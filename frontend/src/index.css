@@ -1,0 +1,163 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import './styles/tokens.css';
+
+/*
+ * Bridge the semantic token layer into Tailwind's utility namespace.
+ * `inline` keeps the var() reference live, so utilities follow the active theme
+ * without regenerating classes.
+ */
+@theme inline {
+  --color-canvas: var(--ds-canvas);
+  --color-surface: var(--ds-surface);
+  --color-surface-raised: var(--ds-surface-raised);
+  --color-surface-sunken: var(--ds-surface-sunken);
+  --color-surface-hover: var(--ds-surface-hover);
+  --color-surface-active: var(--ds-surface-active);
+  --color-overlay: var(--ds-overlay);
+  --color-material: var(--ds-material);
+
+  --color-content: var(--ds-text-primary);
+  --color-content-secondary: var(--ds-text-secondary);
+  --color-content-tertiary: var(--ds-text-tertiary);
+  --color-content-inverse: var(--ds-text-inverse);
+  --color-content-brand: var(--ds-text-brand);
+
+  --color-line-subtle: var(--ds-border-subtle);
+  --color-line: var(--ds-border);
+  --color-line-strong: var(--ds-border-strong);
+
+  --color-accent: var(--ds-accent);
+  --color-accent-hover: var(--ds-accent-hover);
+  --color-accent-subtle: var(--ds-accent-subtle);
+  --color-accent-contrast: var(--ds-accent-contrast);
+
+  --color-success: var(--ds-success);
+  --color-success-surface: var(--ds-success-surface);
+  --color-warning: var(--ds-warning);
+  --color-warning-surface: var(--ds-warning-surface);
+  --color-danger: var(--ds-danger);
+  --color-danger-surface: var(--ds-danger-surface);
+  --color-info: var(--ds-info);
+  --color-info-surface: var(--ds-info-surface);
+
+  --color-chart-1: var(--ds-chart-1);
+  --color-chart-2: var(--ds-chart-2);
+  --color-chart-3: var(--ds-chart-3);
+  --color-chart-4: var(--ds-chart-4);
+  --color-chart-5: var(--ds-chart-5);
+  --color-chart-6: var(--ds-chart-6);
+  --color-chart-7: var(--ds-chart-7);
+  --color-chart-8: var(--ds-chart-8);
+
+  --font-sans: var(--ds-font-sans);
+  --font-arabic: var(--ds-font-arabic);
+  --font-mono: var(--ds-font-mono);
+
+  --radius-xs: var(--ds-radius-xs);
+  --radius-sm: var(--ds-radius-sm);
+  --radius-md: var(--ds-radius-md);
+  --radius-lg: var(--ds-radius-lg);
+  --radius-xl: var(--ds-radius-xl);
+  --radius-2xl: var(--ds-radius-2xl);
+
+  --shadow-xs: var(--ds-shadow-xs);
+  --shadow-sm: var(--ds-shadow-sm);
+  --shadow-md: var(--ds-shadow-md);
+  --shadow-lg: var(--ds-shadow-lg);
+
+  --ease-standard: var(--ds-ease-standard);
+  --ease-out-soft: var(--ds-ease-out);
+}
+
+@layer base {
+  * {
+    border-color: var(--ds-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--ds-canvas);
+    color: var(--ds-text-primary);
+    font-family: var(--ds-font-sans);
+    font-feature-settings:
+      'cv05' 1,
+      'ss01' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Arabic is designed, not mirrored: its own family, line-height and numerals. */
+  :root[dir='rtl'] body {
+    font-family: var(--ds-font-arabic);
+    line-height: 1.75;
+  }
+
+  /*
+   * Tabular, lining figures everywhere numbers are compared — KPI tiles,
+   * tables, axes. Non-negotiable for an analytics product.
+   */
+  .ds-numeric,
+  table :is(td, th) {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings:
+      'tnum' 1,
+      'lnum' 1;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ds-focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--ds-radius-xs);
+  }
+
+  ::selection {
+    background-color: var(--ds-accent-subtle);
+    color: var(--ds-text-primary);
+  }
+
+  /* Calm, unobtrusive scrollbars that respect the surface. */
+  @supports selector(::-webkit-scrollbar) {
+    ::-webkit-scrollbar {
+      width: 11px;
+      height: 11px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--ds-border-strong);
+      border: 3px solid transparent;
+      background-clip: content-box;
+      border-radius: var(--ds-radius-full);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility ds-material {
+  background-color: var(--ds-material);
+  backdrop-filter: blur(var(--ds-material-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--ds-material-blur)) saturate(180%);
+}
+
+@utility ds-canvas-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--ds-grid-columns), minmax(0, 1fr));
+  gap: var(--ds-grid-gutter);
+}

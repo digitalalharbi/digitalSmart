@@ -1,0 +1,75 @@
+{
+  "brand": {
+    "name": "digitalSmart",
+    "by": "من سمارت كود"
+  },
+  "nav": {
+    "overview": "نظرة عامة",
+    "projects": "المشاريع",
+    "campaigns": "الحملات",
+    "clients": "العملاء",
+    "creativeHub": "مركز الإبداع",
+    "mediaPlanner": "مخطط الوسائط",
+    "budgetCalculator": "حاسبة الميزانية",
+    "approvals": "الموافقات",
+    "analytics": "التحليلات",
+    "reports": "التقارير",
+    "presentations": "العروض التقديمية",
+    "integrations": "التكاملات",
+    "tasks": "المهام",
+    "notifications": "الإشعارات",
+    "aiAssistant": "المساعد الذكي",
+    "administration": "الإدارة",
+    "sections": {
+      "work": "العمل",
+      "intelligence": "الذكاء",
+      "system": "النظام"
+    }
+  },
+  "actions": {
+    "search": "بحث",
+    "commandPalette": "لوحة الأوامر",
+    "toggleTheme": "تغيير المظهر",
+    "toggleLanguage": "تغيير اللغة",
+    "retry": "إعادة المحاولة",
+    "quickCreate": "إنشاء سريع",
+    "openNavigation": "فتح التنقل",
+    "closeNavigation": "إغلاق التنقل",
+    "collapseNavigation": "طي التنقل"
+  },
+  "overview": {
+    "title": "نظرة عامة",
+    "subtitle": "حالة أساس المنصة في هذه البيئة.",
+    "foundationTitle": "أساس المرحلة صفر",
+    "foundationBody": "تم التحقق من الربط بين الخدمة الخلفية وقاعدة البيانات والتخزين المؤقت وطوابير المهام عبر نقطة فحص الحالة أدناه. تُسلَّم واجهات المنتج مرحلةً بمرحلة.",
+    "health": {
+      "title": "حالة النظام",
+      "loading": "جارٍ فحص الخدمات…",
+      "error": "لا يمكن الوصول إلى الواجهة البرمجية.",
+      "errorHint": "شغّل الخدمة الخلفية بالأمر: php artisan serve --port=8001",
+      "service": "الخدمة",
+      "status": "الحالة",
+      "detail": "التفاصيل",
+      "ok": "تعمل",
+      "degraded": "متأثرة",
+      "down": "غير متوفرة",
+      "application": "التطبيق",
+      "version": "الإصدار",
+      "environment": "البيئة"
+    },
+    "roadmapTitle": "الخطوة التالية",
+    "roadmapBody": "تسلّم المرحلة الأولى الهوية ومساحات العمل والأدوار والعملاء والمشاريع مع تطبيق الصلاحيات على الخادم وسجل التغييرات."
+  },
+  "placeholder": {
+    "title": "{{section}}",
+    "body": "تُسلَّم هذه الواجهة في مرحلة لاحقة. أما التنقل والتخطيط والمظهر والترجمة التي ستستخدمها فهي جاهزة بالفعل.",
+    "phase": "مخطَّطة للمرحلة {{phase}}"
+  },
+  "status": {
+    "demo": "بيانات تجريبية"
+  },
+  "a11y": {
+    "mainNavigation": "التنقل الرئيسي",
+    "skipToContent": "تخطَّ إلى المحتوى"
+  }
+}

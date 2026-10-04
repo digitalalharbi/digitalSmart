@@ -1,0 +1,46 @@
+import { fileURLToPath, URL } from 'node:url';
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+
+// digitalSmart runs on 5174/8001 so it never collides with another local stack.
+const API_TARGET = process.env.VITE_DEV_API_PROXY ?? 'http://127.0.0.1:8001';
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
+  server: {
+    // Pinned to IPv4: Vite would otherwise bind ::1 only, which breaks tools,
+    // Playwright and docs that address 127.0.0.1.
+    host: '127.0.0.1',
+    port: 5174,
+    strictPort: true,
+    proxy: {
+      '/api': { target: API_TARGET, changeOrigin: true },
+      '/sanctum': { target: API_TARGET, changeOrigin: true },
+      '/broadcasting': { target: API_TARGET, changeOrigin: true },
+    },
+  },
+  build: {
+    sourcemap: true,
+    chunkSizeWarningLimit: 900,
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.ts'],
+    css: true,
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['e2e/**', 'node_modules/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.{test,spec}.{ts,tsx}', 'src/test/**', 'src/main.tsx', 'src/vite-env.d.ts'],
+    },
+  },
+});

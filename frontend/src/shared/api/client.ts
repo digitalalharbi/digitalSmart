@@ -1,0 +1,113 @@
+import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
+import { env } from '@/shared/config/env';
+
+/** Normalised API error shape every caller can rely on. */
+export class ApiError extends Error {
+  readonly status: number | null;
+  readonly errors: Record<string, string[]>;
+  readonly isAuthError: boolean;
+
+  constructor(
+    message: string,
+    status: number | null,
+    errors: Record<string, string[]> = {},
+    isAuthError = false,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.errors = errors;
+    this.isAuthError = isAuthError;
+  }
+
+  /** First validation message for a field, if the server reported one. */
+  fieldError(field: string): string | undefined {
+    return this.errors[field]?.[0];
+  }
+}
+
+type LaravelErrorBody = {
+  message?: string;
+  errors?: Record<string, string[]>;
+};
+
+/** Called when the session is no longer valid, so the app can route to login. */
+type UnauthenticatedHandler = () => void;
+
+let onUnauthenticated: UnauthenticatedHandler = () => undefined;
+
+export function setUnauthenticatedHandler(handler: UnauthenticatedHandler): void {
+  onUnauthenticated = handler;
+}
+
+function readXsrfToken(): string | null {
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
+
+export const api: AxiosInstance = axios.create({
+  baseURL: env.apiBaseUrl,
+  withCredentials: true,
+  withXSRFToken: true,
+  headers: {
+    Accept: 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+  },
+});
+
+/**
+ * Request interceptor: attach the locale and the CSRF token Sanctum expects for
+ * stateful SPA requests.
+ */
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const locale = document.documentElement.lang;
+  if (locale) {
+    config.headers.set('Accept-Language', locale);
+  }
+
+  const token = readXsrfToken();
+  if (token) {
+    config.headers.set('X-XSRF-TOKEN', token);
+  }
+
+  return config;
+});
+
+/**
+ * Response interceptor: translate transport errors into a single ApiError type
+ * so no component ever inspects raw Axios internals.
+ */
+api.interceptors.response.use(
+  (response) => response,
+  (error: unknown) => {
+    if (!axios.isAxiosError(error)) {
+      return Promise.reject(
+        error instanceof Error
+          ? new ApiError(error.message, null)
+          : new ApiError('Unknown error', null),
+      );
+    }
+
+    const axiosError = error as AxiosError<LaravelErrorBody>;
+    const status = axiosError.response?.status ?? null;
+    const body = axiosError.response?.data;
+    const isAuthError = status === 401 || status === 419;
+
+    if (isAuthError) {
+      onUnauthenticated();
+    }
+
+    const message =
+      body?.message ??
+      (status === null
+        ? 'The server could not be reached. Check your connection and try again.'
+        : `Request failed with status ${String(status)}.`);
+
+    return Promise.reject(new ApiError(message, status, body?.errors ?? {}, isAuthError));
+  },
+);
+
+/** Prime the CSRF cookie before the first stateful (non-GET) request. */
+export async function ensureCsrfCookie(): Promise<void> {
+  await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+}

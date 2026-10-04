@@ -1,0 +1,75 @@
+{
+  "brand": {
+    "name": "digitalSmart",
+    "by": "by Smart Code"
+  },
+  "nav": {
+    "overview": "Overview",
+    "projects": "Projects",
+    "campaigns": "Campaigns",
+    "clients": "Clients",
+    "creativeHub": "Creative Hub",
+    "mediaPlanner": "Media Planner",
+    "budgetCalculator": "Budget Calculator",
+    "approvals": "Approvals",
+    "analytics": "Analytics",
+    "reports": "Reports",
+    "presentations": "Presentations",
+    "integrations": "Integrations",
+    "tasks": "Tasks",
+    "notifications": "Notifications",
+    "aiAssistant": "AI Assistant",
+    "administration": "Administration",
+    "sections": {
+      "work": "Work",
+      "intelligence": "Intelligence",
+      "system": "System"
+    }
+  },
+  "actions": {
+    "search": "Search",
+    "commandPalette": "Command palette",
+    "toggleTheme": "Switch appearance",
+    "toggleLanguage": "Switch language",
+    "retry": "Try again",
+    "quickCreate": "Quick create",
+    "openNavigation": "Open navigation",
+    "closeNavigation": "Close navigation",
+    "collapseNavigation": "Collapse navigation"
+  },
+  "overview": {
+    "title": "Overview",
+    "subtitle": "Platform foundation status for this environment.",
+    "foundationTitle": "Phase 0 foundation",
+    "foundationBody": "Backend, database, cache and queue wiring are verified by the health endpoint below. Product surfaces arrive phase by phase.",
+    "health": {
+      "title": "System health",
+      "loading": "Checking services…",
+      "error": "The API could not be reached.",
+      "errorHint": "Start the backend with: php artisan serve --port=8001",
+      "service": "Service",
+      "status": "Status",
+      "detail": "Detail",
+      "ok": "Operational",
+      "degraded": "Degraded",
+      "down": "Unavailable",
+      "application": "Application",
+      "version": "Version",
+      "environment": "Environment"
+    },
+    "roadmapTitle": "What comes next",
+    "roadmapBody": "Phase 1 delivers identity, workspaces, roles, clients and projects with server-side authorization and audit logging."
+  },
+  "placeholder": {
+    "title": "{{section}}",
+    "body": "This surface is delivered in a later phase. The navigation, layout, theming and localisation it will use are already in place.",
+    "phase": "Planned for {{phase}}"
+  },
+  "status": {
+    "demo": "DEMO DATA"
+  },
+  "a11y": {
+    "mainNavigation": "Main navigation",
+    "skipToContent": "Skip to content"
+  }
+}
