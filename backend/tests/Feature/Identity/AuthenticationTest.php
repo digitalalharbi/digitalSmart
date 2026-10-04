@@ -143,12 +143,27 @@ it('signs out and records it', function (): void {
     expect(AuditLog::query()->where('action', AuditAction::UserLoggedOut->value)->exists())->toBeTrue();
 });
 
-it('rate limits repeated sign-in attempts', function (): void {
+it('rate limits repeated sign-in attempts against one account', function (): void {
+    // The budget is stated here rather than inherited from the environment.
+    config()->set('digitalsmart.rate_limits.auth', 3);
+
     $payload = ['email' => 'target@example.com', 'password' => 'guessing'];
 
-    for ($attempt = 1; $attempt <= 5; $attempt++) {
+    for ($attempt = 1; $attempt <= 3; $attempt++) {
         $this->postJson('/api/auth/login', $payload)->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     $this->postJson('/api/auth/login', $payload)->assertStatus(Response::HTTP_TOO_MANY_REQUESTS);
+});
+
+it('keeps the per-account limit even when the per-IP budget is generous', function (): void {
+    config()->set('digitalsmart.rate_limits.auth', 2);
+
+    $target = ['email' => 'victim@example.com', 'password' => 'guessing'];
+
+    $this->postJson('/api/auth/login', $target)->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+    $this->postJson('/api/auth/login', $target)->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+
+    // A third attempt against the same account is refused, whatever the source.
+    $this->postJson('/api/auth/login', $target)->assertStatus(Response::HTTP_TOO_MANY_REQUESTS);
 });

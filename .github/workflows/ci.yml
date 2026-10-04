@@ -180,8 +180,14 @@ jobs:
         run: |
           composer install --prefer-dist --no-interaction --no-progress
           cp .env.example .env
+          # Parallel browsers sign in repeatedly from one address. The per-account
+          # limit still applies; production keeps the default of 5.
+          echo "RATE_LIMIT_AUTH=60" >> .env
           php artisan key:generate
           php artisan migrate --force
+          # The end-to-end suite signs in as the seeded demo roles, so a
+          # permission regression fails here as well as in the backend tests.
+          php artisan db:seed --force
           nohup php artisan serve --host=127.0.0.1 --port=8001 > /tmp/api.log 2>&1 &
           for i in $(seq 1 30); do
             code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8001/api/health || true)

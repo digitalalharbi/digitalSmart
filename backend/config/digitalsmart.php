@@ -23,4 +23,23 @@ return [
     */
     'demo_data_label' => 'DEMO',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Rate limits (requests per minute)
+    |--------------------------------------------------------------------------
+    |
+    | Configurable so operators can tune them per environment, with secure
+    | defaults. `auth` applies per IP *and* per e-mail address, so raising it
+    | for a local end-to-end run does not weaken the per-account protection
+    | that matters in production — keep the production value low.
+    |
+    */
+
+    'rate_limits' => [
+        'api_user' => (int) env('RATE_LIMIT_API_USER', 120),
+        'api_guest' => (int) env('RATE_LIMIT_API_GUEST', 30),
+        'health' => (int) env('RATE_LIMIT_HEALTH', 60),
+        'auth' => (int) env('RATE_LIMIT_AUTH', 5),
+    ],
+
 ];

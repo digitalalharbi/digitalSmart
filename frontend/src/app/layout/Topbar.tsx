@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Languages, Moon, PanelsTopLeft, Search, Sun } from 'lucide-react';
+import { AccountMenu } from './AccountMenu';
 import { Button } from '@/shared/ui/button';
 import { useUiStore, resolveTheme } from '@/shared/store/ui-store';
 import type { Locale } from '@/shared/i18n';
@@ -64,6 +65,8 @@ export function Topbar() {
         >
           {resolved === 'dark' ? <Sun /> : <Moon />}
         </Button>
+
+        <AccountMenu />
       </div>
     </header>
   );

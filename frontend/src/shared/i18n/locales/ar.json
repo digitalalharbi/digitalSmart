@@ -35,7 +35,15 @@
     "quickCreate": "إنشاء سريع",
     "openNavigation": "فتح التنقل",
     "closeNavigation": "إغلاق التنقل",
-    "collapseNavigation": "طي التنقل"
+    "collapseNavigation": "طي التنقل",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ…",
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "previous": "السابق",
+    "next": "التالي"
   },
   "overview": {
     "title": "نظرة عامة",
@@ -71,5 +79,78 @@
   "a11y": {
     "mainNavigation": "التنقل الرئيسي",
     "skipToContent": "تخطَّ إلى المحتوى"
+  },
+  "auth": {
+    "signInTitle": "تسجيل الدخول إلى digitalSmart",
+    "signInSubtitle": "استخدم حساب مساحة العمل الخاصة بك.",
+    "email": "البريد الإلكتروني",
+    "emailInvalid": "أدخل بريدًا إلكترونيًا صحيحًا.",
+    "password": "كلمة المرور",
+    "passwordRequired": "أدخل كلمة المرور.",
+    "rememberMe": "أبقِ جلستي مفتوحة",
+    "signIn": "تسجيل الدخول",
+    "signingIn": "جارٍ تسجيل الدخول…",
+    "checkingSession": "جارٍ التحقق من الجلسة…"
+  },
+  "account": {
+    "menu": "الحساب ومساحة العمل",
+    "workspaces": "مساحات العمل",
+    "signOut": "تسجيل الخروج",
+    "signingOut": "جارٍ تسجيل الخروج…"
+  },
+  "clients": {
+    "subtitle": "جميع العملاء في مساحة العمل هذه.",
+    "count_zero": "لا يوجد عملاء",
+    "count_one": "عميل واحد",
+    "count_two": "عميلان",
+    "count_few": "{{count}} عملاء",
+    "count_many": "{{count}} عميلًا",
+    "count_other": "{{count}} عميل",
+    "create": "عميل جديد",
+    "searchPlaceholder": "ابحث في العملاء",
+    "filterByStatus": "تصفية حسب الحالة",
+    "loading": "جارٍ تحميل العملاء…",
+    "loadFailed": "تعذّر تحميل العملاء.",
+    "forbidden": "لا يشمل دورك صلاحية الوصول إلى العملاء.",
+    "empty": "لا يوجد عملاء بعد",
+    "emptyHint": "أضف أول عميل لبدء التخطيط للعمل معه.",
+    "noMatches": "لا يوجد عملاء مطابقون لهذه التصفية",
+    "noMatchesHint": "جرّب كلمة بحث أخرى أو امسح تصفية الحالة.",
+    "pagination": "صفحات العملاء",
+    "pageOf": "صفحة {{page}} من {{total}}",
+    "changeStatus": "تغيير الحالة",
+    "actionsFor": "إجراءات {{name}}",
+    "deleteTitle": "حذف {{name}}؟",
+    "deleteDescription": "يُؤرشَف العميل ولا يُمحى: تبقى مشاريعه وسجل إنفاقه وسجل التغييرات محفوظة. لا يمكن التراجع عن ذلك من الواجهة.",
+    "status": {
+      "prospect": "عميل محتمل",
+      "active": "نشط",
+      "paused": "متوقف مؤقتًا",
+      "archived": "مؤرشف"
+    },
+    "columns": {
+      "name": "العميل",
+      "status": "الحالة",
+      "industry": "القطاع",
+      "projects": "المشاريع",
+      "actions": "الإجراءات"
+    },
+    "fields": {
+      "name": "اسم العميل",
+      "legalName": "الاسم القانوني",
+      "industry": "القطاع",
+      "website": "الموقع الإلكتروني",
+      "currency": "العملة الافتراضية",
+      "currencyHint": "رمز من ثلاثة أحرف، مثل SAR",
+      "contactName": "جهة الاتصال الرئيسية",
+      "contactEmail": "البريد الإلكتروني لجهة الاتصال",
+      "contactPhone": "هاتف جهة الاتصال",
+      "notes": "ملاحظات"
+    },
+    "form": {
+      "createTitle": "عميل جديد",
+      "editTitle": "تعديل العميل",
+      "description": "يبدأ العميل الجديد كعميل محتمل، ويمكن تفعيله بعد الاتفاق على العمل."
+    }
   }
 }

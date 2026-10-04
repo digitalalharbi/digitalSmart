@@ -8,7 +8,7 @@ times.
 | Phase | Scope                                                                          | Status |
 | ----- | ------------------------------------------------------------------------------ | ------ |
 | 0     | Repository baseline, dev stack, CI, formatting, linting, tests, env examples, architectural skeleton | **Complete** |
-| 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | Next   |
+| 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | **In progress** |
 | 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | Planned |
 | 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | Planned |
 | 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | Planned |
@@ -35,6 +35,23 @@ times.
   navigation drawer, accessible focus and reduced-motion handling.
 - Gate: Pint, PHPStan level 8, 33 backend tests, 27 frontend tests, 12 Playwright tests
   across Chromium and mobile Safari, all wired into GitHub Actions.
+
+## Phase 1 — delivered so far
+
+- Workspace → Client → Project schema with UUIDv7 keys, check constraints and
+  the indexes the scoped queries rely on.
+- Permission catalogue derived from a single enum, six system roles, and
+  enforcement in the Application layer rather than in controllers.
+- Sanctum session authentication, workspace switching, and an append-only audit
+  trail that records sign-ins, failures and every client mutation.
+- Clients end to end: list with search, status filters and pagination; create,
+  edit, status transitions and soft delete; all permission-gated and
+  workspace-scoped.
+- SPA: sign-in, session gate, account and workspace menu, permission-aware
+  navigation, and the clients surface in English and Arabic.
+
+Still to land in Phase 1: projects CRUD and membership, workspace member
+administration, and the audit log viewer.
 
 ## Blocked
 

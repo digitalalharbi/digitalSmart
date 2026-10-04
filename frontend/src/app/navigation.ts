@@ -10,6 +10,12 @@ export type NavItem = {
   icon: string;
   section: NavSection;
   phase: string;
+  /**
+   * Permission that reveals this item. Undefined means every member sees it.
+   * Hiding is a courtesy for a cleaner interface; the server enforces access
+   * on every request regardless.
+   */
+  permission?: string;
 };
 
 export const NAV_ITEMS: readonly NavItem[] = [
@@ -26,6 +32,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'FolderKanban',
     section: 'work',
     phase: 'Phase 1',
+    permission: 'projects.view_assigned',
   },
   {
     path: '/clients',
@@ -33,6 +40,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'Building2',
     section: 'work',
     phase: 'Phase 1',
+    permission: 'clients.view',
   },
   {
     path: '/campaigns',
@@ -40,6 +48,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'Megaphone',
     section: 'work',
     phase: 'Phase 3',
+    permission: 'projects.view_assigned',
   },
   {
     path: '/creative-hub',
@@ -62,6 +71,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'ChartNoAxesCombined',
     section: 'intelligence',
     phase: 'Phase 4',
+    permission: 'projects.view_assigned',
   },
   {
     path: '/media-planner',
@@ -83,6 +93,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'FileChartColumn',
     section: 'intelligence',
     phase: 'Phase 7',
+    permission: 'projects.view_assigned',
   },
   {
     path: '/ai-assistant',
@@ -104,6 +115,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'Plug',
     section: 'system',
     phase: 'Phase 2',
+    permission: 'workspaces.view',
   },
   {
     path: '/notifications',
@@ -118,6 +130,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'Settings2',
     section: 'system',
     phase: 'Phase 1',
+    permission: 'workspaces.update',
   },
 ];
 

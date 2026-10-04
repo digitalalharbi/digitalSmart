@@ -48,6 +48,38 @@ All notable changes to digitalSmart are recorded here. Format follows
 - `docker-compose.yml` for PostgreSQL and Redis; `Makefile` for setup, dev and verify.
 - Documentation set under `docs/`, including six architecture decision records.
 
+### Added — Phase 1 (in progress): identity, workspaces, clients
+
+**Backend**
+
+- Workspace → Client → Project schema with UUIDv7 keys, status check
+  constraints and the indexes scoped queries depend on.
+- Permission catalogue derived from one enum; six system roles with explicit,
+  non-hierarchical permission sets; enforcement in the Application layer behind
+  an AuthorizationGuard rather than in controllers or route middleware.
+- Sanctum session authentication, workspace switching re-verified against live
+  membership on every request, and configurable rate limits with secure
+  defaults.
+- Clients end to end: search, status filters, pagination, create, edit, domain
+  status transitions and soft delete.
+- Append-only audit trail covering sign-ins, failed attempts and every client
+  mutation, with secrets redacted from recorded diffs.
+
+**Frontend**
+
+- Sign-in page, session gate, and a 401 handler that returns the person to sign
+  in from anywhere rather than leaving a shell of failing requests.
+- Account menu with workspace switching; switching discards every query cached
+  for the previous workspace.
+- Permission-aware navigation, and a clients surface with real loading, empty,
+  filtered-empty, forbidden and error states, in English and Arabic.
+
+**Fixed**
+
+- `SESSION_DOMAIN` was set to `localhost`, so no cookie was issued for
+  `127.0.0.1` and sign-in silently failed to persist. Found by exercising the
+  real browser flow.
+
 ### Blocked
 
 - Live ad-platform handshakes are `BLOCKED_EXTERNAL` pending credentials and provider

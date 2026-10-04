@@ -48,5 +48,10 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Deterministic rate limits: a developer's .env must not change what the suite asserts. -->
+        <env name="RATE_LIMIT_AUTH" value="5" force="true"/>
+        <env name="RATE_LIMIT_API_USER" value="120" force="true"/>
+        <env name="RATE_LIMIT_API_GUEST" value="30" force="true"/>
+        <env name="RATE_LIMIT_HEALTH" value="60" force="true"/>
     </php>
 </phpunit>

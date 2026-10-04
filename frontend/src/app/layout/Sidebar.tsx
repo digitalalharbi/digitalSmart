@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { NAV_ITEMS, NAV_SECTIONS } from '@/app/navigation';
+import { NAV_ITEMS, NAV_SECTIONS, type NavItem } from '@/app/navigation';
+import { useSession, type PermissionSlug } from '@/features/auth';
 import { cn } from '@/shared/lib/cn';
 import { useUiStore } from '@/shared/store/ui-store';
 import { NavIcon } from './NavIcon';
@@ -8,6 +9,15 @@ import { NavIcon } from './NavIcon';
 export function Sidebar() {
   const { t } = useTranslation();
   const isCollapsed = useUiStore((state) => state.isSidebarCollapsed);
+  const { can } = useSession();
+
+  /*
+   * Hiding a surface the role cannot use keeps the navigation honest. It is a
+   * courtesy, not a security boundary — every endpoint re-checks on the server,
+   * and reaching the route directly still returns 403.
+   */
+  const isVisible = (item: NavItem): boolean =>
+    item.permission === undefined || can(item.permission as PermissionSlug);
 
   return (
     <nav
@@ -42,7 +52,7 @@ export function Sidebar() {
                 {t(`nav.sections.${section}`)}
               </h2>
             ) : null}
-            {NAV_ITEMS.filter((item) => item.section === section).map((item) => (
+            {NAV_ITEMS.filter((item) => item.section === section && isVisible(item)).map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}

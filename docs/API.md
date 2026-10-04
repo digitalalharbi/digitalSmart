@@ -59,11 +59,15 @@ disclosed across tenant boundaries.
 
 ## Rate limits
 
-| Limiter  | Budget                                  | Applied to            |
+| Limiter  | Default budget                          | Applied to            |
 | -------- | --------------------------------------- | --------------------- |
 | `api`    | 120/min per user, 30/min per IP (guests) | all `/api` routes     |
 | `health` | 60/min per IP                            | `GET /api/health`     |
 | `auth`   | 5/min per IP **and** 5/min per e-mail    | credential endpoints  |
+
+Budgets are configurable (`RATE_LIMIT_*`) so they can be tuned per environment.
+`auth` applies per IP *and* per e-mail address: raising the per-IP budget for a
+shared address does not weaken the per-account protection.
 
 ## Endpoints
 
@@ -97,7 +101,58 @@ individual service status.
 Framework liveness probe for load balancers. No body of interest; `200` means the PHP
 process booted.
 
+### Authentication
+
+| Endpoint | Purpose |
+| -------- | ------- |
+| `POST /api/auth/login` | Establish a session. Body: `email`, `password`, optional `remember`. |
+| `GET /api/auth/me` | The current user, their workspaces and effective permissions. |
+| `POST /api/auth/logout` | End the session. `204`. |
+| `POST /api/workspaces/{id}/activate` | Switch the session's active workspace. |
+
+Rejected credentials return `422` with a message identical for a wrong password
+and an unknown address — the login form is not an account enumeration oracle. A
+deactivated account is the deliberate exception, because the person needs to know
+to contact an administrator. A user who belongs to no workspace is signed back
+out rather than left half-authenticated.
+
+`GET /api/auth/me` returns a `permissions` array. The SPA uses it to decide what
+to *offer*; it is never the security boundary.
+
+### Clients
+
+| Endpoint | Permission |
+| -------- | ---------- |
+| `GET /api/clients` | `clients.view` |
+| `POST /api/clients` | `clients.create` |
+| `GET /api/clients/{id}` | `clients.view` |
+| `PUT /api/clients/{id}` | `clients.update` |
+| `PATCH /api/clients/{id}/status` | `clients.update` |
+| `DELETE /api/clients/{id}` | `clients.delete` |
+
+List parameters: `search`, `status[]` (`prospect`, `active`, `paused`,
+`archived`), `page`, `per_page` (max 100), `sort` (`name`, `status`,
+`created_at`, `updated_at`), `direction`. An unrecognised sort column is ignored
+rather than interpolated.
+
+Responses are enveloped:
+
+```json
+{
+  "data": [ ... ],
+  "meta": { "total": 42, "page": 1, "per_page": 25, "last_page": 2, "has_more": true }
+}
+```
+
+A client is created as a `prospect`. Status changes go through
+`PATCH /{id}/status` and respect the domain's transitions —
+`prospect → active | archived`, `active → paused | archived`,
+`paused → active | archived`, and `archived` is terminal. An illegal transition
+returns `422` with `"code": "invalid_status_transition"`.
+
+Deletion is a soft delete: projects, spend history and the audit trail survive.
+
 ---
 
-Endpoints for identity, workspaces, clients and projects arrive in Phase 1 and are
-documented here as they land.
+Endpoints for projects, workspace members and the audit log land next and are
+documented here as they arrive.

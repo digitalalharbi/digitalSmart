@@ -21,18 +21,29 @@ final class RouteServiceProvider extends ServiceProvider
     {
         // Default budget for authenticated API traffic.
         RateLimiter::for('api', fn (Request $request): Limit => $request->user() !== null
-            ? Limit::perMinute(120)->by('user:'.$request->user()->getAuthIdentifier())
-            : Limit::perMinute(30)->by('ip:'.(string) $request->ip()));
+            ? Limit::perMinute($this->limit('api_user'))->by('user:'.$request->user()->getAuthIdentifier())
+            : Limit::perMinute($this->limit('api_guest'))->by('ip:'.(string) $request->ip()));
 
         // Monitors poll health frequently; keep it cheap but not unbounded.
-        RateLimiter::for('health', fn (Request $request): Limit => Limit::perMinute(60)
+        RateLimiter::for('health', fn (Request $request): Limit => Limit::perMinute($this->limit('health'))
             ->by('ip:'.(string) $request->ip()));
 
-        // Credential endpoints are brute-force targets (used from Phase 1).
-        // Two limits apply at once: per IP and per account.
+        /*
+         * Credential endpoints are brute-force targets. Two limits apply at
+         * once: per IP and per e-mail. The per-account limit is the one that
+         * protects a specific user, and it stays in force even where the
+         * per-IP budget is raised for a shared address.
+         */
         RateLimiter::for('auth', /** @return list<Limit> */ fn (Request $request): array => [
-            Limit::perMinute(5)->by('ip:'.(string) $request->ip()),
-            Limit::perMinute(5)->by('email:'.strtolower((string) $request->input('email'))),
+            Limit::perMinute($this->limit('auth'))->by('ip:'.(string) $request->ip()),
+            Limit::perMinute($this->limit('auth'))->by('email:'.strtolower((string) $request->input('email'))),
         ]);
+    }
+
+    private function limit(string $name): int
+    {
+        $value = config('digitalsmart.rate_limits.'.$name);
+
+        return is_int($value) && $value > 0 ? $value : 5;
     }
 }

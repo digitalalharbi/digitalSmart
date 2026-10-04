@@ -35,7 +35,15 @@
     "quickCreate": "Quick create",
     "openNavigation": "Open navigation",
     "closeNavigation": "Close navigation",
-    "collapseNavigation": "Collapse navigation"
+    "collapseNavigation": "Collapse navigation",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "close": "Close",
+    "edit": "Edit",
+    "delete": "Delete",
+    "previous": "Previous",
+    "next": "Next"
   },
   "overview": {
     "title": "Overview",
@@ -71,5 +79,74 @@
   "a11y": {
     "mainNavigation": "Main navigation",
     "skipToContent": "Skip to content"
+  },
+  "auth": {
+    "signInTitle": "Sign in to digitalSmart",
+    "signInSubtitle": "Use your workspace account.",
+    "email": "Email",
+    "emailInvalid": "Enter a valid email address.",
+    "password": "Password",
+    "passwordRequired": "Enter your password.",
+    "rememberMe": "Keep me signed in",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "checkingSession": "Checking your session…"
+  },
+  "account": {
+    "menu": "Account and workspace",
+    "workspaces": "Workspaces",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…"
+  },
+  "clients": {
+    "subtitle": "Every client in this workspace.",
+    "count_one": "{{count}} client",
+    "count_other": "{{count}} clients",
+    "create": "New client",
+    "searchPlaceholder": "Search clients",
+    "filterByStatus": "Filter by status",
+    "loading": "Loading clients…",
+    "loadFailed": "Clients could not be loaded.",
+    "forbidden": "Your role does not include access to clients.",
+    "empty": "No clients yet",
+    "emptyHint": "Add the first client to start planning work for them.",
+    "noMatches": "No clients match these filters",
+    "noMatchesHint": "Try a different search term or clear the status filters.",
+    "pagination": "Client pages",
+    "pageOf": "Page {{page}} of {{total}}",
+    "changeStatus": "Change status",
+    "actionsFor": "Actions for {{name}}",
+    "deleteTitle": "Delete {{name}}?",
+    "deleteDescription": "The client is archived rather than erased: its projects, spend history and audit trail are kept. This cannot be undone from the interface.",
+    "status": {
+      "prospect": "Prospect",
+      "active": "Active",
+      "paused": "Paused",
+      "archived": "Archived"
+    },
+    "columns": {
+      "name": "Client",
+      "status": "Status",
+      "industry": "Industry",
+      "projects": "Projects",
+      "actions": "Actions"
+    },
+    "fields": {
+      "name": "Client name",
+      "legalName": "Legal name",
+      "industry": "Industry",
+      "website": "Website",
+      "currency": "Default currency",
+      "currencyHint": "Three-letter code, e.g. SAR",
+      "contactName": "Primary contact",
+      "contactEmail": "Contact email",
+      "contactPhone": "Contact phone",
+      "notes": "Notes"
+    },
+    "form": {
+      "createTitle": "New client",
+      "editTitle": "Edit client",
+      "description": "A new client starts as a prospect. You can activate it once work is agreed."
+    }
   }
 }
