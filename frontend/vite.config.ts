@@ -3,8 +3,11 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-// digitalSmart runs on 5174/8001 so it never collides with another local stack.
+// digitalSmart runs on 5174/8001 so it does not collide with the common 5173/8000
+// defaults. Both are overridable: running several stacks on one machine is normal,
+// and a port clash should be a config change, not a code change.
 const API_TARGET = process.env.VITE_DEV_API_PROXY ?? 'http://127.0.0.1:8001';
+const PORT = Number.parseInt(process.env.VITE_DEV_PORT ?? '5174', 10);
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -15,9 +18,11 @@ export default defineConfig({
   },
   server: {
     // Pinned to IPv4: Vite would otherwise bind ::1 only, which breaks tools,
-    // Playwright and docs that address 127.0.0.1.
+    // Playwright and docs that address 127.0.0.1. strictPort is deliberate —
+    // silently moving to another port would make the API proxy and the
+    // end-to-end suite address the wrong server.
     host: '127.0.0.1',
-    port: 5174,
+    port: PORT,
     strictPort: true,
     proxy: {
       '/api': { target: API_TARGET, changeOrigin: true },
@@ -30,7 +35,7 @@ export default defineConfig({
   // pipeline, which is slower and not representative.
   preview: {
     host: '127.0.0.1',
-    port: 5174,
+    port: PORT,
     strictPort: true,
     proxy: {
       '/api': { target: API_TARGET, changeOrigin: true },

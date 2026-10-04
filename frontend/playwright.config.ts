@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 5174;
+const PORT = Number.parseInt(process.env.VITE_DEV_PORT ?? '5174', 10);
 
 /**
  * E2E runs against the built SPA with the real backend expected on 8001.
