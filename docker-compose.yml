@@ -1,6 +1,11 @@
+# Datastores only. The API, Horizon, Reverb and Vite run on the host so the
+# edit/refresh loop stays fast (see docs/adr/0004-local-stack-without-docker.md).
+# Application containers for deployment arrive in Phase 11.
+
 services:
   postgres:
     image: postgres:17-alpine
+    container_name: digitalsmart-postgres
     environment:
       POSTGRES_DB: digitalsmart
       POSTGRES_USER: digitalsmart
@@ -9,9 +14,27 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U digitalsmart -d digitalsmart"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   redis:
     image: redis:7-alpine
+    container_name: digitalsmart-redis
+    command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
 volumes:
   pgdata:
+  redisdata:

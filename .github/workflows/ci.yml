@@ -1,11 +1,211 @@
 name: CI
+
 on:
   push:
+    branches: [main]
   pull_request:
+
+# A superseded run on the same branch is wasted compute.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PHP_VERSION: '8.4'
+  NODE_VERSION: '24'
+
 jobs:
-  bootstrap-check:
+  backend:
+    name: Backend (Pint, PHPStan, Pest)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: digitalsmart_test
+          POSTGRES_USER: digitalsmart
+          POSTGRES_PASSWORD: digitalsmart
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U digitalsmart"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
       - uses: actions/checkout@v4
-      - name: Repository constitution check
-        run: test -f CLAUDE.md && test -f README.md && test -f docker-compose.yml
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, pdo_pgsql, pgsql, bcmath, intl, zip, sodium
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ runner.os }}-php${{ env.PHP_VERSION }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php${{ env.PHP_VERSION }}-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Code style (Pint)
+        run: php vendor/bin/pint --test
+
+      - name: Static analysis (PHPStan level 8)
+        run: php vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+      - name: Tests (architecture, unit, feature)
+        run: php vendor/bin/pest --ci
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: digitalsmart_test
+          DB_USERNAME: digitalsmart
+          DB_PASSWORD: digitalsmart
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+
+  frontend:
+    name: Frontend (TypeScript, ESLint, Vitest, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check (strict)
+        run: npm run typecheck
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Format check (Prettier)
+        run: npm run format:check
+
+      - name: Unit and component tests
+        run: npm run test
+
+      - name: Production build
+        run: npm run build
+
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [backend, frontend]
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: digitalsmart
+          POSTGRES_USER: digitalsmart
+          POSTGRES_PASSWORD: digitalsmart
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U digitalsmart"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, pdo_pgsql, pgsql, bcmath, intl, zip, sodium
+          coverage: none
+          tools: composer:v2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Start the API
+        working-directory: backend
+        run: |
+          composer install --prefer-dist --no-interaction --no-progress
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate --force
+          nohup php artisan serve --host=127.0.0.1 --port=8001 > /tmp/api.log 2>&1 &
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8001/api/health || true)
+            if [ "$code" = "200" ]; then echo "API ready"; exit 0; fi
+            sleep 2
+          done
+          echo "API did not become healthy:"; cat /tmp/api.log; exit 1
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run end-to-end tests
+        working-directory: frontend
+        run: npm run e2e
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 7

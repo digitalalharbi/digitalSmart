@@ -1,11 +1,36 @@
+# Environment
 .env
 .env.*
 !.env.example
+
+# Dependencies
 vendor/
 node_modules/
+
+# Build output
 dist/
 build/
 coverage/
+playwright-report/
+test-results/
+/docs/openapi.json
+
+# Framework caches
 .phpunit.cache/
-storage/*.key
+.phpunit.result.cache
+backend/storage/*.key
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/testing/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+backend/public/storage
+backend/public/vendor/horizon
+backend/bootstrap/cache/*.php
+!backend/**/.gitignore
+
+# Editors and OS
 .DS_Store
+.idea/
+.vscode/
+*.swp
