@@ -4,14 +4,37 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Client\Contract\ClientReadModel;
+use App\Application\Identity\Contract\Authenticator;
+use App\Application\Identity\Contract\IdentityReadModel;
+use App\Application\Shared\Contract\ActorContext;
+use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\ApplicationInfo;
+use App\Application\Shared\Contract\AuditRecorder;
+use App\Application\Shared\Contract\AuthorizationGuard;
+use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Contract\HealthProbe;
+use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Application\System\Query\GetSystemHealth;
+use App\Domain\Client\Repository\ClientRepository;
+use App\Domain\Project\Repository\ProjectRepository;
+use App\Infrastructure\Access\PermissionAuthorizationGuard;
+use App\Infrastructure\Access\RequestActorContext;
+use App\Infrastructure\Audit\DatabaseAuditRecorder;
+use App\Infrastructure\Identity\EloquentIdentityReadModel;
+use App\Infrastructure\Identity\SessionAuthenticator;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
+use App\Infrastructure\Support\SystemClock;
+use App\Infrastructure\Support\Uuid7Generator;
 use App\Infrastructure\System\CacheHealthProbe;
 use App\Infrastructure\System\DatabaseHealthProbe;
 use App\Infrastructure\System\LaravelApplicationInfo;
 use App\Infrastructure\System\QueueHealthProbe;
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -32,9 +55,35 @@ final class AppServiceProvider extends ServiceProvider
         QueueHealthProbe::class,
     ];
 
+    /**
+     * Application interface => Infrastructure implementation.
+     *
+     * @var array<class-string, class-string>
+     */
+    private const BINDINGS = [
+        ApplicationInfo::class => LaravelApplicationInfo::class,
+        Clock::class => SystemClock::class,
+        IdentifierGenerator::class => Uuid7Generator::class,
+        AuditRecorder::class => DatabaseAuditRecorder::class,
+        AuthorizationGuard::class => PermissionAuthorizationGuard::class,
+        IdentityReadModel::class => EloquentIdentityReadModel::class,
+        Authenticator::class => SessionAuthenticator::class,
+        ClientRepository::class => EloquentClientRepository::class,
+        ClientReadModel::class => EloquentClientReadModel::class,
+        ProjectRepository::class => EloquentProjectRepository::class,
+    ];
+
     public function register(): void
     {
-        $this->app->bind(ApplicationInfo::class, LaravelApplicationInfo::class);
+        foreach (self::BINDINGS as $abstract => $concrete) {
+            $this->app->bind($abstract, $concrete);
+        }
+
+        $this->registerActorContext();
+
+        // Sanctum's SPA guard is stateful; the authenticator needs that
+        // contract rather than the generic Guard.
+        $this->app->bind(StatefulGuard::class, static fn (): StatefulGuard => Auth::guard('web'));
 
         foreach (self::HEALTH_PROBES as $probe) {
             $this->app->tag($probe, HealthProbe::class);
@@ -51,6 +100,17 @@ final class AppServiceProvider extends ServiceProvider
         $this->enforceModelDiscipline();
         $this->enforcePasswordPolicy();
         $this->guardAgainstSlowQueries();
+    }
+
+    /**
+     * One actor context per request, shared by the binder, the guard and every
+     * use case, so permissions are resolved once rather than per check.
+     */
+    private function registerActorContext(): void
+    {
+        $this->app->scoped(RequestActorContext::class);
+        $this->app->bind(ActorContext::class, RequestActorContext::class);
+        $this->app->bind(ActorContextBinder::class, RequestActorContext::class);
     }
 
     /**

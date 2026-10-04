@@ -31,6 +31,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend Origin
+    |--------------------------------------------------------------------------
+    |
+    | Origin of the first-party SPA. Used for CORS and for building links in
+    | notifications. Several origins may be listed, comma-separated; the first
+    | is treated as canonical.
+    |
+    */
+
+    'frontend_url' => explode(',', (string) env('FRONTEND_URL', 'http://127.0.0.1:5174'))[0],
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

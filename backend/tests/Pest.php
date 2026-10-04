@@ -18,9 +18,34 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    ->beforeEach(function (): void {
+        /*
+         * Feature tests address the API from the SPA's own origin. Sanctum only
+         * applies the stateful session middleware to requests it recognises as
+         * first-party, so without this the suite would exercise a token-style
+         * path the browser never takes.
+         */
+        $origin = (string) config('app.frontend_url');
+
+        if ($origin !== '') {
+            $this->withHeader('Origin', $origin);
+        }
+    })
     ->in('Feature');
 
 pest()->extend(TestCase::class)->in('Architecture');
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+/** Build a provisioned workspace with its system roles and an owner. */
+function workspaceScenario(?string $name = null): Tests\Support\WorkspaceScenario
+{
+    return Tests\Support\WorkspaceScenario::create($name);
+}
 
 /*
 |--------------------------------------------------------------------------

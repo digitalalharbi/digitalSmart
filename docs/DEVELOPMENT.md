@@ -103,5 +103,11 @@ Start `php artisan horizon`.
 `/sanctum/csrf-cookie` automatically; check `SANCTUM_STATEFUL_DOMAINS` includes the
 exact SPA host *and port*.
 
+**Sign-in appears to succeed but the next request is unauthenticated** — the
+session cookie is not being stored. Check `SESSION_DOMAIN`: it must be empty for
+local development. Setting it to `localhost` stops the browser accepting cookies
+for `127.0.0.1`, which looks exactly like a broken login. Set it only in deployed
+environments that share cookies across subdomains.
+
 **Vite not reachable on 127.0.0.1** — the dev server pins `host: '127.0.0.1'`; if you
 change it, Playwright's `baseURL` must change too.

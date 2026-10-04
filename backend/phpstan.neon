@@ -25,3 +25,7 @@ parameters:
         -
             identifier: method.notFound
             path: tests/*
+        # Same cause: $this inside a beforeEach closure is the TestCase.
+        -
+            identifier: variable.undefined
+            path: tests/Pest.php

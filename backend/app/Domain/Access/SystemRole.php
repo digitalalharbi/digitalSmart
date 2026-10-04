@@ -1,0 +1,127 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Access;
+
+/**
+ * Roles every workspace starts with.
+ *
+ * Workspaces may add their own roles later; these are the templates seeded on
+ * creation, and they encode the agency reality the product is built for:
+ * managers run projects, buyers execute them, creatives produce for them, and
+ * clients see only their own.
+ */
+enum SystemRole: string
+{
+    case Owner = 'owner';
+    case Admin = 'admin';
+    case ProjectManager = 'project-manager';
+    case MediaBuyer = 'media-buyer';
+    case Creative = 'creative';
+    case ClientViewer = 'client-viewer';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Owner => 'Owner',
+            self::Admin => 'Administrator',
+            self::ProjectManager => 'Project manager',
+            self::MediaBuyer => 'Media buyer',
+            self::Creative => 'Creative',
+            self::ClientViewer => 'Client viewer',
+        };
+    }
+
+    public function description(): string
+    {
+        return match ($this) {
+            self::Owner => 'Full control of the workspace, including its settings and people.',
+            self::Admin => 'Manages people, clients and projects across the workspace.',
+            self::ProjectManager => 'Runs clients and projects, and assigns the people working on them.',
+            self::MediaBuyer => 'Executes the projects they are assigned to.',
+            self::Creative => 'Produces work for the projects they are assigned to.',
+            self::ClientViewer => 'Sees only the projects shared with them. No internal data.',
+        };
+    }
+
+    /**
+     * Permissions granted by this role.
+     *
+     * Deliberately explicit rather than hierarchical: a reader can see exactly
+     * what a role can do without tracing inheritance.
+     *
+     * @return list<Permission>
+     */
+    public function permissions(): array
+    {
+        return match ($this) {
+            self::Owner => Permission::cases(),
+
+            self::Admin => [
+                Permission::WorkspacesView,
+                Permission::WorkspacesUpdate,
+                Permission::WorkspacesManageMembers,
+                Permission::RolesView,
+                Permission::RolesManage,
+                Permission::UsersView,
+                Permission::UsersInvite,
+                Permission::UsersUpdate,
+                Permission::UsersDeactivate,
+                Permission::ClientsView,
+                Permission::ClientsCreate,
+                Permission::ClientsUpdate,
+                Permission::ClientsDelete,
+                Permission::ProjectsViewAll,
+                Permission::ProjectsViewAssigned,
+                Permission::ProjectsCreate,
+                Permission::ProjectsUpdate,
+                Permission::ProjectsDelete,
+                Permission::ProjectsManageMembers,
+                Permission::AuditView,
+            ],
+
+            self::ProjectManager => [
+                Permission::WorkspacesView,
+                Permission::RolesView,
+                Permission::UsersView,
+                Permission::ClientsView,
+                Permission::ClientsCreate,
+                Permission::ClientsUpdate,
+                Permission::ProjectsViewAll,
+                Permission::ProjectsViewAssigned,
+                Permission::ProjectsCreate,
+                Permission::ProjectsUpdate,
+                Permission::ProjectsManageMembers,
+                Permission::AuditView,
+            ],
+
+            self::MediaBuyer => [
+                Permission::WorkspacesView,
+                Permission::UsersView,
+                Permission::ClientsView,
+                Permission::ProjectsViewAssigned,
+                Permission::ProjectsUpdate,
+            ],
+
+            self::Creative => [
+                Permission::WorkspacesView,
+                Permission::UsersView,
+                Permission::ClientsView,
+                Permission::ProjectsViewAssigned,
+            ],
+
+            // Clients see their own projects and nothing else. No user
+            // directory, no other clients, no audit trail.
+            self::ClientViewer => [
+                Permission::ProjectsViewAssigned,
+            ],
+        };
+    }
+
+    /** Owner is protected: a workspace must always retain one. */
+    public function isProtected(): bool
+    {
+        return $this === self::Owner;
+    }
+}
