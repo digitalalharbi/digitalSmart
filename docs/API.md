@@ -152,7 +152,37 @@ returns `422` with `"code": "invalid_status_transition"`.
 
 Deletion is a soft delete: projects, spend history and the audit trail survive.
 
+### Projects
+
+| Endpoint | Permission |
+| -------- | ---------- |
+| `GET /api/projects` | `projects.view_all` or `projects.view_assigned` |
+| `POST /api/projects` | `projects.create` |
+| `GET /api/projects/{id}` | `projects.view_all` or `projects.view_assigned` |
+| `PUT /api/projects/{id}` | `projects.update` + visibility |
+| `PATCH /api/projects/{id}/status` | `projects.update` + visibility |
+| `DELETE /api/projects/{id}` | `projects.delete` + visibility |
+| `GET /api/projects/{id}/members` | visibility of the project |
+| `POST /api/projects/{id}/members` | `projects.manage_members` |
+| `DELETE /api/projects/{id}/members/{user}` | `projects.manage_members` |
+
+**Visibility is the isolation rule.** A caller holding `projects.view_all` sees
+every project in the workspace. Everyone else sees only the projects they are
+explicitly assigned to — applied in the query, so an unassigned project is
+absent from listings and returns 404 individually. An actor with no assignments
+sees an empty list, never the full set.
+
+Status transitions follow the domain: `planning → active | archived`,
+`active → paused | completed | archived`,
+`paused → active | completed | archived`,
+`completed → active | archived`, and `archived` is terminal. Only `active`
+permits campaign spend, and each status change records that fact in the audit
+log.
+
+A project cannot be moved to another client: the client is read from the stored
+project on update rather than accepted from the request.
+
 ---
 
-Endpoints for projects, workspace members and the audit log land next and are
-documented here as they arrive.
+Endpoints for workspace members and the audit log land next and are documented
+here as they arrive.

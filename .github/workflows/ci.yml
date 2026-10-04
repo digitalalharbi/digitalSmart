@@ -80,7 +80,8 @@ jobs:
         run: php vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 
       - name: Tests (architecture, unit, feature)
-        run: php vendor/bin/pest --ci
+        # The architecture suite analyses the whole codebase; 128M is not enough.
+        run: php -d memory_limit=512M vendor/bin/pest --ci
         env:
           DB_CONNECTION: pgsql
           DB_HOST: 127.0.0.1

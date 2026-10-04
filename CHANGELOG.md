@@ -74,6 +74,16 @@ All notable changes to digitalSmart are recorded here. Format follows
 - Permission-aware navigation, and a clients surface with real loading, empty,
   filtered-empty, forbidden and error states, in English and Arabic.
 
+**Projects**
+
+- Full lifecycle with the assignment model: visibility restricted in SQL for
+  roles without `projects.view_all`, assignment as the grant that reveals a
+  project, and removal as the revocation.
+- Domain status transitions with spend permission recorded on every change; a
+  project cannot be moved to another client.
+- SPA surface that distinguishes "you are not assigned to anything yet" from
+  "this workspace has no projects", because they call for different actions.
+
 **Fixed**
 
 - `SESSION_DOMAIN` was set to `localhost`, so no cookie was issued for

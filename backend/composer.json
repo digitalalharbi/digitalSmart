@@ -55,7 +55,7 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@php vendor/bin/pest"
+            "@php -d memory_limit=512M vendor/bin/pest"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -74,7 +74,7 @@
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ],
         "test:coverage": [
-            "@php vendor/bin/pest --coverage --min=70"
+            "@php -d memory_limit=1G vendor/bin/pest --coverage --min=70"
         ],
         "lint": [
             "@php vendor/bin/pint --test"

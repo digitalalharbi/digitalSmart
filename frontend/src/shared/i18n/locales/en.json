@@ -148,5 +148,62 @@
       "editTitle": "Edit client",
       "description": "A new client starts as a prospect. You can activate it once work is agreed."
     }
+  },
+  "projects": {
+    "subtitle": "Work delivered for your clients.",
+    "count_one": "{{count}} project",
+    "count_other": "{{count}} projects",
+    "assignedOnly": "Showing the projects you are assigned to.",
+    "assigned": "Assigned to you",
+    "create": "New project",
+    "searchPlaceholder": "Search projects",
+    "filterByStatus": "Filter by status",
+    "loading": "Loading projects…",
+    "loadFailed": "Projects could not be loaded.",
+    "forbidden": "Your role does not include access to projects.",
+    "empty": "No projects yet",
+    "emptyHint": "Create a project to start planning work for a client.",
+    "noneAssigned": "You are not assigned to any project yet",
+    "noneAssignedHint": "A project manager assigns people to projects. Ask to be added to the work you are on.",
+    "noMatches": "No projects match these filters",
+    "noMatchesHint": "Try a different search term or clear the status filters.",
+    "pagination": "Project pages",
+    "changeStatus": "Change status",
+    "actionsFor": "Actions for {{name}}",
+    "spendActive": "Campaigns under this project may spend.",
+    "spendPaused": "Campaigns under this project may not spend.",
+    "deleteTitle": "Delete {{name}}?",
+    "deleteDescription": "The project is archived rather than erased: its campaigns, spend history and reports are kept. This cannot be undone from the interface.",
+    "status": {
+      "planning": "Planning",
+      "active": "Active",
+      "paused": "Paused",
+      "completed": "Completed",
+      "archived": "Archived"
+    },
+    "columns": {
+      "name": "Project",
+      "client": "Client",
+      "status": "Status",
+      "schedule": "Schedule",
+      "members": "People",
+      "actions": "Actions"
+    },
+    "fields": {
+      "client": "Client",
+      "clientLocked": "A project cannot be moved to another client.",
+      "selectClient": "Select a client",
+      "name": "Project name",
+      "currency": "Currency",
+      "startsOn": "Starts",
+      "endsOn": "Ends",
+      "endsBeforeStart": "The end date cannot be before the start date.",
+      "description": "Description"
+    },
+    "form": {
+      "createTitle": "New project",
+      "editTitle": "Edit project",
+      "description": "A new project starts in planning. Campaigns can only spend once it is active."
+    }
   }
 }

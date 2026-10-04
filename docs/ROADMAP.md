@@ -50,8 +50,13 @@ times.
 - SPA: sign-in, session gate, account and workspace menu, permission-aware
   navigation, and the clients surface in English and Arabic.
 
-Still to land in Phase 1: projects CRUD and membership, workspace member
-administration, and the audit log viewer.
+- Projects end to end, including the assignment model: a role without
+  `projects.view_all` sees only the projects it is assigned to, enforced in SQL
+  rather than by filtering a wider result set. Assigning someone is what grants
+  them visibility; removing them revokes it.
+
+Still to land in Phase 1: workspace member administration and the audit log
+viewer.
 
 ## Blocked
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Identity\SessionController;
 use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
+use App\Interface\Http\Controller\Project\ProjectController;
+use App\Interface\Http\Controller\Project\ProjectMemberController;
 use App\Interface\Http\Controller\System\HealthController;
 use App\Interface\Http\Middleware\BindActorContext;
 use Illuminate\Support\Facades\Route;
@@ -51,4 +53,22 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('client')->name('clients.status');
     Route::delete('clients/{client}', [ClientController::class, 'destroy'])
         ->whereUuid('client')->name('clients.destroy');
+
+    Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
+    Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::get('projects/{project}', [ProjectController::class, 'show'])
+        ->whereUuid('project')->name('projects.show');
+    Route::put('projects/{project}', [ProjectController::class, 'update'])
+        ->whereUuid('project')->name('projects.update');
+    Route::patch('projects/{project}/status', [ProjectController::class, 'changeStatus'])
+        ->whereUuid('project')->name('projects.status');
+    Route::delete('projects/{project}', [ProjectController::class, 'destroy'])
+        ->whereUuid('project')->name('projects.destroy');
+
+    Route::get('projects/{project}/members', [ProjectMemberController::class, 'index'])
+        ->whereUuid('project')->name('projects.members.index');
+    Route::post('projects/{project}/members', [ProjectMemberController::class, 'store'])
+        ->whereUuid('project')->name('projects.members.store');
+    Route::delete('projects/{project}/members/{user}', [ProjectMemberController::class, 'destroy'])
+        ->whereUuid('project')->whereUuid('user')->name('projects.members.destroy');
 });

@@ -30,14 +30,6 @@ export type ClientListParams = {
   direction?: 'asc' | 'desc';
 };
 
-export type PageMeta = {
-  total: number;
-  page: number;
-  per_page: number;
-  last_page: number;
-  has_more: boolean;
-};
-
 export type ClientPayload = {
   name: string;
   legal_name?: string | null;

@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ensureCsrfCookie } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
-import type { Client, ClientListParams, ClientPayload, ClientStatus, PageMeta } from './types';
+import type { PageMeta } from '@/shared/api/types';
+import type { Client, ClientListParams, ClientPayload, ClientStatus } from './types';
 
 type ClientPage = { data: Client[]; meta: PageMeta };
 

@@ -7,6 +7,8 @@ namespace App\Providers;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Identity\Contract\Authenticator;
 use App\Application\Identity\Contract\IdentityReadModel;
+use App\Application\Project\Contract\ProjectMemberRepository;
+use App\Application\Project\Contract\ProjectReadModel;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\ApplicationInfo;
@@ -24,7 +26,9 @@ use App\Infrastructure\Audit\DatabaseAuditRecorder;
 use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
@@ -71,6 +75,8 @@ final class AppServiceProvider extends ServiceProvider
         ClientRepository::class => EloquentClientRepository::class,
         ClientReadModel::class => EloquentClientReadModel::class,
         ProjectRepository::class => EloquentProjectRepository::class,
+        ProjectReadModel::class => EloquentProjectReadModel::class,
+        ProjectMemberRepository::class => EloquentProjectMemberRepository::class,
     ];
 
     public function register(): void

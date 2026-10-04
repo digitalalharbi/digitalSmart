@@ -6,11 +6,13 @@ import { RequireSession } from '@/app/router/RequireSession';
 import { LoginPage } from '@/features/auth';
 import { ClientsPage } from '@/features/clients';
 import { OverviewPage } from '@/features/overview';
+import { ProjectsPage } from '@/features/projects';
 import { PlaceholderPage } from '@/features/placeholder';
 
 /** Surfaces whose real page has landed. The rest fall back to an honest placeholder. */
 const IMPLEMENTED: Record<string, React.ReactElement> = {
   '/clients': <ClientsPage />,
+  '/projects': <ProjectsPage />,
 };
 
 const featureRoutes: RouteObject[] = NAV_ITEMS.filter((item) => item.path !== '/').map((item) => ({
