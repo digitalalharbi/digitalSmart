@@ -10,7 +10,7 @@ FRONTEND := frontend
         verify test lint analyse fix migrate fresh e2e docs clean
 
 help: ## Show available targets
-	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
 
 setup: ## Install dependencies and prepare both applications
