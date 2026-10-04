@@ -9,15 +9,20 @@ analysis and presentation generation.
 
 ## Status
 
-**Phase 0 complete** — a runnable, verified foundation. See `docs/ROADMAP.md`.
+**Phases 0 and 1 complete.** See `docs/ROADMAP.md`.
+
+Working today: sign-in and sessions, workspaces with switching, six system roles
+with server-enforced permissions, clients, projects with assignment-based
+visibility, project and workspace membership, and an audit trail — in English
+and Arabic, light and dark, desktop and mobile.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 33 passed — architecture, unit, feature             |
-| Frontend tests (Vitest)   | 27 passed                                           |
-| End-to-end (Playwright)   | 12 passed — Chromium + mobile Safari                |
+| Backend tests (Pest)      | 160 passed, 451 assertions — architecture, unit, feature |
+| Frontend tests (Vitest)   | 56 passed                                           |
+| End-to-end (Playwright)   | Chromium + mobile Safari, signing in as real roles  |
 | Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
-| Style                     | Pint and ESLint, clean                              |
+| Style                     | Pint, ESLint and Prettier, clean                    |
 
 ## Stack
 
