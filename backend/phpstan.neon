@@ -1,0 +1,27 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    # Teaches PHPStan about Pest's $this binding inside test closures.
+    - vendor/pestphp/pest/phpstan-pest-extension.neon
+
+parameters:
+    paths:
+        - app
+        - config
+        - database
+        - routes
+        - tests
+
+    # Level 8 is the project floor: full null-safety and no untyped boundaries.
+    # Raise to 9/10 once the repository-layer generics settle (Phase 2).
+    level: 8
+
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        # Pest rebinds $this inside it()/test() closures to the TestCase, but
+        # PHPStan resolves it to the enclosing TestCall. A known limitation of
+        # analysing Pest's functional style — scoped to tests and to this
+        # identifier only, so real missing-method bugs elsewhere still fail.
+        -
+            identifier: method.notFound
+            path: tests/*
