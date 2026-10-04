@@ -1,0 +1,11 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  bootstrap-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repository constitution check
+        run: test -f CLAUDE.md && test -f README.md && test -f docker-compose.yml
