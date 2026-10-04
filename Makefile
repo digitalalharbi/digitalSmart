@@ -73,8 +73,8 @@ migrate: ## Run database migrations
 fresh: ## Drop and rebuild the development database
 	cd $(BACKEND) && php artisan migrate:fresh --seed
 
-e2e: ## Playwright end-to-end tests (stack must be running)
-	cd $(FRONTEND) && npm run e2e
+e2e: ## Playwright end-to-end tests against an isolated stack and database
+	./scripts/e2e.sh
 
 docs: ## Export the OpenAPI document
 	cd $(BACKEND) && php artisan scramble:export --path=../docs/openapi.json

@@ -76,8 +76,12 @@ status pulled from `GET /api/health`.
 
 ```bash
 make verify      # everything CI runs, except end-to-end
-make e2e         # Playwright, needs the stack running
+make e2e         # Playwright against its own isolated stack and database
 ```
+
+`make e2e` is self-contained: it creates and seeds `digitalsmart_e2e`, serves the
+production build on 5178 with an API on 8011, runs the suite and tears it all
+down. It leaves your development database and dev servers alone.
 
 Backend only:
 
@@ -108,6 +112,11 @@ session cookie is not being stored. Check `SESSION_DOMAIN`: it must be empty for
 local development. Setting it to `localhost` stops the browser accepting cookies
 for `127.0.0.1`, which looks exactly like a broken login. Set it only in deployed
 environments that share cookies across subdomains.
+
+**Port already in use** — several stacks commonly run on one machine. Set
+`VITE_DEV_PORT` for the SPA; the dev server, the preview server and Playwright
+all read it. `strictPort` is deliberate: silently moving to a free port would
+point the API proxy and the test suite at the wrong server.
 
 **Vite not reachable on 127.0.0.1** — the dev server pins `host: '127.0.0.1'`; if you
 change it, Playwright's `baseURL` must change too.

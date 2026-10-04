@@ -22,12 +22,28 @@ cd backend && composer verify
 # Frontend: types, lint and tests
 cd frontend && npm run verify
 
-# End-to-end (stack must be running)
-cd frontend && npm run e2e
+# End-to-end: builds the SPA, starts an isolated stack, runs Playwright
+make e2e
 
 # Everything CI runs
 make verify
 ```
+
+## End-to-end strategy
+
+`make e2e` (via `scripts/e2e.sh`) brings up a complete, isolated stack: its own
+`digitalsmart_e2e` database, migrated and seeded fresh, an API on 8011 and the
+**production build** of the SPA on 5178. Three reasons:
+
+- The suite signs in and creates records. Pointing it at the development
+  database would steadily fill a developer's workspace with test data.
+- It tests the built bundle — what actually ships — not the dev server's
+  on-demand transforms, which are slower and not representative.
+- Separate ports mean it does not fight a dev stack you already have running.
+
+The suite signs in as the real seeded roles (owner, manager, buyer, creative,
+client viewer) rather than one superuser, so a permission regression fails here
+as well as in the backend tests.
 
 ## Database strategy
 
