@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Interface\Http\Controller\Audit\AuditLogController;
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Identity\SessionController;
 use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
 use App\Interface\Http\Controller\System\HealthController;
+use App\Interface\Http\Controller\Workspace\MemberController;
 use App\Interface\Http\Middleware\BindActorContext;
 use Illuminate\Support\Facades\Route;
 
@@ -71,4 +73,14 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('project')->name('projects.members.store');
     Route::delete('projects/{project}/members/{user}', [ProjectMemberController::class, 'destroy'])
         ->whereUuid('project')->whereUuid('user')->name('projects.members.destroy');
+
+    Route::get('members', [MemberController::class, 'index'])->name('members.index');
+    Route::patch('members/{user}/role', [MemberController::class, 'changeRole'])
+        ->whereUuid('user')->name('members.role');
+    Route::patch('members/{user}/status', [MemberController::class, 'changeStatus'])
+        ->whereUuid('user')->name('members.status');
+    Route::delete('members/{user}', [MemberController::class, 'destroy'])
+        ->whereUuid('user')->name('members.destroy');
+
+    Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit.index');
 });

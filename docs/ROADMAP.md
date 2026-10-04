@@ -8,7 +8,7 @@ times.
 | Phase | Scope                                                                          | Status |
 | ----- | ------------------------------------------------------------------------------ | ------ |
 | 0     | Repository baseline, dev stack, CI, formatting, linting, tests, env examples, architectural skeleton | **Complete** |
-| 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | **In progress** |
+| 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | **Complete** |
 | 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | Planned |
 | 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | Planned |
 | 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | Planned |
@@ -55,8 +55,14 @@ times.
   rather than by filtering a wider result set. Assigning someone is what grants
   them visibility; removing them revokes it.
 
-Still to land in Phase 1: workspace member administration and the audit log
-viewer.
+- Workspace member administration: role changes, suspension and removal, all
+  audited, with the last active owner protected so a workspace can never be left
+  unadministrable.
+- Audit log viewer, scoped to the workspace, filterable to security events.
+
+Deferred to a later slice: e-mail invitations with an acceptance flow. Members
+are added by provisioning today; the permission (`users.invite`) exists and is
+unused rather than silently granted.
 
 ## Blocked
 

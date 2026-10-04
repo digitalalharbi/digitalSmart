@@ -19,6 +19,14 @@ use App\Domain\Workspace\WorkspaceId;
  */
 interface ActorContext
 {
+    /**
+     * Whether an acting user and workspace are established for this request.
+     *
+     * False means the caller has no active membership of any workspace, which
+     * the guard treats as holding no permissions at all.
+     */
+    public function isBound(): bool;
+
     public function userId(): UserId;
 
     public function workspaceId(): WorkspaceId;

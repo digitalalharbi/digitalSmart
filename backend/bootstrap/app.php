@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Identity\Exception\AuthenticationFailed;
 use App\Application\Shared\Exception\AuthorizationDenied;
 use App\Application\Shared\Exception\ResourceNotFound;
+use App\Application\Workspace\Exception\LastOwnerProtected;
 use App\Domain\Shared\Exception\DomainException;
 use App\Interface\Http\Middleware\AssignRequestId;
 use App\Interface\Http\Middleware\SecurityHeaders;
@@ -80,6 +81,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(static fn (DomainException $exception): Response => response()->json([
             'message' => $exception->getMessage(),
             'code' => $exception->errorCode(),
+        ], Response::HTTP_UNPROCESSABLE_ENTITY));
+
+        // Protecting the last owner is a business rule, not a permission failure.
+        $exceptions->render(static fn (LastOwnerProtected $exception): Response => response()->json([
+            'message' => $exception->getMessage(),
+            'code' => 'last_owner_protected',
         ], Response::HTTP_UNPROCESSABLE_ENTITY));
 
         // Rejected credentials read as a validation failure on the login form.

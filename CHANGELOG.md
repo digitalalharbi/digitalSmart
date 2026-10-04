@@ -84,11 +84,23 @@ All notable changes to digitalSmart are recorded here. Format follows
 - SPA surface that distinguishes "you are not assigned to anything yet" from
   "this workspace has no projects", because they call for different actions.
 
+**Administration**
+
+- Workspace member administration — role changes, suspension, reinstatement and
+  removal — with the last active owner protected against demotion, suspension
+  and removal.
+- Audit log viewer, workspace-scoped, filterable to security events, showing who
+  acted and from where.
+
 **Fixed**
 
 - `SESSION_DOMAIN` was set to `localhost`, so no cookie was issued for
   `127.0.0.1` and sign-in silently failed to persist. Found by exercising the
   real browser flow.
+- The actor context was not cleared when no active workspace could be resolved,
+  so a member suspended or removed mid-session could continue acting on
+  permissions they no longer held. The guard now denies an unbound context
+  outright.
 
 ### Blocked
 

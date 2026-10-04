@@ -4,6 +4,7 @@ import { NAV_ITEMS } from '@/app/navigation';
 import { NotFoundPage } from '@/app/router/NotFoundPage';
 import { RequireSession } from '@/app/router/RequireSession';
 import { LoginPage } from '@/features/auth';
+import { AdministrationPage } from '@/features/administration';
 import { ClientsPage } from '@/features/clients';
 import { OverviewPage } from '@/features/overview';
 import { ProjectsPage } from '@/features/projects';
@@ -13,6 +14,7 @@ import { PlaceholderPage } from '@/features/placeholder';
 const IMPLEMENTED: Record<string, React.ReactElement> = {
   '/clients': <ClientsPage />,
   '/projects': <ProjectsPage />,
+  '/administration': <AdministrationPage />,
 };
 
 const featureRoutes: RouteObject[] = NAV_ITEMS.filter((item) => item.path !== '/').map((item) => ({

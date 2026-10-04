@@ -43,7 +43,8 @@
     "edit": "تعديل",
     "delete": "حذف",
     "previous": "السابق",
-    "next": "التالي"
+    "next": "التالي",
+    "remove": "إزالة"
   },
   "overview": {
     "title": "نظرة عامة",
@@ -212,6 +213,48 @@
       "createTitle": "مشروع جديد",
       "editTitle": "تعديل المشروع",
       "description": "يبدأ المشروع الجديد قيد التخطيط. ولا يمكن للحملات أن تنفق إلا بعد تفعيله."
+    }
+  },
+  "administration": {
+    "subtitle": "الأشخاص والأدوار وسجل ما حدث.",
+    "people": "الأشخاص",
+    "auditLog": "سجل التغييرات",
+    "forbidden": "لا يشمل دورك إدارة مساحة العمل.",
+    "auditForbidden": "لا يشمل دورك صلاحية الوصول إلى سجل التغييرات.",
+    "searchPeople": "ابحث في الأشخاص",
+    "searchAudit": "ابحث في سجل التغييرات",
+    "loadingPeople": "جارٍ تحميل الأشخاص…",
+    "loadingAudit": "جارٍ تحميل سجل التغييرات…",
+    "loadFailed": "تعذّر التحميل.",
+    "noPeople": "لا أحد يطابق هذا البحث",
+    "noAudit": "لم يُسجَّل شيء بعد",
+    "noAuditHint": "تظهر هنا عمليات تسجيل الدخول والتغييرات على العملاء والمشاريع والأشخاص فور حدوثها.",
+    "you": "أنت",
+    "roleFor": "دور {{name}}",
+    "suspend": "تعليق",
+    "reinstate": "إعادة التفعيل",
+    "securityOnly": "أحداث الأمان",
+    "securityEvent": "أمان",
+    "systemActor": "النظام",
+    "status": {
+      "invited": "مدعو",
+      "active": "نشط",
+      "suspended": "معلّق"
+    },
+    "roles": {
+      "owner": "مالك",
+      "admin": "مسؤول",
+      "project-manager": "مدير مشاريع",
+      "media-buyer": "مشتري وسائط",
+      "creative": "مصمم",
+      "client-viewer": "عميل مُشاهد"
+    },
+    "columns": {
+      "person": "الشخص",
+      "role": "الدور",
+      "status": "الحالة",
+      "projects": "المشاريع",
+      "actions": "الإجراءات"
     }
   }
 }

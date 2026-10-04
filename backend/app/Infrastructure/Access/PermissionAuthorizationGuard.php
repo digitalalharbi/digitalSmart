@@ -16,13 +16,19 @@ final readonly class PermissionAuthorizationGuard implements AuthorizationGuard
 
     public function ensure(Permission $permission): void
     {
-        if (! $this->actor->permissions()->has($permission)) {
-            throw AuthorizationDenied::missingPermission($permission);
+        if (! $this->actor->isBound() || ! $this->actor->permissions()->has($permission)) {
+            throw $this->actor->isBound()
+                ? AuthorizationDenied::missingPermission($permission)
+                : AuthorizationDenied::noActiveWorkspace();
         }
     }
 
     public function ensureAny(Permission ...$permissions): void
     {
+        if (! $this->actor->isBound()) {
+            throw AuthorizationDenied::noActiveWorkspace();
+        }
+
         if (! $this->actor->permissions()->hasAny(...$permissions)) {
             throw AuthorizationDenied::missingAnyPermission(array_values($permissions));
         }
@@ -34,6 +40,10 @@ final readonly class PermissionAuthorizationGuard implements AuthorizationGuard
      */
     public function ensureProjectVisible(ProjectId $projectId): void
     {
+        if (! $this->actor->isBound()) {
+            throw AuthorizationDenied::noActiveWorkspace();
+        }
+
         $permissions = $this->actor->permissions();
 
         if ($permissions->has(Permission::ProjectsViewAll)) {
@@ -54,6 +64,6 @@ final readonly class PermissionAuthorizationGuard implements AuthorizationGuard
 
     public function allows(Permission $permission): bool
     {
-        return $this->actor->permissions()->has($permission);
+        return $this->actor->isBound() && $this->actor->permissions()->has($permission);
     }
 }

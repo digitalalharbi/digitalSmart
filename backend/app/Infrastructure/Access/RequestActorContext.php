@@ -41,6 +41,14 @@ final class RequestActorContext implements ActorContext, ActorContextBinder
         $this->assignedProjectIds = null;
     }
 
+    public function clear(): void
+    {
+        $this->userId = null;
+        $this->workspaceId = null;
+        $this->permissions = null;
+        $this->assignedProjectIds = null;
+    }
+
     public function isBound(): bool
     {
         return $this->userId instanceof UserId && $this->workspaceId instanceof WorkspaceId;

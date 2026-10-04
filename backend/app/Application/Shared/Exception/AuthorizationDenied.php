@@ -40,6 +40,12 @@ final class AuthorizationDenied extends RuntimeException
         ));
     }
 
+    /** The caller holds no active membership of any workspace. */
+    public static function noActiveWorkspace(): self
+    {
+        return new self('You do not have an active membership of any workspace.');
+    }
+
     public static function notAssignedToProject(): self
     {
         return new self('You are not assigned to this project.');

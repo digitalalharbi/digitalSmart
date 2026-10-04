@@ -43,7 +43,8 @@
     "edit": "Edit",
     "delete": "Delete",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "remove": "Remove"
   },
   "overview": {
     "title": "Overview",
@@ -204,6 +205,48 @@
       "createTitle": "New project",
       "editTitle": "Edit project",
       "description": "A new project starts in planning. Campaigns can only spend once it is active."
+    }
+  },
+  "administration": {
+    "subtitle": "People, roles and the record of what happened.",
+    "people": "People",
+    "auditLog": "Audit log",
+    "forbidden": "Your role does not include workspace administration.",
+    "auditForbidden": "Your role does not include access to the audit log.",
+    "searchPeople": "Search people",
+    "searchAudit": "Search the audit log",
+    "loadingPeople": "Loading people…",
+    "loadingAudit": "Loading the audit log…",
+    "loadFailed": "This could not be loaded.",
+    "noPeople": "No one matches this search",
+    "noAudit": "Nothing recorded yet",
+    "noAuditHint": "Sign-ins and changes to clients, projects and people appear here as they happen.",
+    "you": "You",
+    "roleFor": "Role for {{name}}",
+    "suspend": "Suspend",
+    "reinstate": "Reinstate",
+    "securityOnly": "Security events",
+    "securityEvent": "Security",
+    "systemActor": "System",
+    "status": {
+      "invited": "Invited",
+      "active": "Active",
+      "suspended": "Suspended"
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Administrator",
+      "project-manager": "Project manager",
+      "media-buyer": "Media buyer",
+      "creative": "Creative",
+      "client-viewer": "Client viewer"
+    },
+    "columns": {
+      "person": "Person",
+      "role": "Role",
+      "status": "Status",
+      "projects": "Projects",
+      "actions": "Actions"
     }
   }
 }

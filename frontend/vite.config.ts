@@ -25,6 +25,19 @@ export default defineConfig({
       '/broadcasting': { target: API_TARGET, changeOrigin: true },
     },
   },
+  // The preview server mirrors dev, so end-to-end tests can run against the
+  // built artifact — what actually ships — rather than the dev transform
+  // pipeline, which is slower and not representative.
+  preview: {
+    host: '127.0.0.1',
+    port: 5174,
+    strictPort: true,
+    proxy: {
+      '/api': { target: API_TARGET, changeOrigin: true },
+      '/sanctum': { target: API_TARGET, changeOrigin: true },
+      '/broadcasting': { target: API_TARGET, changeOrigin: true },
+    },
+  },
   build: {
     sourcemap: true,
     chunkSizeWarningLimit: 900,
@@ -40,7 +53,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.{test,spec}.{ts,tsx}', 'src/test/**', 'src/main.tsx', 'src/vite-env.d.ts'],
+      exclude: [
+        'src/**/*.{test,spec}.{ts,tsx}',
+        'src/test/**',
+        'src/main.tsx',
+        'src/vite-env.d.ts',
+      ],
     },
   },
 });

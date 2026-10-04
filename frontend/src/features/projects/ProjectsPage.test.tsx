@@ -10,8 +10,18 @@ const permissions = vi.hoisted(() => ({ current: [] as string[] }));
 
 vi.mock('./api', () => ({
   useProjectsQuery: () => projectsQuery(),
-  useCreateProjectMutation: () => ({ mutateAsync: vi.fn(), isPending: false, error: null, reset: vi.fn() }),
-  useUpdateProjectMutation: () => ({ mutateAsync: vi.fn(), isPending: false, error: null, reset: vi.fn() }),
+  useCreateProjectMutation: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+    error: null,
+    reset: vi.fn(),
+  }),
+  useUpdateProjectMutation: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+    error: null,
+    reset: vi.fn(),
+  }),
   useChangeProjectStatusMutation: () => ({ mutate: vi.fn(), isPending: false }),
   useDeleteProjectMutation: () => ({ mutate: vi.fn(), isPending: false }),
 }));
@@ -55,7 +65,10 @@ function project(overrides: Partial<Project> = {}): Project {
 
 function page(items: Project[]) {
   return {
-    data: { data: items, meta: { total: items.length, page: 1, per_page: 25, last_page: 1, has_more: false } },
+    data: {
+      data: items,
+      meta: { total: items.length, page: 1, per_page: 25, last_page: 1, has_more: false },
+    },
     isPending: false,
     isError: false,
     error: null,

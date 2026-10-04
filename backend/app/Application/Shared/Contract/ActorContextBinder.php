@@ -17,5 +17,13 @@ interface ActorContextBinder
 {
     public function bind(UserId $userId, WorkspaceId $workspaceId): void;
 
+    /**
+     * Drop any established actor.
+     *
+     * Called when no active workspace can be resolved, so a context left over
+     * from earlier in the lifecycle can never be reused with stale permissions.
+     */
+    public function clear(): void;
+
     public function isBound(): bool;
 }

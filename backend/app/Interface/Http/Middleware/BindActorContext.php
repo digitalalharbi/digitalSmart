@@ -33,6 +33,7 @@ final readonly class BindActorContext
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
+        $workspaceId = null;
 
         if ($user !== null) {
             $userId = new UserId((string) $user->getAuthIdentifier());
@@ -41,6 +42,16 @@ final readonly class BindActorContext
             if ($workspaceId instanceof WorkspaceId) {
                 $this->binder->bind($userId, $workspaceId);
             }
+        }
+
+        /*
+         * No user, or no active membership of any workspace — for instance
+         * after being suspended or removed mid-session. Clearing is deliberate:
+         * a context left bound from earlier would carry permissions the person
+         * no longer holds.
+         */
+        if ($workspaceId === null) {
+            $this->binder->clear();
         }
 
         return $next($request);

@@ -182,7 +182,37 @@ log.
 A project cannot be moved to another client: the client is read from the stored
 project on update rather than accepted from the request.
 
+### Workspace members
+
+| Endpoint | Permission |
+| -------- | ---------- |
+| `GET /api/members` | `users.view` |
+| `PATCH /api/members/{user}/role` | `users.update` |
+| `PATCH /api/members/{user}/status` | `users.deactivate` |
+| `DELETE /api/members/{user}` | `workspaces.manage_members` |
+
+A workspace must always retain at least one **active owner**. Demoting,
+suspending or removing the last one returns `422` with
+`"code": "last_owner_protected"` — otherwise an administrator could lock
+everybody out of a tenant with no way back in.
+
+Status changes take effect on the caller's very next request: a suspended member
+holds no permissions at all, whatever their role says. A member removed from the
+workspace receives `403` with a message explaining they hold no active
+membership; their user account and audit trail survive, because an audit entry
+that cannot be attributed is not evidence.
+
+### Audit log
+
+| Endpoint | Permission |
+| -------- | ---------- |
+| `GET /api/audit-logs` | `audit.view` |
+
+Newest first, always scoped to the active workspace. Parameters: `search`,
+`action[]`, `actor_id`, `security_only`, `page`, `per_page`. Entries are
+append-only and secrets are redacted from recorded diffs.
+
 ---
 
-Endpoints for workspace members and the audit log land next and are documented
-here as they arrive.
+Integration endpoints arrive in Phase 2; see `docs/INTEGRATIONS.md` for what is
+blocked there.
