@@ -1,21 +1,74 @@
 # digitalSmart
 
-Smart Code advertising operating system for multi-platform paid media management, project collaboration, creative operations, client reporting, budget intelligence, AI analysis, and presentation generation.
+Smart Code advertising operating system for multi-platform paid media management,
+project collaboration, creative operations, client reporting, budget intelligence, AI
+analysis and presentation generation.
 
-## Required stack
-- Laravel 12 API-only, Clean Architecture / DDD
-- React + Vite + TypeScript
-- TanStack Query + Zustand
-- Tailwind CSS + shadcn/ui
-- PostgreSQL (UUID, JSONB where appropriate)
-- Redis + Laravel Queues + Horizon
-- Laravel Reverb + Echo
+> `CLAUDE.md` is the authoritative product, architecture, design, security, testing and
+> execution specification. Read it before making any change.
+
+## Status
+
+**Phase 0 complete** — a runnable, verified foundation. See `docs/ROADMAP.md`.
+
+| Gate                      | Result                                              |
+| ------------------------- | --------------------------------------------------- |
+| Backend tests (Pest)      | 33 passed — architecture, unit, feature             |
+| Frontend tests (Vitest)   | 27 passed                                           |
+| End-to-end (Playwright)   | 12 passed — Chromium + mobile Safari                |
+| Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
+| Style                     | Pint and ESLint, clean                              |
+
+## Stack
+
+- **Backend** — Laravel 12, API-only, Clean Architecture / DDD, PHP 8.4
+- **Frontend** — React 19 + Vite + TypeScript (strict), TanStack Query, Zustand,
+  React Router, Tailwind CSS v4 + shadcn/ui-style primitives
+- **Data** — PostgreSQL with UUIDv7 keys; JSONB only where justified
+- **Async/realtime** — Redis, Laravel Queues, Horizon, Reverb + Echo
+- **Quality** — Pest, Vitest + Testing Library, Playwright, PHPStan/Larastan, Pint,
+  ESLint, OpenAPI, GitHub Actions
+
+## Quick start
+
+```bash
+docker compose up -d     # PostgreSQL + Redis (or use native services)
+make setup               # install dependencies, create .env, migrate
+make dev                 # API :8001, Horizon, Reverb :8080, SPA :5174
+```
+
+Open <http://127.0.0.1:5174>. The Overview page reports live database, cache and queue
+status from `GET /api/health`.
+
+Full instructions, prerequisites and troubleshooting: `docs/DEVELOPMENT.md`.
+
+## Verify
+
+```bash
+make verify     # Pint, PHPStan, Pest, tsc, ESLint, Prettier, Vitest
+make e2e        # Playwright (stack must be running)
+```
+
+## Documentation
+
+| Document                 | Contents                                               |
+| ------------------------ | ------------------------------------------------------ |
+| `docs/PRODUCT.md`        | What digitalSmart is, who it serves, product principles |
+| `docs/ARCHITECTURE.md`   | Layering, dependency rules, request flow                |
+| `docs/DATA_MODEL.md`     | Database principles, current tables, planned shape      |
+| `docs/API.md`            | Conventions, auth, errors, rate limits, endpoints       |
+| `docs/INTEGRATIONS.md`   | Provider adapters, isolation model, what is blocked     |
+| `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |
+| `docs/SECURITY.md`       | Controls, threat notes, secret handling                 |
+| `docs/TESTING.md`        | Test layers, database strategy, conventions             |
+| `docs/DEVELOPMENT.md`    | Ports, setup, running, troubleshooting                  |
+| `docs/ROADMAP.md`        | Phase status and what is blocked                        |
+| `docs/adr/`              | Architecture decision records                           |
 
 ## Product principles
-- Premium global SaaS quality
-- Apple-inspired clarity, hierarchy, materials, spacing, motion, and accessibility — never a literal clone
-- Adjust-inspired analytics, configurable dashboards, drill-down, period comparison, report builder, automation
-- CampaignsHub-inspired project isolation, integration bindings, tasks, notifications, shared reports, auditability, permissions
-- Arabic RTL and English LTR first-class
 
-Read `CLAUDE.md` before making any change.
+- Premium global SaaS quality; Apple-inspired clarity and restraint, never a clone
+- Adjust-inspired analytics: configurable dashboards, drill-down, comparison, report builder
+- CampaignsHub-inspired isolation, integration bindings, tasks, notifications, auditability
+- Arabic RTL and English LTR are both first-class and designed
+- Never fabricate business data; never simulate an integration that is not connected
