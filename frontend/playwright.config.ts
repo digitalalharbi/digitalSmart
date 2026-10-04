@@ -11,11 +11,31 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
+
+  /*
+   * `php artisan serve` is single-process: it handles one request at a time.
+   * Four browser workers queue behind each other, responses stretch past a
+   * second, and assertions start failing on timing rather than behaviour.
+   * Two workers keep the suite honest and still finish quickly.
+   */
+  workers: 2,
+
+  // Same reason: allow for a queued request rather than racing the server.
+  expect: { timeout: 10_000 },
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: process.env.E2E_BASE_URL ?? `http://127.0.0.1:${String(PORT)}`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    /*
+     * Pinned. The app picks its initial language from the browser, which is
+     * correct behaviour — but it means an Arabic-locale machine renders the
+     * Arabic UI and every English selector misses. The RTL experience is
+     * covered deliberately by its own test rather than by accident of
+     * whichever machine the suite runs on.
+     */
+    locale: 'en-US',
+    timezoneId: 'Asia/Riyadh',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

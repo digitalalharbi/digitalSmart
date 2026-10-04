@@ -20,7 +20,7 @@
 | Strict CORS allow-list     | `config/cors.php` — origins from `FRONTEND_URL`, no wildcard  |
 | SPA session auth           | Sanctum stateful API; encrypted session cookies               |
 | CSRF                       | `XSRF-TOKEN` cookie + `X-XSRF-TOKEN` header, sent by the API client |
-| Rate limiting              | `api`, `health`, `auth` limiters (`RouteServiceProvider`)     |
+| Rate limiting              | `api`, `health`, `auth` limiters, budgets configurable with secure defaults |
 | Security headers           | `SecurityHeaders` middleware (CSP, nosniff, DENY, Referrer-Policy, Permissions-Policy, HSTS on TLS) |
 | Stack disclosure removed   | `X-Powered-By` / `Server` stripped at both Symfony and SAPI level |
 | Request correlation        | `AssignRequestId`; inbound ids accepted only if valid UUIDs, so logs cannot be injected |
@@ -38,6 +38,13 @@ itself sensitive.
 **Why the API has a deny-all CSP.** The API returns JSON only. If a response is ever
 coerced into being rendered as a document, the policy prevents script execution. The
 SPA is served separately and carries its own policy.
+
+**Why the login limiter is per account as well as per IP.** A per-IP budget
+alone is both too strict and too weak: too strict for an office behind one
+address, too weak against an attacker spreading attempts across addresses. The
+`auth` limiter applies both, so raising the per-IP budget for a shared address
+— or for an end-to-end run — never weakens the protection around an individual
+account.
 
 **Why request ids are validated.** An attacker-supplied header lands in log lines; an
 unvalidated value allows forged log entries. Only UUIDs are accepted; anything else is

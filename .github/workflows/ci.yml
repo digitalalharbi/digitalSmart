@@ -181,9 +181,16 @@ jobs:
         run: |
           composer install --prefer-dist --no-interaction --no-progress
           cp .env.example .env
-          # Parallel browsers sign in repeatedly from one address. The per-account
-          # limit still applies; production keeps the default of 5.
-          echo "RATE_LIMIT_AUTH=60" >> .env
+          # The whole suite's traffic lands in one per-IP bucket sized for a
+          # single person, so the per-IP budgets are raised for this run only.
+          # Production keeps the defaults, and the per-account login limit —
+          # the one that matters against brute force — still applies.
+          {
+            echo "RATE_LIMIT_AUTH=500"
+            echo "RATE_LIMIT_API_GUEST=1000"
+            echo "RATE_LIMIT_API_USER=1000"
+            echo "RATE_LIMIT_HEALTH=1000"
+          } >> .env
           php artisan key:generate
           php artisan migrate --force
           # The end-to-end suite signs in as the seeded demo roles, so a

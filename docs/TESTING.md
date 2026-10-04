@@ -45,6 +45,27 @@ The suite signs in as the real seeded roles (owner, manager, buyer, creative,
 client viewer) rather than one superuser, so a permission regression fails here
 as well as in the backend tests.
 
+Two environment details matter, and both are configuration rather than
+weakened checks:
+
+- **Rate limits.** Every browser in the run shares one address, so a whole
+  suite's traffic lands in a single per-IP bucket sized for one person. The
+  runner raises the per-IP budgets for that process only; production keeps the
+  defaults, and the per-account login limit — the one that actually protects a
+  user against brute force — stays in force.
+- **Concurrency.** `php artisan serve` is single-process: it handles one
+  request at a time. Running four browser workers against it stretches
+  responses past a second and tests begin failing on timing rather than
+  behaviour, so the suite runs two workers with a 10s assertion timeout. A
+  multi-process runtime (FPM, or Octane) would lift that, and is a Phase 11
+  concern.
+- **Locale.** The app picks its language from the browser, which is correct
+  behaviour, so on an Arabic-locale machine it renders the Arabic interface and
+  every English selector misses. Playwright pins `en-US`, and
+  `e2e/localisation.spec.ts` deliberately does not — it asserts that an Arabic
+  browser gets Arabic, right to left, with Latin digits, without touching a
+  toggle.
+
 ## Database strategy
 
 Feature tests run against **real PostgreSQL** (`digitalsmart_test`), never SQLite. The
