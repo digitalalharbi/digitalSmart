@@ -1,0 +1,110 @@
+[
+  {
+    "sub_request_status": "SUCCESS",
+    "creative": {
+      "id": "44444444-aaaa-4bbb-8ccc-000000000001",
+      "ad_account_id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+      "name": "SANDBOX — Ramadan top snap",
+      "type": "WEB_VIEW",
+      "packaging_status": "SUCCESS",
+      "review_status": "APPROVED",
+      "shareable": true,
+      "headline": "عروض رمضان من الحمراء",
+      "brand_name": "Alhambra",
+      "call_to_action": "SHOP_NOW",
+      "top_snap_media_id": "55555555-aaaa-4bbb-8ccc-000000000001",
+      "top_snap_crop_position": "MIDDLE",
+      "ad_product": "SNAP_AD",
+      "render_type": "STANDARD",
+      "web_view_properties": {
+        "url": "https://sandbox.digitalsmart.invalid/alhambra/ramadan",
+        "allow_snap_javascript_sdk": false,
+        "use_immersive_mode": true,
+        "block_preload": false
+      },
+      "created_at": "2026-07-30T10:00:00.000Z",
+      "updated_at": "2026-09-30T14:00:00.000Z"
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "creative": {
+      "id": "44444444-aaaa-4bbb-8ccc-000000000002",
+      "ad_account_id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+      "name": "SANDBOX — Lookalike story ad",
+      "type": "WEB_VIEW",
+      "packaging_status": "SUCCESS",
+      "review_status": "APPROVED",
+      "shareable": true,
+      "headline": "Discover the Alhambra collection",
+      "brand_name": "Alhambra",
+      "call_to_action": "LEARN_MORE",
+      "top_snap_media_id": "55555555-aaaa-4bbb-8ccc-000000000002",
+      "web_view_properties": {
+        "url": "https://sandbox.digitalsmart.invalid/alhambra/collection"
+      },
+      "created_at": "2026-08-08T07:35:00.000Z",
+      "updated_at": "2026-09-26T19:00:00.000Z"
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "creative": {
+      "id": "44444444-aaaa-4bbb-8ccc-000000000003",
+      "ad_account_id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+      "name": "SANDBOX — Catalog collection",
+      "type": "COLLECTION",
+      "packaging_status": "SUCCESS",
+      "review_status": "APPROVED",
+      "shareable": false,
+      "headline": "تسوق التشكيلة الكاملة",
+      "brand_name": "Alhambra",
+      "call_to_action": "SHOP_NOW",
+      "top_snap_media_id": "55555555-aaaa-4bbb-8ccc-000000000003",
+      "collection_properties": {
+        "interaction_zone_id": "66666666-aaaa-4bbb-8ccc-000000000001",
+        "default_fallback_interaction_type": "WEB_VIEW",
+        "web_view_properties": {
+          "url": "https://sandbox.digitalsmart.invalid/alhambra/catalog"
+        }
+      },
+      "created_at": "2026-07-12T08:00:00.000Z",
+      "updated_at": "2026-10-01T10:00:00.000Z"
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "creative": {
+      "id": "44444444-aaaa-4bbb-8ccc-000000000004",
+      "ad_account_id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+      "name": "SANDBOX — Brand film",
+      "type": "SNAP_AD",
+      "packaging_status": "SUCCESS",
+      "review_status": "APPROVED",
+      "shareable": true,
+      "headline": "الحمراء — حكاية أصالة",
+      "brand_name": "Alhambra",
+      "top_snap_media_id": "55555555-aaaa-4bbb-8ccc-000000000004",
+      "created_at": "2026-08-26T11:00:00.000Z",
+      "updated_at": "2026-09-28T16:00:00.000Z"
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "creative": {
+      "id": "44444444-aaaa-4bbb-8ccc-000000000005",
+      "ad_account_id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+      "name": "SANDBOX — Rejected hiring claim",
+      "type": "LEAD_GENERATION",
+      "packaging_status": "SUCCESS",
+      "review_status": "REJECTED",
+      "shareable": false,
+      "headline": "Guaranteed job placement",
+      "brand_name": "Alhambra",
+      "call_to_action": "APPLY_NOW",
+      "top_snap_media_id": "55555555-aaaa-4bbb-8ccc-000000000005",
+      "created_at": "2026-09-19T09:00:00.000Z",
+      "updated_at": "2026-09-22T12:00:00.000Z"
+    }
+  }
+]

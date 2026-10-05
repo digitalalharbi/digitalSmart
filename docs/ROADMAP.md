@@ -104,7 +104,7 @@ built around them.
   `sandbox`, `manual`, `estimated` — decided once where the credentials are known.
   Aggregates inherit their weakest input, and sandbox or estimated figures will
   not combine with actuals at all.
-- `AdvertisingSyncAdapter`, the sync port, with Meta, Google Ads and TikTok
+- `AdvertisingSyncAdapter`, the sync port, with Meta, Google Ads, TikTok and Snapchat
   implementations reading campaigns, ad sets/groups, ads, creatives and
   insights at campaign, ad-group and ad level, against fixtures that hold each
   provider's real response shapes. Google's field names came from the published
@@ -121,11 +121,15 @@ built around them.
 
 ### Not yet done in Phase 3
 
-- Sync adapters for Snapchat, X and LinkedIn. Each needs its own mapper against
-  its own documented schema and its own fixture set; the registry reports
+- Sync adapters for X and LinkedIn. Each needs its own mapper against its own
+  documented schema and its own fixture set; the registry reports
   `supports() === false` for them rather than offering a stub.
 - TikTok's click, video and revenue metric names, which its documentation did
   not make readable.
+- Verification of the unit of Snapchat's `spend` metric. Every other money field in
+  their API carries a `_micro` suffix and this one does not; it is mapped as micros,
+  and if that is wrong spend is understated 10,000-fold. Only a live response settles
+  it — see docs/INTEGRATIONS.md.
 - Account-level insight ingestion (the contract and fixture exist; the sync reads
   campaign, ad-group and ad levels).
 - Webhooks, where a provider officially supports them.

@@ -230,9 +230,20 @@ final class EloquentAdvertisingStore implements AdvertisingStore
             $now = $this->clock->now();
             $written = 0;
 
+            $adGroupCampaigns = $this->parentMap(AdGroup::class, $context->externalAccountId, 'campaign_id');
+
             foreach ($records as $record) {
                 $adGroupId = $adGroups[$record->adGroupExternalId] ?? null;
-                $campaignId = $campaigns[$record->campaignExternalId] ?? null;
+
+                /*
+                 * Not every provider puts a campaign id on its ad. Snapchat's ad
+                 * carries only `ad_squad_id`, and the hierarchy is reached through it.
+                 * So the campaign is resolved from the record when it has one and from
+                 * the ad group otherwise — rather than skipping the ad, which would
+                 * silently lose a provider's entire ad level.
+                 */
+                $campaignId = $campaigns[$record->campaignExternalId]
+                    ?? ($adGroupId === null ? null : $adGroupCampaigns[$adGroupId] ?? null);
 
                 if ($adGroupId === null || $campaignId === null) {
                     continue;

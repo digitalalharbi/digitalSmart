@@ -4,6 +4,40 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Snapchat sync
+
+### Added
+
+- `SnapchatMapper` and `SnapchatSyncAdapter`, with field names, enum values and
+  response shapes read from Snap's published reference. 27 mapper tests and 11
+  sync tests.
+- An `unwrap()` hook on the sync adapter base. Snapchat wraps every list item as
+  `{sub_request_status, <entity>: {…}}` because a batch can partly succeed, so a
+  failed row carries no entity and is dropped rather than mapped into a record with
+  an empty id. Unwrapping is a provider concern, not a mapper one.
+- The store now resolves an ad's campaign through its ad group when the provider does
+  not supply one. Snapchat's ad object carries only `ad_squad_id`; without this the
+  sync would silently discard that provider's entire ad level.
+
+### Conventions handled
+
+Snapchat is the fourth distinct set in four providers: money in **micros** (like
+Google), a lifetime **spend cap** rather than a lifetime budget, a click called a
+**swipe** with no separate link-click metric, reach as `uniques`, quartiles as
+**counts** (unlike Google's rates), `bid_micro: 0` meaning auto-bid rather than a
+zero bid, and delivery state in a `delivery_status` array because `status` is only
+ACTIVE or PAUSED.
+
+### One unverified assumption, recorded rather than hidden
+
+Every money field Snap publishes carries a `_micro` suffix **except** the stats
+metric `spend`. It is mapped as micro-currency for consistency with the rest of their
+API, which is the likely reading — but it could not be confirmed, and if it is wrong
+spend is understated by a factor of 10,000. The fixtures encode the same assumption,
+so no test can catch it; only a live response can. Flagged prominently in
+`docs/INTEGRATIONS.md` and `docs/ROADMAP.md` as the most consequential open item
+across all four providers.
+
 ## Phase 4 — the dashboard builder
 
 Completes Phase 4. The foundation commit's schema and ports now have use cases,

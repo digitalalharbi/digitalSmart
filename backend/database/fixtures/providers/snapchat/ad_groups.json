@@ -1,0 +1,159 @@
+[
+  {
+    "sub_request_status": "SUCCESS",
+    "adsquad": {
+      "id": "22222222-aaaa-4bbb-8ccc-000000000001",
+      "campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+      "name": "SANDBOX — Broad 18-34 | KSA | Purchase",
+      "status": "ACTIVE",
+      "type": "SNAP_ADS",
+      "optimization_goal": "PIXEL_PURCHASE",
+      "billing_event": "IMPRESSION",
+      "bid_strategy": "AUTO_BID",
+      "pacing_type": "STANDARD",
+      "delivery_constraint": "DAILY_BUDGET",
+      "start_time": "2026-08-01T00:00:00.000Z",
+      "created_at": "2026-07-28T09:15:00.000Z",
+      "updated_at": "2026-09-30T14:02:11.000Z",
+      "targeting": {
+        "geos": [
+          {
+            "country_code": "sa"
+          }
+        ],
+        "demographics": [
+          {
+            "min_age": 18,
+            "max_age": 34
+          }
+        ]
+      },
+      "placement_v2": {
+        "config": "AUTOMATIC"
+      },
+      "conversion_window": {
+        "swipe_up_attribution_window": "SEVEN_DAY"
+      },
+      "delivery_status": [
+        "ACTIVE"
+      ]
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "adsquad": {
+      "id": "22222222-aaaa-4bbb-8ccc-000000000002",
+      "campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+      "name": "SANDBOX — Lookalike purchasers",
+      "status": "ACTIVE",
+      "type": "SNAP_ADS",
+      "optimization_goal": "PIXEL_PURCHASE",
+      "billing_event": "IMPRESSION",
+      "bid_strategy": "LOWEST_COST_WITH_MAX_BID",
+      "bid_micro": "3400000",
+      "pacing_type": "STANDARD",
+      "start_time": "2026-08-10T00:00:00.000Z",
+      "created_at": "2026-08-08T07:30:00.000Z",
+      "updated_at": "2026-09-26T19:00:00.000Z",
+      "targeting": {
+        "geos": [
+          {
+            "country_code": "sa"
+          }
+        ]
+      },
+      "delivery_status": [
+        "ACTIVE"
+      ]
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "adsquad": {
+      "id": "22222222-aaaa-4bbb-8ccc-000000000003",
+      "campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+      "name": "SANDBOX — Catalog retargeting",
+      "status": "ACTIVE",
+      "type": "SNAP_ADS",
+      "optimization_goal": "PIXEL_ADD_TO_CART",
+      "billing_event": "IMPRESSION",
+      "bid_strategy": "AUTO_BID",
+      "daily_budget_micro": "600000000",
+      "start_time": "2026-07-15T00:00:00.000Z",
+      "end_time": "2026-12-31T23:59:00.000Z",
+      "created_at": "2026-07-10T08:05:00.000Z",
+      "updated_at": "2026-10-01T10:30:00.000Z",
+      "targeting": {
+        "geos": [
+          {
+            "country_code": "sa"
+          },
+          {
+            "country_code": "ae"
+          }
+        ]
+      },
+      "delivery_status": [
+        "PAUSED_BY_CAMPAIGN_SPEND_CAP"
+      ]
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "adsquad": {
+      "id": "22222222-aaaa-4bbb-8ccc-000000000004",
+      "campaign_id": "11111111-aaaa-4bbb-8ccc-000000000003",
+      "name": "SANDBOX — Reach | Riyadh",
+      "status": "PAUSED",
+      "type": "SNAP_ADS",
+      "optimization_goal": "IMPRESSIONS",
+      "billing_event": "IMPRESSION",
+      "bid_strategy": "AUTO_BID",
+      "lifetime_budget_micro": "12000000000",
+      "start_time": "2026-09-01T00:00:00.000Z",
+      "created_at": "2026-08-25T11:05:00.000Z",
+      "updated_at": "2026-09-28T16:45:00.000Z",
+      "targeting": {
+        "geos": [
+          {
+            "country_code": "sa",
+            "metros": [
+              {
+                "id": "1"
+              }
+            ]
+          }
+        ]
+      },
+      "delivery_status": [
+        "PAUSED_BY_CAMPAIGN"
+      ]
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "adsquad": {
+      "id": "22222222-aaaa-4bbb-8ccc-000000000005",
+      "campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+      "name": "SANDBOX — Lead form | Hiring",
+      "status": "ACTIVE",
+      "type": "SNAP_ADS",
+      "optimization_goal": "LEAD_FORM_SUBMISSIONS",
+      "billing_event": "IMPRESSION",
+      "bid_strategy": "AUTO_BID",
+      "start_time": "2026-09-20T00:00:00.000Z",
+      "created_at": "2026-09-18T09:05:00.000Z",
+      "updated_at": "2026-09-22T12:00:00.000Z",
+      "targeting": {
+        "geos": [
+          {
+            "country_code": "sa"
+          }
+        ]
+      },
+      "delivery_status": [
+        "NO_ACTIVE_ADS"
+      ]
+    }
+  }
+]

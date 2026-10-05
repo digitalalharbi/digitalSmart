@@ -1,0 +1,1528 @@
+[
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 6136,
+      "swipes": 89,
+      "spend": 58882919,
+      "uniques": 4217,
+      "frequency": 1.455,
+      "quartile_1": 3004,
+      "quartile_2": 1771,
+      "quartile_3": 1261,
+      "view_completion": 916,
+      "screen_time_millis": 10268533,
+      "conversion_add_cart": 7,
+      "conversion_page_views": 66,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 777.14
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 2854,
+      "swipes": 50,
+      "spend": 37726031,
+      "uniques": 2180,
+      "frequency": 1.309,
+      "quartile_1": 1118,
+      "quartile_2": 709,
+      "quartile_3": 452,
+      "view_completion": 267,
+      "screen_time_millis": 4446671,
+      "conversion_add_cart": 4,
+      "conversion_page_views": 35,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 661.74
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2073,
+      "swipes": 52,
+      "spend": 33877896,
+      "uniques": 1577,
+      "frequency": 1.315,
+      "quartile_1": 1055,
+      "quartile_2": 620,
+      "quartile_3": 428,
+      "view_completion": 288,
+      "screen_time_millis": 3041082,
+      "conversion_add_cart": 4,
+      "conversion_page_views": 37,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 612.6
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 699,
+      "swipes": 8,
+      "spend": 14672155,
+      "uniques": 419,
+      "frequency": 1.668,
+      "quartile_1": 269,
+      "quartile_2": 180,
+      "quartile_3": 127,
+      "view_completion": 81,
+      "screen_time_millis": 702768,
+      "conversion_sign_ups": 2
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 5935,
+      "swipes": 76,
+      "spend": 52695675,
+      "uniques": 4591,
+      "frequency": 1.293,
+      "quartile_1": 2668,
+      "quartile_2": 1537,
+      "quartile_3": 1169,
+      "view_completion": 680,
+      "screen_time_millis": 5938367,
+      "conversion_add_cart": 2,
+      "conversion_page_views": 62,
+      "conversion_purchases": 1,
+      "conversion_purchases_value": 300.65
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 2784,
+      "swipes": 46,
+      "spend": 36642424,
+      "uniques": 1683,
+      "frequency": 1.654,
+      "quartile_1": 1349,
+      "quartile_2": 942,
+      "quartile_3": 665,
+      "view_completion": 518,
+      "screen_time_millis": 3673998,
+      "conversion_add_cart": 7,
+      "conversion_page_views": 37,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 585.31
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2388,
+      "swipes": 56,
+      "spend": 40512965,
+      "uniques": 1535,
+      "frequency": 1.556,
+      "quartile_1": 915,
+      "quartile_2": 565,
+      "quartile_3": 385,
+      "view_completion": 247,
+      "screen_time_millis": 3163741,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 41,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 592.46
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 607,
+      "swipes": 7,
+      "spend": 13182728,
+      "uniques": 405,
+      "frequency": 1.499,
+      "quartile_1": 276,
+      "quartile_2": 181,
+      "quartile_3": 120,
+      "view_completion": 93,
+      "screen_time_millis": 704777,
+      "conversion_sign_ups": 1
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 5787,
+      "swipes": 78,
+      "spend": 51719842,
+      "uniques": 3598,
+      "frequency": 1.608,
+      "quartile_1": 2266,
+      "quartile_2": 1501,
+      "quartile_3": 1113,
+      "view_completion": 691,
+      "screen_time_millis": 9709243,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 56,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 504.35
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 2996,
+      "swipes": 55,
+      "spend": 39036387,
+      "uniques": 2119,
+      "frequency": 1.414,
+      "quartile_1": 1438,
+      "quartile_2": 814,
+      "quartile_3": 595,
+      "view_completion": 373,
+      "screen_time_millis": 3819706,
+      "conversion_add_cart": 2,
+      "conversion_page_views": 41,
+      "conversion_purchases": 1,
+      "conversion_purchases_value": 342.32
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2240,
+      "swipes": 55,
+      "spend": 37655008,
+      "uniques": 1444,
+      "frequency": 1.551,
+      "quartile_1": 1027,
+      "quartile_2": 657,
+      "quartile_3": 410,
+      "view_completion": 312,
+      "screen_time_millis": 3512595,
+      "conversion_add_cart": 7,
+      "conversion_page_views": 49,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 780.74
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 581,
+      "swipes": 6,
+      "spend": 11864230,
+      "uniques": 345,
+      "frequency": 1.684,
+      "quartile_1": 284,
+      "quartile_2": 186,
+      "quartile_3": 142,
+      "view_completion": 107,
+      "screen_time_millis": 814603,
+      "conversion_sign_ups": 2
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 5728,
+      "swipes": 79,
+      "spend": 56483922,
+      "uniques": 4052,
+      "frequency": 1.414,
+      "quartile_1": 2765,
+      "quartile_2": 1975,
+      "quartile_3": 1266,
+      "view_completion": 850,
+      "screen_time_millis": 6497763,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 60,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 517.32
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 2857,
+      "swipes": 54,
+      "spend": 35321014,
+      "uniques": 2230,
+      "frequency": 1.281,
+      "quartile_1": 1443,
+      "quartile_2": 829,
+      "quartile_3": 631,
+      "view_completion": 502,
+      "screen_time_millis": 5044968,
+      "conversion_add_cart": 7,
+      "conversion_page_views": 40,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 616.26
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2412,
+      "swipes": 59,
+      "spend": 39285665,
+      "uniques": 1735,
+      "frequency": 1.39,
+      "quartile_1": 916,
+      "quartile_2": 521,
+      "quartile_3": 354,
+      "view_completion": 208,
+      "screen_time_millis": 3837032,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 45,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 442.08
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 605,
+      "swipes": 6,
+      "spend": 12299022,
+      "uniques": 413,
+      "frequency": 1.465,
+      "quartile_1": 286,
+      "quartile_2": 178,
+      "quartile_3": 134,
+      "view_completion": 79,
+      "screen_time_millis": 544628,
+      "conversion_sign_ups": 1
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 6993,
+      "swipes": 92,
+      "spend": 62082241,
+      "uniques": 4645,
+      "frequency": 1.505,
+      "quartile_1": 2899,
+      "quartile_2": 1854,
+      "quartile_3": 1373,
+      "view_completion": 800,
+      "screen_time_millis": 9490743,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 75,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 578.75
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 3713,
+      "swipes": 73,
+      "spend": 51512810,
+      "uniques": 2534,
+      "frequency": 1.465,
+      "quartile_1": 1826,
+      "quartile_2": 1252,
+      "quartile_3": 913,
+      "view_completion": 600,
+      "screen_time_millis": 5975789,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 54,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 740.9
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2673,
+      "swipes": 65,
+      "spend": 47058536,
+      "uniques": 1741,
+      "frequency": 1.535,
+      "quartile_1": 1291,
+      "quartile_2": 774,
+      "quartile_3": 561,
+      "view_completion": 317,
+      "screen_time_millis": 4599675,
+      "conversion_add_cart": 10,
+      "conversion_page_views": 46,
+      "conversion_purchases": 4,
+      "conversion_purchases_value": 1055.74
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 750,
+      "swipes": 9,
+      "spend": 15689048,
+      "uniques": 517,
+      "frequency": 1.451,
+      "quartile_1": 381,
+      "quartile_2": 263,
+      "quartile_3": 162,
+      "view_completion": 109,
+      "screen_time_millis": 866668,
+      "conversion_sign_ups": 2
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 7030,
+      "swipes": 96,
+      "spend": 68234552,
+      "uniques": 5562,
+      "frequency": 1.264,
+      "quartile_1": 3113,
+      "quartile_2": 1715,
+      "quartile_3": 1059,
+      "view_completion": 686,
+      "screen_time_millis": 10228704,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 76,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 603.32
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 3791,
+      "swipes": 75,
+      "spend": 52418765,
+      "uniques": 2849,
+      "frequency": 1.331,
+      "quartile_1": 1910,
+      "quartile_2": 1175,
+      "quartile_3": 855,
+      "view_completion": 543,
+      "screen_time_millis": 5278724,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 59,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 720.57
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2564,
+      "swipes": 60,
+      "spend": 42002306,
+      "uniques": 1636,
+      "frequency": 1.567,
+      "quartile_1": 1168,
+      "quartile_2": 666,
+      "quartile_3": 486,
+      "view_completion": 379,
+      "screen_time_millis": 3052335,
+      "conversion_add_cart": 4,
+      "conversion_page_views": 44,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 563.22
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 757,
+      "swipes": 8,
+      "spend": 16837685,
+      "uniques": 454,
+      "frequency": 1.667,
+      "quartile_1": 313,
+      "quartile_2": 189,
+      "quartile_3": 146,
+      "view_completion": 104,
+      "screen_time_millis": 915465,
+      "conversion_sign_ups": 2
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 6275,
+      "swipes": 81,
+      "spend": 61559441,
+      "uniques": 4069,
+      "frequency": 1.542,
+      "quartile_1": 3146,
+      "quartile_2": 2020,
+      "quartile_3": 1447,
+      "view_completion": 992,
+      "screen_time_millis": 8883946,
+      "conversion_add_cart": 4,
+      "conversion_page_views": 72,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 526.71
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 3276,
+      "swipes": 59,
+      "spend": 42702366,
+      "uniques": 2163,
+      "frequency": 1.515,
+      "quartile_1": 1628,
+      "quartile_2": 1026,
+      "quartile_3": 642,
+      "view_completion": 402,
+      "screen_time_millis": 3756295,
+      "conversion_add_cart": 2,
+      "conversion_page_views": 45,
+      "conversion_purchases": 1,
+      "conversion_purchases_value": 364.51
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2367,
+      "swipes": 67,
+      "spend": 37981578,
+      "uniques": 1773,
+      "frequency": 1.335,
+      "quartile_1": 1157,
+      "quartile_2": 645,
+      "quartile_3": 390,
+      "view_completion": 251,
+      "screen_time_millis": 2817049,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 59,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 536.43
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 659,
+      "swipes": 7,
+      "spend": 13370782,
+      "uniques": 443,
+      "frequency": 1.488,
+      "quartile_1": 269,
+      "quartile_2": 153,
+      "quartile_3": 118,
+      "view_completion": 82,
+      "screen_time_millis": 818499,
+      "conversion_sign_ups": 1
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 6570,
+      "swipes": 85,
+      "spend": 59246710,
+      "uniques": 4275,
+      "frequency": 1.537,
+      "quartile_1": 2850,
+      "quartile_2": 1796,
+      "quartile_3": 1338,
+      "view_completion": 940,
+      "screen_time_millis": 10947458,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 59,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 522.54
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 3058,
+      "swipes": 56,
+      "spend": 42287769,
+      "uniques": 2477,
+      "frequency": 1.235,
+      "quartile_1": 1274,
+      "quartile_2": 774,
+      "quartile_3": 515,
+      "view_completion": 388,
+      "screen_time_millis": 4964218,
+      "conversion_add_cart": 7,
+      "conversion_page_views": 44,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 614.0
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2213,
+      "swipes": 54,
+      "spend": 35648786,
+      "uniques": 1690,
+      "frequency": 1.309,
+      "quartile_1": 860,
+      "quartile_2": 531,
+      "quartile_3": 364,
+      "view_completion": 254,
+      "screen_time_millis": 3087174,
+      "conversion_add_cart": 8,
+      "conversion_page_views": 47,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 885.47
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 634,
+      "swipes": 6,
+      "spend": 13693494,
+      "uniques": 526,
+      "frequency": 1.205,
+      "quartile_1": 284,
+      "quartile_2": 157,
+      "quartile_3": 98,
+      "view_completion": 55,
+      "screen_time_millis": 868768,
+      "conversion_sign_ups": 1
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 6303,
+      "swipes": 92,
+      "spend": 61238560,
+      "uniques": 4339,
+      "frequency": 1.453,
+      "quartile_1": 2791,
+      "quartile_2": 1789,
+      "quartile_3": 1117,
+      "view_completion": 851,
+      "screen_time_millis": 7253231,
+      "conversion_add_cart": 10,
+      "conversion_page_views": 74,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 1007.22
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 2732,
+      "swipes": 53,
+      "spend": 35302559,
+      "uniques": 1926,
+      "frequency": 1.418,
+      "quartile_1": 1174,
+      "quartile_2": 802,
+      "quartile_3": 569,
+      "view_completion": 439,
+      "screen_time_millis": 3978567,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 42,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 754.14
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2172,
+      "swipes": 52,
+      "spend": 36120800,
+      "uniques": 1748,
+      "frequency": 1.243,
+      "quartile_1": 852,
+      "quartile_2": 502,
+      "quartile_3": 314,
+      "view_completion": 232,
+      "screen_time_millis": 2203311,
+      "conversion_add_cart": 8,
+      "conversion_page_views": 45,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 701.96
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 630,
+      "swipes": 8,
+      "spend": 13561716,
+      "uniques": 433,
+      "frequency": 1.455,
+      "quartile_1": 309,
+      "quartile_2": 177,
+      "quartile_3": 118,
+      "view_completion": 70,
+      "screen_time_millis": 851986,
+      "conversion_sign_ups": 2
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 5742,
+      "swipes": 78,
+      "spend": 56415354,
+      "uniques": 4253,
+      "frequency": 1.35,
+      "quartile_1": 2295,
+      "quartile_2": 1310,
+      "quartile_3": 926,
+      "view_completion": 693,
+      "screen_time_millis": 5222456,
+      "conversion_add_cart": 4,
+      "conversion_page_views": 55,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 575.3
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 3129,
+      "swipes": 52,
+      "spend": 39384964,
+      "uniques": 2371,
+      "frequency": 1.32,
+      "quartile_1": 1496,
+      "quartile_2": 956,
+      "quartile_3": 689,
+      "view_completion": 406,
+      "screen_time_millis": 5179594,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 36,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 596.12
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2066,
+      "swipes": 52,
+      "spend": 34546145,
+      "uniques": 1460,
+      "frequency": 1.415,
+      "quartile_1": 841,
+      "quartile_2": 602,
+      "quartile_3": 406,
+      "view_completion": 232,
+      "screen_time_millis": 3363608,
+      "conversion_add_cart": 9,
+      "conversion_page_views": 45,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 850.72
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 703,
+      "swipes": 7,
+      "spend": 14920647,
+      "uniques": 443,
+      "frequency": 1.587,
+      "quartile_1": 358,
+      "quartile_2": 207,
+      "quartile_3": 145,
+      "view_completion": 93,
+      "screen_time_millis": 1080261,
+      "conversion_sign_ups": 1
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 6198,
+      "swipes": 89,
+      "spend": 56824496,
+      "uniques": 4248,
+      "frequency": 1.459,
+      "quartile_1": 2916,
+      "quartile_2": 1665,
+      "quartile_3": 1209,
+      "view_completion": 886,
+      "screen_time_millis": 9007917,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 66,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 652.2
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 3260,
+      "swipes": 55,
+      "spend": 41879276,
+      "uniques": 1939,
+      "frequency": 1.681,
+      "quartile_1": 1436,
+      "quartile_2": 920,
+      "quartile_3": 699,
+      "view_completion": 480,
+      "screen_time_millis": 5708122,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 46,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 698.2
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2194,
+      "swipes": 57,
+      "spend": 35178920,
+      "uniques": 1554,
+      "frequency": 1.412,
+      "quartile_1": 1073,
+      "quartile_2": 609,
+      "quartile_3": 460,
+      "view_completion": 268,
+      "screen_time_millis": 3675134,
+      "conversion_add_cart": 10,
+      "conversion_page_views": 46,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 846.19
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 706,
+      "swipes": 8,
+      "spend": 14149527,
+      "uniques": 577,
+      "frequency": 1.224,
+      "quartile_1": 269,
+      "quartile_2": 180,
+      "quartile_3": 124,
+      "view_completion": 93,
+      "screen_time_millis": 1006330,
+      "conversion_sign_ups": 2
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 6764,
+      "swipes": 86,
+      "spend": 63694623,
+      "uniques": 4356,
+      "frequency": 1.553,
+      "quartile_1": 3083,
+      "quartile_2": 1769,
+      "quartile_3": 1255,
+      "view_completion": 929,
+      "screen_time_millis": 12017375,
+      "conversion_add_cart": 4,
+      "conversion_page_views": 74,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 548.79
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 3707,
+      "swipes": 72,
+      "spend": 48798358,
+      "uniques": 2477,
+      "frequency": 1.497,
+      "quartile_1": 1733,
+      "quartile_2": 1236,
+      "quartile_3": 775,
+      "view_completion": 428,
+      "screen_time_millis": 6135684,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 60,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 678.74
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2625,
+      "swipes": 64,
+      "spend": 43198935,
+      "uniques": 1803,
+      "frequency": 1.456,
+      "quartile_1": 1201,
+      "quartile_2": 772,
+      "quartile_3": 525,
+      "view_completion": 382,
+      "screen_time_millis": 3674721,
+      "conversion_add_cart": 7,
+      "conversion_page_views": 52,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 802.52
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 787,
+      "swipes": 9,
+      "spend": 16206818,
+      "uniques": 486,
+      "frequency": 1.619,
+      "quartile_1": 367,
+      "quartile_2": 247,
+      "quartile_3": 173,
+      "view_completion": 132,
+      "screen_time_millis": 1130186,
+      "conversion_sign_ups": 2
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 7405,
+      "swipes": 93,
+      "spend": 66619596,
+      "uniques": 5532,
+      "frequency": 1.339,
+      "quartile_1": 3501,
+      "quartile_2": 2445,
+      "quartile_3": 1689,
+      "view_completion": 1158,
+      "screen_time_millis": 8933828,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 69,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 534.61
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 3789,
+      "swipes": 68,
+      "spend": 49045141,
+      "uniques": 2607,
+      "frequency": 1.453,
+      "quartile_1": 1533,
+      "quartile_2": 1029,
+      "quartile_3": 693,
+      "view_completion": 443,
+      "screen_time_millis": 3891622,
+      "conversion_add_cart": 4,
+      "conversion_page_views": 50,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 762.49
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2827,
+      "swipes": 75,
+      "spend": 49033241,
+      "uniques": 2179,
+      "frequency": 1.297,
+      "quartile_1": 1124,
+      "quartile_2": 716,
+      "quartile_3": 519,
+      "view_completion": 321,
+      "screen_time_millis": 2668379,
+      "conversion_add_cart": 9,
+      "conversion_page_views": 56,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 774.23
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 755,
+      "swipes": 8,
+      "spend": 15678250,
+      "uniques": 550,
+      "frequency": 1.373,
+      "quartile_1": 387,
+      "quartile_2": 234,
+      "quartile_3": 168,
+      "view_completion": 128,
+      "screen_time_millis": 957561,
+      "conversion_sign_ups": 2
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 6490,
+      "swipes": 91,
+      "spend": 61195813,
+      "uniques": 4117,
+      "frequency": 1.576,
+      "quartile_1": 2578,
+      "quartile_2": 1685,
+      "quartile_3": 1275,
+      "view_completion": 938,
+      "screen_time_millis": 9077188,
+      "conversion_add_cart": 8,
+      "conversion_page_views": 80,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 859.33
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "stats": {
+      "impressions": 3276,
+      "swipes": 56,
+      "spend": 41334923,
+      "uniques": 2539,
+      "frequency": 1.29,
+      "quartile_1": 1550,
+      "quartile_2": 1069,
+      "quartile_3": 724,
+      "view_completion": 506,
+      "screen_time_millis": 5543617,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 49,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 692.09
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "stats": {
+      "impressions": 2205,
+      "swipes": 59,
+      "spend": 39086531,
+      "uniques": 1464,
+      "frequency": 1.506,
+      "quartile_1": 848,
+      "quartile_2": 482,
+      "quartile_3": 355,
+      "view_completion": 267,
+      "screen_time_millis": 3463401,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 52,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 567.97
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+    "type": "AD",
+    "granularity": "DAY",
+    "_parent_ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+    "_parent_campaign_id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "stats": {
+      "impressions": 635,
+      "swipes": 7,
+      "spend": 13476845,
+      "uniques": 425,
+      "frequency": 1.494,
+      "quartile_1": 292,
+      "quartile_2": 208,
+      "quartile_3": 158,
+      "view_completion": 115,
+      "screen_time_millis": 958689,
+      "conversion_sign_ups": 1
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  }
+]

@@ -1,0 +1,1052 @@
+[
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 8990,
+      "swipes": 139,
+      "spend": 96608950,
+      "quartile_1": 4122,
+      "quartile_2": 2480,
+      "quartile_3": 1713,
+      "view_completion": 1183,
+      "screen_time_millis": 14715204,
+      "conversion_add_cart": 11,
+      "conversion_page_views": 101,
+      "conversion_purchases": 5,
+      "conversion_purchases_value": 1438.88,
+      "uniques": 5286,
+      "frequency": 1.701
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2073,
+      "swipes": 52,
+      "spend": 33877896,
+      "quartile_1": 1055,
+      "quartile_2": 620,
+      "quartile_3": 428,
+      "view_completion": 288,
+      "screen_time_millis": 3041082,
+      "conversion_add_cart": 4,
+      "conversion_page_views": 37,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 612.6,
+      "uniques": 1303,
+      "frequency": 1.591
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 699,
+      "swipes": 8,
+      "spend": 14672155,
+      "quartile_1": 269,
+      "quartile_2": 180,
+      "quartile_3": 127,
+      "view_completion": 81,
+      "screen_time_millis": 702768,
+      "conversion_sign_ups": 2,
+      "uniques": 346,
+      "frequency": 2.02
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 8719,
+      "swipes": 122,
+      "spend": 89338099,
+      "quartile_1": 4017,
+      "quartile_2": 2479,
+      "quartile_3": 1834,
+      "view_completion": 1198,
+      "screen_time_millis": 9612365,
+      "conversion_add_cart": 9,
+      "conversion_page_views": 99,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 885.96,
+      "uniques": 5185,
+      "frequency": 1.682
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2388,
+      "swipes": 56,
+      "spend": 40512965,
+      "quartile_1": 915,
+      "quartile_2": 565,
+      "quartile_3": 385,
+      "view_completion": 247,
+      "screen_time_millis": 3163741,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 41,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 592.46,
+      "uniques": 1268,
+      "frequency": 1.883
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 607,
+      "swipes": 7,
+      "spend": 13182728,
+      "quartile_1": 276,
+      "quartile_2": 181,
+      "quartile_3": 120,
+      "view_completion": 93,
+      "screen_time_millis": 704777,
+      "conversion_sign_ups": 1,
+      "uniques": 334,
+      "frequency": 1.817
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 8783,
+      "swipes": 133,
+      "spend": 90756229,
+      "quartile_1": 3704,
+      "quartile_2": 2315,
+      "quartile_3": 1708,
+      "view_completion": 1064,
+      "screen_time_millis": 13528949,
+      "conversion_add_cart": 7,
+      "conversion_page_views": 97,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 846.67,
+      "uniques": 4724,
+      "frequency": 1.859
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2240,
+      "swipes": 55,
+      "spend": 37655008,
+      "quartile_1": 1027,
+      "quartile_2": 657,
+      "quartile_3": 410,
+      "view_completion": 312,
+      "screen_time_millis": 3512595,
+      "conversion_add_cart": 7,
+      "conversion_page_views": 49,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 780.74,
+      "uniques": 1193,
+      "frequency": 1.878
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 581,
+      "swipes": 6,
+      "spend": 11864230,
+      "quartile_1": 284,
+      "quartile_2": 186,
+      "quartile_3": 142,
+      "view_completion": 107,
+      "screen_time_millis": 814603,
+      "conversion_sign_ups": 2,
+      "uniques": 285,
+      "frequency": 2.039
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 8585,
+      "swipes": 133,
+      "spend": 91804936,
+      "quartile_1": 4208,
+      "quartile_2": 2804,
+      "quartile_3": 1897,
+      "view_completion": 1352,
+      "screen_time_millis": 11542731,
+      "conversion_add_cart": 13,
+      "conversion_page_views": 100,
+      "conversion_purchases": 4,
+      "conversion_purchases_value": 1133.58,
+      "uniques": 5191,
+      "frequency": 1.654
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2412,
+      "swipes": 59,
+      "spend": 39285665,
+      "quartile_1": 916,
+      "quartile_2": 521,
+      "quartile_3": 354,
+      "view_completion": 208,
+      "screen_time_millis": 3837032,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 45,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 442.08,
+      "uniques": 1433,
+      "frequency": 1.683
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 605,
+      "swipes": 6,
+      "spend": 12299022,
+      "quartile_1": 286,
+      "quartile_2": 178,
+      "quartile_3": 134,
+      "view_completion": 79,
+      "screen_time_millis": 544628,
+      "conversion_sign_ups": 1,
+      "uniques": 341,
+      "frequency": 1.774
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 10706,
+      "swipes": 165,
+      "spend": 113595051,
+      "quartile_1": 4725,
+      "quartile_2": 3106,
+      "quartile_3": 2286,
+      "view_completion": 1400,
+      "screen_time_millis": 15466532,
+      "conversion_add_cart": 10,
+      "conversion_page_views": 129,
+      "conversion_purchases": 4,
+      "conversion_purchases_value": 1319.65,
+      "uniques": 5933,
+      "frequency": 1.804
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2673,
+      "swipes": 65,
+      "spend": 47058536,
+      "quartile_1": 1291,
+      "quartile_2": 774,
+      "quartile_3": 561,
+      "view_completion": 317,
+      "screen_time_millis": 4599675,
+      "conversion_add_cart": 10,
+      "conversion_page_views": 46,
+      "conversion_purchases": 4,
+      "conversion_purchases_value": 1055.74,
+      "uniques": 1438,
+      "frequency": 1.859
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 750,
+      "swipes": 9,
+      "spend": 15689048,
+      "quartile_1": 381,
+      "quartile_2": 263,
+      "quartile_3": 162,
+      "view_completion": 109,
+      "screen_time_millis": 866668,
+      "conversion_sign_ups": 2,
+      "uniques": 427,
+      "frequency": 1.756
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 10821,
+      "swipes": 171,
+      "spend": 120653317,
+      "quartile_1": 5023,
+      "quartile_2": 2890,
+      "quartile_3": 1914,
+      "view_completion": 1229,
+      "screen_time_millis": 15507428,
+      "conversion_add_cart": 11,
+      "conversion_page_views": 135,
+      "conversion_purchases": 4,
+      "conversion_purchases_value": 1323.89,
+      "uniques": 6951,
+      "frequency": 1.557
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2564,
+      "swipes": 60,
+      "spend": 42002306,
+      "quartile_1": 1168,
+      "quartile_2": 666,
+      "quartile_3": 486,
+      "view_completion": 379,
+      "screen_time_millis": 3052335,
+      "conversion_add_cart": 4,
+      "conversion_page_views": 44,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 563.22,
+      "uniques": 1352,
+      "frequency": 1.896
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 757,
+      "swipes": 8,
+      "spend": 16837685,
+      "quartile_1": 313,
+      "quartile_2": 189,
+      "quartile_3": 146,
+      "view_completion": 104,
+      "screen_time_millis": 915465,
+      "conversion_sign_ups": 2,
+      "uniques": 375,
+      "frequency": 2.019
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 9551,
+      "swipes": 140,
+      "spend": 104261807,
+      "quartile_1": 4774,
+      "quartile_2": 3046,
+      "quartile_3": 2089,
+      "view_completion": 1394,
+      "screen_time_millis": 12640241,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 117,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 891.22,
+      "uniques": 5150,
+      "frequency": 1.855
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2367,
+      "swipes": 67,
+      "spend": 37981578,
+      "quartile_1": 1157,
+      "quartile_2": 645,
+      "quartile_3": 390,
+      "view_completion": 251,
+      "screen_time_millis": 2817049,
+      "conversion_add_cart": 6,
+      "conversion_page_views": 59,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 536.43,
+      "uniques": 1465,
+      "frequency": 1.616
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 659,
+      "swipes": 7,
+      "spend": 13370782,
+      "quartile_1": 269,
+      "quartile_2": 153,
+      "quartile_3": 118,
+      "view_completion": 82,
+      "screen_time_millis": 818499,
+      "conversion_sign_ups": 1,
+      "uniques": 366,
+      "frequency": 1.801
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 9628,
+      "swipes": 141,
+      "spend": 101534479,
+      "quartile_1": 4124,
+      "quartile_2": 2570,
+      "quartile_3": 1853,
+      "view_completion": 1328,
+      "screen_time_millis": 15911676,
+      "conversion_add_cart": 13,
+      "conversion_page_views": 103,
+      "conversion_purchases": 4,
+      "conversion_purchases_value": 1136.54,
+      "uniques": 5580,
+      "frequency": 1.725
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2213,
+      "swipes": 54,
+      "spend": 35648786,
+      "quartile_1": 860,
+      "quartile_2": 531,
+      "quartile_3": 364,
+      "view_completion": 254,
+      "screen_time_millis": 3087174,
+      "conversion_add_cart": 8,
+      "conversion_page_views": 47,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 885.47,
+      "uniques": 1396,
+      "frequency": 1.585
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 634,
+      "swipes": 6,
+      "spend": 13693494,
+      "quartile_1": 284,
+      "quartile_2": 157,
+      "quartile_3": 98,
+      "view_completion": 55,
+      "screen_time_millis": 868768,
+      "conversion_sign_ups": 1,
+      "uniques": 434,
+      "frequency": 1.461
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 9035,
+      "swipes": 145,
+      "spend": 96541119,
+      "quartile_1": 3965,
+      "quartile_2": 2591,
+      "quartile_3": 1686,
+      "view_completion": 1290,
+      "screen_time_millis": 11231798,
+      "conversion_add_cart": 15,
+      "conversion_page_views": 116,
+      "conversion_purchases": 5,
+      "conversion_purchases_value": 1761.36,
+      "uniques": 5177,
+      "frequency": 1.745
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2172,
+      "swipes": 52,
+      "spend": 36120800,
+      "quartile_1": 852,
+      "quartile_2": 502,
+      "quartile_3": 314,
+      "view_completion": 232,
+      "screen_time_millis": 2203311,
+      "conversion_add_cart": 8,
+      "conversion_page_views": 45,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 701.96,
+      "uniques": 1444,
+      "frequency": 1.504
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 630,
+      "swipes": 8,
+      "spend": 13561716,
+      "quartile_1": 309,
+      "quartile_2": 177,
+      "quartile_3": 118,
+      "view_completion": 70,
+      "screen_time_millis": 851986,
+      "conversion_sign_ups": 2,
+      "uniques": 357,
+      "frequency": 1.765
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 8871,
+      "swipes": 130,
+      "spend": 95800318,
+      "quartile_1": 3791,
+      "quartile_2": 2266,
+      "quartile_3": 1615,
+      "view_completion": 1099,
+      "screen_time_millis": 10402050,
+      "conversion_add_cart": 9,
+      "conversion_page_views": 91,
+      "conversion_purchases": 4,
+      "conversion_purchases_value": 1171.42,
+      "uniques": 5474,
+      "frequency": 1.621
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2066,
+      "swipes": 52,
+      "spend": 34546145,
+      "quartile_1": 841,
+      "quartile_2": 602,
+      "quartile_3": 406,
+      "view_completion": 232,
+      "screen_time_millis": 3363608,
+      "conversion_add_cart": 9,
+      "conversion_page_views": 45,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 850.72,
+      "uniques": 1206,
+      "frequency": 1.713
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 703,
+      "swipes": 7,
+      "spend": 14920647,
+      "quartile_1": 358,
+      "quartile_2": 207,
+      "quartile_3": 145,
+      "view_completion": 93,
+      "screen_time_millis": 1080261,
+      "conversion_sign_ups": 1,
+      "uniques": 366,
+      "frequency": 1.921
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 9458,
+      "swipes": 144,
+      "spend": 98703772,
+      "quartile_1": 4352,
+      "quartile_2": 2585,
+      "quartile_3": 1908,
+      "view_completion": 1366,
+      "screen_time_millis": 14716039,
+      "conversion_add_cart": 11,
+      "conversion_page_views": 112,
+      "conversion_purchases": 4,
+      "conversion_purchases_value": 1350.4,
+      "uniques": 5113,
+      "frequency": 1.85
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2194,
+      "swipes": 57,
+      "spend": 35178920,
+      "quartile_1": 1073,
+      "quartile_2": 609,
+      "quartile_3": 460,
+      "view_completion": 268,
+      "screen_time_millis": 3675134,
+      "conversion_add_cart": 10,
+      "conversion_page_views": 46,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 846.19,
+      "uniques": 1284,
+      "frequency": 1.709
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 706,
+      "swipes": 8,
+      "spend": 14149527,
+      "quartile_1": 269,
+      "quartile_2": 180,
+      "quartile_3": 124,
+      "view_completion": 93,
+      "screen_time_millis": 1006330,
+      "conversion_sign_ups": 2,
+      "uniques": 476,
+      "frequency": 1.483
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 10471,
+      "swipes": 158,
+      "spend": 112492981,
+      "quartile_1": 4816,
+      "quartile_2": 3005,
+      "quartile_3": 2030,
+      "view_completion": 1357,
+      "screen_time_millis": 18153059,
+      "conversion_add_cart": 9,
+      "conversion_page_views": 134,
+      "conversion_purchases": 4,
+      "conversion_purchases_value": 1227.53,
+      "uniques": 5647,
+      "frequency": 1.854
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2625,
+      "swipes": 64,
+      "spend": 43198935,
+      "quartile_1": 1201,
+      "quartile_2": 772,
+      "quartile_3": 525,
+      "view_completion": 382,
+      "screen_time_millis": 3674721,
+      "conversion_add_cart": 7,
+      "conversion_page_views": 52,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 802.52,
+      "uniques": 1490,
+      "frequency": 1.762
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 787,
+      "swipes": 9,
+      "spend": 16206818,
+      "quartile_1": 367,
+      "quartile_2": 247,
+      "quartile_3": 173,
+      "view_completion": 132,
+      "screen_time_millis": 1130186,
+      "conversion_sign_ups": 2,
+      "uniques": 401,
+      "frequency": 1.963
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 11194,
+      "swipes": 161,
+      "spend": 115664737,
+      "quartile_1": 5034,
+      "quartile_2": 3474,
+      "quartile_3": 2382,
+      "view_completion": 1601,
+      "screen_time_millis": 12825450,
+      "conversion_add_cart": 9,
+      "conversion_page_views": 119,
+      "conversion_purchases": 4,
+      "conversion_purchases_value": 1297.1,
+      "uniques": 6726,
+      "frequency": 1.664
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2827,
+      "swipes": 75,
+      "spend": 49033241,
+      "quartile_1": 1124,
+      "quartile_2": 716,
+      "quartile_3": 519,
+      "view_completion": 321,
+      "screen_time_millis": 2668379,
+      "conversion_add_cart": 9,
+      "conversion_page_views": 56,
+      "conversion_purchases": 3,
+      "conversion_purchases_value": 774.23,
+      "uniques": 1800,
+      "frequency": 1.571
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 755,
+      "swipes": 8,
+      "spend": 15678250,
+      "quartile_1": 387,
+      "quartile_2": 234,
+      "quartile_3": 168,
+      "view_completion": 128,
+      "screen_time_millis": 957561,
+      "conversion_sign_ups": 2,
+      "uniques": 454,
+      "frequency": 1.663
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000001",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 9766,
+      "swipes": 147,
+      "spend": 102530736,
+      "quartile_1": 4128,
+      "quartile_2": 2754,
+      "quartile_3": 1999,
+      "view_completion": 1444,
+      "screen_time_millis": 14620805,
+      "conversion_add_cart": 13,
+      "conversion_page_views": 129,
+      "conversion_purchases": 5,
+      "conversion_purchases_value": 1551.42,
+      "uniques": 5500,
+      "frequency": 1.776
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000002",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 2205,
+      "swipes": 59,
+      "spend": 39086531,
+      "quartile_1": 848,
+      "quartile_2": 482,
+      "quartile_3": 355,
+      "view_completion": 267,
+      "screen_time_millis": 3463401,
+      "conversion_add_cart": 5,
+      "conversion_page_views": 52,
+      "conversion_purchases": 2,
+      "conversion_purchases_value": 567.97,
+      "uniques": 1209,
+      "frequency": 1.824
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "11111111-aaaa-4bbb-8ccc-000000000004",
+    "type": "CAMPAIGN",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 635,
+      "swipes": 7,
+      "spend": 13476845,
+      "quartile_1": 292,
+      "quartile_2": 208,
+      "quartile_3": 158,
+      "view_completion": 115,
+      "screen_time_millis": 958689,
+      "conversion_sign_ups": 1,
+      "uniques": 351,
+      "frequency": 1.809
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  }
+]

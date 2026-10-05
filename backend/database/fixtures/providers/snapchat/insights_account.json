@@ -1,0 +1,380 @@
+[
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 11762,
+      "swipes": 199,
+      "spend": 145159001,
+      "quartile_1": 5446,
+      "quartile_2": 3280,
+      "quartile_3": 2268,
+      "view_completion": 1552,
+      "screen_time_millis": 18459054,
+      "conversion_add_cart": 15,
+      "conversion_page_views": 138,
+      "conversion_purchases": 7,
+      "conversion_purchases_value": 2051.48,
+      "conversion_sign_ups": 2,
+      "uniques": 6936,
+      "frequency": 1.696
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 11714,
+      "swipes": 185,
+      "spend": 143033792,
+      "quartile_1": 5208,
+      "quartile_2": 3225,
+      "quartile_3": 2339,
+      "view_completion": 1538,
+      "screen_time_millis": 13480883,
+      "conversion_add_cart": 15,
+      "conversion_page_views": 140,
+      "conversion_purchases": 5,
+      "conversion_purchases_value": 1478.42,
+      "conversion_sign_ups": 1,
+      "uniques": 6788,
+      "frequency": 1.726
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 11604,
+      "swipes": 194,
+      "spend": 140275467,
+      "quartile_1": 5015,
+      "quartile_2": 3158,
+      "quartile_3": 2260,
+      "view_completion": 1483,
+      "screen_time_millis": 17856147,
+      "conversion_add_cart": 14,
+      "conversion_page_views": 146,
+      "conversion_purchases": 6,
+      "conversion_purchases_value": 1627.41,
+      "conversion_sign_ups": 2,
+      "uniques": 6203,
+      "frequency": 1.871
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 11602,
+      "swipes": 198,
+      "spend": 143389623,
+      "quartile_1": 5410,
+      "quartile_2": 3503,
+      "quartile_3": 2385,
+      "view_completion": 1639,
+      "screen_time_millis": 15924391,
+      "conversion_add_cart": 19,
+      "conversion_page_views": 145,
+      "conversion_purchases": 6,
+      "conversion_purchases_value": 1575.66,
+      "conversion_sign_ups": 1,
+      "uniques": 6966,
+      "frequency": 1.666
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 14129,
+      "swipes": 239,
+      "spend": 176342635,
+      "quartile_1": 6397,
+      "quartile_2": 4143,
+      "quartile_3": 3009,
+      "view_completion": 1826,
+      "screen_time_millis": 20932875,
+      "conversion_add_cart": 20,
+      "conversion_page_views": 175,
+      "conversion_purchases": 8,
+      "conversion_purchases_value": 2375.39,
+      "conversion_sign_ups": 2,
+      "uniques": 7799,
+      "frequency": 1.812
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 14142,
+      "swipes": 239,
+      "spend": 179493308,
+      "quartile_1": 6504,
+      "quartile_2": 3745,
+      "quartile_3": 2546,
+      "view_completion": 1712,
+      "screen_time_millis": 19475228,
+      "conversion_add_cart": 15,
+      "conversion_page_views": 179,
+      "conversion_purchases": 6,
+      "conversion_purchases_value": 1887.11,
+      "conversion_sign_ups": 2,
+      "uniques": 8678,
+      "frequency": 1.63
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 12577,
+      "swipes": 214,
+      "spend": 155614167,
+      "quartile_1": 6200,
+      "quartile_2": 3844,
+      "quartile_3": 2597,
+      "view_completion": 1727,
+      "screen_time_millis": 16275789,
+      "conversion_add_cart": 12,
+      "conversion_page_views": 176,
+      "conversion_purchases": 5,
+      "conversion_purchases_value": 1427.65,
+      "conversion_sign_ups": 1,
+      "uniques": 6981,
+      "frequency": 1.802
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 12475,
+      "swipes": 201,
+      "spend": 150876759,
+      "quartile_1": 5268,
+      "quartile_2": 3258,
+      "quartile_3": 2315,
+      "view_completion": 1637,
+      "screen_time_millis": 19867618,
+      "conversion_add_cart": 21,
+      "conversion_page_views": 150,
+      "conversion_purchases": 7,
+      "conversion_purchases_value": 2022.01,
+      "conversion_sign_ups": 1,
+      "uniques": 7411,
+      "frequency": 1.683
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 11837,
+      "swipes": 205,
+      "spend": 146223635,
+      "quartile_1": 5126,
+      "quartile_2": 3270,
+      "quartile_3": 2118,
+      "view_completion": 1592,
+      "screen_time_millis": 14287095,
+      "conversion_add_cart": 23,
+      "conversion_page_views": 161,
+      "conversion_purchases": 8,
+      "conversion_purchases_value": 2463.32,
+      "conversion_sign_ups": 2,
+      "uniques": 6980,
+      "frequency": 1.696
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 11640,
+      "swipes": 189,
+      "spend": 145267110,
+      "quartile_1": 4990,
+      "quartile_2": 3075,
+      "quartile_3": 2166,
+      "view_completion": 1424,
+      "screen_time_millis": 14845919,
+      "conversion_add_cart": 18,
+      "conversion_page_views": 136,
+      "conversion_purchases": 7,
+      "conversion_purchases_value": 2022.14,
+      "conversion_sign_ups": 1,
+      "uniques": 7047,
+      "frequency": 1.652
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 12358,
+      "swipes": 209,
+      "spend": 148032219,
+      "quartile_1": 5694,
+      "quartile_2": 3374,
+      "quartile_3": 2492,
+      "view_completion": 1727,
+      "screen_time_millis": 19397503,
+      "conversion_add_cart": 21,
+      "conversion_page_views": 158,
+      "conversion_purchases": 7,
+      "conversion_purchases_value": 2196.59,
+      "conversion_sign_ups": 2,
+      "uniques": 6874,
+      "frequency": 1.798
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 13883,
+      "swipes": 231,
+      "spend": 171898734,
+      "quartile_1": 6384,
+      "quartile_2": 4024,
+      "quartile_3": 2728,
+      "view_completion": 1871,
+      "screen_time_millis": 22957966,
+      "conversion_add_cart": 16,
+      "conversion_page_views": 186,
+      "conversion_purchases": 7,
+      "conversion_purchases_value": 2030.05,
+      "conversion_sign_ups": 2,
+      "uniques": 7538,
+      "frequency": 1.842
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 14776,
+      "swipes": 244,
+      "spend": 180376228,
+      "quartile_1": 6545,
+      "quartile_2": 4424,
+      "quartile_3": 3069,
+      "view_completion": 2050,
+      "screen_time_millis": 16451390,
+      "conversion_add_cart": 18,
+      "conversion_page_views": 175,
+      "conversion_purchases": 7,
+      "conversion_purchases_value": 2071.33,
+      "conversion_sign_ups": 2,
+      "uniques": 8981,
+      "frequency": 1.645
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  },
+  {
+    "id": "d8a2b1c4-6e5f-4a3b-9c8d-1e2f3a4b5c6d",
+    "type": "AD_ACCOUNT",
+    "granularity": "DAY",
+    "stats": {
+      "impressions": 12606,
+      "swipes": 213,
+      "spend": 155094112,
+      "quartile_1": 5268,
+      "quartile_2": 3444,
+      "quartile_3": 2512,
+      "view_completion": 1826,
+      "screen_time_millis": 19042895,
+      "conversion_add_cart": 18,
+      "conversion_page_views": 181,
+      "conversion_purchases": 7,
+      "conversion_purchases_value": 2119.39,
+      "conversion_sign_ups": 1,
+      "uniques": 7061,
+      "frequency": 1.785
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "start_time",
+      "end_time"
+    ]
+  }
+]

@@ -66,7 +66,7 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
         $page = $this->rows($credentials, $this->fixtureName('campaigns'), $cursor);
 
         return new Page(
-            items: array_map(fn (array $row): CampaignRecord => $this->mapCampaign($row), $page->items),
+            items: $this->mapRows($page->items, 'campaigns', fn (array $row): CampaignRecord => $this->mapCampaign($row)),
             nextCursor: $page->nextCursor,
         );
     }
@@ -77,7 +77,7 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
         $page = $this->rows($credentials, $this->fixtureName('ad_groups'), $cursor);
 
         return new Page(
-            items: array_map(fn (array $row): AdGroupRecord => $this->mapAdGroup($row), $page->items),
+            items: $this->mapRows($page->items, 'ad_groups', fn (array $row): AdGroupRecord => $this->mapAdGroup($row)),
             nextCursor: $page->nextCursor,
         );
     }
@@ -88,7 +88,7 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
         $page = $this->rows($credentials, $this->fixtureName('ads'), $cursor);
 
         return new Page(
-            items: array_map(fn (array $row): AdRecord => $this->mapAd($row), $page->items),
+            items: $this->mapRows($page->items, 'ads', fn (array $row): AdRecord => $this->mapAd($row)),
             nextCursor: $page->nextCursor,
         );
     }
@@ -99,7 +99,7 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
         $page = $this->rows($credentials, $this->fixtureName('creatives'), $cursor);
 
         return new Page(
-            items: array_map(fn (array $row): CreativeRecord => $this->mapCreative($row), $page->items),
+            items: $this->mapRows($page->items, 'creatives', fn (array $row): CreativeRecord => $this->mapCreative($row)),
             nextCursor: $page->nextCursor,
         );
     }
@@ -126,9 +126,10 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
         );
 
         return new Page(
-            items: array_map(
-                fn (array $row): InsightRecord => $this->mapInsight($row, $level, $this->reportingCurrency()),
+            items: $this->mapRows(
                 $page->items,
+                'insights',
+                fn (array $row): InsightRecord => $this->mapInsight($row, $level, $this->reportingCurrency()),
             ),
             nextCursor: $page->nextCursor,
         );
@@ -144,6 +145,22 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
     protected function fixtureName(string $kind): string
     {
         return $kind;
+    }
+
+    /**
+     * Pull the entity out of a provider's response envelope.
+     *
+     * Most providers return the entity directly. Snapchat wraps each item as
+     * `{sub_request_status, campaign: {…}}`, because a batch can partly succeed — so
+     * unwrapping is a provider concern, not a mapper one, and a row whose request
+     * failed carries no entity at all.
+     *
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>|null null drops the row
+     */
+    protected function unwrap(array $row, string $kind): ?array
+    {
+        return $row;
     }
 
     /** @param array<string, mixed> $row */
@@ -243,5 +260,29 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
 
             return is_string($value) && $value >= $from && $value <= $to;
         };
+    }
+
+    /**
+     * Unwrap, map, and drop the rows that carried no entity.
+     *
+     * @template TRecord
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @param  callable(array<string, mixed>): TRecord  $map
+     * @return list<TRecord>
+     */
+    private function mapRows(array $rows, string $kind, callable $map): array
+    {
+        $records = [];
+
+        foreach ($rows as $row) {
+            $entity = $this->unwrap($row, $kind);
+
+            if ($entity !== null) {
+                $records[] = $map($entity);
+            }
+        }
+
+        return $records;
     }
 }

@@ -103,7 +103,8 @@ Application ports ── ProviderAdapter          (connect, discover, health)
                   └─ AdvertisingSyncAdapter   (campaigns, ad groups, ads,
                          ├─ MetaSyncAdapter     creatives, insights)
                          ├─ GoogleAdsSyncAdapter
-                         └─ TikTokSyncAdapter
+                         ├─ TikTokSyncAdapter
+                         └─ SnapchatSyncAdapter
 ```
 
 `ProviderAdapter` and `AdvertisingSyncAdapter` are deliberately separate. A
@@ -259,9 +260,38 @@ cannot detect a plausible figure sitting in the wrong column — and a later
 verification pass can map those names without re-syncing, because the values were
 never discarded.
 
-### Snapchat, X and LinkedIn — not implemented
+### Snapchat Marketing API — implemented
 
-`SyncAdapterRegistry::supports()` returns false for these three, and asking for an
+Field names, enum values and response shapes were read from Snap's published
+reference.
+
+| Snapchat behaviour | Why it matters |
+| ------------------ | -------------- |
+| Every list item is wrapped twice: `{sub_request_status, campaign: {…}}` | A batch can partly succeed, and a failed item carries **no entity**. Those rows are dropped; mapping one anyway writes a record with an empty id |
+| Money is **micro-currency** — `daily_budget_micro`, `bid_micro`, `lifetime_spend_cap_micro` | The same convention as Google's micros, and the third distinct one across four providers |
+| The lifetime field is a spend **cap**, not a budget | It limits total spend while a daily budget paces delivery, so a campaign with both has a budget *and* a cap, and only one with the cap alone is lifetime-budgeted |
+| `status` is only ACTIVE or PAUSED | Why something is not delivering lives in `delivery_status`, an array of reason codes. Three fixture campaigns are all ACTIVE: one spending, one at its spend cap, one with no eligible ad squads |
+| A click is a **swipe**, and there is no separate link-click metric | `linkClicks` stays null. Copying swipes into it would make two different CTRs identical for a reason that is ours |
+| Reach is `uniques` | Deduplicated, so it is below impressions and cannot be summed across entities |
+| Quartiles and `view_completion` are **counts** | Unlike Google, which reports quartiles as rates. Nothing is derived |
+| `bid_micro` is `0` under auto-bidding | Treated as unset: a bid of zero is a claim about the campaign, not an absence |
+| The **ad object carries no campaign id** | The hierarchy is reached through the ad squad, so the store resolves the campaign from the squad it already synced rather than skipping the ad |
+| A creative has one text field, `headline`, and no body | Splitting one field into two would be editorialising the creative |
+| `top_snap_media_id` does not say whether it is a still or a video | That lives on the media resource, so the asset kind is `media` rather than a guess |
+| Snapchat publishes no aggregate engagement metric | `engagements` stays null. Screen time and attachment views are kept in metadata rather than added into a number nobody defined |
+| Pagination is a whole `paging.next_link` URL | The opaque cursor the caller stores is that URL, not a token |
+
+> **One unverified assumption, and it is the expensive one.** Every money field Snap
+> publishes carries a `_micro` suffix — except the stats metric `spend`. It is mapped
+> as micro-currency for consistency with the rest of their API, which is the likely
+> reading, but it could not be confirmed from the documentation. **If it is wrong,
+> spend is understated by a factor of 10,000.** This must be checked against a live
+> response before any Snapchat figure reaches a client. The sandbox fixtures encode
+> the same assumption, so a test will not catch it; only a real response will.
+
+### X and LinkedIn — not implemented
+
+`SyncAdapterRegistry::supports()` returns false for these two, and asking for an
 adapter raises `ProviderUnavailable`. There is no stub, because a generic adapter
 could only guess at field names. Each needs its own mapper against its own
 documented schema and its own fixture set.
@@ -274,6 +304,8 @@ documented schema and its own fixture set.
 > `frequency`. The Google mappings came from the protobuf definitions and are on
 > firmer ground, but the *semantics* of `primaryStatus` reasons and the objective
 > inference still want checking against a real account. TikTok's structure fields
-> are confirmed; its metric names are the open item above. The fixtures make a
-> mismatch a failing test rather than a wrong chart, but they cannot substitute
-> for that verification.
+> are confirmed; its metric names are the open item above. Snapchat's field names and
+> enums are confirmed; the unit of its `spend` metric is not, which is the most
+> consequential open item across all four providers. The fixtures make a *name*
+> mismatch a failing test rather than a wrong chart, but a wrong *unit* is encoded in
+> the fixtures too — only a live response settles it.

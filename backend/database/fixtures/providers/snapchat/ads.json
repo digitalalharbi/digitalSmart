@@ -1,0 +1,95 @@
+[
+  {
+    "sub_request_status": "SUCCESS",
+    "ad": {
+      "id": "33333333-aaaa-4bbb-8ccc-000000000001",
+      "ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000001",
+      "name": "SANDBOX — Ramadan top snap",
+      "status": "ACTIVE",
+      "review_status": "APPROVED",
+      "type": "REMOTE_WEBPAGE",
+      "creative_id": "44444444-aaaa-4bbb-8ccc-000000000001",
+      "render_type": "STANDARD",
+      "created_at": "2026-08-01T10:00:00.000Z",
+      "updated_at": "2026-09-30T14:02:11.000Z",
+      "delivery_status": [
+        "ACTIVE"
+      ]
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "ad": {
+      "id": "33333333-aaaa-4bbb-8ccc-000000000002",
+      "ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000002",
+      "name": "SANDBOX — Lookalike story ad",
+      "status": "ACTIVE",
+      "review_status": "APPROVED",
+      "type": "REMOTE_WEBPAGE",
+      "creative_id": "44444444-aaaa-4bbb-8ccc-000000000002",
+      "render_type": "STANDARD",
+      "created_at": "2026-08-01T10:00:00.000Z",
+      "updated_at": "2026-09-30T14:02:11.000Z",
+      "delivery_status": [
+        "ACTIVE"
+      ]
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "ad": {
+      "id": "33333333-aaaa-4bbb-8ccc-000000000003",
+      "ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000003",
+      "name": "SANDBOX — Catalog collection",
+      "status": "ACTIVE",
+      "review_status": "APPROVED",
+      "type": "COLLECTION",
+      "creative_id": "44444444-aaaa-4bbb-8ccc-000000000003",
+      "render_type": "STANDARD",
+      "created_at": "2026-08-01T10:00:00.000Z",
+      "updated_at": "2026-09-30T14:02:11.000Z",
+      "delivery_status": [
+        "ACTIVE"
+      ]
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "ad": {
+      "id": "33333333-aaaa-4bbb-8ccc-000000000004",
+      "ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000004",
+      "name": "SANDBOX — Brand film",
+      "status": "PAUSED",
+      "review_status": "APPROVED",
+      "type": "SNAP_AD",
+      "creative_id": "44444444-aaaa-4bbb-8ccc-000000000004",
+      "render_type": "STANDARD",
+      "created_at": "2026-08-01T10:00:00.000Z",
+      "updated_at": "2026-09-30T14:02:11.000Z",
+      "delivery_status": [
+        "NOT_DELIVERING"
+      ]
+    }
+  },
+  {
+    "sub_request_status": "SUCCESS",
+    "ad": {
+      "id": "33333333-aaaa-4bbb-8ccc-000000000005",
+      "ad_squad_id": "22222222-aaaa-4bbb-8ccc-000000000005",
+      "name": "SANDBOX — Rejected hiring claim",
+      "status": "ACTIVE",
+      "review_status": "REJECTED",
+      "type": "LEAD_GENERATION",
+      "creative_id": "44444444-aaaa-4bbb-8ccc-000000000005",
+      "render_type": "STANDARD",
+      "created_at": "2026-08-01T10:00:00.000Z",
+      "updated_at": "2026-09-30T14:02:11.000Z",
+      "delivery_status": [
+        "NOT_DELIVERING"
+      ],
+      "review_status_reasons": [
+        "Ad text makes an unsupported employment guarantee."
+      ]
+    }
+  }
+]
