@@ -58,9 +58,7 @@ export function ClientsPage() {
   if (isError && error instanceof ApiError && error.status === 403) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-content text-2xl font-semibold tracking-[-0.02em]">
-          {t('nav.clients')}
-        </h1>
+        <h1 className="text-content text-2xl font-semibold">{t('nav.clients')}</h1>
         <Alert tone="warning">{t('clients.forbidden')}</Alert>
       </div>
     );
@@ -70,9 +68,7 @@ export function ClientsPage() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-content text-2xl font-semibold tracking-[-0.02em]">
-            {t('nav.clients')}
-          </h1>
+          <h1 className="text-content text-2xl font-semibold">{t('nav.clients')}</h1>
           <p className="text-content-secondary text-sm">
             {data ? t('clients.count', { count: data.meta.total }) : t('clients.subtitle')}
           </p>

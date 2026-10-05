@@ -26,9 +26,7 @@ export function IntegrationsPage() {
   if (isError && error instanceof ApiError && error.status === 403) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-content text-2xl font-semibold tracking-[-0.02em]">
-          {t('nav.integrations')}
-        </h1>
+        <h1 className="text-content text-2xl font-semibold">{t('nav.integrations')}</h1>
         <Alert tone="warning">{t('integrations.forbidden')}</Alert>
       </div>
     );
@@ -39,9 +37,7 @@ export function IntegrationsPage() {
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-1">
-        <h1 className="text-content text-2xl font-semibold tracking-[-0.02em]">
-          {t('nav.integrations')}
-        </h1>
+        <h1 className="text-content text-2xl font-semibold">{t('nav.integrations')}</h1>
         <p className="text-content-secondary text-sm">{t('integrations.subtitle')}</p>
       </header>
 

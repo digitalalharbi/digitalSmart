@@ -52,9 +52,7 @@ export function LoginPage() {
             dS
           </span>
           <div>
-            <h1 className="text-content text-xl font-semibold tracking-[-0.02em]">
-              {t('auth.signInTitle')}
-            </h1>
+            <h1 className="text-content text-xl font-semibold">{t('auth.signInTitle')}</h1>
             <p className="text-content-secondary mt-1 text-sm">{t('auth.signInSubtitle')}</p>
           </div>
         </div>

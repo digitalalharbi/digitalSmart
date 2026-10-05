@@ -36,9 +36,7 @@ export function Sidebar() {
         </span>
         {!isCollapsed ? (
           <span className="flex flex-col leading-tight">
-            <span className="text-content text-sm font-semibold tracking-[-0.01em]">
-              {t('brand.name')}
-            </span>
+            <span className="text-content text-sm font-semibold">{t('brand.name')}</span>
             <span className="text-content-tertiary text-[0.6875rem]">{t('brand.by')}</span>
           </span>
         ) : null}

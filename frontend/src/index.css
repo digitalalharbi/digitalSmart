@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import './styles/tokens.css';
+@import './styles/typography.css';
 
 /*
  * Bridge the semantic token layer into Tailwind's utility namespace.
@@ -52,7 +53,48 @@
 
   --font-sans: var(--ds-font-sans);
   --font-arabic: var(--ds-font-arabic);
+  --font-mixed: var(--ds-font-mixed);
   --font-mono: var(--ds-font-mono);
+
+  /*
+   * Each size carries its own leading, so a `text-*` utility sets both and a
+   * heading never ends up with body leading. The RTL overrides live in
+   * styles/typography.css, because Arabic needs more room at every size.
+   */
+  --text-2xs: var(--ds-text-2xs);
+  --text-2xs--line-height: var(--ds-leading-normal);
+  --text-xs: var(--ds-text-xs);
+  --text-xs--line-height: var(--ds-leading-normal);
+  --text-sm: var(--ds-text-sm);
+  --text-sm--line-height: var(--ds-leading-normal);
+  --text-base: var(--ds-text-base);
+  --text-base--line-height: var(--ds-leading-normal);
+  --text-md: var(--ds-text-md);
+  --text-md--line-height: var(--ds-leading-relaxed);
+  --text-lg: var(--ds-text-lg);
+  --text-lg--line-height: var(--ds-leading-snug);
+  --text-xl: var(--ds-text-xl);
+  --text-xl--line-height: var(--ds-leading-snug);
+  --text-2xl: var(--ds-text-2xl);
+  --text-2xl--line-height: var(--ds-leading-snug);
+  --text-3xl: var(--ds-text-3xl);
+  --text-3xl--line-height: var(--ds-leading-tight);
+  --text-4xl: var(--ds-text-4xl);
+  --text-4xl--line-height: var(--ds-leading-tight);
+
+  --font-weight-regular: var(--ds-weight-regular);
+  --font-weight-medium: var(--ds-weight-medium);
+  --font-weight-semibold: var(--ds-weight-semibold);
+  --font-weight-bold: var(--ds-weight-bold);
+
+  --leading-tight: var(--ds-leading-tight);
+  --leading-snug: var(--ds-leading-snug);
+  --leading-normal: var(--ds-leading-normal);
+  --leading-relaxed: var(--ds-leading-relaxed);
+
+  --tracking-display: var(--ds-tracking-display);
+  --tracking-tight: var(--ds-tracking-tight);
+  --tracking-wide: var(--ds-tracking-wide);
 
   --radius-xs: var(--ds-radius-xs);
   --radius-sm: var(--ds-radius-sm);
@@ -75,34 +117,13 @@
     border-color: var(--ds-border);
   }
 
-  html {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
-
+  /* Type is set in styles/typography.css; this layer owns colour and chrome. */
   body {
     background-color: var(--ds-canvas);
     color: var(--ds-text-primary);
-    font-family: var(--ds-font-sans);
-    font-feature-settings:
-      'cv05' 1,
-      'ss01' 1;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
   }
 
-  /* Arabic is designed, not mirrored: its own family, line-height and numerals. */
-  :root[dir='rtl'] body {
-    font-family: var(--ds-font-arabic);
-    line-height: 1.75;
-  }
-
-  /*
-   * Tabular, lining figures everywhere numbers are compared — KPI tiles,
-   * tables, axes. Non-negotiable for an analytics product.
-   */
-  .ds-numeric,
+  /* Every table cell compares numbers, so every table cell is tabular. */
   table :is(td, th) {
     font-variant-numeric: tabular-nums lining-nums;
     font-feature-settings:

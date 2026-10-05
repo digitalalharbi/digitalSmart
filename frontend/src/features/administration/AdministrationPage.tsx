@@ -19,9 +19,7 @@ export function AdministrationPage() {
   if (!canSeePeople && !canSeeAudit) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-content text-2xl font-semibold tracking-[-0.02em]">
-          {t('nav.administration')}
-        </h1>
+        <h1 className="text-content text-2xl font-semibold">{t('nav.administration')}</h1>
         <Alert tone="warning">{t('administration.forbidden')}</Alert>
       </div>
     );
@@ -39,9 +37,7 @@ export function AdministrationPage() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-content text-2xl font-semibold tracking-[-0.02em]">
-          {t('nav.administration')}
-        </h1>
+        <h1 className="text-content text-2xl font-semibold">{t('nav.administration')}</h1>
         <p className="text-content-secondary text-sm">{t('administration.subtitle')}</p>
       </header>
 

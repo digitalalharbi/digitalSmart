@@ -55,9 +55,7 @@ export function ProjectsPage() {
   if (isError && error instanceof ApiError && error.status === 403) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-content text-2xl font-semibold tracking-[-0.02em]">
-          {t('nav.projects')}
-        </h1>
+        <h1 className="text-content text-2xl font-semibold">{t('nav.projects')}</h1>
         <Alert tone="warning">{t('projects.forbidden')}</Alert>
       </div>
     );
@@ -67,9 +65,7 @@ export function ProjectsPage() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-content text-2xl font-semibold tracking-[-0.02em]">
-            {t('nav.projects')}
-          </h1>
+          <h1 className="text-content text-2xl font-semibold">{t('nav.projects')}</h1>
           <p className="text-content-secondary text-sm">
             {isAssignedOnly
               ? t('projects.assignedOnly')

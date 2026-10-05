@@ -130,7 +130,7 @@ export function ClientFormDialog({ open, onOpenChange, client }: ClientFormDialo
         <Dialog.Content className="bg-surface animate-in fade-in zoom-in-95 fixed start-1/2 top-1/2 z-50 max-h-[90dvh] w-[calc(100vw-2rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl p-6 shadow-lg duration-[var(--ds-duration-base)] rtl:translate-x-1/2">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
-              <Dialog.Title className="text-content text-lg font-semibold tracking-[-0.01em]">
+              <Dialog.Title className="text-content text-lg font-semibold">
                 {isEditing ? t('clients.form.editTitle') : t('clients.form.createTitle')}
               </Dialog.Title>
               <Dialog.Description className="text-content-secondary mt-1 text-sm">

@@ -1,0 +1,233 @@
+/*
+ * digitalSmart typography.
+ *
+ * Two scripts, treated as equals rather than one as a translation of the other.
+ *
+ * Latin  — Inter Variable. Tight optical tracking at display sizes, excellent
+ *          tabular figures, which an analytics product leans on constantly.
+ * Arabic — IBM Plex Sans Arabic. A genuine UI Arabic with real weights, proper
+ *          glyph shaping and a generous x-height. The previous build *named*
+ *          these families without loading them, so Arabic silently fell back to
+ *          a system face and read cramped.
+ *
+ * The two scripts do not share metrics, and pretending they do is the usual
+ * cause of cramped Arabic:
+ *
+ *   - Arabic needs MORE line-height. Ascenders, descenders and the diacritic
+ *     band collide at Latin leading.
+ *   - Arabic must NEVER get negative letter-spacing. Latin display text takes
+ *     tightening well; Arabic is cursive, and tracking breaks the joins.
+ *   - Arabic optically reads smaller at the same px, so body sizes step up.
+ */
+
+/*
+ * The font files themselves are imported from src/main.tsx. A bare @import of
+ * a node_modules stylesheet from inside an imported stylesheet is not resolved
+ * here, and fails silently — which is how the previous build ended up naming
+ * two families it never loaded.
+ */
+
+:root {
+  /* ---------------------------------------------------------- families ---- */
+  --ds-font-sans:
+    'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ds-font-arabic:
+    'IBM Plex Sans Arabic', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+  --ds-font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+
+  /*
+   * Mixed runs are the normal case here: Arabic prose carrying Latin brand
+   * names, platform names, currency codes and IDs. Listing Arabic first lets it
+   * claim the Arabic range while Inter picks up the Latin, so a sentence does
+   * not visibly change typeface mid-word.
+   */
+  --ds-font-mixed: var(--ds-font-arabic), var(--ds-font-sans);
+
+  /* -------------------------------------------------------------- scale ---- */
+  --ds-text-2xs: 0.6875rem; /* 11px — dense table meta, chart axis labels     */
+  --ds-text-xs: 0.75rem; /*    12px — secondary meta, badges               */
+  --ds-text-sm: 0.8125rem; /*  13px — dense UI, table cells                 */
+  --ds-text-base: 0.875rem; /* 14px — interface default                     */
+  --ds-text-md: 1rem; /*       16px — body copy, long-form reading          */
+  --ds-text-lg: 1.125rem; /*   18px — card titles                          */
+  --ds-text-xl: 1.375rem; /*   22px — section headings                     */
+  --ds-text-2xl: 1.75rem; /*   28px — page titles                          */
+  --ds-text-3xl: 2.25rem; /*   36px — KPI values                           */
+  --ds-text-4xl: 3rem; /*      48px — hero figures on executive dashboards  */
+
+  /* ------------------------------------------------------------ weights ---- */
+  --ds-weight-regular: 400;
+  --ds-weight-medium: 500;
+  --ds-weight-semibold: 600;
+  --ds-weight-bold: 700;
+
+  /* -------------------------------------------------------- line heights --- */
+  --ds-leading-none: 1;
+  --ds-leading-tight: 1.25; /* display figures                              */
+  --ds-leading-snug: 1.4; /*   headings                                    */
+  --ds-leading-normal: 1.55; /* interface text                              */
+  --ds-leading-relaxed: 1.7; /* long-form Latin prose                       */
+
+  /*
+   * Arabic equivalents, one step looser throughout. Not decoration: at Latin
+   * leading the diacritic band of one line touches the descenders above it.
+   */
+  --ds-leading-ar-tight: 1.45;
+  --ds-leading-ar-snug: 1.6;
+  --ds-leading-ar-normal: 1.75;
+  --ds-leading-ar-relaxed: 1.9;
+
+  /* ----------------------------------------------------- letter spacing ---- */
+  --ds-tracking-display: -0.02em; /* Latin display only                      */
+  --ds-tracking-tight: -0.01em;
+  --ds-tracking-normal: 0;
+  --ds-tracking-wide: 0.02em; /*     small caps, overline labels             */
+
+  /*
+   * Arabic tracking is zero at every size, by rule. Positive tracking severs
+   * the cursive joins; negative tracking collides the glyphs.
+   */
+  --ds-tracking-arabic: 0;
+}
+
+/*
+ * The scale itself is script-aware.
+ *
+ * Arabic has a larger x-height but no ascender/descender rhythm to read by, so
+ * at an identical px it reads smaller and denser than Latin. Rather than asking
+ * every component to remember that, the tokens step up under RTL and every
+ * `text-*` utility follows automatically — because Tailwind's sizes reference
+ * these variables live.
+ *
+ * The step is roughly one notch, and it stops at the display sizes, where the
+ * figures are already large enough and extra size would only cost layout.
+ */
+:root[dir='rtl'] {
+  --ds-text-2xs: 0.75rem; /*    11 -> 12 */
+  --ds-text-xs: 0.8125rem; /*   12 -> 13 */
+  --ds-text-sm: 0.875rem; /*    13 -> 14 */
+  --ds-text-base: 0.9375rem; /* 14 -> 15 */
+  --ds-text-md: 1.0625rem; /*   16 -> 17 */
+  --ds-text-lg: 1.1875rem; /*   18 -> 19 */
+  --ds-text-xl: 1.4375rem; /*   22 -> 23 */
+  /* Display sizes hold: they are already large, and growing them costs layout. */
+}
+
+@layer base {
+  html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--ds-font-sans);
+    font-size: var(--ds-text-base);
+    font-weight: var(--ds-weight-regular);
+    line-height: var(--ds-leading-normal);
+    letter-spacing: var(--ds-tracking-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Inter's contextual alternates and stylistic set for a less mechanical a/g. */
+    font-feature-settings:
+      'cv05' 1,
+      'ss01' 1,
+      'calt' 1;
+  }
+
+  /*
+   * Arabic UI. Driven by the document direction, which the store sets before
+   * first paint, so there is no flash of Latin-metric Arabic.
+   */
+  :root[dir='rtl'] body {
+    font-family: var(--ds-font-mixed);
+    /* Arabic reads optically smaller at the same px. */
+    font-size: var(--ds-text-md);
+    line-height: var(--ds-leading-ar-normal);
+    letter-spacing: var(--ds-tracking-arabic);
+    font-feature-settings: 'calt' 1;
+  }
+
+  /* Headings: tightened for Latin, never for Arabic. */
+  :is(h1, h2, h3, h4, h5, h6) {
+    font-family: inherit;
+    font-weight: var(--ds-weight-semibold);
+    letter-spacing: var(--ds-tracking-tight);
+    text-wrap: balance;
+  }
+
+  h1 {
+    letter-spacing: var(--ds-tracking-display);
+  }
+
+  /*
+   * Arabic overrides. `!important` is deliberate and used in exactly this one
+   * place: the size utilities a component carries would otherwise impose Latin
+   * leading and tracking on Arabic, which is what made it read cramped. The
+   * rule is about the script, not the component, so the script wins.
+   */
+  :root[dir='rtl'] :is(h1, h2, h3, h4, h5, h6, p, li, td, th, label, button, a) {
+    letter-spacing: var(--ds-tracking-arabic) !important;
+  }
+
+  :root[dir='rtl'] :is(h1, h2, h3) {
+    line-height: var(--ds-leading-ar-snug) !important;
+  }
+
+  :root[dir='rtl'] :is(p, li, td, th, label) {
+    line-height: var(--ds-leading-ar-normal);
+  }
+
+  /*
+   * Latin inside an Arabic run — brand names, platform names, IDs, currency
+   * codes — keeps Inter's metrics rather than inheriting Arabic's larger size.
+   */
+  :root[dir='rtl'] :is(code, kbd, samp, .ds-latin) {
+    font-size: var(--ds-text-base);
+    letter-spacing: var(--ds-tracking-normal);
+  }
+}
+
+/*
+ * Numbers.
+ *
+ * Every compared figure is tabular and lining, in both languages. Arabic here
+ * uses Western digits deliberately: a media buyer reconciles these against the
+ * platform dashboards, which render Western digits in every locale. The choice
+ * is documented in docs/DESIGN_SYSTEM.md rather than left as a surprise.
+ */
+@utility ds-numeric {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
+  letter-spacing: var(--ds-tracking-normal);
+}
+
+/** A KPI figure: large, tight, tabular, and never tracked in Arabic. */
+@utility ds-figure {
+  font-family: var(--ds-font-sans);
+  font-size: var(--ds-text-3xl);
+  font-weight: var(--ds-weight-semibold);
+  line-height: var(--ds-leading-tight);
+  letter-spacing: var(--ds-tracking-display);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
+}
+
+/** Small uppercase label. Latin only — Arabic has no case, so it is left alone. */
+@utility ds-overline {
+  font-size: var(--ds-text-2xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: var(--ds-tracking-wide);
+  text-transform: uppercase;
+}
+
+:root[dir='rtl'] .ds-overline {
+  text-transform: none;
+  letter-spacing: var(--ds-tracking-arabic);
+  font-size: var(--ds-text-xs);
+}

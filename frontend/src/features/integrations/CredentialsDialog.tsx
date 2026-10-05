@@ -65,7 +65,7 @@ function CredentialsForm({ provider, onDone }: { provider: ProviderRow; onDone: 
       <Dialog.Content className="bg-surface animate-in fade-in zoom-in-95 fixed start-1/2 top-1/2 z-50 max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl p-6 shadow-lg rtl:translate-x-1/2">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <Dialog.Title className="text-content text-lg font-semibold tracking-[-0.01em]">
+            <Dialog.Title className="text-content text-lg font-semibold">
               {t('integrations.credentialsTitle', { provider: provider.label })}
             </Dialog.Title>
             <Dialog.Description className="text-content-secondary mt-1 text-sm">

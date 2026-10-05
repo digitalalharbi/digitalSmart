@@ -20,7 +20,7 @@ export function PlaceholderPage({ titleKey, phase }: PlaceholderPageProps) {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-center gap-3">
-        <h1 className="text-content text-2xl font-semibold tracking-[-0.02em]">{title}</h1>
+        <h1 className="text-content text-2xl font-semibold">{title}</h1>
         <Badge tone="accent">{t('placeholder.phase', { phase })}</Badge>
       </header>
 

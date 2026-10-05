@@ -8,9 +8,7 @@ export function OverviewPage() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-content text-2xl font-semibold tracking-[-0.02em]">
-          {t('overview.title')}
-        </h1>
+        <h1 className="text-content text-2xl font-semibold">{t('overview.title')}</h1>
         <p className="text-content-secondary text-sm">{t('overview.subtitle')}</p>
       </header>
 
