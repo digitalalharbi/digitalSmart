@@ -47,6 +47,16 @@ enum Permission: string
     case AnalyticsExport = 'analytics.export';
     case SavedViewsManage = 'saved_views.manage';
 
+    // Budgets
+    case BudgetsView = 'budgets.view';
+    case BudgetsManage = 'budgets.manage';
+    /*
+     * Separate from managing, deliberately. Drafting a plan and committing a client to
+     * a figure are different acts: a media buyer should be able to reshape a plan all
+     * day and still not be the person who says "the client agreed to this".
+     */
+    case BudgetsApprove = 'budgets.approve';
+
     // Auditability
     case AuditView = 'audit.view';
 
@@ -67,6 +77,9 @@ enum Permission: string
             self::UsersInvite => 'Invite new people',
             self::UsersUpdate => 'Change a person\'s profile or role',
             self::UsersDeactivate => 'Deactivate a person',
+            self::BudgetsView => 'View budgets and how they are pacing',
+            self::BudgetsManage => 'Create budgets and allocate them across platforms and campaigns',
+            self::BudgetsApprove => 'Approve a client budget, fixing the figure that was agreed',
             self::ClientsView => 'View clients',
             self::ClientsCreate => 'Create clients',
             self::ClientsUpdate => 'Change clients',

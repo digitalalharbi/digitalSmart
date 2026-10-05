@@ -37,6 +37,19 @@ enum AuditAction: string
     case IntegrationAccountUnbound = 'integration.account_unbound';
     case IntegrationSyncToggled = 'integration.sync_toggled';
 
+    /*
+     * Budgets. The spec calls for an immutable change log on them, and this is it:
+     * every amount, period and allocation change lands here, append-only, with the
+     * before and after. A separate budget-history table would be a second audit trail
+     * to keep honest.
+     */
+    case BudgetCreated = 'budget.created';
+    case BudgetUpdated = 'budget.updated';
+    case BudgetApproved = 'budget.approved';
+    case BudgetArchived = 'budget.archived';
+    case BudgetDeleted = 'budget.deleted';
+    case BudgetAllocationsChanged = 'budget.allocations_changed';
+
     case WorkspaceMemberInvited = 'workspace.member_invited';
     case WorkspaceMemberRoleChanged = 'workspace.member_role_changed';
     case WorkspaceMemberSuspended = 'workspace.member_suspended';
@@ -63,6 +76,11 @@ enum AuditAction: string
             self::IntegrationDisconnected,
             self::IntegrationAccountBound,
             self::IntegrationAccountUnbound,
+            /*
+             * Approving a budget commits a client's money. Not a credential event, but
+             * the one budget action that has to be as findable as one.
+             */
+            self::BudgetApproved,
         ], true);
     }
 }

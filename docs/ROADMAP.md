@@ -12,7 +12,7 @@ times.
 | 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | **Complete** |
 | 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | **Ingestion complete**; six provider adapters implemented against published schemas, all SANDBOX until credentials exist |
 | 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | **Complete** |
-| 5     | Budgets, pacing, calculator, forecasting, alerts                                | Planned |
+| 5     | Budgets, pacing, calculator, forecasting, alerts                                | **Backend complete**; Media Planner and Budget Calculator surfaces outstanding |
 | 6     | Creative hub, tasks, approvals, files, notifications/realtime                   | Planned |
 | 7     | Reports, shared client portals, exports                                         | Planned |
 | 8     | AI assistant/recommendations with approval gates                                | Planned |
@@ -227,3 +227,43 @@ built around them.
 - Conversion-action metrics (purchases, leads, installs) in the analytics layer:
   they live in `conversion_metrics` rather than `daily_metrics`, so the read model
   reports them as not read. Deferred to Phase 5, where budget pacing needs them.
+
+### Phase 5 — budgets, pacing and forecasting (backend)
+
+- `budgets` and `budget_allocations`, the governance hierarchy from CLAUDE.md: an
+  approved client budget split across platforms, campaigns and ad groups, with five CHECK
+  constraints carrying the rules that matter — including that an approved budget cannot
+  exist without the name of whoever approved it.
+- **An approved budget's amount, period and currency cannot be edited.** The record
+  exists to say what a client agreed to; a figure that can be quietly revised says
+  nothing. Changing one means archiving it and approving a new one, which leaves both on
+  the record. Allocations stay editable, which is how a plan adapts without the
+  commitment moving.
+- A separate `budgets.approve` permission, held by owners, administrators and project
+  managers but **not** media buyers. Drafting a plan and committing a client to a figure
+  are different acts, and that separation is the only thing making "approved" mean
+  anything.
+- `Pacing`: pure arithmetic over four facts — the budget, the period, actual spend and
+  today. Even pacing by definition, with the 10% tolerance published alongside the figure
+  so a reader knows what "expected" means. No projection before the period starts, because
+  a zero there would read as a forecast of no spend.
+- Pacing, the alert list and forecast rates are all **derived on read**, never stored, so
+  they cannot disagree with each other or go stale behind a sync.
+- A forecast in both directions, from **the workspace's own observed delivery and nothing
+  else**. No industry benchmarks exist in this product: a platform with fewer than three
+  days of delivery gets a reason instead of a number, bands are the 25th–75th percentile
+  of the account's own daily rate, headline rates are weighted rather than averaged, every
+  projection is labelled `estimated`, and the sample behind it is published as a version
+  string so a figure quoted in a meeting can be reproduced.
+- 20 domain tests, 58 feature tests.
+
+### Not yet done in Phase 5
+
+- The **Media Planner** and **Budget Calculator** surfaces. The API is complete and
+  tested; the two nav items are still placeholders.
+- Pacing alerts as notifications. The list is computed and exposed; delivering it to
+  somebody is Phase 6, where notifications and realtime live.
+- Allocation at the **account** level between platform and campaign. Every allocation row
+  can name an external account, but the three levels are platform, campaign and ad group —
+  an agency running two Meta accounts for one client splits them as two platform rows
+  today.

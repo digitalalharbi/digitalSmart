@@ -4,6 +4,83 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 5 — budgets, pacing and forecasting (backend)
+
+The governance hierarchy from CLAUDE.md, and the arithmetic a client's money is judged
+by. The two surfaces — Media Planner and Budget Calculator — are not built yet, so the
+API is complete and tested but not yet reachable from the product; see docs/ROADMAP.md.
+
+### Added
+
+- `budgets` and `budget_allocations`: an approved client budget split across platforms,
+  campaigns and ad groups as a self-referencing tree. Five CHECK constraints carry the
+  rules, including that a budget marked approved cannot exist without the name of whoever
+  approved it.
+- `budgets.view`, `budgets.manage` and `budgets.approve`. The third is separate and
+  **media buyers do not have it**: drafting a plan and committing a client to a figure are
+  different acts, and that separation is the only thing making "approved" mean anything.
+  Client viewers have none of the three — what a client may see is decided by explicit
+  sharing in Phase 7, not by a role that happens to open a screen.
+- `Pacing`, pure arithmetic over four facts: the budget, the period, actual spend and
+  today. Seven statuses, because "over budget" and "spending too fast" are different
+  problems with different answers.
+- Pacing, the alert list and forecast rates are **derived on read**, never stored. A
+  stored pacing figure is wrong the moment the next sync lands, and a stale alert is worse
+  than none because it teaches people to ignore the list.
+- A forecast in both directions — budget → results and target → budget — from the
+  workspace's own delivery.
+- The immutable change log the spec asks for, written to the existing audit trail rather
+  than a second history table. Approving a budget is a **security event**: committing a
+  client's money has to be as findable as a credential change.
+
+### Decisions worth recording
+
+- **An approved budget's amount, period and currency cannot be edited.** A figure that
+  can be quietly revised says nothing about what a client agreed to. Changing one means
+  archiving it and approving a new one, which leaves both on the record; allocations stay
+  editable, which is how a plan adapts without the commitment moving.
+- **Allocations may sum to less than the budget, never more.** The unallocated remainder
+  is reported at every level: it is a decision nobody has made yet, and seeing it is how
+  someone remembers to make it.
+- **Pacing is even by definition**, with the 10% tolerance published alongside the figure.
+  A weighted pace is a forecast wearing a plan's clothes, and a reader comparing today's
+  spend against "expected" has to know exactly what expected means.
+- **Spend is read at campaign level only.** `daily_metrics` holds the same spend three
+  times, once per level; adding them would roughly triple it, and the result would look
+  entirely plausible next to a budget.
+- **No industry benchmarks.** Forecast rates come from the workspace's own observed
+  delivery or they do not come at all. A platform with fewer than three days of delivery
+  gets a reason instead of a number; bands are the 25th–75th percentile of the account's
+  own daily rate rather than a percentage chosen to look like a range; headline rates are
+  weighted (total spend over total clicks) rather than an average of daily rates, which
+  would let a quiet day with two clicks count as much as a busy one.
+- **Every projection is labelled `estimated`**, carries its assumptions in words, names
+  what it could not work out, and publishes a version string identifying the sample — so a
+  figure quoted in a meeting can be reproduced, and a different version means the numbers
+  have moved. The disclaimer is in the payload rather than left to the interface to
+  remember.
+
+### Refusals, each of which would otherwise produce a plausible screen
+
+- A **draft** is not paced: a variance from a figure nobody agreed to means nothing.
+- Spend that **cannot be totalled** — two currencies, a currency the budget is not in, or
+  sources that cannot combine — yields no total *and no pacing*, with the reason. Pacing
+  against a partial figure would understate spend, which is the one direction that
+  overcharges a client without anybody noticing.
+- An exchange rate is **never invented** to reconcile a budget with spend in another
+  currency.
+- An allocation planned before its campaign exists has nothing to compare with, and says
+  so rather than showing a zero.
+- A budget whose spend could not be totalled still appears in the alert list, with its
+  reason. Dropping it would make the list look reassuringly short.
+
+### Tests
+
+20 domain tests on the pacing arithmetic alone, including that a budget nobody has set is
+reported as *unknown* rather than "on track"; 58 feature tests covering approval,
+visibility, the allocation tree, pacing against really-synced spend and the forecast's
+refusals. Backend 668 passed, PHPStan level 8 and Pint clean.
+
 ## LinkedIn sync
 
 Sixth and last provider with a published contract. Field names, enum values and

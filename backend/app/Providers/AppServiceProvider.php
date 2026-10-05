@@ -11,6 +11,9 @@ use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Analytics\Contract\AnalyticsReadModel;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Audit\Contract\AuditReadModel;
+use App\Application\Budget\Contract\BenchmarkReadModel;
+use App\Application\Budget\Contract\BudgetRepository;
+use App\Application\Budget\Contract\BudgetSpendReadModel;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Dashboard\Contract\DashboardRepository;
 use App\Application\Dashboard\Contract\SavedViewRepository;
@@ -50,11 +53,14 @@ use App\Infrastructure\Integration\LaravelCredentialCipher;
 use App\Infrastructure\Integration\ProviderAdapterRegistry;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBenchmarkReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDashboardRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
@@ -135,6 +141,9 @@ final class AppServiceProvider extends ServiceProvider
         AccessSynchroniser::class => WorkspaceAccessSynchroniser::class,
         SavedViewRepository::class => EloquentSavedViewRepository::class,
         DashboardRepository::class => EloquentDashboardRepository::class,
+        BudgetRepository::class => EloquentBudgetRepository::class,
+        BudgetSpendReadModel::class => EloquentBudgetSpendReadModel::class,
+        BenchmarkReadModel::class => EloquentBenchmarkReadModel::class,
     ];
 
     public function register(): void

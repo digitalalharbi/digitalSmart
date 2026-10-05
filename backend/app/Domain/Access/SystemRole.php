@@ -81,6 +81,9 @@ enum SystemRole: string
                 Permission::AnalyticsView,
                 Permission::AnalyticsExport,
                 Permission::SavedViewsManage,
+                Permission::BudgetsView,
+                Permission::BudgetsManage,
+                Permission::BudgetsApprove,
                 Permission::AuditView,
             ],
 
@@ -99,6 +102,13 @@ enum SystemRole: string
                 Permission::AnalyticsView,
                 Permission::AnalyticsExport,
                 Permission::SavedViewsManage,
+                /*
+                 * A project manager agrees the budget with the client, so approval sits
+                 * with the role that has that conversation.
+                 */
+                Permission::BudgetsView,
+                Permission::BudgetsManage,
+                Permission::BudgetsApprove,
                 Permission::AuditView,
             ],
 
@@ -111,6 +121,12 @@ enum SystemRole: string
                 Permission::AnalyticsView,
                 Permission::AnalyticsExport,
                 Permission::SavedViewsManage,
+                /*
+                 * Allocates and re-plans within a budget, but does not approve one. That
+                 * separation is the only thing making "approved" mean anything.
+                 */
+                Permission::BudgetsView,
+                Permission::BudgetsManage,
             ],
 
             self::Creative => [
@@ -132,6 +148,12 @@ enum SystemRole: string
             self::ClientViewer => [
                 Permission::ProjectsViewAssigned,
                 Permission::AnalyticsView,
+                /*
+                 * No budget permission, deliberately. A budget carries internal notes
+                 * and an agency's own allocation thinking; what a client may see is
+                 * decided explicitly by the sharing in Phase 7, not by a role that
+                 * happens to open the screen.
+                 */
             ],
         };
     }

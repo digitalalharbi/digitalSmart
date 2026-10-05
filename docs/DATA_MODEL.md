@@ -157,3 +157,35 @@ Two CHECK constraints carry rules the application would otherwise have to rememb
 model**: null means "inherit the dashboard's filters", `{}` means "override them with
 nothing". A cast or default that collapsed the two would silently change what a
 widget shows.
+
+### Budgets and allocations (Phase 5, implemented)
+
+| Table | Key | Notes |
+| ----- | --- | ----- |
+| `budgets` | UUIDv7 | A client's approved amount for a period, with who approved it and when. Unique on `(workspace_id, client_id, name, period_start)` |
+| `budget_allocations` | UUIDv7 | A self-referencing tree: platform → campaign → ad group, each row naming its provider and, where known, the account, campaign or ad group it is for |
+
+`client_id` is **required** and `project_id` is **optional**, which is the agency
+reality: a client's quarterly budget is agreed before anyone decides which campaigns
+will spend it. A budget with no project covers every account bound to that client's
+projects; one with a project covers that project's accounts only.
+
+Five CHECK constraints carry rules the application would otherwise have to remember
+on every write:
+
+- `period_end >= period_start`, because every pacing figure divides by the period.
+- `amount_minor > 0`. A budget of zero is permanently "exhausted" by the arithmetic,
+  which would raise an overspend alert about a figure nobody has set.
+- `status IN ('draft', 'approved', 'archived')`.
+- `status <> 'approved' OR (approved_by IS NOT NULL AND approved_at IS NOT NULL)`. A
+  budget marked approved with nobody's name on it is exactly the record this table
+  exists to make impossible.
+- `(level = 'platform' AND parent_id IS NULL) OR (level <> 'platform' AND parent_id IS
+  NOT NULL)`. Without it the tree can grow sideways — a campaign allocation hanging
+  off the budget directly — and the platform level stops summing to the budget.
+
+Pacing is **not stored**. It is computed from the budget, the period, the spend in
+`daily_metrics` and today, every time it is asked for. A stored pacing figure would be
+wrong the moment the next sync landed, and a stale alert is worse than none because it
+teaches people to ignore the list. The same goes for the alert list and for forecast
+rates: all three are derived, so they cannot disagree with each other.

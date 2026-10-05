@@ -345,6 +345,138 @@ Names are unique per owner, and a reused one is a `422` with
 `"code": "name_already_used"` — the same rule, and the same reasoning, as for
 dashboards.
 
+## Budgets
+
+### `GET|POST /api/budgets`, `GET|PUT|DELETE /api/budgets/{budget}`
+
+Reading needs `budgets.view`; creating and changing needs `budgets.manage`; approving
+needs `budgets.approve`. The third permission exists on its own because drafting a plan
+and committing a client to a figure are different acts: a media buyer can reshape a plan
+all day and still not be the person who says "the client agreed to this".
+
+**Amounts are decimal strings in the major unit.** `"amount": "180000.00"`, not
+`180000000`. An API that takes one and an API that takes the other look identical in a
+request body, and the mistake is only visible on an invoice. Responses report
+`amount_minor` as an integer, as every money field in this API does.
+
+| Field | Notes |
+| ----- | ----- |
+| `client_id` | Required. A budget without a client is a number nobody agreed to |
+| `project_id` | Optional. A client's quarterly budget is agreed before anyone decides which campaigns spend it |
+| `period_start` / `period_end` | Inclusive both ends, so a one-day budget covers one day |
+| `amount` | Decimal, above zero |
+| `notes` | **Internal.** Omitted entirely — not nulled — from any response a client may read, and deliberately left out of the change log so a working note does not become undeletable |
+
+`POST /api/budgets/{budget}/approve` fixes the amount, the period and the currency, and
+records who approved it and when. After that, **changing those fields returns `422`
+`invalid_budget`**: the record exists to say what a client agreed to, and a figure that
+can be quietly revised says nothing. The name, project and notes stay editable, and so
+do the allocations — that is how a plan adapts without the commitment moving. To change
+an approved amount, archive it with `POST /api/budgets/{budget}/archive` and approve a
+new one, which leaves both on the record.
+
+A `DELETE` works on a draft only. An approved budget has spend measured against it, so
+deleting it would make the quarter unreconcilable; the response says to archive it
+instead.
+
+Every create, change, approval, archive, deletion and reallocation is written to the
+audit log with its before and after. That is the immutable change log the governance
+hierarchy needs, and it lives in the audit trail rather than a second history table that
+would have to be kept honest separately. Approving a budget is flagged as a **security
+event**, because committing a client's money has to be as findable as a credential
+change.
+
+### `PUT /api/budgets/{budget}/allocations`
+
+Replaces the whole tree, for the same reason a dashboard's widgets are replaced: the
+tree a reader sees is the whole plan, so an allocation they removed has to go. The
+request nests three levels — `platform` → `campaign` → `ad_group` — rather than sending
+parent ids, so a campaign allocation cannot arrive claiming the budget as its parent.
+
+Four things are refused with `422` `invalid_allocation`:
+
+- allocations summing to more than the approved budget;
+- a branch summing to more than the allocation above it;
+- a child naming a different platform than its parent — the total under "Meta" would
+  otherwise include Google spend;
+- a campaign or ad group allocation hanging off the budget directly.
+
+Summing to **less** than the budget is allowed and reported as `unallocated_minor` at
+every level. An unallocated remainder is a decision nobody has made yet, and seeing it
+is how somebody remembers to make it.
+
+### `GET /api/budgets/{budget}/pacing`
+
+The budget, the spend that landed inside it, and what the two say together. Three things
+this will not do, each of which would produce a plausible screen:
+
+- **Pace a draft.** A variance from a figure nobody agreed to means nothing, so
+  `pacing` is null and `unavailable_reason` says why.
+- **Pace spend it cannot total.** Spend covering two currencies, spend reported in a
+  currency the budget is not in, or sources that cannot be combined all arrive as a null
+  with a reason — and then there is no pacing either, rather than pacing against a
+  partial total. Understated spend is the one direction that overcharges a client
+  without anyone noticing.
+- **Compare an allocation with spend it cannot be matched to.** A campaign allocation
+  written before the campaign exists has no campaign id, so it has no actual spend; that
+  is said rather than shown as a zero.
+
+`pacing.expected_minor` is the budget spread **evenly** across the period, and
+`tolerance` (0.10) is published alongside it so a reader knows what "expected" means
+without a footnote. `projected_minor` is today's rate carried to the end, and it is
+**null before the period starts** — a zero there would read as a forecast of no spend.
+`daily` is one entry per day a provider actually reported, so a gap stays a gap instead
+of being filled with a zero that flattens the cumulative line.
+
+Statuses: `not_started`, `on_track`, `underspending`, `overspending`, `exhausted`,
+`ended`, `unknown`. `exhausted` is checked before the period end, because a budget that
+ran out on day three has a problem worth naming for the rest of the month.
+
+### `GET /api/budgets/alerts`
+
+The approved budgets that need looking at today, recomputed on every request rather than
+stored — a stale alert is worse than none. Overspending first, then the ones whose spend
+could not be totalled, then underspending: money leaving too fast cannot wait for a
+discussion about delivery. Budgets whose spend could not be totalled are **included**
+with their reason, because "we cannot tell you how this is pacing" is itself something an
+operator needs to know, and dropping them would make the list look reassuringly short.
+
+### `POST /api/budgets/forecast`
+
+Budget → results, or target → budget. A POST despite being a read: the request carries a
+provider list, a scope and a target that do not belong in a URL, and nothing is stored,
+so a reader can try as many numbers as they like.
+
+Send either `budget` (a decimal) or `target_metric` with `target_value`
+(`conversions`, `clicks` or `impressions`). Optional `providers`, `window_days` (7–365,
+default 90), `client_id`, `project_id`.
+
+**Rates come from the workspace's own delivery and nothing else.** There is no
+industry-benchmark table in this product, because a rate nobody in this workspace earned
+cannot be defended to the client paying for it. Consequences, all deliberate:
+
+- A platform with fewer than three days of observed delivery gets **no projection** and
+  a reason. A number from two days of one campaign, rendered like any other, is the kind
+  of estimate that gets quoted back as a commitment.
+- A platform reporting in two currencies gets no rates: a cost per click averaged across
+  currencies is not a cost.
+- Headline rates are **weighted** — total spend over total clicks — not an average of
+  daily rates, which would let a quiet day with two clicks count as much as a busy one.
+- The band on each figure is the **25th to 75th percentile of the daily rate**, a real
+  statistic about the account's own variation rather than a percentage chosen to look
+  like a range.
+- `confidence` is `none`, `low`, `medium` or `high`, from the number of observed days and
+  the spread of the rate. An unknown spread is never treated as a stable one.
+- `source` on a projection is always `estimated`; `rate_source` reports what the rates
+  themselves came from, so sandbox-derived rates stay visible as such.
+- `benchmarks.version` identifies the sample — window, scope and observed days per
+  platform — so a figure quoted in a meeting can be reproduced later, and a different
+  version means the numbers have moved.
+- `gaps` names what could not be worked out, rather than leaving empty fields a reader
+  fills in as zero.
+- Every response carries a `disclaimer`. It is in the payload rather than left to the
+  interface to remember, so every consumer gets it — including the ones written later.
+
 ## Dashboards
 
 ### `GET|POST /api/dashboards`, `GET|PUT|DELETE /api/dashboards/{dashboard}`

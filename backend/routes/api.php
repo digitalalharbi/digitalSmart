@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Interface\Http\Controller\Analytics\AnalyticsController;
 use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
 use App\Interface\Http\Controller\Audit\AuditLogController;
+use App\Interface\Http\Controller\Budget\BudgetController;
+use App\Interface\Http\Controller\Budget\ForecastController;
+use App\Interface\Http\Controller\Budget\PacingController;
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Dashboard\DashboardController;
 use App\Interface\Http\Controller\Dashboard\SavedViewController;
@@ -129,6 +132,38 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('dashboard')->name('dashboards.destroy');
     Route::post('dashboards/{dashboard}/duplicate', [DashboardController::class, 'duplicate'])
         ->whereUuid('dashboard')->name('dashboards.duplicate');
+
+    /*
+     * ---------------------------------------------------------------- Budgets ---
+     *
+     * The governance hierarchy: an approved client budget, split across platforms,
+     * campaigns and ad groups, compared with the spend the sync records. Approval is
+     * its own endpoint rather than a status field, because it is an act with its own
+     * permission and its own audit entry.
+     */
+    Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
+    Route::post('budgets', [BudgetController::class, 'store'])->name('budgets.store');
+    Route::get('budgets/alerts', [PacingController::class, 'alerts'])->name('budgets.alerts');
+    Route::get('budgets/{budget}', [BudgetController::class, 'show'])
+        ->whereUuid('budget')->name('budgets.show');
+    Route::put('budgets/{budget}', [BudgetController::class, 'update'])
+        ->whereUuid('budget')->name('budgets.update');
+    Route::delete('budgets/{budget}', [BudgetController::class, 'destroy'])
+        ->whereUuid('budget')->name('budgets.destroy');
+    Route::post('budgets/{budget}/approve', [BudgetController::class, 'approve'])
+        ->whereUuid('budget')->name('budgets.approve');
+    Route::post('budgets/{budget}/archive', [BudgetController::class, 'archive'])
+        ->whereUuid('budget')->name('budgets.archive');
+    Route::put('budgets/{budget}/allocations', [BudgetController::class, 'allocations'])
+        ->whereUuid('budget')->name('budgets.allocations');
+    Route::get('budgets/{budget}/pacing', [PacingController::class, 'show'])
+        ->whereUuid('budget')->name('budgets.pacing');
+    /*
+     * The calculator, in both directions. A POST despite being a read: the request
+     * carries a provider list, a scope and a target that do not belong in a URL, and
+     * nothing is stored, so a reader can try as many numbers as they like.
+     */
+    Route::post('budgets/forecast', ForecastController::class)->name('budgets.forecast');
 
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])
