@@ -16,6 +16,16 @@ use SensitiveParameter;
  */
 final readonly class Credentials
 {
+    /**
+     * The credential value that opts a connection into fixtures.
+     *
+     * Deliberately explicit and ugly: nobody types it by accident, and it cannot
+     * be mistaken for a real secret. It lives in the domain because "is this
+     * connection a sandbox" decides how every number it produces is labelled,
+     * which is a business rule, not an adapter detail.
+     */
+    public const SANDBOX_TOKEN = 'sandbox';
+
     /** @var array<string, string> */
     private array $values;
 
@@ -78,6 +88,29 @@ final readonly class Credentials
         if ($missing !== []) {
             throw MissingCredentials::for($provider->value, $missing);
         }
+    }
+
+    /**
+     * Whether every required credential is the sandbox token.
+     *
+     * All of them, not any: a connection half-filled with a real secret is a
+     * configuration mistake, and treating it as a sandbox would hide that.
+     *
+     * @param  list<string>  $requiredKeys
+     */
+    public function isSandbox(array $requiredKeys): bool
+    {
+        if ($requiredKeys === []) {
+            return false;
+        }
+
+        foreach ($requiredKeys as $key) {
+            if (($this->values[$key] ?? null) !== self::SANDBOX_TOKEN) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function get(string $key): ?string

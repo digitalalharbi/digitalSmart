@@ -1,0 +1,3934 @@
+[
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "2839",
+    "reach": "1794",
+    "clicks": "35",
+    "inline_link_clicks": "27",
+    "spend": "51.23",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 14,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "42"
+      },
+      {
+        "action_type": "link_click",
+        "value": "27"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "19"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "640.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "5021",
+    "reach": "3621",
+    "clicks": "49",
+    "inline_link_clicks": "29",
+    "spend": "72.03",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 14,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "1024"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "232"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "61"
+      },
+      {
+        "action_type": "link_click",
+        "value": "29"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "21"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1024"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2458",
+    "reach": "1334",
+    "clicks": "39",
+    "inline_link_clicks": "32",
+    "spend": "52.78",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 14,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "6.1218"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "50"
+      },
+      {
+        "action_type": "link_click",
+        "value": "32"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "26"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "4"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1420.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "323.11"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "323.11"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1028",
+    "reach": "712",
+    "clicks": "33",
+    "inline_link_clicks": "30",
+    "spend": "36.17",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 14,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "13.9422"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "36"
+      },
+      {
+        "action_type": "link_click",
+        "value": "30"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "21"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "7"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "3"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "2030.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "504.29"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "504.29"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "88",
+    "reach": "64",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.61",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 14,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1670",
+    "reach": "1334",
+    "clicks": "23",
+    "inline_link_clicks": "0",
+    "spend": "36.15",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 14,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "31"
+      },
+      {
+        "action_type": "lead",
+        "value": "9"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "9"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "2859",
+    "reach": "2027",
+    "clicks": "42",
+    "inline_link_clicks": "32",
+    "spend": "53.40",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 13,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "51"
+      },
+      {
+        "action_type": "link_click",
+        "value": "32"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "23"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "960.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "4480",
+    "reach": "2945",
+    "clicks": "39",
+    "inline_link_clicks": "23",
+    "spend": "62.52",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 13,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "897"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "255"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "63"
+      },
+      {
+        "action_type": "link_click",
+        "value": "23"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "17"
+      },
+      {
+        "action_type": "video_view",
+        "value": "897"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2323",
+    "reach": "1821",
+    "clicks": "40",
+    "inline_link_clicks": "33",
+    "spend": "52.50",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 13,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "6.4912"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "46"
+      },
+      {
+        "action_type": "link_click",
+        "value": "33"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "28"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "4"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1420.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "340.79"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "340.79"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1147",
+    "reach": "707",
+    "clicks": "36",
+    "inline_link_clicks": "32",
+    "spend": "40.43",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 13,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "17.1838"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "41"
+      },
+      {
+        "action_type": "link_click",
+        "value": "32"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "27"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "9"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "3"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "2610.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "694.74"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "694.74"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "81",
+    "reach": "50",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.02",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 13,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1528",
+    "reach": "1096",
+    "clicks": "21",
+    "inline_link_clicks": "0",
+    "spend": "31.26",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 13,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "25"
+      },
+      {
+        "action_type": "lead",
+        "value": "5"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "5"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "2678",
+    "reach": "1840",
+    "clicks": "39",
+    "inline_link_clicks": "30",
+    "spend": "51.09",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 12,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "49"
+      },
+      {
+        "action_type": "link_click",
+        "value": "30"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "23"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "2"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "640.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "4920",
+    "reach": "3173",
+    "clicks": "40",
+    "inline_link_clicks": "24",
+    "spend": "65.73",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 12,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "981"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "325"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "65"
+      },
+      {
+        "action_type": "link_click",
+        "value": "24"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "19"
+      },
+      {
+        "action_type": "video_view",
+        "value": "981"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2455",
+    "reach": "1441",
+    "clicks": "39",
+    "inline_link_clicks": "32",
+    "spend": "54.83",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 12,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "6.7138"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "45"
+      },
+      {
+        "action_type": "link_click",
+        "value": "32"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "26"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1065.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "368.12"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "368.12"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1145",
+    "reach": "749",
+    "clicks": "37",
+    "inline_link_clicks": "33",
+    "spend": "40.34",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 12,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "8.2060"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "42"
+      },
+      {
+        "action_type": "link_click",
+        "value": "33"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "25"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "8"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "3"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "2320.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "331.03"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "331.03"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "90",
+    "reach": "60",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.39",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 12,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1744",
+    "reach": "1385",
+    "clicks": "25",
+    "inline_link_clicks": "0",
+    "spend": "37.38",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 12,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "30"
+      },
+      {
+        "action_type": "lead",
+        "value": "8"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "8"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "2769",
+    "reach": "2089",
+    "clicks": "40",
+    "inline_link_clicks": "31",
+    "spend": "53.06",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 11,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "50"
+      },
+      {
+        "action_type": "link_click",
+        "value": "31"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "25"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "2"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "640.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "4584",
+    "reach": "2757",
+    "clicks": "42",
+    "inline_link_clicks": "25",
+    "spend": "62.62",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 11,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "906"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "192"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "58"
+      },
+      {
+        "action_type": "link_click",
+        "value": "25"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "20"
+      },
+      {
+        "action_type": "video_view",
+        "value": "906"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "1960",
+    "reach": "1293",
+    "clicks": "35",
+    "inline_link_clicks": "29",
+    "spend": "45.80",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 11,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "41"
+      },
+      {
+        "action_type": "link_click",
+        "value": "29"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "22"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1065.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1012",
+    "reach": "768",
+    "clicks": "32",
+    "inline_link_clicks": "29",
+    "spend": "38.53",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 11,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "6.5369"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "36"
+      },
+      {
+        "action_type": "link_click",
+        "value": "29"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "21"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "7"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "4"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "2030.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "251.87"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "251.87"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "82",
+    "reach": "63",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.20",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 11,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1624",
+    "reach": "990",
+    "clicks": "22",
+    "inline_link_clicks": "0",
+    "spend": "32.17",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 11,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "29"
+      },
+      {
+        "action_type": "lead",
+        "value": "8"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "8"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "3358",
+    "reach": "1882",
+    "clicks": "48",
+    "inline_link_clicks": "37",
+    "spend": "61.29",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 10,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "64"
+      },
+      {
+        "action_type": "link_click",
+        "value": "37"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "28"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "4"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1280.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "5679",
+    "reach": "4264",
+    "clicks": "48",
+    "inline_link_clicks": "29",
+    "spend": "78.33",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 10,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "1081"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "308"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "65"
+      },
+      {
+        "action_type": "link_click",
+        "value": "29"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "21"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1081"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "2"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "570.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2691",
+    "reach": "1519",
+    "clicks": "49",
+    "inline_link_clicks": "41",
+    "spend": "61.27",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 10,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "5.3921"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "62"
+      },
+      {
+        "action_type": "link_click",
+        "value": "41"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "33"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "4"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "2"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1420.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "330.38"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "330.38"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1300",
+    "reach": "723",
+    "clicks": "38",
+    "inline_link_clicks": "34",
+    "spend": "49.97",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 10,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "11.4856"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "44"
+      },
+      {
+        "action_type": "link_click",
+        "value": "34"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "27"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "7"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "2"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "2030.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "573.93"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "573.93"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "102",
+    "reach": "60",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "4.00",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 10,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "2047",
+    "reach": "1197",
+    "clicks": "27",
+    "inline_link_clicks": "0",
+    "spend": "43.22",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 10,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "32"
+      },
+      {
+        "action_type": "lead",
+        "value": "8"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "8"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "3522",
+    "reach": "2674",
+    "clicks": "43",
+    "inline_link_clicks": "33",
+    "spend": "63.34",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 9,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "56"
+      },
+      {
+        "action_type": "link_click",
+        "value": "33"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "29"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "960.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "6211",
+    "reach": "3778",
+    "clicks": "60",
+    "inline_link_clicks": "36",
+    "spend": "93.02",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 9,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "1118"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "252"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "94"
+      },
+      {
+        "action_type": "link_click",
+        "value": "36"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "30"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1118"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2759",
+    "reach": "2081",
+    "clicks": "47",
+    "inline_link_clicks": "39",
+    "spend": "58.54",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 9,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "6.1449"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "57"
+      },
+      {
+        "action_type": "link_click",
+        "value": "39"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "30"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "4"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "2"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1420.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "359.72"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "359.72"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1281",
+    "reach": "883",
+    "clicks": "37",
+    "inline_link_clicks": "33",
+    "spend": "48.85",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 9,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "6.7922"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "43"
+      },
+      {
+        "action_type": "link_click",
+        "value": "33"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "25"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "7"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "3"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "2030.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "331.80"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "331.80"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "98",
+    "reach": "57",
+    "clicks": "2",
+    "inline_link_clicks": "1",
+    "spend": "3.68",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 9,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "2"
+      },
+      {
+        "action_type": "link_click",
+        "value": "1"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "0"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1985",
+    "reach": "1217",
+    "clicks": "27",
+    "inline_link_clicks": "0",
+    "spend": "41.13",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 9,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "35"
+      },
+      {
+        "action_type": "lead",
+        "value": "10"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "10"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "3187",
+    "reach": "2195",
+    "clicks": "43",
+    "inline_link_clicks": "33",
+    "spend": "58.32",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 8,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "5.7970"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "56"
+      },
+      {
+        "action_type": "link_click",
+        "value": "33"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "24"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "2"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "640.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "338.08"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "338.08"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "5172",
+    "reach": "4032",
+    "clicks": "45",
+    "inline_link_clicks": "27",
+    "spend": "73.00",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 8,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "987"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "313"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "58"
+      },
+      {
+        "action_type": "link_click",
+        "value": "27"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "23"
+      },
+      {
+        "action_type": "video_view",
+        "value": "987"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2120",
+    "reach": "1260",
+    "clicks": "38",
+    "inline_link_clicks": "31",
+    "spend": "49.20",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 8,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "7.0762"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "43"
+      },
+      {
+        "action_type": "link_click",
+        "value": "31"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "27"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "4"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "2"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1420.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "348.15"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "348.15"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "954",
+    "reach": "661",
+    "clicks": "30",
+    "inline_link_clicks": "27",
+    "spend": "36.85",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 8,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "9.1306"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "33"
+      },
+      {
+        "action_type": "link_click",
+        "value": "27"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "19"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "5"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "2"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1450.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "336.46"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "336.46"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "91",
+    "reach": "50",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.39",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 8,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1583",
+    "reach": "972",
+    "clicks": "22",
+    "inline_link_clicks": "0",
+    "spend": "30.69",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 8,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "27"
+      },
+      {
+        "action_type": "lead",
+        "value": "6"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "6"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "2987",
+    "reach": "2030",
+    "clicks": "39",
+    "inline_link_clicks": "30",
+    "spend": "56.20",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 7,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "5.1166"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "49"
+      },
+      {
+        "action_type": "link_click",
+        "value": "30"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "26"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "960.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "287.55"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "287.55"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "4337",
+    "reach": "2745",
+    "clicks": "42",
+    "inline_link_clicks": "25",
+    "spend": "60.71",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 7,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "855"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "204"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "65"
+      },
+      {
+        "action_type": "link_click",
+        "value": "25"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "22"
+      },
+      {
+        "action_type": "video_view",
+        "value": "855"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2247",
+    "reach": "1303",
+    "clicks": "35",
+    "inline_link_clicks": "29",
+    "spend": "51.58",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 7,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "46"
+      },
+      {
+        "action_type": "link_click",
+        "value": "29"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "24"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1065.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1063",
+    "reach": "637",
+    "clicks": "33",
+    "inline_link_clicks": "30",
+    "spend": "40.70",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 7,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "8.3188"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "37"
+      },
+      {
+        "action_type": "link_click",
+        "value": "30"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "22"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "7"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "3"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "2030.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "338.57"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "338.57"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "78",
+    "reach": "55",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.19",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 7,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1528",
+    "reach": "1021",
+    "clicks": "21",
+    "inline_link_clicks": "0",
+    "spend": "32.42",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 7,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "26"
+      },
+      {
+        "action_type": "lead",
+        "value": "7"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "7"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "3208",
+    "reach": "2334",
+    "clicks": "42",
+    "inline_link_clicks": "32",
+    "spend": "58.01",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 6,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "57"
+      },
+      {
+        "action_type": "link_click",
+        "value": "32"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "27"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "640.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "5273",
+    "reach": "3625",
+    "clicks": "50",
+    "inline_link_clicks": "30",
+    "spend": "72.16",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 6,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "961"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "264"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "72"
+      },
+      {
+        "action_type": "link_click",
+        "value": "30"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "25"
+      },
+      {
+        "action_type": "video_view",
+        "value": "961"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2093",
+    "reach": "1240",
+    "clicks": "37",
+    "inline_link_clicks": "31",
+    "spend": "46.55",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 6,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "6.7879"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "48"
+      },
+      {
+        "action_type": "link_click",
+        "value": "31"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "22"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1065.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "315.98"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "315.98"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "929",
+    "reach": "522",
+    "clicks": "27",
+    "inline_link_clicks": "24",
+    "spend": "32.26",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 6,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "8.1699"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "30"
+      },
+      {
+        "action_type": "link_click",
+        "value": "24"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "19"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "6"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "2"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1740.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "263.56"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "263.56"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "86",
+    "reach": "60",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.30",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 6,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1473",
+    "reach": "834",
+    "clicks": "21",
+    "inline_link_clicks": "0",
+    "spend": "29.72",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 6,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "29"
+      },
+      {
+        "action_type": "lead",
+        "value": "7"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "7"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "2758",
+    "reach": "1878",
+    "clicks": "34",
+    "inline_link_clicks": "26",
+    "spend": "50.35",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 5,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "48"
+      },
+      {
+        "action_type": "link_click",
+        "value": "26"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "19"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "2"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "640.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "4360",
+    "reach": "2889",
+    "clicks": "39",
+    "inline_link_clicks": "23",
+    "spend": "59.31",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 5,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "852"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "234"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "59"
+      },
+      {
+        "action_type": "link_click",
+        "value": "23"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "19"
+      },
+      {
+        "action_type": "video_view",
+        "value": "852"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2033",
+    "reach": "1575",
+    "clicks": "31",
+    "inline_link_clicks": "26",
+    "spend": "47.98",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 5,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "41"
+      },
+      {
+        "action_type": "link_click",
+        "value": "26"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "19"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1065.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1130",
+    "reach": "720",
+    "clicks": "35",
+    "inline_link_clicks": "31",
+    "spend": "39.15",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 5,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "15.8553"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "40"
+      },
+      {
+        "action_type": "link_click",
+        "value": "31"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "25"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "6"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "2"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1740.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "620.74"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "620.74"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "93",
+    "reach": "57",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.65",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 5,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1524",
+    "reach": "1185",
+    "clicks": "20",
+    "inline_link_clicks": "0",
+    "spend": "29.66",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 5,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "26"
+      },
+      {
+        "action_type": "lead",
+        "value": "7"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "7"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "3060",
+    "reach": "1703",
+    "clicks": "42",
+    "inline_link_clicks": "32",
+    "spend": "58.66",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 4,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "51"
+      },
+      {
+        "action_type": "link_click",
+        "value": "32"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "24"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "960.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "5030",
+    "reach": "3996",
+    "clicks": "45",
+    "inline_link_clicks": "27",
+    "spend": "72.43",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 4,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "1025"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "260"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "61"
+      },
+      {
+        "action_type": "link_click",
+        "value": "27"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "21"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1025"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2158",
+    "reach": "1583",
+    "clicks": "33",
+    "inline_link_clicks": "27",
+    "spend": "46.40",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 4,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "6.5384"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "41"
+      },
+      {
+        "action_type": "link_click",
+        "value": "27"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "21"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "2"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "710.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "303.38"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "303.38"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "928",
+    "reach": "516",
+    "clicks": "27",
+    "inline_link_clicks": "24",
+    "spend": "36.11",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 4,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "16.2315"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "29"
+      },
+      {
+        "action_type": "link_click",
+        "value": "24"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "21"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "4"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1160.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "586.12"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "586.12"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "91",
+    "reach": "50",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.69",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 4,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1509",
+    "reach": "1032",
+    "clicks": "22",
+    "inline_link_clicks": "0",
+    "spend": "30.49",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 4,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "28"
+      },
+      {
+        "action_type": "lead",
+        "value": "6"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "6"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "3885",
+    "reach": "2802",
+    "clicks": "47",
+    "inline_link_clicks": "36",
+    "spend": "72.36",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 3,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "57"
+      },
+      {
+        "action_type": "link_click",
+        "value": "36"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "29"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "960.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "5553",
+    "reach": "3502",
+    "clicks": "52",
+    "inline_link_clicks": "31",
+    "spend": "80.61",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 3,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "1160"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "351"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "72"
+      },
+      {
+        "action_type": "link_click",
+        "value": "31"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "24"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1160"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2621",
+    "reach": "1933",
+    "clicks": "47",
+    "inline_link_clicks": "39",
+    "spend": "60.36",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 3,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "6.6256"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "61"
+      },
+      {
+        "action_type": "link_click",
+        "value": "39"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "28"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "4"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "2"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1420.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "399.92"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "399.92"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1322",
+    "reach": "726",
+    "clicks": "44",
+    "inline_link_clicks": "40",
+    "spend": "50.08",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 3,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "10.9021"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "49"
+      },
+      {
+        "action_type": "link_click",
+        "value": "40"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "32"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "7"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "4"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "2030.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "545.98"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "545.98"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "105",
+    "reach": "77",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.98",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 3,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "2054",
+    "reach": "1397",
+    "clicks": "31",
+    "inline_link_clicks": "0",
+    "spend": "39.92",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 3,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "36"
+      },
+      {
+        "action_type": "lead",
+        "value": "13"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "13"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "3794",
+    "reach": "2376",
+    "clicks": "51",
+    "inline_link_clicks": "39",
+    "spend": "70.88",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 2,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "69"
+      },
+      {
+        "action_type": "link_click",
+        "value": "39"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "31"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "4"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1280.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "5625",
+    "reach": "4056",
+    "clicks": "50",
+    "inline_link_clicks": "30",
+    "spend": "77.90",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 2,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "1330"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "392"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "78"
+      },
+      {
+        "action_type": "link_click",
+        "value": "30"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "25"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1330"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2583",
+    "reach": "1424",
+    "clicks": "47",
+    "inline_link_clicks": "39",
+    "spend": "58.92",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 2,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "6.4578"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "59"
+      },
+      {
+        "action_type": "link_click",
+        "value": "39"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "34"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "5"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "3"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1775.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "380.49"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "380.49"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1349",
+    "reach": "761",
+    "clicks": "42",
+    "inline_link_clicks": "38",
+    "spend": "51.75",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 2,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "9.6421"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "45"
+      },
+      {
+        "action_type": "link_click",
+        "value": "38"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "28"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "10"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "4"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "2900.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "498.98"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "498.98"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "102",
+    "reach": "69",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.96",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 2,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1978",
+    "reach": "1165",
+    "clicks": "27",
+    "inline_link_clicks": "0",
+    "spend": "41.10",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 2,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "37"
+      },
+      {
+        "action_type": "lead",
+        "value": "7"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "7"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000001",
+    "impressions": "2648",
+    "reach": "1769",
+    "clicks": "35",
+    "inline_link_clicks": "27",
+    "spend": "50.57",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 1,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "45"
+      },
+      {
+        "action_type": "link_click",
+        "value": "27"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "21"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "2"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "640.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000001",
+    "ad_id": "23850000002000002",
+    "impressions": "4587",
+    "reach": "3483",
+    "clicks": "44",
+    "inline_link_clicks": "26",
+    "spend": "65.18",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 1,
+    "video_p25_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "891"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "289"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "65"
+      },
+      {
+        "action_type": "link_click",
+        "value": "26"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "22"
+      },
+      {
+        "action_type": "video_view",
+        "value": "891"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "285.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000001",
+    "adset_id": "23850000001000002",
+    "ad_id": "23850000002000003",
+    "impressions": "2308",
+    "reach": "1564",
+    "clicks": "36",
+    "inline_link_clicks": "30",
+    "spend": "49.66",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 1,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "44"
+      },
+      {
+        "action_type": "link_click",
+        "value": "30"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "22"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "3"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "1"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "1065.00"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000004",
+    "impressions": "1107",
+    "reach": "747",
+    "clicks": "34",
+    "inline_link_clicks": "30",
+    "spend": "42.65",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 1,
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "16.2530"
+      }
+    ],
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "37"
+      },
+      {
+        "action_type": "link_click",
+        "value": "30"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "25"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "7"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "3"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "2030.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "693.19"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "693.19"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000002",
+    "adset_id": "23850000001000003",
+    "ad_id": "23850000002000005",
+    "impressions": "92",
+    "reach": "59",
+    "clicks": "1",
+    "inline_link_clicks": "0",
+    "spend": "3.78",
+    "objective": "OUTCOME_SALES",
+    "_day_offset": 1,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "1"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "campaign_id": "23850000000000004",
+    "adset_id": "23850000001000005",
+    "ad_id": "23850000002000007",
+    "impressions": "1625",
+    "reach": "1000",
+    "clicks": "22",
+    "inline_link_clicks": "0",
+    "spend": "34.51",
+    "objective": "LEAD_GENERATION",
+    "_day_offset": 1,
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "27"
+      },
+      {
+        "action_type": "lead",
+        "value": "6"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "6"
+      }
+    ]
+  }
+]

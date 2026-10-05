@@ -29,6 +29,21 @@ final class ProviderUnavailable extends RuntimeException
         ));
     }
 
+    /**
+     * No sync adapter is implemented for this provider.
+     *
+     * Says so plainly rather than returning an adapter that would invent field
+     * names. The missing piece is our implementation, not the provider's API.
+     */
+    public static function noSyncAdapter(Provider $provider): self
+    {
+        return new self($provider, sprintf(
+            'No %s sync adapter is implemented, so campaign and performance data cannot be read '
+            .'from it. Nothing is wrong with the connection.',
+            $provider->label(),
+        ));
+    }
+
     public static function capabilityUnsupported(Provider $provider, string $capability): self
     {
         return new self($provider, sprintf(

@@ -100,3 +100,33 @@ database is untouched and tests do not leak state into one another.
 `composer test:coverage` enforces a 70% floor on the backend. Coverage is a smoke
 alarm, not a goal: a well-tested vertical slice beats a high percentage of trivial
 assertions.
+
+## Advertising sync
+
+The sync suite is the first place where "the tests pass" and "the numbers are
+right" come apart, so it tests the second thing:
+
+- **Normalisation** (`tests/Unit/Infrastructure/Advertising/MetaMapperTest.php`)
+  runs against the SANDBOX fixtures, which hold real Graph API shapes. It asserts
+  the conventions a naive mapping gets wrong: minor-unit budget strings versus
+  decimal spend strings, `effective_status` over `status`, legacy objectives
+  alongside the ODAX names, and that nested `actions` categories are not summed.
+- **Null versus zero** is asserted explicitly at both layers. A non-video ad must
+  report `null` video completions, not `0`; the latter reads as "nobody finished
+  it" about something that had no video.
+- **Idempotency** (`tests/Feature/Advertising/SyncTest.php`) runs the same sync
+  twice and compares every table's count, then corrupts a stored figure and
+  checks a re-run fixes it. This test found a real defect: a nullable column in a
+  unique index, which PostgreSQL treats as distinct, so conversions doubled on
+  every re-read.
+- **Isolation** covers the three ways an account must not be synced: not bound,
+  bound with sync paused, and belonging to another workspace. All three answer
+  `Skipped` and write nothing.
+- **Data honesty** asserts every sandbox row carries `source = sandbox`, that the
+  run records it too, and — the important one — that a connection with *real*
+  credentials fails outright and writes nothing. A fallback from "cannot call the
+  API" to "show the fixtures" would be the one bug that puts invented numbers on a
+  client report, so there is a test whose only job is to keep that path closed.
+
+Fixture dates are relative and resolved against an injected clock, so the sandbox
+window follows today without the assertions drifting.

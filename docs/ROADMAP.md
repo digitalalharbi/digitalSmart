@@ -10,7 +10,7 @@ times.
 | 0     | Repository baseline, dev stack, CI, formatting, linting, tests, env examples, architectural skeleton | **Complete** |
 | 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | **Complete** |
 | 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | **Complete** |
-| 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | Planned |
+| 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | **Ingestion complete**, Meta adapter live; other adapters in progress |
 | 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | Planned |
 | 5     | Budgets, pacing, calculator, forecasting, alerts                                | Planned |
 | 6     | Creative hub, tasks, approvals, files, notifications/realtime                   | Planned |
@@ -89,3 +89,36 @@ unused rather than silently granted.
 
 Neither blocker stops other work: contracts, mocks, UI, tests and documentation are
 built around them.
+
+## Phase 3 — delivered so far
+
+- The advertising schema: `campaigns`, `ad_groups`, `creatives` + `creative_assets`,
+  `ads`, `daily_metrics`, `conversion_metrics`, plus `sync_runs`, `sync_cursors`
+  and `provider_errors`. Check constraints and unique indexes carry the rules that
+  matter — including the one that makes a re-sync idempotent rather than doubling
+  spend.
+- A normalised vocabulary that every provider maps into: `EntityStatus`,
+  `CampaignObjective`, `BudgetMode`, `ConversionActionType`, `CreativeFormat`,
+  `AdEntityType`, and `Money` in integer minor units with a currency guard.
+- `MetricSource` on every metric row — `live`, `synced`, `stale`, `partial`,
+  `sandbox`, `manual`, `estimated` — decided once where the credentials are known.
+  Aggregates inherit their weakest input, and sandbox or estimated figures will
+  not combine with actuals at all.
+- `AdvertisingSyncAdapter`, the sync port, with the Meta implementation reading
+  campaigns, ad sets, ads, creatives and insights at campaign, ad-group and ad
+  level, against fixtures that hold real Graph API shapes.
+- An idempotent store: every write keyed on the provider's own identifier, metrics
+  batched into chunked upserts sized from the row width, and ancestry denormalised
+  onto the fact table so the common filters join nothing.
+- `advertising:sync` and a queued, per-account-unique job with provider-aware
+  backoff; a journal that records every run, its counts and its failures by
+  category, so "why is yesterday missing?" is answerable from the product.
+
+### Not yet done in Phase 3
+
+- Sync adapters for Google Ads, TikTok, Snapchat, X and LinkedIn. Each needs its
+  own mapper against its own documented schema and its own fixture set; the
+  registry reports `supports() === false` for them rather than offering a stub.
+- Account-level insight ingestion (the contract and fixture exist; the sync reads
+  campaign, ad-group and ad levels).
+- Webhooks, where a provider officially supports them.

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Advertising\Contract\AdvertisingStore;
+use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegistryContract;
+use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Audit\Contract\AuditReadModel;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Identity\Contract\Authenticator;
@@ -31,6 +34,8 @@ use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use App\Domain\Project\Repository\ProjectRepository;
 use App\Infrastructure\Access\PermissionAuthorizationGuard;
 use App\Infrastructure\Access\RequestActorContext;
+use App\Infrastructure\Advertising\Sandbox\SandboxFixtures;
+use App\Infrastructure\Advertising\SyncAdapterRegistry;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
 use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
@@ -41,6 +46,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
@@ -48,6 +54,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMembershipReposit
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
 use App\Infrastructure\System\CacheHealthProbe;
@@ -106,6 +113,11 @@ final class AppServiceProvider extends ServiceProvider
         ExternalAccountRepository::class => EloquentExternalAccountRepository::class,
         IntegrationBindingRepository::class => EloquentIntegrationBindingRepository::class,
         IntegrationReadModel::class => EloquentIntegrationReadModel::class,
+
+        // Advertising data (Phase 3)
+        SyncAdapterRegistryContract::class => SyncAdapterRegistry::class,
+        AdvertisingStore::class => EloquentAdvertisingStore::class,
+        SyncJournal::class => EloquentSyncJournal::class,
     ];
 
     public function register(): void
@@ -127,6 +139,15 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->singleton(GetSystemHealth::class, fn ($app): GetSystemHealth => new GetSystemHealth(
             $app->make(ApplicationInfo::class),
             $app->tagged(HealthProbe::class),
+        ));
+
+        /*
+         * Sandbox fixtures resolve their relative dates against injected time,
+         * so a test can freeze the clock and get a predictable window.
+         */
+        $this->app->singleton(SandboxFixtures::class, fn ($app): SandboxFixtures => new SandboxFixtures(
+            database_path('fixtures/providers'),
+            $app->make(Clock::class)->now(),
         ));
     }
 

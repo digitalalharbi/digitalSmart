@@ -1,0 +1,1136 @@
+[
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 14,
+    "impressions": "13104",
+    "reach": "7507",
+    "clicks": "180",
+    "inline_link_clicks": "118",
+    "objective": "OUTCOME_SALES",
+    "spend": "251.97",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "221"
+      },
+      {
+        "action_type": "link_click",
+        "value": "118"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "87"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "14"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1024"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "4"
+      },
+      {
+        "action_type": "purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "lead",
+        "value": "9"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "9"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "4375.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "827.40"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "827.40"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "232"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "3.2837"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 13,
+    "impressions": "12418",
+    "reach": "7327",
+    "clicks": "179",
+    "inline_link_clicks": "120",
+    "objective": "OUTCOME_SALES",
+    "spend": "243.13",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "227"
+      },
+      {
+        "action_type": "link_click",
+        "value": "120"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "95"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "17"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "5"
+      },
+      {
+        "action_type": "video_view",
+        "value": "897"
+      },
+      {
+        "action_type": "purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "lead",
+        "value": "5"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "5"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "5275.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1035.53"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1035.53"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "255"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "4.2592"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 12,
+    "impressions": "13032",
+    "reach": "7328",
+    "clicks": "181",
+    "inline_link_clicks": "119",
+    "objective": "OUTCOME_SALES",
+    "spend": "252.76",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "232"
+      },
+      {
+        "action_type": "link_click",
+        "value": "119"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "93"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "14"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "5"
+      },
+      {
+        "action_type": "video_view",
+        "value": "981"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "lead",
+        "value": "8"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "8"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "4310.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "699.15"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "699.15"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "325"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "2.7661"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 11,
+    "impressions": "12031",
+    "reach": "6745",
+    "clicks": "172",
+    "inline_link_clicks": "114",
+    "objective": "OUTCOME_SALES",
+    "spend": "235.38",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "215"
+      },
+      {
+        "action_type": "link_click",
+        "value": "114"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "88"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "13"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "6"
+      },
+      {
+        "action_type": "video_view",
+        "value": "906"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1"
+      },
+      {
+        "action_type": "lead",
+        "value": "8"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "8"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "4020.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "251.87"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "251.87"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "192"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "1.0701"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 10,
+    "impressions": "15177",
+    "reach": "8173",
+    "clicks": "211",
+    "inline_link_clicks": "141",
+    "objective": "OUTCOME_SALES",
+    "spend": "298.08",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "268"
+      },
+      {
+        "action_type": "link_click",
+        "value": "141"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "109"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "17"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "7"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1081"
+      },
+      {
+        "action_type": "purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "lead",
+        "value": "8"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "8"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "5300.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "904.31"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "904.31"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "308"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "3.0338"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 9,
+    "impressions": "15856",
+    "reach": "9059",
+    "clicks": "216",
+    "inline_link_clicks": "142",
+    "objective": "OUTCOME_SALES",
+    "spend": "308.56",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "287"
+      },
+      {
+        "action_type": "link_click",
+        "value": "142"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "114"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "15"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "6"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1118"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "lead",
+        "value": "10"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "10"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "4695.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "691.52"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "691.52"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "252"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "2.2411"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 8,
+    "impressions": "13107",
+    "reach": "7771",
+    "clicks": "179",
+    "inline_link_clicks": "118",
+    "objective": "OUTCOME_SALES",
+    "spend": "251.45",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "218"
+      },
+      {
+        "action_type": "link_click",
+        "value": "118"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "93"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "12"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "5"
+      },
+      {
+        "action_type": "purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "video_view",
+        "value": "987"
+      },
+      {
+        "action_type": "lead",
+        "value": "6"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "6"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "3795.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "1022.69"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "1022.69"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "313"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "4.0672"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 7,
+    "impressions": "12240",
+    "reach": "6602",
+    "clicks": "171",
+    "inline_link_clicks": "114",
+    "objective": "OUTCOME_SALES",
+    "spend": "244.80",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "224"
+      },
+      {
+        "action_type": "link_click",
+        "value": "114"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "94"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "14"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "5"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "video_view",
+        "value": "855"
+      },
+      {
+        "action_type": "lead",
+        "value": "7"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "7"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "4340.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "626.12"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "626.12"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "204"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "2.5577"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 6,
+    "impressions": "13062",
+    "reach": "7300",
+    "clicks": "178",
+    "inline_link_clicks": "117",
+    "objective": "OUTCOME_SALES",
+    "spend": "242.00",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "237"
+      },
+      {
+        "action_type": "link_click",
+        "value": "117"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "93"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "12"
+      },
+      {
+        "action_type": "video_view",
+        "value": "961"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "3"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "lead",
+        "value": "7"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "7"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "3730.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "579.54"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "579.54"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "264"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "2.3948"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 5,
+    "impressions": "11898",
+    "reach": "7037",
+    "clicks": "160",
+    "inline_link_clicks": "106",
+    "objective": "OUTCOME_SALES",
+    "spend": "230.10",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "215"
+      },
+      {
+        "action_type": "link_click",
+        "value": "106"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "82"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "12"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "4"
+      },
+      {
+        "action_type": "video_view",
+        "value": "852"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "lead",
+        "value": "7"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "7"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "3730.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "620.74"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "620.74"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "234"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "2.6977"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 4,
+    "impressions": "12776",
+    "reach": "7525",
+    "clicks": "170",
+    "inline_link_clicks": "110",
+    "objective": "OUTCOME_SALES",
+    "spend": "247.78",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "211"
+      },
+      {
+        "action_type": "link_click",
+        "value": "110"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "87"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "10"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "2"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1025"
+      },
+      {
+        "action_type": "purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "lead",
+        "value": "6"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "6"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "3115.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "889.50"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "889.50"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "260"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "3.5899"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 3,
+    "impressions": "15540",
+    "reach": "8844",
+    "clicks": "222",
+    "inline_link_clicks": "146",
+    "objective": "OUTCOME_SALES",
+    "spend": "307.31",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "276"
+      },
+      {
+        "action_type": "link_click",
+        "value": "146"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "113"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "15"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "7"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1160"
+      },
+      {
+        "action_type": "purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "lead",
+        "value": "13"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "13"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "4695.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "945.90"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "945.90"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "351"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "3.0780"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 2,
+    "impressions": "15431",
+    "reach": "8348",
+    "clicks": "218",
+    "inline_link_clicks": "146",
+    "objective": "OUTCOME_SALES",
+    "spend": "304.51",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "289"
+      },
+      {
+        "action_type": "link_click",
+        "value": "146"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "118"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "20"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "8"
+      },
+      {
+        "action_type": "video_view",
+        "value": "1330"
+      },
+      {
+        "action_type": "purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "3"
+      },
+      {
+        "action_type": "lead",
+        "value": "7"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "7"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "6240.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "879.47"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "879.47"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "392"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "2.8881"
+      }
+    ]
+  },
+  {
+    "date_start": null,
+    "date_stop": null,
+    "account_id": "sandbox_1001",
+    "account_currency": "SAR",
+    "_day_offset": 1,
+    "impressions": "12367",
+    "reach": "7306",
+    "clicks": "172",
+    "inline_link_clicks": "113",
+    "objective": "OUTCOME_SALES",
+    "spend": "246.35",
+    "actions": [
+      {
+        "action_type": "post_engagement",
+        "value": "219"
+      },
+      {
+        "action_type": "link_click",
+        "value": "113"
+      },
+      {
+        "action_type": "landing_page_view",
+        "value": "90"
+      },
+      {
+        "action_type": "add_to_cart",
+        "value": "13"
+      },
+      {
+        "action_type": "initiate_checkout",
+        "value": "5"
+      },
+      {
+        "action_type": "video_view",
+        "value": "891"
+      },
+      {
+        "action_type": "purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "2"
+      },
+      {
+        "action_type": "lead",
+        "value": "6"
+      },
+      {
+        "action_type": "onsite_conversion.lead_grouped",
+        "value": "6"
+      }
+    ],
+    "action_values": [
+      {
+        "action_type": "add_to_cart",
+        "value": "4020.00"
+      },
+      {
+        "action_type": "purchase",
+        "value": "693.19"
+      },
+      {
+        "action_type": "offsite_conversion.fb_pixel_purchase",
+        "value": "693.19"
+      }
+    ],
+    "video_p100_watched_actions": [
+      {
+        "action_type": "video_view",
+        "value": "289"
+      }
+    ],
+    "purchase_roas": [
+      {
+        "action_type": "omni_purchase",
+        "value": "2.8138"
+      }
+    ]
+  }
+]

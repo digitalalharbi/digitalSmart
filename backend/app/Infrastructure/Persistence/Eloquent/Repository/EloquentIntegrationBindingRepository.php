@@ -7,7 +7,9 @@ namespace App\Infrastructure\Persistence\Eloquent\Repository;
 use App\Domain\Integration\ExternalAccountId;
 use App\Domain\Integration\IntegrationBindingId;
 use App\Domain\Integration\ProjectIntegrationBinding;
+use App\Domain\Integration\Provider;
 use App\Domain\Integration\Repository\IntegrationBindingRepository;
+use App\Domain\Integration\SyncTarget;
 use App\Domain\Project\ProjectId;
 use App\Domain\Workspace\WorkspaceId;
 use App\Infrastructure\Persistence\Eloquent\Model\ProjectIntegrationBinding as BindingModel;
@@ -66,6 +68,57 @@ final class EloquentIntegrationBindingRepository implements IntegrationBindingRe
             ->where('workspace_id', $workspaceId->value)
             ->where('external_account_id', $externalAccountId->value)
             ->count();
+    }
+
+    public function syncEnabledCountForAccount(WorkspaceId $workspaceId, ExternalAccountId $externalAccountId): int
+    {
+        return BindingModel::query()
+            ->where('workspace_id', $workspaceId->value)
+            ->where('external_account_id', $externalAccountId->value)
+            ->where('sync_enabled', true)
+            ->count();
+    }
+
+    /** @return list<SyncTarget> */
+    public function syncTargets(?WorkspaceId $workspaceId = null): array
+    {
+        $query = BindingModel::query()
+            ->join('external_accounts', 'external_accounts.id', '=', 'project_integration_bindings.external_account_id')
+            ->where('project_integration_bindings.sync_enabled', true)
+            ->when(
+                $workspaceId instanceof WorkspaceId,
+                fn ($q) => $q->where('project_integration_bindings.workspace_id', $workspaceId?->value),
+            )
+            ->distinct()
+            ->select([
+                'project_integration_bindings.workspace_id',
+                'project_integration_bindings.external_account_id',
+                'external_accounts.provider',
+            ]);
+
+        $targets = [];
+
+        foreach ($query->get() as $row) {
+            $targets[] = new SyncTarget(
+                workspaceId: new WorkspaceId((string) $row->getAttribute('workspace_id')),
+                externalAccountId: new ExternalAccountId((string) $row->getAttribute('external_account_id')),
+                provider: Provider::from((string) $row->getAttribute('provider')),
+            );
+        }
+
+        return $targets;
+    }
+
+    public function touchSyncedAt(
+        WorkspaceId $workspaceId,
+        ExternalAccountId $externalAccountId,
+        DateTimeImmutable $at,
+    ): void {
+        BindingModel::query()
+            ->where('workspace_id', $workspaceId->value)
+            ->where('external_account_id', $externalAccountId->value)
+            ->where('sync_enabled', true)
+            ->update(['last_synced_at' => $at]);
     }
 
     private function toDomain(BindingModel $model): ProjectIntegrationBinding

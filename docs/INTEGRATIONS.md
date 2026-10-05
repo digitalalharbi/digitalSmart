@@ -46,9 +46,44 @@ to recorded fixtures, so the whole flow — discovery, binding, project access,
 revocation — can be exercised before any provider grants access.
 
 Sandbox accounts are named `SANDBOX — …` and are asserted as such by the test
-suite. They contain **account structure only**. There are no sandbox metrics and
-there will not be: a fabricated spend figure in front of a client is the one
-failure this project treats as unrecoverable.
+suite.
+
+Phase 3 extended sandbox mode to campaign structure and performance, which needs
+saying carefully, because an earlier version of this document said there would
+never be sandbox metrics. The reasoning behind that line still holds — a
+fabricated spend figure in front of a client is the one failure this project
+treats as unrecoverable — but refusing to have any numbers at all made the whole
+ingestion, analytics and reporting layer impossible to build or test before a
+provider grants access, which is worse.
+
+What exists instead is a labelling guarantee strong enough to make the fixtures
+safe:
+
+- Every row written from a sandbox connection carries
+  `MetricSource::Sandbox` in its own `source` column, decided once in
+  `SyncBoundAccount` where the credentials are known, and there is no code path
+  below that which can relabel it.
+- Aggregates inherit their weakest input (`MetricSource::weakest`), so a single
+  sandbox row makes the whole total read `SANDBOX`. Sandbox figures will not
+  combine with actuals at all (`mixesWith`), so a mixed total cannot be formed
+  by accident.
+- A connection reads fixtures only when **every** required credential is
+  literally the string `sandbox`. Half-filled is a configuration mistake, not a
+  sandbox, and is treated as one.
+- Real credentials still refuse outright. There is no fallback from "cannot call
+  the API" to "show the fixtures", which is the specific failure mode that would
+  put invented numbers on a client's report.
+
+The fixtures themselves are described in
+`backend/database/fixtures/providers/README.md`, including where their numbers
+came from. Each file holds what the provider's API returns — its own field names,
+value types and enum strings, from the published schema — so the mapper the tests
+exercise is the mapper that will face the live endpoint. The only departure from
+a verbatim response is that dates are stored as relative offsets and resolved at
+read time, so the sandbox does not age into irrelevance.
+
+Where a provider publishes no contract, its fixture directory is simply absent
+and `SyncAdapterRegistry::supports()` returns false. Nothing invents a shape.
 
 ## Architecture
 
@@ -56,19 +91,59 @@ Provider logic sits behind stable ports. No provider-specific code ever appears 
 controller or a domain model.
 
 ```
-Application port ─── ProviderAdapter (interface)
-                         ├─ MetaAdsAdapter
-                         ├─ GoogleAdsAdapter
-                         ├─ TikTokAdsAdapter
-                         ├─ SnapchatAdsAdapter
-                         ├─ XAdsAdapter
-                         ├─ LinkedInAdsAdapter
-                         └─ OpenAIAdsAdapter
+Application ports ── ProviderAdapter          (connect, discover, health)
+                  │      ├─ MetaAdsAdapter
+                  │      ├─ GoogleAdsAdapter
+                  │      ├─ TikTokAdsAdapter
+                  │      ├─ SnapchatAdsAdapter
+                  │      ├─ XAdsAdapter
+                  │      ├─ LinkedInAdsAdapter
+                  │      └─ OpenAIAdsAdapter
+                  │
+                  └─ AdvertisingSyncAdapter   (campaigns, ad groups, ads,
+                         └─ MetaSyncAdapter    creatives, insights)
 ```
 
-Each adapter exposes: auth/connect, account discovery, campaign discovery, metrics sync,
-creative requirements, campaign mutation *where supported*, error normalisation,
-rate-limit handling and a health check.
+`ProviderAdapter` and `AdvertisingSyncAdapter` are deliberately separate. A
+provider can be connected long before any sync is implemented, and the health of
+a connection should not depend on the sync surface. The registries reflect that:
+every provider has a `ProviderAdapter`, enforced by a test, while
+`SyncAdapterRegistry::supports()` is allowed to answer false — and when it does,
+asking for an adapter raises `ProviderUnavailable` rather than returning a stub.
+
+Each provider adapter exposes: auth/connect, account discovery, campaign
+discovery, creative requirements, campaign mutation *where supported*, error
+normalisation, rate-limit handling and a health check.
+
+### The sync contract
+
+Every `AdvertisingSyncAdapter` implementation must:
+
+- return normalised records — no provider-shaped type crosses the boundary;
+- preserve provider ids and raw status strings, because the caller needs both;
+- report `null` for a metric the provider does not expose, never `0`;
+- paginate with an opaque cursor the caller stores and hands back;
+- raise `ProviderRequestFailed` with retry guidance rather than sleeping inside
+  the adapter and blocking a worker;
+- be re-runnable for the same date range without duplicating anything.
+
+It also declares two numbers the sync scheduler depends on:
+`attributionLookbackDays()`, how far back conversions keep landing against past
+dates, and `maxInsightRangeDays()`, the widest range to request at once.
+
+### Running a sync
+
+`advertising:sync` queues one `SyncBoundAccountJob` per external account that at
+least one project has bound **with sync enabled**. The job is unique per account,
+so two runs cannot race on the same upsert keys, and backs off (60s, 5m, 15m)
+because every provider here rate-limits per account.
+
+Structure is read in dependency order — campaigns, ad groups, creatives, ads —
+since an ad references both an ad group and a creative. Performance is then read
+per level, because a parent's figures are not the sum of its children's. Failure
+is partial by design: if ads sync and performance does not, the ads are kept and
+the run is recorded as `partial`. What is never acceptable is a run that reports
+success while missing days.
 
 ### Isolation model (mandatory)
 
@@ -100,8 +175,33 @@ OAuth where possible, otherwise Business Manager / Business Center asset sharing
 partner access, account IDs, pixels/datasets, pages and conversion assets — with a
 per-provider checklist showing what is still missing.
 
-## Sandbox behaviour
+## Provider field mappings
 
-Until credentials exist, adapters run against recorded fixtures. Sandbox responses are
-labelled `DEMO`/`SANDBOX` end to end, in the API payload and in the UI, so a sandbox
-number can never be mistaken for client money.
+Each mapper reads one provider's documented schema. The Meta mapping is
+implemented; the rest follow as their fixtures and mappers land.
+
+### Meta Marketing API — implemented
+
+Conventions that a naive mapping gets wrong, and which `MetaMapper` handles
+explicitly:
+
+| Meta behaviour | Why it matters |
+| -------------- | -------------- |
+| `daily_budget` / `lifetime_budget` / `bid_amount` are numeric **strings in minor units** (`"250000"` = 2,500.00) | Read as a decimal, a budget is overstated a hundredfold and pacing never fires |
+| `spend` is a **decimal string** in the account currency, unlike budgets | Two different conventions in one response |
+| `status` is what the advertiser set; `effective_status` folds in parent state, schedule and ad review | Explains "active but not delivering"; both are stored |
+| ODAX renamed objectives to `OUTCOME_*`, but older campaigns keep the legacy names | Dropping the legacy set silently reclassifies live campaigns as "other" |
+| `actions` / `action_values` are arrays of `{action_type, value}`, with **nested categories** (`omni_purchase` contains `purchase`) | Summing the array triples the purchase count and divides ROAS by three |
+| A campaign with neither budget set has its budget on its ad sets | Mapped to `BudgetMode::Inherited`, not to zero |
+| Attribution is configurable up to 28-day click | Sync re-reads 28 days rather than trusting a watermark |
+
+An unrecognised status or objective maps to `Unknown` / `Other`. A value Meta
+adds next year must not silently become "active".
+
+> **Caveat.** These mappings were written from Meta's published schema
+> documentation. Several reference pages render their field tables client-side and
+> could not be read directly, so every mapping must be re-verified against the
+> live API once credentials exist — specifically the insight field names, the
+> complete `action_type` vocabulary, and the per-level availability of `reach` and
+> `frequency`. The fixtures make a mismatch a failing test rather than a wrong
+> chart, but they cannot substitute for that verification.

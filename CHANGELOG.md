@@ -4,6 +4,58 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 3 — campaign data model, sync and normalised metrics
+
+### Added
+
+- Advertising schema: `campaigns`, `ad_groups`, `creatives`, `creative_assets`,
+  `ads`, `daily_metrics`, `conversion_metrics`, `sync_runs`, `sync_cursors`,
+  `provider_errors`.
+- Normalised advertising vocabulary (`EntityStatus`, `CampaignObjective`,
+  `BudgetMode`, `ConversionActionType`, `CreativeFormat`, `AdEntityType`,
+  `SyncKind`, `SyncStatus`, `ProviderErrorCategory`) and the `Money` /
+  `MetricSet` value objects.
+- `MetricSource` on every metric row, with aggregate rules: a total inherits its
+  weakest input's label, and sandbox or estimated figures never combine with
+  actuals.
+- `AdvertisingSyncAdapter` port and `MetaSyncAdapter`, reading campaigns, ad sets,
+  ads, creatives and insights from SANDBOX fixtures shaped like real Graph API
+  responses. `MetaMapper` handles Meta's minor-unit budget strings, decimal spend
+  strings, `effective_status`, the ODAX objective rename, and nested `actions`
+  categories that must not be summed.
+- Idempotent `AdvertisingStore`, a `SyncJournal` recording every run and failure,
+  the `SyncExternalAccount` / `SyncBoundAccount` use cases, a per-account-unique
+  queued job with provider-aware backoff, and the `advertising:sync` command.
+- 51 new tests: Meta normalisation, sandbox fixture loading and pagination,
+  advertising domain rules, and an end-to-end sync covering isolation, hierarchy
+  linking, null-versus-zero, source labelling, idempotency and the journal.
+
+### Changed
+
+- `Money::toDecimal()` now returns an exact decimal **string** built with integer
+  arithmetic, and the lossy float conversion moved to `toFloat()`. A class whose
+  reason to exist is that floats cannot hold 0.1 should not hand one back at the
+  last step.
+- Sandbox-ness moved from the adapter to `Credentials::isSandbox()`: whether a
+  connection is a sandbox decides how every number it produces is labelled, which
+  is a business rule rather than an adapter detail. A connection counts as a
+  sandbox only when *every* required credential is the token.
+- `conversion_metrics.attribution_window` is not nullable and defaults to
+  `'default'`. PostgreSQL treats `NULL`s as distinct in a unique index, so a
+  nullable column there made every re-sync insert a second row — conversions
+  doubled on each re-read. Caught by the idempotency test.
+- Test memory limit raised to 512M: the architecture tests parse every source
+  file, so the suite's need grows with the codebase.
+
+### Documentation
+
+- `docs/DATA_MODEL.md`, `docs/INTEGRATIONS.md` and `docs/ROADMAP.md` updated,
+  including an explicit record of why sandbox performance data now exists after
+  an earlier decision against it, and what makes it safe.
+- `backend/database/fixtures/providers/README.md` documents the fixtures'
+  provenance and the single way they depart from a verbatim API response.
+
+
 ## [Unreleased]
 
 ### Added — Phase 0: foundation

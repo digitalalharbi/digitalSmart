@@ -30,12 +30,10 @@ use App\Infrastructure\Integration\Fixture\SandboxAccounts;
 abstract class AbstractProviderAdapter implements ProviderAdapter
 {
     /**
-     * Credential value that opts a connection into fixtures.
-     *
-     * Deliberately explicit and ugly: nobody types this by accident, and it
-     * cannot be confused with a real secret.
+     * Kept as an alias so adapters and tests read naturally; the value itself
+     * belongs to the domain, where the labelling rule it drives lives.
      */
-    public const SANDBOX_TOKEN = 'sandbox';
+    public const SANDBOX_TOKEN = Credentials::SANDBOX_TOKEN;
 
     abstract public function provider(): Provider;
 
@@ -98,13 +96,7 @@ abstract class AbstractProviderAdapter implements ProviderAdapter
     /** Whether this connection is running against fixtures. */
     protected function isSandbox(Credentials $credentials): bool
     {
-        foreach ($this->provider()->requiredCredentialKeys() as $key) {
-            if ($credentials->get($key) !== self::SANDBOX_TOKEN) {
-                return false;
-            }
-        }
-
-        return true;
+        return $credentials->isSandbox($this->provider()->requiredCredentialKeys());
     }
 
     /**

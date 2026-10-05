@@ -10,6 +10,7 @@ use App\Application\Shared\Exception\AuthorizationDenied;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Application\Workspace\Exception\LastOwnerProtected;
 use App\Domain\Shared\Exception\DomainException;
+use App\Interface\Console\SyncAdvertisingData;
 use App\Interface\Http\Middleware\AssignRequestId;
 use App\Interface\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\AuthenticationException;
@@ -27,6 +28,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         apiPrefix: 'api',
     )
+    ->withCommands([
+        SyncAdvertisingData::class,
+    ])
     ->withMiddleware(function (Middleware $middleware): void {
         // First-party SPA authentication: Sanctum's stateful guard on /api.
         $middleware->statefulApi();
