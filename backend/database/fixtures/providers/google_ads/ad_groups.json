@@ -1,0 +1,118 @@
+[
+  {
+    "adGroup": {
+      "resourceName": "customers/7788990011/adGroups/30110001",
+      "id": "30110001",
+      "name": "SANDBOX — Brand exact",
+      "status": "ENABLED",
+      "primaryStatus": "ELIGIBLE",
+      "type": "SEARCH_STANDARD",
+      "campaign": "customers/7788990011/campaigns/20110001",
+      "cpcBidMicros": "2400000",
+      "effectiveCpcBidMicros": "2400000"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "adGroup": {
+      "resourceName": "customers/7788990011/adGroups/30110002",
+      "id": "30110002",
+      "name": "SANDBOX — Brand phrase",
+      "status": "ENABLED",
+      "primaryStatus": "ELIGIBLE",
+      "type": "SEARCH_STANDARD",
+      "campaign": "customers/7788990011/campaigns/20110001",
+      "cpcBidMicros": "2100000",
+      "effectiveCpcBidMicros": "2100000"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "adGroup": {
+      "resourceName": "customers/7788990011/adGroups/30110003",
+      "id": "30110003",
+      "name": "SANDBOX — PMax asset group proxy",
+      "status": "ENABLED",
+      "primaryStatus": "ELIGIBLE",
+      "type": "SEARCH_STANDARD",
+      "campaign": "customers/7788990011/campaigns/20110002",
+      "targetCpaMicros": "48000000"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "adGroup": {
+      "resourceName": "customers/7788990011/adGroups/30110004",
+      "id": "30110004",
+      "name": "SANDBOX — Video reach KSA",
+      "status": "ENABLED",
+      "primaryStatus": "ELIGIBLE",
+      "type": "VIDEO_TRUE_VIEW_IN_STREAM",
+      "campaign": "customers/7788990011/campaigns/20110003"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "adGroup": {
+      "resourceName": "customers/7788990011/adGroups/30110005",
+      "id": "30110005",
+      "name": "SANDBOX — Display no ads",
+      "status": "ENABLED",
+      "primaryStatus": "NOT_ELIGIBLE",
+      "type": "DISPLAY_STANDARD",
+      "campaign": "customers/7788990011/campaigns/20110004",
+      "targetCpaMicros": "35000000"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "adGroup": {
+      "resourceName": "customers/7788990011/adGroups/30110006",
+      "id": "30110006",
+      "name": "SANDBOX — Generic terms",
+      "status": "PAUSED",
+      "primaryStatus": "PAUSED",
+      "type": "SEARCH_STANDARD",
+      "campaign": "customers/7788990011/campaigns/20110005",
+      "cpcBidMicros": "1600000",
+      "effectiveCpcBidMicros": "1600000"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  }
+]

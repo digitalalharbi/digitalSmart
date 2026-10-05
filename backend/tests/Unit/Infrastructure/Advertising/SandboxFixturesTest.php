@@ -25,6 +25,17 @@ function fixtures(string $today = '2026-10-05'): SandboxFixtures
     );
 }
 
+it('pages performance like a reporting endpoint, not two rows at a time', function (): void {
+    $page = fixtures()->page(Provider::Meta, 'insights_ad');
+
+    // Structure pages tightly to exercise cursors; insights page like the
+    // real APIs, because paging a fortnight two rows at a time buys nothing.
+    expect(fixtures()->pageSizeFor('insights_ad'))->toBe(SandboxFixtures::INSIGHT_PAGE_SIZE)
+        ->and(fixtures()->pageSizeFor('campaigns'))->toBe(SandboxFixtures::PAGE_SIZE)
+        ->and($page->items)->toHaveCount(SandboxFixtures::INSIGHT_PAGE_SIZE)
+        ->and($page->hasMore())->toBeTrue();
+});
+
 it('pages with an opaque cursor, like every real provider', function (): void {
     $first = fixtures()->page(Provider::Meta, 'campaigns');
 

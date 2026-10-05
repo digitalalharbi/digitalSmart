@@ -104,9 +104,12 @@ built around them.
   `sandbox`, `manual`, `estimated` — decided once where the credentials are known.
   Aggregates inherit their weakest input, and sandbox or estimated figures will
   not combine with actuals at all.
-- `AdvertisingSyncAdapter`, the sync port, with the Meta implementation reading
-  campaigns, ad sets, ads, creatives and insights at campaign, ad-group and ad
-  level, against fixtures that hold real Graph API shapes.
+- `AdvertisingSyncAdapter`, the sync port, with Meta and Google Ads
+  implementations reading campaigns, ad sets/groups, ads, creatives and
+  insights at campaign, ad-group and ad level, against fixtures that hold each
+  provider's real response shapes. Google's field names came from the published
+  protobuf definitions, which corrected a mapping a reasonable guess would have
+  got wrong: v22 has no `metrics.video_views`.
 - An idempotent store: every write keyed on the provider's own identifier, metrics
   batched into chunked upserts sized from the row width, and ancestry denormalised
   onto the fact table so the common filters join nothing.
@@ -116,9 +119,9 @@ built around them.
 
 ### Not yet done in Phase 3
 
-- Sync adapters for Google Ads, TikTok, Snapchat, X and LinkedIn. Each needs its
-  own mapper against its own documented schema and its own fixture set; the
-  registry reports `supports() === false` for them rather than offering a stub.
+- Sync adapters for TikTok, Snapchat, X and LinkedIn. Each needs its own mapper
+  against its own documented schema and its own fixture set; the registry
+  reports `supports() === false` for them rather than offering a stub.
 - Account-level insight ingestion (the contract and fixture exist; the sync reads
   campaign, ad-group and ad levels).
 - Webhooks, where a provider officially supports them.

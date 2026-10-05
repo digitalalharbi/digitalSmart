@@ -26,6 +26,8 @@ enum ConversionActionType: string
     case LandingPageView = 'landing_page_view';
     case ViewContent = 'view_content';
     case Search = 'search';
+    /** Google reports a visit to a physical store as a conversion category. */
+    case StoreVisit = 'store_visit';
     case Custom = 'custom';
     case Other = 'other';
 
@@ -49,6 +51,7 @@ enum ConversionActionType: string
             self::LandingPageView => 'Landing page view',
             self::ViewContent => 'Content view',
             self::Search => 'Search',
+            self::StoreVisit => 'Store visit',
             self::Custom => 'Custom conversion',
             self::Other => 'Other',
         };

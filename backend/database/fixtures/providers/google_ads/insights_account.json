@@ -1,0 +1,464 @@
+[
+  {
+    "metrics": {
+      "impressions": "31759",
+      "clicks": "269",
+      "interactions": "269",
+      "costMicros": "608380194",
+      "viewThroughConversions": "1",
+      "conversions": 9.99,
+      "conversionsValue": 3041.85,
+      "allConversions": 11.64,
+      "allConversionsValue": 3410.77,
+      "videoTrueviewViews": "6382",
+      "engagements": "255",
+      "videoQuartileP100Rate": 14.4275,
+      "ctr": 0.00847,
+      "averageCpc": 2261636.41,
+      "averageCpm": 19156150.82
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "32652",
+      "clicks": "288",
+      "interactions": "288",
+      "costMicros": "597407956",
+      "viewThroughConversions": "1",
+      "conversions": 11.04,
+      "conversionsValue": 3416.0,
+      "allConversions": 13.13,
+      "allConversionsValue": 4157.77,
+      "videoTrueviewViews": "6099",
+      "engagements": "243",
+      "videoQuartileP100Rate": 15.6219,
+      "ctr": 0.00882,
+      "averageCpc": 2074333.18,
+      "averageCpm": 18296213.28
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "33182",
+      "clicks": "283",
+      "interactions": "283",
+      "costMicros": "594078242",
+      "viewThroughConversions": "1",
+      "conversions": 11.95,
+      "conversionsValue": 3667.95,
+      "allConversions": 14.41,
+      "allConversionsValue": 4115.55,
+      "videoTrueviewViews": "6057",
+      "engagements": "242",
+      "videoQuartileP100Rate": 11.1993,
+      "ctr": 0.008529,
+      "averageCpc": 2099216.4,
+      "averageCpm": 17903629.74
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "31527",
+      "clicks": "270",
+      "interactions": "270",
+      "costMicros": "611432376",
+      "viewThroughConversions": "3",
+      "conversions": 9.86,
+      "conversionsValue": 3032.3,
+      "allConversions": 11.83,
+      "allConversionsValue": 3535.24,
+      "videoTrueviewViews": "6143",
+      "engagements": "245",
+      "videoQuartileP100Rate": 11.1543,
+      "ctr": 0.008564,
+      "averageCpc": 2264564.36,
+      "averageCpm": 19393928.25
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "41315",
+      "clicks": "349",
+      "interactions": "349",
+      "costMicros": "787699102",
+      "viewThroughConversions": "3",
+      "conversions": 14.45,
+      "conversionsValue": 4416.0,
+      "allConversions": 16.54,
+      "allConversionsValue": 5005.56,
+      "videoTrueviewViews": "7160",
+      "engagements": "286",
+      "videoQuartileP100Rate": 14.2031,
+      "ctr": 0.008447,
+      "averageCpc": 2257017.48,
+      "averageCpm": 19065692.9
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "38582",
+      "clicks": "326",
+      "interactions": "326",
+      "costMicros": "714763652",
+      "viewThroughConversions": "5",
+      "conversions": 13.29,
+      "conversionsValue": 4084.15,
+      "allConversions": 15.35,
+      "allConversionsValue": 4696.87,
+      "videoTrueviewViews": "6761",
+      "engagements": "270",
+      "videoQuartileP100Rate": 10.7238,
+      "ctr": 0.00845,
+      "averageCpc": 2192526.54,
+      "averageCpm": 18525832.05
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "35133",
+      "clicks": "272",
+      "interactions": "272",
+      "costMicros": "619963621",
+      "viewThroughConversions": "1",
+      "conversions": 10.46,
+      "conversionsValue": 3199.3,
+      "allConversions": 12.42,
+      "allConversionsValue": 3829.28,
+      "videoTrueviewViews": "5587",
+      "engagements": "223",
+      "videoQuartileP100Rate": 14.7048,
+      "ctr": 0.007742,
+      "averageCpc": 2279278.02,
+      "averageCpm": 17646190.79
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "34384",
+      "clicks": "274",
+      "interactions": "274",
+      "costMicros": "624380336",
+      "viewThroughConversions": "2",
+      "conversions": 9.41,
+      "conversionsValue": 2915.2,
+      "allConversions": 11.92,
+      "allConversionsValue": 3413.36,
+      "videoTrueviewViews": "5903",
+      "engagements": "236",
+      "videoQuartileP100Rate": 9.9539,
+      "ctr": 0.007969,
+      "averageCpc": 2278760.35,
+      "averageCpm": 18159037.23
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "34995",
+      "clicks": "286",
+      "interactions": "286",
+      "costMicros": "630257488",
+      "viewThroughConversions": "1",
+      "conversions": 11.42,
+      "conversionsValue": 3493.15,
+      "allConversions": 15.48,
+      "allConversionsValue": 4089.98,
+      "videoTrueviewViews": "6113",
+      "engagements": "244",
+      "videoQuartileP100Rate": 11.7908,
+      "ctr": 0.008173,
+      "averageCpc": 2203697.51,
+      "averageCpm": 18009929.65
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "35195",
+      "clicks": "283",
+      "interactions": "283",
+      "costMicros": "656629098",
+      "viewThroughConversions": "3",
+      "conversions": 11.07,
+      "conversionsValue": 3403.3,
+      "allConversions": 12.41,
+      "allConversionsValue": 4024.34,
+      "videoTrueviewViews": "6830",
+      "engagements": "273",
+      "videoQuartileP100Rate": 9.1691,
+      "ctr": 0.008041,
+      "averageCpc": 2320244.16,
+      "averageCpm": 18656885.86
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "33450",
+      "clicks": "273",
+      "interactions": "273",
+      "costMicros": "592561292",
+      "viewThroughConversions": "2",
+      "conversions": 10.81,
+      "conversionsValue": 3324.8,
+      "allConversions": 13.76,
+      "allConversionsValue": 3710.5,
+      "videoTrueviewViews": "6393",
+      "engagements": "255",
+      "videoQuartileP100Rate": 15.1846,
+      "ctr": 0.008161,
+      "averageCpc": 2170554.18,
+      "averageCpm": 17714836.83
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "40875",
+      "clicks": "345",
+      "interactions": "345",
+      "costMicros": "789960158",
+      "viewThroughConversions": "3",
+      "conversions": 12.48,
+      "conversionsValue": 3817.45,
+      "allConversions": 14.78,
+      "allConversionsValue": 4313.92,
+      "videoTrueviewViews": "7055",
+      "engagements": "282",
+      "videoQuartileP100Rate": 9.5742,
+      "ctr": 0.00844,
+      "averageCpc": 2289739.59,
+      "averageCpm": 19326242.4
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "38882",
+      "clicks": "346",
+      "interactions": "346",
+      "costMicros": "774355590",
+      "viewThroughConversions": "2",
+      "conversions": 12.13,
+      "conversionsValue": 3754.85,
+      "allConversions": 16.02,
+      "allConversionsValue": 4410.13,
+      "videoTrueviewViews": "7052",
+      "engagements": "282",
+      "videoQuartileP100Rate": 14.399,
+      "ctr": 0.008899,
+      "averageCpc": 2238021.94,
+      "averageCpm": 19915528.78
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "segments.date"
+    ]
+  },
+  {
+    "metrics": {
+      "impressions": "33201",
+      "clicks": "287",
+      "interactions": "287",
+      "costMicros": "658996422",
+      "viewThroughConversions": "1",
+      "conversions": 10.79,
+      "conversionsValue": 3312.95,
+      "allConversions": 13.75,
+      "allConversionsValue": 3619.01,
+      "videoTrueviewViews": "5924",
+      "engagements": "236",
+      "videoQuartileP100Rate": 11.0879,
+      "ctr": 0.008644,
+      "averageCpc": 2296154.78,
+      "averageCpm": 19848691.97
+    },
+    "segments": {
+      "adNetworkType": "SEARCH"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "segments.date"
+    ]
+  }
+]

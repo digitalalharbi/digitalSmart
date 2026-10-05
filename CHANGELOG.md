@@ -4,6 +4,44 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Google Ads sync
+
+### Added
+
+- `GoogleAdsMapper` and `GoogleAdsSyncAdapter`, reading campaigns, ad groups, ads
+  and insights from SANDBOX fixtures in protobuf-JSON shape. Field names were
+  taken from the published **protobuf definitions** rather than the HTML field
+  reference, which renders client-side — and that immediately corrected a mapping
+  a reasonable guess would have got wrong: v22 has no `metrics.video_views`. The
+  metric is `videoTrueviewViews`, and quartile completion exists only as a rate.
+- 38 new tests covering micros conversion, shared budgets, `primaryStatus` as the
+  real delivery signal, fractional conversions, and the metrics Google simply
+  does not publish.
+- `ConversionActionType::StoreVisit`, which Google reports as a category.
+
+### Changed
+
+- The sync adapter base class now owns the paging loop and the sandbox gate, so a
+  provider contributes only its fixture names and its row mapping. Adding Google
+  took a 90-line adapter instead of a 200-line one.
+- `EloquentAdvertisingStore` memoises its id and parent maps for the lifetime of
+  a sync, invalidating per model on write. Without it every page re-read the whole
+  campaign, ad-group and creative tables; a Google sync test went from 34s to
+  0.2s.
+- Sandbox fixtures now page structure at 2 rows and performance at 50. Structure
+  stays tiny so every sync crosses page boundaries and cursor handling is
+  exercised; paging a fortnight of ad-level rows two at a time bought no coverage
+  and cost every test run.
+- The fixture loader supports a `_date_paths` directive, so a provider that nests
+  its date (Google puts it under `segments`) gets it where a live response would
+  put it.
+
+### Documentation
+
+- `docs/INTEGRATIONS.md` gains the Google Ads field-mapping table, including the
+  metrics Google does not expose and why they stay null rather than being
+  approximated.
+
 ## Phase 3 — campaign data model, sync and normalised metrics
 
 ### Added

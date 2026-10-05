@@ -1,0 +1,242 @@
+[
+  {
+    "adGroupAd": {
+      "resourceName": "customers/7788990011/adGroupAds/30110001~40110001",
+      "adGroup": "customers/7788990011/adGroups/30110001",
+      "status": "ENABLED",
+      "primaryStatus": "ELIGIBLE",
+      "adStrength": "EXCELLENT",
+      "policySummary": {
+        "approvalStatus": "APPROVED",
+        "reviewStatus": "REVIEWED"
+      },
+      "ad": {
+        "resourceName": "customers/7788990011/ads/40110001",
+        "id": "40110001",
+        "type": "RESPONSIVE_SEARCH_AD",
+        "finalUrls": [
+          "https://sandbox.digitalsmart.invalid/alhambra"
+        ],
+        "displayUrl": "sandbox.digitalsmart.invalid/alhambra",
+        "responsiveSearchAd": {
+          "headlines": [
+            {
+              "text": "الحمراء للتجزئة"
+            },
+            {
+              "text": "تسوق أونلاين"
+            },
+            {
+              "text": "توصيل سريع"
+            }
+          ],
+          "descriptions": [
+            {
+              "text": "اكتشف تشكيلة الحمراء الجديدة مع توصيل مجاني."
+            },
+            {
+              "text": "عروض حصرية لعملاء المملكة."
+            }
+          ],
+          "path1": "offers"
+        }
+      }
+    },
+    "campaign": {
+      "resourceName": "customers/7788990011/campaigns/20110001",
+      "id": "20110001"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "adGroupAd": {
+      "resourceName": "customers/7788990011/adGroupAds/30110002~40110002",
+      "adGroup": "customers/7788990011/adGroups/30110002",
+      "status": "ENABLED",
+      "primaryStatus": "LIMITED",
+      "adStrength": "GOOD",
+      "policySummary": {
+        "approvalStatus": "APPROVED_LIMITED",
+        "reviewStatus": "REVIEWED",
+        "policyTopicEntries": [
+          {
+            "topic": "TRADEMARKS_IN_AD_TEXT",
+            "type": "LIMITED"
+          }
+        ]
+      },
+      "ad": {
+        "resourceName": "customers/7788990011/ads/40110002",
+        "id": "40110002",
+        "type": "RESPONSIVE_SEARCH_AD",
+        "finalUrls": [
+          "https://sandbox.digitalsmart.invalid/alhambra/collection"
+        ],
+        "responsiveSearchAd": {
+          "headlines": [
+            {
+              "text": "Alhambra Collection"
+            },
+            {
+              "text": "Shop the new season"
+            }
+          ],
+          "descriptions": [
+            {
+              "text": "Free delivery across the Kingdom."
+            }
+          ]
+        }
+      }
+    },
+    "campaign": {
+      "resourceName": "customers/7788990011/campaigns/20110001",
+      "id": "20110001"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "adGroupAd": {
+      "resourceName": "customers/7788990011/adGroupAds/30110003~40110003",
+      "adGroup": "customers/7788990011/adGroups/30110003",
+      "status": "ENABLED",
+      "primaryStatus": "ELIGIBLE",
+      "adStrength": "AVERAGE",
+      "policySummary": {
+        "approvalStatus": "APPROVED",
+        "reviewStatus": "REVIEWED"
+      },
+      "ad": {
+        "resourceName": "customers/7788990011/ads/40110003",
+        "id": "40110003",
+        "type": "RESPONSIVE_DISPLAY_AD",
+        "finalUrls": [
+          "https://sandbox.digitalsmart.invalid/alhambra/pmax"
+        ],
+        "responsiveDisplayAd": {
+          "headlines": [
+            {
+              "text": "Alhambra Retail"
+            }
+          ],
+          "descriptions": [
+            {
+              "text": "Everything for the home."
+            }
+          ],
+          "businessName": "Alhambra"
+        }
+      }
+    },
+    "campaign": {
+      "resourceName": "customers/7788990011/campaigns/20110002",
+      "id": "20110002"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "adGroupAd": {
+      "resourceName": "customers/7788990011/adGroupAds/30110004~40110004",
+      "adGroup": "customers/7788990011/adGroups/30110004",
+      "status": "ENABLED",
+      "primaryStatus": "ELIGIBLE",
+      "policySummary": {
+        "approvalStatus": "APPROVED",
+        "reviewStatus": "REVIEWED"
+      },
+      "ad": {
+        "resourceName": "customers/7788990011/ads/40110004",
+        "id": "40110004",
+        "name": "SANDBOX — Brand film in-stream",
+        "type": "VIDEO_TRUEVIEW_IN_STREAM_AD",
+        "finalUrls": [
+          "https://sandbox.digitalsmart.invalid/alhambra/story"
+        ],
+        "videoAd": {
+          "inStream": {
+            "actionButtonLabel": "Learn more"
+          }
+        }
+      }
+    },
+    "campaign": {
+      "resourceName": "customers/7788990011/campaigns/20110003",
+      "id": "20110003"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "adGroupAd": {
+      "resourceName": "customers/7788990011/adGroupAds/30110006~40110005",
+      "adGroup": "customers/7788990011/adGroups/30110006",
+      "status": "ENABLED",
+      "primaryStatus": "NOT_ELIGIBLE",
+      "adStrength": "POOR",
+      "policySummary": {
+        "approvalStatus": "DISAPPROVED",
+        "reviewStatus": "REVIEWED",
+        "policyTopicEntries": [
+          {
+            "topic": "MISLEADING_CLAIMS_IN_AD_TEXT",
+            "type": "PROHIBITED"
+          }
+        ]
+      },
+      "ad": {
+        "resourceName": "customers/7788990011/ads/40110005",
+        "id": "40110005",
+        "type": "RESPONSIVE_SEARCH_AD",
+        "finalUrls": [
+          "https://sandbox.digitalsmart.invalid/alhambra/clearance"
+        ],
+        "responsiveSearchAd": {
+          "headlines": [
+            {
+              "text": "Guaranteed lowest price ever"
+            }
+          ],
+          "descriptions": [
+            {
+              "text": "Nobody beats our prices, guaranteed forever."
+            }
+          ]
+        }
+      }
+    },
+    "campaign": {
+      "resourceName": "customers/7788990011/campaigns/20110005",
+      "id": "20110005"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  }
+]

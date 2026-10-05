@@ -9,13 +9,10 @@ use App\Application\Advertising\DTO\AdRecord;
 use App\Application\Advertising\DTO\CampaignRecord;
 use App\Application\Advertising\DTO\CreativeRecord;
 use App\Application\Advertising\DTO\InsightRecord;
-use App\Application\Advertising\DTO\Page;
 use App\Domain\Advertising\AdEntityType;
-use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Infrastructure\Advertising\Mapper\MetaMapper;
 use App\Infrastructure\Advertising\Sandbox\SandboxFixtures;
-use DateTimeImmutable;
 
 /**
  * Meta Marketing API sync.
@@ -64,98 +61,39 @@ final class MetaSyncAdapter extends AbstractSyncAdapter
         return 92;
     }
 
-    /** @return Page<CampaignRecord> */
-    public function fetchCampaigns(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
+    /** Meta calls them ad sets, and the fixtures keep the provider's own word. */
+    protected function fixtureName(string $kind): string
     {
-        $this->assertSandbox($credentials);
-
-        $page = $this->fixtures->page($this->provider(), 'campaigns', $cursor);
-
-        return new Page(
-            items: array_map(fn (array $row): CampaignRecord => $this->mapper->campaign($row), $page->items),
-            nextCursor: $page->nextCursor,
-        );
-    }
-
-    /** @return Page<AdGroupRecord> */
-    public function fetchAdGroups(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
-    {
-        $this->assertSandbox($credentials);
-
-        $page = $this->fixtures->page($this->provider(), 'adsets', $cursor);
-
-        return new Page(
-            items: array_map(fn (array $row): AdGroupRecord => $this->mapper->adGroup($row), $page->items),
-            nextCursor: $page->nextCursor,
-        );
-    }
-
-    /** @return Page<AdRecord> */
-    public function fetchAds(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
-    {
-        $this->assertSandbox($credentials);
-
-        $page = $this->fixtures->page($this->provider(), 'ads', $cursor);
-
-        return new Page(
-            items: array_map(fn (array $row): AdRecord => $this->mapper->ad($row), $page->items),
-            nextCursor: $page->nextCursor,
-        );
-    }
-
-    /** @return Page<CreativeRecord> */
-    public function fetchCreatives(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
-    {
-        $this->assertSandbox($credentials);
-
-        $page = $this->fixtures->page($this->provider(), 'adcreatives', $cursor);
-
-        return new Page(
-            items: array_map(fn (array $row): CreativeRecord => $this->mapper->creative($row), $page->items),
-            nextCursor: $page->nextCursor,
-        );
-    }
-
-    /** @return Page<InsightRecord> */
-    public function fetchInsights(
-        Credentials $credentials,
-        string $externalAccountId,
-        AdEntityType $level,
-        DateTimeImmutable $since,
-        DateTimeImmutable $until,
-        ?string $cursor = null,
-    ): Page {
-        $this->assertSandbox($credentials);
-
-        /*
-         * Each level is its own request, as it is against the real API: Meta's
-         * `level` parameter changes which ids come back and recomputes reach,
-         * so a parent's row is not the sum of its children's.
-         */
-        $fixture = 'insights_'.match ($level) {
-            AdEntityType::Account => 'account',
-            AdEntityType::Campaign => 'campaign',
-            AdEntityType::AdGroup => 'adset',
-            AdEntityType::Ad => 'ad',
+        return match ($kind) {
+            'ad_groups' => 'adsets',
+            'creatives' => 'adcreatives',
+            'insights_ad_group' => 'insights_adset',
+            default => $kind,
         };
+    }
 
-        $page = $this->fixtures->page(
-            $this->provider(),
-            $fixture,
-            $cursor,
-            $this->withinRange($since, $until),
-        );
+    protected function mapCampaign(array $row): CampaignRecord
+    {
+        return $this->mapper->campaign($row);
+    }
 
-        // The account's reporting currency. Sandbox accounts are SAR; a live
-        // adapter reads it from the row's own `account_currency`.
-        $currency = 'SAR';
+    protected function mapAdGroup(array $row): AdGroupRecord
+    {
+        return $this->mapper->adGroup($row);
+    }
 
-        return new Page(
-            items: array_map(
-                fn (array $row): InsightRecord => $this->mapper->insight($row, $level, $currency),
-                $page->items,
-            ),
-            nextCursor: $page->nextCursor,
-        );
+    protected function mapAd(array $row): AdRecord
+    {
+        return $this->mapper->ad($row);
+    }
+
+    protected function mapCreative(array $row): CreativeRecord
+    {
+        return $this->mapper->creative($row);
+    }
+
+    protected function mapInsight(array $row, AdEntityType $level, string $currency): InsightRecord
+    {
+        return $this->mapper->insight($row, $level, $currency);
     }
 }

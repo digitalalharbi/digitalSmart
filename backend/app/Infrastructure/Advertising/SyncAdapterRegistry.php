@@ -8,6 +8,7 @@ use App\Application\Advertising\Contract\AdvertisingSyncAdapter;
 use App\Application\Advertising\Contract\SyncAdapterRegistry as Registry;
 use App\Application\Integration\Exception\ProviderUnavailable;
 use App\Domain\Integration\Provider;
+use App\Infrastructure\Advertising\Adapter\GoogleAdsSyncAdapter;
 use App\Infrastructure\Advertising\Adapter\MetaSyncAdapter;
 use Illuminate\Contracts\Container\Container;
 
@@ -25,6 +26,7 @@ final readonly class SyncAdapterRegistry implements Registry
     /** @var array<string, class-string<AdvertisingSyncAdapter>> */
     private const ADAPTERS = [
         Provider::Meta->value => MetaSyncAdapter::class,
+        Provider::GoogleAds->value => GoogleAdsSyncAdapter::class,
     ];
 
     public function __construct(private Container $container) {}

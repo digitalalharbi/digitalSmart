@@ -25,9 +25,22 @@ use Illuminate\Support\Str;
  * range or a replayed page updates a row instead of adding one. The alternative
  * is double-counted spend, which is a number a client would be billed against.
  */
-final readonly class EloquentAdvertisingStore implements AdvertisingStore
+final class EloquentAdvertisingStore implements AdvertisingStore
 {
-    public function __construct(private Clock $clock) {}
+    /**
+     * Provider id → our id, and our id → our parent's id, per account.
+     *
+     * Memoised for the lifetime of one sync. Without it every page of ads
+     * re-reads the whole campaign, ad-group and creative tables, and a page of
+     * insights re-reads six maps — which turns a wide date range into thousands
+     * of identical queries. Structure writes invalidate the maps they affect, so
+     * a child page still sees the parents the previous page created.
+     *
+     * @var array<string, array<string, string>>
+     */
+    private array $maps = [];
+
+    public function __construct(private readonly Clock $clock) {}
 
     public function upsertCampaigns(SyncContext $context, array $records): int
     {
@@ -71,6 +84,8 @@ final readonly class EloquentAdvertisingStore implements AdvertisingStore
 
                 $written++;
             }
+
+            $this->forget(Campaign::class);
 
             return $written;
         });
@@ -130,6 +145,8 @@ final readonly class EloquentAdvertisingStore implements AdvertisingStore
 
                 $written++;
             }
+
+            $this->forget(AdGroup::class);
 
             return $written;
         });
@@ -194,6 +211,8 @@ final readonly class EloquentAdvertisingStore implements AdvertisingStore
                 $written++;
             }
 
+            $this->forget(Creative::class);
+
             return $written;
         });
     }
@@ -248,6 +267,8 @@ final readonly class EloquentAdvertisingStore implements AdvertisingStore
 
                 $written++;
             }
+
+            $this->forget(Ad::class);
 
             return $written;
         });
@@ -424,21 +445,12 @@ final readonly class EloquentAdvertisingStore implements AdvertisingStore
     /**
      * Provider id → our id, for one account.
      *
-     * Loaded once per batch rather than queried per record: a page of ads would
-     * otherwise issue three lookups each.
-     *
      * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
      * @return array<string, string>
      */
     private function idMap(string $model, string $externalAccountId): array
     {
-        /** @var array<string, string> $map */
-        $map = $model::query()
-            ->where('external_account_id', $externalAccountId)
-            ->pluck('id', 'external_id')
-            ->all();
-
-        return $map;
+        return $this->lookup($model, $externalAccountId, 'external_id', 'id');
     }
 
     /**
@@ -449,12 +461,44 @@ final readonly class EloquentAdvertisingStore implements AdvertisingStore
      */
     private function parentMap(string $model, string $externalAccountId, string $column): array
     {
+        return $this->lookup($model, $externalAccountId, 'id', $column);
+    }
+
+    /**
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
+     * @return array<string, string>
+     */
+    private function lookup(string $model, string $externalAccountId, string $keyColumn, string $valueColumn): array
+    {
+        $cacheKey = $model.'|'.$externalAccountId.'|'.$keyColumn.'>'.$valueColumn;
+
+        if (isset($this->maps[$cacheKey])) {
+            return $this->maps[$cacheKey];
+        }
+
         /** @var array<string, string> $map */
         $map = $model::query()
             ->where('external_account_id', $externalAccountId)
-            ->pluck($column, 'id')
+            ->pluck($valueColumn, $keyColumn)
             ->all();
 
-        return $map;
+        return $this->maps[$cacheKey] = $map;
+    }
+
+    /**
+     * Drop the memoised maps for one model.
+     *
+     * Called after writing that model, so the next page sees what this one
+     * created rather than a snapshot taken before it existed.
+     *
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
+     */
+    private function forget(string $model): void
+    {
+        foreach (array_keys($this->maps) as $key) {
+            if (str_starts_with($key, $model.'|')) {
+                unset($this->maps[$key]);
+            }
+        }
     }
 }

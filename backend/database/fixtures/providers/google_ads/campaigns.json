@@ -1,0 +1,178 @@
+[
+  {
+    "campaign": {
+      "resourceName": "customers/7788990011/campaigns/20110001",
+      "id": "20110001",
+      "name": "SANDBOX — Alhambra | Search | Brand",
+      "status": "ENABLED",
+      "primaryStatus": "ELIGIBLE",
+      "primaryStatusReasons": [],
+      "servingStatus": "SERVING",
+      "advertisingChannelType": "SEARCH",
+      "biddingStrategyType": "TARGET_SPEND",
+      "startDate": "2026-07-01",
+      "campaignBudget": "customers/7788990011/campaignBudgets/9001",
+      "optimizationScore": 0.83,
+      "experimentType": "BASE"
+    },
+    "campaignBudget": {
+      "resourceName": "customers/7788990011/campaignBudgets/9001",
+      "id": "9001",
+      "name": "SANDBOX — Search brand daily",
+      "amountMicros": "180000000",
+      "totalAmountMicros": "0",
+      "period": "DAILY",
+      "deliveryMethod": "STANDARD",
+      "explicitlyShared": false,
+      "status": "ENABLED"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "campaign": {
+      "resourceName": "customers/7788990011/campaigns/20110002",
+      "id": "20110002",
+      "name": "SANDBOX — Alhambra | Performance Max | Retail",
+      "status": "ENABLED",
+      "primaryStatus": "LIMITED",
+      "primaryStatusReasons": [
+        "BUDGET_CONSTRAINED"
+      ],
+      "servingStatus": "SERVING",
+      "advertisingChannelType": "PERFORMANCE_MAX",
+      "biddingStrategyType": "MAXIMIZE_CONVERSION_VALUE",
+      "startDate": "2026-08-15",
+      "campaignBudget": "customers/7788990011/campaignBudgets/9002",
+      "optimizationScore": 0.71,
+      "experimentType": "BASE"
+    },
+    "campaignBudget": {
+      "resourceName": "customers/7788990011/campaignBudgets/9002",
+      "id": "9002",
+      "name": "SANDBOX — PMax shared budget",
+      "amountMicros": "420000000",
+      "totalAmountMicros": "0",
+      "period": "DAILY",
+      "deliveryMethod": "STANDARD",
+      "explicitlyShared": true,
+      "status": "ENABLED"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "campaign": {
+      "resourceName": "customers/7788990011/campaigns/20110003",
+      "id": "20110003",
+      "name": "SANDBOX — Alhambra | Video | Reach",
+      "status": "ENABLED",
+      "primaryStatus": "ELIGIBLE",
+      "servingStatus": "SERVING",
+      "advertisingChannelType": "VIDEO",
+      "advertisingChannelSubType": "VIDEO_REACH_TARGET_FREQUENCY",
+      "biddingStrategyType": "TARGET_CPM",
+      "startDate": "2026-09-10",
+      "endDate": "2026-12-31",
+      "campaignBudget": "customers/7788990011/campaignBudgets/9003",
+      "experimentType": "BASE"
+    },
+    "campaignBudget": {
+      "resourceName": "customers/7788990011/campaignBudgets/9003",
+      "id": "9003",
+      "name": "SANDBOX — Video reach total",
+      "amountMicros": "0",
+      "totalAmountMicros": "9000000000",
+      "period": "CUSTOM_PERIOD",
+      "deliveryMethod": "STANDARD",
+      "explicitlyShared": false,
+      "status": "ENABLED"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "campaign": {
+      "resourceName": "customers/7788990011/campaigns/20110004",
+      "id": "20110004",
+      "name": "SANDBOX — Alhambra | Display | Misconfigured",
+      "status": "ENABLED",
+      "primaryStatus": "MISCONFIGURED",
+      "primaryStatusReasons": [
+        "HAS_AD_GROUPS_WITHOUT_ADS"
+      ],
+      "servingStatus": "SERVING",
+      "advertisingChannelType": "DISPLAY",
+      "biddingStrategyType": "TARGET_CPA",
+      "startDate": "2026-09-20",
+      "campaignBudget": "customers/7788990011/campaignBudgets/9004",
+      "experimentType": "BASE"
+    },
+    "campaignBudget": {
+      "resourceName": "customers/7788990011/campaignBudgets/9004",
+      "id": "9004",
+      "name": "SANDBOX — Display daily",
+      "amountMicros": "75000000",
+      "totalAmountMicros": "0",
+      "period": "DAILY",
+      "deliveryMethod": "ACCELERATED",
+      "explicitlyShared": false,
+      "status": "ENABLED"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  },
+  {
+    "campaign": {
+      "resourceName": "customers/7788990011/campaigns/20110005",
+      "id": "20110005",
+      "name": "SANDBOX — Alhambra | Search | Paused generic",
+      "status": "PAUSED",
+      "primaryStatus": "PAUSED",
+      "servingStatus": "NONE",
+      "advertisingChannelType": "SEARCH",
+      "biddingStrategyType": "MANUAL_CPC",
+      "startDate": "2026-06-01",
+      "campaignBudget": "customers/7788990011/campaignBudgets/9001",
+      "experimentType": "BASE"
+    },
+    "campaignBudget": {
+      "resourceName": "customers/7788990011/campaignBudgets/9001",
+      "id": "9001",
+      "name": "SANDBOX — Search brand daily",
+      "amountMicros": "180000000",
+      "totalAmountMicros": "0",
+      "period": "DAILY",
+      "deliveryMethod": "STANDARD",
+      "explicitlyShared": false,
+      "status": "ENABLED"
+    },
+    "customer": {
+      "id": "7788990011",
+      "resourceName": "customers/7788990011",
+      "descriptiveName": "SANDBOX — Alhambra Retail (Google Ads)",
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    }
+  }
+]

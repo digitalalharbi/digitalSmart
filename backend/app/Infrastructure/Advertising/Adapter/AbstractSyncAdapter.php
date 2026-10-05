@@ -5,7 +5,14 @@ declare(strict_types=1);
 namespace App\Infrastructure\Advertising\Adapter;
 
 use App\Application\Advertising\Contract\AdvertisingSyncAdapter;
+use App\Application\Advertising\DTO\AdGroupRecord;
+use App\Application\Advertising\DTO\AdRecord;
+use App\Application\Advertising\DTO\CampaignRecord;
+use App\Application\Advertising\DTO\CreativeRecord;
+use App\Application\Advertising\DTO\InsightRecord;
+use App\Application\Advertising\DTO\Page;
 use App\Application\Integration\Exception\ProviderNotConfigured;
+use App\Domain\Advertising\AdEntityType;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Infrastructure\Advertising\Sandbox\SandboxFixtures;
@@ -23,8 +30,11 @@ use DateTimeImmutable;
  * provider-shaped fixtures off disk.
  *
  * The consequence is deliberate. There is no code path that quietly invents a
- * number for a live connection. Swapping fixtures for HTTP later changes the
- * `fetch*` bodies and nothing above them.
+ * number for a live connection. Swapping fixtures for HTTP later replaces the
+ * `rows()` source and leaves every mapping, every cursor and every test alone.
+ *
+ * Subclasses supply two things and inherit the rest: which fixture file answers
+ * which request, and how to turn one of its rows into a normalised record.
  */
 abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
 {
@@ -50,6 +60,129 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
         return 92;
     }
 
+    /** @return Page<CampaignRecord> */
+    final public function fetchCampaigns(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
+    {
+        $page = $this->rows($credentials, $this->fixtureName('campaigns'), $cursor);
+
+        return new Page(
+            items: array_map(fn (array $row): CampaignRecord => $this->mapCampaign($row), $page->items),
+            nextCursor: $page->nextCursor,
+        );
+    }
+
+    /** @return Page<AdGroupRecord> */
+    final public function fetchAdGroups(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
+    {
+        $page = $this->rows($credentials, $this->fixtureName('ad_groups'), $cursor);
+
+        return new Page(
+            items: array_map(fn (array $row): AdGroupRecord => $this->mapAdGroup($row), $page->items),
+            nextCursor: $page->nextCursor,
+        );
+    }
+
+    /** @return Page<AdRecord> */
+    final public function fetchAds(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
+    {
+        $page = $this->rows($credentials, $this->fixtureName('ads'), $cursor);
+
+        return new Page(
+            items: array_map(fn (array $row): AdRecord => $this->mapAd($row), $page->items),
+            nextCursor: $page->nextCursor,
+        );
+    }
+
+    /** @return Page<CreativeRecord> */
+    final public function fetchCreatives(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
+    {
+        $page = $this->rows($credentials, $this->fixtureName('creatives'), $cursor);
+
+        return new Page(
+            items: array_map(fn (array $row): CreativeRecord => $this->mapCreative($row), $page->items),
+            nextCursor: $page->nextCursor,
+        );
+    }
+
+    /** @return Page<InsightRecord> */
+    final public function fetchInsights(
+        Credentials $credentials,
+        string $externalAccountId,
+        AdEntityType $level,
+        DateTimeImmutable $since,
+        DateTimeImmutable $until,
+        ?string $cursor = null,
+    ): Page {
+        /*
+         * One request per level, as against the real APIs: asking for a
+         * different level changes which ids come back and recomputes reach, so a
+         * parent's row is not the sum of its children's.
+         */
+        $page = $this->rows(
+            $credentials,
+            $this->fixtureName('insights_'.$level->value),
+            $cursor,
+            $this->withinRange($since, $until, $this->insightDateField()),
+        );
+
+        return new Page(
+            items: array_map(
+                fn (array $row): InsightRecord => $this->mapInsight($row, $level, $this->reportingCurrency()),
+                $page->items,
+            ),
+            nextCursor: $page->nextCursor,
+        );
+    }
+
+    /**
+     * The fixture file answering a request.
+     *
+     * Overridden where a provider's own vocabulary differs — Meta's ad sets are
+     * `adsets`, not `ad_groups` — so the file names stay recognisable to anyone
+     * comparing them with the provider's documentation.
+     */
+    protected function fixtureName(string $kind): string
+    {
+        return $kind;
+    }
+
+    /** @param array<string, mixed> $row */
+    abstract protected function mapCampaign(array $row): CampaignRecord;
+
+    /** @param array<string, mixed> $row */
+    abstract protected function mapAdGroup(array $row): AdGroupRecord;
+
+    /** @param array<string, mixed> $row */
+    abstract protected function mapAd(array $row): AdRecord;
+
+    /** @param array<string, mixed> $row */
+    abstract protected function mapCreative(array $row): CreativeRecord;
+
+    /** @param array<string, mixed> $row */
+    abstract protected function mapInsight(array $row, AdEntityType $level, string $currency): InsightRecord;
+
+    /**
+     * Which key in an insight row holds its date.
+     *
+     * Meta puts it at the top level as `date_start`; Google nests it under
+     * `segments.date`, which the loader flattens for range filtering only.
+     */
+    protected function insightDateField(): string
+    {
+        return 'date_start';
+    }
+
+    /**
+     * The sandbox account's reporting currency.
+     *
+     * A fallback only: every mapper prefers the currency on the row itself,
+     * because that is where a live response states it.
+     */
+    protected function reportingCurrency(): string
+    {
+        return 'SAR';
+    }
+
     /** True when this connection is wired to fixtures rather than an endpoint. */
     protected function isSandbox(Credentials $credentials): bool
     {
@@ -57,10 +190,27 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
     }
 
     /**
-     * The only door into a fetch.
+     * One page of raw provider rows — the only door into a fetch.
+     *
+     * @param  callable(array<string, mixed>): bool|null  $filter
+     * @return Page<array<string, mixed>>
      *
      * @throws ProviderNotConfigured when credentials are absent, or present but
      *                               not yet usable against the live API
+     */
+    protected function rows(
+        Credentials $credentials,
+        string $fixture,
+        ?string $cursor,
+        ?callable $filter = null,
+    ): Page {
+        $this->assertSandbox($credentials);
+
+        return $this->fixtures->page($this->provider(), $fixture, $cursor, $filter);
+    }
+
+    /**
+     * @throws ProviderNotConfigured
      */
     protected function assertSandbox(Credentials $credentials): void
     {

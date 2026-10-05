@@ -23,8 +23,23 @@ use RuntimeException;
  */
 final class SandboxFixtures
 {
-    /** Rows per page. Small on purpose, so cursor handling is exercised. */
+    /**
+     * Rows per page for structure.
+     *
+     * Deliberately tiny, so every sync crosses several page boundaries and
+     * cursor handling is exercised rather than assumed.
+     */
     public const PAGE_SIZE = 2;
+
+    /**
+     * Rows per page for performance.
+     *
+     * Larger because that is what the real APIs do — Meta's default insight page
+     * is 25 and Google streams whole result sets — and because paging fourteen
+     * days of ad-level rows two at a time is a cost the tests pay on every run
+     * for no extra coverage.
+     */
+    public const INSIGHT_PAGE_SIZE = 50;
 
     /** @var array<string, list<array<string, mixed>>> */
     private array $cache = [];
@@ -48,14 +63,21 @@ final class SandboxFixtures
             $rows = array_values(array_filter($rows, $filter));
         }
 
+        $size = $this->pageSizeFor($name);
         $offset = $this->decodeCursor($cursor);
-        $slice = array_slice($rows, $offset, self::PAGE_SIZE);
-        $next = $offset + self::PAGE_SIZE;
+        $slice = array_slice($rows, $offset, $size);
+        $next = $offset + $size;
 
         return new Page(
             items: array_values($slice),
             nextCursor: $next < count($rows) ? $this->encodeCursor($next) : null,
         );
+    }
+
+    /** Insight files page like a real reporting endpoint; structure pages tightly. */
+    public function pageSizeFor(string $name): int
+    {
+        return str_starts_with($name, 'insights_') ? self::INSIGHT_PAGE_SIZE : self::PAGE_SIZE;
     }
 
     /**
@@ -116,6 +138,12 @@ final class SandboxFixtures
     /**
      * Turn `_day_offset` into the date fields the provider would have sent.
      *
+     * `date_start` and `date_stop` are always written at the top level, because
+     * that is where the range filter looks. A row may also list `_date_paths`
+     * (dotted, e.g. `segments.date`) for providers that nest the date somewhere
+     * else — Google reports it under `segments`, and the mapper must find it
+     * exactly where a live response would put it.
+     *
      * @param  array<string, mixed>  $row
      * @return array<string, mixed>
      */
@@ -127,6 +155,14 @@ final class SandboxFixtures
             $date = $this->today->modify('-'.(int) $offset.' days')->format('Y-m-d');
             $row['date_start'] = $date;
             $row['date_stop'] = $date;
+
+            $paths = $row['_date_paths'] ?? null;
+
+            foreach (is_array($paths) ? $paths : [] as $path) {
+                if (is_string($path)) {
+                    $row = $this->writePath($row, explode('.', $path), $date);
+                }
+            }
         }
 
         foreach (array_keys($row) as $key) {
@@ -134,6 +170,35 @@ final class SandboxFixtures
                 unset($row[$key]);
             }
         }
+
+        return $row;
+    }
+
+    /**
+     * Set a nested value, creating intermediate arrays.
+     *
+     * @param  array<string, mixed>  $row
+     * @param  list<string>  $segments
+     * @return array<string, mixed>
+     */
+    private function writePath(array $row, array $segments, string $value): array
+    {
+        $key = array_shift($segments);
+
+        if ($key === null) {
+            return $row;
+        }
+
+        if ($segments === []) {
+            $row[$key] = $value;
+
+            return $row;
+        }
+
+        $nested = $row[$key] ?? [];
+        /** @var array<string, mixed> $nested */
+        $nested = is_array($nested) ? $nested : [];
+        $row[$key] = $this->writePath($nested, $segments, $value);
 
         return $row;
     }
