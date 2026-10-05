@@ -1,0 +1,282 @@
+[
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "326.20",
+      "billed_cost": "326.20",
+      "cash_spend": "326.20",
+      "voucher_spend": "0.00",
+      "conversions": "3.30",
+      "impressions": "18518",
+      "reach": "-"
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "340.98",
+      "billed_cost": "340.98",
+      "cash_spend": "340.98",
+      "voucher_spend": "0.00",
+      "conversions": "3.22",
+      "impressions": "19205",
+      "reach": "-"
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "360.10",
+      "billed_cost": "360.10",
+      "cash_spend": "360.10",
+      "voucher_spend": "0.00",
+      "conversions": "2.44",
+      "impressions": "19730",
+      "reach": "-"
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "326.69",
+      "billed_cost": "326.69",
+      "cash_spend": "326.69",
+      "voucher_spend": "0.00",
+      "conversions": "2.31",
+      "impressions": "17512",
+      "reach": "-"
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "432.64",
+      "billed_cost": "432.64",
+      "cash_spend": "432.64",
+      "voucher_spend": "0.00",
+      "conversions": "3.63",
+      "impressions": "24010",
+      "reach": "-"
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "397.75",
+      "billed_cost": "397.75",
+      "cash_spend": "397.75",
+      "voucher_spend": "0.00",
+      "conversions": "3.56",
+      "impressions": "21818",
+      "reach": "-"
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "336.23",
+      "billed_cost": "336.23",
+      "cash_spend": "336.23",
+      "voucher_spend": "0.00",
+      "conversions": "2.90",
+      "impressions": "18973",
+      "reach": "-"
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "324.48",
+      "billed_cost": "324.48",
+      "cash_spend": "324.48",
+      "voucher_spend": "0.00",
+      "conversions": "3.22",
+      "impressions": "18012",
+      "reach": "-"
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "336.87",
+      "billed_cost": "336.87",
+      "cash_spend": "336.87",
+      "voucher_spend": "0.00",
+      "conversions": "2.74",
+      "impressions": "18811",
+      "reach": "-"
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "337.81",
+      "billed_cost": "337.81",
+      "cash_spend": "337.81",
+      "voucher_spend": "0.00",
+      "conversions": "3.60",
+      "impressions": "19081",
+      "reach": "-"
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "332.36",
+      "billed_cost": "332.36",
+      "cash_spend": "332.36",
+      "voucher_spend": "0.00",
+      "conversions": "2.53",
+      "impressions": "18919",
+      "reach": "-"
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "411.40",
+      "billed_cost": "411.40",
+      "cash_spend": "411.40",
+      "voucher_spend": "0.00",
+      "conversions": "3.45",
+      "impressions": "23178",
+      "reach": "-"
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "409.15",
+      "billed_cost": "409.15",
+      "cash_spend": "409.15",
+      "voucher_spend": "0.00",
+      "conversions": "2.79",
+      "impressions": "22274",
+      "reach": "-"
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "spend": "331.13",
+      "billed_cost": "331.13",
+      "cash_spend": "331.13",
+      "voucher_spend": "0.00",
+      "conversions": "2.78",
+      "impressions": "18286",
+      "reach": "-"
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  }
+]

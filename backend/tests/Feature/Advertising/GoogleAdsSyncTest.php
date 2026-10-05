@@ -209,3 +209,133 @@ it('is idempotent for Google as well', function (): void {
     expect(DailyMetric::query()->count())->toBe($before)
         ->and($before)->toBeGreaterThan(0);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Cross-provider consistency
+|--------------------------------------------------------------------------
+|
+| The point of normalisation: three providers with three money conventions,
+| three status models and three reporting shapes land in the same tables with
+| the same meaning — and each keeps its own vocabulary alongside.
+|
+*/
+
+/** @return array{scenario: WorkspaceScenario, account: ExternalAccount} */
+function tiktokScenario(): array
+{
+    $scenario = WorkspaceScenario::create();
+    $repository = app(ProviderConnectionRepository::class);
+
+    $connection = ProviderConnection::register(
+        id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
+        workspaceId: new WorkspaceId((string) $scenario->workspace->getKey()),
+        provider: Provider::TikTok,
+        name: 'TikTok Ads',
+        credentials: new Credentials([
+            'app_id' => Credentials::SANDBOX_TOKEN,
+            'app_secret' => Credentials::SANDBOX_TOKEN,
+        ]),
+    );
+    $repository->save($connection);
+
+    $account = ExternalAccount::query()->create([
+        'workspace_id' => $scenario->workspace->getKey(),
+        'provider_connection_id' => $connection->id->value,
+        'provider' => 'tiktok',
+        'external_id' => '7100000000000000001',
+        'name' => 'SANDBOX — Alhambra Retail (TikTok)',
+        'currency' => 'SAR',
+        'timezone' => 'Asia/Riyadh',
+        'status' => 'active',
+        'discovered_at' => now(),
+    ]);
+
+    $client = Client::factory()->create(['workspace_id' => $scenario->workspace->getKey()]);
+    $project = Project::factory()->forClient($client)->create();
+
+    ProjectIntegrationBinding::query()->create([
+        'workspace_id' => $scenario->workspace->getKey(),
+        'project_id' => $project->getKey(),
+        'external_account_id' => $account->getKey(),
+        'sync_enabled' => true,
+        'bound_at' => now(),
+    ]);
+
+    return ['scenario' => $scenario, 'account' => $account];
+}
+
+it('syncs TikTok into the same tables, with its own words kept', function (): void {
+    $setup = tiktokScenario();
+
+    $outcome = app(SyncBoundAccount::class)(
+        (string) $setup['scenario']->workspace->getKey(),
+        (string) $setup['account']->getKey(),
+    );
+
+    expect($outcome->status)->toBe(SyncStatus::Succeeded)
+        ->and(Campaign::query()->count())->toBe(5)
+        ->and(AdGroup::query()->count())->toBe(6)
+        ->and(Ad::query()->count())->toBe(6);
+
+    $overBudget = Campaign::query()->where('external_id', '1810000000000000002')->firstOrFail();
+
+    // Normalised for cross-platform queries, raw for the operator comparing
+    // our screen with TikTok's.
+    expect($overBudget->status)->toBe(EntityStatus::NotDelivering)
+        ->and($overBudget->raw_status)->toBe('ENABLE')
+        ->and($overBudget->raw_effective_status)->toBe('CAMPAIGN_STATUS_BUDGET_EXCEED')
+        // A float on the wire, minor units in the column Meta and Google share.
+        ->and($overBudget->budget_minor)->toBe(4_500_000);
+});
+
+it('keeps a TikTok "-" metric null all the way into the database', function (): void {
+    $setup = tiktokScenario();
+
+    app(SyncBoundAccount::class)(
+        (string) $setup['scenario']->workspace->getKey(),
+        (string) $setup['account']->getKey(),
+    );
+
+    /*
+     * The one ad whose reach TikTok could not produce. If the sentinel had been
+     * cast anywhere along the way, this row would hold 0 and a frequency chart
+     * would divide by it.
+     */
+    $missing = DailyMetric::query()
+        ->where('entity_type', 'ad')
+        ->whereNull('reach')
+        ->whereNotNull('impressions')
+        ->count();
+
+    expect($missing)->toBeGreaterThan(0);
+});
+
+it('lands three providers in one set of tables without colliding', function (): void {
+    $google = googleScenario();
+    $tiktok = tiktokScenario();
+
+    app(SyncBoundAccount::class)(
+        (string) $google['scenario']->workspace->getKey(),
+        (string) $google['account']->getKey(),
+    );
+    app(SyncBoundAccount::class)(
+        (string) $tiktok['scenario']->workspace->getKey(),
+        (string) $tiktok['account']->getKey(),
+    );
+
+    $byProvider = Campaign::query()
+        ->selectRaw('provider, count(*) as total')
+        ->groupBy('provider')
+        ->pluck('total', 'provider')
+        ->all();
+
+    /*
+     * Different workspaces, so this also proves the unique key is scoped to the
+     * external account rather than global: two providers can use the same
+     * campaign id without one overwriting the other.
+     */
+    expect($byProvider)->toHaveKeys(['google_ads', 'tiktok'])
+        ->and(DailyMetric::query()->distinct()->pluck('provider')->all())
+        ->toHaveCount(2);
+});

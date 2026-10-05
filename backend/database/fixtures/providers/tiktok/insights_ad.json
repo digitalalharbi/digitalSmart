@@ -1,0 +1,1346 @@
+[
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "111.54",
+      "billed_cost": "111.54",
+      "cash_spend": "111.54",
+      "voucher_spend": "0.00",
+      "impressions": "8052",
+      "reach": "5781",
+      "conversions": "0.91",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "60.90",
+      "billed_cost": "60.90",
+      "cash_spend": "60.90",
+      "voucher_spend": "0.00",
+      "impressions": "2971",
+      "reach": "2017",
+      "conversions": "0.49",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "105.85",
+      "billed_cost": "105.85",
+      "cash_spend": "105.85",
+      "voucher_spend": "0.00",
+      "impressions": "5537",
+      "reach": "3351",
+      "conversions": "1.75",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "47.91",
+      "billed_cost": "47.91",
+      "cash_spend": "47.91",
+      "voucher_spend": "0.00",
+      "impressions": "1958",
+      "reach": "-",
+      "conversions": "0.15",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 14,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "111.62",
+      "billed_cost": "111.62",
+      "cash_spend": "111.62",
+      "voucher_spend": "0.00",
+      "impressions": "8080",
+      "reach": "5811",
+      "conversions": "1.03",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "73.94",
+      "billed_cost": "73.94",
+      "cash_spend": "73.94",
+      "voucher_spend": "0.00",
+      "impressions": "3587",
+      "reach": "2462",
+      "conversions": "0.88",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "101.07",
+      "billed_cost": "101.07",
+      "cash_spend": "101.07",
+      "voucher_spend": "0.00",
+      "impressions": "5362",
+      "reach": "3037",
+      "conversions": "1.17",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "54.35",
+      "billed_cost": "54.35",
+      "cash_spend": "54.35",
+      "voucher_spend": "0.00",
+      "impressions": "2176",
+      "reach": "-",
+      "conversions": "0.14",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 13,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "123.85",
+      "billed_cost": "123.85",
+      "cash_spend": "123.85",
+      "voucher_spend": "0.00",
+      "impressions": "8912",
+      "reach": "6156",
+      "conversions": "0.72",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "73.38",
+      "billed_cost": "73.38",
+      "cash_spend": "73.38",
+      "voucher_spend": "0.00",
+      "impressions": "3358",
+      "reach": "2154",
+      "conversions": "0.47",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "104.48",
+      "billed_cost": "104.48",
+      "cash_spend": "104.48",
+      "voucher_spend": "0.00",
+      "impressions": "5283",
+      "reach": "2865",
+      "conversions": "1.11",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "58.39",
+      "billed_cost": "58.39",
+      "cash_spend": "58.39",
+      "voucher_spend": "0.00",
+      "impressions": "2177",
+      "reach": "-",
+      "conversions": "0.14",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 12,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "111.49",
+      "billed_cost": "111.49",
+      "cash_spend": "111.49",
+      "voucher_spend": "0.00",
+      "impressions": "7589",
+      "reach": "4067",
+      "conversions": "0.74",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "75.61",
+      "billed_cost": "75.61",
+      "cash_spend": "75.61",
+      "voucher_spend": "0.00",
+      "impressions": "3338",
+      "reach": "2286",
+      "conversions": "0.56",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "90.10",
+      "billed_cost": "90.10",
+      "cash_spend": "90.10",
+      "voucher_spend": "0.00",
+      "impressions": "4648",
+      "reach": "2865",
+      "conversions": "0.86",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "49.49",
+      "billed_cost": "49.49",
+      "cash_spend": "49.49",
+      "voucher_spend": "0.00",
+      "impressions": "1937",
+      "reach": "-",
+      "conversions": "0.15",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 11,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "149.16",
+      "billed_cost": "149.16",
+      "cash_spend": "149.16",
+      "voucher_spend": "0.00",
+      "impressions": "10884",
+      "reach": "7215",
+      "conversions": "1.31",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "92.15",
+      "billed_cost": "92.15",
+      "cash_spend": "92.15",
+      "voucher_spend": "0.00",
+      "impressions": "4235",
+      "reach": "2301",
+      "conversions": "0.90",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "119.89",
+      "billed_cost": "119.89",
+      "cash_spend": "119.89",
+      "voucher_spend": "0.00",
+      "impressions": "6248",
+      "reach": "4713",
+      "conversions": "1.24",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "71.44",
+      "billed_cost": "71.44",
+      "cash_spend": "71.44",
+      "voucher_spend": "0.00",
+      "impressions": "2643",
+      "reach": "-",
+      "conversions": "0.18",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 10,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "146.66",
+      "billed_cost": "146.66",
+      "cash_spend": "146.66",
+      "voucher_spend": "0.00",
+      "impressions": "9801",
+      "reach": "7051",
+      "conversions": "1.13",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "87.80",
+      "billed_cost": "87.80",
+      "cash_spend": "87.80",
+      "voucher_spend": "0.00",
+      "impressions": "4021",
+      "reach": "2334",
+      "conversions": "0.97",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "105.62",
+      "billed_cost": "105.62",
+      "cash_spend": "105.62",
+      "voucher_spend": "0.00",
+      "impressions": "5660",
+      "reach": "2984",
+      "conversions": "1.30",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "57.67",
+      "billed_cost": "57.67",
+      "cash_spend": "57.67",
+      "voucher_spend": "0.00",
+      "impressions": "2336",
+      "reach": "-",
+      "conversions": "0.16",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 9,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "116.77",
+      "billed_cost": "116.77",
+      "cash_spend": "116.77",
+      "voucher_spend": "0.00",
+      "impressions": "8238",
+      "reach": "5512",
+      "conversions": "0.76",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "64.15",
+      "billed_cost": "64.15",
+      "cash_spend": "64.15",
+      "voucher_spend": "0.00",
+      "impressions": "3123",
+      "reach": "2344",
+      "conversions": "0.69",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "102.96",
+      "billed_cost": "102.96",
+      "cash_spend": "102.96",
+      "voucher_spend": "0.00",
+      "impressions": "5583",
+      "reach": "3567",
+      "conversions": "1.28",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "52.35",
+      "billed_cost": "52.35",
+      "cash_spend": "52.35",
+      "voucher_spend": "0.00",
+      "impressions": "2029",
+      "reach": "-",
+      "conversions": "0.17",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 8,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "101.75",
+      "billed_cost": "101.75",
+      "cash_spend": "101.75",
+      "voucher_spend": "0.00",
+      "impressions": "7598",
+      "reach": "4747",
+      "conversions": "1.03",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "70.01",
+      "billed_cost": "70.01",
+      "cash_spend": "70.01",
+      "voucher_spend": "0.00",
+      "impressions": "3323",
+      "reach": "1776",
+      "conversions": "0.71",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "99.66",
+      "billed_cost": "99.66",
+      "cash_spend": "99.66",
+      "voucher_spend": "0.00",
+      "impressions": "5111",
+      "reach": "2729",
+      "conversions": "1.31",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "53.06",
+      "billed_cost": "53.06",
+      "cash_spend": "53.06",
+      "voucher_spend": "0.00",
+      "impressions": "1980",
+      "reach": "-",
+      "conversions": "0.17",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 7,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "113.92",
+      "billed_cost": "113.92",
+      "cash_spend": "113.92",
+      "voucher_spend": "0.00",
+      "impressions": "7996",
+      "reach": "5056",
+      "conversions": "0.90",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "73.62",
+      "billed_cost": "73.62",
+      "cash_spend": "73.62",
+      "voucher_spend": "0.00",
+      "impressions": "3576",
+      "reach": "2048",
+      "conversions": "0.66",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "98.88",
+      "billed_cost": "98.88",
+      "cash_spend": "98.88",
+      "voucher_spend": "0.00",
+      "impressions": "5373",
+      "reach": "3000",
+      "conversions": "1.05",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "50.45",
+      "billed_cost": "50.45",
+      "cash_spend": "50.45",
+      "voucher_spend": "0.00",
+      "impressions": "1866",
+      "reach": "-",
+      "conversions": "0.13",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 6,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "117.88",
+      "billed_cost": "117.88",
+      "cash_spend": "117.88",
+      "voucher_spend": "0.00",
+      "impressions": "8417",
+      "reach": "4640",
+      "conversions": "1.18",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "75.98",
+      "billed_cost": "75.98",
+      "cash_spend": "75.98",
+      "voucher_spend": "0.00",
+      "impressions": "3535",
+      "reach": "2700",
+      "conversions": "0.59",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "94.24",
+      "billed_cost": "94.24",
+      "cash_spend": "94.24",
+      "voucher_spend": "0.00",
+      "impressions": "5213",
+      "reach": "2929",
+      "conversions": "1.72",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "49.71",
+      "billed_cost": "49.71",
+      "cash_spend": "49.71",
+      "voucher_spend": "0.00",
+      "impressions": "1916",
+      "reach": "-",
+      "conversions": "0.11",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 5,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "117.15",
+      "billed_cost": "117.15",
+      "cash_spend": "117.15",
+      "voucher_spend": "0.00",
+      "impressions": "8509",
+      "reach": "5828",
+      "conversions": "0.76",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "73.01",
+      "billed_cost": "73.01",
+      "cash_spend": "73.01",
+      "voucher_spend": "0.00",
+      "impressions": "3321",
+      "reach": "2163",
+      "conversions": "0.63",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "89.63",
+      "billed_cost": "89.63",
+      "cash_spend": "89.63",
+      "voucher_spend": "0.00",
+      "impressions": "4944",
+      "reach": "3040",
+      "conversions": "0.93",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "52.57",
+      "billed_cost": "52.57",
+      "cash_spend": "52.57",
+      "voucher_spend": "0.00",
+      "impressions": "2145",
+      "reach": "-",
+      "conversions": "0.21",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 4,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "137.31",
+      "billed_cost": "137.31",
+      "cash_spend": "137.31",
+      "voucher_spend": "0.00",
+      "impressions": "10015",
+      "reach": "6871",
+      "conversions": "1.10",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "90.13",
+      "billed_cost": "90.13",
+      "cash_spend": "90.13",
+      "voucher_spend": "0.00",
+      "impressions": "4231",
+      "reach": "2739",
+      "conversions": "0.94",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "113.21",
+      "billed_cost": "113.21",
+      "cash_spend": "113.21",
+      "voucher_spend": "0.00",
+      "impressions": "6316",
+      "reach": "3830",
+      "conversions": "1.26",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "70.75",
+      "billed_cost": "70.75",
+      "cash_spend": "70.75",
+      "voucher_spend": "0.00",
+      "impressions": "2616",
+      "reach": "-",
+      "conversions": "0.15",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 3,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "139.71",
+      "billed_cost": "139.71",
+      "cash_spend": "139.71",
+      "voucher_spend": "0.00",
+      "impressions": "9821",
+      "reach": "6177",
+      "conversions": "0.80",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "80.68",
+      "billed_cost": "80.68",
+      "cash_spend": "80.68",
+      "voucher_spend": "0.00",
+      "impressions": "3690",
+      "reach": "2576",
+      "conversions": "0.53",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "122.81",
+      "billed_cost": "122.81",
+      "cash_spend": "122.81",
+      "voucher_spend": "0.00",
+      "impressions": "6324",
+      "reach": "3593",
+      "conversions": "1.23",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "65.95",
+      "billed_cost": "65.95",
+      "cash_spend": "65.95",
+      "voucher_spend": "0.00",
+      "impressions": "2439",
+      "reach": "-",
+      "conversions": "0.23",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 2,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000001",
+      "adgroup_id": "1820000000000000001",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "120.77",
+      "billed_cost": "120.77",
+      "cash_spend": "120.77",
+      "voucher_spend": "0.00",
+      "impressions": "8050",
+      "reach": "4566",
+      "conversions": "0.75",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 1"
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000002",
+      "adgroup_id": "1820000000000000002",
+      "campaign_id": "1810000000000000001",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "65.73",
+      "billed_cost": "65.73",
+      "cash_spend": "65.73",
+      "voucher_spend": "0.00",
+      "impressions": "3147",
+      "reach": "2293",
+      "conversions": "0.47",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 2"
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000003",
+      "adgroup_id": "1820000000000000003",
+      "campaign_id": "1810000000000000002",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "86.13",
+      "billed_cost": "86.13",
+      "cash_spend": "86.13",
+      "voucher_spend": "0.00",
+      "impressions": "4848",
+      "reach": "3429",
+      "conversions": "1.38",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 3"
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  },
+  {
+    "dimensions": {
+      "ad_id": "1830000000000000005",
+      "adgroup_id": "1820000000000000005",
+      "campaign_id": "1810000000000000004",
+      "advertiser_id": "7100000000000000001"
+    },
+    "metrics": {
+      "spend": "58.50",
+      "billed_cost": "58.50",
+      "cash_spend": "58.50",
+      "voucher_spend": "0.00",
+      "impressions": "2241",
+      "reach": "-",
+      "conversions": "0.18",
+      "currency": "SAR",
+      "timezone": "Asia/Riyadh",
+      "ad_name": "SANDBOX ad 5"
+    },
+    "_day_offset": 1,
+    "_date_paths": [
+      "dimensions.stat_time_day"
+    ]
+  }
+]

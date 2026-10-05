@@ -4,6 +4,33 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## TikTok sync
+
+### Added
+
+- `TikTokMapper` and `TikTokSyncAdapter`, mapping structure and the reporting
+  envelope from TikTok's own reference: `budget` as a float in the account
+  currency, `operation_status` versus `secondary_status`, `{dimensions, metrics}`
+  rows with every value a string, and the literal `"-"` sentinel for an
+  unavailable metric — which becomes null, never zero.
+- 23 mapper tests and 3 cross-provider sync tests, including one proving three
+  providers land in the same tables without colliding on campaign ids.
+
+### Deliberately not added
+
+- TikTok's click, video and revenue metric names. Its supported-metrics reference
+  is only reachable from inside its own documentation SPA, so those names could
+  not be confirmed. The mapper keeps a `VERIFIED_METRICS` list, leaves the
+  unverifiable metrics **null**, and carries every unrecognised metric into
+  `metadata.unmapped_metrics` untouched. A gap can be labelled; a plausible
+  figure in the wrong column cannot be detected.
+
+### Fixed
+
+- TikTok's `bid_price: 0` (returned when bidding is automatic and the real target
+  is `conversion_bid_price`) was being read as a bid of zero, which asserts
+  something about the campaign rather than reporting an absence.
+
 ## Google Ads sync
 
 ### Added

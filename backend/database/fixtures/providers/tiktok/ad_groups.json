@@ -1,0 +1,148 @@
+[
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000001",
+    "adgroup_id": "1820000000000000001",
+    "adgroup_name": "SANDBOX — Broad | 18-44 | KSA",
+    "operation_status": "ENABLE",
+    "secondary_status": "ADGROUP_STATUS_DELIVERY_OK",
+    "optimization_goal": "CONVERT",
+    "billing_event": "OCPM",
+    "budget_mode": "BUDGET_MODE_INFINITE",
+    "bid_price": 0.0,
+    "conversion_bid_price": 42.0,
+    "pacing": "PACING_MODE_SMOOTH",
+    "schedule_type": "SCHEDULE_FROM_NOW",
+    "schedule_start_time": "2026-08-12 00:00:00",
+    "promotion_type": "WEBSITE",
+    "pixel_id": "7200000000000000001",
+    "optimization_event": "SHOPPING",
+    "placement_type": "PLACEMENT_TYPE_AUTOMATIC",
+    "location_ids": [
+      "6252001"
+    ],
+    "age_groups": [
+      "AGE_18_24",
+      "AGE_25_34",
+      "AGE_35_44"
+    ],
+    "gender": "GENDER_UNLIMITED",
+    "operating_systems": [
+      "ANDROID",
+      "IOS"
+    ],
+    "create_time": "2026-08-12 09:16:00",
+    "modify_time": "2026-09-30 11:02:40"
+  },
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000001",
+    "adgroup_id": "1820000000000000002",
+    "adgroup_name": "SANDBOX — Lookalike | Purchasers 1%",
+    "operation_status": "ENABLE",
+    "secondary_status": "ADGROUP_STATUS_DELIVERY_OK",
+    "optimization_goal": "CONVERT",
+    "billing_event": "OCPM",
+    "budget_mode": "BUDGET_MODE_INFINITE",
+    "conversion_bid_price": 38.5,
+    "pacing": "PACING_MODE_SMOOTH",
+    "schedule_type": "SCHEDULE_FROM_NOW",
+    "schedule_start_time": "2026-08-20 00:00:00",
+    "promotion_type": "WEBSITE",
+    "pixel_id": "7200000000000000001",
+    "placement_type": "PLACEMENT_TYPE_NORMAL",
+    "placements": [
+      "PLACEMENT_TIKTOK"
+    ],
+    "audience_ids": [
+      "7300000000000000001"
+    ],
+    "location_ids": [
+      "6252001"
+    ],
+    "create_time": "2026-08-20 08:00:00",
+    "modify_time": "2026-09-28 17:45:00"
+  },
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000002",
+    "adgroup_id": "1820000000000000003",
+    "adgroup_name": "SANDBOX — Shop | Value optimisation",
+    "operation_status": "ENABLE",
+    "secondary_status": "ADGROUP_STATUS_CAMPAIGN_EXCEED",
+    "optimization_goal": "VALUE",
+    "billing_event": "OCPM",
+    "budget_mode": "BUDGET_MODE_INFINITE",
+    "pacing": "PACING_MODE_SMOOTH",
+    "schedule_type": "SCHEDULE_START_END",
+    "schedule_start_time": "2026-07-03 00:00:00",
+    "schedule_end_time": "2026-12-31 23:59:00",
+    "promotion_type": "TIKTOK_SHOP",
+    "create_time": "2026-07-03 07:48:00",
+    "modify_time": "2026-10-01 08:30:00"
+  },
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000003",
+    "adgroup_id": "1820000000000000004",
+    "adgroup_name": "SANDBOX — Reach | Riyadh + Jeddah",
+    "operation_status": "DISABLE",
+    "secondary_status": "ADGROUP_STATUS_CAMPAIGN_DISABLE",
+    "optimization_goal": "REACH",
+    "billing_event": "CPM",
+    "budget_mode": "BUDGET_MODE_DAY",
+    "budget": 300.0,
+    "bid_price": 18.0,
+    "pacing": "PACING_MODE_SMOOTH",
+    "schedule_type": "SCHEDULE_FROM_NOW",
+    "schedule_start_time": "2026-09-18 00:00:00",
+    "location_ids": [
+      "109223",
+      "108410"
+    ],
+    "create_time": "2026-09-18 12:02:00",
+    "modify_time": "2026-09-29 14:21:09"
+  },
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000004",
+    "adgroup_id": "1820000000000000005",
+    "adgroup_name": "SANDBOX — Instant form | Hiring",
+    "operation_status": "ENABLE",
+    "secondary_status": "ADGROUP_STATUS_ADVERTISER_AUDIT",
+    "optimization_goal": "LEAD_GENERATION",
+    "billing_event": "OCPM",
+    "budget_mode": "BUDGET_MODE_INFINITE",
+    "conversion_bid_price": 95.0,
+    "promotion_type": "LEAD_GENERATION",
+    "schedule_type": "SCHEDULE_FROM_NOW",
+    "schedule_start_time": "2026-09-25 00:00:00",
+    "location_ids": [
+      "6252001"
+    ],
+    "age_groups": [
+      "AGE_25_34",
+      "AGE_35_44",
+      "AGE_45_54"
+    ],
+    "create_time": "2026-09-25 10:12:00",
+    "modify_time": "2026-09-26 09:00:00"
+  },
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000005",
+    "adgroup_id": "1820000000000000006",
+    "adgroup_name": "SANDBOX — Traffic | Generic",
+    "operation_status": "ENABLE",
+    "secondary_status": "ADGROUP_STATUS_AUDIT_DENY",
+    "optimization_goal": "CLICK",
+    "billing_event": "CPC",
+    "budget_mode": "BUDGET_MODE_INFINITE",
+    "bid_price": 1.4,
+    "promotion_type": "WEBSITE",
+    "schedule_type": "SCHEDULE_FROM_NOW",
+    "schedule_start_time": "2026-09-05 00:00:00",
+    "create_time": "2026-09-05 16:42:00",
+    "modify_time": "2026-09-22 13:12:00"
+  }
+]

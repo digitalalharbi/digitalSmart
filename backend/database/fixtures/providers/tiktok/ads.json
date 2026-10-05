@@ -1,0 +1,114 @@
+[
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000001",
+    "adgroup_id": "1820000000000000001",
+    "ad_id": "1830000000000000001",
+    "ad_name": "SANDBOX — Ramadan hero 9x16",
+    "operation_status": "ENABLE",
+    "secondary_status": "AD_STATUS_DELIVERY_OK",
+    "ad_format": "SINGLE_VIDEO",
+    "ad_text": "عروض رمضان من الحمراء — توصيل مجاني",
+    "call_to_action": "SHOP_NOW",
+    "landing_page_url": "https://sandbox.digitalsmart.invalid/alhambra/ramadan",
+    "video_id": "v1000000000000000001",
+    "image_ids": [
+      "img1000000000000001"
+    ],
+    "image_url": "https://sandbox.digitalsmart.invalid/tiktok/thumb/ramadan.jpg",
+    "identity_id": "id1000000000000001",
+    "identity_type": "CUSTOMIZED_USER",
+    "display_name": "Alhambra",
+    "music_id": "m1000000000000001",
+    "create_time": "2026-08-12 09:20:00",
+    "modify_time": "2026-09-30 11:02:40"
+  },
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000001",
+    "adgroup_id": "1820000000000000002",
+    "ad_id": "1830000000000000002",
+    "ad_name": "SANDBOX — LAL carousel",
+    "operation_status": "ENABLE",
+    "secondary_status": "AD_STATUS_DELIVERY_OK",
+    "ad_format": "CAROUSEL_ADS",
+    "ad_text": "اكتشف تشكيلة الحمراء",
+    "call_to_action": "LEARN_MORE",
+    "landing_page_url": "https://sandbox.digitalsmart.invalid/alhambra/collection",
+    "image_ids": [
+      "img1000000000000010",
+      "img1000000000000011",
+      "img1000000000000012"
+    ],
+    "identity_id": "id1000000000000001",
+    "identity_type": "CUSTOMIZED_USER",
+    "create_time": "2026-08-20 08:05:00",
+    "modify_time": "2026-09-28 17:45:00"
+  },
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000002",
+    "adgroup_id": "1820000000000000003",
+    "ad_id": "1830000000000000003",
+    "ad_name": "SANDBOX — Shop video",
+    "operation_status": "ENABLE",
+    "secondary_status": "AD_STATUS_CAMPAIGN_EXCEED",
+    "ad_format": "SINGLE_VIDEO",
+    "ad_text": "تسوق من متجر الحمراء على تيك توك",
+    "call_to_action": "SHOP_NOW",
+    "video_id": "v1000000000000000003",
+    "tiktok_item_id": "7400000000000000001",
+    "identity_id": "id1000000000000001",
+    "identity_type": "TT_USER",
+    "create_time": "2026-07-03 07:50:00",
+    "modify_time": "2026-10-01 08:30:00"
+  },
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000003",
+    "adgroup_id": "1820000000000000004",
+    "ad_id": "1830000000000000004",
+    "ad_name": "SANDBOX — Teaser 15s",
+    "operation_status": "DISABLE",
+    "secondary_status": "AD_STATUS_CAMPAIGN_DISABLE",
+    "ad_format": "SINGLE_VIDEO",
+    "ad_text": "قريباً من الحمراء",
+    "video_id": "v1000000000000000004",
+    "create_time": "2026-09-18 12:05:00",
+    "modify_time": "2026-09-29 14:21:09"
+  },
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000004",
+    "adgroup_id": "1820000000000000005",
+    "ad_id": "1830000000000000005",
+    "ad_name": "SANDBOX — Hiring form",
+    "operation_status": "ENABLE",
+    "secondary_status": "AD_STATUS_ADVERTISER_AUDIT",
+    "ad_format": "SINGLE_IMAGE",
+    "ad_text": "انضم إلى فريق الحمراء",
+    "call_to_action": "APPLY_NOW",
+    "image_ids": [
+      "img1000000000000020"
+    ],
+    "create_time": "2026-09-25 10:15:00",
+    "modify_time": "2026-09-26 09:00:00"
+  },
+  {
+    "advertiser_id": "7100000000000000001",
+    "campaign_id": "1810000000000000005",
+    "adgroup_id": "1820000000000000006",
+    "ad_id": "1830000000000000006",
+    "ad_name": "SANDBOX — Generic clickbait",
+    "operation_status": "ENABLE",
+    "secondary_status": "AD_STATUS_AUDIT_DENY",
+    "ad_format": "SINGLE_VIDEO",
+    "ad_text": "لن تصدق هذه العروض!",
+    "video_id": "v1000000000000000006",
+    "ad_reject_reasons": [
+      "Exaggerated or misleading claims in ad text."
+    ],
+    "create_time": "2026-09-05 16:45:00",
+    "modify_time": "2026-09-22 13:12:00"
+  }
+]
