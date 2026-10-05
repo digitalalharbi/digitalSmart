@@ -210,6 +210,32 @@ final readonly class SyncExternalAccount
     }
 
     /**
+     * The requested range as consecutive windows no provider will refuse.
+     *
+     * Inclusive at both ends, because that is how every adapter filters a date, so a
+     * window of seven days is seven dates and the next one starts on the eighth. A
+     * range shorter than one window is one window.
+     *
+     * @return list<array{DateTimeImmutable, DateTimeImmutable}>
+     */
+    private function windows(DateTimeImmutable $since, DateTimeImmutable $until, int $maxDays): array
+    {
+        $span = max(1, $maxDays);
+        $windows = [];
+        $from = $since;
+
+        while ($from <= $until) {
+            $to = $from->modify('+'.($span - 1).' days');
+            $windows[] = [$from, $to > $until ? $until : $to];
+            $from = $to->modify('+1 day');
+        }
+
+        // A range that ends before it starts still has to be asked for once, so the
+        // journal records a run rather than silently nothing.
+        return $windows === [] ? [[$since, $until]] : $windows;
+    }
+
+    /**
      * Read performance for every level the provider reports separately.
      *
      * The window always reaches back by the adapter's attribution lookback, even
@@ -238,12 +264,18 @@ final readonly class SyncExternalAccount
             $since = $resyncFrom ?? $until->modify('-'.$lookback.' days');
         }
 
-        // Never ask for more than the adapter says it can answer in one go.
-        $maxDays = $adapter->maxInsightRangeDays();
-
-        if ($since < $until->modify('-'.$maxDays.' days')) {
-            $since = $until->modify('-'.$maxDays.' days');
-        }
+        /*
+         * Split the window rather than shorten it.
+         *
+         * Each provider states how much it will answer in one request — seven days for
+         * X's synchronous stats, which is less than the four weeks its conversions keep
+         * landing in. Clamping the range to one request's worth would mean such a
+         * provider could never re-read its own attribution window: a purchase
+         * attributed ten days back would stay invisible, and the client would see a
+         * worse ROAS than they earned. The range is asked for in consecutive windows
+         * instead, at the cost of more requests.
+         */
+        $windows = $this->windows($since, $until, $adapter->maxInsightRangeDays());
 
         $runId = $this->journal->begin($context, SyncKind::Insights, $since, $until);
         $read = 0;
@@ -252,24 +284,26 @@ final readonly class SyncExternalAccount
 
         try {
             foreach ([AdEntityType::Campaign, AdEntityType::AdGroup, AdEntityType::Ad] as $level) {
-                $cursor = null;
+                foreach ($windows as [$from, $to]) {
+                    $cursor = null;
 
-                do {
-                    $page = $adapter->fetchInsights(
-                        $credentials,
-                        $context->externalAccountExternalId,
-                        $level,
-                        $since,
-                        $until,
-                        $cursor,
-                    );
+                    do {
+                        $page = $adapter->fetchInsights(
+                            $credentials,
+                            $context->externalAccountExternalId,
+                            $level,
+                            $from,
+                            $to,
+                            $cursor,
+                        );
 
-                    $calls += $page->apiCalls;
-                    $read += count($page->items);
-                    $written += $this->store->upsertInsights($context, $page->items);
+                        $calls += $page->apiCalls;
+                        $read += count($page->items);
+                        $written += $this->store->upsertInsights($context, $page->items);
 
-                    $cursor = $page->nextCursor;
-                } while ($cursor !== null);
+                        $cursor = $page->nextCursor;
+                    } while ($cursor !== null);
+                }
             }
 
             $this->journal->rememberWatermark(

@@ -39,7 +39,9 @@ final class SandboxAccounts
                 new DiscoveredAccount('sandbox-snap-5001', 'SANDBOX — Alhambra Retail (Snapchat)', 'SAR', 'Asia/Riyadh', ExternalAccountStatus::Active),
             ],
             Provider::X => [
-                new DiscoveredAccount('sandbox_x_18ce', 'SANDBOX — Najd Fintech (X)', 'USD', 'Asia/Riyadh', ExternalAccountStatus::Active),
+                // X account ids are short base-36 strings, and this is the account the
+                // X sync fixtures report against, so discovery and sync agree.
+                new DiscoveredAccount('18ce54d4x5t', 'SANDBOX — Najd Fintech (X)', 'SAR', 'Asia/Riyadh', ExternalAccountStatus::Active),
             ],
             Provider::LinkedIn => [
                 new DiscoveredAccount('sandbox-li-900100', 'SANDBOX — Najd Fintech (LinkedIn)', 'USD', 'Asia/Riyadh', ExternalAccountStatus::Active),

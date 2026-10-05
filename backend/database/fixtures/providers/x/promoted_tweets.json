@@ -1,0 +1,42 @@
+[
+  {
+    "id": "eqaad",
+    "line_item_id": "8u94t",
+    "tweet_id": "1839201847362019328",
+    "entity_status": "ACTIVE",
+    "approval_status": "ACCEPTED",
+    "created_at": "2026-08-01T06:00:00Z",
+    "updated_at": "2026-08-01T06:00:00Z",
+    "deleted": false
+  },
+  {
+    "id": "eqaae",
+    "line_item_id": "8u94t",
+    "tweet_id": "1839201847362019329",
+    "entity_status": "ACTIVE",
+    "approval_status": "ACCEPTED",
+    "created_at": "2026-08-14T06:00:00Z",
+    "updated_at": "2026-08-14T06:00:00Z",
+    "deleted": false
+  },
+  {
+    "id": "eqaaf",
+    "line_item_id": "8u94u",
+    "tweet_id": "1839201847362019330",
+    "entity_status": "ACTIVE",
+    "approval_status": "REJECTED",
+    "created_at": "2026-08-20T06:00:00Z",
+    "updated_at": "2026-08-21T10:00:00Z",
+    "deleted": false
+  },
+  {
+    "id": "eqaag",
+    "line_item_id": "8u94v",
+    "tweet_id": "1839201847362019331",
+    "entity_status": "PAUSED",
+    "approval_status": "ACCEPTED",
+    "created_at": "2026-07-15T06:00:00Z",
+    "updated_at": "2026-09-20T06:00:00Z",
+    "deleted": false
+  }
+]

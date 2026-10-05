@@ -125,14 +125,21 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
             $this->withinRange($since, $until, $this->insightDateField()),
         );
 
-        return new Page(
-            items: $this->mapRows(
-                $page->items,
-                'insights',
-                fn (array $row): InsightRecord => $this->mapInsight($row, $level, $this->reportingCurrency()),
-            ),
-            nextCursor: $page->nextCursor,
-        );
+        $records = [];
+
+        foreach ($page->items as $row) {
+            $entity = $this->unwrap($row, 'insights');
+
+            if ($entity === null) {
+                continue;
+            }
+
+            foreach ($this->mapInsights($entity, $level, $this->reportingCurrency(), $since) as $record) {
+                $records[] = $record;
+            }
+        }
+
+        return new Page(items: $records, nextCursor: $page->nextCursor);
     }
 
     /**
@@ -175,8 +182,24 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
     /** @param array<string, mixed> $row */
     abstract protected function mapCreative(array $row): CreativeRecord;
 
-    /** @param array<string, mixed> $row */
-    abstract protected function mapInsight(array $row, AdEntityType $level, string $currency): InsightRecord;
+    /**
+     * The records one raw insight row stands for — usually one.
+     *
+     * A list rather than a single record, because providers disagree about what a row
+     * is. Meta, Google, TikTok and Snapchat return one row per entity per day. X
+     * returns a *time series*: one array per metric, aligned to the requested range,
+     * so one of its rows is a whole range. `$since` is the start the request asked
+     * for, which is what a series without dates is aligned to.
+     *
+     * @param  array<string, mixed>  $row
+     * @return list<InsightRecord>
+     */
+    abstract protected function mapInsights(
+        array $row,
+        AdEntityType $level,
+        string $currency,
+        DateTimeImmutable $since,
+    ): array;
 
     /**
      * Which key in an insight row holds its date.

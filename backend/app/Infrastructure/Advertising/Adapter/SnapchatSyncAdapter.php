@@ -13,6 +13,7 @@ use App\Domain\Advertising\AdEntityType;
 use App\Domain\Integration\Provider;
 use App\Infrastructure\Advertising\Mapper\SnapchatMapper;
 use App\Infrastructure\Advertising\Sandbox\SandboxFixtures;
+use DateTimeImmutable;
 
 /**
  * Snapchat Marketing API sync.
@@ -120,8 +121,17 @@ final class SnapchatSyncAdapter extends AbstractSyncAdapter
         return $this->mapper->creative($row);
     }
 
-    protected function mapInsight(array $row, AdEntityType $level, string $currency): InsightRecord
-    {
-        return $this->mapper->insight($row, $level, $currency);
+    /**
+     * One row is one entity's day, so always exactly one record.
+     *
+     * @return list<InsightRecord>
+     */
+    protected function mapInsights(
+        array $row,
+        AdEntityType $level,
+        string $currency,
+        DateTimeImmutable $since,
+    ): array {
+        return [$this->mapper->insight($row, $level, $currency)];
     }
 }

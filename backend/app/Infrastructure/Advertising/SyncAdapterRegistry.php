@@ -12,6 +12,7 @@ use App\Infrastructure\Advertising\Adapter\GoogleAdsSyncAdapter;
 use App\Infrastructure\Advertising\Adapter\MetaSyncAdapter;
 use App\Infrastructure\Advertising\Adapter\SnapchatSyncAdapter;
 use App\Infrastructure\Advertising\Adapter\TikTokSyncAdapter;
+use App\Infrastructure\Advertising\Adapter\XAdsSyncAdapter;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -31,6 +32,7 @@ final readonly class SyncAdapterRegistry implements Registry
         Provider::GoogleAds->value => GoogleAdsSyncAdapter::class,
         Provider::TikTok->value => TikTokSyncAdapter::class,
         Provider::Snapchat->value => SnapchatSyncAdapter::class,
+        Provider::X->value => XAdsSyncAdapter::class,
     ];
 
     public function __construct(private Container $container) {}

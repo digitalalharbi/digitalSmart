@@ -1,0 +1,1262 @@
+[
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            8692
+          ],
+          "engagements": [
+            443
+          ],
+          "clicks": [
+            302
+          ],
+          "url_clicks": [
+            134
+          ],
+          "likes": [
+            87
+          ],
+          "retweets": [
+            12
+          ],
+          "replies": [
+            8
+          ],
+          "follows": [
+            6
+          ],
+          "qualified_impressions": [
+            5341
+          ],
+          "billed_engagements": [
+            134
+          ],
+          "billed_charge_local_micro": [
+            138039890
+          ],
+          "conversion_purchases": [
+            5
+          ],
+          "conversion_add_to_carts": [
+            14
+          ],
+          "conversion_site_visits": [
+            86
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 14
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            8938
+          ],
+          "engagements": [
+            417
+          ],
+          "clicks": [
+            305
+          ],
+          "url_clicks": [
+            140
+          ],
+          "likes": [
+            88
+          ],
+          "retweets": [
+            16
+          ],
+          "replies": [
+            6
+          ],
+          "follows": [
+            4
+          ],
+          "qualified_impressions": [
+            5507
+          ],
+          "billed_engagements": [
+            140
+          ],
+          "billed_charge_local_micro": [
+            152509308
+          ],
+          "conversion_purchases": [
+            3
+          ],
+          "conversion_add_to_carts": [
+            9
+          ],
+          "conversion_site_visits": [
+            80
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 13
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            8695
+          ],
+          "engagements": [
+            459
+          ],
+          "clicks": [
+            304
+          ],
+          "url_clicks": [
+            138
+          ],
+          "likes": [
+            97
+          ],
+          "retweets": [
+            14
+          ],
+          "replies": [
+            7
+          ],
+          "follows": [
+            7
+          ],
+          "qualified_impressions": [
+            5887
+          ],
+          "billed_engagements": [
+            138
+          ],
+          "billed_charge_local_micro": [
+            154799368
+          ],
+          "conversion_purchases": [
+            5
+          ],
+          "conversion_add_to_carts": [
+            13
+          ],
+          "conversion_site_visits": [
+            82
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 12
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            9078
+          ],
+          "engagements": [
+            425
+          ],
+          "clicks": [
+            316
+          ],
+          "url_clicks": [
+            155
+          ],
+          "likes": [
+            100
+          ],
+          "retweets": [
+            9
+          ],
+          "replies": [
+            4
+          ],
+          "follows": [
+            4
+          ],
+          "qualified_impressions": [
+            6043
+          ],
+          "billed_engagements": [
+            155
+          ],
+          "billed_charge_local_micro": [
+            173144433
+          ],
+          "conversion_purchases": [
+            5
+          ],
+          "conversion_add_to_carts": [
+            15
+          ],
+          "conversion_site_visits": [
+            98
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 11
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            10844
+          ],
+          "engagements": [
+            546
+          ],
+          "clicks": [
+            395
+          ],
+          "url_clicks": [
+            187
+          ],
+          "likes": [
+            128
+          ],
+          "retweets": [
+            14
+          ],
+          "replies": [
+            11
+          ],
+          "follows": [
+            2
+          ],
+          "qualified_impressions": [
+            6859
+          ],
+          "billed_engagements": [
+            187
+          ],
+          "billed_charge_local_micro": [
+            209645752
+          ],
+          "conversion_purchases": [
+            8
+          ],
+          "conversion_add_to_carts": [
+            17
+          ],
+          "conversion_site_visits": [
+            116
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 10
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            11375
+          ],
+          "engagements": [
+            524
+          ],
+          "clicks": [
+            381
+          ],
+          "url_clicks": [
+            179
+          ],
+          "likes": [
+            96
+          ],
+          "retweets": [
+            10
+          ],
+          "replies": [
+            10
+          ],
+          "follows": [
+            8
+          ],
+          "qualified_impressions": [
+            7293
+          ],
+          "billed_engagements": [
+            179
+          ],
+          "billed_charge_local_micro": [
+            191370626
+          ],
+          "conversion_purchases": [
+            6
+          ],
+          "conversion_add_to_carts": [
+            16
+          ],
+          "conversion_site_visits": [
+            120
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 9
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            9160
+          ],
+          "engagements": [
+            444
+          ],
+          "clicks": [
+            307
+          ],
+          "url_clicks": [
+            130
+          ],
+          "likes": [
+            92
+          ],
+          "retweets": [
+            13
+          ],
+          "replies": [
+            5
+          ],
+          "follows": [
+            1
+          ],
+          "qualified_impressions": [
+            6099
+          ],
+          "billed_engagements": [
+            130
+          ],
+          "billed_charge_local_micro": [
+            134535722
+          ],
+          "conversion_purchases": [
+            4
+          ],
+          "conversion_add_to_carts": [
+            11
+          ],
+          "conversion_site_visits": [
+            80
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 8
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            8797
+          ],
+          "engagements": [
+            444
+          ],
+          "clicks": [
+            293
+          ],
+          "url_clicks": [
+            129
+          ],
+          "likes": [
+            103
+          ],
+          "retweets": [
+            16
+          ],
+          "replies": [
+            5
+          ],
+          "follows": [
+            2
+          ],
+          "qualified_impressions": [
+            5869
+          ],
+          "billed_engagements": [
+            129
+          ],
+          "billed_charge_local_micro": [
+            136996204
+          ],
+          "conversion_purchases": [
+            5
+          ],
+          "conversion_add_to_carts": [
+            12
+          ],
+          "conversion_site_visits": [
+            89
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 7
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            8635
+          ],
+          "engagements": [
+            436
+          ],
+          "clicks": [
+            297
+          ],
+          "url_clicks": [
+            145
+          ],
+          "likes": [
+            97
+          ],
+          "retweets": [
+            8
+          ],
+          "replies": [
+            4
+          ],
+          "follows": [
+            6
+          ],
+          "qualified_impressions": [
+            5855
+          ],
+          "billed_engagements": [
+            145
+          ],
+          "billed_charge_local_micro": [
+            159106191
+          ],
+          "conversion_purchases": [
+            5
+          ],
+          "conversion_add_to_carts": [
+            13
+          ],
+          "conversion_site_visits": [
+            93
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 6
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            9487
+          ],
+          "engagements": [
+            478
+          ],
+          "clicks": [
+            341
+          ],
+          "url_clicks": [
+            157
+          ],
+          "likes": [
+            95
+          ],
+          "retweets": [
+            14
+          ],
+          "replies": [
+            8
+          ],
+          "follows": [
+            3
+          ],
+          "qualified_impressions": [
+            6497
+          ],
+          "billed_engagements": [
+            157
+          ],
+          "billed_charge_local_micro": [
+            162290335
+          ],
+          "conversion_purchases": [
+            6
+          ],
+          "conversion_add_to_carts": [
+            13
+          ],
+          "conversion_site_visits": [
+            87
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 5
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            8610
+          ],
+          "engagements": [
+            449
+          ],
+          "clicks": [
+            299
+          ],
+          "url_clicks": [
+            148
+          ],
+          "likes": [
+            88
+          ],
+          "retweets": [
+            10
+          ],
+          "replies": [
+            11
+          ],
+          "follows": [
+            5
+          ],
+          "qualified_impressions": [
+            5253
+          ],
+          "billed_engagements": [
+            148
+          ],
+          "billed_charge_local_micro": [
+            157993686
+          ],
+          "conversion_purchases": [
+            6
+          ],
+          "conversion_add_to_carts": [
+            16
+          ],
+          "conversion_site_visits": [
+            105
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 4
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            11170
+          ],
+          "engagements": [
+            511
+          ],
+          "clicks": [
+            380
+          ],
+          "url_clicks": [
+            188
+          ],
+          "likes": [
+            101
+          ],
+          "retweets": [
+            10
+          ],
+          "replies": [
+            9
+          ],
+          "follows": [
+            6
+          ],
+          "qualified_impressions": [
+            7060
+          ],
+          "billed_engagements": [
+            188
+          ],
+          "billed_charge_local_micro": [
+            201521943
+          ],
+          "conversion_purchases": [
+            5
+          ],
+          "conversion_add_to_carts": [
+            16
+          ],
+          "conversion_site_visits": [
+            113
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 3
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            9821
+          ],
+          "engagements": [
+            436
+          ],
+          "clicks": [
+            319
+          ],
+          "url_clicks": [
+            148
+          ],
+          "likes": [
+            82
+          ],
+          "retweets": [
+            12
+          ],
+          "replies": [
+            12
+          ],
+          "follows": [
+            6
+          ],
+          "qualified_impressions": [
+            6266
+          ],
+          "billed_engagements": [
+            148
+          ],
+          "billed_charge_local_micro": [
+            154654074
+          ],
+          "conversion_purchases": [
+            4
+          ],
+          "conversion_add_to_carts": [
+            14
+          ],
+          "conversion_site_visits": [
+            107
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 2
+  },
+  {
+    "id": "92ph",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            8851
+          ],
+          "engagements": [
+            424
+          ],
+          "clicks": [
+            303
+          ],
+          "url_clicks": [
+            136
+          ],
+          "likes": [
+            98
+          ],
+          "retweets": [
+            13
+          ],
+          "replies": [
+            8
+          ],
+          "follows": [
+            6
+          ],
+          "qualified_impressions": [
+            5259
+          ],
+          "billed_engagements": [
+            136
+          ],
+          "billed_charge_local_micro": [
+            140297160
+          ],
+          "conversion_purchases": [
+            3
+          ],
+          "conversion_add_to_carts": [
+            10
+          ],
+          "conversion_site_visits": [
+            86
+          ],
+          "conversion_sign_ups": null
+        }
+      }
+    ],
+    "_day_offset": 1
+  },
+  {
+    "id": "92pi",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            10487
+          ],
+          "engagements": [
+            163
+          ],
+          "clicks": [
+            57
+          ],
+          "video_total_views": [
+            4498
+          ],
+          "video_views_25": [
+            2801
+          ],
+          "video_views_50": [
+            1844
+          ],
+          "video_views_75": [
+            1283
+          ],
+          "video_views_100": [
+            957
+          ],
+          "video_content_starts": [
+            5847
+          ],
+          "video_3s100pct_views": [
+            3208
+          ],
+          "video_6s_views": [
+            2257
+          ],
+          "video_15s_views": [
+            1191
+          ],
+          "video_cta_clicks": [
+            34
+          ],
+          "billed_engagements": [
+            3430
+          ],
+          "billed_charge_local_micro": [
+            98336101
+          ]
+        }
+      }
+    ],
+    "_day_offset": 14
+  },
+  {
+    "id": "92pi",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            11569
+          ],
+          "engagements": [
+            288
+          ],
+          "clicks": [
+            80
+          ],
+          "video_total_views": [
+            5122
+          ],
+          "video_views_25": [
+            3083
+          ],
+          "video_views_50": [
+            1903
+          ],
+          "video_views_75": [
+            1178
+          ],
+          "video_views_100": [
+            836
+          ],
+          "video_content_starts": [
+            6495
+          ],
+          "video_3s100pct_views": [
+            4065
+          ],
+          "video_6s_views": [
+            2811
+          ],
+          "video_15s_views": [
+            1216
+          ],
+          "video_cta_clicks": [
+            22
+          ],
+          "billed_engagements": [
+            3641
+          ],
+          "billed_charge_local_micro": [
+            108952163
+          ]
+        }
+      }
+    ],
+    "_day_offset": 13
+  },
+  {
+    "id": "92pi",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            11690
+          ],
+          "engagements": [
+            270
+          ],
+          "clicks": [
+            52
+          ],
+          "video_total_views": [
+            4668
+          ],
+          "video_views_25": [
+            2634
+          ],
+          "video_views_50": [
+            1622
+          ],
+          "video_views_75": [
+            1157
+          ],
+          "video_views_100": [
+            761
+          ],
+          "video_content_starts": [
+            6729
+          ],
+          "video_3s100pct_views": [
+            3423
+          ],
+          "video_6s_views": [
+            2107
+          ],
+          "video_15s_views": [
+            1345
+          ],
+          "video_cta_clicks": [
+            19
+          ],
+          "billed_engagements": [
+            3705
+          ],
+          "billed_charge_local_micro": [
+            93780911
+          ]
+        }
+      }
+    ],
+    "_day_offset": 12
+  },
+  {
+    "id": "92pi",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            10755
+          ],
+          "engagements": [
+            141
+          ],
+          "clicks": [
+            50
+          ],
+          "video_total_views": [
+            4400
+          ],
+          "video_views_25": [
+            2835
+          ],
+          "video_views_50": [
+            1758
+          ],
+          "video_views_75": [
+            1154
+          ],
+          "video_views_100": [
+            856
+          ],
+          "video_content_starts": [
+            5787
+          ],
+          "video_3s100pct_views": [
+            3365
+          ],
+          "video_6s_views": [
+            2443
+          ],
+          "video_15s_views": [
+            1220
+          ],
+          "video_cta_clicks": [
+            24
+          ],
+          "billed_engagements": [
+            3470
+          ],
+          "billed_charge_local_micro": [
+            93981323
+          ]
+        }
+      }
+    ],
+    "_day_offset": 11
+  },
+  {
+    "id": "92pi",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            12845
+          ],
+          "engagements": [
+            187
+          ],
+          "clicks": [
+            69
+          ],
+          "video_total_views": [
+            5053
+          ],
+          "video_views_25": [
+            3061
+          ],
+          "video_views_50": [
+            1951
+          ],
+          "video_views_75": [
+            1384
+          ],
+          "video_views_100": [
+            955
+          ],
+          "video_content_starts": [
+            6885
+          ],
+          "video_3s100pct_views": [
+            4186
+          ],
+          "video_6s_views": [
+            3010
+          ],
+          "video_15s_views": [
+            1362
+          ],
+          "video_cta_clicks": [
+            25
+          ],
+          "billed_engagements": [
+            3833
+          ],
+          "billed_charge_local_micro": [
+            103891035
+          ]
+        }
+      }
+    ],
+    "_day_offset": 10
+  },
+  {
+    "id": "92pi",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            14187
+          ],
+          "engagements": [
+            206
+          ],
+          "clicks": [
+            66
+          ],
+          "video_total_views": [
+            6424
+          ],
+          "video_views_25": [
+            3572
+          ],
+          "video_views_50": [
+            2330
+          ],
+          "video_views_75": [
+            1555
+          ],
+          "video_views_100": [
+            1174
+          ],
+          "video_content_starts": [
+            7533
+          ],
+          "video_3s100pct_views": [
+            5344
+          ],
+          "video_6s_views": [
+            3335
+          ],
+          "video_15s_views": [
+            1678
+          ],
+          "video_cta_clicks": [
+            51
+          ],
+          "billed_engagements": [
+            4588
+          ],
+          "billed_charge_local_micro": [
+            129703672
+          ]
+        }
+      }
+    ],
+    "_day_offset": 9
+  },
+  {
+    "id": "92pi",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            11370
+          ],
+          "engagements": [
+            162
+          ],
+          "clicks": [
+            81
+          ],
+          "video_total_views": [
+            5100
+          ],
+          "video_views_25": [
+            2905
+          ],
+          "video_views_50": [
+            1959
+          ],
+          "video_views_75": [
+            1255
+          ],
+          "video_views_100": [
+            925
+          ],
+          "video_content_starts": [
+            6130
+          ],
+          "video_3s100pct_views": [
+            3798
+          ],
+          "video_6s_views": [
+            2458
+          ],
+          "video_15s_views": [
+            1159
+          ],
+          "video_cta_clicks": [
+            33
+          ],
+          "billed_engagements": [
+            4245
+          ],
+          "billed_charge_local_micro": [
+            109147759
+          ]
+        }
+      }
+    ],
+    "_day_offset": 8
+  },
+  {
+    "id": "92pi",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            12094
+          ],
+          "engagements": [
+            266
+          ],
+          "clicks": [
+            65
+          ],
+          "video_total_views": [
+            4968
+          ],
+          "video_views_25": [
+            3126
+          ],
+          "video_views_50": [
+            1931
+          ],
+          "video_views_75": [
+            1253
+          ],
+          "video_views_100": [
+            871
+          ],
+          "video_content_starts": [
+            6553
+          ],
+          "video_3s100pct_views": [
+            3631
+          ],
+          "video_6s_views": [
+            2820
+          ],
+          "video_15s_views": [
+            1391
+          ],
+          "video_cta_clicks": [
+            22
+          ],
+          "billed_engagements": [
+            3644
+          ],
+          "billed_charge_local_micro": [
+            105950216
+          ]
+        }
+      }
+    ],
+    "_day_offset": 7
+  },
+  {
+    "id": "92pi",
+    "id_data": [
+      {
+        "segment": null,
+        "metrics": {
+          "impressions": [
+            11510
+          ],
+          "engagements": [
+            231
+          ],
+          "clicks": [
+            69
+          ],
+          "video_total_views": [
+            4935
+          ],
+          "video_views_25": [
+            3128
+          ],
+          "video_views_50": [
+            2082
+          ],
+          "video_views_75": [
+            1422
+          ],
+          "video_views_100": [
+            1060
+          ],
+          "video_content_starts": [
+            5863
+          ],
+          "video_3s100pct_views": [
+            4126
+          ],
+          "video_6s_views": [
+            2324
+          ],
+          "video_15s_views": [
+            1445
+          ],
+          "video_cta_clicks": [
+            20
+          ],
+          "billed_engagements": [
+            3636
+          ],
+          "billed_charge_local_micro": [
+            100139820
+          ]
+        }
+      }
+    ],
+    "_day_offset": 6
+  }
+]

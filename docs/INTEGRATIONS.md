@@ -18,7 +18,7 @@ unconfigured provider reports exactly that.
 | Google Ads | Google Cloud OAuth client, **developer token** approved for production by Google     | `GOOGLE_ADS_CLIENT_ID`, `GOOGLE_ADS_CLIENT_SECRET`, `GOOGLE_ADS_DEVELOPER_TOKEN` |
 | TikTok Ads | TikTok for Business developer app, Marketing API approval                            | `TIKTOK_ADS_APP_ID`, `TIKTOK_ADS_APP_SECRET` |
 | Snapchat   | Snap Business app with Marketing API access                                          | `SNAPCHAT_ADS_CLIENT_ID`, `SNAPCHAT_ADS_CLIENT_SECRET` |
-| X Ads      | X developer account with **Ads API access** (separately approved, often paid)         | `X_ADS_CONSUMER_KEY`, `X_ADS_CONSUMER_SECRET` |
+| X Ads      | X developer app, **Ads API access** via X's access form (up to 3 business days), plus a per-user **OAuth 1.0a** access token — X is the one provider here that is not OAuth 2.0 | `X_ADS_CONSUMER_KEY`, `X_ADS_CONSUMER_SECRET` |
 | LinkedIn   | LinkedIn app with Advertising API access (partner programme approval)                 | `LINKEDIN_ADS_CLIENT_ID`, `LINKEDIN_ADS_CLIENT_SECRET` |
 | ChatGPT Ads| Programme availability and API access — **not generally available**; contract and capability set unknown until access is granted | `OPENAI_ADS_API_KEY` |
 
@@ -289,12 +289,64 @@ reference.
 > response before any Snapchat figure reaches a client. The sandbox fixtures encode
 > the same assumption, so a test will not catch it; only a real response will.
 
-### X and LinkedIn — not implemented
+### X Ads API v12 — implemented
 
-`SyncAdapterRegistry::supports()` returns false for these two, and asking for an
-adapter raises `ProviderUnavailable`. There is no stub, because a generic adapter
-could only guess at field names. Each needs its own mapper against its own
-documented schema and its own fixture set.
+Field names, enum values and response shapes were read from X's published
+reference. `https://ads-api.x.com/12/` is the base; two versions are live at once and
+each is deprecated six months after its successor appears, so the version in the path
+is a thing to watch rather than set once.
+
+**Auth is the odd one out.** X is the only provider here that is not OAuth 2.0: every
+request is signed with OAuth 1.0a, three-legged, using a consumer key and secret for
+the app plus an access token and secret for the user acting on the account. There is
+no refresh token to rotate — an OAuth 1.0a token stays valid until the user revokes
+it — so reconnection is a user action rather than a scheduled job, which is why
+`Provider::X` declares `AuthMethod::OAuth1` and asks for `consumer_key` and
+`consumer_secret`.
+
+| X behaviour | Why it matters |
+| ----------- | -------------- |
+| **Stats are a time series, not a row per date** — `{"id": "dvcz7", "id_data": [{"segment": null, "metrics": {"impressions": [0, 2792, …]}}]}` | One response row is a whole range. Bucket *i* of every metric is the same day, and the day is the requested start plus *i*: the response states its length, not its dates. A mapper reading only the first bucket would silently discard every day but the first, which is why `mapInsights()` returns a *list* |
+| A metric with no data comes back as `null`, not an array of zeros | X documents that null and zero are equivalent *for it*. They are not equivalent here, so a null stays null — an aggregate has to be able to say "not reported" rather than claim a measured none. It also means the series length has to be taken from the longest metric rather than the first |
+| **The objective is on the line item, not the campaign** | One campaign can be pursuing two objectives at once, so a campaign record carries none at all rather than one borrowed from a child |
+| **Reach is a separate endpoint** — `stats/.../reach/campaigns`, with its own range limits | Stats rows carry no reach, so `reach` stays null for every X row. Impressions passed off as people is the easy lie here |
+| Money is micros, suffixed `_local_micro` | The same convention as Google and Snapchat; `$5.50` is `5500000` |
+| A campaign may carry a daily budget *and* a total budget | The daily figure paces and the total caps, so a campaign with both is daily-budgeted with a cap |
+| `entity_status` is only ACTIVE, PAUSED or DRAFT | Why an entity is not serving is in `servable` and `reasons_not_servable`. Only **two** reason codes are documented — `PAUSED_BY_ADVERTISER` and `INCOMPLETE` — so only those two are interpreted; any other reason still yields "not delivering" because `servable: false` says so, and the code itself reaches the interface untranslated |
+| Paused is both "paused" and "not servable" | The switch wins: `PAUSED_BY_ADVERTISER` is reported as paused, because that is the state an operator can act on |
+| **A promoted tweet carries no campaign id** | The hierarchy is reached through the line item, so the store resolves the campaign from the line item it already synced — the same hole Snapchat's ad object opened |
+| A promoted tweet has no name | The tweet *is* the creative. The row is labelled by its tweet id rather than "Untitled" repeated down a list |
+| Targeting lives in its own `targeting_criteria` collection | Not on the line item, so `targeting` is an empty object rather than a half-populated one |
+| A card is assembled from **components** and X derives `card_type` from them | MEDIA (one `media_key`), SWIPEABLE_MEDIA (`media_keys`, 2–6 — this is how a carousel is made), DETAILS (`title`, `destination`) and BUTTON (`label`, `destination`). `title` and `label` are typed wrappers, `{"type": "ENUM", "value": "INSTALL"}`, so the value is read out rather than the wrapper stringified |
+| A card references media by **key**, not URL | Resolving a key to a URL is a separate media-library request, so no thumbnail is reported |
+| `url_clicks` is the nearest thing to a link click | It is X's own metric rather than a share of `clicks`, so the two CTRs differ for the platform's reason, not ours |
+| X publishes **no conversion total and no conversion value** in these metric groups | `conversions` reports purchases as the headline, as for Snapchat — adding the columns would count one purchase again as a content view and again as a checkout. Every column that reported a figure becomes a breakdown row, and none of them carries a value |
+| Synchronous stats answer **at most 7 days**; conversions keep landing for weeks | This is the first provider whose per-request ceiling is *shorter* than its attribution lookback. The sync now asks for the range in consecutive windows rather than clamping it to one request — clamping meant such a provider could never re-read its own attribution window |
+| `entity_ids` is capped at 20 per request, and `placement` is one value per request | Both are per-request shapes for the transport to respect, not mapping concerns |
+| Metrics finalise after 24 hours; **spend** within three days | A figure read today can still change, which is the same reason every provider here is re-read |
+
+Errors arrive as `{"errors": [{"code": "CAPS_CASE", "message": "…", "parameter": "…"}]}`.
+The documented retryable conditions are `TOO_MANY_REQUESTS` (429), `OVER_CAPACITY`
+(503), `SERVICE_UNAVAILABLE` (503), `INTERNAL_ERROR` (500), `CANCELLED_REQUEST` (408)
+and `LOCK_ACQUISITION_TIMEOUT` (423) — another writer holding the entity. The last two
+were being filed as `unknown`, and so reported to an operator as something to fix;
+they are now classified as transient. Synchronous stats allow 250 requests per 15
+minutes per user, and the asynchronous jobs endpoint 100 concurrent jobs per account.
+
+> **What is not verified.** `reasons_not_servable` and `effective_status` have no
+> published enumerations — only `PAUSED_BY_ADVERTISER`/`INCOMPLETE` and
+> `UNKNOWN`/`RUNNING` appear in X's examples, and the fixtures use nothing else. Card
+> types beyond `UNIFIED` and `IMAGE_APP` are inferred from the one documented example:
+> the medium is read from the leading token, so `IMAGE_*` and `VIDEO_*` are recognised
+> and anything else is reported as unknown rather than guessed. The LTV conversion
+> groups were not mapped at all, which is why no X revenue figure exists.
+
+### LinkedIn — not implemented
+
+`SyncAdapterRegistry::supports()` returns false, and asking for an adapter raises
+`ProviderUnavailable`. There is no stub, because a generic adapter could only guess at
+field names. It needs its own mapper against its own documented schema and its own
+fixture set.
 
 > **Caveat.** The Meta mappings were written from Meta's published schema
 > Several of its reference pages render their field tables client-side and could
@@ -306,6 +358,8 @@ documented schema and its own fixture set.
 > inference still want checking against a real account. TikTok's structure fields
 > are confirmed; its metric names are the open item above. Snapchat's field names and
 > enums are confirmed; the unit of its `spend` metric is not, which is the most
-> consequential open item across all four providers. The fixtures make a *name*
-> mismatch a failing test rather than a wrong chart, but a wrong *unit* is encoded in
-> the fixtures too — only a live response settles it.
+> consequential open item across all five providers. X's field names, metric names and
+> response shape are confirmed; its status reason codes are not enumerated anywhere, so
+> only the two it publishes are interpreted. The fixtures make a *name* mismatch a
+> failing test rather than a wrong chart, but a wrong *unit* is encoded in the fixtures
+> too — only a live response settles it.

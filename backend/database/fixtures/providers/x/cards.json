@@ -1,0 +1,59 @@
+[
+  {
+    "id": "5a9v1",
+    "name": "SANDBOX — Alhambra oud | website card",
+    "card_uri": "card://1043281327995940864",
+    "card_type": "IMAGE_WEBSITE",
+    "components": [
+      {
+        "type": "MEDIA",
+        "media_key": "3_1323490622599176192"
+      },
+      {
+        "type": "DETAILS",
+        "title": {
+          "type": "STRING",
+          "value": "Oud Alhambra | free delivery in Riyadh"
+        },
+        "destination": {
+          "type": "WEBSITE",
+          "url": "https://alhambra-oud.example/riyadh"
+        }
+      }
+    ],
+    "created_at": "2026-07-29T08:00:00Z",
+    "updated_at": "2026-07-29T08:00:00Z",
+    "deleted": false
+  },
+  {
+    "id": "5a9v2",
+    "name": "SANDBOX — Alhambra | app install carousel",
+    "card_uri": "card://1043281327995940865",
+    "card_type": "UNIFIED",
+    "components": [
+      {
+        "type": "SWIPEABLE_MEDIA",
+        "media_keys": [
+          "3_1323490622599176193",
+          "3_1323490622599176194",
+          "3_1323490622599176195"
+        ]
+      },
+      {
+        "type": "BUTTON",
+        "label": {
+          "type": "ENUM",
+          "value": "INSTALL"
+        },
+        "destination": {
+          "type": "APP",
+          "ios_app_store_identifier": "1234567890",
+          "android_app_store_identifier": "com.example.alhambra"
+        }
+      }
+    ],
+    "created_at": "2026-08-25T11:50:00Z",
+    "updated_at": "2026-08-25T11:50:00Z",
+    "deleted": false
+  }
+]

@@ -204,7 +204,15 @@ describe('sync vocabulary', function (): void {
         expect(ProviderErrorCategory::fromStatusCode(429))->toBe(ProviderErrorCategory::RateLimit)
             ->and(ProviderErrorCategory::fromStatusCode(401))->toBe(ProviderErrorCategory::Auth)
             ->and(ProviderErrorCategory::fromStatusCode(503))->toBe(ProviderErrorCategory::Server)
-            ->and(ProviderErrorCategory::fromStatusCode(null))->toBe(ProviderErrorCategory::Transport);
+            ->and(ProviderErrorCategory::fromStatusCode(null))->toBe(ProviderErrorCategory::Transport)
+            /*
+             * Both are retryable, and both are conditions X actually publishes: a
+             * cancelled request and a lock another writer is holding. Reported as
+             * unknown they would have reached an operator as something to fix.
+             */
+            ->and(ProviderErrorCategory::fromStatusCode(408)->isTransient())->toBeTrue()
+            ->and(ProviderErrorCategory::fromStatusCode(423)->isTransient())->toBeTrue()
+            ->and(ProviderErrorCategory::fromStatusCode(418))->toBe(ProviderErrorCategory::Unknown);
 
         // Waiting fixes a rate limit; only a person fixes an expired token.
         expect(ProviderErrorCategory::RateLimit->isTransient())->toBeTrue()

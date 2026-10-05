@@ -4,6 +4,60 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## X Ads sync
+
+### Added
+
+- `XAdsMapper` and `XAdsSyncAdapter` for X Ads API v12, with field names, metric names
+  and response shapes read from X's published reference. 32 mapper tests and 15 sync
+  tests.
+- Fixtures in X's real stats shape, including a campaign that reports nothing at all
+  and a line item whose metrics X omits entirely rather than zeroing.
+
+### Conventions handled
+
+X is the first provider here that is shaped differently rather than merely spelled
+differently:
+
+- **Performance is a time series.** One row holds one array per metric, aligned to the
+  requested range — so a row is a range, not a day, and bucket *i* is the start plus
+  *i*. The adapter contract now returns a *list* of records per row for this reason; a
+  mapper reading only the first bucket would silently discard every other day.
+- **The objective is on the line item**, so an X campaign carries none at all rather
+  than one borrowed from a child.
+- **Reach is a separate endpoint**, so every X row reports no reach rather than
+  impressions standing in for people.
+- **Auth is OAuth 1.0a** — the only provider here that is not OAuth 2.0, and the only
+  one with no refresh token to rotate.
+- A promoted tweet carries no campaign id and no name: the campaign is resolved through
+  the line item, and the row is labelled by its tweet.
+- A card is assembled from components (MEDIA, SWIPEABLE_MEDIA, DETAILS, BUTTON) and X
+  derives `card_type` from them, so the medium, headline, button and destination are
+  read from the components. A SWIPEABLE_MEDIA component is what makes a carousel.
+- A metric with no data arrives as `null`. X documents null and zero as equivalent for
+  it; they are not equivalent here, so the null survives.
+
+### Fixed
+
+- **The insight window was clamped instead of split.** Each adapter states how much a
+  provider will answer in one request, and the sync shortened the range to fit. X is
+  the first provider whose ceiling (7 days) is less than its attribution lookback (28),
+  which meant it could never re-read its own attribution window: a purchase attributed
+  ten days back would have stayed invisible and the client would have seen a worse ROAS
+  than they earned. The range is now asked for in consecutive windows.
+- **`CANCELLED_REQUEST` (408) and `LOCK_ACQUISITION_TIMEOUT` (423) were filed as
+  unknown**, and so reported to an operator as something to fix. Both are documented X
+  conditions that clear on retry, and both are now classified as transient.
+
+### Not verified
+
+`reasons_not_servable` and `effective_status` have no published enumerations — X's
+examples show only `PAUSED_BY_ADVERTISER`/`INCOMPLETE` and `UNKNOWN`/`RUNNING`, and the
+fixtures use nothing else. Only those two reason codes are interpreted; any other still
+yields "not delivering" because `servable: false` says so, and the code reaches the
+interface untranslated. Card types beyond the one documented example are read by their
+leading token rather than matched against an invented list.
+
 ## Snapchat sync
 
 ### Added

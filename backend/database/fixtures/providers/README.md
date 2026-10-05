@@ -34,6 +34,21 @@ that reports **nothing at all** rather than zero. Weekends lift volume. Parent
 levels are not the sum of their children — reach is discounted, as Meta
 deduplicates it — so a test cannot pass by summing the wrong level.
 
+## Shapes that look odd but are not
+
+Each file is a JSON **list of the items** a response's data array holds, not the whole
+envelope — pagination is the loader's job. Two providers make that look strange:
+
+- **Snapchat** items are wrapped twice, `{sub_request_status, campaign: {…}}`, because
+  one batch can partly succeed. A failed item carries no entity, and dropping it is the
+  adapter's job.
+- **X** reports performance as a time series: each stats item is
+  `{id, id_data: [{segment, metrics: {impressions: [...]}}]}` with one array per metric
+  aligned to the requested range. Its insight rows hold **one bucket each**, which is
+  exactly what a single-day request returns, so they filter by date like every other
+  provider's. The mapper still walks the whole series, because a live multi-day request
+  returns one row with many buckets and reading only the first would discard the rest.
+
 ## The one departure from a verbatim response
 
 `date_start` / `date_stop` are absent from the stored rows, replaced by

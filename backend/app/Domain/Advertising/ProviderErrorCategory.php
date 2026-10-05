@@ -43,6 +43,15 @@ enum ProviderErrorCategory: string
             $status === 404 => self::NotFound,
             $status === 429 => self::RateLimit,
             $status === 400, $status === 422 => self::Validation,
+            /*
+             * Retryable without anyone changing anything. X publishes both as
+             * documented error codes — `CANCELLED_REQUEST` (408) and
+             * `LOCK_ACQUISITION_TIMEOUT` (423), the second meaning another writer holds
+             * the entity right now. Filed as unknown they would have been reported to
+             * an operator as something to fix.
+             */
+            $status === 408 => self::Transport,
+            $status === 423 => self::Server,
             $status !== null && $status >= 500 => self::Server,
             $status === null => self::Transport,
             default => self::Unknown,

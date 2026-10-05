@@ -23,8 +23,21 @@ WEB_PORT="${VITE_DEV_PORT:-5178}"
 # ports are checked before anything starts.
 cleanup() {
   for pid in "${API_PID:-}" "${WEB_PID:-}"; do
-    [[ -n "$pid" ]] && kill "$pid" 2>/dev/null || true
+    [[ -z "$pid" ]] && continue
+    pkill -P "$pid" 2>/dev/null || true
+    kill "$pid" 2>/dev/null || true
   done
+
+  # And then the workers, by the port they hold.
+  #
+  # `artisan serve` runs `php -S` as a child, which forks PHP_CLI_SERVER_WORKERS
+  # grandchildren. Killing the recorded PID and its children leaves those workers
+  # reparented to init, still listening — and the next run fails its own port check
+  # for what looks like a stale process of the developer's making. Matching the
+  # listener is the only thing that reliably reaches them.
+  local holders
+  holders=$(lsof -nP -iTCP:"$API_PORT" -sTCP:LISTEN -t 2>/dev/null || true)
+  [[ -n "$holders" ]] && kill $holders 2>/dev/null || true
 }
 trap cleanup EXIT
 
