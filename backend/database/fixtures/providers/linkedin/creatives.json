@@ -1,0 +1,78 @@
+[
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "campaign": "urn:li:sponsoredCampaign:360035215",
+    "content": {
+      "reference": "urn:li:share:6778045555198214144"
+    },
+    "createdAt": 1753100000000,
+    "createdBy": "urn:li:person:rboDhL7Xsf",
+    "id": "urn:li:sponsoredCreative:119962155",
+    "intendedStatus": "ACTIVE",
+    "isServing": true,
+    "isTest": false,
+    "lastModifiedAt": 1759000000000,
+    "lastModifiedBy": "urn:li:person:rboDhL7Xsf",
+    "name": "SANDBOX — Open a business account in minutes",
+    "review": {
+      "status": "APPROVED"
+    }
+  },
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "campaign": "urn:li:sponsoredCampaign:360035215",
+    "content": {
+      "reference": "urn:li:share:6778045555198214150"
+    },
+    "createdAt": 1754200000000,
+    "id": "urn:li:sponsoredCreative:119962160",
+    "intendedStatus": "ACTIVE",
+    "isServing": true,
+    "isTest": false,
+    "lastModifiedAt": 1758900000000,
+    "review": {
+      "status": "APPROVED"
+    }
+  },
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "campaign": "urn:li:sponsoredCampaign:360035221",
+    "content": {
+      "reference": "urn:li:share:6778045555198214161"
+    },
+    "createdAt": 1754300000000,
+    "id": "urn:li:sponsoredCreative:119962171",
+    "intendedStatus": "ACTIVE",
+    "isServing": false,
+    "isTest": false,
+    "lastModifiedAt": 1754400000000,
+    "review": {
+      "status": "REJECTED",
+      "rejectionReasons": [
+        "CONTENT_POLICY_VIOLATION"
+      ]
+    },
+    "servingHoldReasons": [
+      "REJECTED"
+    ]
+  },
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "campaign": "urn:li:sponsoredCampaign:360035230",
+    "content": {
+      "reference": "urn:li:ugcPost:6778045555198214177"
+    },
+    "createdAt": 1748200000000,
+    "id": "urn:li:sponsoredCreative:119962180",
+    "intendedStatus": "ACTIVE",
+    "isServing": false,
+    "isTest": false,
+    "lastModifiedAt": 1758000000000,
+    "review": {
+      "status": "APPROVED"
+    },
+    "servingHoldReasons": [
+      "CAMPAIGN_GROUP_TOTAL_BUDGET_HOLD"
+    ]
+  }
+]

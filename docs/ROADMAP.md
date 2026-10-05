@@ -10,7 +10,7 @@ times.
 | 0     | Repository baseline, dev stack, CI, formatting, linting, tests, env examples, architectural skeleton | **Complete** |
 | 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | **Complete** |
 | 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | **Complete** |
-| 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | **Ingestion complete**, Meta adapter live; other adapters in progress |
+| 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | **Ingestion complete**; six provider adapters implemented against published schemas, all SANDBOX until credentials exist |
 | 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | **Complete** |
 | 5     | Budgets, pacing, calculator, forecasting, alerts                                | Planned |
 | 6     | Creative hub, tasks, approvals, files, notifications/realtime                   | Planned |
@@ -104,7 +104,8 @@ built around them.
   `sandbox`, `manual`, `estimated` — decided once where the credentials are known.
   Aggregates inherit their weakest input, and sandbox or estimated figures will
   not combine with actuals at all.
-- `AdvertisingSyncAdapter`, the sync port, with Meta, Google Ads, TikTok, Snapchat and X
+- `AdvertisingSyncAdapter`, the sync port, with Meta, Google Ads, TikTok, Snapchat, X
+  and LinkedIn
   implementations reading campaigns, ad sets/groups, ads, creatives and
   insights at campaign, ad-group and ad level, against fixtures that hold each
   provider's real response shapes. Google's field names came from the published
@@ -121,9 +122,9 @@ built around them.
 
 ### Not yet done in Phase 3
 
-- A sync adapter for LinkedIn. It needs its own mapper against its own documented
-  schema and its own fixture set; the registry reports `supports() === false` rather
-  than offering a stub.
+- A sync adapter for ChatGPT Ads. The programme is not generally available and its
+  contract is unknown, so the registry reports `supports() === false` and the provider
+  declares no capabilities rather than offering a stub.
 - TikTok's click, video and revenue metric names, which its documentation did
   not make readable.
 - X's asynchronous stats endpoint, which is the only way to read more than seven days
@@ -131,6 +132,10 @@ built around them.
   synchronous endpoint is used instead, in consecutive seven-day windows.
 - X's reach endpoint (`stats/.../reach/campaigns`), which is a separate call with its
   own range limits. Until it is read, every X row reports no reach at all.
+- The post a LinkedIn creative sponsors, which is where its headline, image and link
+  live. Until it is read, LinkedIn creatives carry no copy and no destination.
+- LinkedIn's revenue attribution finder, which needs a CRM connected to Business
+  Manager.
 - Verification of the unit of Snapchat's `spend` metric. Every other money field in
   their API carries a `_micro` suffix and this one does not; it is mapped as micros,
   and if that is wrong spend is understated 10,000-fold. Only a live response settles

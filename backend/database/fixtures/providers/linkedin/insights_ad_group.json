@@ -1,0 +1,729 @@
+[
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 12144,
+    "clicks": 85,
+    "landingPageClicks": 62,
+    "costInLocalCurrency": "1213.94678",
+    "approximateMemberReach": 6731,
+    "totalEngagements": 118,
+    "reactions": 13,
+    "comments": 0,
+    "shares": 1,
+    "follows": 1,
+    "oneClickLeadFormOpens": 19,
+    "oneClickLeads": 4,
+    "externalWebsiteConversions": 4,
+    "externalWebsitePostClickConversions": 4,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "3580.00000",
+    "qualifiedLeads": 1,
+    "averageDwellTime": 4,
+    "_day_offset": 14,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 11572,
+    "clicks": 82,
+    "landingPageClicks": 59,
+    "costInLocalCurrency": "1166.48572",
+    "approximateMemberReach": 6817,
+    "totalEngagements": 113,
+    "reactions": 11,
+    "comments": 1,
+    "shares": 0,
+    "follows": 0,
+    "oneClickLeadFormOpens": 18,
+    "oneClickLeads": 6,
+    "externalWebsiteConversions": 6,
+    "externalWebsitePostClickConversions": 6,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "5220.00000",
+    "qualifiedLeads": 1,
+    "averageDwellTime": 4,
+    "_day_offset": 13,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 13014,
+    "clicks": 89,
+    "landingPageClicks": 62,
+    "costInLocalCurrency": "1174.17368",
+    "approximateMemberReach": 7279,
+    "totalEngagements": 123,
+    "reactions": 9,
+    "comments": 0,
+    "shares": 1,
+    "follows": 1,
+    "oneClickLeadFormOpens": 16,
+    "oneClickLeads": 4,
+    "externalWebsiteConversions": 4,
+    "externalWebsitePostClickConversions": 4,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "3520.00000",
+    "qualifiedLeads": 0,
+    "averageDwellTime": 3,
+    "_day_offset": 12,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 12790,
+    "clicks": 90,
+    "landingPageClicks": 59,
+    "costInLocalCurrency": "1249.02354",
+    "approximateMemberReach": 6289,
+    "totalEngagements": 113,
+    "reactions": 10,
+    "comments": 1,
+    "shares": 0,
+    "follows": 1,
+    "oneClickLeadFormOpens": 15,
+    "oneClickLeads": 6,
+    "externalWebsiteConversions": 6,
+    "externalWebsitePostClickConversions": 6,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "5280.00000",
+    "qualifiedLeads": 2,
+    "averageDwellTime": 2,
+    "_day_offset": 11,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 14254,
+    "clicks": 98,
+    "landingPageClicks": 68,
+    "costInLocalCurrency": "1362.77635",
+    "approximateMemberReach": 7665,
+    "totalEngagements": 124,
+    "reactions": 17,
+    "comments": 1,
+    "shares": 1,
+    "follows": 2,
+    "oneClickLeadFormOpens": 14,
+    "oneClickLeads": 4,
+    "externalWebsiteConversions": 4,
+    "externalWebsitePostClickConversions": 4,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "3460.00000",
+    "qualifiedLeads": 1,
+    "averageDwellTime": 6,
+    "_day_offset": 10,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 14532,
+    "clicks": 93,
+    "landingPageClicks": 61,
+    "costInLocalCurrency": "1269.63777",
+    "approximateMemberReach": 7637,
+    "totalEngagements": 128,
+    "reactions": 11,
+    "comments": 1,
+    "shares": 1,
+    "follows": 0,
+    "oneClickLeadFormOpens": 12,
+    "oneClickLeads": 4,
+    "externalWebsiteConversions": 4,
+    "externalWebsitePostClickConversions": 4,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "3520.00000",
+    "qualifiedLeads": 1,
+    "averageDwellTime": 4,
+    "_day_offset": 9,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 11794,
+    "clicks": 75,
+    "landingPageClicks": 53,
+    "costInLocalCurrency": "1034.55891",
+    "approximateMemberReach": 6456,
+    "totalEngagements": 100,
+    "reactions": 9,
+    "comments": 0,
+    "shares": 1,
+    "follows": 0,
+    "oneClickLeadFormOpens": 10,
+    "oneClickLeads": 4,
+    "externalWebsiteConversions": 4,
+    "externalWebsitePostClickConversions": 4,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "3520.00000",
+    "qualifiedLeads": 1,
+    "averageDwellTime": 4,
+    "_day_offset": 8,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 11793,
+    "clicks": 80,
+    "landingPageClicks": 52,
+    "costInLocalCurrency": "1125.29982",
+    "approximateMemberReach": 6189,
+    "totalEngagements": 107,
+    "reactions": 13,
+    "comments": 0,
+    "shares": 0,
+    "follows": 3,
+    "oneClickLeadFormOpens": 10,
+    "oneClickLeads": 5,
+    "externalWebsiteConversions": 5,
+    "externalWebsitePostClickConversions": 5,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "4310.00000",
+    "qualifiedLeads": 1,
+    "averageDwellTime": 3,
+    "_day_offset": 7,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 12509,
+    "clicks": 82,
+    "landingPageClicks": 55,
+    "costInLocalCurrency": "1133.91079",
+    "approximateMemberReach": 6214,
+    "totalEngagements": 114,
+    "reactions": 13,
+    "comments": 0,
+    "shares": 0,
+    "follows": 0,
+    "oneClickLeadFormOpens": 12,
+    "oneClickLeads": 2,
+    "externalWebsiteConversions": 2,
+    "externalWebsitePostClickConversions": 2,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "1700.00000",
+    "qualifiedLeads": 1,
+    "averageDwellTime": 5,
+    "_day_offset": 6,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 12400,
+    "clicks": 90,
+    "landingPageClicks": 65,
+    "costInLocalCurrency": "1233.45911",
+    "approximateMemberReach": 7328,
+    "totalEngagements": 115,
+    "reactions": 10,
+    "comments": 2,
+    "shares": 0,
+    "follows": 2,
+    "oneClickLeadFormOpens": 19,
+    "oneClickLeads": 4,
+    "externalWebsiteConversions": 4,
+    "externalWebsitePostClickConversions": 4,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "3460.00000",
+    "qualifiedLeads": 1,
+    "averageDwellTime": 3,
+    "_day_offset": 5,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 12111,
+    "clicks": 77,
+    "landingPageClicks": 56,
+    "costInLocalCurrency": "1024.01052",
+    "approximateMemberReach": 6744,
+    "totalEngagements": 103,
+    "reactions": 10,
+    "comments": 0,
+    "shares": 0,
+    "follows": 1,
+    "oneClickLeadFormOpens": 14,
+    "oneClickLeads": 4,
+    "externalWebsiteConversions": 4,
+    "externalWebsitePostClickConversions": 4,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "3460.00000",
+    "qualifiedLeads": 1,
+    "averageDwellTime": 6,
+    "_day_offset": 4,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 13880,
+    "clicks": 84,
+    "landingPageClicks": 61,
+    "costInLocalCurrency": "1178.32330",
+    "approximateMemberReach": 7673,
+    "totalEngagements": 123,
+    "reactions": 12,
+    "comments": 1,
+    "shares": 0,
+    "follows": 2,
+    "oneClickLeadFormOpens": 15,
+    "oneClickLeads": 2,
+    "externalWebsiteConversions": 2,
+    "externalWebsitePostClickConversions": 2,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "1760.00000",
+    "qualifiedLeads": 0,
+    "averageDwellTime": 3,
+    "_day_offset": 3,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 14221,
+    "clicks": 99,
+    "landingPageClicks": 64,
+    "costInLocalCurrency": "1295.96141",
+    "approximateMemberReach": 7122,
+    "totalEngagements": 139,
+    "reactions": 18,
+    "comments": 1,
+    "shares": 1,
+    "follows": 0,
+    "oneClickLeadFormOpens": 17,
+    "oneClickLeads": 8,
+    "externalWebsiteConversions": 8,
+    "externalWebsitePostClickConversions": 8,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "6980.00000",
+    "qualifiedLeads": 3,
+    "averageDwellTime": 5,
+    "_day_offset": 2,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035215"
+    ],
+    "dateRange": {},
+    "impressions": 11521,
+    "clicks": 80,
+    "landingPageClicks": 50,
+    "costInLocalCurrency": "1107.19958",
+    "approximateMemberReach": 6577,
+    "totalEngagements": 104,
+    "reactions": 13,
+    "comments": 0,
+    "shares": 0,
+    "follows": 2,
+    "oneClickLeadFormOpens": 14,
+    "oneClickLeads": 4,
+    "externalWebsiteConversions": 4,
+    "externalWebsitePostClickConversions": 4,
+    "externalWebsitePostViewConversions": 0,
+    "conversionValueInLocalCurrency": "3460.00000",
+    "qualifiedLeads": 1,
+    "averageDwellTime": 4,
+    "_day_offset": 1,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035221"
+    ],
+    "dateRange": {},
+    "impressions": 229,
+    "clicks": 0,
+    "landingPageClicks": 0,
+    "costInLocalCurrency": "0.00000",
+    "approximateMemberReach": 139,
+    "totalEngagements": 0,
+    "reactions": 0,
+    "comments": 0,
+    "shares": 0,
+    "follows": 0,
+    "oneClickLeadFormOpens": 0,
+    "oneClickLeads": 0,
+    "externalWebsiteConversions": 0,
+    "externalWebsitePostClickConversions": 0,
+    "externalWebsitePostViewConversions": 0,
+    "averageDwellTime": 4,
+    "_day_offset": 14,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035221"
+    ],
+    "dateRange": {},
+    "impressions": 246,
+    "clicks": 0,
+    "landingPageClicks": 0,
+    "costInLocalCurrency": "0.00000",
+    "approximateMemberReach": 146,
+    "totalEngagements": 0,
+    "reactions": 0,
+    "comments": 0,
+    "shares": 0,
+    "follows": 0,
+    "oneClickLeadFormOpens": 0,
+    "oneClickLeads": 0,
+    "externalWebsiteConversions": 0,
+    "externalWebsitePostClickConversions": 0,
+    "externalWebsitePostViewConversions": 0,
+    "averageDwellTime": 4,
+    "_day_offset": 13,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035221"
+    ],
+    "dateRange": {},
+    "impressions": 246,
+    "clicks": 0,
+    "landingPageClicks": 0,
+    "costInLocalCurrency": "0.00000",
+    "approximateMemberReach": 133,
+    "totalEngagements": 0,
+    "reactions": 0,
+    "comments": 0,
+    "shares": 0,
+    "follows": 0,
+    "oneClickLeadFormOpens": 0,
+    "oneClickLeads": 0,
+    "externalWebsiteConversions": 0,
+    "externalWebsitePostClickConversions": 0,
+    "externalWebsitePostViewConversions": 0,
+    "averageDwellTime": 6,
+    "_day_offset": 12,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035230"
+    ],
+    "dateRange": {},
+    "impressions": 17474,
+    "clicks": 64,
+    "costInLocalCurrency": "505.04127",
+    "approximateMemberReach": 8322,
+    "totalEngagements": 222,
+    "videoViews": 6632,
+    "videoStarts": 8449,
+    "videoFirstQuartileCompletions": 4178,
+    "videoMidpointCompletions": 2980,
+    "videoThirdQuartileCompletions": 2023,
+    "videoCompletions": 1288,
+    "videoWatchTime": 43999,
+    "averageVideoWatchTime": 8.19,
+    "_day_offset": 14,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035230"
+    ],
+    "dateRange": {},
+    "impressions": 16629,
+    "clicks": 41,
+    "costInLocalCurrency": "397.82074",
+    "approximateMemberReach": 7968,
+    "totalEngagements": 144,
+    "videoViews": 5251,
+    "videoStarts": 7816,
+    "videoFirstQuartileCompletions": 3024,
+    "videoMidpointCompletions": 2089,
+    "videoThirdQuartileCompletions": 1398,
+    "videoCompletions": 1086,
+    "videoWatchTime": 35893,
+    "averageVideoWatchTime": 3.71,
+    "_day_offset": 13,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035230"
+    ],
+    "dateRange": {},
+    "impressions": 17890,
+    "clicks": 54,
+    "costInLocalCurrency": "470.66130",
+    "approximateMemberReach": 8908,
+    "totalEngagements": 138,
+    "videoViews": 6217,
+    "videoStarts": 8312,
+    "videoFirstQuartileCompletions": 3962,
+    "videoMidpointCompletions": 2401,
+    "videoThirdQuartileCompletions": 1679,
+    "videoCompletions": 1326,
+    "videoWatchTime": 52384,
+    "averageVideoWatchTime": 5.64,
+    "_day_offset": 12,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035230"
+    ],
+    "dateRange": {},
+    "impressions": 17708,
+    "clicks": 61,
+    "costInLocalCurrency": "447.86390",
+    "approximateMemberReach": 8817,
+    "totalEngagements": 277,
+    "videoViews": 5940,
+    "videoStarts": 7713,
+    "videoFirstQuartileCompletions": 3975,
+    "videoMidpointCompletions": 2533,
+    "videoThirdQuartileCompletions": 1680,
+    "videoCompletions": 1162,
+    "videoWatchTime": 41318,
+    "averageVideoWatchTime": 7.38,
+    "_day_offset": 11,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035230"
+    ],
+    "dateRange": {},
+    "impressions": 21118,
+    "clicks": 95,
+    "costInLocalCurrency": "642.91645",
+    "approximateMemberReach": 10389,
+    "totalEngagements": 189,
+    "videoViews": 8250,
+    "videoStarts": 9732,
+    "videoFirstQuartileCompletions": 4779,
+    "videoMidpointCompletions": 3208,
+    "videoThirdQuartileCompletions": 1972,
+    "videoCompletions": 1267,
+    "videoWatchTime": 61199,
+    "averageVideoWatchTime": 6.47,
+    "_day_offset": 10,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035230"
+    ],
+    "dateRange": {},
+    "impressions": 17880,
+    "clicks": 70,
+    "costInLocalCurrency": "504.91928",
+    "approximateMemberReach": 9310,
+    "totalEngagements": 350,
+    "videoViews": 7047,
+    "videoStarts": 8339,
+    "videoFirstQuartileCompletions": 4651,
+    "videoMidpointCompletions": 2859,
+    "videoThirdQuartileCompletions": 2024,
+    "videoCompletions": 1506,
+    "videoWatchTime": 31219,
+    "averageVideoWatchTime": 3.91,
+    "_day_offset": 9,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035230"
+    ],
+    "dateRange": {},
+    "impressions": 16165,
+    "clicks": 66,
+    "costInLocalCurrency": "450.61486",
+    "approximateMemberReach": 7224,
+    "totalEngagements": 287,
+    "videoViews": 5989,
+    "videoStarts": 7593,
+    "videoFirstQuartileCompletions": 3884,
+    "videoMidpointCompletions": 2413,
+    "videoThirdQuartileCompletions": 1724,
+    "videoCompletions": 1367,
+    "videoWatchTime": 41608,
+    "averageVideoWatchTime": 8.4,
+    "_day_offset": 8,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035230"
+    ],
+    "dateRange": {},
+    "impressions": 16666,
+    "clicks": 36,
+    "costInLocalCurrency": "435.76966",
+    "approximateMemberReach": 7790,
+    "totalEngagements": 267,
+    "videoViews": 5537,
+    "videoStarts": 8248,
+    "videoFirstQuartileCompletions": 3691,
+    "videoMidpointCompletions": 2518,
+    "videoThirdQuartileCompletions": 1590,
+    "videoCompletions": 998,
+    "videoWatchTime": 46089,
+    "averageVideoWatchTime": 5.31,
+    "_day_offset": 7,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035230"
+    ],
+    "dateRange": {},
+    "impressions": 18273,
+    "clicks": 55,
+    "costInLocalCurrency": "554.71563",
+    "approximateMemberReach": 9817,
+    "totalEngagements": 152,
+    "videoViews": 7209,
+    "videoStarts": 8076,
+    "videoFirstQuartileCompletions": 4493,
+    "videoMidpointCompletions": 3183,
+    "videoThirdQuartileCompletions": 2001,
+    "videoCompletions": 1548,
+    "videoWatchTime": 29439,
+    "averageVideoWatchTime": 6.17,
+    "_day_offset": 6,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  },
+  {
+    "pivotValues": [
+      "urn:li:sponsoredCampaign:360035230"
+    ],
+    "dateRange": {},
+    "impressions": 15804,
+    "clicks": 43,
+    "costInLocalCurrency": "437.10604",
+    "approximateMemberReach": 7079,
+    "totalEngagements": 209,
+    "videoViews": 5569,
+    "videoStarts": 7434,
+    "videoFirstQuartileCompletions": 3425,
+    "videoMidpointCompletions": 2281,
+    "videoThirdQuartileCompletions": 1476,
+    "videoCompletions": 1044,
+    "videoWatchTime": 37577,
+    "averageVideoWatchTime": 7.66,
+    "_day_offset": 5,
+    "_date_objects": [
+      "dateRange.start",
+      "dateRange.end"
+    ]
+  }
+]

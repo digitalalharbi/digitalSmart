@@ -163,6 +163,25 @@ final class SandboxFixtures
                     $row = $this->writePath($row, explode('.', $path), $date);
                 }
             }
+
+            /*
+             * LinkedIn does not send a date string at all: its analytics rows carry
+             * `dateRange: {start: {year, month, day}, end: {…}}`, three integers deep.
+             * `_date_objects` writes that shape, so the fixture keeps the response
+             * verbatim rather than the mapper learning a format no live row uses.
+             */
+            $objects = $row['_date_objects'] ?? null;
+            $parts = [
+                'year' => (int) $this->today->modify('-'.(int) $offset.' days')->format('Y'),
+                'month' => (int) $this->today->modify('-'.(int) $offset.' days')->format('n'),
+                'day' => (int) $this->today->modify('-'.(int) $offset.' days')->format('j'),
+            ];
+
+            foreach (is_array($objects) ? $objects : [] as $path) {
+                if (is_string($path)) {
+                    $row = $this->writePath($row, explode('.', $path), $parts);
+                }
+            }
         }
 
         foreach (array_keys($row) as $key) {
@@ -179,9 +198,10 @@ final class SandboxFixtures
      *
      * @param  array<string, mixed>  $row
      * @param  list<string>  $segments
+     * @param  string|array<string, int>  $value
      * @return array<string, mixed>
      */
-    private function writePath(array $row, array $segments, string $value): array
+    private function writePath(array $row, array $segments, string|array $value): array
     {
         $key = array_shift($segments);
 

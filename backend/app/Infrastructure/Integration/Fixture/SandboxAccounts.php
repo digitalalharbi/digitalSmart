@@ -44,7 +44,9 @@ final class SandboxAccounts
                 new DiscoveredAccount('18ce54d4x5t', 'SANDBOX — Najd Fintech (X)', 'SAR', 'Asia/Riyadh', ExternalAccountStatus::Active),
             ],
             Provider::LinkedIn => [
-                new DiscoveredAccount('sandbox-li-900100', 'SANDBOX — Najd Fintech (LinkedIn)', 'USD', 'Asia/Riyadh', ExternalAccountStatus::Active),
+                // A LinkedIn ad account id is a bare long, and this is the account the
+                // LinkedIn sync fixtures report against.
+                new DiscoveredAccount('512352200', 'SANDBOX — Najd Fintech (LinkedIn)', 'SAR', 'Asia/Riyadh', ExternalAccountStatus::Active),
             ],
             // No fixtures: we do not know what this programme's accounts look
             // like, so inventing a shape would be a guess the UI presents as fact.

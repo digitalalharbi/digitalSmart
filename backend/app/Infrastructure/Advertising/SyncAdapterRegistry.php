@@ -9,6 +9,7 @@ use App\Application\Advertising\Contract\SyncAdapterRegistry as Registry;
 use App\Application\Integration\Exception\ProviderUnavailable;
 use App\Domain\Integration\Provider;
 use App\Infrastructure\Advertising\Adapter\GoogleAdsSyncAdapter;
+use App\Infrastructure\Advertising\Adapter\LinkedInSyncAdapter;
 use App\Infrastructure\Advertising\Adapter\MetaSyncAdapter;
 use App\Infrastructure\Advertising\Adapter\SnapchatSyncAdapter;
 use App\Infrastructure\Advertising\Adapter\TikTokSyncAdapter;
@@ -33,6 +34,7 @@ final readonly class SyncAdapterRegistry implements Registry
         Provider::TikTok->value => TikTokSyncAdapter::class,
         Provider::Snapchat->value => SnapchatSyncAdapter::class,
         Provider::X->value => XAdsSyncAdapter::class,
+        Provider::LinkedIn->value => LinkedInSyncAdapter::class,
     ];
 
     public function __construct(private Container $container) {}

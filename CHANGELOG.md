@@ -4,6 +4,67 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## LinkedIn sync
+
+Sixth and last provider with a published contract. Field names, enum values and
+response shapes were read from LinkedIn's reference, which is the best documented of the
+six — full field tables with complete enumerations.
+
+### Added
+
+- `LinkedInMapper` and `LinkedInSyncAdapter` for the versioned `/rest/` API, with 28
+  mapper tests and 12 sync tests.
+- `_date_objects`, a fixture-loader directive that writes a date as
+  `{year, month, day}` integers. LinkedIn sends no date string anywhere in a reporting
+  response, so without it either the fixture or the mapper would have to use a shape no
+  live row has.
+
+### The hazard, recorded in three places
+
+**A LinkedIn "campaign" is an ad set.** Its hierarchy is account → campaignGroup →
+campaign → creative, and the *campaign* is what carries targeting, a bid, a budget and
+an objective. So a campaign group lands at our campaign level, a campaign at our ad
+group level, and a creative at our ad level. Get it wrong and every roll-up in the
+product is off by one level, which is why it is stated in the adapter, the mapper,
+docs/INTEGRATIONS.md and the fixture README rather than left to be deduced — and why the
+sync test asserts the whole chain creative → campaign → campaign group.
+
+### Conventions handled
+
+- Money is a **decimal string inside an object** (`{"amount": "180000.00",
+  "currencyCode": "SAR"}`), and analytics money is a bare decimal string that may carry
+  more than two decimals (`"19.91833"`). Rounded half-up at the minor unit, as their
+  billing does.
+- **Schedules are epoch milliseconds**; read as seconds a 2025 date becomes the year
+  57560.
+- Ids are URNs in some places and longs in others, so everything is reduced to the
+  trailing id.
+- **`servingStatuses` decides delivery, not `status`.** `RUNNABLE` is its only serving
+  value, so an ACTIVE group that has spent its budget is reported as not delivering with
+  `CAMPAIGN_GROUP_TOTAL_BUDGET_HOLD` carried through untranslated.
+- `CANCELED` maps to *removed*, not *completed*: it is permanent and not
+  re-activatable, and "completed" would say it ran its course.
+- A creative has no format field — the ad format is on the campaign — and often no name
+  either, so it is labelled by the post it sponsors.
+- A creative names only its campaign, so the campaign group is resolved from the
+  campaign already synced: the third provider running whose ad level needs that.
+- `approximateMemberReach` is deduplicated members and only returned for ranges of 92
+  days or less, which is why the insight window is 92. A parent's reach is below the sum
+  of its children's, and the fixtures encode that so a test cannot pass by summing the
+  wrong level.
+- `conversionValueInLocalCurrency` is one total rather than a figure per type, so it is
+  the row's revenue and no breakdown row carries a value. LinkedIn does publish
+  conversion worth, unlike X.
+- `JOB_APPLICANTS` is filed as *other*, not *leads*: a job applicant is not a sales
+  lead, and hiring spend in a conversion chart a client reads as pipeline would mislead.
+
+### Not read
+
+The post a creative sponsors — where its headline, image and link live — and the revenue
+attribution finder, which needs a CRM connected to Business Manager. LinkedIn also warns
+that its reach and demographic figures differ slightly between reporting levels because
+they are approximate; nothing here reconciles that away.
+
 ## X Ads sync
 
 ### Added

@@ -37,7 +37,7 @@ deduplicates it — so a test cannot pass by summing the wrong level.
 ## Shapes that look odd but are not
 
 Each file is a JSON **list of the items** a response's data array holds, not the whole
-envelope — pagination is the loader's job. Two providers make that look strange:
+envelope — pagination is the loader's job. Three providers make that look strange:
 
 - **Snapchat** items are wrapped twice, `{sub_request_status, campaign: {…}}`, because
   one batch can partly succeed. A failed item carries no entity, and dropping it is the
@@ -48,6 +48,10 @@ envelope — pagination is the loader's job. Two providers make that look strang
   exactly what a single-day request returns, so they filter by date like every other
   provider's. The mapper still walks the whole series, because a live multi-day request
   returns one row with many buckets and reading only the first would discard the rest.
+- **LinkedIn** names its levels differently from ours, and the files keep *its* names so
+  they can be read against its documentation: `campaign_groups.json` holds what we call
+  campaigns, `campaigns.json` holds our ad groups, and `creatives.json` serves both our
+  ads and our creatives, because LinkedIn has one resource for both.
 
 ## The one departure from a verbatim response
 
@@ -56,6 +60,12 @@ envelope — pagination is the loader's job. Two providers make that look strang
 sandbox always returns a recent window instead of ageing into irrelevance. Keys
 beginning with `_` are loader directives and are stripped before any mapper sees
 the row.
+
+There are two more directives, both for providers that do not send a plain date
+string: `_date_paths` writes the resolved date as a string at a dotted path, for one
+that nests it (Google's `segments.date`), and `_date_objects` writes it as
+`{year, month, day}` integers, for LinkedIn, whose reporting rows carry no date string
+anywhere.
 
 ## Adding a provider
 

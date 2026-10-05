@@ -1,0 +1,93 @@
+[
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "backfilled": false,
+    "changeAuditStamps": {
+      "created": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1753000000000
+      },
+      "lastModified": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1759000000000
+      }
+    },
+    "id": 603407684,
+    "name": "SANDBOX — Najd Fintech | Lead Generation | GCC",
+    "objectiveType": "LEAD_GENERATION",
+    "runSchedule": {
+      "start": 1753000000000
+    },
+    "servingStatuses": [
+      "RUNNABLE"
+    ],
+    "status": "ACTIVE",
+    "test": false,
+    "totalBudget": {
+      "amount": "180000.00",
+      "currencyCode": "SAR"
+    },
+    "buyingType": "AUCTION",
+    "budgetOptimization": {
+      "bidStrategy": "MAXIMUM_DELIVERY"
+    }
+  },
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "backfilled": false,
+    "changeAuditStamps": {
+      "created": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1748000000000
+      },
+      "lastModified": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1758000000000
+      }
+    },
+    "id": 603407690,
+    "name": "SANDBOX — Najd Fintech | Brand Awareness",
+    "objectiveType": "BRAND_AWARENESS",
+    "runSchedule": {
+      "start": 1748000000000,
+      "end": 1766000000000
+    },
+    "servingStatuses": [
+      "CAMPAIGN_GROUP_TOTAL_BUDGET_HOLD"
+    ],
+    "status": "ACTIVE",
+    "test": false,
+    "totalBudget": {
+      "amount": "45000.00",
+      "currencyCode": "SAR"
+    },
+    "buyingType": "AUCTION",
+    "budgetOptimization": {
+      "bidStrategy": "MANUAL"
+    }
+  },
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "backfilled": true,
+    "changeAuditStamps": {
+      "created": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1740000000000
+      },
+      "lastModified": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1740000000000
+      }
+    },
+    "id": 504293601,
+    "name": "SANDBOX — Default campaign group",
+    "runSchedule": {
+      "start": 1740000000000
+    },
+    "servingStatuses": [
+      "RUNNABLE"
+    ],
+    "status": "PAUSED",
+    "test": false
+  }
+]

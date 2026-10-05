@@ -341,12 +341,63 @@ minutes per user, and the asynchronous jobs endpoint 100 concurrent jobs per acc
 > and anything else is reported as unknown rather than guessed. The LTV conversion
 > groups were not mapped at all, which is why no X revenue figure exists.
 
-### LinkedIn — not implemented
+### LinkedIn Marketing API — implemented
 
-`SyncAdapterRegistry::supports()` returns false, and asking for an adapter raises
-`ProviderUnavailable`. There is no stub, because a generic adapter could only guess at
-field names. It needs its own mapper against its own documented schema and its own
-fixture set.
+Field names, enum values and response shapes were read from LinkedIn's published
+reference. `https://api.linkedin.com/rest/` is the base, and every request carries a
+dated `LinkedIn-Version` header plus `X-Restli-Protocol-Version: 2.0.0`. Versions
+sunset about a year after release, so the header is something to keep current rather
+than set once. Auth is OAuth 2.0 three-legged, with `r_ads` and `r_ads_reporting`.
+
+> **The hierarchy does not line up with ours, and the names actively mislead.**
+> LinkedIn's structure is account → campaignGroup → campaign → creative, and its
+> *campaign* is what carries targeting, a bid, a budget and an objective — an ad set by
+> any other name. So a LinkedIn **campaign group** is our campaign, a LinkedIn
+> **campaign** is our ad group, and a **creative** is our ad. Anyone comparing our
+> screen with Campaign Manager has to know that, and anyone changing this adapter has to
+> know it twice: get it wrong and every roll-up in the product is off by one level.
+
+| LinkedIn behaviour | Why it matters |
+| ------------------ | -------------- |
+| Money is a **decimal string inside an object** — `{"amount": "180000.00", "currencyCode": "SAR"}` | Not micros and not a bare string: the third money convention across six providers. Analytics money is a bare decimal string that may carry *more than two decimals* (`"19.91833"`), so it is rounded half-up at the minor unit — truncating would lose a halala on every row |
+| Schedules are **epoch milliseconds**, and `runSchedule.end` is exclusive | Read as seconds, a 2025 start date becomes the year 57560 |
+| Dates in analytics are **three integers** — `dateRange: {start: {year, month, day}}` | There is no date string anywhere in a reporting response, which is why the fixture loader grew a directive that writes that shape rather than the mapper learning a format no live row uses |
+| Ids are **URNs in some places and longs in others** | A campaign group's `id` is `603407684`; a creative's is `urn:li:sponsoredCreative:119962155`; parents are always URNs. Everything is reduced to the trailing id, which is what a later request and a stored row both need |
+| **`servingStatuses` decides delivery, not `status`** | `status` is what the advertiser set; `servingStatuses` is service-controlled and `RUNNABLE` is its only serving value — every other documented value is a hold. An ACTIVE group that has spent its budget is reported as not delivering, with `CAMPAIGN_GROUP_TOTAL_BUDGET_HOLD` carried through as the raw effective status |
+| `CANCELED` is permanent and not re-activatable | Mapped to *removed*, not *completed*: "completed" would say it ran its course |
+| One campaign group per account is created automatically and **cannot be edited** by an enterprise account | `backfilled: true` marks it, and that reaches the metadata, because an operator told "you cannot change this" deserves the reason |
+| A creative has **no format field** | The ad format is a property of the *campaign*, and a creative only points at a post whose medium would take another call. So a creative's format is `unknown` and the campaign's `format` is kept where it was reported — on the ad group |
+| A creative's `name` is optional, and most made in Campaign Manager have none | The row is labelled by the post it sponsors, which an operator can at least match against a content calendar |
+| **A creative names only its campaign** | The campaign group is resolved from the campaign already synced — the third provider running whose ad level needs this |
+| Targeting **is** on the campaign, as a boolean tree of include/exclude facets | Stored as sent: flattening it would lose the operators that define the audience |
+| `approximateMemberReach` is deduplicated members, and only for ranges **≤ 92 days** | Which is why `maxInsightRangeDays()` is 92 — a wider request would still answer, silently without reach. A parent's reach is below the sum of its children's, so summing across levels is as wrong here as it is for Meta |
+| `conversionValueInLocalCurrency` is **one total**, not a figure per conversion type | So it is reported as the row's revenue, and no breakdown row carries a value. LinkedIn does publish conversion worth, unlike X |
+| `externalWebsiteConversions` is the only conversion *total* published | It is the headline, and its post-click/post-view halves go to metadata rather than becoming rows that would count the same conversion twice |
+| `JOB_APPLICANTS` is an objective | Filed as *other*, not *leads*: a job applicant is not a sales lead, and putting hiring spend into a conversion chart a client reads as pipeline would mislead |
+| `clicks` and `landingPageClicks` are separate metrics | Both reported as sent, so the two CTRs differ for LinkedIn's reason rather than ours |
+| Reporting is **throttled by data volume**: 45 million metric values per 5 minutes | Metrics requested × rows returned. A sync asks for the metrics it maps and no more, which is also why only 20 metrics may be named per request |
+| Search endpoints page by **cursor in `metadata.nextPageToken`**; `adAnalytics` does not page at all | Its response is capped at 15,000 elements instead, so a range has to stay small enough to fit |
+| Daily data is retained for **6 months** | Beyond that LinkedIn rounds a request to month boundaries, which silently changes what a figure means |
+
+The documented retryable conditions are 429 `TOO_MANY_REQUESTS`, 500 `INTERNAL_ERROR`
+and 503 `UNDER_MAINTENANCE`. A 400 arrives as `MISSING_FIELD`,
+`INVALID_VALUE_FOR_FIELD`, `START_DATE_AFTER_END_DATE` or `DATE_TOO_EARLY`, and 414
+`REQUEST_URI_TOO_LONG` is a real possibility on this API because a reporting request
+carries long lists of URNs.
+
+> **What is not claimed.** LinkedIn warns that its own figures differ slightly between
+> reporting levels and across different ranges, because reach and demographic metrics
+> are approximate; nothing here reconciles that away. The post a creative sponsors is
+> not read, so no creative headline, image or link is reported. Revenue attribution
+> (`attributedRevenueMetrics`, which needs a connected CRM) is not read either.
+
+### ChatGPT Ads — not implemented
+
+`SyncAdapterRegistry::supports()` returns false, asking for an adapter raises
+`ProviderUnavailable`, and `Provider::OpenAI` declares no capabilities at all. There is
+no stub and nothing inferred, because the programme is not generally available and its
+contract is unknown — declaring anything would be a guess the interface would then
+present as fact.
 
 > **Caveat.** The Meta mappings were written from Meta's published schema
 > Several of its reference pages render their field tables client-side and could
@@ -358,8 +409,12 @@ fixture set.
 > inference still want checking against a real account. TikTok's structure fields
 > are confirmed; its metric names are the open item above. Snapchat's field names and
 > enums are confirmed; the unit of its `spend` metric is not, which is the most
-> consequential open item across all five providers. X's field names, metric names and
+> consequential open item across all six providers. X's field names, metric names and
 > response shape are confirmed; its status reason codes are not enumerated anywhere, so
-> only the two it publishes are interpreted. The fixtures make a *name* mismatch a
+> only the two it publishes are interpreted. LinkedIn's schemas are the best documented
+> of the six — field tables with full enumerations — so the open question there is not
+> what its fields are but what its *approximate* metrics mean when they disagree
+> between levels, which LinkedIn warns about and nothing here reconciles away. The
+> fixtures make a *name* mismatch a
 > failing test rather than a wrong chart, but a wrong *unit* is encoded in the fixtures
 > too — only a live response settles it.

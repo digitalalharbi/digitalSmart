@@ -1,0 +1,200 @@
+[
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "campaignGroup": "urn:li:sponsoredCampaignGroup:603407684",
+    "changeAuditStamps": {
+      "created": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1753100000000
+      },
+      "lastModified": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1759000000000
+      }
+    },
+    "costType": "CPC",
+    "creativeSelection": "OPTIMIZED",
+    "dailyBudget": {
+      "amount": "1200.00",
+      "currencyCode": "SAR"
+    },
+    "format": "STANDARD_UPDATE",
+    "id": 360035215,
+    "locale": {
+      "country": "SA",
+      "language": "ar"
+    },
+    "name": "SANDBOX — Finance decision makers | Riyadh",
+    "objectiveType": "LEAD_GENERATION",
+    "offsiteDeliveryEnabled": false,
+    "optimizationTargetType": "MAX_LEAD",
+    "pacingStrategy": "LIFETIME",
+    "politicalIntent": "NOT_POLITICAL",
+    "runSchedule": {
+      "start": 1753100000000
+    },
+    "servingStatuses": [
+      "RUNNABLE"
+    ],
+    "status": "ACTIVE",
+    "targetingCriteria": {
+      "include": {
+        "and": [
+          {
+            "or": {
+              "urn:li:adTargetingFacet:locations": [
+                "urn:li:geo:103819153"
+              ]
+            }
+          },
+          {
+            "or": {
+              "urn:li:adTargetingFacet:seniorities": [
+                "urn:li:seniority:7",
+                "urn:li:seniority:8"
+              ]
+            }
+          }
+        ]
+      },
+      "exclude": {
+        "or": {
+          "urn:li:adTargetingFacet:industries": [
+            "urn:li:industry:137"
+          ]
+        }
+      }
+    },
+    "test": false,
+    "type": "SPONSORED_UPDATES",
+    "unitCost": {
+      "amount": "0",
+      "currencyCode": "SAR"
+    },
+    "versionTag": "12",
+    "audienceExpansionEnabled": true
+  },
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "campaignGroup": "urn:li:sponsoredCampaignGroup:603407684",
+    "changeAuditStamps": {
+      "created": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1754000000000
+      },
+      "lastModified": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1759100000000
+      }
+    },
+    "costType": "CPM",
+    "creativeSelection": "ROUND_ROBIN",
+    "format": "SPOTLIGHT",
+    "id": 360035221,
+    "locale": {
+      "country": "SA",
+      "language": "en"
+    },
+    "name": "SANDBOX — Retargeting | message ads",
+    "objectiveType": "LEAD_GENERATION",
+    "offsiteDeliveryEnabled": false,
+    "optimizationTargetType": "NONE",
+    "runSchedule": {
+      "start": 1754000000000
+    },
+    "servingStatuses": [
+      "RUNNABLE"
+    ],
+    "status": "ACTIVE",
+    "test": false,
+    "totalBudget": {
+      "amount": "32000.00",
+      "currencyCode": "SAR"
+    },
+    "type": "SPONSORED_INMAILS",
+    "unitCost": {
+      "amount": "42.50",
+      "currencyCode": "SAR"
+    },
+    "versionTag": "4"
+  },
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "campaignGroup": "urn:li:sponsoredCampaignGroup:603407690",
+    "changeAuditStamps": {
+      "created": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1748100000000
+      },
+      "lastModified": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1758000000000
+      }
+    },
+    "costType": "CPV",
+    "format": "VIDEO",
+    "id": 360035230,
+    "locale": {
+      "country": "SA",
+      "language": "ar"
+    },
+    "name": "SANDBOX — GCC | video views",
+    "objectiveType": "VIDEO_VIEWS",
+    "offsiteDeliveryEnabled": true,
+    "optimizationTargetType": "MAX_VIDEO_VIEW",
+    "runSchedule": {
+      "start": 1748100000000,
+      "end": 1766000000000
+    },
+    "servingStatuses": [
+      "CAMPAIGN_GROUP_TOTAL_BUDGET_HOLD"
+    ],
+    "status": "ACTIVE",
+    "test": false,
+    "totalBudget": {
+      "amount": "45000.00",
+      "currencyCode": "SAR"
+    },
+    "type": "SPONSORED_UPDATES",
+    "unitCost": {
+      "amount": "0.08",
+      "currencyCode": "SAR"
+    },
+    "versionTag": "9"
+  },
+  {
+    "account": "urn:li:sponsoredAccount:512352200",
+    "campaignGroup": "urn:li:sponsoredCampaignGroup:504293601",
+    "changeAuditStamps": {
+      "created": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1740100000000
+      },
+      "lastModified": {
+        "actor": "urn:li:person:324_kGGaLE",
+        "time": 1740100000000
+      }
+    },
+    "costType": "CPC",
+    "format": "TEXT_AD",
+    "id": 360035240,
+    "locale": {
+      "country": "SA",
+      "language": "en"
+    },
+    "name": "SANDBOX — Text ads | archived",
+    "objectiveType": "WEBSITE_VISITS",
+    "offsiteDeliveryEnabled": false,
+    "runSchedule": {
+      "start": 1740100000000
+    },
+    "status": "ARCHIVED",
+    "test": false,
+    "type": "TEXT_AD",
+    "unitCost": {
+      "amount": "3.00",
+      "currencyCode": "SAR"
+    },
+    "versionTag": "2"
+  }
+]
