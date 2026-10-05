@@ -21,3 +21,7 @@ export const AnalyticsPage = lazy(async () => ({
 export const CampaignsPage = lazy(async () => ({
   default: (await import('@/features/campaigns/CampaignsPage')).CampaignsPage,
 }));
+
+export const DashboardsPage = lazy(async () => ({
+  default: (await import('@/features/dashboards/DashboardsPage')).DashboardsPage,
+}));

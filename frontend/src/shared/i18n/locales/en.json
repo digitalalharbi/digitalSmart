@@ -24,7 +24,8 @@
       "work": "Work",
       "intelligence": "Intelligence",
       "system": "System"
-    }
+    },
+    "dashboards": "Dashboards"
   },
   "actions": {
     "search": "Search",
@@ -428,5 +429,86 @@
     "breadcrumb": "Drill-down trail",
     "allPlatforms": "All platforms",
     "drillHint": "Select a row to open its {{level}}s"
+  },
+  "dashboards": {
+    "title": "Dashboards",
+    "subtitle": "Build a canvas of the figures a client actually asks about.",
+    "picker": "Dashboards",
+    "create": "New dashboard",
+    "newName": "Untitled dashboard",
+    "edit": "Edit",
+    "duplicate": "Duplicate",
+    "save": "Save dashboard",
+    "saving": "Saving…",
+    "saveFailed": "The dashboard could not be saved.",
+    "loadFailed": "Dashboards could not be loaded. Check your connection and try again.",
+    "shared": "Shared",
+    "addWidget": "Add a widget",
+    "editWidget": "Edit widget",
+    "nameLabel": "Name",
+    "visibilityLabel": "Who can see it",
+    "ownFilters": "Own filters",
+    "editHint": "Reorder and resize with the controls on each widget. Nothing is saved until you choose Save.",
+    "widgetCount_one": "{{count}} widget",
+    "widgetCount_other": "{{count}} widgets",
+    "visibility": {
+      "private": "Only me",
+      "workspace": "Everyone in the workspace",
+      "project": "The project team"
+    },
+    "widgetTypes": {
+      "scorecard": "Single figure",
+      "line": "Trend over time",
+      "bar": "Comparison",
+      "share": "Share of total",
+      "scatter": "Efficiency vs scale",
+      "table": "Table"
+    },
+    "canvas": {
+      "moveEarlier": "Move earlier",
+      "moveLater": "Move later",
+      "narrower": "Make narrower",
+      "wider": "Make wider",
+      "edit": "Edit this widget",
+      "remove": "Remove this widget"
+    },
+    "editor": {
+      "type": "Chart type",
+      "metrics": "Metrics",
+      "oneMetric": "Choose one metric.",
+      "upToMetrics": "Choose up to {{count}}.",
+      "needsTwoMetrics": "This chart plots one metric against another, so it needs two.",
+      "groupBy": "Group by",
+      "width": "Width",
+      "widthFraction": "{{columns}}/{{total}}",
+      "height": "Height",
+      "title": "Title",
+      "titleHint": "Optional. Leave blank to use the chart type.",
+      "add": "Add widget",
+      "apply": "Apply"
+    },
+    "widget": {
+      "noMetric": "This widget has no metric to show.",
+      "aria": {
+        "line": "{{metric}} over time.",
+        "bar": "{{metric}} by {{dimension}}, largest first.",
+        "share": "Share of {{metric}} by {{dimension}}.",
+        "scatter": "{{metric}} plotted against each other, one point per {{dimension}}.",
+        "scorecard": "{{metric}} for the selected period.",
+        "table": "{{metric}} by {{dimension}}, as a table."
+      }
+    },
+    "emptyCanvas": {
+      "title": "This dashboard has no widgets yet",
+      "description": "Open it for editing and add the first one."
+    },
+    "none": {
+      "title": "No dashboards yet",
+      "description": "A dashboard is a canvas of the figures you look at most. Build one and share it with the workspace or keep it to yourself."
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete"
   }
 }

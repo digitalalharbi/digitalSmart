@@ -77,9 +77,18 @@ E2E_STATEFUL="127.0.0.1:$WEB_PORT,localhost:$WEB_PORT"
 # — just budgeted for a test run rather than a person. Per-account protection,
 # which is the one that matters against brute force, still applies.
 
+# PHP's built-in server accepts one connection at a time unless it is told to
+# fork. Two browser projects run at once and every dashboard widget issues its own
+# analytics query, so on one worker a sign-in queues behind several half-second
+# aggregations and the browser eventually reports the server as unreachable — a
+# harness limit that reads exactly like an application bug. `--no-reload` is required
+# for the workers to be created at all — Laravel warns and falls back to one
+# otherwise — and costs nothing here, because the suite runs a build rather than code
+# somebody is editing.
 echo "==> Starting API on :$API_PORT"
 (
   cd "$ROOT/backend"
+  PHP_CLI_SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-10}" \
   DB_DATABASE="$E2E_DB" \
   FRONTEND_URL="$E2E_ORIGIN" \
   SANCTUM_STATEFUL_DOMAINS="$E2E_STATEFUL" \
@@ -87,7 +96,7 @@ echo "==> Starting API on :$API_PORT"
   RATE_LIMIT_API_USER="${RATE_LIMIT_API_USER:-1000}" \
   RATE_LIMIT_AUTH="${RATE_LIMIT_AUTH:-500}" \
   RATE_LIMIT_HEALTH="${RATE_LIMIT_HEALTH:-1000}" \
-  exec php artisan serve --host=127.0.0.1 --port="$API_PORT"
+  exec php artisan serve --host=127.0.0.1 --port="$API_PORT" --no-reload
 ) > /tmp/digitalsmart-e2e-api.log 2>&1 &
 API_PID=$!
 

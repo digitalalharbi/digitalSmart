@@ -24,7 +24,8 @@
       "work": "العمل",
       "intelligence": "الذكاء",
       "system": "النظام"
-    }
+    },
+    "dashboards": "لوحات المعلومات"
   },
   "actions": {
     "search": "بحث",
@@ -447,5 +448,90 @@
     "breadcrumb": "مسار التفصيل",
     "allPlatforms": "جميع المنصات",
     "drillHint": "اختر صفاً لعرض {{level}} التابعة له"
+  },
+  "dashboards": {
+    "title": "لوحات المعلومات",
+    "subtitle": "ابنِ لوحة تعرض الأرقام التي يسأل عنها العميل فعلاً.",
+    "picker": "لوحات المعلومات",
+    "create": "لوحة جديدة",
+    "newName": "لوحة بدون عنوان",
+    "edit": "تحرير",
+    "duplicate": "نسخ",
+    "save": "حفظ اللوحة",
+    "saving": "جارٍ الحفظ…",
+    "saveFailed": "لم نتمكن من حفظ اللوحة.",
+    "loadFailed": "لم نتمكن من تحميل لوحات المعلومات. تحقق من الاتصال وأعد المحاولة.",
+    "shared": "مشتركة",
+    "addWidget": "إضافة عنصر",
+    "editWidget": "تحرير العنصر",
+    "nameLabel": "الاسم",
+    "visibilityLabel": "من يمكنه الاطلاع",
+    "ownFilters": "مرشحات خاصة",
+    "editHint": "أعد الترتيب والحجم من أزرار كل عنصر. لا يُحفظ شيء حتى تختار الحفظ.",
+    "widgetCount_zero": "لا عناصر",
+    "widgetCount_one": "عنصر واحد",
+    "widgetCount_two": "عنصران",
+    "widgetCount_few": "{{count}} عناصر",
+    "widgetCount_many": "{{count}} عنصراً",
+    "widgetCount_other": "{{count}} عنصر",
+    "visibility": {
+      "private": "أنا فقط",
+      "workspace": "جميع أعضاء مساحة العمل",
+      "project": "فريق المشروع"
+    },
+    "widgetTypes": {
+      "scorecard": "رقم واحد",
+      "line": "التغيّر عبر الزمن",
+      "bar": "مقارنة",
+      "share": "الحصة من الإجمالي",
+      "scatter": "الكفاءة مقابل الحجم",
+      "table": "جدول"
+    },
+    "canvas": {
+      "moveEarlier": "تقديم",
+      "moveLater": "تأخير",
+      "narrower": "تصغير العرض",
+      "wider": "توسيع",
+      "edit": "تحرير هذا العنصر",
+      "remove": "إزالة هذا العنصر"
+    },
+    "editor": {
+      "type": "نوع الرسم",
+      "metrics": "المؤشرات",
+      "oneMetric": "اختر مؤشراً واحداً.",
+      "upToMetrics": "اختر حتى {{count}}.",
+      "needsTwoMetrics": "هذا الرسم يقارن مؤشراً بآخر، لذا يحتاج إلى مؤشرين.",
+      "groupBy": "التجميع حسب",
+      "width": "العرض",
+      "widthFraction": "{{columns}}/{{total}}",
+      "height": "الارتفاع",
+      "title": "العنوان",
+      "titleHint": "اختياري. اتركه فارغاً لاستخدام نوع الرسم.",
+      "add": "إضافة العنصر",
+      "apply": "تطبيق"
+    },
+    "widget": {
+      "noMetric": "لا يوجد مؤشر لعرضه في هذا العنصر.",
+      "aria": {
+        "line": "{{metric}} عبر الزمن.",
+        "bar": "{{metric}} حسب {{dimension}}، من الأكبر إلى الأصغر.",
+        "share": "حصة {{metric}} حسب {{dimension}}.",
+        "scatter": "{{metric}} مقابل بعضها، نقطة لكل {{dimension}}.",
+        "scorecard": "{{metric}} للفترة المحددة.",
+        "table": "{{metric}} حسب {{dimension}}، في جدول."
+      }
+    },
+    "emptyCanvas": {
+      "title": "لا توجد عناصر في هذه اللوحة بعد",
+      "description": "افتحها للتحرير وأضف العنصر الأول."
+    },
+    "none": {
+      "title": "لا توجد لوحات بعد",
+      "description": "اللوحة هي مساحة تعرض الأرقام التي تتابعها أكثر. أنشئ واحدة وشاركها مع مساحة العمل أو احتفظ بها لنفسك."
+    }
+  },
+  "common": {
+    "cancel": "إلغاء",
+    "delete": "حذف"
   }
 }

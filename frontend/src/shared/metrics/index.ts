@@ -9,3 +9,9 @@
 export * from './types';
 export { formatMetric, formatChange, MISSING } from './format';
 export { trendOption, breakdownOption, efficiencyOption, trendMetricsFor } from './charts';
+export {
+  widgetBarOption,
+  widgetShareOption,
+  widgetScatterOption,
+  widgetLineOption,
+} from './widgetCharts';

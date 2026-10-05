@@ -130,3 +130,30 @@ rather than trusting the high-water mark.
   environment.
 - Index creation on large tables uses `CONCURRENTLY` outside a transaction.
 - Every foreign key states its delete behaviour explicitly.
+
+### Saved views and dashboards (Phase 4, implemented)
+
+| Table | Key | Notes |
+| ----- | --- | ----- |
+| `saved_views` | UUIDv7 | A stored analytics query, as JSONB. Unique on `(workspace_id, created_by, name)` |
+| `dashboards` | UUIDv7 | Name, audience, and the filters its widgets inherit |
+| `dashboard_widgets` | UUIDv7 | Type, metrics, dimension, optional filter override, and a placement on the 12-column grid |
+
+The query and the filters are JSONB rather than columns, which is a deliberate
+trade: neither is ever filtered or aggregated in SQL, both follow the analytics
+request object which will keep growing, and a column per filter would mean a
+migration every time one is added. What it costs is that an invalid query is caught
+only on read — which is why the request object validates it again on the way out.
+
+Two CHECK constraints carry rules the application would otherwise have to remember:
+
+- `visibility <> 'project' OR project_id IS NOT NULL`. Project-scoped visibility
+  without a project has no defined audience.
+- `grid_column + grid_width <= 12 AND grid_width >= 3 AND grid_height BETWEEN 1 AND 6`.
+  A widget stored outside the canvas disappears from the dashboard with nothing to
+  say it was ever there.
+
+`dashboard_widgets.filter_overrides` is **nullable and that nullability is the
+model**: null means "inherit the dashboard's filters", `{}` means "override them with
+nothing". A cast or default that collapsed the two would silently change what a
+widget shows.

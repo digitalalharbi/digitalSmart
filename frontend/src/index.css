@@ -182,3 +182,21 @@
   grid-template-columns: repeat(var(--ds-grid-columns), minmax(0, 1fr));
   gap: var(--ds-grid-gutter);
 }
+
+/* ============================================================
+ * Dashboard widget placement
+ *
+ * A widget's span is data — a reader chose it — so it arrives as a custom property
+ * rather than a class. Tailwind cannot enumerate every column combination, and
+ * inline `grid-column` would apply at every width, including a phone where a
+ * three-column widget is unreadable.
+ *
+ * So: full width by default, and the arranged span only once there is room for it.
+ * A dashboard that can only be read on a desktop is one a media buyer cannot check
+ * from a client's office.
+ * ============================================================ */
+@media (width >= 48rem) {
+  [data-widget-span] {
+    grid-column: span var(--widget-span) / span var(--widget-span);
+  }
+}

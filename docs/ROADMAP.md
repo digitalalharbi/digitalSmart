@@ -11,7 +11,7 @@ times.
 | 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | **Complete** |
 | 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | **Complete** |
 | 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | **Ingestion complete**, Meta adapter live; other adapters in progress |
-| 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | **Analytics, charts and campaign explorer complete**; saved views and widget composer outstanding |
+| 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | **Complete** |
 | 5     | Budgets, pacing, calculator, forecasting, alerts                                | Planned |
 | 6     | Creative hub, tasks, approvals, files, notifications/realtime                   | Planned |
 | 7     | Reports, shared client portals, exports                                         | Planned |
@@ -173,9 +173,8 @@ built around them.
   them to a project and runs the real sync, so the demo workspace demonstrates the
   analytics layer and the E2E suite exercises the whole path.
 
-### Phase 4 — saved views and dashboards, foundation only
+### Phase 4 — saved views and the dashboard builder
 
-The schema, domain rules and ports are in place; the use cases, API and UI are not.
 
 - `saved_views`, `dashboards` and `dashboard_widgets` tables, with CHECK constraints
   carrying the rules that matter: project-scoped visibility cannot exist without a
@@ -186,14 +185,31 @@ The schema, domain rules and ports are in place; the use cases, API and UI are n
   share-of-total over 90 dates is refused rather than drawn), and `GridPlacement`
   (which raises rather than clamps, because clamping moves a widget the reader
   placed and an off-grid widget disappears silently).
-- `SavedViewRepository` and `DashboardRepository` ports, and the DTOs they speak.
+- `SavedViewRepository` and `DashboardRepository` ports, with Eloquent
+  implementations that apply visibility as a `WHERE` rather than filtering
+  afterwards — a private record belonging to someone else is never in the result set,
+  because a leaked name or even a count is still a leak.
+- Full CRUD for both, plus duplicate: `/api/analytics/views` and `/api/dashboards`.
+  Only the owner may change or delete; a colleague gets a 404 rather than a 403,
+  since whether someone else's dashboard exists is not something a caller learns by
+  trying to edit it.
+- A builder UI: add, remove, reorder, resize, retitle, choose chart type, metrics and
+  grouping, set widget-level filter overrides, pick an audience, duplicate, and save
+  the whole canvas. Responsive (full-width widgets below `md`), Arabic RTL, dark mode,
+  and loading, empty, error and permission states throughout.
+- **Reordering and resizing are buttons, not drag-and-drop.** Deliberate: drag-only
+  reordering fails WCAG 2.2's dragging criterion, does not work with a keyboard, and
+  is awkward on touch — which is much of where this gets read. Pointer dragging can be
+  layered on the same model later without changing it.
+- Grid arithmetic as pure functions with 14 unit tests, so every reorder and resize
+  re-flows into a valid layout rather than being refused on save.
+- 57 backend tests, 32 frontend tests, 11 Playwright specs.
 
 ### Not yet done in Phase 4
 
-- The saved-view and dashboard **use cases, repositories, API and UI**. The ports
-  are written; nothing implements them yet, so the feature is not reachable.
+- Nothing. Pivot-style reports and CSV/XLSX/PDF export belong to Phase 7; annotations
+  and threshold lines on charts are deferred to Phase 5 where pacing targets make
+  them meaningful.
 - Conversion-action metrics (purchases, leads, installs) in the analytics layer:
   they live in `conversion_metrics` rather than `daily_metrics`, so the read model
-  currently reports them as not read.
-- CSV/XLSX export.
-- Annotations and threshold lines on charts.
+  reports them as not read. Deferred to Phase 5, where budget pacing needs them.

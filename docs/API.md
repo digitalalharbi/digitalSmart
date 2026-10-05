@@ -320,3 +320,79 @@ direction are domain facts, and a second copy in TypeScript is how a dashboard
 ends up showing CPA as a count on one screen and money on another. It also
 publishes `additive_across_entities`, so the interface can explain why reach
 disappears when more than one entity is selected.
+
+## Saved views
+
+### `GET|POST /api/analytics/views`, `PUT|DELETE /api/analytics/views/{view}`
+
+A saved view is a stored analytics question. Reading needs `analytics.view`;
+creating or changing one needs `saved_views.manage`.
+
+**A preset is stored, not the dates it resolved to.** A view called "last 28 days"
+should still mean that next month — freezing the dates would turn it into a snapshot
+of one period, which is a different feature with a different name. An explicit
+`start`/`end` is also accepted and *is* stored literally, because a closed month is a
+legitimate thing to save.
+
+The query is rebuilt into a real `AnalyticsRequest` on the way in rather than stored
+as whatever JSON arrived, so a view saved today still parses in six months.
+
+`POST /api/analytics/views/{view}/opened` records that a view was used. Separate from
+reading it, so the ordering in the picker reflects what someone actually opens rather
+than what a background refresh fetched.
+
+Names are unique per owner, and a reused one is a `422` with
+`"code": "name_already_used"` — the same rule, and the same reasoning, as for
+dashboards.
+
+## Dashboards
+
+### `GET|POST /api/dashboards`, `GET|PUT|DELETE /api/dashboards/{dashboard}`
+
+A dashboard is a canvas of widgets over a 12-column grid, plus the filters its
+widgets inherit.
+
+**The widget set is replaced, not merged.** What a reader sees is what the dashboard
+is, so a widget they removed has to go — and diffing a set of grid positions is a
+worse way to reach that than sending the set. Omitting `widgets` entirely means
+"leave the canvas alone", which is how a rename or a visibility change avoids
+resending everything; `widgets: []` means "the canvas is now empty". Those are
+different instructions and both are supported.
+
+| Field | Notes |
+| ----- | ----- |
+| `visibility` | `private`, `workspace`, or `project`. The third needs a `project_id`, and the database refuses it without one |
+| `filters` | The dashboard's own period and filters. Keys outside the analytics vocabulary are dropped rather than stored |
+| `widgets[].type` | `scorecard`, `line`, `bar`, `share`, `scatter`, `table` |
+| `widgets[].filter_overrides` | **`null` means inherit; `{}` means override with nothing.** Two different instructions, preserved as such end to end |
+| `widgets[].column/row/width/height` | Placement. Width is 3–12 columns, height 1–6 rows |
+| `grid_columns` (response) | The grid the server validates against, so the client lays out on the same one rather than keeping its own copy of the number |
+
+Five things are refused with `422` and a message naming what would fix it, because
+these reach someone composing a dashboard rather than a developer reading a log:
+
+- a widget with no metric;
+- a scatter with one metric — it plots one against another, so it needs two;
+- a chart type that cannot show the chosen dimension, e.g. a share of total across
+  ninety dates, which draws perfectly and means nothing;
+- two widgets that would overlap. An overlap does not error in a browser — one widget
+  simply covers the other, and the hidden one is invisible until someone moves it, so
+  refusing the save is the only way the reader finds out;
+- a name the caller already used, as `"code": "name_already_used"`. Names are unique
+  per owner — two identical entries in a picker are useless — and a unique index
+  enforces it either way; the check is what turns an everyday reused name into a
+  `422` that says which name to change, instead of a failed insert surfacing as a
+  `500` carrying the constraint and the statement. Two *different* people may each
+  have a "Weekly review".
+
+`POST /api/dashboards/{dashboard}/duplicate` is the one place a name conflict is not
+reported. The default copy name is chosen by the server, so a second copy becomes
+`… (copy 2)` rather than failing on a name the caller never typed; a `name` the
+caller *does* supply is theirs to change and conflicts as above.
+
+Only the owner may change or delete a dashboard; a colleague who can see it gets a
+`404` if they try, because whether someone else's dashboard exists is not something a
+caller learns by attempting to edit it. `POST /api/dashboards/{dashboard}/duplicate`
+is how a shared dashboard gets adapted instead: it needs only visibility of the
+source, and the copy is always **private**, whatever the original was — inheriting a
+shared audience would publish a draft the moment it was made.

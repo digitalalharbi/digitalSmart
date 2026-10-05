@@ -4,6 +4,74 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 4 — the dashboard builder
+
+Completes Phase 4. The foundation commit's schema and ports now have use cases,
+repositories, an API and a working builder behind them.
+
+### Added
+
+- Saved views: `/api/analytics/views` with full CRUD. A **preset** is stored rather
+  than the dates it resolved to, so a view called "last 28 days" still means that next
+  month; an explicit range is stored literally, because a closed month is a legitimate
+  thing to save. The query is rebuilt into a real `AnalyticsRequest` on the way in, so
+  a view saved today still parses in six months.
+- Dashboards: `/api/dashboards` with CRUD plus duplicate. The widget set is replaced
+  rather than merged, omitting `widgets` leaves the canvas alone, and `widgets: []`
+  empties it — three distinct instructions, all supported.
+- A builder UI covering add, remove, reorder, resize, retitle, chart type, metrics,
+  grouping, widget-level filter overrides, audience, duplicate and save. Responsive,
+  Arabic RTL, dark mode, with loading, empty, error and permission states.
+- Grid arithmetic as pure functions (`layout.ts`) with 14 unit tests: every reorder
+  and resize re-flows into a valid layout, so an invalid one is prevented rather than
+  refused on save.
+- 57 backend tests, 32 frontend tests and 11 Playwright specs.
+
+### Decisions worth recording
+
+- **Reordering and resizing are buttons, not drag-and-drop.** Drag-only reordering
+  fails WCAG 2.2's dragging criterion, does not work with a keyboard, and is awkward on
+  touch. Pointer dragging can be layered on the same model later.
+- **Each widget runs its own query** rather than the dashboard running one and slicing
+  it. That costs requests and buys the thing that makes a dashboard useful: widgets can
+  ask different questions. TanStack Query dedupes identical ones.
+- **A duplicate is always private**, whatever the original was. Inheriting a shared
+  audience would publish a draft the moment it was created.
+- **Visibility is applied in SQL**, not filtered from a response: a private record
+  belonging to someone else is never in the result set.
+
+### Fixed
+
+Four real defects, found by the tests rather than by review:
+
+- Clicking "New dashboard" then Save would **overwrite an existing dashboard**. The
+  landing effect re-selected one while the draft was open, and the save target was read
+  from that selection. The selection is now derived rather than synced into state by an
+  effect, which makes the whole class of bug impossible rather than merely fixed — and
+  the ESLint rule about setting state in an effect was pointing at exactly this.
+- The page read `.description` off a dashboard narrowed only against `undefined`, so a
+  query settling with `null` crashed the whole surface instead of showing an empty state.
+- A save mutation resolving with nothing threw inside `onSuccess`, turning a successful
+  write into an error the reader could not act on.
+- **Reusing a name returned a `500` with the raw SQL in it.** Dashboard and saved-view
+  names are unique per owner, enforced by an index that nothing asked about first, so
+  naming a second dashboard "Weekly review" failed as an insert — and in any
+  environment with debug on, the response carried the constraint name, the column
+  list, the workspace and user ids and the whole statement. Both use cases now check
+  the name and answer `422 name_already_used` naming the offending dashboard. The
+  duplicate endpoint is the exception: it chose "(copy)" itself, so it climbs to
+  "(copy 2)" rather than failing the caller for a name they never typed.
+
+### Testing
+
+The E2E harness ran the API on PHP's built-in server with a single worker, which
+accepts one connection at a time. Two browser projects run at once and every widget
+issues its own analytics query, so a sign-in could queue behind several half-second
+aggregations until the browser reported the server unreachable — which reads exactly
+like an application bug. `scripts/e2e.sh` now forks workers, and the dashboard spec
+namespaces its records per project, because both projects share one database and one
+demo account.
+
 ## Phase 4 — dashboard and saved-view foundation
 
 Schema, domain rules and ports only. The use cases, API and UI are **not** done, so

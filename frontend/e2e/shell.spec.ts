@@ -45,8 +45,13 @@ test.describe('mobile navigation', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test('opens the drawer, navigates, and closes itself', async ({ page }) => {
-    // The rail is hidden at this width.
-    await expect(page.getByRole('link', { name: 'Analytics' })).toBeHidden();
+    /*
+     * The rail itself is hidden at this width. Asserted on the navigation landmark
+     * rather than on a link inside it: links to the same destination exist elsewhere
+     * on the page — the overview card offers one — and this assertion is about the
+     * rail, not about every anchor that happens to point at analytics.
+     */
+    await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeHidden();
 
     await page.getByRole('button', { name: 'Open navigation' }).click();
     const drawer = page.getByRole('dialog', { name: 'Main navigation' });

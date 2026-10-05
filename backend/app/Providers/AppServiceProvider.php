@@ -12,6 +12,8 @@ use App\Application\Analytics\Contract\AnalyticsReadModel;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Audit\Contract\AuditReadModel;
 use App\Application\Client\Contract\ClientReadModel;
+use App\Application\Dashboard\Contract\DashboardRepository;
+use App\Application\Dashboard\Contract\SavedViewRepository;
 use App\Application\Identity\Contract\Authenticator;
 use App\Application\Identity\Contract\IdentityReadModel;
 use App\Application\Integration\Contract\CredentialCipher;
@@ -54,12 +56,14 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDashboardRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMembershipRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
@@ -129,6 +133,8 @@ final class AppServiceProvider extends ServiceProvider
         AnalyticsReadModel::class => EloquentAnalyticsReadModel::class,
         VisibilityResolver::class => ActorVisibilityResolver::class,
         AccessSynchroniser::class => WorkspaceAccessSynchroniser::class,
+        SavedViewRepository::class => EloquentSavedViewRepository::class,
+        DashboardRepository::class => EloquentDashboardRepository::class,
     ];
 
     public function register(): void

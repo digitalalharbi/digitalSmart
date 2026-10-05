@@ -6,6 +6,8 @@ use App\Interface\Http\Controller\Analytics\AnalyticsController;
 use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
 use App\Interface\Http\Controller\Audit\AuditLogController;
 use App\Interface\Http\Controller\Client\ClientController;
+use App\Interface\Http\Controller\Dashboard\DashboardController;
+use App\Interface\Http\Controller\Dashboard\SavedViewController;
 use App\Interface\Http\Controller\Identity\SessionController;
 use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
 use App\Interface\Http\Controller\Integration\ExternalAccountController;
@@ -98,6 +100,35 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     // What can be asked for, and what each metric means. Served rather than
     // duplicated in the client, so formatting cannot diverge between screens.
     Route::get('analytics/catalogue', MetricCatalogueController::class)->name('analytics.catalogue');
+
+    /*
+     * Saved views: a stored analytics query. The preset is stored rather than the
+     * dates it resolved to, so "last 28 days" keeps meaning that.
+     */
+    Route::get('analytics/views', [SavedViewController::class, 'index'])->name('views.index');
+    Route::post('analytics/views', [SavedViewController::class, 'store'])->name('views.store');
+    Route::put('analytics/views/{view}', [SavedViewController::class, 'update'])
+        ->whereUuid('view')->name('views.update');
+    Route::delete('analytics/views/{view}', [SavedViewController::class, 'destroy'])
+        ->whereUuid('view')->name('views.destroy');
+    Route::post('analytics/views/{view}/opened', [SavedViewController::class, 'touch'])
+        ->whereUuid('view')->name('views.opened');
+
+    /*
+     * Dashboards. A dashboard and its whole widget set are saved together, because
+     * the canvas a reader sees is the whole truth about it — a widget they removed
+     * has to go, and diffing grid positions is a worse way to get there.
+     */
+    Route::get('dashboards', [DashboardController::class, 'index'])->name('dashboards.index');
+    Route::post('dashboards', [DashboardController::class, 'store'])->name('dashboards.store');
+    Route::get('dashboards/{dashboard}', [DashboardController::class, 'show'])
+        ->whereUuid('dashboard')->name('dashboards.show');
+    Route::put('dashboards/{dashboard}', [DashboardController::class, 'update'])
+        ->whereUuid('dashboard')->name('dashboards.update');
+    Route::delete('dashboards/{dashboard}', [DashboardController::class, 'destroy'])
+        ->whereUuid('dashboard')->name('dashboards.destroy');
+    Route::post('dashboards/{dashboard}/duplicate', [DashboardController::class, 'duplicate'])
+        ->whereUuid('dashboard')->name('dashboards.duplicate');
 
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])

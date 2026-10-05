@@ -33,6 +33,15 @@ export const queryKeys = {
     query: (params: Record<string, unknown>) => ['analytics', 'query', params] as const,
     catalogue: () => ['analytics', 'catalogue'] as const,
   },
+  dashboards: {
+    all: () => ['dashboards'] as const,
+    list: () => ['dashboards', 'list'] as const,
+    detail: (id: string) => ['dashboards', 'detail', id] as const,
+  },
+  savedViews: {
+    all: () => ['saved-views'] as const,
+    list: () => ['saved-views', 'list'] as const,
+  },
   campaigns: {
     all: () => ['campaigns'] as const,
     list: (params: Record<string, unknown>) => ['campaigns', 'list', params] as const,

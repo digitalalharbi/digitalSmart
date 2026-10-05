@@ -77,6 +77,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'analytics.view',
   },
   {
+    path: '/dashboards',
+    labelKey: 'nav.dashboards',
+    icon: 'LayoutGrid',
+    section: 'intelligence',
+    phase: 'Phase 4',
+    permission: 'analytics.view',
+  },
+  {
     path: '/media-planner',
     labelKey: 'nav.mediaPlanner',
     icon: 'CalendarRange',

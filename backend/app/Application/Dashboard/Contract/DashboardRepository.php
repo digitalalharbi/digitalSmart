@@ -39,6 +39,14 @@ interface DashboardRepository
     /** Copy a dashboard, including its widgets, as the actor's own private draft. */
     public function duplicate(string $workspaceId, string $actorId, string $id, string $name): DashboardView;
 
+    /**
+     * Does this actor already have a dashboard by this name?
+     *
+     * Case-sensitive, matching the unique index exactly: a looser comparison here
+     * would refuse a name the database would have accepted.
+     */
+    public function nameTaken(string $workspaceId, string $actorId, string $name, ?string $exceptId = null): bool;
+
     public function isOwnedBy(string $workspaceId, string $id, string $actorId): bool;
 
     public function makeDefault(string $workspaceId, string $actorId, string $id): void;

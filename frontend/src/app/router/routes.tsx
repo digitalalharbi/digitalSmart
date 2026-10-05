@@ -11,7 +11,7 @@ import { ClientsPage } from '@/features/clients';
 import { OverviewPage } from '@/features/overview';
 import { ProjectsPage } from '@/features/projects';
 import { PlaceholderPage } from '@/features/placeholder';
-import { AnalyticsPage, CampaignsPage } from '@/app/router/lazyPages';
+import { AnalyticsPage, CampaignsPage, DashboardsPage } from '@/app/router/lazyPages';
 import { SurfaceFallback } from '@/app/router/SurfaceFallback';
 
 /** Wraps a lazily loaded surface so its chunk can arrive without a blank page. */
@@ -27,6 +27,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/integrations': <IntegrationsPage />,
   '/analytics': deferred(<AnalyticsPage />),
   '/campaigns': deferred(<CampaignsPage />),
+  '/dashboards': deferred(<DashboardsPage />),
 };
 
 const featureRoutes: RouteObject[] = NAV_ITEMS.filter((item) => item.path !== '/').map((item) => ({

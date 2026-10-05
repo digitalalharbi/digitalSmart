@@ -38,6 +38,13 @@ interface SavedViewRepository
     public function delete(string $workspaceId, string $id): void;
 
     /** Whether the actor owns it, and may therefore change or delete it. */
+    /**
+     * Does this actor already have a saved view by this name?
+     *
+     * Case-sensitive, matching the unique index exactly.
+     */
+    public function nameTaken(string $workspaceId, string $actorId, string $name, ?string $exceptId = null): bool;
+
     public function isOwnedBy(string $workspaceId, string $id, string $actorId): bool;
 
     /**
