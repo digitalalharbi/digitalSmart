@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Access\Contract\AccessSynchroniser;
 use App\Application\Advertising\Contract\AdvertisingStore;
 use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegistryContract;
 use App\Application\Advertising\Contract\SyncJournal;
+use App\Application\Analytics\Contract\AnalyticsReadModel;
+use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Audit\Contract\AuditReadModel;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Identity\Contract\Authenticator;
@@ -32,8 +35,10 @@ use App\Domain\Integration\Repository\ExternalAccountRepository;
 use App\Domain\Integration\Repository\IntegrationBindingRepository;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use App\Domain\Project\Repository\ProjectRepository;
+use App\Infrastructure\Access\ActorVisibilityResolver;
 use App\Infrastructure\Access\PermissionAuthorizationGuard;
 use App\Infrastructure\Access\RequestActorContext;
+use App\Infrastructure\Access\WorkspaceAccessSynchroniser;
 use App\Infrastructure\Advertising\Sandbox\SandboxFixtures;
 use App\Infrastructure\Advertising\SyncAdapterRegistry;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
@@ -41,6 +46,7 @@ use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
 use App\Infrastructure\Integration\LaravelCredentialCipher;
 use App\Infrastructure\Integration\ProviderAdapterRegistry;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
@@ -118,6 +124,11 @@ final class AppServiceProvider extends ServiceProvider
         SyncAdapterRegistryContract::class => SyncAdapterRegistry::class,
         AdvertisingStore::class => EloquentAdvertisingStore::class,
         SyncJournal::class => EloquentSyncJournal::class,
+
+        // Analytics (Phase 4)
+        AnalyticsReadModel::class => EloquentAnalyticsReadModel::class,
+        VisibilityResolver::class => ActorVisibilityResolver::class,
+        AccessSynchroniser::class => WorkspaceAccessSynchroniser::class,
     ];
 
     public function register(): void

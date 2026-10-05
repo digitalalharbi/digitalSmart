@@ -10,6 +10,7 @@ use App\Application\Shared\Exception\AuthorizationDenied;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Application\Workspace\Exception\LastOwnerProtected;
 use App\Domain\Shared\Exception\DomainException;
+use App\Interface\Console\SyncAccessCatalogue;
 use App\Interface\Console\SyncAdvertisingData;
 use App\Interface\Http\Middleware\AssignRequestId;
 use App\Interface\Http\Middleware\SecurityHeaders;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api',
     )
     ->withCommands([
+        SyncAccessCatalogue::class,
         SyncAdvertisingData::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {

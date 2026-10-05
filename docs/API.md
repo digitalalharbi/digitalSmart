@@ -248,3 +248,75 @@ works.
 ---
 
 Campaign and metrics endpoints arrive in Phase 3.
+
+## Analytics
+
+### `GET /api/analytics`
+
+One endpoint answers the scorecard, the chart and the table. They have to agree,
+and computing them from a single query with a single set of filters is the only
+way to guarantee that — a scorecard that disagrees with the sum of its own chart
+is the fastest way to lose a reader's trust in a dashboard.
+
+Requires `analytics.view`. An actor without `projects.view_all` has every query
+narrowed, in SQL, to the projects they are assigned to.
+
+| Parameter | Notes |
+| --------- | ----- |
+| `start`, `end` | `Y-m-d`, inclusive, in the ad account's own timezone |
+| `preset` | `7d`, `14d`, `28d` (default), `30d`, `90d`, `this_month`, `last_month`. All end **yesterday**: today is still accumulating, and including it makes every metric look worse than it is |
+| `compare` | `none` (default), `previous_period`, `previous_year` |
+| `metrics[]` | From the catalogue below; defaults to the standard scorecard |
+| `dimension` | `date`, `provider`, `external_account`, `campaign`, `ad_group`, `ad` — omit for totals only |
+| `order_by`, `limit` | Breakdown ordering (default: spend, descending) and size (max 500) |
+| `providers[]`, `account_ids[]`, `campaign_ids[]`, `ad_group_ids[]`, `ad_ids[]`, `project_ids[]`, `client_id` | Filters. The narrowest structural filter decides which **level** of stored rows answers the query |
+
+Every figure is returned as an object, not a bare number, because a number alone
+cannot be rendered honestly:
+
+```json
+{
+  "metric": "roas",
+  "label": "ROAS",
+  "value": 3.84,
+  "format": "ratio",
+  "precision": 2,
+  "is_minor_units": false,
+  "currency": null,
+  "source": "sandbox",
+  "requires_label": true,
+  "unavailable_reason": null,
+  "comparison_value": 3.12,
+  "change_ratio": 0.2308,
+  "change_is_good": true,
+  "lower_is_better": false
+}
+```
+
+Three things about that shape are load-bearing:
+
+- **`value` is nullable, and null is an answer.** It means the figure does not
+  exist, and `unavailable_reason` says why in words a person can act on — "Not
+  reported by this platform", "Covers more than one currency", "Reach is
+  deduplicated by the platform, so it cannot be added across 4 entities". Clients
+  must render a gap, never a zero.
+- **Money stays in minor units** all the way to the browser (`is_minor_units`),
+  so nothing rounds in transit, and `currency` says how to format it.
+- **`source`** is one of `live`, `synced`, `stale`, `partial`, `sandbox`,
+  `manual`, `estimated`. The response carries it per figure *and* once for the
+  whole surface, taken from the weakest row involved, so a chart and its scorecard
+  cannot disagree about how trustworthy they are.
+
+`series` returns one point per day in the range, **including days with no data**
+(`row_count: 0`, every value null). A chart that omits a day joins the two either
+side with a straight line, hiding the fact that delivery stopped — which is the
+most important thing on the screen that day.
+
+### `GET /api/analytics/catalogue`
+
+Metrics, dimensions, providers and source states, with their labels, formats and
+precision. Served rather than duplicated in the client: a metric's format and
+direction are domain facts, and a second copy in TypeScript is how a dashboard
+ends up showing CPA as a count on one screen and money on another. It also
+publishes `additive_across_entities`, so the interface can explain why reach
+disappears when more than one entity is selected.

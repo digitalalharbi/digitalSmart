@@ -78,6 +78,9 @@ enum SystemRole: string
                 Permission::ProjectsUpdate,
                 Permission::ProjectsDelete,
                 Permission::ProjectsManageMembers,
+                Permission::AnalyticsView,
+                Permission::AnalyticsExport,
+                Permission::SavedViewsManage,
                 Permission::AuditView,
             ],
 
@@ -93,6 +96,9 @@ enum SystemRole: string
                 Permission::ProjectsCreate,
                 Permission::ProjectsUpdate,
                 Permission::ProjectsManageMembers,
+                Permission::AnalyticsView,
+                Permission::AnalyticsExport,
+                Permission::SavedViewsManage,
                 Permission::AuditView,
             ],
 
@@ -102,6 +108,9 @@ enum SystemRole: string
                 Permission::ClientsView,
                 Permission::ProjectsViewAssigned,
                 Permission::ProjectsUpdate,
+                Permission::AnalyticsView,
+                Permission::AnalyticsExport,
+                Permission::SavedViewsManage,
             ],
 
             self::Creative => [
@@ -111,10 +120,18 @@ enum SystemRole: string
                 Permission::ProjectsViewAssigned,
             ],
 
-            // Clients see their own projects and nothing else. No user
-            // directory, no other clients, no audit trail.
+            /*
+             * Clients see their own projects and nothing else. No user
+             * directory, no other clients, no audit trail.
+             *
+             * Analytics is granted, but it is not workspace-wide: without
+             * ProjectsViewAll every analytics query is narrowed to the
+             * projects the actor is assigned to, in SQL. The permission opens
+             * the screen; the assignment decides what is on it.
+             */
             self::ClientViewer => [
                 Permission::ProjectsViewAssigned,
+                Permission::AnalyticsView,
             ],
         };
     }

@@ -42,6 +42,11 @@ enum Permission: string
     case ProjectsDelete = 'projects.delete';
     case ProjectsManageMembers = 'projects.manage_members';
 
+    // Analytics
+    case AnalyticsView = 'analytics.view';
+    case AnalyticsExport = 'analytics.export';
+    case SavedViewsManage = 'saved_views.manage';
+
     // Auditability
     case AuditView = 'audit.view';
 
@@ -72,6 +77,9 @@ enum Permission: string
             self::ProjectsUpdate => 'Change projects',
             self::ProjectsDelete => 'Archive or delete projects',
             self::ProjectsManageMembers => 'Assign people to projects',
+            self::AnalyticsView => 'View performance analytics',
+            self::AnalyticsExport => 'Export analytics data',
+            self::SavedViewsManage => 'Create and share saved views',
             self::AuditView => 'Read the audit log',
         };
     }

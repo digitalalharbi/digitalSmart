@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Interface\Http\Controller\Analytics\AnalyticsController;
+use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
 use App\Interface\Http\Controller\Audit\AuditLogController;
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Identity\SessionController;
@@ -86,6 +88,16 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('user')->name('members.destroy');
 
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit.index');
+
+    // ---------------------------------------------------------------- Analytics ---
+    /*
+     * One endpoint for scorecard, chart and table. They have to agree, and the
+     * only way to guarantee that is to compute them from a single query.
+     */
+    Route::get('analytics', AnalyticsController::class)->name('analytics.query');
+    // What can be asked for, and what each metric means. Served rather than
+    // duplicated in the client, so formatting cannot diverge between screens.
+    Route::get('analytics/catalogue', MetricCatalogueController::class)->name('analytics.catalogue');
 
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])

@@ -11,7 +11,7 @@ times.
 | 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | **Complete** |
 | 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | **Complete** |
 | 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | **Ingestion complete**, Meta adapter live; other adapters in progress |
-| 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | Planned |
+| 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | **Analytics layer complete**, UI in progress |
 | 5     | Budgets, pacing, calculator, forecasting, alerts                                | Planned |
 | 6     | Creative hub, tasks, approvals, files, notifications/realtime                   | Planned |
 | 7     | Reports, shared client portals, exports                                         | Planned |
@@ -129,3 +129,33 @@ built around them.
 - Account-level insight ingestion (the contract and fixture exist; the sync reads
   campaign, ad-group and ad levels).
 - Webhooks, where a provider officially supports them.
+
+## Phase 4 — delivered so far
+
+- A composable analytics layer: one query answers scorecard, time series and
+  breakdown together, so they cannot disagree. Date presets, period and
+  year-over-year comparison, and filters down to the individual ad.
+- `Metric` and `Dimension` as domain enums, with each metric's format, precision,
+  direction (`lower_is_better`) and dependencies declared once and served to the
+  client — so CPA cannot be money on one screen and a count on another.
+- Aggregation in SQL, with three refusals built in rather than bolted on:
+  reading one entity level only; never summing reach across entities; never
+  totalling money across currencies. Each refusal returns null **with a reason**
+  the interface shows.
+- Derived metrics computed from the totals, never averaged from daily ratios — the
+  mean of seven daily CPCs is not the week's CPC.
+- Visibility enforced before aggregation: an actor without `projects.view_all`
+  has every query narrowed to the projects they are assigned to, intersected with
+  whatever they asked for rather than replacing it.
+- `access:sync`, which brings existing workspaces' roles in line with the code.
+  Without it a deploy that adds a permission reaches new workspaces only, and
+  every existing one silently lacks the feature.
+
+### Not yet done in Phase 4
+
+- The dashboard, campaign explorer and chart UI.
+- Saved views and the custom widget composer.
+- Conversion-action metrics (purchases, leads, installs) in the analytics layer:
+  they live in `conversion_metrics` rather than `daily_metrics`, so the read model
+  currently reports them as not read.
+- CSV/XLSX export.

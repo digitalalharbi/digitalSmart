@@ -4,6 +4,43 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 4 — analytics layer
+
+### Added
+
+- `Metric` and `Dimension` domain enums: 28 metrics with their format, precision,
+  direction, dependencies and whether they may be summed across entities.
+- `AnalyticsReadModel` and its SQL implementation, answering scorecard, series and
+  breakdown from one query with one set of filters.
+- `GET /api/analytics` and `GET /api/analytics/catalogue`.
+- `analytics.view`, `analytics.export` and `saved_views.manage` permissions, and
+  `access:sync` to bring existing workspaces' roles in line with the code.
+- 28 analytics tests, asserted against data the real sync wrote from the SANDBOX
+  fixtures rather than hand-built rows — so the aggregation cannot agree with
+  itself while disagreeing with the ingestion.
+
+### Notable refusals, each returning null with a reason
+
+- **One level only.** A campaign total is the campaign row, never the sum of its
+  ads. Both levels hold figures for the same money, and reading them together
+  roughly doubles every total.
+- **No summed reach.** It counts deduplicated people, so adding two campaigns'
+  reach double-counts anyone who saw both. Reported per entity, refused across
+  entities, with the count of entities in the message.
+- **No cross-currency money.** Converting needs a rate, a date and a decision
+  about which rate, none of which belongs in a read model.
+- **No ratio from a zero denominator**, and no percentage change from a period
+  with nothing in it. "Up from nothing" has no percentage, and +∞ or +100% is a
+  number someone will quote in a meeting.
+
+### Fixed
+
+- `SyncAccessCatalogue` reached into Infrastructure from the Interface layer — a
+  real layering violation the architecture test caught. It now goes through an
+  Application port.
+- Two tests used `limit(1)->update()`. PostgreSQL has no `LIMIT` on `UPDATE`, so
+  that quietly rewrites the whole table or nothing; they target rows by key.
+
 ## TikTok sync
 
 ### Added
