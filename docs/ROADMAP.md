@@ -9,7 +9,7 @@ times.
 | ----- | ------------------------------------------------------------------------------ | ------ |
 | 0     | Repository baseline, dev stack, CI, formatting, linting, tests, env examples, architectural skeleton | **Complete** |
 | 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | **Complete** |
-| 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | Planned |
+| 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | **Complete** |
 | 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | Planned |
 | 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | Planned |
 | 5     | Budgets, pacing, calculator, forecasting, alerts                                | Planned |
@@ -63,6 +63,22 @@ times.
 Deferred to a later slice: e-mail invitations with an acceptance flow. Members
 are added by provisioning today; the permission (`users.invite`) exists and is
 unused rather than silently granted.
+
+## Phase 2 — delivered
+
+- Seven provider adapters behind one stable port, each declaring its real
+  capabilities. An architecture test fails the build if an adapter claims
+  something its platform cannot do.
+- `ProviderConnection → ExternalAccount → ProjectIntegrationBinding` implemented
+  end to end, with the binding as the only thing that grants a project sight of
+  an ad account — permission-gated, audited, and proven isolated in both
+  cross-tenant directions.
+- Credentials encrypted at rest, redacted in logs and audit entries, and never
+  returned by the API.
+- `BLOCKED_EXTERNAL` made executable: real credentials produce an honest 503
+  naming what is missing, a platform with no published API produces a 501, and
+  sandbox mode exercises the whole workflow with clearly labelled fixtures and
+  no invented metrics.
 
 ## Blocked
 

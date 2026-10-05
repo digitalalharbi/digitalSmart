@@ -47,6 +47,17 @@ Workspace ─┬─ User (via membership + role)
   external account. Without a binding, a project sees nothing — this is the rule that
   keeps one client's spend invisible to another.
 
+### Integrations (Phase 2, implemented)
+
+| Table | Key | Notes |
+| ----- | --- | ----- |
+| `provider_connections` | UUIDv7 | One per provider per workspace. Holds the encrypted credential blob, hidden from serialisation. |
+| `external_accounts` | UUIDv7 | Discovered ad accounts. `workspace_id` denormalised from the connection so scoped queries need no join. Unique on `(provider_connection_id, external_id)`. |
+| `project_integration_bindings` | UUIDv7 | The grant. Unique on `(project_id, external_account_id)`; deleting it revokes access immediately. |
+
+Deleting a connection cascades to its accounts and their bindings, by the
+schema's own foreign keys rather than by application code remembering to.
+
 ### Metrics
 
 Daily metrics are stored at the finest grain the provider reports, normalised to a

@@ -8,6 +8,9 @@ use App\Application\Audit\Contract\AuditReadModel;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Identity\Contract\Authenticator;
 use App\Application\Identity\Contract\IdentityReadModel;
+use App\Application\Integration\Contract\CredentialCipher;
+use App\Application\Integration\Contract\IntegrationReadModel;
+use App\Application\Integration\Contract\ProviderAdapterRegistry as ProviderAdapterRegistryContract;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
 use App\Application\Shared\Contract\ActorContext;
@@ -22,20 +25,29 @@ use App\Application\System\Query\GetSystemHealth;
 use App\Application\Workspace\Contract\MemberReadModel;
 use App\Application\Workspace\Contract\MembershipRepository;
 use App\Domain\Client\Repository\ClientRepository;
+use App\Domain\Integration\Repository\ExternalAccountRepository;
+use App\Domain\Integration\Repository\IntegrationBindingRepository;
+use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use App\Domain\Project\Repository\ProjectRepository;
 use App\Infrastructure\Access\PermissionAuthorizationGuard;
 use App\Infrastructure\Access\RequestActorContext;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
 use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
+use App\Infrastructure\Integration\LaravelCredentialCipher;
+use App\Infrastructure\Integration\ProviderAdapterRegistry;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMembershipRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
 use App\Infrastructure\System\CacheHealthProbe;
@@ -86,6 +98,14 @@ final class AppServiceProvider extends ServiceProvider
         MemberReadModel::class => EloquentMemberReadModel::class,
         MembershipRepository::class => EloquentMembershipRepository::class,
         AuditReadModel::class => EloquentAuditReadModel::class,
+
+        // Integrations
+        CredentialCipher::class => LaravelCredentialCipher::class,
+        ProviderAdapterRegistryContract::class => ProviderAdapterRegistry::class,
+        ProviderConnectionRepository::class => EloquentProviderConnectionRepository::class,
+        ExternalAccountRepository::class => EloquentExternalAccountRepository::class,
+        IntegrationBindingRepository::class => EloquentIntegrationBindingRepository::class,
+        IntegrationReadModel::class => EloquentIntegrationReadModel::class,
     ];
 
     public function register(): void

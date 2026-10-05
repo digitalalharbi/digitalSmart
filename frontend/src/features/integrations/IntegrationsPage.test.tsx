@@ -1,0 +1,253 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { renderWithProviders } from '@/test/render';
+import { IntegrationsPage } from './IntegrationsPage';
+import type { ExternalAccount, ProjectBinding, ProviderRow } from './types';
+
+const providersQuery = vi.hoisted(() => vi.fn());
+const accountsQuery = vi.hoisted(() => vi.fn());
+const bindingsQuery = vi.hoisted(() => vi.fn());
+const bind = vi.hoisted(() => vi.fn());
+const permissions = vi.hoisted(() => ({ current: [] as string[] }));
+
+vi.mock('./api', () => ({
+  useProvidersQuery: () => providersQuery(),
+  useExternalAccountsQuery: () => accountsQuery(),
+  useProjectBindingsQuery: () => bindingsQuery(),
+  useBindAccountMutation: () => ({ mutate: bind, isPending: false, error: null }),
+  useUnbindAccountMutation: () => ({ mutate: vi.fn(), isPending: false, error: null }),
+  useSetBindingSyncMutation: () => ({ mutate: vi.fn(), isPending: false, error: null }),
+  useConfigureConnectionMutation: () => ({
+    mutate: vi.fn(),
+    isPending: false,
+    error: null,
+    reset: vi.fn(),
+  }),
+  useDiscoverAccountsMutation: () => ({ mutate: vi.fn(), isPending: false, error: null }),
+  useDisconnectProviderMutation: () => ({ mutate: vi.fn(), isPending: false, error: null }),
+}));
+
+vi.mock('@/features/projects', () => ({
+  useProjectsQuery: () => ({
+    data: {
+      data: [{ id: 'p1', name: 'Ramadan Campaign', client: { id: 'c1', name: 'Alhambra Retail' } }],
+    },
+    isPending: false,
+  }),
+}));
+
+vi.mock('@/features/auth', async () => {
+  const actual = await vi.importActual<Record<string, unknown>>('@/features/auth');
+  return {
+    ...actual,
+    useSession: () => ({
+      user: { id: 'me' },
+      isLoading: false,
+      isAuthenticated: true,
+      can: (permission: string) => permissions.current.includes(permission),
+    }),
+  };
+});
+
+function provider(overrides: Partial<ProviderRow> = {}): ProviderRow {
+  return {
+    provider: 'meta',
+    label: 'Meta Ads',
+    auth_method: 'oauth2',
+    capabilities: [
+      { slug: 'metrics_sync', label: 'Sync performance metrics', is_write: false },
+      { slug: 'budget_mutation', label: 'Change budgets', is_write: true },
+    ],
+    connection_id: null,
+    status: 'not_configured',
+    status_label: 'Not configured',
+    can_sync: false,
+    needs_attention: false,
+    status_message: null,
+    missing_credentials: ['client_id', 'client_secret'],
+    blocked_external: true,
+    account_count: 0,
+    last_checked_at: null,
+    expires_at: null,
+    ...overrides,
+  };
+}
+
+function account(overrides: Partial<ExternalAccount> = {}): ExternalAccount {
+  return {
+    id: 'a1',
+    provider: 'meta',
+    provider_label: 'Meta Ads',
+    external_id: 'act_sandbox_1001',
+    name: 'SANDBOX — Alhambra Retail (Meta)',
+    currency: 'SAR',
+    timezone: 'Asia/Riyadh',
+    status: 'active',
+    is_bindable: true,
+    binding_count: 0,
+    discovered_at: null,
+    ...overrides,
+  };
+}
+
+const ok = <T,>(data: T) => ({ data, isPending: false, isError: false, error: null });
+
+describe('IntegrationsPage', () => {
+  beforeEach(() => {
+    providersQuery.mockReturnValue(ok([provider()]));
+    accountsQuery.mockReturnValue(ok([account()]));
+    bindingsQuery.mockReturnValue(ok([] as ProjectBinding[]));
+    bind.mockReset();
+    permissions.current = ['workspaces.view', 'workspaces.update'];
+  });
+
+  it('explains that an unconnected provider is waiting on the provider, not on us', async () => {
+    await renderWithProviders(<IntegrationsPage />);
+
+    expect(screen.getByText('Waiting on provider access')).toBeInTheDocument();
+    expect(screen.getByText(/account-owner action, not a setting here/)).toBeInTheDocument();
+  });
+
+  it('names the exact credentials a provider still needs', async () => {
+    await renderWithProviders(<IntegrationsPage />);
+
+    expect(screen.getByText(/client_id, client_secret/)).toBeInTheDocument();
+  });
+
+  it('distinguishes write capabilities from read ones', async () => {
+    await renderWithProviders(<IntegrationsPage />);
+
+    // A capability that changes live spend must be visibly different.
+    expect(screen.getByText('Change budgets')).toBeInTheDocument();
+    expect(screen.getByText('Sync performance metrics')).toBeInTheDocument();
+  });
+
+  it('says plainly when a platform has no published API, instead of showing an empty list', async () => {
+    providersQuery.mockReturnValue(
+      ok([
+        provider({
+          provider: 'openai',
+          label: 'ChatGPT Ads',
+          capabilities: [],
+          auth_method: 'unknown',
+        }),
+      ]),
+    );
+    await renderWithProviders(<IntegrationsPage />);
+
+    expect(screen.getByText(/No published API yet/)).toBeInTheDocument();
+  });
+
+  it('does not offer discovery for a provider with no credentials', async () => {
+    await renderWithProviders(<IntegrationsPage />);
+
+    expect(screen.queryByRole('button', { name: 'Find accounts' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add credentials' })).toBeInTheDocument();
+  });
+
+  it('offers discovery once credentials are stored', async () => {
+    providersQuery.mockReturnValue(
+      ok([
+        provider({
+          missing_credentials: [],
+          status: 'configured',
+          status_label: 'Awaiting authorisation',
+        }),
+      ]),
+    );
+    await renderWithProviders(<IntegrationsPage />);
+
+    expect(screen.getByRole('button', { name: 'Find accounts' })).toBeInTheDocument();
+  });
+
+  it('asks for a project before showing anything bindable', async () => {
+    await renderWithProviders(<IntegrationsPage />);
+
+    expect(screen.getByText('Choose a project')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Grant access' })).not.toBeInTheDocument();
+  });
+
+  it('grants a project access to an account', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<IntegrationsPage />);
+
+    await user.selectOptions(screen.getByLabelText('Project'), 'p1');
+    await user.click(screen.getByRole('button', { name: 'Grant access' }));
+
+    expect(bind).toHaveBeenCalledWith({ projectId: 'p1', accountId: 'a1' });
+  });
+
+  it('will not offer to bind an account the provider has disabled', async () => {
+    accountsQuery.mockReturnValue(ok([account({ status: 'disabled', is_bindable: false })]));
+    const user = userEvent.setup();
+    await renderWithProviders(<IntegrationsPage />);
+
+    await user.selectOptions(screen.getByLabelText('Project'), 'p1');
+
+    expect(screen.getByRole('button', { name: 'Grant access' })).toBeDisabled();
+    expect(screen.getByText('Disabled')).toBeInTheDocument();
+  });
+
+  it('shows granted access and offers revocation instead of granting', async () => {
+    bindingsQuery.mockReturnValue(
+      ok([
+        {
+          id: 'b1',
+          project_id: 'p1',
+          external_account: {
+            id: 'a1',
+            name: 'SANDBOX — Alhambra Retail (Meta)',
+            provider: 'meta',
+            provider_label: 'Meta Ads',
+          },
+          sync_enabled: true,
+          bound_at: null,
+          last_synced_at: null,
+        },
+      ] as ProjectBinding[]),
+    );
+    const user = userEvent.setup();
+    await renderWithProviders(<IntegrationsPage />);
+
+    await user.selectOptions(screen.getByLabelText('Project'), 'p1');
+
+    const row = within(screen.getByRole('list', { name: 'Discovered ad accounts' })).getByRole(
+      'listitem',
+    );
+    expect(within(row).getByText('Access granted')).toBeInTheDocument();
+    expect(within(row).getByRole('button', { name: 'Revoke' })).toBeInTheDocument();
+    expect(within(row).getByRole('button', { name: 'Pause sync' })).toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Grant access' })).not.toBeInTheDocument();
+  });
+
+  it('hides granting from a role that cannot administer the workspace', async () => {
+    permissions.current = ['workspaces.view'];
+    const user = userEvent.setup();
+    await renderWithProviders(<IntegrationsPage />);
+
+    await user.selectOptions(screen.getByLabelText('Project'), 'p1');
+
+    expect(screen.queryByRole('button', { name: 'Grant access' })).not.toBeInTheDocument();
+  });
+
+  it('warns never to enter a client password when collecting credentials', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<IntegrationsPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Add credentials' }));
+
+    expect(await screen.findByText(/Never enter a client's platform password/)).toBeInTheDocument();
+  });
+
+  it('offers credential fields as password inputs that start empty', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<IntegrationsPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Add credentials' }));
+
+    const secret = await screen.findByLabelText(/Client secret/);
+    expect(secret).toHaveAttribute('type', 'password');
+    expect(secret).toHaveValue('');
+  });
+});

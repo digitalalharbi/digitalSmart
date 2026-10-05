@@ -102,6 +102,28 @@ All notable changes to digitalSmart are recorded here. Format follows
   permissions they no longer held. The guard now denies an unbound context
   outright.
 
+### Added — Phase 2: integrations foundation
+
+- Seven provider adapters (Meta, Google Ads, TikTok, Snapchat, X, LinkedIn,
+  ChatGPT Ads) behind one stable port, each declaring the capabilities it
+  actually implements. An architecture test fails the build if an adapter
+  claims something its platform cannot do.
+- `ProviderConnection → ExternalAccount → ProjectIntegrationBinding`: the
+  binding is the only thing that lets a project read an ad account. Connecting
+  a platform and discovering its accounts expose nothing by themselves.
+- Credentials encrypted with AES-256-GCM before storage, redacted when dumped,
+  hidden from serialisation, and never returned by the API — which reports only
+  which keys are held.
+- `BLOCKED_EXTERNAL` made executable: real credentials produce a 503 naming
+  what is missing and stating that the gap is the provider's approval rather
+  than the operator's mistake; a platform with no published API produces a 501
+  and declares no capabilities at all.
+- Sandbox mode exercises the full workflow against clearly labelled `SANDBOX`
+  fixtures — account structure only, never a fabricated metric.
+- Integrations surface showing every platform's real status, what each can do,
+  which credentials are still needed, and per-project access grants, in English
+  and Arabic.
+
 ### Blocked
 
 - Live ad-platform handshakes are `BLOCKED_EXTERNAL` pending credentials and provider

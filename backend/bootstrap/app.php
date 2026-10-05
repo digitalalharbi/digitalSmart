@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Application\Identity\Exception\AuthenticationFailed;
+use App\Application\Integration\Exception\ProviderNotConfigured;
+use App\Application\Integration\Exception\ProviderRequestFailed;
+use App\Application\Integration\Exception\ProviderUnavailable;
 use App\Application\Shared\Exception\AuthorizationDenied;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Application\Workspace\Exception\LastOwnerProtected;
@@ -82,6 +85,37 @@ return Application::configure(basePath: dirname(__DIR__))
             'message' => $exception->getMessage(),
             'code' => $exception->errorCode(),
         ], Response::HTTP_UNPROCESSABLE_ENTITY));
+
+        /*
+         * A provider we cannot reach is not a server error and not the user's
+         * mistake: it is a documented external dependency. 503 with the exact
+         * missing credential, so the response is actionable rather than just
+         * red.
+         */
+        $exceptions->render(static fn (ProviderNotConfigured $exception): Response => response()->json([
+            'message' => $exception->getMessage(),
+            'code' => 'provider_not_configured',
+            'provider' => $exception->provider->value,
+            'missing_credentials' => $exception->missingKeys,
+            'blocked_external' => true,
+        ], Response::HTTP_SERVICE_UNAVAILABLE));
+
+        // The capability does not exist to be used — no credential would help.
+        $exceptions->render(static fn (ProviderUnavailable $exception): Response => response()->json([
+            'message' => $exception->getMessage(),
+            'code' => 'provider_unavailable',
+            'provider' => $exception->provider->value,
+            'blocked_external' => true,
+        ], Response::HTTP_NOT_IMPLEMENTED));
+
+        // A normalised provider failure, with whatever retry guidance we have.
+        $exceptions->render(static fn (ProviderRequestFailed $exception): Response => response()->json([
+            'message' => $exception->getMessage(),
+            'code' => 'provider_request_failed',
+            'provider' => $exception->provider->value,
+            'retryable' => $exception->isRetryable(),
+            'retry_after_seconds' => $exception->retryAfterSeconds,
+        ], Response::HTTP_BAD_GATEWAY));
 
         // Protecting the last owner is a business rule, not a permission failure.
         $exceptions->render(static fn (LastOwnerProtected $exception): Response => response()->json([

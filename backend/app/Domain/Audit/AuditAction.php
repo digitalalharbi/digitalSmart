@@ -29,6 +29,14 @@ enum AuditAction: string
     case ProjectMemberAssigned = 'project.member_assigned';
     case ProjectMemberRemoved = 'project.member_removed';
 
+    case IntegrationConnected = 'integration.connected';
+    case IntegrationCredentialsUpdated = 'integration.credentials_updated';
+    case IntegrationDisconnected = 'integration.disconnected';
+    case IntegrationAccountsDiscovered = 'integration.accounts_discovered';
+    case IntegrationAccountBound = 'integration.account_bound';
+    case IntegrationAccountUnbound = 'integration.account_unbound';
+    case IntegrationSyncToggled = 'integration.sync_toggled';
+
     case WorkspaceMemberInvited = 'workspace.member_invited';
     case WorkspaceMemberRoleChanged = 'workspace.member_role_changed';
     case WorkspaceMemberSuspended = 'workspace.member_suspended';
@@ -48,6 +56,13 @@ enum AuditAction: string
             self::UserPasswordChanged,
             self::WorkspaceMemberRoleChanged,
             self::WorkspaceMemberSuspended,
+            // Credentials and data-access grants are security events: who
+            // connected a platform, and who let a project read an ad account.
+            self::IntegrationConnected,
+            self::IntegrationCredentialsUpdated,
+            self::IntegrationDisconnected,
+            self::IntegrationAccountBound,
+            self::IntegrationAccountUnbound,
         ], true);
     }
 }

@@ -28,10 +28,13 @@ test.describe('application shell', () => {
   });
 
   test('navigates to a surface that a later phase delivers', async ({ page }) => {
-    await page.goto('/integrations');
+    // Analytics is still a placeholder; integrations stopped being one in
+    // Phase 2, which is exactly the kind of drift this assertion should catch.
+    await page.goto('/analytics');
 
-    await expect(page.getByRole('heading', { level: 1, name: 'Integrations' })).toBeVisible();
-    await expect(page.getByText('Planned for Phase 2')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Analytics' })).toBeVisible();
+    await expect(page.getByText('Planned for Phase 4')).toBeVisible();
+    await expect(page.getByText(/delivered in a later phase/)).toBeVisible();
   });
 });
 

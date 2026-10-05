@@ -248,5 +248,67 @@
       "projects": "Projects",
       "actions": "Actions"
     }
+  },
+  "integrations": {
+    "subtitle": "Ad platforms this workspace can read from, and which projects may read what.",
+    "forbidden": "Your role does not include access to integrations.",
+    "loading": "Loading integrations…",
+    "loadFailed": "Integrations could not be loaded.",
+    "awaitingAccessTitle": "Waiting on provider access",
+    "awaitingAccessBody_one": "{{count}} platform cannot be connected yet. These need credentials or programme approval from the provider — an account-owner action, not a setting here. digitalSmart will not show figures it cannot actually retrieve.",
+    "awaitingAccessBody_other": "{{count}} platforms cannot be connected yet. These need credentials or programme approval from the providers — account-owner actions, not settings here. digitalSmart will not show figures it cannot actually retrieve.",
+    "noCapabilities": "No published API yet, so there is nothing we can honestly offer for this platform.",
+    "blockedTitle": "Not connected",
+    "blockedBody": "Needs: {{keys}}. These are issued by the provider.",
+    "accountCount_one": "{{count}} ad account",
+    "accountCount_other": "{{count}} ad accounts",
+    "configure": "Add credentials",
+    "update": "Replace credentials",
+    "discover": "Find accounts",
+    "disconnectFrom": "Disconnect {{provider}}",
+    "credentialsTitle": "{{provider}} credentials",
+    "credentialsDescription": "The platform's own API credentials, issued to Smart Code.",
+    "neverClientPassword": "Never enter a client's platform password. digitalSmart does not store them, and does not need them: access comes from OAuth, Business Manager sharing or partner access.",
+    "sandboxHint": "To exercise the workflow before a provider grants access, enter “sandbox” in every field. You will get clearly labelled SANDBOX accounts and no invented figures.",
+    "authMethod": {
+      "oauth2": "OAuth 2.0",
+      "oauth1": "OAuth 1.0a",
+      "unknown": "No published flow"
+    },
+    "credentialKeys": {
+      "client_id": "Client ID",
+      "client_secret": "Client secret",
+      "developer_token": "Developer token",
+      "app_id": "App ID",
+      "app_secret": "App secret",
+      "consumer_key": "Consumer key",
+      "consumer_secret": "Consumer secret",
+      "api_key": "API key"
+    },
+    "bindingsTitle": "Project access",
+    "bindingsDescription": "A project reads an ad account only if it is granted here. Discovering an account does not expose it to anyone.",
+    "chooseProject": "Project",
+    "selectProject": "Select a project",
+    "selectProjectTitle": "Choose a project",
+    "selectProjectHint": "Pick a project to see which ad accounts it may read, and to grant or revoke access.",
+    "noAccounts": "No ad accounts discovered yet",
+    "noAccountsHint": "Connect a platform and find its accounts first. Until then there is nothing to grant.",
+    "linked": "Access granted",
+    "usedBy_zero": "used by no projects",
+    "usedBy_one": "used by 1 project",
+    "usedBy_other": "used by {{count}} projects",
+    "grant": "Grant access",
+    "revoke": "Revoke",
+    "pauseSync": "Pause sync",
+    "resumeSync": "Resume sync",
+    "accountStatus": {
+      "active": "Active",
+      "disabled": "Disabled",
+      "closed": "Closed",
+      "unsettled": "Unsettled billing",
+      "unknown": "Unknown"
+    },
+    "accountsList": "Discovered ad accounts",
+    "capabilitiesFor": "What {{provider}} can do"
   }
 }

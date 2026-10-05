@@ -6,6 +6,9 @@ use App\Interface\Http\Controller\Audit\AuditLogController;
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Identity\SessionController;
 use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
+use App\Interface\Http\Controller\Integration\ExternalAccountController;
+use App\Interface\Http\Controller\Integration\ProjectBindingController;
+use App\Interface\Http\Controller\Integration\ProviderController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
 use App\Interface\Http\Controller\System\HealthController;
@@ -83,4 +86,32 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('user')->name('members.destroy');
 
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit.index');
+
+    // ------------------------------------------------------------ Integrations ---
+    Route::get('integrations/providers', [ProviderController::class, 'index'])
+        ->name('integrations.providers.index');
+    Route::put('integrations/providers/{provider}', [ProviderController::class, 'configure'])
+        ->name('integrations.providers.configure');
+    Route::post('integrations/providers/{provider}/discover', [ProviderController::class, 'discover'])
+        ->name('integrations.providers.discover');
+    Route::get('integrations/providers/{provider}/health', [ProviderController::class, 'health'])
+        ->name('integrations.providers.health');
+    Route::delete('integrations/providers/{provider}', [ProviderController::class, 'destroy'])
+        ->name('integrations.providers.destroy');
+
+    Route::get('integrations/accounts', [ExternalAccountController::class, 'index'])
+        ->name('integrations.accounts.index');
+
+    /*
+     * Bindings live under the project, because that is what they are about:
+     * which external accounts this one project may read.
+     */
+    Route::get('projects/{project}/integrations', [ProjectBindingController::class, 'index'])
+        ->whereUuid('project')->name('projects.integrations.index');
+    Route::post('projects/{project}/integrations', [ProjectBindingController::class, 'store'])
+        ->whereUuid('project')->name('projects.integrations.store');
+    Route::patch('projects/{project}/integrations/{account}', [ProjectBindingController::class, 'update'])
+        ->whereUuid('project')->whereUuid('account')->name('projects.integrations.update');
+    Route::delete('projects/{project}/integrations/{account}', [ProjectBindingController::class, 'destroy'])
+        ->whereUuid('project')->whereUuid('account')->name('projects.integrations.destroy');
 });

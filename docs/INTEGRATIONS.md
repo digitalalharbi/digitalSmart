@@ -26,6 +26,30 @@ These are business/account actions, not engineering work: they need the owner's
 identity, legal acceptance and in some cases payment. That is why they are the one
 class of thing the build stops for.
 
+## How the boundary is enforced in code
+
+`BLOCKED_EXTERNAL` is not a comment here, it is behaviour:
+
+- An adapter given **real credentials** throws `ProviderNotConfigured` and the
+  API answers `503` with `blocked_external: true`. The message says plainly that
+  digitalSmart has not been granted API access — not that the operator entered
+  something wrong, because they did not.
+- A provider with **no published API** (ChatGPT Ads) throws `ProviderUnavailable`
+  and answers `501`. It declares *no* capabilities, so the interface renders no
+  controls for it.
+- Nothing fabricates a successful connection, and nothing invents a metric.
+
+### Sandbox mode
+
+Entering `sandbox` for every credential of a provider switches that connection
+to recorded fixtures, so the whole flow — discovery, binding, project access,
+revocation — can be exercised before any provider grants access.
+
+Sandbox accounts are named `SANDBOX — …` and are asserted as such by the test
+suite. They contain **account structure only**. There are no sandbox metrics and
+there will not be: a fabricated spend figure in front of a client is the one
+failure this project treats as unrecoverable.
+
 ## Architecture
 
 Provider logic sits behind stable ports. No provider-specific code ever appears in a

@@ -212,7 +212,39 @@ Newest first, always scoped to the active workspace. Parameters: `search`,
 `action[]`, `actor_id`, `security_only`, `page`, `per_page`. Entries are
 append-only and secrets are redacted from recorded diffs.
 
+### Integrations
+
+| Endpoint | Permission |
+| -------- | ---------- |
+| `GET /api/integrations/providers` | `workspaces.view` |
+| `PUT /api/integrations/providers/{provider}` | `workspaces.update` |
+| `POST /api/integrations/providers/{provider}/discover` | `workspaces.update` |
+| `GET /api/integrations/providers/{provider}/health` | `workspaces.view` |
+| `DELETE /api/integrations/providers/{provider}` | `workspaces.update` |
+| `GET /api/integrations/accounts` | `workspaces.view` |
+| `GET /api/projects/{id}/integrations` | visibility of the project |
+| `POST /api/projects/{id}/integrations` | `workspaces.update` |
+| `PATCH /api/projects/{id}/integrations/{account}` | `workspaces.update` |
+| `DELETE /api/projects/{id}/integrations/{account}` | `workspaces.update` |
+
+Credentials are **write-only**. `PUT` accepts them; every response reports only
+which *keys* are held (`credential_keys`), never a value.
+
+Listing bindings needs only project visibility — a media buyer should see which
+accounts feed their project — while granting and revoking need workspace
+administration, because that is the access boundary between clients.
+
+Three provider-specific statuses:
+
+| Status | Code | Meaning |
+| ------ | ---- | ------- |
+| `503` | `provider_not_configured` | Credentials are missing, or present but unusable because the provider has not granted API access. `blocked_external: true`, with `missing_credentials` when that is the cause. |
+| `501` | `provider_unavailable` | The capability does not exist to be used; no credential would help. |
+| `502` | `provider_request_failed` | A normalised provider failure, with `retryable` and `retry_after_seconds`. |
+
+See `docs/INTEGRATIONS.md` for what each provider needs and how sandbox mode
+works.
+
 ---
 
-Integration endpoints arrive in Phase 2; see `docs/INTEGRATIONS.md` for what is
-blocked there.
+Campaign and metrics endpoints arrive in Phase 3.

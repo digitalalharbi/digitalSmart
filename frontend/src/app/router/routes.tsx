@@ -5,6 +5,7 @@ import { NotFoundPage } from '@/app/router/NotFoundPage';
 import { RequireSession } from '@/app/router/RequireSession';
 import { LoginPage } from '@/features/auth';
 import { AdministrationPage } from '@/features/administration';
+import { IntegrationsPage } from '@/features/integrations';
 import { ClientsPage } from '@/features/clients';
 import { OverviewPage } from '@/features/overview';
 import { ProjectsPage } from '@/features/projects';
@@ -15,6 +16,7 @@ const IMPLEMENTED: Record<string, React.ReactElement> = {
   '/clients': <ClientsPage />,
   '/projects': <ProjectsPage />,
   '/administration': <AdministrationPage />,
+  '/integrations': <IntegrationsPage />,
 };
 
 const featureRoutes: RouteObject[] = NAV_ITEMS.filter((item) => item.path !== '/').map((item) => ({

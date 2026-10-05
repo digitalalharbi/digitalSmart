@@ -22,6 +22,12 @@ export const queryKeys = {
     all: () => ['audit'] as const,
     list: (params: Record<string, unknown>) => ['audit', 'list', params] as const,
   },
+  integrations: {
+    all: () => ['integrations'] as const,
+    providers: () => ['integrations', 'providers'] as const,
+    accounts: (provider: string) => ['integrations', 'accounts', provider] as const,
+    bindings: (projectId: string) => ['integrations', 'bindings', projectId] as const,
+  },
   projects: {
     all: () => ['projects'] as const,
     list: (params: Record<string, unknown>) => ['projects', 'list', params] as const,

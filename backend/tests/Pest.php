@@ -41,6 +41,26 @@ pest()->extend(TestCase::class)->in('Architecture');
 |--------------------------------------------------------------------------
 */
 
+/**
+ * Find one row in a JSON `data` array by a field value.
+ *
+ * Response payloads are `mixed`, so this keeps the type information in one
+ * place instead of every test reaching for an untyped collection.
+ *
+ * @return array<string, mixed>
+ */
+function jsonRow(mixed $rows, string $key, string $value): array
+{
+    foreach (is_array($rows) ? $rows : [] as $row) {
+        if (is_array($row) && ($row[$key] ?? null) === $value) {
+            /** @var array<string, mixed> $row */
+            return $row;
+        }
+    }
+
+    throw new RuntimeException(sprintf('No row with %s = "%s" in the response.', $key, $value));
+}
+
 /** Build a provisioned workspace with its system roles and an owner. */
 function workspaceScenario(?string $name = null): Tests\Support\WorkspaceScenario
 {
