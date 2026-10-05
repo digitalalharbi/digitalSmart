@@ -173,9 +173,25 @@ built around them.
   them to a project and runs the real sync, so the demo workspace demonstrates the
   analytics layer and the E2E suite exercises the whole path.
 
+### Phase 4 — saved views and dashboards, foundation only
+
+The schema, domain rules and ports are in place; the use cases, API and UI are not.
+
+- `saved_views`, `dashboards` and `dashboard_widgets` tables, with CHECK constraints
+  carrying the rules that matter: project-scoped visibility cannot exist without a
+  project, and a widget cannot be stored outside the 12-column canvas.
+- `Visibility` (private / workspace / project — the third because an agency needs a
+  dashboard one client's team sees and colleagues on another client do not),
+  `WidgetType` (which states the shape of question each type can answer, so a
+  share-of-total over 90 dates is refused rather than drawn), and `GridPlacement`
+  (which raises rather than clamps, because clamping moves a widget the reader
+  placed and an off-grid widget disappears silently).
+- `SavedViewRepository` and `DashboardRepository` ports, and the DTOs they speak.
+
 ### Not yet done in Phase 4
 
-- Saved views and the custom dashboard widget composer.
+- The saved-view and dashboard **use cases, repositories, API and UI**. The ports
+  are written; nothing implements them yet, so the feature is not reachable.
 - Conversion-action metrics (purchases, leads, installs) in the analytics layer:
   they live in `conversion_metrics` rather than `daily_metrics`, so the read model
   currently reports them as not read.

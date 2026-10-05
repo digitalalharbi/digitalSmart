@@ -4,6 +4,27 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 4 — dashboard and saved-view foundation
+
+Schema, domain rules and ports only. The use cases, API and UI are **not** done, so
+the feature is not yet reachable from the product — see docs/ROADMAP.md.
+
+### Added
+
+- `saved_views`, `dashboards` and `dashboard_widgets` tables. Two CHECK constraints
+  carry rules the application would otherwise have to remember: a project-scoped
+  view cannot exist without a project, and a widget cannot be stored outside the
+  12-column canvas.
+- `Visibility`, with three states rather than a boolean — the third exists because an
+  agency's real need is a dashboard one client's team can see and colleagues working
+  for a different client cannot.
+- `WidgetType`, which declares the shape of question each type can answer, so a
+  share-of-total across 90 dates is refused rather than drawn.
+- `GridPlacement`, which raises on an impossible placement rather than clamping:
+  clamping moves a widget the reader deliberately placed, and an off-grid widget
+  vanishes from the dashboard with nothing to say it was there.
+- 12 domain tests covering those rules.
+
 ## Phase 4 — analytics interface
 
 ### Added
