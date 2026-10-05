@@ -48,7 +48,10 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'Megaphone',
     section: 'work',
     phase: 'Phase 3',
-    permission: 'projects.view_assigned',
+    // The surface reads performance data, so it is gated on the permission the
+    // endpoint actually checks. Offering it to a role that would receive a 403 is
+    // worse than not offering it.
+    permission: 'analytics.view',
   },
   {
     path: '/creative-hub',
@@ -71,7 +74,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'ChartNoAxesCombined',
     section: 'intelligence',
     phase: 'Phase 4',
-    permission: 'projects.view_assigned',
+    permission: 'analytics.view',
   },
   {
     path: '/media-planner',

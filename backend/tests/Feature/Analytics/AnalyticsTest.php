@@ -530,3 +530,46 @@ describe('keeping roles in step with the code', function (): void {
         $this->actingAs($creative)->getJson('/api/analytics')->assertForbidden();
     });
 });
+
+describe('labels', function (): void {
+    it('names a platform the way the product does, not by its slug', function (): void {
+        $workspace = SyncedWorkspace::default();
+
+        $payload = analytics($workspace, ['preset' => '90d', 'dimension' => 'provider']);
+        $labels = array_column($payload['breakdown'], 'label', 'key');
+
+        /*
+         * Resolved server-side from the provider enum, which already defines the
+         * name. Leaving the slug for the client to translate is how one screen ends
+         * up saying "Meta Ads" and another "google_ads".
+         */
+        expect($labels['meta'] ?? null)->toBe('Meta Ads')
+            ->and($labels['google_ads'] ?? null)->toBe('Google Ads');
+    });
+
+    it('removes a deleted campaign’s figures with it, leaving no nameless rows', function (): void {
+        $workspace = SyncedWorkspace::with([Provider::Meta->value => 'act_sandbox_1001']);
+
+        $campaign = Campaign::query()->firstOrFail();
+        $before = DailyMetric::query()->where('campaign_id', $campaign->getKey())->count();
+
+        expect($before)->toBeGreaterThan(0);
+
+        $campaign->delete();
+
+        /*
+         * The foreign key cascades, by the schema rather than by application code
+         * remembering to. That is what keeps an unnameable row out of a report: a
+         * metric whose entity no longer exists could be totalled but never labelled,
+         * and a reader cannot act on a figure with no name attached.
+         */
+        expect(DailyMetric::query()->where('campaign_id', $campaign->getKey())->count())->toBe(0);
+
+        $payload = analytics($workspace, ['preset' => '90d', 'dimension' => 'campaign']);
+
+        foreach (array_column($payload['breakdown'], 'label') as $label) {
+            expect($label)->not->toBe('')
+                ->and($label)->not->toContain('Unknown');
+        }
+    });
+});

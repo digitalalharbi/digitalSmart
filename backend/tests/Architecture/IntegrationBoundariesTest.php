@@ -50,6 +50,13 @@ arch('credentials never reach the interface layer directly')
         'App\Infrastructure\Integration',
         'App\Infrastructure\Advertising',
         'App\Infrastructure\Persistence\Eloquent\Repository',
+        /*
+         * The demo seeder, which connects providers in sandbox mode. The rule this
+         * list protects is that credentials never reach the Interface layer or an
+         * API response; a seeder is neither, it refuses to run in production, and
+         * the only value it ever constructs is the literal sandbox token.
+         */
+        'Database\Seeders',
     ]);
 
 arch('sync adapters live only in infrastructure')

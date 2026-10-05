@@ -92,10 +92,18 @@ echo "==> Starting API on :$API_PORT"
 API_PID=$!
 
 echo "==> Building and serving the SPA on :$WEB_PORT"
-(
+# The build runs `tsc -b`, which is stricter than a bare `tsc --noEmit` (it applies
+# the app's own tsconfig, including noUnusedLocals). A failure here is a real type
+# error, so it is reported with its output rather than leaving the next step to fail
+# with a confusing connection refused.
+if ! (
   cd "$ROOT/frontend"
   VITE_DEV_API_PROXY="http://127.0.0.1:$API_PORT" npm run build
-) > /tmp/digitalsmart-e2e-build.log 2>&1
+) > /tmp/digitalsmart-e2e-build.log 2>&1; then
+  echo "The SPA build failed:" >&2
+  tail -30 /tmp/digitalsmart-e2e-build.log >&2
+  exit 1
+fi
 
 (
   cd "$ROOT/frontend"

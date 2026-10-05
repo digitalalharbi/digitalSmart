@@ -24,6 +24,9 @@ export const PERMISSIONS = {
   projectsUpdate: 'projects.update',
   projectsDelete: 'projects.delete',
   projectsManageMembers: 'projects.manage_members',
+  analyticsView: 'analytics.view',
+  analyticsExport: 'analytics.export',
+  savedViewsManage: 'saved_views.manage',
   auditView: 'audit.view',
 } as const;
 

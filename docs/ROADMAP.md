@@ -11,7 +11,7 @@ times.
 | 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | **Complete** |
 | 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | **Complete** |
 | 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | **Ingestion complete**, Meta adapter live; other adapters in progress |
-| 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | **Analytics layer complete**, UI in progress |
+| 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | **Analytics, charts and campaign explorer complete**; saved views and widget composer outstanding |
 | 5     | Budgets, pacing, calculator, forecasting, alerts                                | Planned |
 | 6     | Creative hub, tasks, approvals, files, notifications/realtime                   | Planned |
 | 7     | Reports, shared client portals, exports                                         | Planned |
@@ -151,11 +151,33 @@ built around them.
   Without it a deploy that adds a permission reaches new workspaces only, and
   every existing one silently lacks the feature.
 
+### Phase 4 — the interface
+
+- **ECharts**, with only the chart types in use registered and the whole engine in
+  a lazily loaded chunk: the initial bundle is 243 kB gzipped and the 209 kB chart
+  chunk arrives when a chart surface is first opened.
+- An analytics surface with a scorecard, a trend chart whose metric follows the tile
+  a reader selects, a spend breakdown, an efficiency-against-scale scatter, and a
+  table that keeps each entity's platform id for reconciliation.
+- A campaign explorer that drills platform → campaign → ad group → ad, where each
+  step narrows the scorecard and the chart as well as the table. A breadcrumb that
+  does not change the figures above it is decoration.
+- An overview screen that answers one question and links to the surface that answers
+  the follow-up, rather than competing to be a second dashboard.
+- Charts mirrored for Arabic — reversed category axis, value axis on the other side,
+  flipped bar radii, and the Arabic font stack handed to the canvas explicitly.
+- Data honesty enforced in the components: a nullable value rendered as an em dash
+  with the server's reason beside it, a source badge on anything not live, and a
+  notice above the numbers rather than below them.
+- The demo seeder now connects Meta, Google Ads and TikTok in sandbox mode, binds
+  them to a project and runs the real sync, so the demo workspace demonstrates the
+  analytics layer and the E2E suite exercises the whole path.
+
 ### Not yet done in Phase 4
 
-- The dashboard, campaign explorer and chart UI.
-- Saved views and the custom widget composer.
+- Saved views and the custom dashboard widget composer.
 - Conversion-action metrics (purchases, leads, installs) in the analytics layer:
   they live in `conversion_metrics` rather than `daily_metrics`, so the read model
   currently reports them as not read.
 - CSV/XLSX export.
+- Annotations and threshold lines on charts.

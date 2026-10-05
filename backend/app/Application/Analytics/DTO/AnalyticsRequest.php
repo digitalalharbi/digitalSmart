@@ -26,26 +26,4 @@ final readonly class AnalyticsRequest
         public ?Metric $orderBy = null,
         public int $limit = 50,
     ) {}
-
-    /** The default scorecard: the figures an agency looks at first. */
-    public static function scorecard(DateRange $range, AnalyticsFilters $filters, ?DateRange $compareTo = null): self
-    {
-        return new self(
-            range: $range,
-            filters: $filters,
-            metrics: [
-                Metric::Spend,
-                Metric::Revenue,
-                Metric::Roas,
-                Metric::Conversions,
-                Metric::CostPerConversion,
-                Metric::Impressions,
-                Metric::Clicks,
-                Metric::Ctr,
-                Metric::Cpc,
-                Metric::Cpm,
-            ],
-            compareTo: $compareTo,
-        );
-    }
 }

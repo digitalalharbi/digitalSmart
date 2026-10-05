@@ -146,12 +146,105 @@ Target **WCAG 2.2 AA**.
 - Component tests query by role and accessible name, so a regression in semantics fails
   the build.
 
-## Charts (from Phase 4)
+## Charts
 
-Professional and interactive: rich tooltips, comparison overlays, annotations,
-threshold/target lines, brush selection on time series, zoom where it helps, and export.
-Every chart must be readable in both themes, must not rely on hue alone, and must label
-its axes and units.
+**Engine: Apache ECharts**, chosen over the alternatives for three reasons that
+matter for this product specifically: it renders to canvas, so a 90-day ad-level
+scatter stays interactive where SVG-based libraries stall; it supports a true
+right-to-left layout rather than only mirrored text; and it treats `null` as a gap
+rather than zero, which is the behaviour every chart here depends on.
+
+Only the chart types in use are registered (`shared/ui/chart/Chart.tsx`). The full
+bundle is roughly a megabyte, and a dashboard that loads slowly is one people stop
+opening — so adding a chart type is a deliberate edit, and the whole engine is in a
+lazily loaded chunk rather than the initial bundle.
+
+### Series colours
+
+A categorical sequence of its own (`--ds-chart-1` … `--ds-chart-8`), deliberately
+**not** the platform colours: a chart of four Meta campaigns would otherwise be
+four shades of one blue. Ordered so the first three are distinguishable under the
+common forms of colour blindness, and so adjacent pairs differ in lightness as well
+as hue — a line read in greyscale or printed must still be legible. Dark mode lifts
+each value's lightness while keeping its hue, so a chart does not change identity
+when the theme does.
+
+The tokens are OKLCH custom properties, which a canvas cannot resolve, so they are
+read from the computed root style at render time. That is what lets a chart follow a
+theme switch without a single colour being duplicated in TypeScript.
+
+### Rules every chart follows
+
+- **A gap is a gap.** Days with no data are `null` and the line is *broken*
+  (`connectNulls: false`). A line drawn through a gap says delivery continued at
+  some level when in fact it stopped — the most misleading thing a performance
+  chart can do, and the thing a client would notice last.
+- **It answers a question.** Each chart states what it is for: the efficiency
+  scatter carries "which campaigns deserve more budget, and which are expensive at
+  size?" above it, because a scatter plot is not self-explanatory. A chart without
+  a question is decoration.
+- **It is readable without the canvas.** `ariaLabel` is a required prop, not an
+  optional one, and the figures are also rendered as text in a visually hidden
+  caption. A canvas is invisible to a screen reader, so a chart without one is a
+  hole in the page.
+- **It respects motion preferences.** `prefers-reduced-motion` disables animation,
+  read in JavaScript because a canvas is not styled by CSS.
+- **It resizes with its container,** via `ResizeObserver` rather than a window
+  listener: these live in a grid whose columns change with the sidebar, so a chart
+  can need to resize when the window has not.
+- **Gridlines stay faint.** They are the most over-weighted element in most
+  dashboards. They exist so a reader can judge a value; the data should be the
+  loudest thing on the canvas.
+
+### Right-to-left
+
+Charts are mirrored, not merely translated. In Arabic the category axis reverses,
+the value axis moves to the other side, the legend follows the reading direction,
+and bar corner radii flip. A time series reading left-to-right inside a
+right-to-left interface asks the reader to change direction mid-page. ECharts also
+draws its own text and inherits nothing from CSS, so the Arabic font stack is
+handed to it explicitly — otherwise axis labels fall back to a Latin-first face.
+
+## Showing where a number came from
+
+This is a design rule, not just an engineering one, because it is enforced in the
+components.
+
+Every figure the product displays carries a **source state** — `live`, `synced`,
+`stale`, `partial`, `sandbox`, `manual`, `estimated` — and the interface marks
+anything that is not `live`. For `live` the *absence* of a badge is the statement.
+`sandbox` uses the loudest tone available, because a sandbox figure mistaken for a
+client's spend is the failure the whole mechanism exists to prevent.
+
+A `SourceNotice` sits **above** the numbers on every analytics surface, so a reader
+meets the caveat before drawing a conclusion rather than after.
+
+### A missing figure looks missing
+
+`MetricValue.value` is nullable and the formatter renders null as an em dash,
+never zero. Coercing it would turn "the platform does not report this" into "this
+performed at zero" — a claim about a campaign rather than a statement about the
+data.
+
+A dash alone is not enough, though: the card and the table cell also show the
+server's `unavailable_reason`. "Not reported by this platform for the selected
+period" and "Reach is deduplicated by the platform, so it cannot be added across 4
+entities" are different facts, and both tell the reader what to do next. A reader
+who sees only a dash assumes the product is broken.
+
+### Numbers
+
+`.ds-numeric` applies tabular figures, so a column aligns on the decimal in both
+scripts. Money crosses the wire in **minor units** and is divided once, at the
+formatter, to two decimals — including above a thousand. These figures get
+reconciled against a platform's invoice, and a column where 840.25 keeps its cents
+while 12,500.00 does not is both inconsistent to scan and short of the precision
+someone is checking. Dense tiles that cannot afford the width use `formatCompact`,
+which is an explicit choice rather than a silent threshold.
+
+A change is coloured by whether it is **good**, which the server decides from the
+metric's own direction: CPA falling 20% is green, spend falling 20% is not. The
+interface never re-derives that from the sign.
 
 ## Components
 

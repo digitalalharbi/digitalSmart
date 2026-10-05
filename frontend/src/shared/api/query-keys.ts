@@ -28,6 +28,15 @@ export const queryKeys = {
     accounts: (provider: string) => ['integrations', 'accounts', provider] as const,
     bindings: (projectId: string) => ['integrations', 'bindings', projectId] as const,
   },
+  analytics: {
+    all: () => ['analytics'] as const,
+    query: (params: Record<string, unknown>) => ['analytics', 'query', params] as const,
+    catalogue: () => ['analytics', 'catalogue'] as const,
+  },
+  campaigns: {
+    all: () => ['campaigns'] as const,
+    list: (params: Record<string, unknown>) => ['campaigns', 'list', params] as const,
+  },
   projects: {
     all: () => ['projects'] as const,
     list: (params: Record<string, unknown>) => ['projects', 'list', params] as const,

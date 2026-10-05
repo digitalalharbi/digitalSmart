@@ -14,6 +14,7 @@ use App\Application\Analytics\DTO\SeriesPoint;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
+use App\Domain\Integration\Provider;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -617,12 +618,20 @@ final readonly class EloquentAnalyticsReadModel implements AnalyticsReadModel
     private function fallbackLabel(Dimension $dimension, string $key): string
     {
         return match ($dimension) {
-            // Provider slugs are their own label; the interface maps them to a
-            // display name from the enum.
-            Dimension::Provider => $key,
+            /*
+             * The provider's display name, from the enum that already defines it.
+             * It is resolved here rather than in the client because the label is a
+             * domain fact: two places deciding it is how one screen ends up saying
+             * "Meta Ads" and another "google_ads".
+             */
+            Dimension::Provider => Provider::tryFrom($key)?->label() ?? $key,
             Dimension::Date => $key,
-            // An entity that was deleted from the platform after its metrics were
-            // synced. Saying so beats a blank cell.
+            /*
+             * Defensive. The foreign keys cascade, so deleting a campaign takes its
+             * metric rows with it and an unnameable group should not arise — but a
+             * figure with no name is one a reader cannot act on, so if one ever does
+             * it says so rather than rendering a blank cell.
+             */
             default => 'Unknown ('.substr($key, 0, 8).')',
         };
     }

@@ -4,6 +4,54 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 4 — analytics interface
+
+### Added
+
+- **ECharts** behind a wrapper that registers only the chart types in use, reads its
+  palette from the OKLCH design tokens at render time, resizes via `ResizeObserver`,
+  honours `prefers-reduced-motion`, and requires an `ariaLabel` — a canvas is
+  invisible to a screen reader, so a chart without one is a hole in the page.
+- Chart series tokens (`--ds-chart-1` … `--ds-chart-8`), deliberately separate from
+  the platform colours so a chart of four Meta campaigns is not four shades of one
+  blue, and lifted in dark mode without changing hue.
+- An analytics surface: scorecard, trend chart driven by the tile a reader selects,
+  spend breakdown, efficiency-against-scale scatter, and a detail table that keeps
+  each entity's platform id.
+- A campaign explorer drilling platform → campaign → ad group → ad, where each step
+  narrows the scorecard and chart as well as the table.
+- An overview screen showing four headline figures and spend by platform.
+- `MetricCard`, `SourceBadge` and `SourceNotice`: a null figure renders as an em
+  dash with the server's reason beside it, anything not `live` is badged, and the
+  notice sits above the numbers so a reader meets the caveat first.
+- Full Arabic translation of every new surface, and charts mirrored rather than
+  merely translated.
+- 42 new frontend tests and 8 new Playwright specs, including one asserting that a
+  sandbox surface says so before showing a figure.
+
+### Changed
+
+- The two chart surfaces are lazily loaded. The initial bundle went from 454 kB
+  gzipped to 243 kB, with the 209 kB chart chunk arriving on first visit. This also
+  required keeping the page components out of `features/analytics/index.ts`: the
+  overview screen importing a hook from that barrel pulled the whole engine back
+  into the initial bundle.
+- `formatCurrency` keeps the minor unit on every amount. It previously dropped the
+  decimals above a thousand for density, which is wrong for figures reconciled
+  against a platform's invoice — and made a column where 840.25 kept its cents and
+  12,500.00 did not.
+- The metric vocabulary moved to `shared/metrics`. `shared/ui` needs it, and a
+  shared component importing from a feature inverts the dependency — caught by the
+  lint rule rather than by review.
+- `/analytics` and `/campaigns` nav items are gated on `analytics.view` rather than
+  `projects.view_assigned`: offering a surface to a role that would receive a 403 is
+  worse than not offering it.
+- The demo seeder connects three providers in sandbox mode, binds them and runs the
+  real sync. An earlier version of that file said it never would; the reasoning
+  still holds, and what makes it safe is the labelling downstream rather than the
+  absence of data — a demo workspace with no performance data cannot demonstrate or
+  test the analytics layer at all.
+
 ## Phase 4 — analytics layer
 
 ### Added

@@ -20,12 +20,28 @@ export function formatNumber(value: number, locale = 'en', fractionDigits = 0): 
   }).format(value);
 }
 
-export function formatCurrency(value: number, currency: string, locale = 'en'): string {
+/**
+ * Money, to the minor unit.
+ *
+ * Always two decimals by default, including above a thousand. These figures get
+ * reconciled against a platform's own invoice, and a column where 840.25 keeps its
+ * cents while 1,234.56 becomes 1,235 is both inconsistent to scan and short of the
+ * precision someone is checking. Dense tiles that genuinely cannot afford the
+ * width use `formatCompact` instead, which is an explicit choice rather than a
+ * silent threshold.
+ */
+export function formatCurrency(
+  value: number,
+  currency: string,
+  locale = 'en',
+  fractionDigits = 2,
+): string {
   return new Intl.NumberFormat(tagFor(locale), {
     style: 'currency',
     currency,
     currencyDisplay: 'narrowSymbol',
-    maximumFractionDigits: value >= 1000 ? 0 : 2,
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
   }).format(value);
 }
 

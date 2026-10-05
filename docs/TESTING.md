@@ -130,3 +130,34 @@ right" come apart, so it tests the second thing:
 
 Fixture dates are relative and resolved against an injected clock, so the sandbox
 window follows today without the assertions drifting.
+
+## Analytics and charts
+
+The analytics surfaces are tested at three levels, and each level is there because
+the one above it cannot catch what it catches.
+
+- **Unit, against real shapes.** `shared/metrics/format.test.ts` and
+  `charts.test.ts` assert the rules that make a chart honest: a null renders as an
+  em dash and never a zero; minor units divide exactly once; a gap in a series stays
+  `null` with `connectNulls: false`; the whole chart mirrors in Arabic, axis side
+  included.
+- **Component.** `MetricCard` is asserted to show the server's
+  `unavailable_reason` beside a missing figure, and to colour a change by whether it
+  is *good* rather than by its sign. `SourceNotice` is asserted to carry the
+  "do not share with a client" warning for sandbox data.
+- **End-to-end, against the real pipeline.** `e2e/analytics.spec.ts` runs against
+  the demo workspace, whose figures the actual sync wrote from the SANDBOX fixtures.
+  That means a break anywhere — adapter, mapper, store, SQL aggregation, API
+  resource, chart option — fails here, and the sandbox warning is asserted to be on
+  screen before any number is.
+
+ECharts is stubbed in component tests: jsdom has no canvas and no measured
+container. The option builders are therefore covered by their own unit tests
+against real payload shapes, which is where the interesting logic lives anyway.
+
+**The lazily loaded chunk.** `/analytics` and `/campaigns` fetch a 209 kB chart
+chunk on first visit, which against a single-process dev server shared by every
+worker can exceed the default assertion timeout. `openSurface()` makes that wait
+explicit and generous; every assertion after it uses the normal timeout. This is a
+harness constraint, not an application one — the analytics queries themselves
+measure about 30 ms.

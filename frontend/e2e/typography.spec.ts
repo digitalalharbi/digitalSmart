@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
  * Typography is a product requirement here, not a styling detail: Arabic is a
@@ -9,7 +9,7 @@ import { expect, test } from '@playwright/test';
  * read cramped. A named font that never loads is invisible in code review.
  */
 
-async function typography(page: import('@playwright/test').Page) {
+async function typography(page: Page) {
   return page.evaluate(() => {
     const read = (selector: string) => {
       const element = document.querySelector(selector);

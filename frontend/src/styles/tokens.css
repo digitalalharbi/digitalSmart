@@ -123,6 +123,39 @@
   --ds-info: var(--ds-info-600);
   --ds-info-surface: var(--ds-info-100);
 
+  /* ------------------------------------------------------------------
+   * Chart series
+   *
+   * A categorical sequence of its own, deliberately NOT the platform colours:
+   * a chart of four campaigns on Meta would otherwise be four shades of one
+   * blue. Ordered so the first three are distinguishable under the common forms
+   * of colour blindness, and so adjacent pairs differ in lightness as well as
+   * hue — a line chart read in greyscale or printed must still be legible.
+   * ------------------------------------------------------------------ */
+  --ds-chart-1: oklch(0.606 0.173 264);
+  --ds-chart-2: oklch(0.7 0.148 182);
+  --ds-chart-3: oklch(0.742 0.145 76);
+  --ds-chart-4: oklch(0.608 0.192 22);
+  --ds-chart-5: oklch(0.56 0.16 310);
+  --ds-chart-6: oklch(0.676 0.126 150);
+  --ds-chart-7: oklch(0.52 0.11 230);
+  --ds-chart-8: oklch(0.78 0.12 50);
+
+  /* Chart chrome: present enough to read a value against, quiet enough not to
+   * compete with the data. Gridlines are the single most over-weighted element
+   * in most dashboards. */
+  --ds-chart-grid: oklch(0.197 0.01 264 / 0.08);
+  --ds-chart-axis: var(--ds-neutral-400);
+  --ds-chart-axis-label: var(--ds-neutral-500);
+  --ds-chart-tooltip-surface: var(--ds-neutral-0);
+  --ds-chart-tooltip-border: oklch(0.197 0.01 264 / 0.12);
+  /* A comparison period: present, clearly secondary, never competing. */
+  --ds-chart-comparison: var(--ds-neutral-400);
+  /* A target or threshold line. */
+  --ds-chart-threshold: var(--ds-neutral-500);
+  /* Where data is missing rather than zero. */
+  --ds-chart-gap: oklch(0.197 0.01 264 / 0.04);
+
   /* Shadows: subtle, physically plausible, single light source above */
   --ds-shadow-xs: 0 1px 2px oklch(0.197 0.01 264 / 0.06);
   --ds-shadow-sm: 0 1px 2px oklch(0.197 0.01 264 / 0.05), 0 2px 6px oklch(0.197 0.01 264 / 0.05);
@@ -167,6 +200,27 @@
   --ds-success-surface: oklch(0.724 0.142 158 / 0.16);
   --ds-warning: oklch(0.812 0.145 82);
   --ds-warning-surface: oklch(0.812 0.145 82 / 0.16);
+  /* Chart series, lifted for a graphite canvas: the light-mode values are too
+   * dark to read against it, so each is raised in lightness while keeping its
+   * hue, so a chart does not change identity when the theme does. */
+  --ds-chart-1: oklch(0.706 0.142 265);
+  --ds-chart-2: oklch(0.78 0.13 182);
+  --ds-chart-3: oklch(0.82 0.14 82);
+  --ds-chart-4: oklch(0.7 0.18 22);
+  --ds-chart-5: oklch(0.68 0.15 310);
+  --ds-chart-6: oklch(0.76 0.12 150);
+  --ds-chart-7: oklch(0.66 0.11 230);
+  --ds-chart-8: oklch(0.85 0.11 50);
+
+  --ds-chart-grid: oklch(1 0 0 / 0.07);
+  --ds-chart-axis: var(--ds-neutral-600);
+  --ds-chart-axis-label: var(--ds-neutral-400);
+  --ds-chart-tooltip-surface: var(--ds-neutral-900);
+  --ds-chart-tooltip-border: oklch(1 0 0 / 0.11);
+  --ds-chart-comparison: var(--ds-neutral-600);
+  --ds-chart-threshold: var(--ds-neutral-500);
+  --ds-chart-gap: oklch(1 0 0 / 0.035);
+
   --ds-danger: oklch(0.698 0.182 22);
   --ds-danger-surface: oklch(0.698 0.182 22 / 0.16);
   --ds-info: oklch(0.736 0.118 232);

@@ -1,0 +1,23 @@
+import { lazy } from 'react';
+
+/*
+ * The chart-heavy surfaces, loaded on first visit.
+ *
+ * The charting engine is larger than the rest of this application put together, so
+ * loading it on the sign-in screen would make the first paint of every session pay
+ * for a surface most visits never open. These import the page modules directly
+ * rather than their feature barrels: a barrel that re-exported a page would pull
+ * the engine back into the initial bundle through anything that imported a hook
+ * from it, which is exactly what happened when the overview screen first grew a
+ * scorecard.
+ *
+ * Its own file because this module exports components and nothing else, which is
+ * what React's fast-refresh boundary needs.
+ */
+export const AnalyticsPage = lazy(async () => ({
+  default: (await import('@/features/analytics/AnalyticsPage')).AnalyticsPage,
+}));
+
+export const CampaignsPage = lazy(async () => ({
+  default: (await import('@/features/campaigns/CampaignsPage')).CampaignsPage,
+}));

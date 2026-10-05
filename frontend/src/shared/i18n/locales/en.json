@@ -67,7 +67,15 @@
       "environment": "Environment"
     },
     "roadmapTitle": "What comes next",
-    "roadmapBody": "Phase 1 delivers identity, workspaces, roles, clients and projects with server-side authorization and audit logging."
+    "roadmapBody": "Phase 1 delivers identity, workspaces, roles, clients and projects with server-side authorization and audit logging.",
+    "performance": "Performance",
+    "byPlatform": "Spend by platform",
+    "openAnalytics": "Open analytics",
+    "noData": {
+      "title": "No performance data yet",
+      "description": "Connect an ad platform and bind one of its accounts to a project. Performance appears here once the first sync completes.",
+      "action": "Go to integrations"
+    }
   },
   "placeholder": {
     "title": "{{section}}",
@@ -310,5 +318,115 @@
     },
     "accountsList": "Discovered ad accounts",
     "capabilitiesFor": "What {{provider}} can do"
+  },
+  "analytics": {
+    "subtitle": "Performance across every platform a project is bound to.",
+    "forbidden": "Your role does not include access to performance analytics.",
+    "loadFailed": "Performance data could not be loaded. Check your connection and try again.",
+    "scorecard": "Key figures",
+    "noComparison": "No comparison",
+    "filters": {
+      "period": "Period",
+      "compare": "Compare",
+      "groupBy": "Group by",
+      "platforms": "Platforms"
+    },
+    "presets": {
+      "7d": "7 days",
+      "14d": "14 days",
+      "28d": "28 days",
+      "30d": "30 days",
+      "90d": "90 days",
+      "this_month": "This month",
+      "last_month": "Last month"
+    },
+    "comparisons": {
+      "none": "Off",
+      "previous_period": "Previous period",
+      "previous_year": "Last year"
+    },
+    "dimensions": {
+      "date": "Date",
+      "provider": "Platform",
+      "external_account": "Ad account",
+      "campaign": "Campaign",
+      "ad_group": "Ad group",
+      "ad": "Ad"
+    },
+    "trend": {
+      "title": "{{metric}} over time",
+      "hint": "Select a figure above to plot it",
+      "aria": "{{metric}} by day from {{start}} to {{end}}. Days with no delivery are left blank rather than shown as zero."
+    },
+    "mix": {
+      "title": "Spend by {{dimension}}",
+      "aria": "Spend by {{dimension}}, largest first."
+    },
+    "efficiency": {
+      "title": "Efficiency against scale",
+      "question": "Which campaigns deserve more budget, and which are expensive at size?",
+      "aria": "Each point is a campaign, positioned by spend against cost per acquisition. Lower and further right is better."
+    },
+    "table": {
+      "title": "{{dimension}} detail"
+    },
+    "empty": {
+      "title": "No performance data for this period",
+      "description": "Either nothing was delivered in this range, or no ad account is bound to a project you can see. Connect a platform and bind an account to a project to start syncing.",
+      "breakdown": "Nothing to break down for this period."
+    },
+    "source": {
+      "live": {
+        "label": "Live",
+        "help": "Read from the platform within the freshness window.",
+        "notice": ""
+      },
+      "synced": {
+        "label": "Synced",
+        "help": "Synced from the platform, though the freshness window has moved on.",
+        "notice": ""
+      },
+      "stale": {
+        "label": "Stale",
+        "help": "Older than the freshness threshold. Shown, but a sync has not succeeded recently.",
+        "notice": "these figures are older than the freshness threshold. A sync has not completed recently, so treat them as indicative until it does."
+      },
+      "partial": {
+        "label": "Partial",
+        "help": "The sync covered only part of the range, so totals understate reality.",
+        "notice": "the last sync covered only part of this range, so these totals are lower than the real ones. They will rise when the sync completes."
+      },
+      "sandbox": {
+        "label": "Sandbox",
+        "help": "From sandbox fixtures. Not real performance, and never to be shared with a client.",
+        "notice": "these are sandbox figures from test fixtures, not real performance. They exist so the product can be used before a platform grants API access. Do not share them with a client or act on them."
+      },
+      "manual": {
+        "label": "Manual",
+        "help": "Entered by a person — an offline conversion or a spend adjustment.",
+        "notice": "part of this includes figures entered by hand rather than synced from a platform."
+      },
+      "estimated": {
+        "label": "Estimated",
+        "help": "A projection, not a measurement. Never totalled with actuals.",
+        "notice": "this is a projection based on past performance, not a measurement, and it is not a guarantee of results."
+      }
+    }
+  },
+  "campaigns": {
+    "status": {
+      "active": "Active",
+      "paused": "Paused",
+      "not_delivering": "Not delivering",
+      "in_review": "In review",
+      "rejected": "Rejected",
+      "completed": "Completed",
+      "archived": "Archived",
+      "removed": "Removed",
+      "unknown": "Unknown"
+    },
+    "breadcrumb": "Drill-down trail",
+    "allPlatforms": "All platforms",
+    "drillHint": "Select a row to open its {{level}}s"
   }
 }
