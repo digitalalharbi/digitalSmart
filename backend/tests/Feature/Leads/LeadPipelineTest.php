@@ -415,6 +415,60 @@ describe('the Lead Center', function (): void {
             ->and((float) $data['funnel']['win_rate'])->toBe(50.0);
     });
 
+    it('names the currency its totals are in', function (): void {
+        $setup = leadScenario();
+
+        $won = recordLead($setup, ['phone' => '0555000001', 'value' => '2500', 'currency' => 'SAR']);
+        moveLead($setup, $won, 'won')->assertOk();
+
+        $funnel = leadCentre($setup)['funnel'];
+
+        // An amount without its currency is not a figure, so the two travel together.
+        expect($funnel['won_value_minor'])->toBe(250_000)
+            ->and($funnel['currency'])->toBe('SAR')
+            ->and($funnel['currency_count'])->toBe(1)
+            ->and($funnel['is_value_reportable'])->toBeTrue();
+    });
+
+    it('withholds a total that would add two currencies together', function (): void {
+        $setup = leadScenario();
+
+        $riyals = recordLead($setup, ['phone' => '0555000001', 'value' => '2500', 'currency' => 'SAR']);
+        $dirhams = recordLead($setup, ['phone' => '0555000002', 'value' => '1000', 'currency' => 'AED']);
+
+        moveLead($setup, $riyals, 'won')->assertOk();
+        moveLead($setup, $dirhams, 'won')->assertOk();
+
+        $funnel = leadCentre($setup)['funnel'];
+
+        /*
+         * 350,000 would be the sum, and it would be a figure made of two different units — 250,000 halalas
+         * plus 100,000 fils is not 350,000 of anything. The counts are untouched, because a lead is a lead
+         * whatever it was priced in; only the money is withheld, and `currency_count` says why so the
+         * interface can explain the gap rather than show an unaccountable dash.
+         */
+        expect($funnel['won'])->toBe(2)
+            ->and($funnel['won_value_minor'])->toBeNull()
+            ->and($funnel['average_won_value_minor'])->toBeNull()
+            ->and($funnel['currency'])->toBeNull()
+            ->and($funnel['currency_count'])->toBe(2)
+            ->and($funnel['is_value_reportable'])->toBeFalse();
+    });
+
+    it('reports no currency when no lead carried a value', function (): void {
+        $setup = leadScenario();
+
+        recordLead($setup, ['phone' => '0555000001']);
+
+        $funnel = leadCentre($setup)['funnel'];
+
+        // Nothing to name and nothing to show, which is different from a total of zero.
+        expect($funnel['total'])->toBe(1)
+            ->and($funnel['won_value_minor'])->toBeNull()
+            ->and($funnel['currency'])->toBeNull()
+            ->and($funnel['currency_count'])->toBe(0);
+    });
+
     it('gives no win rate when nothing has closed', function (): void {
         $setup = leadScenario();
 

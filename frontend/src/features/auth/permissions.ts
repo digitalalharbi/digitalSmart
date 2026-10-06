@@ -35,6 +35,15 @@ export const PERMISSIONS = {
    * would be refused it anyway.
    */
   budgetsApprove: 'budgets.approve',
+  /*
+   * Leads and tracking. `leads.manage` is separate from viewing for the same reason
+   * approving a budget is: reading a pipeline and judging a prospect worthless are
+   * different acts, and the second one leaves a record with somebody's name on it.
+   */
+  leadsView: 'leads.view',
+  leadsManage: 'leads.manage',
+  trackingView: 'tracking.view',
+  trackingManage: 'tracking.manage',
   auditView: 'audit.view',
 } as const;
 

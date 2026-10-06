@@ -31,6 +31,56 @@ type LaravelErrorBody = {
   errors?: Record<string, string[]>;
 };
 
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    /**
+     * Whether this request may be sent again if the connection fails with no response.
+     *
+     * Defaults to true for GET and HEAD. Set it on a write only where repeating the request
+     * cannot repeat its effect.
+     */
+    retryOnNetworkError?: boolean;
+    /** Set by the client; not for callers. */
+    networkAttempts?: number;
+  }
+}
+
+/**
+ * How many times a request with **no response at all** is tried again.
+ *
+ * A request that came back with a status — even a 500 — is an answer, and answers are never
+ * retried. This covers the other case: the connection failed and nothing arrived. That happens
+ * on a dropped mobile connection, when a laptop changes network mid-request, and behind any
+ * proxy that recycles a connection a moment before it is used.
+ *
+ * One retry, after a short pause. More would turn a real outage into a slow page, and the
+ * difference between "the server is down" and "that request was unlucky" is almost always
+ * settled by the second attempt.
+ */
+const NETWORK_RETRIES = 1;
+const NETWORK_RETRY_DELAY_MS = 250;
+
+/** Requests that may be repeated without repeating their effect. */
+function isRepeatable(config: InternalAxiosRequestConfig | undefined): boolean {
+  if (config === undefined) {
+    return false;
+  }
+
+  /*
+   * An explicit opt-in wins, for the handful of writes that are genuinely idempotent — signing
+   * in twice signs you in once. Everything else is judged by its method: a reader can be
+   * repeated, and a write that nothing has told us is safe cannot, because a request that
+   * failed without a response may still have been received and acted on.
+   */
+  if (config.retryOnNetworkError !== undefined) {
+    return config.retryOnNetworkError;
+  }
+
+  const method = (config.method ?? 'get').toLowerCase();
+
+  return method === 'get' || method === 'head';
+}
+
 /** Called when the session is no longer valid, so the app can route to login. */
 type UnauthenticatedHandler = () => void;
 
@@ -90,6 +140,24 @@ api.interceptors.response.use(
 
     const axiosError = error as AxiosError<LaravelErrorBody>;
     const status = axiosError.response?.status ?? null;
+
+    /*
+     * No status means nothing came back. Try once more before telling the reader the server is
+     * unreachable, which is a conclusion a single dropped connection does not justify.
+     */
+    if (status === null && isRepeatable(axiosError.config)) {
+      const config = axiosError.config as InternalAxiosRequestConfig;
+      const attempts = config.networkAttempts ?? 0;
+
+      if (attempts < NETWORK_RETRIES) {
+        config.networkAttempts = attempts + 1;
+
+        return new Promise((resolve) => setTimeout(resolve, NETWORK_RETRY_DELAY_MS)).then(() =>
+          api.request(config),
+        );
+      }
+    }
+
     const body = axiosError.response?.data;
     const isAuthError = status === 401 || status === 419;
 
@@ -107,7 +175,24 @@ api.interceptors.response.use(
   },
 );
 
-/** Prime the CSRF cookie before the first stateful (non-GET) request. */
+/**
+ * Prime the CSRF cookie before the first stateful (non-GET) request.
+ *
+ * Deliberately on the bare axios export rather than on `api`: the endpoint is outside the API
+ * prefix and returns no body. It does get the same one retry, because a dropped connection here
+ * fails the sign-in that follows it, and fetching a cookie twice costs nothing.
+ */
 export async function ensureCsrfCookie(): Promise<void> {
-  await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+  try {
+    await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response === undefined) {
+      await new Promise((resolve) => setTimeout(resolve, NETWORK_RETRY_DELAY_MS));
+      await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+
+      return;
+    }
+
+    throw error;
+  }
 }

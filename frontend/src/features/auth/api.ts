@@ -30,7 +30,15 @@ export function useLoginMutation() {
     mutationFn: async (credentials: Credentials): Promise<AuthenticatedUser> => {
       // Sanctum's stateful guard needs the CSRF cookie before the POST.
       await ensureCsrfCookie();
-      const response = await api.post<{ data: AuthenticatedUser }>('/auth/login', credentials);
+      /*
+       * Safe to send again if the connection drops with no response, which is the one write in
+       * this product that is: signing in twice signs you in once. Without this, a single dropped
+       * connection tells somebody the server is unreachable while they are looking at a page it
+       * served a moment earlier.
+       */
+      const response = await api.post<{ data: AuthenticatedUser }>('/auth/login', credentials, {
+        retryOnNetworkError: true,
+      });
       return response.data.data;
     },
     onSuccess: (user) => {

@@ -1,43 +1,7 @@
-import {
-  BadgeCheck,
-  Bell,
-  Building2,
-  Calculator,
-  CalendarRange,
-  ChartNoAxesCombined,
-  FileChartColumn,
-  FolderKanban,
-  LayoutDashboard,
-  ListChecks,
-  Megaphone,
-  Palette,
-  Plug,
-  Presentation,
-  Settings2,
-  Sparkles,
-  type LucideIcon,
-} from 'lucide-react';
-
-const ICONS: Record<string, LucideIcon> = {
-  BadgeCheck,
-  Bell,
-  Building2,
-  Calculator,
-  CalendarRange,
-  ChartNoAxesCombined,
-  FileChartColumn,
-  FolderKanban,
-  LayoutDashboard,
-  ListChecks,
-  Megaphone,
-  Palette,
-  Plug,
-  Presentation,
-  Settings2,
-  Sparkles,
-};
+import { FALLBACK_NAV_ICON, NAV_ICONS } from './navIcons';
 
 export function NavIcon({ name, className }: { name: string; className?: string }) {
-  const Icon = ICONS[name] ?? LayoutDashboard;
+  const Icon = NAV_ICONS[name] ?? FALLBACK_NAV_ICON;
+
   return <Icon className={className} aria-hidden="true" />;
 }

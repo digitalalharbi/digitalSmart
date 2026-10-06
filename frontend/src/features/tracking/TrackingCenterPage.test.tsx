@@ -11,6 +11,15 @@ import type {
   TrackingIssue,
 } from './types';
 
+/*
+ * ECharts needs a real canvas and a measured container, neither of which jsdom has. The chart's
+ * own behaviour is the chart component's business; the figures this page draws are also in the
+ * table twin, which is real DOM and is asserted directly.
+ */
+vi.mock('@/shared/ui/chart/Chart', () => ({
+  Chart: ({ ariaLabel }: { ariaLabel: string }) => <div data-testid="chart">{ariaLabel}</div>,
+}));
+
 vi.mock('@/features/clients', () => ({
   useClientsQuery: () => ({
     isPending: false,
@@ -320,5 +329,24 @@ describe('the tracking centre', function () {
 
     expect(await screen.findByText('Nothing is measuring this work yet')).toBeInTheDocument();
     expect(screen.getByText('No conversion is defined')).toBeInTheDocument();
+  });
+
+  it('will not save a conversion until a client is chosen', async () => {
+    state.health = health();
+
+    await renderWithProviders(<TrackingCenterPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Define a conversion' }));
+
+    const editor = screen.getByRole('dialog');
+
+    /*
+     * A conversion definition decides what a client's reports count, so the form does not pick a
+     * client on somebody's behalf. It used to default to whichever client sorted first — and the
+     * default silently failed when the client list arrived after the form opened, leaving the save
+     * button disabled with nothing on screen explaining why.
+     */
+    expect(within(editor).getByRole('button', { name: 'Save' })).toBeDisabled();
+    expect(within(editor).getByRole('combobox', { name: 'Client' })).toHaveValue('');
   });
 });

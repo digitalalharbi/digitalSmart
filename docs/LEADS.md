@@ -118,6 +118,27 @@ produced. For leads that bucket is usually **enormous** — most enquiries carry
 arrive by phone — so hiding it would make every named campaign look responsible for a far larger share of the
 pipeline than it is.
 
+## A total needs a currency, or it is not a total
+
+Money on the Lead Center is **nullable, and arrives with the currency it is in**. Null means the
+figure is not reportable, which is the case whenever the window's valued leads came in more than
+one currency.
+
+Postgres adds minor units across currencies without complaint, so the obvious implementation
+produces a confident figure made of two different units: 250,000 halalas plus 100,000 fils is not
+350,000 of anything. It is not wrong by a percentage — it is not a number.
+
+So the read model selects `count(distinct currency)` alongside every sum, and where that count is
+not exactly one it reports null amounts and a null currency, with `currency_count` saying how many
+there were. The **counts are untouched**: a lead is a lead whatever it was priced in, and only the
+money is withheld. The interface then says *"these leads carried two different currencies, so their
+totals are not shown — filter to one client to see a total"*, which is a fact somebody can act on,
+rather than a dash nobody can account for.
+
+No conversion is attempted. A converted total needs a rate, a date for that rate, and a decision
+about who owns it; a product that picked one silently would be inventing the most quotable number on
+the page.
+
 ## Permissions
 
 `leads.view` and `leads.manage`.
@@ -150,12 +171,51 @@ client-portal response, and `docs/SECURITY.md` carries the retention question.
   and a decision about which record's history survives.
 - **No scoring.** A lead score is a model, and a model presented as a fact is the thing this product refuses.
   It belongs with the AI phase, labelled as modelled.
-- **No frontend surface.** The Lead Center's endpoint is complete and tested.
+- **No cross-source rate.** There is deliberately no lead-to-click or lead-to-session figure. Sessions come
+  from an analytics property and leads from a form or a CRM; dividing one by the other assumes every session had
+  the chance to convert. The two columns are shown side by side instead — see above.
+
+## The surface
+
+`frontend/src/features/leads` — the Lead Center page, and the first place in this product where the
+honesty rules are visible rather than merely enforced.
+
+**The funnel has four steps, and the fourth is not "qualified".** Arrived → somebody tried → got
+through → won. Each is a genuine superset of the next, so the bars can only shorten. The available
+qualified figure is how many leads sit at that stage *now*, and a lead that has since been won passed
+through it without being counted in it — so placing that number between "got through" and "won" would
+draw a funnel that narrows and then widens, from which a reader would reasonably conclude that leads
+were being won without qualification. The chart says why the step is missing, beside the chart.
+
+The bars use the **ordinal ramp** rather than eight categorical hues, because swapping two of these
+stages would change the meaning: the order is the information. See
+[DATA_VISUALISATION.md](DATA_VISUALISATION.md).
+
+**Taps sit in their own chart with their own axis**, in a different colour slot from the lead charts,
+with both totals stated in one sentence and no percentage between them. One shared axis would invite
+the eye to read the two as parts of one quantity, which is exactly the mistake the endpoint was built
+to prevent.
+
+**Time to first contact is a column, not a detail**, and a lead nobody has rung shows "not yet"
+rather than zero hours — which is the opposite of true and the most actionable thing on the row.
+
+A disqualification collects its reason in the interface before sending, because the server refuses
+one without it and because that reason is the only record of why somebody judged a prospect
+worthless.
+
+Every chart carries a table twin, and the pipeline's own figures are reachable without a pointer or
+colour vision.
 
 ## Tests
 
 - `backend/tests/Unit/Domain/LeadsTest.php` — the absent source kinds, the stage semantics, every rate and its
   denominator, and the four spellings of a Saudi phone number.
 - `backend/tests/Feature/Leads/LeadPipelineTest.php` — recording, deduplication, the attribution upgrade, the
-  disqualification reason, the reopened lead, the signals column, and the media buyer who may read but not
-  qualify.
+  disqualification reason, the reopened lead, the signals column, the media buyer who may read but not qualify,
+  and the three currency cases: one currency named, two currencies withheld, none reported.
+- `frontend/src/features/leads/LeadCentrePage.test.tsx` — the refusals as the reader meets them: no rate between
+  taps and leads, qualified absent from the funnel with its reason, a null rate explained rather than shown as
+  zero, a withheld mixed-currency total, the unattributed row still present, and a single record called what it
+  is.
+- `frontend/e2e/leads.spec.ts` — the same refusals in a browser, in both languages, plus the table twin and the
+  role that may not see the surface at all.

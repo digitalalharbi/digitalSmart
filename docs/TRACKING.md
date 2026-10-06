@@ -147,6 +147,26 @@ being read.
 Returns the sources with their freshness, the definitions with what was actually observed in
 the window, and the issues. Requires `tracking.view`.
 
+## The surface
+
+`frontend/src/features/tracking` — the Tracking Center, and since Phase 17 a chart that answers
+the page's only real question: is any of this working?
+
+**Three states, three different facts**, and the chart keeps them apart:
+
+- **A count.** The event has been seen that many times in the window.
+- **Zero.** Asked for, and never seen. Drawn as a visible zero-length bar with its label, because
+  this is the finding rather than the absence of one — somebody has declared what a sale looks like
+  and nothing has ever matched it. Sorted to the top, since a never-seen conversion buried under
+  the busiest events is a finding nobody acts on.
+- **Null.** No window was asked for, so nothing was counted. Drawn as a **gap**, not a zero: "we
+  did not look" and "we looked and found nothing" are opposite statements, and only one of them
+  means tracking is broken.
+
+Conversions and intent signals each get their own colour, their own legend entry, and no total.
+Both are in the chart because somebody defined both; the one thing it must not do is let them add
+up, because a tap is not a conversation and a form begun is not a form submitted.
+
 ## Tests
 
 `backend/tests/Unit/Domain/TrackingHealthTest.php` is organised around the restraints above:

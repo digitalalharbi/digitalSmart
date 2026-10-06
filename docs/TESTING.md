@@ -61,14 +61,45 @@ weakened checks:
   measured optimum. A multi-process runtime (FPM, or Octane) would make it
   unnecessary, and is a hardening concern.
 
-  **The suite shares the machine, and that is the thing to know.** An
-  intermittent failure chased through this stack turned out to be neither the
-  product nor the suite's own concurrency: another project's test run on the
-  same host was starving it, which surfaced as a *refused connection* the
-  application reported correctly. Two measurements made it obvious — the same
-  suite finished in 1.9 minutes all green on an idle machine and took 19 minutes
-  with three failures on a busy one, and serialising the browsers made it worse
-  rather than better. Before suspecting the code, check the load.
+  **The proxy must not keep connections alive to this server, and that is the
+  thing to know.** Two tests failed or flaked on every run for weeks, always
+  with the application reporting "the server could not be reached" on the
+  sign-in screen. It reads exactly like a bug in the sign-in screen, and it was
+  mistaken for one twice — first as host load, then as password hashing cost.
+
+  It was neither. The browser talks to Vite's preview server, which proxies
+  `/api` to PHP's built-in server. Node has kept proxy connections alive by
+  default since 19, and `php -S` binds a kept-alive connection to one forked
+  worker and closes it on its own schedule; when Node then picks that socket for
+  the next request the read fails, the proxy returns nothing, and the
+  application correctly says it could not reach the server. It appeared only
+  under WebKit, which opens and reuses more connections than Chromium — which
+  is why one browser project failed and the other did not, and why the failures
+  moved between projects run to run.
+
+  `vite.config.ts` now gives the proxy an agent with `keepAlive: false` and a
+  socket cap. The suite went from 148 passed / 1 failed / 1 flaky in roughly
+  **25 minutes** to **158–160 passed in 3.5 minutes**: the pathological ~500ms
+  request times in the server log were socket reuse stalling, not the
+  application being slow.
+
+  **The last of those failures was a real API defect, and the harness found it.** Once the
+  sign-in helper reported the browser's own view, the next run named the cause in one line:
+  `302 /api/auth/login`. The route carried Laravel's `guest` middleware, which answers an
+  already-authenticated request with a redirect to a web route — absolute against `APP_URL`, so
+  cross-origin for the SPA, so blocked by the browser, so indistinguishable from an unreachable
+  server. Any test that signed in twice in one context hit it. Fixed in the API, not the harness.
+
+  **Do not trust `artisan serve`'s own timings when it is forked.** They
+  mis-pair across workers, and the same log reported a bcrypt verification as
+  taking 0.02ms and a cookie fetch as taking 500ms. The sign-in helper now
+  records the browser's view — every auth response status and every failed
+  request — and includes it in the error when it gives up, because two separate
+  investigations of this error reached the wrong conclusion from that log.
+
+  Host load still matters and is still worth checking first: the same suite
+  finished in 1.9 minutes all green on an idle machine and took 19 minutes with
+  three failures on a busy one.
 
   Three mitigations are in place and all three are worth having regardless:
 
@@ -78,12 +109,25 @@ weakened checks:
   - The suite allows one Playwright retry. A retried test is reported as
     **flaky** rather than as a pass, which is the point: the signal stays in the
     output rather than being hidden by a longer timeout.
+  - **Every name a test creates carries the attempt number.** The records this
+    suite creates are unique per client and period, which the server enforces, so
+    a test that failed *after* saving could never pass on retry: the second
+    attempt's save was correctly refused, the form stayed open, and the test timed
+    out on a control that never appeared. That turned every flake into a hard
+    failure whose message described the retry rather than the original fault, and
+    it hid the proxy problem above for weeks.
   - `scripts/e2e.sh` kills whatever holds either port on exit. Both servers put
     processes beyond the reach of the PID it recorded — `artisan serve` forks
     workers as grandchildren, `npm run preview` runs through a shell — and a
     leaked preview server is worse than a leaked API one because it keeps a Node
     process busy rather than idle. Ten accumulated across runs before this
     existed, on the machine running the tests.
+- **The application retries a request that got no response at all,** once. A
+  request that came back with a status got an answer and is never retried; one
+  that came back with nothing may have been unlucky. GET and HEAD by default,
+  plus signing in, which is the one write that can be repeated without repeating
+  its effect. `src/shared/api/client.test.ts` holds that distinction, and the
+  suite benefits from it for the same reason a user on a train does.
 - **Locale.** The app picks its language from the browser, which is correct
   behaviour, so on an Arabic-locale machine it renders the Arabic interface and
   every English selector misses. Playwright pins `en-US`, and

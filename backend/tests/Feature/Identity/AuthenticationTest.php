@@ -30,6 +30,60 @@ it('signs a member in and returns their workspaces and permissions', function ()
     expect($permissions)->not->toContain('clients.create');
 });
 
+it('lets somebody already signed in sign in as somebody else', function (): void {
+    $scenario = workspaceScenario('Smart Code');
+    $buyer = $scenario->addMember(SystemRole::MediaBuyer);
+    $buyer->forceFill(['password' => 'the-second-password'])->save();
+
+    /*
+     * Switching accounts, which is a real thing people do — and which this endpoint used to answer
+     * with a **302 to a web route**, because it carried Laravel's `guest` middleware.
+     *
+     * Wrong twice over for an API. A client is owed a status and a body it can act on, and the
+     * redirect's target is absolute against `APP_URL`: for a single-page app on another origin the
+     * browser blocks that redirect outright, so the only thing the application can honestly report
+     * is that the server could not be reached. It cost two end-to-end investigations, each of which
+     * blamed something else.
+     *
+     * It is safe because it still needs the second account's password, and the authenticator
+     * regenerates the session on every successful attempt.
+     */
+    $response = $this->actingAs($scenario->owner)->postJson('/api/auth/login', [
+        'email' => $buyer->getAttribute('email'),
+        'password' => 'the-second-password',
+    ]);
+
+    $response->assertOk()->assertJsonPath('data.email', $buyer->getAttribute('email'));
+
+    // And it is a status, not a redirect — whatever else changes about this route.
+    expect($response->status())->not->toBeIn([301, 302, 303, 307, 308]);
+});
+
+it('refuses the wrong password even when a session is already open', function (): void {
+    $scenario = workspaceScenario();
+    $buyer = $scenario->addMember(SystemRole::MediaBuyer);
+    $buyer->forceFill(['password' => 'the-real-password'])->save();
+
+    /*
+     * The other half of removing `guest`: holding a valid session must not help anybody guess a
+     * second account's password, and the open session must survive the failure rather than being
+     * dropped by it.
+     */
+    $this->actingAs($scenario->owner)
+        ->postJson('/api/auth/login', [
+            'email' => $buyer->getAttribute('email'),
+            'password' => 'wrong',
+        ])
+        // The same 422 an anonymous attempt gets: a wrong password is a wrong password, and the
+        // response must not differ by whether somebody already holds a session.
+        ->assertUnprocessable();
+
+    $this->actingAs($scenario->owner)
+        ->getJson('/api/auth/me')
+        ->assertOk()
+        ->assertJsonPath('data.email', $scenario->owner->getAttribute('email'));
+});
+
 it('rejects a wrong password without revealing whether the account exists', function (): void {
     $scenario = workspaceScenario();
     $user = $scenario->owner;

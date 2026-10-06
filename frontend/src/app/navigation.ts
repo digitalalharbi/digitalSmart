@@ -81,6 +81,16 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'tracking.view',
   },
   {
+    path: '/leads',
+    labelKey: 'nav.leads',
+    icon: 'UserRoundSearch',
+    section: 'intelligence',
+    phase: 'Phase 17',
+    // The permission the endpoints check. Offering a surface that would answer 403 is worse
+    // than not offering it.
+    permission: 'leads.view',
+  },
+  {
     path: '/commerce',
     labelKey: 'nav.commerce',
     icon: 'ShoppingBag',

@@ -850,8 +850,16 @@ empty**, and each denominator is the defensible one: the win rate divides by **c
 lead is not a loss; the qualification rate by leads somebody **reached**, because a lead nobody has phoned has
 not failed to qualify.
 
+`won_value_minor`, `open_value_minor` and `average_won_value_minor` are **null unless `currency` is set**, and
+`currency` is set only where the window's valued leads were all in one currency. `currency_count` says how many
+there were, and `is_value_reportable` is the same statement as a boolean. A sum of minor units across currencies
+is not a larger or smaller figure — 250,000 halalas plus 100,000 fils is not 350,000 of anything — so the counts
+are reported and the money is withheld, with the reason available to say so. No conversion is attempted: a rate
+and a date for that rate are decisions this endpoint has no business making silently.
+
 `by_source` and `by_campaign` break the pipeline down, with the unattributed row always produced — for leads it
-is usually the largest, since most enquiries carry no parameters and many arrive by phone.
+is usually the largest, since most enquiries carry no parameters and many arrive by phone. Each `by_source` row
+carries its own `currency` under the same rule.
 
 `signals` is the counted-tap column: `whatsapp_click`, `phone_click`, `form_start`. It sits **beside** the
 funnel and is never summed with it, and **no ratio between the two is published.** A tap and a lead do not share

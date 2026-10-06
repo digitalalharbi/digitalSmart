@@ -29,15 +29,16 @@ sit.
 | 12    | **Salla** integration — entities, HMAC webhook verification, queued handling, reconciliation sync, two-axis status mapping | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 13    | **Zid** integration — the same normalised domain, which Zid fits natively; Basic Auth webhooks, custom merchant statuses | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with a required revenue source on every request | **Complete** |
-| 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome | **Backend complete**; the CRM bridge and the frontend surface are outstanding |
-| 16    | **Customer journeys** — identity evidence, identity confidence, conversion timelines | **Complete for what the data supports**; multi-touch journeys need event-level data this product does not have — see docs/JOURNEYS.md |
-| 17    | **Attribution** — first/last/paid-last/linear/position/time-decay models, each exposing coverage, data quality, confidence and revenue source | Planned |
-| 18    | **Creative operations** — briefs, requests, assets, versions, specs, validation, comments, approval workflow, Kanban | Planned |
-| 19    | **Operations** — tasks, approvals engine, client requests, notifications and realtime | Planned |
-| 20    | **Reporting** — report builder, saved reports, exports, secure client live reports and snapshots | Planned |
-| 21    | **Client portal** — per-module visibility, never leaking internal notes | Planned |
-| 22    | **AI** — Ask/Analyze/Investigate/Report/Plan, evidence-backed, permission-aware, recommendation-first | Planned |
-| 23    | **Presentation generator** — PPTX and PDF, Arabic RTL, Smart Code theme, real charts and tables | Planned |
+| 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome | **Complete**; the CRM bridge is outstanding |
+| 16    | **Customer journeys** — identity evidence, identity confidence, conversion timelines | **Complete for what the data supports**; multi-touch journeys need event-level data this product does not have — see docs/JOURNEYS.md. The timeline surface ships with the Lead Center |
+| 17    | **Visualisation layer** — a measured chart palette with executable gates, mark specs in one module, a chart frame carrying source state and a table twin, the Lead Center and the journey timeline | **Complete** |
+| 18    | **Attribution** — first/last/paid-last/linear/position/time-decay models, each exposing coverage, data quality, confidence and revenue source | Planned |
+| 19    | **Creative operations** — briefs, requests, assets, versions, specs, validation, comments, approval workflow, Kanban | Planned |
+| 20    | **Operations** — tasks, approvals engine, client requests, notifications and realtime | Planned |
+| 21    | **Reporting** — report builder, saved reports, exports, secure client live reports and snapshots | Planned |
+| 22    | **Client portal** — per-module visibility, never leaking internal notes | Planned |
+| 23    | **AI** — Ask/Analyze/Investigate/Report/Plan, evidence-backed, permission-aware, recommendation-first | Planned |
+| 24    | **Presentation generator** — PPTX and PDF, Arabic RTL, Smart Code theme, real charts and tables | Planned |
 | 24    | **Provider write operations** — only where the API supports them, behind capability, permission, explicit approval and audit | Planned |
 | 25    | **Production hardening** — security, performance, load, queue resilience, observability, backup and restore, WCAG 2.2 AA, deployment and runbooks | Planned |
 
@@ -773,6 +774,47 @@ work**, and that finding is the most useful thing in the phase.
 ### Not yet done in Phase 16
 
 - **Multi-touch touchpoints**, as above. This is the phase's honest ceiling.
-- **No Journey Explorer surface.** The endpoint is complete; the page is worth building once there is more than
-  one kind of touchpoint to show on it.
 - **No manual merge** of two records a human knows are one person, which Phase 15 also notes.
+
+### Phase 17 — the visualisation layer
+
+The phase that made the charts measurable rather than tasteful, and shipped the two surfaces that were
+waiting on it.
+
+- **The chart palette is derived and tested, not chosen.** Eight categorical slots in a fixed order,
+  searched over lightness and chroma steps *and* orderings against the published colour-blindness
+  thresholds in both themes at once, plus a six-step ordinal ramp and a diverging pair with a neutral
+  midpoint. `palette.gates.test.ts` parses `tokens.css` and holds it to the numbers — it parses the CSS
+  rather than a copy, because a palette asserted against itself is not a gate.
+- **Three real defects came out of it.** The dark chart palette never applied, because a trailing `:root`
+  block overrode the dark theme at equal specificity; the palette that did apply failed three gates,
+  including a pair at ΔE 5.2 under deuteranopia against a gate of 8; and the analytics trend chart put two
+  y-scales on one plot, which invents a correlation under a heading inviting a budget decision.
+- **Never two scales on one plot**, with a test. The trend chart became two plots sharing one time axis
+  with a linked crosshair; a dashboard widget too small for that indexes both metrics to 100 at a common
+  date on a named axis.
+- **`ChartFrame` carries what charts leave out**: the source state, the caveats, and a chart/table switch
+  in the open. A canvas tells a screen reader nothing and a tooltip needs a pointer, so neither can be the
+  only route to a value — and the table is the relief the contrast rule depends on.
+- **The Lead Center ships**, and the funnel has four steps rather than five. "Qualified" is a current-stage
+  count, so a lead since won passed through it uncounted; placing it between "got through" and "won" would
+  draw a funnel that narrows and then widens. The chart says why the step is missing.
+- **Taps sit in their own chart with their own axis and no percentage between them**, which is the endpoint's
+  refusal made visible.
+- **The journey timeline ships** as part of the Lead Center rather than as its own explorer — which is the
+  honest form for two or three records. Phase 16 said the page was worth building once there was somewhere
+  to put it; this was that.
+- **A currency defect fixed on the way.** The Lead Center summed `value_minor` across currencies and published
+  no currency at all. Totals are now withheld with the reason stated whenever more than one currency is in
+  play: 250,000 halalas plus 100,000 fils is not 350,000 of anything.
+- The demo workspace now seeds a pipeline and a sandbox GA4 property, so the surface demonstrates its own
+  refusals instead of showing four empty states.
+- Every nav icon is now registered and asserted — three surfaces had been silently sharing the overview icon.
+
+### Not yet done in Phase 17
+
+- **Existing surfaces are not all retrofitted to `ChartFrame`.** Analytics, campaigns and store revenue use the
+  shared marks and the fixed palette; moving their cards into the frame is mechanical and is worth doing when
+  each is next touched.
+- **No texture channel.** The palette clears every gate on colour alone in both themes, so the backup channel
+  for full colour-blindness, grey print and forced-colors mode is not yet implemented.

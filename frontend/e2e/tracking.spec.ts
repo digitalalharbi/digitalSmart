@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { ACCOUNTS, signIn } from './support/accounts';
 
 /**
@@ -9,7 +9,18 @@ import { ACCOUNTS, signIn } from './support/accounts';
  * record and the server correctly refuses it.
  */
 function named(base: string): string {
-  return `E2E ${base} [${test.info().project.name}]`;
+  /*
+   * The retry index is part of the name, and it is what makes these tests retryable at all.
+   *
+   * Every record this suite creates is unique per client and period, which the server enforces.
+   * Without the attempt number, a test that failed after saving could never pass on retry: the
+   * second attempt's save is correctly refused, the form stays open, and the test times out on a
+   * control that never appears — turning one flake into a hard failure whose message describes
+   * the retry rather than the original fault.
+   */
+  const attempt = test.info().retry === 0 ? '' : ` r${String(test.info().retry)}`;
+
+  return `E2E ${base} [${test.info().project.name}${attempt}]`;
 }
 
 /**
@@ -25,6 +36,23 @@ async function openTracking(page: Page, account: string = ACCOUNTS.owner): Promi
   await expect(page.getByRole('heading', { level: 1, name: 'Tracking Center' })).toBeVisible({
     timeout: 30_000,
   });
+}
+
+/**
+ * Open the conversion editor and return it.
+ *
+ * Scoped to the dialog rather than to the page, and that matters: the page carries its own "Name"
+ * field for registering a measurement source, so a click that has not opened the editor yet does
+ * not fail — it silently types into the wrong form, and the test then waits out its whole timeout
+ * on a field that was never going to appear. Returning the dialog also waits for it.
+ */
+async function openEditor(page: Page): Promise<Locator> {
+  await page.getByRole('button', { name: 'Define a conversion' }).click();
+
+  const editor = page.getByRole('dialog');
+  await expect(editor).toBeVisible({ timeout: 20_000 });
+
+  return editor;
 }
 
 test.describe('tracking centre', () => {
@@ -65,24 +93,32 @@ test.describe('tracking centre', () => {
     await openTracking(page);
 
     const name = named('Lead');
-    const rawName = `e2e_lead_${test.info().project.name.toLowerCase()}`;
+    // Unique per attempt for the same reason `named` is: a raw event name belongs to one conversion.
+    const rawName = `e2e_lead_${test.info().project.name.toLowerCase()}_${String(test.info().retry)}`;
 
-    await page.getByRole('button', { name: 'Define a conversion' }).click();
-    await page.getByLabel('Name', { exact: true }).fill(name);
-    await page.getByLabel('Raw event name').first().fill(rawName);
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    const editor = await openEditor(page);
+    // Chosen rather than assumed: see the note in ConversionEditor about why there is no default.
+    await editor.getByLabel('Client').selectOption({ index: 1 });
+    await editor.getByLabel('Name', { exact: true }).fill(name);
+    await editor.getByLabel('Raw event name').first().fill(rawName);
+    await editor.getByRole('button', { name: 'Save', exact: true }).click();
 
-    await expect(page.getByText(name)).toBeVisible({ timeout: 20_000 });
+    /*
+     * Exact, because the page now also carries the name inside the observed-events chart's
+     * accessible description ("<name>: Never seen"), which is a legitimate second mention.
+     */
+    await expect(page.getByText(name, { exact: true })).toBeVisible({ timeout: 20_000 });
 
     /*
      * The rule worth proving end to end: two conversions claiming one raw name both count every
      * event, so a dashboard showing both shows the same lead twice. The server refuses it and the
      * form says which name to change rather than "something went wrong".
      */
-    await page.getByRole('button', { name: 'Define a conversion' }).click();
-    await page.getByLabel('Name', { exact: true }).fill(named('Enquiry'));
-    await page.getByLabel('Raw event name').first().fill(rawName);
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    const second = await openEditor(page);
+    await second.getByLabel('Client').selectOption({ index: 1 });
+    await second.getByLabel('Name', { exact: true }).fill(named('Enquiry'));
+    await second.getByLabel('Raw event name').first().fill(rawName);
+    await second.getByRole('button', { name: 'Save', exact: true }).click();
 
     /*
      * The server's own words, naming the event name to change. That is the point of showing its
@@ -95,8 +131,8 @@ test.describe('tracking centre', () => {
   test('warns when an intent signal is chosen as a conversion', async ({ page }) => {
     await openTracking(page);
 
-    await page.getByRole('button', { name: 'Define a conversion' }).click();
-    await page.getByLabel('What it means').selectOption('whatsapp_click');
+    const editor = await openEditor(page);
+    await editor.getByLabel('What it means').selectOption('whatsapp_click');
 
     /*
      * Said at the moment somebody chooses it, not only in the issue list a week later. A click is

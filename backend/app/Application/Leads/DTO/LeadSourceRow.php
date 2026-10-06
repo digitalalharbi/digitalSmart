@@ -16,7 +16,9 @@ final readonly class LeadSourceRow
         public int $qualified,
         public int $won,
         public int $closed,
-        public int $wonValueMinor = 0,
+        /** Null where this route's won leads were in more than one currency. See LeadFunnel. */
+        public ?int $wonValueMinor = null,
+        public ?string $currency = null,
     ) {}
 
     /** Wins over closed leads, or null. An open lead is not a loss. */

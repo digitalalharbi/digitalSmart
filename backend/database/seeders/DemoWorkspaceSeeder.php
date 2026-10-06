@@ -5,14 +5,26 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Application\Advertising\Command\SyncBoundAccount;
+use App\Application\Leads\Command\ChangeLeadStage;
+use App\Application\Leads\Command\RecordLead;
+use App\Application\Leads\DTO\LeadInput;
+use App\Application\Measurement\Command\SaveMeasurementSource;
+use App\Application\Measurement\Command\SyncMeasurementSource;
+use App\Application\Measurement\DTO\MeasurementSourceInput;
+use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\SystemRole;
 use App\Domain\Client\ClientStatus;
+use App\Domain\Commerce\OrderAttribution;
+use App\Domain\Identity\UserId;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
 use App\Domain\Integration\ProviderConnectionId;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
+use App\Domain\Leads\LeadSourceKind;
+use App\Domain\Leads\LeadStage;
+use App\Domain\Measurement\MeasurementSourceKind;
 use App\Domain\Project\ProjectStatus;
 use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceId;
@@ -23,6 +35,7 @@ use App\Infrastructure\Persistence\Eloquent\Model\ProjectIntegrationBinding;
 use App\Infrastructure\Persistence\Eloquent\Model\User;
 use App\Infrastructure\Persistence\Eloquent\Model\WorkspaceMember;
 use App\Infrastructure\Workspace\WorkspaceProvisioner;
+use DateTimeImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -94,6 +107,24 @@ final class DemoWorkspaceSeeder extends Seeder
 
         $this->clients($workspace->getKey(), $owner->getKey());
         $this->sandboxPerformance($workspace->getKey());
+
+        /*
+         * Leads and the counted taps beside them, so the demo can show the one thing the Lead
+         * Center exists to refuse: a tap-to-lead rate. With an empty pipeline the page is all
+         * empty states, and the honesty rules it enforces are invisible.
+         *
+         * Both go through the real use cases, which means binding an actor — the commands check a
+         * permission, as they should, and a seeder that bypassed the guard would be exercising a
+         * path no live account can take. The owner is bound the same way the request middleware
+         * binds one, rather than by logging in: there is no request here to carry a session.
+         */
+        $actor = app(ActorContextBinder::class);
+        $actor->bind(new UserId((string) $owner->getKey()), new WorkspaceId((string) $workspace->getKey()));
+
+        $this->demoSignals($workspace->getKey());
+        $this->demoLeads($workspace->getKey());
+
+        $actor->clear();
 
         $this->command?->info('Demo workspace seeded. Sign in with any '.
             'demo address and the password "'.self::PASSWORD.'".');
@@ -253,5 +284,194 @@ final class DemoWorkspaceSeeder extends Seeder
                 );
             }
         }
+    }
+
+    /**
+     * A GA4 property in sandbox, synced, so the demo has counted taps to sit beside the leads.
+     *
+     * The fixtures carry `whatsapp_click`, `form_start` and `generate_lead` — the three events the
+     * Lead Center's right-hand column is made of — and every row the sync writes is labelled
+     * `sandbox`, so none of it can be mistaken for a client's measurement.
+     */
+    private function demoSignals(mixed $workspaceId): void
+    {
+        /** @var Client|null $client */
+        $client = Client::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('status', ClientStatus::Active->value)
+            ->orderBy('created_at')
+            ->first();
+
+        if ($client === null) {
+            return;
+        }
+
+        $connections = app(ProviderConnectionRepository::class);
+        $provider = Provider::GoogleAnalytics;
+
+        $credentials = [];
+
+        foreach ($provider->requiredCredentialKeys() as $key) {
+            $credentials[$key] = Credentials::SANDBOX_TOKEN;
+        }
+
+        $existing = $connections->findForProvider(new WorkspaceId((string) $workspaceId), $provider);
+
+        if ($existing instanceof ProviderConnection) {
+            $existing->replaceCredentials(new Credentials($credentials));
+            $connection = $existing;
+        } else {
+            $connection = ProviderConnection::register(
+                id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
+                workspaceId: new WorkspaceId((string) $workspaceId),
+                provider: $provider,
+                name: 'SANDBOX — '.$provider->label(),
+                credentials: new Credentials($credentials),
+            );
+        }
+
+        $connections->save($connection);
+
+        $source = app(SaveMeasurementSource::class)(new MeasurementSourceInput(
+            clientId: (string) $client->getKey(),
+            kind: MeasurementSourceKind::Analytics,
+            externalId: 'properties/123456',
+            name: 'SANDBOX — Demo GA4 property',
+            provider: $provider,
+            providerConnectionId: $connection->id->value,
+        ));
+
+        $result = app(SyncMeasurementSource::class)($source->id);
+
+        $this->command?->line(sprintf(
+            '  Measurement: %s, %d events observed.',
+            $result->status->value,
+            $result->rowsWritten,
+        ));
+    }
+
+    /**
+     * A pipeline with something in it.
+     *
+     * Deliberately uneven. Several leads nobody has contacted, so the "not yet" column has something
+     * to say; a disqualification with its reason, because the server refuses one without; manual
+     * entries, so the "not measured" marker appears where it matters; and leads carrying no campaign
+     * at all, which is the commonest case in this market and the reason the unattributed row exists.
+     *
+     * Every one goes through `RecordLead`, so the demo data is produced by the code a live account
+     * uses — and a defect in that path breaks the demo loudly instead of hiding behind fixtures.
+     */
+    private function demoLeads(mixed $workspaceId): void
+    {
+        /** @var list<Client> $clients */
+        $clients = Client::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('status', ClientStatus::Active->value)
+            ->orderBy('created_at')
+            ->get()
+            ->all();
+
+        if ($clients === []) {
+            return;
+        }
+
+        $record = app(RecordLead::class);
+        $change = app(ChangeLeadStage::class);
+        $now = new DateTimeImmutable('now');
+
+        /*
+         * One currency throughout. Mixed currencies are a case the Lead Center handles by withholding
+         * its totals, and a demo that triggered it would show four dashes where the figures should be.
+         */
+        $definitions = [
+            ['days' => 1, 'kind' => LeadSourceKind::FormSubmission, 'detail' => 'Contact form', 'name' => 'Layla Al-Harbi', 'phone' => '0555001101', 'campaign' => 'autumn-range', 'source' => 'meta', 'value' => 250_000, 'stage' => null, 'reason' => null],
+            ['days' => 2, 'kind' => LeadSourceKind::WhatsAppMessage, 'detail' => 'WhatsApp business', 'name' => 'Omar Al-Qahtani', 'phone' => '0555001102', 'campaign' => null, 'source' => null, 'value' => null, 'stage' => null, 'reason' => null],
+            ['days' => 3, 'kind' => LeadSourceKind::PhoneCall, 'detail' => 'Showroom line', 'name' => 'Noura Al-Shehri', 'phone' => '0555001103', 'campaign' => null, 'source' => null, 'value' => 90_000, 'stage' => LeadStage::Contacted, 'reason' => null],
+            ['days' => 5, 'kind' => LeadSourceKind::FormSubmission, 'detail' => 'Contact form', 'name' => 'Faisal Al-Dosari', 'phone' => '0555001104', 'campaign' => 'autumn-range', 'source' => 'meta', 'value' => 180_000, 'stage' => LeadStage::Qualified, 'reason' => null],
+            ['days' => 6, 'kind' => LeadSourceKind::WhatsAppMessage, 'detail' => 'WhatsApp business', 'name' => 'Hind Al-Otaibi', 'phone' => '0555001105', 'campaign' => 'ramadan-teaser', 'source' => 'google', 'value' => 420_000, 'stage' => LeadStage::Won, 'reason' => null],
+            ['days' => 8, 'kind' => LeadSourceKind::FormSubmission, 'detail' => 'Pricing page', 'name' => 'Saud Al-Ghamdi', 'phone' => '0555001106', 'campaign' => 'ramadan-teaser', 'source' => 'google', 'value' => 310_000, 'stage' => LeadStage::Won, 'reason' => null],
+            ['days' => 9, 'kind' => LeadSourceKind::Manual, 'detail' => 'Referral from a partner', 'name' => 'Abdulrahman Al-Zahrani', 'phone' => '0555001107', 'campaign' => null, 'source' => null, 'value' => 150_000, 'stage' => LeadStage::Won, 'reason' => null],
+            ['days' => 11, 'kind' => LeadSourceKind::PhoneCall, 'detail' => 'Showroom line', 'name' => 'Maha Al-Juhani', 'phone' => '0555001108', 'campaign' => null, 'source' => null, 'value' => null, 'stage' => LeadStage::Lost, 'reason' => null],
+            ['days' => 13, 'kind' => LeadSourceKind::FormSubmission, 'detail' => 'Contact form', 'name' => 'Turki Al-Mutairi', 'phone' => '0555001109', 'campaign' => 'autumn-range', 'source' => 'meta', 'value' => null, 'stage' => LeadStage::Disqualified, 'reason' => 'Outside the delivery area'],
+            ['days' => 16, 'kind' => LeadSourceKind::Import, 'detail' => 'Trade show list', 'name' => 'Reem Al-Harthi', 'phone' => '0555001110', 'campaign' => null, 'source' => null, 'value' => null, 'stage' => LeadStage::Lost, 'reason' => null],
+            ['days' => 18, 'kind' => LeadSourceKind::WhatsAppMessage, 'detail' => 'WhatsApp business', 'name' => 'Khalid Al-Subaie', 'phone' => '0555001111', 'campaign' => 'ramadan-teaser', 'source' => 'google', 'value' => 200_000, 'stage' => LeadStage::Qualified, 'reason' => null],
+            ['days' => 21, 'kind' => LeadSourceKind::FormSubmission, 'detail' => 'Contact form', 'name' => 'Ghada Al-Amri', 'phone' => '0555001112', 'campaign' => null, 'source' => null, 'value' => null, 'stage' => null, 'reason' => null],
+        ];
+
+        $recorded = 0;
+
+        foreach ($clients as $index => $client) {
+            /** @var Project|null $project */
+            $project = Project::query()
+                ->where('client_id', $client->getKey())
+                ->orderBy('created_at')
+                ->first();
+
+            // The second client gets the shorter half, so the two do not look identical.
+            $slice = $index === 0 ? $definitions : array_slice($definitions, 0, 5);
+
+            foreach ($slice as $position => $definition) {
+                $lead = $record(new LeadInput(
+                    clientId: (string) $client->getKey(),
+                    sourceKind: $definition['kind'],
+                    receivedAt: $now->modify('-'.$definition['days'].' days'),
+                    // What the lead itself carried. Null stays null: most enquiries carry nothing,
+                    // and inventing a campaign for them is how an unattributed row disappears.
+                    attribution: OrderAttribution::from(
+                        source: $definition['source'],
+                        medium: $definition['source'] === null ? null : 'cpc',
+                        campaign: $definition['campaign'],
+                    ),
+                    projectId: $project === null ? null : (string) $project->getKey(),
+                    sourceDetail: $definition['detail'],
+                    name: $definition['name'],
+                    // Unique per client, so the deduplication window does not merge the two sets.
+                    phone: '055'.str_pad((string) ($index * 100 + $position + 5000), 7, '0', STR_PAD_LEFT),
+                    valueMinor: $definition['value'],
+                    currency: $definition['value'] === null ? null : 'SAR',
+                ));
+
+                $recorded += 1;
+
+                if ($definition['stage'] === null) {
+                    continue;
+                }
+
+                /*
+                 * Moved through the stages one at a time, because the domain refuses an invalid
+                 * transition — which is the behaviour being relied on, not worked around.
+                 */
+                foreach ($this->pathTo($definition['stage']) as $stage) {
+                    $change(
+                        $lead->id,
+                        $stage,
+                        $stage === LeadStage::Disqualified ? $definition['reason'] : null,
+                    );
+                }
+            }
+        }
+
+        $this->command?->line(sprintf('  Leads: %d recorded across %d clients.', $recorded, count($clients)));
+    }
+
+    /**
+     * The stages a lead has to pass through to reach one.
+     *
+     * The domain refuses a jump from new straight to won, deliberately: a lead that was never
+     * contacted and never qualified cannot have been won, and a seeder allowed to skip would be
+     * creating records the product's own rules say are impossible.
+     *
+     * @return list<LeadStage>
+     */
+    private function pathTo(LeadStage $target): array
+    {
+        return match ($target) {
+            LeadStage::Contacted => [LeadStage::Contacted],
+            LeadStage::Disqualified => [LeadStage::Contacted, LeadStage::Disqualified],
+            LeadStage::Qualified => [LeadStage::Contacted, LeadStage::Qualified],
+            LeadStage::Won => [LeadStage::Contacted, LeadStage::Qualified, LeadStage::Won],
+            LeadStage::Lost => [LeadStage::Contacted, LeadStage::Qualified, LeadStage::Lost],
+            default => [],
+        };
     }
 }

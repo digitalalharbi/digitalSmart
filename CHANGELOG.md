@@ -4,6 +4,129 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 17 — the visualisation layer
+
+Charts are the part of this product most able to mislead and least likely to be reviewed for it. This
+phase made the measurable parts measurable, and shipped the two surfaces that were waiting on them.
+
+### Fixed
+
+- **The dark chart palette never applied.** A second `:root` block at the end of `tokens.css` redefined
+  `--ds-chart-1…8` after `[data-theme='dark']` at equal specificity, so the lifted dark series colours were
+  dead code and dark mode drew light-mode marks on a graphite card.
+- **The palette that did apply was unsafe.** Measured against a white surface it failed three gates: two slots
+  below the chroma floor, a worst adjacent pair at ΔE 5.2 under deuteranopia against a gate of 8, and ΔE 13.4
+  under ordinary vision against a floor of 15 — gold beside green and aqua beside green, which a tenth of male
+  readers could not have separated. A comment claimed the first three slots were colour-blind safe; nobody had
+  measured it.
+- **The analytics trend chart was dual-axis.** Where a second y-scale lines up with the first is arbitrary, so
+  the two lines appeared to cross and diverge at moments that meant nothing — a chart that invents a correlation,
+  under a heading inviting a budget decision.
+- **The Lead Center summed money across currencies** and published no currency at all, so a workspace with
+  Saudi and Emirati leads received a confident figure made of two different units. Totals are now withheld with
+  the reason stated; the counts are untouched, because a lead is a lead whatever it was priced in.
+- **Three surfaces shared the overview icon** in the sidebar, because an unregistered icon name falls back
+  silently. Registered, and asserted.
+- **`formatPercent` was being handed rates out of 100.** A `formatRate` helper now takes the shape the API
+  actually publishes, and the names say which is which.
+
+### Added
+
+- `shared/ui/chart/colour.ts` — OKLCH→sRGB, OKLab distance, and the Machado 2009 deficiency transforms. ECharts
+  parses colours to lift a hue on hover with a parser that predates OKLCH, so every token is resolved to hex
+  before it reaches a canvas. The same module the gates measure with, so the documented numbers come from the
+  code that draws the charts.
+- `palette.gates.test.ts` — 24 assertions over the palette as `tokens.css` declares it, including the measured
+  four-series cap for scatter and small multiples.
+- `shared/ui/chart/marks.ts` and `marks.test.ts` — the mark specs in one place, with tests for the rules whose
+  wrong version looks normal: no smoothing, no bridged gaps, no dashed gridlines, a surface gap instead of a
+  border, and mirroring by inverting an axis rather than reversing data.
+- `ChartFrame` and `ChartTable` — the source badge, the caveats, and a chart/table switch in the open.
+- **The Lead Center** (`features/leads`) — the four-step funnel on the ordinal ramp, taps in their own chart with
+  their own axis and no ratio between them, breakdowns by route and campaign that keep the unattributed row and
+  fold the tail into a stated "other", and a pipeline table whose time-to-first-contact column shows "not yet"
+  rather than zero hours.
+- **The journey timeline**, inside the Lead Center — a timeline rather than a chart, which is the honest form
+  for two or three records, with the identity evidence, the single-record statement and the response's own
+  limitations rendered as data.
+- Demo seeding for both: 17 leads through the real `RecordLead` and `ChangeLeadStage` use cases, and a sandbox
+  GA4 property synced for the tap counts, so the surface demonstrates its refusals instead of showing four empty
+  states.
+- **A chart in the Tracking Center** answering the page's only real question — is any of this
+  working — with three states kept apart: a count, a never-seen zero sorted to the top because it is
+  the finding, and a null drawn as a gap because "we did not look" and "we looked and found nothing"
+  are opposite statements.
+- **One retry for a request that got no response at all**, in `shared/api/client.ts`. A request that
+  came back with a status got an answer and is never retried; one that came back with nothing may have
+  been unlucky, and "the server could not be reached" is a conclusion a single failed connection does
+  not support. GET and HEAD by default, plus signing in, which is the one write in this product that
+  can be repeated without repeating its effect.
+- `docs/DATA_VISUALISATION.md`, with the design system's chart section rewritten around it.
+
+### The end-to-end suite — and the API defect behind it
+
+Five fixes. The last one is a real product defect that two previous investigations of the same
+error had attributed to something else; it was found by making the test harness report what the
+browser saw instead of what the server's log claimed.
+
+- **`POST /api/auth/login` answered an already-authenticated request with a 302 to a web route**,
+  because it carried Laravel's `guest` middleware. Wrong twice over for an API: a client is owed a
+  status and a body it can act on, and the redirect's target is absolute against `APP_URL`, so for
+  a single-page app served from another origin the browser blocks the redirect outright and the only
+  thing the application can honestly report is that the server could not be reached. Signing in
+  while already signed in is a legitimate act — somebody switching accounts — it still requires the
+  second account's password, and the authenticator regenerates the session on every successful
+  attempt, so the middleware was protecting nothing. Removed, with tests for the switch, for a wrong
+  password with a session already open, and for the absence of a redirect status.
+
+- **The API proxy must not keep connections alive to `php -S`.** Node has pooled proxy
+  connections by default since 19; the development server binds a kept-alive connection to one
+  forked worker and closes it on its own schedule, so Node eventually picks a dead socket, the
+  proxy returns nothing, and the application correctly reports that the server could not be
+  reached. It appeared only under WebKit, which reuses more connections — which is why one browser
+  project failed and the other did not, and why the failures moved between projects run to run. The
+  suite went from 148 passed / 1 failed / 1 flaky in roughly 25 minutes to **162 passed in 6
+  minutes with no hard failures**.
+- **Every name a test creates now carries the attempt number.** The records the suite creates are
+  unique per client and period, which the server enforces, so a test that failed *after* saving
+  could never pass on retry: the second attempt's save was correctly refused, the form stayed open,
+  and the test timed out on a control that never appeared. That turned every flake into a hard
+  failure whose message described the retry rather than the original fault, and it hid the proxy
+  problem for weeks.
+- **The sign-in helper now reports what the browser saw** — every auth response status and every
+  failed request — when it gives up. Two separate investigations of this error reached the wrong
+  conclusion by reading `artisan serve`'s own log, which under forked workers mis-pairs timings and
+  reported a bcrypt verification as taking 0.02ms. The first run with the diagnostic in place named
+  the cause in one line.
+- **A separate TypeScript project for `e2e`.** While it sat inside the application's project it
+  inherited `vitest/globals`, so a Playwright spec could reference Vitest's `expect` or `describe`,
+  typecheck cleanly, and fail at run time with an error pointing at the assertion rather than the
+  import that was never made.
+- `tests/Feature/System/CorsTest.php` — the API's preflight handling, which nothing asserted. An
+  API that does not answer a preflight looks to a browser exactly like an API that is down, and
+  neither message mentions CORS.
+- **The conversion editor no longer picks a client for you.** It defaulted to whichever client
+  sorted first, which is a consequential choice made on somebody's behalf — a conversion definition
+  decides what that client's reports count. The default also failed silently: the draft is
+  initialised once, so when the client list arrived after the form opened the preselection did not
+  happen and the save button stayed disabled with nothing on screen explaining why. Found by a test
+  that waited 45 seconds for a button that was never going to enable.
+
+### Decisions worth recording
+
+- **The funnel has four steps, and the fourth is not "qualified".** Each step is a genuine superset of the next.
+  The available qualified figure is a current-stage count, and a lead since won passed through it uncounted, so
+  placing it between "got through" and "won" would draw a funnel that narrows and then widens — from which a
+  reader would reasonably conclude leads were being won without qualification.
+- **The dark interface accent sits above the band a chart mark needs.** `--ds-brand-400` at L 0.706 is lighter
+  than the dark chart band allows, which is why chart slot 1 and `--ds-accent` are not one value in dark mode.
+  Found by the search, not by eye.
+- **Scatter charts cap at four series.** There is no assignment order in a scatter, so every pair has to clear
+  the gate rather than only the neighbours. Past the cap `seriesColour` repeats a slot, so the mistake is visible
+  rather than a generated ninth hue that looks plausible and is indistinguishable under colour blindness.
+- **No currency conversion.** A converted total needs a rate, a date for that rate, and an owner for the
+  decision; picking one silently would be inventing the most quotable number on the page.
+
 ## Phase 16 — customer journeys
 
 Three of the four things this phase asked for are delivered. The fourth is blocked by the data rather than by

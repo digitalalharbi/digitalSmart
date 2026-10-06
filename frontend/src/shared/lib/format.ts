@@ -45,6 +45,19 @@ export function formatCurrency(
   }).format(value);
 }
 
+/**
+ * A rate the API reports out of 100, as a percentage.
+ *
+ * Separate from `formatPercent` because the two take different units and the mistake is
+ * silent: `formatPercent` wants a fraction (0.5 → 50%), and a win rate arriving as `50`
+ * would render as 5,000%. Every rate in this product's API — win rate, contact rate,
+ * attribution coverage — is 0–100, so this is the one to reach for, and the name says which.
+ */
+export function formatRate(percent: number, locale = 'en', fractionDigits = 1): string {
+  return formatPercent(percent / 100, locale, fractionDigits);
+}
+
+/** A fraction as a percentage: 0.1234 → 12.3%. For a rate out of 100 use `formatRate`. */
 export function formatPercent(value: number, locale = 'en', fractionDigits = 1): string {
   return new Intl.NumberFormat(tagFor(locale), {
     style: 'percent',

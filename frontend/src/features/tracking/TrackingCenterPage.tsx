@@ -9,6 +9,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ConversionEditor } from './ConversionEditor';
 import { IssueList } from './IssueList';
+import { ObservedEventsChart } from './ObservedEventsChart';
 import { SourceRegistration } from './SourceRegistration';
 import { useSyncSourceMutation, useTrackingHealthQuery } from './useTracking';
 import type { EventDefinition, Freshness, MeasurementSource, SyncResult } from './types';
@@ -211,6 +212,13 @@ export function TrackingCenterPage() {
                 description={t('tracking.conversions.emptyBody')}
               />
             ) : (
+              <ObservedEventsChart
+                definitions={health.data.definitions}
+                windowDays={health.data.window_days}
+              />
+            )}
+
+            {health.data.definitions.length === 0 ? null : (
               <ul className="grid gap-3 sm:grid-cols-2">
                 {health.data.definitions.map((definition) => (
                   <li key={definition.id}>

@@ -125,6 +125,22 @@ The response carries `limitations` as data rather than leaving them to documenta
 the page is the one who would otherwise draw the wrong conclusion. They are assembled per journey: a
 single-touch journey is told it is single-touch, and a weakly linked one is told why.
 
+## The surface
+
+`frontend/src/features/leads/JourneyPanel.tsx`, opened from a lead in the Lead Center.
+
+**A timeline rather than a chart**, and that is the honest form: there are usually two or three
+records, and two points do not make a trend — drawing them on an axis would imply a rate of
+something.
+
+The panel mirrors each of this document's refusals where a reader meets them. A single record is
+labelled *"one record, nothing else recorded — this is not a journey yet"* instead of being drawn as
+a one-step timeline. The identity evidence and its confidence sit in the header, in a warning tone
+below the reliable threshold, so a shared-device match is visibly something to judge rather than
+something to count. The earliest attributed touchpoint is introduced as a fact about **that record**.
+And the `limitations` the response carries are rendered as their own block, because the person
+reading the page is the one who would otherwise conclude that a customer appeared from nowhere.
+
 ## Tests
 
 `backend/tests/Feature/Leads/JourneyTest.php` — the refusals first: a single record is not a journey, the

@@ -50,9 +50,23 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
                 ."count(*) filter (where l.stage = 'lost') as lost, "
                 ."count(*) filter (where l.stage in ('new','contacted','qualified')) as open, "
                 ."coalesce(sum(l.value_minor) filter (where l.stage = 'won'), 0) as won_value, "
-                ."coalesce(sum(l.value_minor) filter (where l.stage in ('new','contacted','qualified')), 0) as open_value"
+                ."coalesce(sum(l.value_minor) filter (where l.stage in ('new','contacted','qualified')), 0) as open_value, "
+                /*
+                 * The currency those sums are in, and how many there were.
+                 *
+                 * Postgres adds minor units across currencies without complaint, so without this the totals
+                 * would be a confident figure made of two different units — 100 halalas plus 100 fils is not
+                 * 200 of anything. `min()` names the currency when the count says there is exactly one, and
+                 * is discarded otherwise.
+                 */
+                .'count(distinct l.currency) filter (where l.value_minor is not null) as currency_count, '
+                .'min(l.currency) filter (where l.value_minor is not null) as currency'
             )
             ->first();
+
+        /** @var array<string, mixed> $values */
+        $values = (array) $row;
+        $currency = $this->singleCurrency($values);
 
         return new LeadFunnel(
             total: (int) ($row->total ?? 0),
@@ -68,8 +82,14 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
              * denominator include leads nobody has closed.
              */
             open: (int) ($row->open ?? 0),
-            wonValueMinor: (int) ($row->won_value ?? 0),
-            openValueMinor: (int) ($row->open_value ?? 0),
+            /*
+             * Null, not zero, when more than one currency is in play: the counts are still perfectly good —
+             * a lead is a lead — so only the money is withheld, and the funnel says why.
+             */
+            wonValueMinor: $currency === null ? null : (int) ($values['won_value'] ?? 0),
+            openValueMinor: $currency === null ? null : (int) ($values['open_value'] ?? 0),
+            currency: $currency,
+            currencyCount: (int) ($values['currency_count'] ?? 0),
         );
     }
 
@@ -89,7 +109,9 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
                 ."count(*) filter (where l.stage = 'qualified') as qualified, "
                 ."count(*) filter (where l.stage = 'won') as won, "
                 ."count(*) filter (where l.stage in ('won','lost','disqualified')) as closed, "
-                ."coalesce(sum(l.value_minor) filter (where l.stage = 'won'), 0) as won_value"
+                ."coalesce(sum(l.value_minor) filter (where l.stage = 'won'), 0) as won_value, "
+                .'count(distinct l.currency) filter (where l.value_minor is not null) as currency_count, '
+                .'min(l.currency) filter (where l.value_minor is not null) as currency'
             )
             ->groupBy('l.source_kind', 'source_detail')
             ->orderByDesc('total')
@@ -107,6 +129,7 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
             }
 
             $detail = (string) ($values['source_detail'] ?? '');
+            $sourceCurrency = $this->singleCurrency($values);
 
             $sources[] = new LeadSourceRow(
                 sourceKind: $kind,
@@ -115,7 +138,8 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
                 qualified: (int) ($values['qualified'] ?? 0),
                 won: (int) ($values['won'] ?? 0),
                 closed: (int) ($values['closed'] ?? 0),
-                wonValueMinor: (int) ($values['won_value'] ?? 0),
+                wonValueMinor: $sourceCurrency === null ? null : (int) ($values['won_value'] ?? 0),
+                currency: $sourceCurrency,
             );
         }
 
@@ -235,6 +259,23 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
             closed: (int) ($row->closed ?? 0),
             evidence: null,
         );
+    }
+
+    /**
+     * The one currency a group of amounts is in, or null when there is not exactly one.
+     *
+     * Null is the useful answer in both of the other cases. No valued leads means there is no currency to
+     * name and nothing to show; several means the sum is not a figure at all.
+     *
+     * @param  array<string, mixed>  $values
+     */
+    private function singleCurrency(array $values): ?string
+    {
+        $currency = $values['currency'] ?? null;
+
+        return (int) ($values['currency_count'] ?? 0) === 1 && is_string($currency) && $currency !== ''
+            ? $currency
+            : null;
     }
 
     /**

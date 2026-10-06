@@ -9,7 +9,18 @@ import { ACCOUNTS, signIn } from './support/accounts';
  * collides with the first project's record.
  */
 function named(base: string): string {
-  return `E2E ${base} [${test.info().project.name}]`;
+  /*
+   * The retry index is part of the name, and it is what makes these tests retryable at all.
+   *
+   * Every record this suite creates is unique per client and period, which the server enforces.
+   * Without the attempt number, a test that failed after saving could never pass on retry: the
+   * second attempt's save is correctly refused, the form stays open, and the test times out on a
+   * control that never appears — turning one flake into a hard failure whose message describes
+   * the retry rather than the original fault.
+   */
+  const attempt = test.info().retry === 0 ? '' : ` r${String(test.info().retry)}`;
+
+  return `E2E ${base} [${test.info().project.name}${attempt}]`;
 }
 
 async function openPlanner(page: Page): Promise<void> {

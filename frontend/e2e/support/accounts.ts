@@ -42,9 +42,47 @@ export const DEMO_PASSWORD = 'password';
  */
 const RETRY_DELAYS_MS = [400, 1_200];
 
+/** What the browser made of the sign-in requests, for the message if every attempt fails. */
+type SignInEvidence = {
+  responses: string[];
+  failures: string[];
+};
+
+/**
+ * Watch the sign-in requests, so a failure says what happened rather than only that it did.
+ *
+ * Added after two separate investigations of this exact error reached the wrong conclusion from
+ * the server's own log, which under a forked development server mis-pairs request timings and
+ * reports a bcrypt verification as taking 0.02ms. The browser's view is the one that matters, and
+ * it costs nothing to keep.
+ */
+function watchSignIn(page: Page): SignInEvidence {
+  const evidence: SignInEvidence = { responses: [], failures: [] };
+  const isAuth = (url: string): boolean => url.includes('/auth/login') || url.includes('/sanctum/');
+
+  page.on('response', (response) => {
+    if (isAuth(response.url())) {
+      evidence.responses.push(`${String(response.status())} ${new URL(response.url()).pathname}`);
+    }
+  });
+
+  page.on('requestfailed', (request) => {
+    if (isAuth(request.url())) {
+      evidence.failures.push(
+        `${new URL(request.url()).pathname}: ${request.failure()?.errorText ?? 'unknown'}`,
+      );
+    }
+  });
+
+  return evidence;
+}
+
 export async function signIn(page: Page, email: string): Promise<void> {
+  const evidence = watchSignIn(page);
+
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
     await page.goto('/login');
+
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password').fill(DEMO_PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
@@ -66,7 +104,11 @@ export async function signIn(page: Page, email: string): Promise<void> {
 
     if (delay === undefined) {
       throw new Error(
-        `Sign-in for ${email} could not reach the server after ${String(RETRY_DELAYS_MS.length + 1)} attempts.`,
+        [
+          `Sign-in for ${email} could not reach the server after ${String(RETRY_DELAYS_MS.length + 1)} attempts.`,
+          `Responses: ${evidence.responses.length === 0 ? 'none' : evidence.responses.join(', ')}`,
+          `Failed requests: ${evidence.failures.length === 0 ? 'none' : evidence.failures.join('; ')}`,
+        ].join('\n'),
       );
     }
 

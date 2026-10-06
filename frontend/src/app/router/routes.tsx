@@ -16,6 +16,7 @@ import {
   BudgetCalculatorPage,
   CampaignsPage,
   DashboardsPage,
+  LeadCentrePage,
   MediaPlannerPage,
   StoreAnalyticsPage,
   TrackingCenterPage,
@@ -39,6 +40,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/media-planner': deferred(<MediaPlannerPage />),
   '/budget-calculator': deferred(<BudgetCalculatorPage />),
   '/tracking': deferred(<TrackingCenterPage />),
+  '/leads': deferred(<LeadCentrePage />),
   '/commerce': deferred(<StoreAnalyticsPage />),
 };
 

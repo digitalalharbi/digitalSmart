@@ -89,6 +89,15 @@ final readonly class LeadResource
                 'won_value_minor' => $funnel->wonValueMinor,
                 'open_value_minor' => $funnel->openValueMinor,
                 /*
+                 * The currency those amounts are in, published beside them because an amount without its
+                 * currency is not a figure. Null — along with null amounts — when the window's valued leads
+                 * came in more than one currency, which `currency_count` then states so the interface can
+                 * explain the gap rather than show a dash nobody can account for.
+                 */
+                'currency' => $funnel->currency,
+                'currency_count' => $funnel->currencyCount,
+                'is_value_reportable' => $funnel->isValueReportable(),
+                /*
                  * Every rate is null rather than zero when its denominator is empty, and each one's
                  * denominator is stated above so a reader can check it. The win rate divides by *closed*
                  * leads, because an open lead is not a loss — the arithmetic that has sunk more agency
@@ -109,6 +118,7 @@ final readonly class LeadResource
                 'won' => $row->won,
                 'closed' => $row->closed,
                 'won_value_minor' => $row->wonValueMinor,
+                'currency' => $row->currency,
                 'win_rate' => $row->winRate(),
             ], $view->bySource),
             'by_campaign' => array_map(static fn (LeadBreakdownRow $row): array => [

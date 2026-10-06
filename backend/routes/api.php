@@ -60,11 +60,23 @@ Route::post('webhooks/stores/{provider}', StoreWebhookController::class)
     ->middleware('throttle:webhooks')
     ->name('webhooks.stores');
 
-Route::middleware('guest')->group(function (): void {
-    Route::post('auth/login', [SessionController::class, 'store'])
-        ->middleware('throttle:auth')
-        ->name('auth.login');
-});
+/*
+ * Signing in, with no `guest` middleware — deliberately.
+ *
+ * Laravel's `guest` middleware answers an already-authenticated request with a **302 to a web
+ * route**, which is wrong twice over for an API. An API client is owed a status and a body it can
+ * act on, and the redirect's target is absolute against `APP_URL`: for a single-page app served
+ * from a different origin that redirect is cross-origin, the browser blocks it outright, and the
+ * only thing the application can honestly report is that the server could not be reached. That
+ * failure cost two end-to-end investigations and was twice attributed to something else.
+ *
+ * Signing in while already signed in is also a legitimate act — somebody switching accounts — and
+ * it still requires the second account's password. The authenticator regenerates the session on
+ * every successful attempt, so there is no fixation to guard against here.
+ */
+Route::post('auth/login', [SessionController::class, 'store'])
+    ->middleware('throttle:auth')
+    ->name('auth.login');
 
 // --------------------------------------------------------- Authenticated ---
 Route::middleware(['auth:sanctum', BindActorContext::class])->group(function (): void {

@@ -27,7 +27,8 @@
     },
     "dashboards": "Dashboards",
     "tracking": "Tracking",
-    "commerce": "Store revenue"
+    "commerce": "Store revenue",
+    "leads": "Lead Center"
   },
   "actions": {
     "search": "Search",
@@ -78,6 +79,15 @@
       "title": "No performance data yet",
       "description": "Connect an ad platform and bind one of its accounts to a project. Performance appears here once the first sync completes.",
       "action": "Go to integrations"
+    },
+    "trend": {
+      "title": "Spend, day by day",
+      "subtitle": "The last 28 days. A month's spend in four days and the same total spread evenly are two different campaigns.",
+      "day": "Day",
+      "spend": "Spend",
+      "emptyTitle": "No spend recorded",
+      "emptyBody": "Nothing has been reported for these 28 days. That is not a line along the floor — there is nothing to draw.",
+      "aria": "Daily spend over the last 28 days, broken where a day was not reported."
     }
   },
   "placeholder": {
@@ -767,6 +777,23 @@
       "missing_trigger_ids": "Missing triggers",
       "live_version_id": "Published version",
       "measurement_ids_found": "Ids found"
+    },
+    "observed": {
+      "title": "What has actually been seen",
+      "subtitle": "Against what each client said success is, over the last {{days}} days",
+      "conversions": "Conversions",
+      "signals": "Intent signals",
+      "event": "Defined as",
+      "seen": "Seen",
+      "lastSeen": "Last seen",
+      "neverSeen": "Never seen",
+      "notCounted": "Not counted",
+      "signalBadge": "Intent only",
+      "primaryBadge": "Primary",
+      "caveat": "Intent signals are in this chart because somebody defined them, and they are a different colour because they are a different thing: a tap is not a conversation and a form begun is not a form submitted. Nothing here is totalled. \"Never seen\" means the event was looked for and has not happened — usually the most actionable row on the page.",
+      "emptyTitle": "Nothing defined yet",
+      "emptyBody": "Define what counts as success for a client and this chart will show whether any of it is happening.",
+      "aria": "Observed counts for each defined event over the last {{days}} days, with conversions and intent signals shown separately and never totalled."
     }
   },
   "commerce": {
@@ -859,6 +886,133 @@
     "legend": {
       "other": "Other",
       "unattributed": "Not attributed"
+    }
+  },
+  "leads": {
+    "title": "Lead Center",
+    "subtitle": "Every enquiry a client received, how far it got, and — beside it rather than inside it — how many taps and part-filled forms were counted over the same days.",
+    "loadFailed": "Could not load the Lead Center. Try again in a moment.",
+    "scorecard": "Lead summary",
+    "mixedCurrency": "These leads carried {{count}} different currencies, so their totals are not shown: a sum of two currencies is not a larger number, it is not a number. Filter to one client to see a total.",
+    "source": {
+      "label": "Recorded by people, not measured by a platform"
+    },
+    "denied": {
+      "title": "The Lead Center is not part of your access",
+      "body": "It carries prospects' names and contact details, so it is limited to the roles that work the pipeline. Ask a workspace owner if you need it."
+    },
+    "period": {
+      "label": "Period",
+      "days": "Last {{count}} days"
+    },
+    "scope": {
+      "client": "Client",
+      "allClients": "All clients"
+    },
+    "metric": {
+      "total": "Leads",
+      "winRate": "Win rate",
+      "contactRate": "Somebody tried",
+      "averageWon": "Average won value",
+      "noClosed": "Nothing has closed yet, so there is nothing to divide by. This is not a win rate of zero.",
+      "noLeads": "No leads arrived in this period.",
+      "noWonValue": "No won lead carried a value.",
+      "mixedCurrency": "The won leads were in more than one currency, so there is no total to average."
+    },
+    "pipeline": {
+      "title": "How far leads got",
+      "subtitle": "Of the leads that arrived in the last {{days}} days",
+      "arrived": "Arrived",
+      "attempted": "Somebody tried",
+      "reached": "Got through",
+      "won": "Won",
+      "ofArrived": "of the leads that arrived",
+      "ofClosed": "of the leads that closed",
+      "whyNoQualified": "Qualified is not a step here. The figure available is how many leads sit at that stage now, and a lead that has since been won passed through it without being counted — so putting it between \"got through\" and \"won\" would show the funnel narrowing and then widening.",
+      "emptyTitle": "No leads in this period",
+      "emptyBody": "Nothing arrived in the last {{days}} days. That is not a funnel of zeroes — there is nothing to draw.",
+      "aria": "How far the leads of the last {{days}} days got, as four stages from arrived to won."
+    },
+    "signals": {
+      "title": "Taps and forms begun",
+      "subtitle": "Counted over the same {{days}} days",
+      "event": "Event",
+      "count": "Counted",
+      "comparison": "{{signals}} counted, {{leads}} leads. The gap is expected and no percentage is offered: the same person taps several times, or taps and then phones instead.",
+      "emptyTitle": "Nothing counted",
+      "emptyBody": "No tap or form-start events have been observed for this scope. That may mean tracking is not installed — the Tracking Center says which.",
+      "aria": "Counted taps and form starts over the last {{days}} days, by event name."
+    },
+    "bySource": {
+      "title": "By route",
+      "subtitle": "Which way the enquiry arrived",
+      "caveat": "A route marked \"not measured\" was entered or imported by hand. Those are real leads and must not be reported as campaign results."
+    },
+    "byCampaign": {
+      "title": "By campaign",
+      "subtitle": "What the lead itself carried",
+      "caveat": "A campaign here is what the lead arrived tagged with — not a model's opinion of which campaign deserves the credit. Leads that carried nothing are shown as their own row rather than left out."
+    },
+    "breakdown": {
+      "unattributed": "Not attributed",
+      "folded": "The smallest {{count}} rows are summed into \"other\": that row has no win rate and no value, because averaging rates with different denominators produces a figure that is none of theirs.",
+      "emptyTitle": "Nothing to break down",
+      "emptyBody": "No leads arrived in the last {{days}} days.",
+      "aria": "{{title}}, as leads per row over the last {{days}} days."
+    },
+    "list": {
+      "title": "The pipeline",
+      "subtitle": "Newest first. Choose a lead to see everything recorded for that person.",
+      "caption": "Leads, with their route, stage, and how long somebody took to respond.",
+      "emptyTitle": "No leads yet",
+      "emptyBody": "Nothing has been recorded for this scope.",
+      "moveFailed": "Could not move the lead. Try again in a moment.",
+      "reason": "Why",
+      "confirm": "Disqualify"
+    },
+    "stages": {
+      "new": "New",
+      "contacted": "Mark contacted",
+      "qualified": "Qualify",
+      "disqualified": "Disqualify",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "badge": {
+      "notMeasured": "Not measured",
+      "unattributed": "Not attributed"
+    },
+    "table": {
+      "lead": "Lead",
+      "route": "Route",
+      "stage": "Stage",
+      "received": "Received",
+      "toFirstContact": "To first contact",
+      "value": "Value",
+      "actions": "Move",
+      "leads": "Leads",
+      "qualified": "Qualified",
+      "won": "Won",
+      "winRate": "Win rate",
+      "wonValue": "Won value",
+      "rate": "Rate",
+      "rateOf": "As a share of",
+      "anonymous": "No name recorded",
+      "notContacted": "Not yet",
+      "hours": "{{hours}} h"
+    },
+    "journey": {
+      "title": "Everything recorded",
+      "pickTitle": "Choose a lead",
+      "pickBody": "Everything recorded for that person — their enquiries and their orders — appears here.",
+      "span": "{{count}} records over {{days}} days",
+      "singleTouch": "One record, nothing else recorded. This is not a journey yet.",
+      "earliest": "The earliest record carrying an attribution was a {{record}}, tagged {{campaign}}. That is a fact about that record, not a decision about which touch earned the credit.",
+      "limitations": "What this cannot say",
+      "noAttribution": "Carried no campaign of its own.",
+      "carried": "Carried {{campaign}} — {{evidence}}",
+      "emptyTitle": "Nothing linked",
+      "emptyBody": "No contact details on this lead could be matched to anything else, which is common and honest."
     }
   }
 }

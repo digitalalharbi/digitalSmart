@@ -72,6 +72,26 @@ src/
 code never imports from a feature. Server state lives in TanStack Query; only genuinely
 local client state (theme, locale, sidebar) lives in Zustand.
 
+### One retry, and only for a request that got nothing back
+
+`shared/api/client.ts` distinguishes two failures that look identical to a caller and are not
+the same thing at all.
+
+A request that came back **with a status** got an answer. A 500 is an answer, and it is never
+retried: retrying it doubles the load on a server already failing and makes the reader wait twice
+as long for the same message.
+
+A request that came back **with no status at all** may simply have been unlucky — a dropped
+mobile connection, a laptop changing network mid-request, any proxy that recycles a connection a
+moment before it is used. That is sent once more after 250ms, because "the server could not be
+reached" is a conclusion a single failed connection does not support.
+
+Only requests that may be repeated without repeating their effect: GET and HEAD by default, plus
+a write that opts in with `retryOnNetworkError`. Signing in is the one write in this product that
+qualifies, because signing in twice signs you in once. Everything else is left alone — a request
+that failed without a response may still have been received and acted on, and a duplicate record
+is worse than an error message.
+
 ## Async and realtime
 
 Redis backs cache and queues. Horizon supervises queue workers. Reverb is the WebSocket

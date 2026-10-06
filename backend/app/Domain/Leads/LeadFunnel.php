@@ -35,9 +35,32 @@ final readonly class LeadFunnel
         public int $lost,
         /** Still in play. Not a loss, and the reason the win rate's denominator is not `total`. */
         public int $open,
-        public int $wonValueMinor = 0,
-        public int $openValueMinor = 0,
+        /*
+         * Money, and the currency it is in — together, always.
+         *
+         * Null rather than zero when the amounts are **not reportable**, which is the case whenever the
+         * window's valued leads were in more than one currency. Summing minor units across currencies
+         * produces a number that is not wrong by a percentage but meaningless: 100 halalas added to 100
+         * fils is not 200 of anything. A null says so; a figure would not.
+         */
+        public ?int $wonValueMinor = null,
+        public ?int $openValueMinor = null,
+        /** The single currency these amounts are in, or null when there is not exactly one. */
+        public ?string $currency = null,
+        /** How many distinct currencies the window's valued leads carried. */
+        public int $currencyCount = 0,
     ) {}
+
+    /**
+     * Whether the money on this funnel can be shown at all.
+     *
+     * False where leads arrived in several currencies. The counts are still perfectly good — a lead is a
+     * lead — so the funnel is shown and only its totals are withheld, with the reason stated.
+     */
+    public function isValueReportable(): bool
+    {
+        return $this->currency !== null;
+    }
 
     /** Closed one way or another: won, lost or disqualified. */
     public function closed(): int
@@ -80,8 +103,8 @@ final readonly class LeadFunnel
     /** Average value of a won lead, or null where none were won or none carried a value. */
     public function averageWonValueMinor(): ?int
     {
-        return $this->won > 0 && $this->wonValueMinor > 0
-            ? intdiv($this->wonValueMinor, $this->won)
+        return $this->won > 0 && ($this->wonValueMinor ?? 0) > 0
+            ? intdiv($this->wonValueMinor ?? 0, $this->won)
             : null;
     }
 

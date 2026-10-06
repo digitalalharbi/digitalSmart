@@ -75,6 +75,16 @@ export const queryKeys = {
     containers: () => ['measurement', 'containers'] as const,
     readiness: (sourceId: string) => ['measurement', 'readiness', sourceId] as const,
   },
+  leads: {
+    all: () => ['leads'] as const,
+    centre: (scope: Record<string, unknown>) => ['leads', 'centre', scope] as const,
+    list: (filter: Record<string, unknown>) => ['leads', 'list', filter] as const,
+    /*
+     * One key per lead. A journey is an assertion about who somebody is, assembled from the
+     * records as they stand, so it is never shared between leads or held across a change.
+     */
+    journey: (leadId: string) => ['leads', 'journey', leadId] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,

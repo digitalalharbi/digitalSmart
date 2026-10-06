@@ -68,7 +68,17 @@ export function ConversionEditor({
   const remove = useDeleteConversionMutation();
 
   const [draft, setDraft] = useState<ConversionDraft>(() => ({
-    client_id: definition?.client_id ?? clientId ?? clients[0]?.id ?? '',
+    /*
+     * No fallback to the first client in the list — deliberately, and it used to have one.
+     *
+     * Two reasons. A conversion definition decides what a client's reports count, so attaching one
+     * to whichever client happened to sort first is a consequential choice made on somebody's
+     * behalf. And the fallback did not work reliably anyway: the draft is initialised once, so if
+     * the client list arrived after the form opened the preselection silently did not happen and
+     * the save button stayed disabled with nothing on screen explaining why. An explicit "choose a
+     * client" says what is needed.
+     */
+    client_id: definition?.client_id ?? clientId ?? '',
     project_id: definition?.project_id ?? null,
     name: definition?.name ?? '',
     normalized_event: definition?.normalized_event ?? 'generate_lead',
