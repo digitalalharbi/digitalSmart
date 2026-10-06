@@ -22,6 +22,9 @@ use App\Application\Identity\Contract\IdentityReadModel;
 use App\Application\Integration\Contract\CredentialCipher;
 use App\Application\Integration\Contract\IntegrationReadModel;
 use App\Application\Integration\Contract\ProviderAdapterRegistry as ProviderAdapterRegistryContract;
+use App\Application\Measurement\Contract\EventDefinitionRepository;
+use App\Application\Measurement\Contract\MeasurementSourceRepository;
+use App\Application\Measurement\Contract\ObservedEventReadModel;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
 use App\Application\Shared\Contract\ActorContext;
@@ -58,13 +61,16 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadMod
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentObservedEventReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDashboardRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentEventDefinitionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMeasurementSourceRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMembershipRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
@@ -144,6 +150,11 @@ final class AppServiceProvider extends ServiceProvider
         BudgetRepository::class => EloquentBudgetRepository::class,
         BudgetSpendReadModel::class => EloquentBudgetSpendReadModel::class,
         BenchmarkReadModel::class => EloquentBenchmarkReadModel::class,
+
+        // Measurement (Phase 7)
+        MeasurementSourceRepository::class => EloquentMeasurementSourceRepository::class,
+        EventDefinitionRepository::class => EloquentEventDefinitionRepository::class,
+        ObservedEventReadModel::class => EloquentObservedEventReadModel::class,
     ];
 
     public function register(): void

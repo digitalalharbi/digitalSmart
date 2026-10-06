@@ -84,6 +84,8 @@ enum SystemRole: string
                 Permission::BudgetsView,
                 Permission::BudgetsManage,
                 Permission::BudgetsApprove,
+                Permission::TrackingView,
+                Permission::TrackingManage,
                 Permission::AuditView,
             ],
 
@@ -109,6 +111,8 @@ enum SystemRole: string
                 Permission::BudgetsView,
                 Permission::BudgetsManage,
                 Permission::BudgetsApprove,
+                Permission::TrackingView,
+                Permission::TrackingManage,
                 Permission::AuditView,
             ],
 
@@ -127,6 +131,12 @@ enum SystemRole: string
                  */
                 Permission::BudgetsView,
                 Permission::BudgetsManage,
+                /*
+                 * A buyer sets up the pixels and the conversions, so they define them too.
+                 * Measurement is the work, not an administrative afterthought.
+                 */
+                Permission::TrackingView,
+                Permission::TrackingManage,
             ],
 
             self::Creative => [

@@ -16,6 +16,7 @@ use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
 use App\Interface\Http\Controller\Integration\ExternalAccountController;
 use App\Interface\Http\Controller\Integration\ProjectBindingController;
 use App\Interface\Http\Controller\Integration\ProviderController;
+use App\Interface\Http\Controller\Measurement\MeasurementController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
 use App\Interface\Http\Controller\System\HealthController;
@@ -164,6 +165,35 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      * nothing is stored, so a reader can try as many numbers as they like.
      */
     Route::post('budgets/forecast', ForecastController::class)->name('budgets.forecast');
+
+    /*
+     * ------------------------------------------------------------ Measurement ---
+     *
+     * What measures a client's work, what counts as success there, and whether it is
+     * working. The conversion registry is the hinge: nothing in this product infers
+     * meaning from an event name, so a raw name counts towards a conversion only because
+     * somebody mapped it here.
+     */
+    Route::get('measurement/sources', [MeasurementController::class, 'sources'])
+        ->name('measurement.sources.index');
+    Route::post('measurement/sources', [MeasurementController::class, 'storeSource'])
+        ->name('measurement.sources.store');
+    Route::put('measurement/sources/{source}', [MeasurementController::class, 'updateSource'])
+        ->whereUuid('source')->name('measurement.sources.update');
+    Route::delete('measurement/sources/{source}', [MeasurementController::class, 'destroySource'])
+        ->whereUuid('source')->name('measurement.sources.destroy');
+
+    Route::get('measurement/conversions', [MeasurementController::class, 'definitions'])
+        ->name('measurement.conversions.index');
+    Route::post('measurement/conversions', [MeasurementController::class, 'storeDefinition'])
+        ->name('measurement.conversions.store');
+    Route::put('measurement/conversions/{definition}', [MeasurementController::class, 'updateDefinition'])
+        ->whereUuid('definition')->name('measurement.conversions.update');
+    Route::delete('measurement/conversions/{definition}', [MeasurementController::class, 'destroyDefinition'])
+        ->whereUuid('definition')->name('measurement.conversions.destroy');
+
+    Route::get('measurement/health', [MeasurementController::class, 'health'])
+        ->name('measurement.health');
 
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])

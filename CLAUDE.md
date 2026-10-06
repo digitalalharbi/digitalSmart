@@ -190,6 +190,8 @@ Maintain:
 - docs/DATA_MODEL.md
 - docs/API.md
 - docs/INTEGRATIONS.md
+- docs/MEASUREMENT.md
+- docs/TRACKING.md
 - docs/DESIGN_SYSTEM.md
 - docs/SECURITY.md
 - docs/TESTING.md

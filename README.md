@@ -63,6 +63,8 @@ make e2e        # Playwright (stack must be running)
 | `docs/DATA_MODEL.md`     | Database principles, current tables, planned shape      |
 | `docs/API.md`            | Conventions, auth, errors, rate limits, endpoints       |
 | `docs/INTEGRATIONS.md`   | Provider adapters, isolation model, what is blocked     |
+| `docs/MEASUREMENT.md`    | Measurement sources, the event vocabulary, the conversion registry |
+| `docs/TRACKING.md`       | Tracking health: the issue codes, and what it refuses to infer |
 | `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |
 | `docs/SECURITY.md`       | Controls, threat notes, secret handling                 |
 | `docs/TESTING.md`        | Test layers, database strategy, conventions             |

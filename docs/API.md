@@ -528,3 +528,98 @@ caller learns by attempting to edit it. `POST /api/dashboards/{dashboard}/duplic
 is how a shared dashboard gets adapted instead: it needs only visibility of the
 source, and the copy is always **private**, whatever the original was — inheriting a
 shared audience would publish a draft the moment it was made.
+
+## Measurement
+
+Reading needs `tracking.view`; registering and changing needs `tracking.manage`. Neither is
+granted to a creative or a client viewer — measurement setup is where a number's meaning is
+decided, and that is the agency's to answer for.
+
+The product rules behind these endpoints are in [MEASUREMENT.md](MEASUREMENT.md); the
+diagnosis is in [TRACKING.md](TRACKING.md).
+
+### `GET|POST /api/measurement/sources`, `PUT|DELETE /api/measurement/sources/{source}`
+
+What measures a client's work: a GA4 property, a GTM container, an ad account, a store, a CRM,
+a website form, a typed figure.
+
+| Field | Notes |
+| ----- | ----- |
+| `client_id` | Required. Measurement is agreed per client before any project uses it |
+| `project_id` | Optional. A project read returns its own sources **and** the client-level ones it inherits, so a project-scoped page does not hide the property doing the measuring |
+| `kind` | `analytics`, `tag_manager`, `ad_platform`, `store`, `crm`, `website`, `manual` |
+| `provider` | A registry id. **Required for the first four kinds and refused for the last three** — a lead taken by phone has no platform, and demanding one would make the honest cases unrecordable |
+| `external_id` | The provider's own id for the thing, e.g. `properties/123456` |
+
+**A kind must match its provider's category** (`analytics`↔`analytics`,
+`store`↔`commerce`, …), checked against the Phase 6 registry and refused with `422`
+`invalid_measurement_source`. Filing a Salla store as an analytics property would put invoiced
+revenue in the column that holds what a browser reported; the two disagree by design, and once
+they share a column nobody can say which is wrong.
+
+Registering the same `external_id` for one client twice is the same `422`. A unique index
+enforces it either way — the check is what turns a duplicate into a message naming the
+property, rather than a failed insert surfacing as a `500` carrying the constraint.
+
+Every response carries three derived fields rather than stored ones:
+
+- `freshness` — `live`, `synced`, `stale`, `silent`, `never_synced` — computed on read, because
+  freshness is a statement about now. `last_synced_at` and `last_event_at` travel with it,
+  because **`stale` and `silent` are different problems**: one means the figures are old, the
+  other means the source is working perfectly and measuring nothing.
+- `needs_attention` — true for `stale`, `silent` and `never_synced`.
+- `is_revenue_authority` — true for `store` and `crm` only. An analytics property reports what
+  a browser said a sale was worth; an ad platform reports what it believes it caused. Neither
+  is an invoice.
+
+### `GET|POST /api/measurement/conversions`, `PUT|DELETE /api/measurement/conversions/{definition}`
+
+What counts as success, and which raw event names mean it.
+
+| Field | Notes |
+| ----- | ----- |
+| `name` | Unique per scope. Two identical entries in a conversion picker are useless |
+| `normalized_event` | One of the fourteen vocabulary cases |
+| `is_conversion` / `is_primary` / `expects_value` | A primary must be a conversion |
+| `mappings[]` | `raw_event_name`, and an optional `measurement_source_id`. **Null means "from any source"** — a different statement from "from a source we cannot name" |
+
+`mappings` is `present` rather than `required`: an empty array is a coherent request shape, and
+it is refused in the use case where the message can say *why* — nothing would ever count
+towards the conversion — rather than as "the mappings field is required".
+
+Four `422` `invalid_event_definition` cases: no mappings; the same raw name twice in one
+definition; a raw name another definition in the scope already claims; a primary that is not a
+conversion. The duplicate checks run across the whole scope, because the double count a reader
+sees does not care which record caused it.
+
+**A `PUT` replaces the mappings outright**, for the same reason a dashboard's widgets are
+replaced: the set of raw names is the whole truth about what the conversion counts, so a name
+somebody removed has to stop counting. The audit entry keeps **both sides** — "leads halved in
+March" is sometimes a campaign and sometimes a mapping somebody edited, and nothing else can
+tell them apart.
+
+Responses publish `is_intent_signal_only`, true for `whatsapp_click`, `phone_click` and
+`form_start`. A click is not a conversation and a form start is not a submission; reporting a
+cost per click as a cost per lead is the commonest way results get overstated. Counting one is
+allowed — it raises a tracking warning, not a refusal.
+
+`observed_count` is **null when no window was asked for** and `0` when a window was asked and
+nothing was seen. A create returns null; the health endpoint returns a number. Answering "0"
+to a question nobody asked would read as "never happened".
+
+### `GET /api/measurement/health`
+
+Accepts `client_id` and `project_id`. Returns the sources with their freshness, the definitions
+with what was actually observed over `window_days` (14), `is_healthy`, `critical_count`, and
+`issues` sorted worst-first.
+
+Recomputed on every request. A stored diagnosis is wrong the moment the next sync lands, and a
+stale warning teaches people to ignore the list.
+
+Each issue carries `code`, `severity`, `summary`, `remedy`, `subject` and **`evidence`** — the
+facts it rests on. A tracking centre that says "purchase event missing" without saying how it
+knows is one people stop believing after the first false alarm, and a false alarm is certain
+because this product can only see what a provider reports to it. The ten codes and what each
+refuses to infer are in [TRACKING.md](TRACKING.md#the-issues).
+
+A correctly configured project returns `"issues": []`. Silence is the goal.

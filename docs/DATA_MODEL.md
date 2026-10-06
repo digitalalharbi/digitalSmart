@@ -189,3 +189,39 @@ Pacing is **not stored**. It is computed from the budget, the period, the spend 
 wrong the moment the next sync landed, and a stale alert is worse than none because it
 teaches people to ignore the list. The same goes for the alert list and for forecast
 rates: all three are derived, so they cannot disagree with each other.
+
+### Measurement (Phase 7, implemented)
+
+Four tables behind [MEASUREMENT.md](MEASUREMENT.md).
+
+`measurement_sources` — what reports events or orders for a client: a GA4 property, a GTM
+container, an ad account, a store, a CRM, a website form, a typed figure. `client_id` required,
+`project_id` optional, `provider` nullable because a CRM and a phone log have no platform in
+the registry. `last_synced_at` and `last_event_at` are both kept, because "the figures are
+old" and "it is reporting nothing" are different problems with different remedies. Freshness
+itself is **not stored** — it is derived on every read, since it is a statement about now.
+
+A unique index on `(workspace_id, client_id, provider, external_id)`: two records for one
+property would double every count read through it.
+
+`event_definitions` — the conversion registry. Unique on
+`(workspace_id, client_id, project_id, name)`, with a CHECK that
+`is_primary = false OR is_conversion = true`: "the most important thing we are not counting as
+a conversion" is not a sentence anybody means, and the database is where that stays true
+regardless of which code path writes.
+
+`event_mappings` — which raw event names mean a definition. **This table is the reason nothing
+in this product guesses what an event means.** One property's `contact` is a form and another's
+is a phone tap, so a raw name counts only because somebody mapped it here.
+`measurement_source_id` is nullable and means *from any source*, which is why the read model's
+unmapped-name join matches on name alone when it is null.
+
+`observed_event_counts` — one source, one raw name, one day: a count, an optional
+`value_minor` and its currency. An aggregate deliberately; a row per event would be a firehose
+with no question behind it, and every question this product asks is per day. Two CHECK
+constraints: counts and values are non-negative, and **a value implies a currency** — a value
+without one is a number without a unit, and the first thing anyone would do with it is add it
+to another one.
+
+Deletes cascade in the direction meaning flows: observed counts go with their source, because
+they only ever meant anything *as read through it*, and mappings go with their definition.

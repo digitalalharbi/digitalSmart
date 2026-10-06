@@ -21,7 +21,7 @@ sit.
 | 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | **Complete** |
 | 5     | Budgets, pacing, calculator, forecasting, alerts                                | **Complete** |
 | 6     | **Provider registry** — one canonical catalogue of providers, categories, capabilities, auth strategies and API status, consumed by both ends | **Complete** |
-| 7     | **Measurement foundation** — measurement sources, tracking properties, normalised events, event mapping, sessions, touchpoints, conversion registry, tracking health | Planned |
+| 7     | **Measurement foundation** — measurement sources, normalised event vocabulary, conversion registry, event mapping, observed events, tracking health | **Complete**; sessions and touchpoints moved to Phase 16, where identity evidence lives |
 | 8     | **Google Analytics 4** — accounts, properties, data streams, dimensions, metrics, key events, per-project property binding, freshness states | Planned |
 | 9     | **Google Tag Manager** — accounts, containers, workspaces, tags, triggers, variables, versions; tracking-readiness checks with evidence-backed states | Planned |
 | 10    | **Tracking Center** — per client and project: what is connected, what is verified, what is missing, last event, last sync, issues by severity | Planned |
@@ -352,3 +352,45 @@ built around them.
   can name an external account, but the three levels are platform, campaign and ad group —
   an agency running two Meta accounts for one client splits them as two platform rows
   today.
+
+### Phase 7 — the measurement foundation
+
+The layer every later phase reads. Store analytics, lead intelligence, journeys, attribution,
+the AI analysis and the generated presentations all resolve conversions through this, so a
+guessed meaning here would make every one of them confidently wrong in a way no chart reveals.
+
+- **Measurement sources** — a client's GA4 property, GTM container, ad account, store, CRM,
+  website form or typed figure. A source's kind must match its provider's category, checked
+  against the Phase 6 registry: filing a Salla store as an analytics property would put
+  invoiced revenue in the column holding what a browser reported.
+- **Only a store and a CRM are revenue authorities.** Published on every source. An analytics
+  property reports what a browser said a sale was worth; an ad platform reports what it
+  believes it caused. Phase 14's revenue-source selection is built on this.
+- **`NormalizedEvent`** — fourteen cases, each answering whether it is a conversion by nature
+  and whether it is **intent only**. `whatsapp_click`, `phone_click` and `form_start` are
+  marked: a click is not a conversation, and reporting a cost per click as a cost per lead is
+  the commonest way an agency overstates its results.
+- **The conversion registry and its mappings.** Nothing infers meaning from an event name. Four
+  refusals, each preventing a number nobody could defend: a conversion nothing maps to, a raw
+  name claimed twice in one scope, the same name twice in one record, a primary that is not a
+  conversion. Editing replaces the mappings outright and the audit keeps both sides.
+- **Freshness derived, not stored** — `live`, `synced`, `stale`, `silent`, `never_synced`, with
+  `stale` and `silent` deliberately distinct: old figures and a source that is working
+  perfectly while measuring nothing need different people.
+- **Tracking health** — a pure diagnosis over ten issue codes, every one carrying its evidence
+  and a remedy, sorted worst-first, recomputed on every read. Documented in
+  [TRACKING.md](TRACKING.md), including what it refuses to infer.
+- 52 tests: the domain rules as plain objects, the endpoints through HTTP.
+
+### Not yet done in Phase 7
+
+- **Nothing populates `observed_event_counts` in production yet.** The schema, read model,
+  diagnosis and API are complete and tested; GA4 (Phase 8) and the commerce adapters
+  (Phases 11–13) are what will fill it. Until then the tracking centre's honest answer for a
+  real workspace is `never_synced`, which is the correct answer.
+- **Sessions and touchpoints** moved to Phase 16. They are identity questions — which
+  observations belong to one person — and answering them without identity evidence and a
+  confidence level would be exactly the guessing this phase refuses.
+- **No cross-source deduplication.** A purchase in GA4 and the same purchase in Salla are two
+  observations of one sale. Keeping them apart is the precondition for Phase 14 merging them
+  under a revenue source the user chooses.

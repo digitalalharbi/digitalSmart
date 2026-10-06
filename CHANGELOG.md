@@ -4,6 +4,82 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 7 — the measurement foundation
+
+Where a number gets its meaning. Every later phase — store analytics, lead intelligence,
+journeys, attribution, the AI analysis, the generated decks — resolves conversions through this
+layer, so a guessed meaning here would make all of them confidently wrong in a way no chart
+reveals.
+
+### Added
+
+- **Measurement sources** (`measurement_sources`): what reports events or orders for a client —
+  a GA4 property, a GTM container, an ad account, a store, a CRM, a website form, a figure
+  somebody types. Client-scoped by default, so a project read returns its own sources *and* the
+  client-level ones it inherits.
+- **`NormalizedEvent`** — a fourteen-case vocabulary, each case answering whether it is a
+  conversion by nature and whether it is an intent signal only.
+- **The conversion registry** (`event_definitions`, `event_mappings`): a named thing a project
+  counts, and the raw event names that mean it.
+- **`observed_event_counts`** — one source, one raw name, one day, with an optional value in
+  minor units. The aggregate the diagnosis reads.
+- **Tracking health** — `GET /api/measurement/health`: a pure diagnosis over ten issue codes,
+  every one carrying the evidence it rests on and a remedy, sorted worst-first.
+- `MeasurementFreshness` (`live`, `synced`, `stale`, `silent`, `never_synced`), `TrackingIssue`,
+  `TrackingSeverity`, `MeasurementSourceKind`.
+- Nine endpoints, `tracking.view` / `tracking.manage`, five audit actions, two new docs —
+  `docs/MEASUREMENT.md` and `docs/TRACKING.md` — and 52 tests.
+
+### Decisions worth recording
+
+- **Nothing infers meaning from an event name.** One property's `contact` is a form submission,
+  another's is a phone tap, a third fires it on the contact page. A raw name counts towards a
+  conversion only because somebody mapped it, and that mapping has an author and an audit
+  entry. The cost is that a person has to do the mapping; the alternative is revenue figures
+  nobody can defend. `purchase_complete` arriving unmapped is reported as unmapped.
+- **`stale` and `silent` are deliberately different states.** Stale means the figures are old.
+  Silent means the source is syncing perfectly and measuring nothing — and that is the failure
+  this whole area exists to catch, because a report built on it comes out quietly empty rather
+  than visibly broken. Zero looks exactly like a bad month.
+- **A source's kind must match its provider's category.** Registering a Salla store as an
+  analytics property would put invoiced revenue into the column that holds what a browser
+  reported. Those disagree by design, and once they share a column nobody can say which is
+  wrong. The Phase 6 registry already knows each provider's category, so the check costs one
+  comparison.
+- **Only a store and a CRM are revenue authorities.** An analytics property reports what a
+  browser said a sale was worth — measured before the payment failed or the item came back. An
+  ad platform reports what it believes it caused, which is a claim about its own
+  effectiveness. Neither is an invoice.
+- **Intent signals are flagged, not refused.** A WhatsApp click is not a conversation and a form
+  start is not a submission. An agency may genuinely want to count clicks; the danger is
+  somebody reading the figure as leads six weeks later, so the product names it and lets them
+  decide.
+- **Freshness and the whole diagnosis are derived on every read.** A stored diagnosis is wrong
+  the moment the next sync lands, and a stale warning is worse than no warning: it teaches
+  people to ignore the list, which costs more than the one issue it got wrong.
+- **`critical` is narrow on purpose.** It means something the client is paying to have measured
+  is not being measured at all. A list where everything is urgent is a list nobody reads, and
+  this feature is worth nothing the moment it stops being read.
+- **Every issue carries its evidence.** A tracking centre that says "purchase event missing"
+  without saying how it knows is one people stop believing after the first false alarm — and a
+  false alarm is certain, because this product can only see what a provider reports to it. The
+  evidence is what lets somebody disagree, which is the only reason they will trust it when it
+  is right.
+- **An edit replaces a definition's mappings outright, and the audit keeps both sides.** "Leads
+  halved in March" is sometimes a campaign and sometimes a mapping somebody edited, and nothing
+  else can tell them apart afterwards.
+- **`observed_count` is null when no window was asked for, and `0` when one was and nothing was
+  seen.** Answering "0" to a question nobody asked reads as "never happened".
+- **Sessions and touchpoints were moved out of this phase to Phase 16.** They are identity
+  questions, and answering them without identity evidence and a confidence level would be the
+  guessing this phase exists to refuse.
+
+### Not yet in place
+
+- **Nothing populates `observed_event_counts` in production.** GA4 (Phase 8) and the commerce
+  adapters (Phases 11–13) fill it. Until then a real workspace's honest tracking answer is
+  `never_synced` — which is the correct answer, not a gap in the feature.
+
 ## Phase 6 — the provider registry
 
 One canonical catalogue of every platform, consumed by both ends. The registry existed in

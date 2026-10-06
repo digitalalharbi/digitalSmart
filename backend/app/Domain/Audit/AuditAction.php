@@ -50,6 +50,16 @@ enum AuditAction: string
     case BudgetDeleted = 'budget.deleted';
     case BudgetAllocationsChanged = 'budget.allocations_changed';
 
+    /*
+     * Measurement. A conversion definition decides what every report on a project counts, so
+     * changing one changes history as read by everybody — worth a record with an author.
+     */
+    case MeasurementSourceSaved = 'measurement.source_saved';
+    case MeasurementSourceDeleted = 'measurement.source_deleted';
+    case ConversionDefined = 'measurement.conversion_defined';
+    case ConversionChanged = 'measurement.conversion_changed';
+    case ConversionDeleted = 'measurement.conversion_deleted';
+
     case WorkspaceMemberInvited = 'workspace.member_invited';
     case WorkspaceMemberRoleChanged = 'workspace.member_role_changed';
     case WorkspaceMemberSuspended = 'workspace.member_suspended';

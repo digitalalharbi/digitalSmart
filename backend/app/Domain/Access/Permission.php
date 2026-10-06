@@ -57,6 +57,10 @@ enum Permission: string
      */
     case BudgetsApprove = 'budgets.approve';
 
+    // Measurement and tracking
+    case TrackingView = 'tracking.view';
+    case TrackingManage = 'tracking.manage';
+
     // Auditability
     case AuditView = 'audit.view';
 
@@ -77,6 +81,8 @@ enum Permission: string
             self::UsersInvite => 'Invite new people',
             self::UsersUpdate => 'Change a person\'s profile or role',
             self::UsersDeactivate => 'Deactivate a person',
+            self::TrackingView => 'View what measures a client\'s work, and whether it is healthy',
+            self::TrackingManage => 'Define conversions and map the events that mean them',
             self::BudgetsView => 'View budgets and how they are pacing',
             self::BudgetsManage => 'Create budgets and allocate them across platforms and campaigns',
             self::BudgetsApprove => 'Approve a client budget, fixing the figure that was agreed',
