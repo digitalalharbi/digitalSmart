@@ -1,0 +1,44 @@
+[
+  {
+    "name": "accountSummaries/8120045",
+    "account": "accounts/8120045",
+    "displayName": "Smart Code Agency",
+    "propertySummaries": [
+      {
+        "property": "properties/412006881",
+        "displayName": "Noon Retail — Web",
+        "propertyType": "PROPERTY_TYPE_ORDINARY",
+        "parent": "accounts/8120045",
+        "canEdit": true
+      },
+      {
+        "property": "properties/412006882",
+        "displayName": "Noon Retail — App",
+        "propertyType": "PROPERTY_TYPE_ORDINARY",
+        "parent": "accounts/8120045",
+        "canEdit": false
+      },
+      {
+        "property": "properties/412006890",
+        "displayName": "Noon Retail — Group roll-up",
+        "propertyType": "PROPERTY_TYPE_ROLLUP",
+        "parent": "accounts/8120045",
+        "canEdit": false
+      }
+    ]
+  },
+  {
+    "name": "accountSummaries/8120099",
+    "account": "accounts/8120099",
+    "displayName": "Former client — do not report",
+    "propertySummaries": [
+      {
+        "property": "properties/412007100",
+        "displayName": "Al Waha Clinics",
+        "propertyType": "PROPERTY_TYPE_ORDINARY",
+        "parent": "accounts/8120099",
+        "canEdit": false
+      }
+    ]
+  }
+]

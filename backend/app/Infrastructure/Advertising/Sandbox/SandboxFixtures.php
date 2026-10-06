@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Advertising\Sandbox;
 
-use App\Application\Advertising\DTO\Page;
+use App\Application\Shared\DTO\ProviderPage;
 use App\Domain\Integration\Provider;
 use DateTimeImmutable;
 use JsonException;
@@ -53,9 +53,9 @@ final class SandboxFixtures
      * One page of raw rows, with `_` directives resolved and stripped.
      *
      * @param  callable(array<string, mixed>): bool|null  $filter
-     * @return Page<array<string, mixed>>
+     * @return ProviderPage<array<string, mixed>>
      */
-    public function page(Provider $provider, string $name, ?string $cursor = null, ?callable $filter = null): Page
+    public function page(Provider $provider, string $name, ?string $cursor = null, ?callable $filter = null): ProviderPage
     {
         $rows = $this->rows($provider, $name);
 
@@ -68,7 +68,7 @@ final class SandboxFixtures
         $slice = array_slice($rows, $offset, $size);
         $next = $offset + $size;
 
-        return new Page(
+        return new ProviderPage(
             items: array_values($slice),
             nextCursor: $next < count($rows) ? $this->encodeCursor($next) : null,
         );

@@ -10,8 +10,8 @@ use App\Application\Advertising\DTO\AdRecord;
 use App\Application\Advertising\DTO\CampaignRecord;
 use App\Application\Advertising\DTO\CreativeRecord;
 use App\Application\Advertising\DTO\InsightRecord;
-use App\Application\Advertising\DTO\Page;
 use App\Application\Integration\Exception\ProviderNotConfigured;
+use App\Application\Shared\DTO\ProviderPage;
 use App\Domain\Advertising\AdEntityType;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
@@ -60,51 +60,51 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
         return 92;
     }
 
-    /** @return Page<CampaignRecord> */
-    final public function fetchCampaigns(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
+    /** @return ProviderPage<CampaignRecord> */
+    final public function fetchCampaigns(Credentials $credentials, string $externalAccountId, ?string $cursor = null): ProviderPage
     {
         $page = $this->rows($credentials, $this->fixtureName('campaigns'), $cursor);
 
-        return new Page(
+        return new ProviderPage(
             items: $this->mapRows($page->items, 'campaigns', fn (array $row): CampaignRecord => $this->mapCampaign($row)),
             nextCursor: $page->nextCursor,
         );
     }
 
-    /** @return Page<AdGroupRecord> */
-    final public function fetchAdGroups(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
+    /** @return ProviderPage<AdGroupRecord> */
+    final public function fetchAdGroups(Credentials $credentials, string $externalAccountId, ?string $cursor = null): ProviderPage
     {
         $page = $this->rows($credentials, $this->fixtureName('ad_groups'), $cursor);
 
-        return new Page(
+        return new ProviderPage(
             items: $this->mapRows($page->items, 'ad_groups', fn (array $row): AdGroupRecord => $this->mapAdGroup($row)),
             nextCursor: $page->nextCursor,
         );
     }
 
-    /** @return Page<AdRecord> */
-    final public function fetchAds(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
+    /** @return ProviderPage<AdRecord> */
+    final public function fetchAds(Credentials $credentials, string $externalAccountId, ?string $cursor = null): ProviderPage
     {
         $page = $this->rows($credentials, $this->fixtureName('ads'), $cursor);
 
-        return new Page(
+        return new ProviderPage(
             items: $this->mapRows($page->items, 'ads', fn (array $row): AdRecord => $this->mapAd($row)),
             nextCursor: $page->nextCursor,
         );
     }
 
-    /** @return Page<CreativeRecord> */
-    final public function fetchCreatives(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page
+    /** @return ProviderPage<CreativeRecord> */
+    final public function fetchCreatives(Credentials $credentials, string $externalAccountId, ?string $cursor = null): ProviderPage
     {
         $page = $this->rows($credentials, $this->fixtureName('creatives'), $cursor);
 
-        return new Page(
+        return new ProviderPage(
             items: $this->mapRows($page->items, 'creatives', fn (array $row): CreativeRecord => $this->mapCreative($row)),
             nextCursor: $page->nextCursor,
         );
     }
 
-    /** @return Page<InsightRecord> */
+    /** @return ProviderPage<InsightRecord> */
     final public function fetchInsights(
         Credentials $credentials,
         string $externalAccountId,
@@ -112,7 +112,7 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
         DateTimeImmutable $since,
         DateTimeImmutable $until,
         ?string $cursor = null,
-    ): Page {
+    ): ProviderPage {
         /*
          * One request per level, as against the real APIs: asking for a
          * different level changes which ids come back and recomputes reach, so a
@@ -139,7 +139,7 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
             }
         }
 
-        return new Page(items: $records, nextCursor: $page->nextCursor);
+        return new ProviderPage(items: $records, nextCursor: $page->nextCursor);
     }
 
     /**
@@ -233,7 +233,7 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
      * One page of raw provider rows — the only door into a fetch.
      *
      * @param  callable(array<string, mixed>): bool|null  $filter
-     * @return Page<array<string, mixed>>
+     * @return ProviderPage<array<string, mixed>>
      *
      * @throws ProviderNotConfigured when credentials are absent, or present but
      *                               not yet usable against the live API
@@ -243,7 +243,7 @@ abstract class AbstractSyncAdapter implements AdvertisingSyncAdapter
         string $fixture,
         ?string $cursor,
         ?callable $filter = null,
-    ): Page {
+    ): ProviderPage {
         $this->assertSandbox($credentials);
 
         return $this->fixtures->page($this->provider(), $fixture, $cursor, $filter);

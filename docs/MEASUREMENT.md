@@ -171,6 +171,10 @@ no question behind it; every question this product asks is per day.
 A value with no currency is a number with no unit, and the first thing anyone would do with it
 is add it to another one — so a database CHECK constraint refuses it.
 
+Every row carries a source label (`SYNCED`, `PARTIAL`, `SANDBOX`, …) rather than the run
+carrying it, so a query spanning a sampled day and a complete one can see that from the rows it
+touched without joining back to a sync journal.
+
 The read model answers two questions, both over the trailing window:
 
 - `countsByRawName()` — what each name was seen to do, and whether any observation carried a
@@ -183,9 +187,15 @@ A mapping with a null source matches on name alone, which is what "from any sour
 
 ## What this layer does not do yet
 
-- **No source populates `observed_event_counts` in production.** GA4 (Phase 8) and the
-  commerce adapters (Phases 11–13) are what fill it. The schema, the read model, the
-  diagnosis and the API are complete and tested; the sync jobs are their own phases.
+- **Google Analytics 4 fills `observed_event_counts`** as of Phase 8 — see
+  [GOOGLE_ANALYTICS.md](GOOGLE_ANALYTICS.md). The commerce adapters (Phases 11–13) are what will
+  add orders. Both are still BLOCKED_EXTERNAL for live credentials, so a real workspace's honest
+  answer today remains `never_synced`.
+- **Money is rounded at two decimal places**, through the `Money` value object shared with every
+  advertising mapper. Correct for SAR, AED, USD and EUR; wrong for zero-exponent currencies (JPY)
+  and three-exponent ones (KWD, BHD, OMR). Recorded here rather than worked around in one mapper,
+  because a second rounding rule in one place is how two parts of a product come to disagree
+  about an amount.
 - **No identity resolution.** Sessions, touchpoints and identity confidence are Phase 16.
 - **No deduplication across sources.** A purchase in GA4 and the same purchase in Salla are
   two observations of one sale, and merging them is Phase 14's job, under an explicit

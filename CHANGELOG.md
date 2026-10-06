@@ -4,6 +4,95 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 8 — Google Analytics 4
+
+The first source that fills `observed_event_counts`. Built against the published Admin API v1beta
+and Data API v1beta contracts, read-only permanently, and still BLOCKED_EXTERNAL for live
+credentials.
+
+### Added
+
+- **`MeasurementSyncAdapter`** and its registry, separate from the advertising ones: an ad platform
+  is asked about campaigns and spend, an analytics property about which raw events arrived.
+- **`GoogleAnalyticsMapper`** and **`GoogleAnalyticsSyncAdapter`** covering `accountSummaries.list`,
+  `properties.dataStreams.list`, `properties.keyEvents.list`, `properties.getMetadata` and
+  `runReport`.
+- **`ReportQuality`** — GA4's own statements about the completeness of its answer, mapped to the
+  honesty label a figure carries.
+- **`SyncMeasurementSource`**, `DiscoverAnalyticsProperties`, `SuggestConversions`,
+  `EloquentObservedEventWriter`, and `MeasurementFixtures` — a fixture loader that keeps whole
+  responses rather than rows.
+- Three endpoints: property discovery, conversion suggestions, and sync. `docs/GOOGLE_ANALYTICS.md`
+  and 60 tests.
+
+### Fixed
+
+- **GA4, Tag Manager, Salla and Zid could not actually be connected.** Phase 6 added them to the
+  provider registry with adapters, credential keys and sandbox accounts, and the
+  `provider_connections` CHECK constraint written in Phase 2 still listed only the six advertising
+  platforms plus OpenAI. A provider therefore appeared on the integrations page, offered a Connect
+  action, accepted credentials through validation — and then failed at the insert with a constraint
+  violation. Found by the first test that tried to connect GA4. The constraint is widened from the
+  enum rather than dropped, since it is the reason an unknown provider string cannot reach a table
+  half the product reads.
+
+### Decisions worth recording
+
+- **Report rows are read through their headers, never by position.** A `runReport` row is a
+  positional array of `{value}`. Reading `dimensionValues[0]` because that is the order we asked for
+  would work until somebody added a dimension, at which point every date becomes an event name —
+  silently, with the figures still looking plausible. The fixtures list `eventName` before `date`
+  so a positional reader fails the suite immediately, and the fixtures are stored as whole
+  responses rather than rows precisely so the headers exist to be read.
+- **The value metric is asked for, not assumed.** Custom metrics differ per property, and a
+  property with no revenue data blocks its currency metrics with `NO_REVENUE_METRICS` — requesting
+  one anyway turns every sync into a 400. So `getMetadata` is read and a metric GA4 itself declares
+  `TYPE_CURRENCY` is used. A property reporting no money is read for counts only, which is the
+  honest outcome: a hard-coded name we had not verified would be an invented metric, and a stored
+  zero would be worse.
+- **GA4's completeness signals decide the figures' label.** Sampled, thresholded, truncated, or
+  rolled into `(other)` — each makes the run `PARTIAL` rather than `SYNCED`, with one sentence per
+  cause. A tool that reads the rows and drops the flags reports 412 leads with the same confidence
+  whether it saw all of them or 4% of them, and the client is told 412 either way. A sampling
+  fraction under 1% is shown to two decimals, because "0%" for a 0.4% sample reads as "no data"
+  when it means the figure is a two-hundredfold extrapolation.
+- **An empty report is not a defect.** `emptyReason` is recorded and deliberately not counted as
+  partial: a property with no traffic in the window is a fact about the client.
+- **`(other)` is never stored as an event name or a date.** As a name it would offer somebody a
+  conversion called "(other)" to map; as a date, a row we cannot place is dropped rather than
+  parked on today, which would move someone else's traffic into this morning.
+- **Key events are suggestions, and the citation bar is strict.** A normalised event is proposed
+  only for names Google documents with a defined meaning. `generate_lead` is **not** proposed,
+  because it does not appear on either page the map was built from — a suggestion the product
+  cannot cite is a guess wearing a citation's clothes. The cost of asking is one dropdown; the cost
+  of getting one wrong is a conversion that counts the wrong thing for a year.
+- **Roll-up properties are flagged.** A roll-up counts the same event its source properties do, so
+  measuring a client through both doubles every figure, and nothing later in the product could
+  detect that it had happened.
+- **Discovery is unfiltered.** An agency's Google account holds properties for clients it has left,
+  and that is exactly the list a person must read carefully rather than one to prune for them.
+- **The sync re-reads a window instead of resuming from a high-water mark.** Analytics figures keep
+  moving after the day closes, so "since last time" would freeze every day at its first, lowest
+  value. The writer upserts on `(source, raw name, date)` — inserting would multiply a client's
+  conversions by the number of times the sync had run, which would look exactly like growth.
+- **The weakest label in a run wins**, rather than labelling page by page: a chart totalling a
+  complete day and an estimated one is an estimate, and a reader cannot see which rows contributed.
+- **`last_synced_at` is written even on a failure**, because "we tried and got nowhere" is a
+  different fact from "nobody has asked". **`last_event_at` only moves forward**, settled in SQL
+  with `greatest()`, so a backfill of an older range cannot age a healthy source into a critical
+  warning.
+- **`Page` moved to `App\Application\Shared\DTO\ProviderPage`.** One page from somebody else's
+  API is not an advertising concept, and measurement needed it without coupling to advertising.
+
+### Not yet in place
+
+- **The live transport.** Needs a Google Cloud project with both APIs enabled, an allow-listed
+  OAuth redirect URI, and a user who can read the property. Real credentials fail loudly and name
+  what is missing; there is no path that invents a count.
+- **Currency exponents.** Revenue rounds at two decimal places through the shared `Money` value
+  object, so JPY and KWD are wrong. A pre-existing limitation shared with every advertising mapper,
+  recorded rather than worked around in one mapper.
+
 ## Phase 7 — the measurement foundation
 
 Where a number gets its meaning. Every later phase — store analytics, lead intelligence,

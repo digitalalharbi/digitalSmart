@@ -9,7 +9,7 @@ use App\Application\Advertising\DTO\AdRecord;
 use App\Application\Advertising\DTO\CampaignRecord;
 use App\Application\Advertising\DTO\CreativeRecord;
 use App\Application\Advertising\DTO\InsightRecord;
-use App\Application\Advertising\DTO\Page;
+use App\Application\Shared\DTO\ProviderPage;
 use App\Domain\Advertising\AdEntityType;
 use App\Domain\Integration\Credentials;
 use DateTimeImmutable;
@@ -34,17 +34,17 @@ use DateTimeImmutable;
  */
 interface AdvertisingSyncAdapter
 {
-    /** @return Page<CampaignRecord> */
-    public function fetchCampaigns(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page;
+    /** @return ProviderPage<CampaignRecord> */
+    public function fetchCampaigns(Credentials $credentials, string $externalAccountId, ?string $cursor = null): ProviderPage;
 
-    /** @return Page<AdGroupRecord> */
-    public function fetchAdGroups(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page;
+    /** @return ProviderPage<AdGroupRecord> */
+    public function fetchAdGroups(Credentials $credentials, string $externalAccountId, ?string $cursor = null): ProviderPage;
 
-    /** @return Page<AdRecord> */
-    public function fetchAds(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page;
+    /** @return ProviderPage<AdRecord> */
+    public function fetchAds(Credentials $credentials, string $externalAccountId, ?string $cursor = null): ProviderPage;
 
-    /** @return Page<CreativeRecord> */
-    public function fetchCreatives(Credentials $credentials, string $externalAccountId, ?string $cursor = null): Page;
+    /** @return ProviderPage<CreativeRecord> */
+    public function fetchCreatives(Credentials $credentials, string $externalAccountId, ?string $cursor = null): ProviderPage;
 
     /**
      * Daily performance for one level over an inclusive date range.
@@ -53,7 +53,7 @@ interface AdvertisingSyncAdapter
      * figures are not the sum of its children: reach is deduplicated and
      * attribution moves conversions between levels.
      *
-     * @return Page<InsightRecord>
+     * @return ProviderPage<InsightRecord>
      */
     public function fetchInsights(
         Credentials $credentials,
@@ -62,7 +62,7 @@ interface AdvertisingSyncAdapter
         DateTimeImmutable $since,
         DateTimeImmutable $until,
         ?string $cursor = null,
-    ): Page;
+    ): ProviderPage;
 
     /**
      * How far back conversions keep landing against past dates.

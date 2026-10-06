@@ -67,6 +67,33 @@ that nests it (Google's `segments.date`), and `_date_objects` writes it as
 `{year, month, day}` integers, for LinkedIn, whose reporting rows carry no date string
 anywhere.
 
+## Measurement fixtures are whole responses, not rows
+
+`google_analytics/` is read by a different loader
+(`App\Infrastructure\Measurement\Sandbox\MeasurementFixtures`) and follows a different rule:
+each element of the file is a **complete API response**, not a row.
+
+That is deliberate. The thing most worth proving about a GA4 report is that the mapper reads its
+rows through `dimensionHeaders` rather than by position — a row is a positional array of
+`{value}`, so a mapper that assumed the order we asked for would turn every date into an event
+name the moment somebody added a dimension, silently, with the figures still looking plausible.
+Headers only exist on the envelope, so flattening these to rows would delete the test that
+catches it. The fixtures prove the point by listing `eventName` **before** `date`.
+
+One response per element also mirrors how a real paged `runReport` behaves: one response per
+request.
+
+### The one departure here
+
+`_newest_days_ago` on a report response shifts every date in it by a whole number of days, so
+its newest row lands that many days before today. Real dates in, real dates out, the gaps
+between them preserved, the `YYYYMMDD` format untouched — the mapper cannot tell the difference.
+Without it, every freshness state in a sandbox workspace would read `stale` and the tracking
+page would be a wall of warnings about fixtures.
+
+`metadata.json` holds a one-element list containing the single `getMetadata` object, so every
+file reads the same way while the object inside stays verbatim.
+
 ## Adding a provider
 
 Create `<provider>/` and mirror its real API shapes. Do not invent an entity, a

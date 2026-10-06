@@ -8,13 +8,13 @@ use App\Application\Advertising\Contract\AdvertisingStore;
 use App\Application\Advertising\Contract\AdvertisingSyncAdapter;
 use App\Application\Advertising\Contract\SyncAdapterRegistry;
 use App\Application\Advertising\Contract\SyncJournal;
-use App\Application\Advertising\DTO\Page;
 use App\Application\Advertising\DTO\SyncContext;
 use App\Application\Advertising\DTO\SyncOutcome;
 use App\Application\Integration\Exception\ProviderNotConfigured;
 use App\Application\Integration\Exception\ProviderRequestFailed;
 use App\Application\Integration\Exception\ProviderUnavailable;
 use App\Application\Shared\Contract\Clock;
+use App\Application\Shared\DTO\ProviderPage;
 use App\Domain\Advertising\AdEntityType;
 use App\Domain\Advertising\ProviderErrorCategory;
 use App\Domain\Advertising\SyncKind;
@@ -79,25 +79,25 @@ final readonly class SyncExternalAccount
             $this->syncStructure(
                 $context,
                 SyncKind::Campaigns,
-                fn (?string $cursor): Page => $adapter->fetchCampaigns($credentials, $account, $cursor),
+                fn (?string $cursor): ProviderPage => $adapter->fetchCampaigns($credentials, $account, $cursor),
                 fn (array $records): int => $this->store->upsertCampaigns($context, $records),
             ),
             $this->syncStructure(
                 $context,
                 SyncKind::AdGroups,
-                fn (?string $cursor): Page => $adapter->fetchAdGroups($credentials, $account, $cursor),
+                fn (?string $cursor): ProviderPage => $adapter->fetchAdGroups($credentials, $account, $cursor),
                 fn (array $records): int => $this->store->upsertAdGroups($context, $records),
             ),
             $this->syncStructure(
                 $context,
                 SyncKind::Creatives,
-                fn (?string $cursor): Page => $adapter->fetchCreatives($credentials, $account, $cursor),
+                fn (?string $cursor): ProviderPage => $adapter->fetchCreatives($credentials, $account, $cursor),
                 fn (array $records): int => $this->store->upsertCreatives($context, $records),
             ),
             $this->syncStructure(
                 $context,
                 SyncKind::Ads,
-                fn (?string $cursor): Page => $adapter->fetchAds($credentials, $account, $cursor),
+                fn (?string $cursor): ProviderPage => $adapter->fetchAds($credentials, $account, $cursor),
                 fn (array $records): int => $this->store->upsertAds($context, $records),
             ),
         ];
@@ -144,7 +144,7 @@ final readonly class SyncExternalAccount
     }
 
     /**
-     * Page through one structure kind until the provider stops offering cursors.
+     * ProviderPage through one structure kind until the provider stops offering cursors.
      *
      * The cursor is persisted after every successful page, so a run interrupted
      * at page nine resumes at page nine rather than page one.
@@ -155,7 +155,7 @@ final readonly class SyncExternalAccount
      *
      * @template TRecord
      *
-     * @param  callable(?string): Page<TRecord>  $fetch
+     * @param  callable(?string): ProviderPage<TRecord>  $fetch
      * @param  callable(list<TRecord>): int  $write
      * @return array{kind: SyncKind, read: int, written: int, calls: int, failure: ?string}
      */

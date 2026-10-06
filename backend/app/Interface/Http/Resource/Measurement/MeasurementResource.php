@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Interface\Http\Resource\Measurement;
 
+use App\Application\Measurement\DTO\ConversionSuggestion;
+use App\Application\Measurement\DTO\DataStreamRecord;
+use App\Application\Measurement\DTO\DiscoveredProperty;
 use App\Application\Measurement\DTO\EventDefinitionView;
 use App\Application\Measurement\DTO\EventMappingView;
 use App\Application\Measurement\DTO\MeasurementSourceView;
+use App\Application\Measurement\DTO\MeasurementSyncResult;
 use App\Application\Measurement\DTO\TrackingHealthView;
 use App\Domain\Measurement\TrackingIssue;
 
@@ -76,6 +80,82 @@ final readonly class MeasurementResource
             /** Null when no window was asked for; 0 means asked, and never seen. */
             'observed_count' => $definition->observedCount,
             'last_seen_date' => $definition->lastSeenDate,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public static function property(DiscoveredProperty $property): array
+    {
+        return [
+            // The provider's resource name, prefix included: it is what every request is addressed to.
+            'property_id' => $property->propertyId,
+            'display_name' => $property->displayName,
+            'account_name' => $property->accountName,
+            'account_display_name' => $property->accountDisplayName,
+            'property_type' => $property->propertyType,
+            /*
+             * Flagged because a roll-up counts the same event its source properties do, so
+             * measuring one client through both double-counts — and nothing later in the product
+             * could detect that it had happened.
+             */
+            'is_aggregate' => $property->isAggregate(),
+            'streams' => array_map(static fn (DataStreamRecord $stream): array => [
+                'stream_id' => $stream->streamId,
+                'display_name' => $stream->displayName,
+                'type' => $stream->type,
+                // The site and the G- id are how a person recognises the property as their client's.
+                'measurement_id' => $stream->measurementId,
+                'default_uri' => $stream->defaultUri,
+                'app_identifier' => $stream->appIdentifier,
+                'is_web' => $stream->isWeb(),
+            ], $property->streams),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public static function suggestion(ConversionSuggestion $suggestion): array
+    {
+        return [
+            'raw_event_name' => $suggestion->rawEventName,
+            /*
+             * Null means "ask". This product places a name only from the provider's own published
+             * vocabulary, so a name it cannot cite is one a person chooses — including names that
+             * look obvious.
+             */
+            'normalized_event' => $suggestion->normalizedEvent?->value,
+            'normalized_event_label' => $suggestion->normalizedEvent?->label(),
+            'is_intent_signal_only' => $suggestion->normalizedEvent?->isIntentSignalOnly(),
+            // So confirming the same list twice cannot create a second definition for one event.
+            'already_mapped' => $suggestion->alreadyMapped,
+            'is_custom' => $suggestion->isCustom,
+            /*
+             * Counted per session, two purchases in one visit are one key event. Published so
+             * nobody reconciles it against an order count and concludes the tracking is broken.
+             */
+            'counted_once_per_session' => $suggestion->countedOncePerSession,
+            'default_value' => $suggestion->defaultValue,
+            'default_currency' => $suggestion->defaultCurrency,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public static function syncResult(MeasurementSyncResult $result): array
+    {
+        return [
+            'status' => $result->status->value,
+            'days_read' => $result->daysRead,
+            'rows_written' => $result->rowsWritten,
+            'api_calls' => $result->apiCalls,
+            /*
+             * The weakest label anything in the run carries, and the caveats behind it. A run can
+             * succeed completely and still have read estimates; without these a caller would
+             * present them as totals.
+             */
+            'source' => $result->source->value,
+            'source_label' => $result->source->label(),
+            'caveats' => $result->caveats,
+            'last_event_date' => $result->lastEventDate,
+            'failure_message' => $result->failureMessage,
         ];
     }
 

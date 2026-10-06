@@ -1,0 +1,104 @@
+[
+  {
+    "_newest_days_ago": 1,
+    "dimensionHeaders": [
+      { "name": "eventName" },
+      { "name": "date" }
+    ],
+    "metricHeaders": [
+      { "name": "eventCount", "type": "TYPE_INTEGER" },
+      { "name": "purchaseRevenue", "type": "TYPE_CURRENCY" }
+    ],
+    "rows": [
+      {
+        "dimensionValues": [{ "value": "page_view" }, { "value": "20260601" }],
+        "metricValues": [{ "value": "4812" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "session_start" }, { "value": "20260601" }],
+        "metricValues": [{ "value": "1903" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "generate_lead" }, { "value": "20260601" }],
+        "metricValues": [{ "value": "37" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "purchase" }, { "value": "20260601" }],
+        "metricValues": [{ "value": "12" }, { "value": "8415.75" }]
+      },
+      {
+        "dimensionValues": [{ "value": "whatsapp_click" }, { "value": "20260601" }],
+        "metricValues": [{ "value": "64" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "purchase_complete" }, { "value": "20260601" }],
+        "metricValues": [{ "value": "3" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "page_view" }, { "value": "20260531" }],
+        "metricValues": [{ "value": "4410" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "generate_lead" }, { "value": "20260531" }],
+        "metricValues": [{ "value": "29" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "purchase" }, { "value": "20260531" }],
+        "metricValues": [{ "value": "9" }, { "value": "6120.00" }]
+      }
+    ],
+    "rowCount": 14,
+    "metadata": {
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "kind": "analyticsData#runReport"
+  },
+  {
+    "_newest_days_ago": 3,
+    "dimensionHeaders": [
+      { "name": "eventName" },
+      { "name": "date" }
+    ],
+    "metricHeaders": [
+      { "name": "eventCount", "type": "TYPE_INTEGER" },
+      { "name": "purchaseRevenue", "type": "TYPE_CURRENCY" }
+    ],
+    "rows": [
+      {
+        "dimensionValues": [{ "value": "page_view" }, { "value": "20260530" }],
+        "metricValues": [{ "value": "4201" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "generate_lead" }, { "value": "20260530" }],
+        "metricValues": [{ "value": "31" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "purchase" }, { "value": "20260530" }],
+        "metricValues": [{ "value": "11" }, { "value": "7340.50" }]
+      },
+      {
+        "dimensionValues": [{ "value": "(other)" }, { "value": "20260530" }],
+        "metricValues": [{ "value": "118" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "form_start" }, { "value": "20260529" }],
+        "metricValues": [{ "value": "88" }, { "value": "0" }]
+      }
+    ],
+    "rowCount": 14,
+    "metadata": {
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh",
+      "dataLossFromOtherRow": true,
+      "samplingMetadatas": [
+        {
+          "samplesReadCount": "4120055",
+          "samplingSpaceSize": "51500687"
+        }
+      ],
+      "subjectToThresholding": true
+    },
+    "kind": "analyticsData#runReport"
+  }
+]

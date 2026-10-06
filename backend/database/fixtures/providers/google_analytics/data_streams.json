@@ -1,0 +1,36 @@
+[
+  {
+    "name": "properties/412006881/dataStreams/7740012",
+    "type": "WEB_DATA_STREAM",
+    "displayName": "noonretail.sa",
+    "createTime": "2025-02-11T08:14:22.431Z",
+    "updateTime": "2026-01-04T11:02:51.118Z",
+    "webStreamData": {
+      "measurementId": "G-7QK2M4XZPL",
+      "firebaseAppId": "",
+      "defaultUri": "https://noonretail.sa"
+    }
+  },
+  {
+    "name": "properties/412006882/dataStreams/7740055",
+    "type": "ANDROID_APP_DATA_STREAM",
+    "displayName": "Noon Retail Android",
+    "createTime": "2025-03-02T09:41:10.004Z",
+    "updateTime": "2025-11-19T06:22:03.900Z",
+    "androidAppStreamData": {
+      "firebaseAppId": "1:820114553077:android:5f2a9d41c8",
+      "packageName": "sa.noonretail.shop"
+    }
+  },
+  {
+    "name": "properties/412006882/dataStreams/7740056",
+    "type": "IOS_APP_DATA_STREAM",
+    "displayName": "Noon Retail iOS",
+    "createTime": "2025-03-02T09:43:55.221Z",
+    "updateTime": "2025-11-19T06:22:40.117Z",
+    "iosAppStreamData": {
+      "firebaseAppId": "1:820114553077:ios:9c71b2e0aa",
+      "bundleId": "sa.noonretail.shop"
+    }
+  }
+]

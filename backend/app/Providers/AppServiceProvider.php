@@ -24,7 +24,9 @@ use App\Application\Integration\Contract\IntegrationReadModel;
 use App\Application\Integration\Contract\ProviderAdapterRegistry as ProviderAdapterRegistryContract;
 use App\Application\Measurement\Contract\EventDefinitionRepository;
 use App\Application\Measurement\Contract\MeasurementSourceRepository;
+use App\Application\Measurement\Contract\MeasurementSyncAdapterRegistry as MeasurementSyncAdapterRegistryContract;
 use App\Application\Measurement\Contract\ObservedEventReadModel;
+use App\Application\Measurement\Contract\ObservedEventWriter;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
 use App\Application\Shared\Contract\ActorContext;
@@ -54,6 +56,8 @@ use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
 use App\Infrastructure\Integration\LaravelCredentialCipher;
 use App\Infrastructure\Integration\ProviderAdapterRegistry;
+use App\Infrastructure\Measurement\MeasurementSyncAdapterRegistry;
+use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBenchmarkReadModel;
@@ -72,6 +76,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRe
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMeasurementSourceRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMembershipRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentObservedEventWriter;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
@@ -152,7 +157,9 @@ final class AppServiceProvider extends ServiceProvider
         BenchmarkReadModel::class => EloquentBenchmarkReadModel::class,
 
         // Measurement (Phase 7)
+        MeasurementSyncAdapterRegistryContract::class => MeasurementSyncAdapterRegistry::class,
         MeasurementSourceRepository::class => EloquentMeasurementSourceRepository::class,
+        ObservedEventWriter::class => EloquentObservedEventWriter::class,
         EventDefinitionRepository::class => EloquentEventDefinitionRepository::class,
         ObservedEventReadModel::class => EloquentObservedEventReadModel::class,
     ];
@@ -183,6 +190,16 @@ final class AppServiceProvider extends ServiceProvider
          * so a test can freeze the clock and get a predictable window.
          */
         $this->app->singleton(SandboxFixtures::class, fn ($app): SandboxFixtures => new SandboxFixtures(
+            database_path('fixtures/providers'),
+            $app->make(Clock::class)->now(),
+        ));
+
+        /*
+         * Measurement fixtures shift their dates against the same injected time, so a sandbox
+         * tracking page shows a property that reported yesterday rather than one that has been
+         * silent since the fixture was written.
+         */
+        $this->app->singleton(MeasurementFixtures::class, fn ($app): MeasurementFixtures => new MeasurementFixtures(
             database_path('fixtures/providers'),
             $app->make(Clock::class)->now(),
         ));

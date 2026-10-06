@@ -8,11 +8,17 @@ use App\Application\Measurement\Command\DeleteEventDefinition;
 use App\Application\Measurement\Command\DeleteMeasurementSource;
 use App\Application\Measurement\Command\SaveEventDefinition;
 use App\Application\Measurement\Command\SaveMeasurementSource;
+use App\Application\Measurement\Command\SyncMeasurementSource;
+use App\Application\Measurement\DTO\ConversionSuggestion;
+use App\Application\Measurement\DTO\DiscoveredProperty;
 use App\Application\Measurement\DTO\EventDefinitionView;
 use App\Application\Measurement\DTO\MeasurementSourceView;
+use App\Application\Measurement\Query\DiscoverAnalyticsProperties;
 use App\Application\Measurement\Query\GetTrackingHealth;
 use App\Application\Measurement\Query\ListEventDefinitions;
 use App\Application\Measurement\Query\ListMeasurementSources;
+use App\Application\Measurement\Query\SuggestConversions;
+use App\Domain\Integration\Provider;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Request\Measurement\EventDefinitionRequest;
 use App\Interface\Http\Request\Measurement\MeasurementSourceRequest;
@@ -107,6 +113,56 @@ final class MeasurementController extends Controller
                 $health($this->scopeId($request, 'client_id'), $this->scopeId($request, 'project_id')),
             ),
         ]);
+    }
+
+    /**
+     * Every property the workspace's connection can read.
+     *
+     * Unfiltered on purpose: the person choosing which property measures which client has to see
+     * what the account actually holds, including the ones for clients the agency has left.
+     */
+    public function properties(string $provider, DiscoverAnalyticsProperties $discover): JsonResponse
+    {
+        $resolved = Provider::tryFrom($provider);
+
+        if ($resolved === null) {
+            return response()->json(['message' => 'Unknown provider.'], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'data' => array_map(
+                static fn (DiscoveredProperty $property): array => MeasurementResource::property($property),
+                $discover($resolved),
+            ),
+        ]);
+    }
+
+    /**
+     * Candidate conversions from what the property already treats as a key event.
+     *
+     * Suggestions only. Nothing is counted until somebody saves a definition, which is the act
+     * that carries an author and an audit entry.
+     */
+    public function suggestions(string $source, SuggestConversions $suggest): JsonResponse
+    {
+        return response()->json([
+            'data' => array_map(
+                static fn (ConversionSuggestion $suggestion): array => MeasurementResource::suggestion($suggestion),
+                $suggest($source),
+            ),
+        ]);
+    }
+
+    /**
+     * Read a source now and write what it reported.
+     *
+     * Synchronous because it is a person pressing a button and waiting for an answer; the
+     * scheduled path is a queued job over the same use case. The response carries the honesty
+     * label and the caveats, so a caller cannot show an estimate as a total.
+     */
+    public function sync(string $source, SyncMeasurementSource $sync): JsonResponse
+    {
+        return response()->json(['data' => MeasurementResource::syncResult($sync($source))]);
     }
 
     private function scopeId(Request $request, string $key): ?string

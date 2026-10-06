@@ -195,6 +195,18 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::get('measurement/health', [MeasurementController::class, 'health'])
         ->name('measurement.health');
 
+    /*
+     * Discovery, suggestion and sync. All three reach a provider, so all three need
+     * `tracking.manage` rather than `tracking.view` — reading a workspace's whole analytics
+     * estate is a setup action, not a reporting one.
+     */
+    Route::get('measurement/providers/{provider}/properties', [MeasurementController::class, 'properties'])
+        ->name('measurement.properties');
+    Route::get('measurement/sources/{source}/suggestions', [MeasurementController::class, 'suggestions'])
+        ->whereUuid('source')->name('measurement.sources.suggestions');
+    Route::post('measurement/sources/{source}/sync', [MeasurementController::class, 'sync'])
+        ->whereUuid('source')->name('measurement.sources.sync');
+
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])
         ->name('integrations.providers.index');

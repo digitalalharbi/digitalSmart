@@ -623,3 +623,70 @@ because this product can only see what a provider reports to it. The ten codes a
 refuses to infer are in [TRACKING.md](TRACKING.md#the-issues).
 
 A correctly configured project returns `"issues": []`. Silence is the goal.
+
+### `GET /api/measurement/providers/{provider}/properties`
+
+Every analytics property the workspace's connection can read. Needs `tracking.manage`, not
+`tracking.view`: this reaches out to the provider on the workspace's credentials, and reading an
+agency's whole analytics estate is a setup action rather than a reporting one.
+
+Deliberately unfiltered — including the properties for clients the agency has left, which is
+exactly the list a person must read carefully rather than one the product should prune for them.
+
+Each property carries its data streams, because the site and the `G-` measurement id are how
+somebody recognises it as their client's; a list of numeric ids is unusable for that decision.
+`is_aggregate` flags a roll-up property: it counts the same event its source properties do, so
+measuring one client through both would double every figure and nothing later could detect it.
+
+An unknown provider is a `404`. A provider with no measurement adapter, or one nobody has
+connected, is an empty list — not an error, because the integrations page is where that is fixed
+and it already says so. Real credentials with no authorised OAuth client are `503`
+`provider_not_configured`, naming what is missing.
+
+### `GET /api/measurement/sources/{source}/suggestions`
+
+Candidate conversions, from what the property's owner already marked as a key event. Needs
+`tracking.manage`.
+
+**Suggestions only. Nothing is created.** GA4 marking an event key is GA4's opinion — often a
+default, sometimes left by whoever configured the property years ago — and what this agency counts
+for this client is a different question with an author and an audit entry.
+
+`normalized_event` is populated **only** for names Google documents with a defined meaning, and
+is `null` otherwise, including for names that look obvious. A suggestion the product cannot cite
+is a guess wearing a citation's clothes; the list is in
+[GOOGLE_ANALYTICS.md](GOOGLE_ANALYTICS.md#key-events-are-suggestions-never-conversions).
+
+`counted_once_per_session` is published because it changes what the number means: counted per
+session, two purchases in one visit are one key event, and somebody reconciling that against an
+order count would otherwise conclude the tracking is broken. `already_mapped` is true for a raw
+name some definition in the scope already claims, so confirming the same list twice cannot create
+a second definition counting one event.
+
+### `POST /api/measurement/sources/{source}/sync`
+
+Read the source now and write what it reported. Needs `tracking.manage`. Synchronous because it
+is a person pressing a button and waiting; the scheduled path is a queued job over the same use
+case.
+
+The response is the honest account of the run, not a boolean:
+
+| Field | Notes |
+| ----- | ----- |
+| `status` | `succeeded`, `partial`, `failed`, or `skipped` |
+| `days_read` / `rows_written` / `api_calls` | What it actually did |
+| `source` | The **weakest** honesty label anything in the run carries — `sandbox` beats `partial` beats `synced` |
+| `caveats` | Why the figures are not totals, one sentence per cause |
+| `last_event_date` | The most recent day anything was seen on |
+| `failure_message` | What stopped it, when something did |
+
+`skipped` is not a failure: a manual source or a CRM has nothing to read, and a provider without
+an adapter is a gap in this product rather than a problem with the client's setup. The interface
+needs that distinguishable so it can disable the button instead of offering one that fails.
+
+A run that fails part-way is `partial`, not `failed`, when days did land — those figures are real
+and are kept. `last_synced_at` is written even on a failure, because "we tried and got nowhere" is
+a different fact from "nobody has asked", and a tracking page has to tell them apart.
+
+Re-running over the same window **replaces** rather than accumulates. The failure that guards
+against would look exactly like growth.

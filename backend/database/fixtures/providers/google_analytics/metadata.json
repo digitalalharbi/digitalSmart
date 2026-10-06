@@ -1,0 +1,57 @@
+[
+  {
+    "name": "properties/412006881/metadata",
+    "dimensions": [
+      {
+        "apiName": "date",
+        "uiName": "Date",
+        "description": "The date of the event, formatted as YYYYMMDD.",
+        "category": "Time"
+      },
+      {
+        "apiName": "eventName",
+        "uiName": "Event name",
+        "description": "The name of the event.",
+        "category": "Event"
+      }
+    ],
+    "metrics": [
+      {
+        "apiName": "eventCount",
+        "uiName": "Event count",
+        "description": "The count of events.",
+        "type": "TYPE_INTEGER",
+        "category": "Event"
+      },
+      {
+        "apiName": "sessions",
+        "uiName": "Sessions",
+        "description": "The number of sessions that began on your site or app.",
+        "type": "TYPE_INTEGER",
+        "category": "Session"
+      },
+      {
+        "apiName": "averageSessionDuration",
+        "uiName": "Average session duration",
+        "description": "The average duration (in seconds) of users' sessions.",
+        "type": "TYPE_SECONDS",
+        "category": "Session"
+      },
+      {
+        "apiName": "advertiserAdCost",
+        "uiName": "Ad cost",
+        "description": "The total amount you paid for your ads.",
+        "type": "TYPE_CURRENCY",
+        "category": "Advertising",
+        "blockedReasons": ["NO_COST_METRICS"]
+      },
+      {
+        "apiName": "purchaseRevenue",
+        "uiName": "Purchase revenue",
+        "description": "The sum of revenue from purchases made in your app or site.",
+        "type": "TYPE_CURRENCY",
+        "category": "Revenue"
+      }
+    ]
+  }
+]

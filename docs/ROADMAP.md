@@ -22,7 +22,7 @@ sit.
 | 5     | Budgets, pacing, calculator, forecasting, alerts                                | **Complete** |
 | 6     | **Provider registry** — one canonical catalogue of providers, categories, capabilities, auth strategies and API status, consumed by both ends | **Complete** |
 | 7     | **Measurement foundation** — measurement sources, normalised event vocabulary, conversion registry, event mapping, observed events, tracking health | **Complete**; sessions and touchpoints moved to Phase 16, where identity evidence lives |
-| 8     | **Google Analytics 4** — accounts, properties, data streams, dimensions, metrics, key events, per-project property binding, freshness states | Planned |
+| 8     | **Google Analytics 4** — accounts, properties, data streams, metadata-driven metrics, key events as suggestions, event counts, sampling and thresholding honesty, freshness states | **Complete**; BLOCKED_EXTERNAL on an authorised OAuth client, sandbox end to end |
 | 9     | **Google Tag Manager** — accounts, containers, workspaces, tags, triggers, variables, versions; tracking-readiness checks with evidence-backed states | Planned |
 | 10    | **Tracking Center** — per client and project: what is connected, what is verified, what is missing, last event, last sync, issues by severity | Planned |
 | 11    | **Commerce domain** — normalised stores, orders, items, products, variants, customers, refunds, payments, shipments, webhook events, sync runs | Planned |
@@ -394,3 +394,49 @@ guessed meaning here would make every one of them confidently wrong in a way no 
 - **No cross-source deduplication.** A purchase in GA4 and the same purchase in Salla are two
   observations of one sale. Keeping them apart is the precondition for Phase 14 merging them
   under a revenue source the user chooses.
+
+### Phase 8 — Google Analytics 4
+
+The first source that actually fills `observed_event_counts`, built against the published Admin
+API v1beta and Data API v1beta contracts.
+
+- **`MeasurementSyncAdapter`**, separate from the advertising one because the questions differ: an
+  ad platform is asked about campaigns and spend, an analytics property about which raw events
+  arrived. One interface for both would mean a GA4 adapter implementing `fetchCampaigns()` as a
+  shrug.
+- **Report rows are read through `dimensionHeaders`, never by position.** The failure this
+  prevents — adding a dimension and silently storing every date as an event name — leaves the
+  figures looking plausible. The fixtures list `eventName` before `date` so a positional reader
+  fails the suite at once.
+- **The value metric is asked for, not assumed.** `getMetadata` is read and a metric GA4 itself
+  declares `TYPE_CURRENCY` with no `blockedReasons` is used. A property reporting no money is read
+  for counts only — the honest outcome, where a hard-coded name would be an invented metric.
+- **GA4's own completeness signals reach the figures' labels.** Sampling
+  (`samplesReadCount / samplingSpaceSize`), `subjectToThresholding`, `dataTruncationReasons` and
+  `dataLossFromOtherRow` each make a run `PARTIAL` rather than `SYNCED`, with a sentence per cause.
+  A tool that drops these reports 412 leads whether it saw all of them or 4% of them.
+- **Key events are suggestions a person confirms**, and a normalised event is proposed only for
+  names Google documents — `generate_lead` included in the refusal, because it is not on either
+  cited page.
+- Discovery is unfiltered and flags roll-up properties, which would double-count a client measured
+  through both a roll-up and its sources.
+- The sync re-reads a 14-day restatement window and upserts; `last_event_at` only moves forward,
+  settled in SQL.
+- **A real Phase 6 defect found here:** the `provider_connections` CHECK constraint still listed
+  only the six advertising platforms, so GA4, GTM, Salla and Zid appeared on the integrations page,
+  offered a Connect action, passed validation and then failed at the insert. Widened from the enum.
+- 60 tests across the mapper and the HTTP surface.
+
+### Not yet done in Phase 8
+
+- **The live transport.** Needs a Google Cloud project with both APIs enabled, an allow-listed
+  OAuth redirect URI and a user who can read the property. No programme to be admitted to — the
+  blocker is configuration and consent. Until then real credentials fail loudly and name what is
+  missing, and no code path invents a count.
+- **Scheduled syncing.** The use case is queue-ready and driven synchronously by a button today;
+  putting it on a schedule belongs with the operations phase that owns job orchestration.
+- **Per-project property binding.** A source can name a project and inherits to a client's
+  projects otherwise, which covers the agency case; the explicit binding UI arrives with the
+  Tracking Center in Phase 10.
+- **Currency exponents.** Revenue rounds at two decimals, so JPY and KWD are wrong. A shared
+  `Money` limitation, recorded in GOOGLE_ANALYTICS.md.

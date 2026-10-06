@@ -65,6 +65,7 @@ make e2e        # Playwright (stack must be running)
 | `docs/INTEGRATIONS.md`   | Provider adapters, isolation model, what is blocked     |
 | `docs/MEASUREMENT.md`    | Measurement sources, the event vocabulary, the conversion registry |
 | `docs/TRACKING.md`       | Tracking health: the issue codes, and what it refuses to infer |
+| `docs/GOOGLE_ANALYTICS.md` | GA4 Admin and Data APIs, sampling honesty, key-event suggestions |
 | `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |
 | `docs/SECURITY.md`       | Controls, threat notes, secret handling                 |
 | `docs/TESTING.md`        | Test layers, database strategy, conventions             |
