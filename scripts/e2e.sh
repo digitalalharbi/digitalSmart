@@ -77,9 +77,24 @@ DB_PASSWORD="$(env_value DB_PASSWORD digitalsmart)"
 
 echo "==> Preparing $E2E_DB as $DB_USERNAME"
 PGPASSWORD="$DB_PASSWORD" createdb -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" "$E2E_DB" 2>/dev/null || true
+# Password hashing is deliberately cheap for this run, and the seed has to agree with the
+# server or nothing signs in.
+#
+# This is not a corner cut for speed alone. `.env` sets 12 rounds, which is right for
+# production and costs a few hundred milliseconds of pure CPU per verification. Every test
+# here signs in, two browser projects run at once, and PHP's built-in server hands each
+# request to a worker for the whole of it — so a burst of sign-ins fills the accept queue and
+# the browser is told the server is unreachable. That failure reads exactly like an
+# application bug and was mistaken for one.
+#
+# Four rounds is what `phpunit.xml` already uses for the other suites. It is safe here for the
+# same reasons: this database is created fresh, dropped at the end, and holds only seeded demo
+# passwords. Nothing about the application's own hashing configuration changes.
+E2E_BCRYPT_ROUNDS="${E2E_BCRYPT_ROUNDS:-4}"
+
 (
   cd "$ROOT/backend"
-  DB_DATABASE="$E2E_DB" php artisan migrate:fresh --seed --force
+  DB_DATABASE="$E2E_DB" BCRYPT_ROUNDS="$E2E_BCRYPT_ROUNDS" php artisan migrate:fresh --seed --force
 )
 
 # Sanctum only establishes a session for requests it recognises as first-party,
@@ -98,7 +113,11 @@ E2E_STATEFUL="127.0.0.1:$WEB_PORT,localhost:$WEB_PORT"
 # fork. Two browser projects run at once and every dashboard widget issues its own
 # analytics query, so on one worker a sign-in queues behind several half-second
 # aggregations and the browser eventually reports the server as unreachable — a
-# harness limit that reads exactly like an application bug. `--no-reload` is required
+# harness limit that reads exactly like an application bug.
+#
+# Workers alone were not enough: the dominant cost was password hashing at production
+# rounds, which is why `E2E_BCRYPT_ROUNDS` is set above. Both matter, and the hashing
+# mattered more. `--no-reload` is required
 # for the workers to be created at all — Laravel warns and falls back to one
 # otherwise — and costs nothing here, because the suite runs a build rather than code
 # somebody is editing.
@@ -110,6 +129,7 @@ echo "==> Starting API on :$API_PORT"
   cd "$ROOT/backend"
   PHP_CLI_SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-16}" \
   DB_DATABASE="$E2E_DB" \
+  BCRYPT_ROUNDS="$E2E_BCRYPT_ROUNDS" \
   FRONTEND_URL="$E2E_ORIGIN" \
   SANCTUM_STATEFUL_DOMAINS="$E2E_STATEFUL" \
   RATE_LIMIT_API_GUEST="${RATE_LIMIT_API_GUEST:-1000}" \
@@ -159,4 +179,10 @@ fi
 
 echo "==> Running Playwright"
 cd "$ROOT/frontend"
+
+# The suite caches one signed-in session per role so it does not re-authenticate on every test.
+# Those sessions belong to the database this run just created and dropped, so a session left over
+# from a previous run points at a user that no longer exists. Cleared here rather than trusted.
+rm -rf test-results/.sessions
+
 VITE_DEV_PORT="$WEB_PORT" E2E_BASE_URL="http://127.0.0.1:$WEB_PORT" npx playwright test "$@"

@@ -1,3 +1,4 @@
+import { Agent } from 'node:http';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
@@ -8,6 +9,26 @@ import tailwindcss from '@tailwindcss/vite';
 // and a port clash should be a config change, not a code change.
 const API_TARGET = process.env.VITE_DEV_API_PROXY ?? 'http://127.0.0.1:8001';
 const PORT = Number.parseInt(process.env.VITE_DEV_PORT ?? '5174', 10);
+
+/*
+ * The API proxy opens a fresh connection per request instead of pooling them.
+ *
+ * Node has kept connections alive by default since 19, and PHP's built-in development
+ * server — which is what sits behind this proxy locally and in the end-to-end suite —
+ * binds a kept-alive connection to one forked worker and closes it on its own schedule.
+ * When Node then picks that socket for the next request the read fails, the proxy
+ * returns nothing, and the application correctly reports that the server could not be
+ * reached. It looks exactly like a bug in the sign-in screen, and it was mistaken for
+ * one: it appeared only under WebKit, which opens and reuses more connections than
+ * Chromium does.
+ *
+ * A new connection per request costs a local TCP handshake, which is not measurable
+ * next to a request that has to be retried.
+ */
+const PROXY = {
+  changeOrigin: true,
+  agent: new Agent({ keepAlive: false }),
+} as const;
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -25,9 +46,9 @@ export default defineConfig({
     port: PORT,
     strictPort: true,
     proxy: {
-      '/api': { target: API_TARGET, changeOrigin: true },
-      '/sanctum': { target: API_TARGET, changeOrigin: true },
-      '/broadcasting': { target: API_TARGET, changeOrigin: true },
+      '/api': { target: API_TARGET, ...PROXY },
+      '/sanctum': { target: API_TARGET, ...PROXY },
+      '/broadcasting': { target: API_TARGET, ...PROXY },
     },
   },
   // The preview server mirrors dev, so end-to-end tests can run against the
@@ -38,9 +59,9 @@ export default defineConfig({
     port: PORT,
     strictPort: true,
     proxy: {
-      '/api': { target: API_TARGET, changeOrigin: true },
-      '/sanctum': { target: API_TARGET, changeOrigin: true },
-      '/broadcasting': { target: API_TARGET, changeOrigin: true },
+      '/api': { target: API_TARGET, ...PROXY },
+      '/sanctum': { target: API_TARGET, ...PROXY },
+      '/broadcasting': { target: API_TARGET, ...PROXY },
     },
   },
   build: {

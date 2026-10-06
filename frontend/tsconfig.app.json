@@ -31,5 +31,5 @@
     /* Path aliases (resolved relative to this file; baseUrl is deprecated in TS 6) */
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src", "e2e"]
+  "include": ["src"]
 }

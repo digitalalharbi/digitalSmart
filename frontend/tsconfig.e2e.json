@@ -1,0 +1,44 @@
+{
+  /*
+   * The end-to-end suite, which is neither application code nor build tooling.
+   *
+   * Its own project because the two test frameworks have colliding global names. While
+   * `e2e` sat inside the application's project it inherited `vitest/globals`, so a
+   * Playwright spec could reference Vitest's `expect` or `describe` and typecheck
+   * cleanly — then fail at run time, with an error that points at the assertion rather
+   * than at the import that was never made.
+   *
+   * It takes `node` because the harness runs in Node, and `DOM` because the callbacks
+   * handed to `page.evaluate` are compiled here and run in a browser. Keeping both out
+   * of the application's project is the other half of the point: application code must
+   * not see Node's globals, or a stray `process.env` will typecheck and then be
+   * undefined in the browser.
+   */
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.e2e.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "esnext",
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Strictness — the same bar as the application; a lax test harness hides real failures. */
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true
+  },
+  "include": ["e2e"]
+}
