@@ -690,3 +690,41 @@ a different fact from "nobody has asked", and a tracking page has to tell them a
 
 Re-running over the same window **replaces** rather than accumulates. The failure that guards
 against would look exactly like growth.
+
+### `GET /api/measurement/containers`
+
+Every tag container the workspace's connection can read. Needs `tracking.manage`.
+
+Separate from assessing one: listing is a single cheap call, while reading each container's
+published version is a call per container. `public_id` (`GTM-XXXXXX`) is the field that matters —
+it is what somebody will find in their client's page source, and the only way to be sure a
+container is the right one. `is_web` distinguishes a web container from a server-side or app one, so
+nobody expects web page events from something measuring elsewhere.
+
+Empty when Tag Manager is not connected.
+
+### `GET /api/measurement/sources/{source}/readiness`
+
+Whether a client's container is actually doing anything. Needs `tracking.manage`, and the source
+must be of kind `tag_manager` — an analytics property has no container, and a `404` saying so beats
+an empty page.
+
+**Assessed from the published version, never a workspace.** A workspace holds what somebody is
+working on; the live version is what the site runs, and believing the first is the second is the
+commonest failure in this area. `has_live_version: false` means the container was never published —
+reported as a fact rather than an error, and as the *only* finding, because anything else would bury
+it.
+
+The issues use the same shape, severities and evidence rule as `/measurement/health`; the six codes
+are listed in [GOOGLE_TAG_MANAGER.md](GOOGLE_TAG_MANAGER.md#what-it-concludes-and-from-what). This
+is a separate endpoint because health is derived from our own tables and always answers, while this
+needs a live call — and a provider outage must not empty the tracking page of facts it already had.
+
+`measurement_ids_found` and `measurement_ids_expected` both travel on the response so a reader can
+judge the id finding rather than trust it: a container may load a property through a custom template
+or a server-side container, neither of which this product can see.
+
+A source pointing at a container the connection can no longer read is a `404` — silently assessing a
+different container would be the worst available outcome. Real credentials with no authorised OAuth
+client are `503` `provider_not_configured`: reporting "ready" or "never published" would both be
+fabrications, and either would be acted on.

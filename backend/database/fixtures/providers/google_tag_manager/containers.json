@@ -1,0 +1,40 @@
+[
+  {
+    "container": [
+      {
+        "path": "accounts/6001144/containers/191002277",
+        "accountId": "6001144",
+        "containerId": "191002277",
+        "name": "Noon Retail — Web",
+        "publicId": "GTM-NR4QX8V",
+        "domainName": ["noonretail.sa", "www.noonretail.sa"],
+        "usageContext": ["web"],
+        "tagIds": ["GT-PK92MNQ"],
+        "fingerprint": "1764521882103",
+        "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/6001144/containers/191002277/workspaces?apiLink=container"
+      },
+      {
+        "path": "accounts/6001144/containers/191002290",
+        "accountId": "6001144",
+        "containerId": "191002290",
+        "name": "Noon Retail — Server",
+        "publicId": "GTM-SRV77LK",
+        "usageContext": ["server"],
+        "taggingServerUrls": ["https://sgtm.noonretail.sa"],
+        "fingerprint": "1764521990022",
+        "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/6001144/containers/191002290/workspaces?apiLink=container"
+      },
+      {
+        "path": "accounts/6001144/containers/191002311",
+        "accountId": "6001144",
+        "containerId": "191002311",
+        "name": "Al Waha Clinics — Web (never published)",
+        "publicId": "GTM-AW3TTQ2",
+        "domainName": ["alwahaclinics.sa"],
+        "usageContext": ["web"],
+        "fingerprint": "1764522001477",
+        "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/6001144/containers/191002311/workspaces?apiLink=container"
+      }
+    ]
+  }
+]

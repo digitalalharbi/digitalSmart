@@ -8,6 +8,7 @@ use App\Application\Integration\Contract\ProviderAdapter;
 use App\Application\Integration\Exception\ProviderUnavailable;
 use App\Application\Measurement\Contract\MeasurementSyncAdapter;
 use App\Application\Measurement\Contract\MeasurementSyncAdapterRegistry;
+use App\Application\Measurement\Contract\TagContainerReadAdapter;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderCapability;
 use App\Infrastructure\Integration\ProviderAdapterRegistry;
@@ -80,9 +81,28 @@ arch('no sync adapter is referenced outside infrastructure and its registry')
         'App\Providers',
     ]);
 
-arch('measurement adapters live only in infrastructure')
-    ->expect('App\Infrastructure\Measurement\Adapter')
-    ->toImplement(MeasurementSyncAdapter::class);
+it('gives every measurement adapter one of the measurement contracts', function (): void {
+    /*
+     * Two contracts share this directory, because two different questions are asked of a provider:
+     * an analytics property is asked what events arrived, a tag container what is published. A
+     * single `toImplement` rule would force one of them to pretend to be the other — which is the
+     * very thing the split exists to avoid — so the rule is that every adapter implements *one* of
+     * them, and an adapter implementing neither is a class nobody can call.
+     */
+    $directory = app_path('Infrastructure/Measurement/Adapter');
+    $files = glob($directory.'/*.php');
+
+    expect($files)->not->toBeEmpty();
+
+    foreach ($files ?: [] as $file) {
+        $class = 'App\\Infrastructure\\Measurement\\Adapter\\'.basename($file, '.php');
+
+        expect(
+            is_a($class, MeasurementSyncAdapter::class, true)
+            || is_a($class, TagContainerReadAdapter::class, true)
+        )->toBeTrue($class.' implements neither measurement adapter contract');
+    }
+});
 
 arch('no measurement adapter is referenced outside infrastructure and its registry')
     ->expect('App\Infrastructure\Measurement\Adapter')

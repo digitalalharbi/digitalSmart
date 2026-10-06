@@ -193,6 +193,7 @@ Maintain:
 - docs/MEASUREMENT.md
 - docs/TRACKING.md
 - docs/GOOGLE_ANALYTICS.md
+- docs/GOOGLE_TAG_MANAGER.md
 - docs/DESIGN_SYSTEM.md
 - docs/SECURITY.md
 - docs/TESTING.md

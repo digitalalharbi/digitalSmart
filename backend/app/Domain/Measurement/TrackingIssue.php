@@ -46,6 +46,35 @@ final readonly class TrackingIssue
     public const string DUPLICATE_MAPPING = 'duplicate_mapping';
 
     /**
+     * A container has never been published, so nothing in it is deployed.
+     *
+     * The commonest tag-manager failure and the hardest to see: the workspace looks complete,
+     * every tag is configured, and the live site has no container version at all.
+     */
+    public const string CONTAINER_NEVER_PUBLISHED = 'container_never_published';
+
+    /** The container has edits nobody has published, so the live site is running older rules. */
+    public const string CONTAINER_UNPUBLISHED_CHANGES = 'container_unpublished_changes';
+
+    /** A tag in the live container is paused, so it is deployed and does nothing. */
+    public const string TAG_PAUSED = 'tag_paused';
+
+    /** A tag has no firing trigger, so it can never fire. */
+    public const string TAG_WITHOUT_TRIGGER = 'tag_without_trigger';
+
+    /** A tag fires on a trigger the live version does not contain. */
+    public const string TAG_TRIGGER_MISSING = 'tag_trigger_missing';
+
+    /**
+     * No tag in the live container carries the measurement id of the property bound to this client.
+     *
+     * A warning, never a critical. A container can load a property through a custom template, a
+     * server-side container or a variable this product cannot resolve, so absence here is
+     * evidence worth showing a person rather than proof of a fault.
+     */
+    public const string MEASUREMENT_ID_NOT_IN_CONTAINER = 'measurement_id_not_in_container';
+
+    /**
      * An intent signal is being counted as a conversion.
      *
      * A WhatsApp click is not a conversation and a form start is not a submission. This is

@@ -1,0 +1,20 @@
+[
+  {
+    "path": "accounts/6001144/containers/191002277/workspaces/9",
+    "workspaceChange": [
+      {
+        "changeStatus": "added",
+        "tag": {
+          "path": "accounts/6001144/containers/191002277/workspaces/9/tags/19",
+          "tagId": "19",
+          "name": "GA4 — add_to_cart",
+          "type": "gaawe"
+        }
+      }
+    ]
+  },
+  {
+    "path": "accounts/6001144/containers/191002290/workspaces/4",
+    "workspaceChange": []
+  }
+]

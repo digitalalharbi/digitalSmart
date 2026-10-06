@@ -83,6 +83,15 @@ Issues sort worst-first, which is the order somebody works through them.
 | `intent_signal_as_conversion` | warning | A click or a form start is being counted as a completed action. |
 | `no_primary_conversion` | warning | Nothing says what success means here. |
 
+### Container readiness shares this vocabulary
+
+Six more codes — `container_never_published`, `container_unpublished_changes`, `tag_paused`,
+`tag_without_trigger`, `tag_trigger_missing`, `measurement_id_not_in_container` — come from
+assessing a tag container, and use the same `TrackingIssue` shape, the same severities and the same
+evidence rule. They are served by `GET /api/measurement/sources/{source}/readiness` rather than by
+the health endpoint, because that one needs a live call to Tag Manager and this one must keep
+answering when a provider does not. See [GOOGLE_TAG_MANAGER.md](GOOGLE_TAG_MANAGER.md).
+
 ### Why `primary_conversion_unseen` is critical
 
 Either the campaign is failing or the measurement is. Both need somebody today, and the two

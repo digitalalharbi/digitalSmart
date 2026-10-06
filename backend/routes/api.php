@@ -207,6 +207,17 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('measurement/sources/{source}/sync', [MeasurementController::class, 'sync'])
         ->whereUuid('source')->name('measurement.sources.sync');
 
+    /*
+     * Tag containers. Readiness is its own endpoint rather than part of `measurement/health`,
+     * because health is derived from our own tables and always answers while this needs a live
+     * call to Tag Manager — and a provider outage must not empty the tracking page of facts it
+     * already had.
+     */
+    Route::get('measurement/containers', [MeasurementController::class, 'containers'])
+        ->name('measurement.containers');
+    Route::get('measurement/sources/{source}/readiness', [MeasurementController::class, 'readiness'])
+        ->whereUuid('source')->name('measurement.sources.readiness');
+
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])
         ->name('integrations.providers.index');

@@ -27,6 +27,7 @@ use App\Application\Measurement\Contract\MeasurementSourceRepository;
 use App\Application\Measurement\Contract\MeasurementSyncAdapterRegistry as MeasurementSyncAdapterRegistryContract;
 use App\Application\Measurement\Contract\ObservedEventReadModel;
 use App\Application\Measurement\Contract\ObservedEventWriter;
+use App\Application\Measurement\Contract\TagContainerReadAdapter;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
 use App\Application\Shared\Contract\ActorContext;
@@ -56,6 +57,7 @@ use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
 use App\Infrastructure\Integration\LaravelCredentialCipher;
 use App\Infrastructure\Integration\ProviderAdapterRegistry;
+use App\Infrastructure\Measurement\Adapter\GoogleTagManagerReadAdapter;
 use App\Infrastructure\Measurement\MeasurementSyncAdapterRegistry;
 use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel;
@@ -160,6 +162,12 @@ final class AppServiceProvider extends ServiceProvider
         MeasurementSyncAdapterRegistryContract::class => MeasurementSyncAdapterRegistry::class,
         MeasurementSourceRepository::class => EloquentMeasurementSourceRepository::class,
         ObservedEventWriter::class => EloquentObservedEventWriter::class,
+        /*
+         * One implementation, bound directly rather than through a registry. Tag Manager is
+         * the only container provider this product reads, and a registry of one is a
+         * ceremony that hides that fact rather than a seam anybody needs.
+         */
+        TagContainerReadAdapter::class => GoogleTagManagerReadAdapter::class,
         EventDefinitionRepository::class => EloquentEventDefinitionRepository::class,
         ObservedEventReadModel::class => EloquentObservedEventReadModel::class,
     ];

@@ -23,7 +23,7 @@ sit.
 | 6     | **Provider registry** — one canonical catalogue of providers, categories, capabilities, auth strategies and API status, consumed by both ends | **Complete** |
 | 7     | **Measurement foundation** — measurement sources, normalised event vocabulary, conversion registry, event mapping, observed events, tracking health | **Complete**; sessions and touchpoints moved to Phase 16, where identity evidence lives |
 | 8     | **Google Analytics 4** — accounts, properties, data streams, metadata-driven metrics, key events as suggestions, event counts, sampling and thresholding honesty, freshness states | **Complete**; BLOCKED_EXTERNAL on an authorised OAuth client, sandbox end to end |
-| 9     | **Google Tag Manager** — accounts, containers, workspaces, tags, triggers, variables, versions; tracking-readiness checks with evidence-backed states | Planned |
+| 9     | **Google Tag Manager** — accounts, containers, published versions, tags, triggers; evidence-backed readiness checks that refuse to read a tag's purpose from its name | **Complete**; BLOCKED_EXTERNAL on an authorised OAuth client, sandbox end to end |
 | 10    | **Tracking Center** — per client and project: what is connected, what is verified, what is missing, last event, last sync, issues by severity | Planned |
 | 11    | **Commerce domain** — normalised stores, orders, items, products, variants, customers, refunds, payments, shipments, webhook events, sync runs | Planned |
 | 12    | **Salla** integration — OAuth, entities, webhooks with signature verification, idempotent queued handling, reconciliation sync | Planned |
@@ -440,3 +440,43 @@ API v1beta and Data API v1beta contracts.
   Tracking Center in Phase 10.
 - **Currency exponents.** Revenue rounds at two decimals, so JPY and KWD are wrong. A shared
   `Money` limitation, recorded in GOOGLE_ANALYTICS.md.
+
+### Phase 9 — Google Tag Manager
+
+Container readiness: whether what somebody built is deployed and able to fire. Built against the
+Tag Manager API v2, read-only permanently — the API can publish tags, and a reporting tool that
+could rewrite a client's measurement setup will eventually break one with nobody able to say what
+changed.
+
+- **`TagContainerReadAdapter`**, a third adapter shape, because a container reports configuration
+  rather than events. Forcing it into the sync contract would mean an empty `fetchEventCounts()`,
+  which reads as "measured nothing" rather than "not that kind of thing".
+- **It reads the live version, never a workspace.** A workspace is what somebody is working on; the
+  live version is what the site runs. Believing the first is the second is the commonest failure in
+  this area. A container nobody published is reported as exactly that, and as the *only* finding,
+  because anything else would bury it.
+- **It never reads a tag's purpose from its name.** "GA4 – Purchase" is a label somebody typed; it
+  may fire on a thank-you page, on every page, or never. A container whose only tag is called that
+  and which fires properly produces no findings at all, and a test is named after it.
+- **Built-in triggers are not accused.** Every container has undeletable All Pages, Consent
+  Initialization and Initialization triggers that the API never returns in the trigger list. Nearly
+  every real tag fires on All Pages, so a naive comparison reports the whole container broken — the
+  false positive that would have killed the feature on first use. The threshold is set so the
+  failure mode is silence, never a wrong accusation.
+- **The measurement-id cross-check compares the client's registered property against what the
+  published container refers to**, scanning for the id's own shape at any depth under any key — the
+  parameter key depends on the tag template, so finding the id is a fact while assuming a key would
+  be a guess. Reported as a warning phrased as a question, with the ids it did find as evidence.
+- Readiness is its own endpoint rather than part of `/measurement/health`: health is derived from our
+  own tables and always answers, and a Tag Manager outage must not empty the tracking page.
+- 29 tests.
+
+### Not yet done in Phase 9
+
+- **The live transport**, on the same gate as Analytics.
+- **Variables and folders** are read past rather than assessed. Nothing honest can be concluded from
+  a variable's existence, and inventing findings to make the page look thorough is the opposite of
+  the point.
+- **Consent-mode configuration** is visible in a tag's `consentSettings` and deliberately not
+  assessed yet: whether a setup is compliant is a legal judgement about a jurisdiction, not a
+  structural fact, and this product will not imply it has made one.

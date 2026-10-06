@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Http\Resource\Measurement;
 
+use App\Application\Measurement\DTO\ContainerReadinessView;
 use App\Application\Measurement\DTO\ConversionSuggestion;
 use App\Application\Measurement\DTO\DataStreamRecord;
+use App\Application\Measurement\DTO\DiscoveredContainer;
 use App\Application\Measurement\DTO\DiscoveredProperty;
 use App\Application\Measurement\DTO\EventDefinitionView;
 use App\Application\Measurement\DTO\EventMappingView;
@@ -156,6 +158,63 @@ final readonly class MeasurementResource
             'caveats' => $result->caveats,
             'last_event_date' => $result->lastEventDate,
             'failure_message' => $result->failureMessage,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public static function container(DiscoveredContainer $container): array
+    {
+        return [
+            'container_id' => $container->containerId,
+            'path' => $container->path,
+            'name' => $container->name,
+            /*
+             * The one field that proves a container is the right one: `GTM-XXXXXX` is what somebody
+             * will find in their client's page source. A numeric id proves nothing to anybody.
+             */
+            'public_id' => $container->publicId,
+            'account_id' => $container->accountId,
+            'usage_contexts' => $container->usageContexts,
+            // So nobody expects web events from a server-side or app container.
+            'is_web' => $container->isWeb(),
+            'domain_names' => $container->domainNames,
+            'tag_ids' => $container->tagIds,
+            'tag_manager_url' => $container->tagManagerUrl,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public static function readiness(ContainerReadinessView $readiness): array
+    {
+        return [
+            'container' => self::container($readiness->container),
+            'is_ready' => $readiness->isReady(),
+            /*
+             * Published state, not workspace state. A workspace holds what somebody is working on;
+             * this is what the site is running, and believing the first is the second is the
+             * commonest failure in this whole area.
+             */
+            'has_live_version' => $readiness->hasLiveVersion,
+            'live_version_id' => $readiness->liveVersionId,
+            'has_unpublished_changes' => $readiness->hasUnpublishedChanges,
+            'published_tag_count' => $readiness->publishedTagCount,
+            'critical_count' => $readiness->criticalCount(),
+            /*
+             * Both lists travel with the findings so a reader can judge the measurement-id claim
+             * rather than take it on trust — the container may be loading a property through a
+             * template this product cannot read.
+             */
+            'measurement_ids_found' => $readiness->measurementIdsFound,
+            'measurement_ids_expected' => $readiness->measurementIdsExpected,
+            'issues' => array_map(static fn (TrackingIssue $issue): array => [
+                'code' => $issue->code,
+                'severity' => $issue->severity->value,
+                'severity_label' => $issue->severity->label(),
+                'summary' => $issue->summary,
+                'remedy' => $issue->remedy,
+                'subject' => $issue->subject,
+                'evidence' => $issue->evidence,
+            ], $readiness->issues),
         ];
     }
 

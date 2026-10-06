@@ -10,13 +10,16 @@ use App\Application\Measurement\Command\SaveEventDefinition;
 use App\Application\Measurement\Command\SaveMeasurementSource;
 use App\Application\Measurement\Command\SyncMeasurementSource;
 use App\Application\Measurement\DTO\ConversionSuggestion;
+use App\Application\Measurement\DTO\DiscoveredContainer;
 use App\Application\Measurement\DTO\DiscoveredProperty;
 use App\Application\Measurement\DTO\EventDefinitionView;
 use App\Application\Measurement\DTO\MeasurementSourceView;
 use App\Application\Measurement\Query\DiscoverAnalyticsProperties;
+use App\Application\Measurement\Query\GetContainerReadiness;
 use App\Application\Measurement\Query\GetTrackingHealth;
 use App\Application\Measurement\Query\ListEventDefinitions;
 use App\Application\Measurement\Query\ListMeasurementSources;
+use App\Application\Measurement\Query\ListTagContainers;
 use App\Application\Measurement\Query\SuggestConversions;
 use App\Domain\Integration\Provider;
 use App\Interface\Http\Controller\Controller;
@@ -163,6 +166,35 @@ final class MeasurementController extends Controller
     public function sync(string $source, SyncMeasurementSource $sync): JsonResponse
     {
         return response()->json(['data' => MeasurementResource::syncResult($sync($source))]);
+    }
+
+    /**
+     * Every tag container the workspace's connection can read.
+     *
+     * The published state of one of them is a separate call: listing containers is cheap, and
+     * reading each one's live version is not.
+     */
+    public function containers(ListTagContainers $list): JsonResponse
+    {
+        return response()->json([
+            'data' => array_map(
+                static fn (DiscoveredContainer $container): array => MeasurementResource::container($container),
+                $list(),
+            ),
+        ]);
+    }
+
+    /**
+     * Whether a client's container is actually doing anything.
+     *
+     * Separate from `measurement/health` on purpose. Health is derived from this product's own
+     * tables and always answers; readiness needs a live call to Tag Manager, which can be slow,
+     * rate-limited or unauthorised. Folding one into the other would let a provider outage empty
+     * the tracking page of facts it already had.
+     */
+    public function readiness(string $source, GetContainerReadiness $readiness): JsonResponse
+    {
+        return response()->json(['data' => MeasurementResource::readiness($readiness($source))]);
     }
 
     private function scopeId(Request $request, string $key): ?string

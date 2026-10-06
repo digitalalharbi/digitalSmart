@@ -4,6 +4,72 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 9 — Google Tag Manager
+
+Container readiness: whether what somebody built is deployed and able to fire. Read-only
+permanently, and still BLOCKED_EXTERNAL for live credentials.
+
+### Added
+
+- **`TagContainerReadAdapter`**, `GoogleTagManagerReadAdapter` and `GoogleTagManagerMapper` over the
+  Tag Manager API v2: `accounts`, `containers`, `versions:live`, `workspaces/{w}/status`.
+- **`ContainerReadiness`**, a pure domain assessment, plus `ContainerFacts` and `TagFacts`.
+- Six new `TrackingIssue` codes sharing the tracking vocabulary: `container_never_published`,
+  `container_unpublished_changes`, `tag_paused`, `tag_without_trigger`, `tag_trigger_missing`,
+  `measurement_id_not_in_container`.
+- `ListTagContainers`, `GetContainerReadiness`, two endpoints, `docs/GOOGLE_TAG_MANAGER.md`, and 29
+  tests.
+
+### Decisions worth recording
+
+- **A container is assessed, not synced.** It reports configuration rather than events, so it cannot
+  be judged by freshness and has no place in the sync contract — forcing it there would mean an
+  empty `fetchEventCounts()`, which reads as "measured nothing" rather than "not that kind of
+  thing".
+- **Readiness is its own endpoint, not part of `/measurement/health`.** Health is derived from our
+  own tables and always answers; readiness needs a live call that can be slow, rate-limited or
+  unauthorised. Folding them together would let a provider outage empty the tracking page of facts
+  it already had.
+- **The live version is read, never a workspace.** A workspace holds what somebody is working on.
+  An agency believing tracking is configured because the workspace looks right is the single most
+  common failure in this area, and reading the wrong one would make this product a participant in
+  it. A container nobody published returns that as its only finding, because paused tags and missing
+  triggers inside an unpublished container would bury the one fact that matters.
+- **A tag's name is never grounds for a finding.** "GA4 – Purchase" is a label somebody typed; it may
+  fire on a thank-you page, on every page, or on a button nobody clicks. Reporting "purchase
+  tracking is configured" because a tag was called that would be confidently wrong in the one place
+  an agency cannot afford to be, and the client would have no way to tell. The name appears only as
+  a finding's subject, and a container whose sole tag is called that produces no findings at all.
+- **Built-in triggers are never accused of being missing.** Every container has undeletable All
+  Pages, Consent Initialization and Initialization triggers that the API does not return in the
+  trigger list, and nearly every real tag fires on All Pages — so a naive comparison reports the
+  whole container as broken. This was caught by the first realistic fixture. The threshold is chosen
+  so the failure mode is **silence rather than a wrong accusation**: a missed dangling trigger costs
+  one warning, a false one on every tag empties the page of meaning immediately. An id that is not a
+  plain integer is likewise left alone — an id this code cannot parse is not one it understands well
+  enough to call broken.
+- **The measurement-id check is absence of evidence, not evidence of absence.** It scans for the
+  id's own shape at any depth under any key, because which parameter key holds a measurement id
+  depends on the tag template: finding the id is a fact about the container, assuming a key would be
+  a guess. A miss is a warning phrased as a question, with the ids it *did* find as evidence, because
+  a container can load a property through a custom template or a server-side container that this
+  product cannot see. Telling somebody to "add the tag" when it is already there is how a tracking
+  page loses its authority.
+- **Unpublished changes span workspaces.** `getStatus` is per workspace and a container can have
+  several; changes in any of them are unpublished from the live site's point of view.
+- **A source pointing at an unreadable container fails with a 404.** Silently assessing a different
+  container would be the worst available outcome.
+
+### Not yet in place
+
+- **The live transport**, on the same gate as Analytics.
+- **Variables and folders** are read past rather than assessed: nothing honest follows from a
+  variable's existence, and inventing findings to make the page look thorough is the opposite of the
+  point.
+- **Consent-mode configuration** is visible in `consentSettings` and deliberately not assessed.
+  Whether a setup is compliant is a legal judgement about a jurisdiction, not a structural fact, and
+  this product will not imply it has made one.
+
 ## Phase 8 — Google Analytics 4
 
 The first source that fills `observed_event_counts`. Built against the published Admin API v1beta

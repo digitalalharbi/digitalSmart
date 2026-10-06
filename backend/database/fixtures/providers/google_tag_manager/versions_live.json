@@ -1,0 +1,180 @@
+[
+  {
+    "path": "accounts/6001144/containers/191002277/versions/18",
+    "accountId": "6001144",
+    "containerId": "191002277",
+    "containerVersionId": "18",
+    "name": "Checkout tracking + WhatsApp",
+    "description": "Published 2026-05-28",
+    "fingerprint": "1764522100994",
+    "container": {
+      "path": "accounts/6001144/containers/191002277",
+      "accountId": "6001144",
+      "containerId": "191002277",
+      "name": "Noon Retail — Web",
+      "publicId": "GTM-NR4QX8V",
+      "usageContext": ["web"]
+    },
+    "tag": [
+      {
+        "path": "accounts/6001144/containers/191002277/workspaces/9/tags/14",
+        "accountId": "6001144",
+        "containerId": "191002277",
+        "tagId": "14",
+        "name": "Google tag — GA4",
+        "type": "googtag",
+        "parameter": [
+          { "type": "template", "key": "tagId", "value": "G-7QK2M4XZPL" },
+          {
+            "type": "list",
+            "key": "configSettingsTable",
+            "list": [
+              {
+                "type": "map",
+                "map": [
+                  { "type": "template", "key": "parameter", "value": "send_page_view" },
+                  { "type": "template", "key": "parameterValue", "value": "true" }
+                ]
+              }
+            ]
+          }
+        ],
+        "fingerprint": "1764522100100",
+        "firingTriggerId": ["2147479553"],
+        "tagFiringOption": "oncePerEvent"
+      },
+      {
+        "path": "accounts/6001144/containers/191002277/workspaces/9/tags/15",
+        "accountId": "6001144",
+        "containerId": "191002277",
+        "tagId": "15",
+        "name": "GA4 — purchase",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "template", "key": "eventName", "value": "purchase" },
+          { "type": "tagReference", "key": "measurementIdOverride", "value": "Google tag — GA4" }
+        ],
+        "fingerprint": "1764522100200",
+        "firingTriggerId": ["31"],
+        "tagFiringOption": "oncePerEvent"
+      },
+      {
+        "path": "accounts/6001144/containers/191002277/workspaces/9/tags/16",
+        "accountId": "6001144",
+        "containerId": "191002277",
+        "tagId": "16",
+        "name": "GA4 — generate_lead",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "template", "key": "eventName", "value": "generate_lead" }
+        ],
+        "fingerprint": "1764522100300",
+        "tagFiringOption": "oncePerEvent"
+      },
+      {
+        "path": "accounts/6001144/containers/191002277/workspaces/9/tags/17",
+        "accountId": "6001144",
+        "containerId": "191002277",
+        "tagId": "17",
+        "name": "GA4 — whatsapp_click (debug)",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "template", "key": "eventName", "value": "whatsapp_click" }
+        ],
+        "fingerprint": "1764522100400",
+        "firingTriggerId": ["32"],
+        "paused": true,
+        "tagFiringOption": "oncePerEvent"
+      },
+      {
+        "path": "accounts/6001144/containers/191002277/workspaces/9/tags/18",
+        "accountId": "6001144",
+        "containerId": "191002277",
+        "tagId": "18",
+        "name": "Google Ads — conversion",
+        "type": "awct",
+        "parameter": [
+          { "type": "template", "key": "conversionId", "value": "AW-882440115" },
+          { "type": "template", "key": "conversionLabel", "value": "qQ1mCPrk8Y0DEPO" }
+        ],
+        "fingerprint": "1764522100500",
+        "firingTriggerId": ["31", "9001"],
+        "tagFiringOption": "oncePerEvent"
+      }
+    ],
+    "trigger": [
+      {
+        "path": "accounts/6001144/containers/191002277/workspaces/9/triggers/31",
+        "accountId": "6001144",
+        "containerId": "191002277",
+        "triggerId": "31",
+        "name": "Purchase — dataLayer event",
+        "type": "customEvent",
+        "fingerprint": "1764522100600"
+      },
+      {
+        "path": "accounts/6001144/containers/191002277/workspaces/9/triggers/32",
+        "accountId": "6001144",
+        "containerId": "191002277",
+        "triggerId": "32",
+        "name": "WhatsApp link click",
+        "type": "linkClick",
+        "fingerprint": "1764522100700"
+      }
+    ],
+    "variable": [
+      {
+        "path": "accounts/6001144/containers/191002277/workspaces/9/variables/41",
+        "accountId": "6001144",
+        "containerId": "191002277",
+        "variableId": "41",
+        "name": "DL — value",
+        "type": "v",
+        "fingerprint": "1764522100800"
+      }
+    ],
+    "builtInVariable": [
+      {
+        "path": "accounts/6001144/containers/191002277/workspaces/9/built_in_variables",
+        "accountId": "6001144",
+        "containerId": "191002277",
+        "type": "pageUrl",
+        "name": "Page URL"
+      }
+    ],
+    "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/6001144/containers/191002277/versions/18?apiLink=version"
+  },
+  {
+    "path": "accounts/6001144/containers/191002290/versions/3",
+    "accountId": "6001144",
+    "containerId": "191002290",
+    "containerVersionId": "3",
+    "name": "Server container v3",
+    "fingerprint": "1764522200100",
+    "container": {
+      "path": "accounts/6001144/containers/191002290",
+      "accountId": "6001144",
+      "containerId": "191002290",
+      "name": "Noon Retail — Server",
+      "publicId": "GTM-SRV77LK",
+      "usageContext": ["server"]
+    },
+    "tag": [
+      {
+        "path": "accounts/6001144/containers/191002290/workspaces/4/tags/7",
+        "accountId": "6001144",
+        "containerId": "191002290",
+        "tagId": "7",
+        "name": "GA4 (server)",
+        "type": "sgtmgaaw",
+        "parameter": [
+          { "type": "template", "key": "measurementId", "value": "G-7QK2M4XZPL" }
+        ],
+        "fingerprint": "1764522200200",
+        "firingTriggerId": ["2147479553"]
+      }
+    ],
+    "trigger": [],
+    "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/6001144/containers/191002290/versions/3?apiLink=version"
+  }
+]
