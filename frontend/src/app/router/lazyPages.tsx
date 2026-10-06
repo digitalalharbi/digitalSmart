@@ -38,3 +38,7 @@ export const MediaPlannerPage = lazy(async () => ({
 export const BudgetCalculatorPage = lazy(async () => ({
   default: (await import('@/features/budgets/BudgetCalculatorPage')).BudgetCalculatorPage,
 }));
+
+export const TrackingCenterPage = lazy(async () => ({
+  default: (await import('@/features/tracking/TrackingCenterPage')).TrackingCenterPage,
+}));

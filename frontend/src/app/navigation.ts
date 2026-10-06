@@ -69,6 +69,18 @@ export const NAV_ITEMS: readonly NavItem[] = [
     phase: 'Phase 19',
   },
   {
+    path: '/tracking',
+    labelKey: 'nav.tracking',
+    icon: 'Radar',
+    section: 'intelligence',
+    phase: 'Phase 10',
+    /*
+     * Gated on the permission the endpoints actually check. Offering a surface to a role that
+     * would receive a 403 is worse than not offering it.
+     */
+    permission: 'tracking.view',
+  },
+  {
     path: '/analytics',
     labelKey: 'nav.analytics',
     icon: 'ChartNoAxesCombined',

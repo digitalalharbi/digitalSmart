@@ -25,7 +25,8 @@
       "intelligence": "Intelligence",
       "system": "System"
     },
-    "dashboards": "Dashboards"
+    "dashboards": "Dashboards",
+    "tracking": "Tracking"
   },
   "actions": {
     "search": "Search",
@@ -510,7 +511,9 @@
   "common": {
     "cancel": "Cancel",
     "delete": "Delete",
-    "edit": "Edit"
+    "edit": "Edit",
+    "save": "Save",
+    "remove": "Remove"
   },
   "budgets": {
     "forbidden": {
@@ -657,5 +660,112 @@
     },
     "observedDays_one": "{{count}} day of delivery observed",
     "observedDays_other": "{{count}} days of delivery observed"
+  },
+  "tracking": {
+    "title": "Tracking Center",
+    "subtitle": "What is measuring each client's work, what counts as success there, and whether any of it is actually working.",
+    "loadFailed": "Could not load the tracking picture. Try again in a moment.",
+    "scope": {
+      "client": "Client",
+      "allClients": "All clients"
+    },
+    "issues": {
+      "title": "What needs attention",
+      "window": "Counts cover the last {{days}} days",
+      "noneTitle": "Nothing needs attention",
+      "noneBody": "Every connected source is reporting, and every conversion has been seen. This list is empty when tracking is working — that is what it is for."
+    },
+    "sources": {
+      "title": "What is measuring",
+      "name": "Source",
+      "kind": "Kind",
+      "freshness": "State",
+      "lastEvent": "Last event",
+      "actions": "Actions",
+      "sync": "Read now",
+      "connect": "Add a property",
+      "revenueAuthority": "Can report revenue",
+      "emptyTitle": "Nothing is measuring this work yet",
+      "emptyBody": "Connect an analytics property, a store or an ad account, then bind it to this client."
+    },
+    "conversions": {
+      "title": "What counts as success",
+      "define": "Define a conversion",
+      "edit": "Edit",
+      "primary": "Primary",
+      "intentOnly": "Intent signal",
+      "countsFrom": "Counts: {{names}}",
+      "inWindow": "seen in {{days}} days",
+      "emptyTitle": "No conversion is defined",
+      "emptyBody": "Until one is, no report can say what success means for this client."
+    },
+    "register": {
+      "title": "Add an analytics property",
+      "subtitle": "Every property this workspace's Google connection can read, including the ones for clients you no longer work with. Check the site before you pick.",
+      "client": "Client",
+      "chooseClient": "Choose a client",
+      "use": "Use this",
+      "rollUp": "Roll-up",
+      "none": "The connected account can read no properties.",
+      "unavailable": "Google Analytics is not connected yet, or its authorisation is not complete. Fix that on the integrations page.",
+      "failed": "Could not register that property. It may already be registered for this client."
+    },
+    "sync": {
+      "done": "Read {{name}}: {{rows}} rows across {{days}} days.",
+      "skipped": "{{name}} has nothing to read — it is a source somebody fills in by hand.",
+      "failed": "Could not read {{name}}."
+    },
+    "editor": {
+      "createTitle": "Define a conversion",
+      "editTitle": "Edit “{{name}}”",
+      "name": "Name",
+      "meaning": "What it means",
+      "meaningHint": "Chosen by you. Nothing here is inferred from the event name.",
+      "isConversion": "Count as a conversion",
+      "isPrimary": "This is the primary conversion",
+      "expectsValue": "Should arrive with a value",
+      "mappings": "Event names that mean this",
+      "mappingsHint": "A raw name counts towards this conversion only because it is listed here. One property's “contact” is a form; another's is a phone tap.",
+      "rawName": "Raw event name",
+      "addMapping": "Add a name",
+      "suggestionsTitle": "Seen on this property",
+      "suggestionsHint": "Events the property's owner marked as key. Adding one fills in the name; the meaning is still yours to choose.",
+      "alreadyMapped": "already used",
+      "oncePerSessionNote": "Some of these are counted once per session, so two in one visit count as one. Worth knowing before reconciling against orders.",
+      "intentWarning": "This is a signal of intent, not a completed action. Count it if you mean to, but do not report it as a lead or a sale.",
+      "saveFailed": "Could not save. The server gave no reason — check the connection and try again.",
+      "delete": "Delete this conversion"
+    },
+    "events": {
+      "purchase": "Purchase",
+      "generate_lead": "Lead",
+      "form_submit": "Form submitted",
+      "sign_up": "Sign-up",
+      "add_to_cart": "Add to cart",
+      "begin_checkout": "Checkout started",
+      "view_item": "Product view",
+      "whatsapp_click": "WhatsApp click",
+      "phone_click": "Phone click",
+      "form_start": "Form started",
+      "page_view": "Page view",
+      "session_start": "Session start",
+      "app_install": "App install",
+      "custom_event": "Custom event"
+    },
+    "evidence": {
+      "last_event_at": "Last event",
+      "last_synced_at": "Last read",
+      "kind": "Kind",
+      "mapped_names": "Mapped names",
+      "raw_event_name": "Event name",
+      "observed_count": "Seen",
+      "definitions": "Conversions",
+      "normalized_event": "Meaning",
+      "public_id": "Container",
+      "tag_type": "Tag type",
+      "missing_trigger_ids": "Missing triggers",
+      "live_version_id": "Published version",
+      "measurement_ids_found": "Ids found"
+    }
   }
 }

@@ -24,7 +24,7 @@ sit.
 | 7     | **Measurement foundation** — measurement sources, normalised event vocabulary, conversion registry, event mapping, observed events, tracking health | **Complete**; sessions and touchpoints moved to Phase 16, where identity evidence lives |
 | 8     | **Google Analytics 4** — accounts, properties, data streams, metadata-driven metrics, key events as suggestions, event counts, sampling and thresholding honesty, freshness states | **Complete**; BLOCKED_EXTERNAL on an authorised OAuth client, sandbox end to end |
 | 9     | **Google Tag Manager** — accounts, containers, published versions, tags, triggers; evidence-backed readiness checks that refuse to read a tag's purpose from its name | **Complete**; BLOCKED_EXTERNAL on an authorised OAuth client, sandbox end to end |
-| 10    | **Tracking Center** — per client and project: what is connected, what is verified, what is missing, last event, last sync, issues by severity | Planned |
+| 10    | **Tracking Center** — per client: what is measuring, what counts as success, and what needs attention, with the evidence behind every finding | **Complete** |
 | 11    | **Commerce domain** — normalised stores, orders, items, products, variants, customers, refunds, payments, shipments, webhook events, sync runs | Planned |
 | 12    | **Salla** integration — OAuth, entities, webhooks with signature verification, idempotent queued handling, reconciliation sync | Planned |
 | 13    | **Zid** integration — the same normalised domain without forcing Salla semantics onto it | Planned |
@@ -480,3 +480,45 @@ changed.
 - **Consent-mode configuration** is visible in a tag's `consentSettings` and deliberately not
   assessed yet: whether a setup is compliant is a legal judgement about a jurisdiction, not a
   structural fact, and this product will not imply it has made one.
+
+### Phase 10 — the Tracking Center
+
+The surface that makes Phases 7 to 9 usable, and the first nav item to arrive since the budget
+pages.
+
+- **Three panels in the order somebody needs them**: what needs attention, what is measuring, what
+  counts as success. The issue list is first deliberately — a page opening on a tidy table of
+  sources invites the conclusion that everything is fine, which is the conclusion that costs an
+  agency a quarter of a client's spend.
+- **Every finding shows its remedy and its evidence**, on the page rather than behind a tooltip. An
+  issue list without remedies is a list of complaints, and a diagnosis without evidence is one
+  people stop believing after the first false alarm.
+- **Silence is a rendered state with its own words.** "Nothing needs attention" is said out loud,
+  because a blank area reads as a loading failure.
+- **Registering a property is discovery-driven**, never a text field: nobody can be expected to type
+  `properties/412006881` correctly, and a mistyped id produces a source that syncs nothing while
+  looking perfectly configured. Roll-up properties are flagged in the picker.
+- **The conversion editor enforces the central rule in the interface.** Raw names are typed or taken
+  from the property's key events; the meaning is always the person's choice. The suggestion list
+  fills in a name and applies a meaning only where the product can cite one.
+- **The intent-signal warning appears at the moment somebody chooses it**, not only in the issue list
+  a week later.
+- **A sync reports its caveats, not just success.** A run can succeed completely and still have read
+  estimates, and the person who pressed the button is the one who needs to know before they quote
+  the number.
+- `observed_count` renders `0` and `—` differently, because "asked and never happened" and "nobody
+  looked" are different facts.
+- Save failures show **the server's own message**, which names the event name to change.
+- 11 component tests and 10 end-to-end tests across both browser projects; full suite 146 passing.
+
+### Not yet done in Phase 10
+
+- **Container readiness is not on the page yet.** The endpoint and its assessment are complete
+  (Phase 9) and the surface shows analytics sources only; adding a tag-manager panel needs a design
+  decision about how a live provider call behaves beside data that always loads, and it is worth
+  making that deliberately rather than bolting a spinner onto this page.
+- **Project scope.** The page filters by client, which is how measurement is agreed. Per-project
+  filtering is a one-line addition once a project picker exists on a surface that needs it.
+- **No charts.** An event-count trend is the obvious candidate and was left out on purpose: the
+  question this page answers is "is it working", and a sparkline would invite reading it as
+  performance.

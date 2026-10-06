@@ -51,6 +51,21 @@ export const queryKeys = {
      */
     forecast: (params: Record<string, unknown>) => ['budgets', 'forecast', params] as const,
   },
+  measurement: {
+    all: () => ['measurement'] as const,
+    /*
+     * Health is keyed by scope and nothing else. It is recomputed server-side on every read, so
+     * caching it per scope is the most that can honestly be held: a key that outlived a sync
+     * would show a diagnosis of a state that no longer exists.
+     */
+    health: (scope: Record<string, unknown>) => ['measurement', 'health', scope] as const,
+    sources: (scope: Record<string, unknown>) => ['measurement', 'sources', scope] as const,
+    conversions: (scope: Record<string, unknown>) => ['measurement', 'conversions', scope] as const,
+    properties: (provider: string) => ['measurement', 'properties', provider] as const,
+    suggestions: (sourceId: string) => ['measurement', 'suggestions', sourceId] as const,
+    containers: () => ['measurement', 'containers'] as const,
+    readiness: (sourceId: string) => ['measurement', 'readiness', sourceId] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,

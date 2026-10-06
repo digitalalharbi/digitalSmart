@@ -17,6 +17,7 @@ import {
   CampaignsPage,
   DashboardsPage,
   MediaPlannerPage,
+  TrackingCenterPage,
 } from '@/app/router/lazyPages';
 import { SurfaceFallback } from '@/app/router/SurfaceFallback';
 
@@ -36,6 +37,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/dashboards': deferred(<DashboardsPage />),
   '/media-planner': deferred(<MediaPlannerPage />),
   '/budget-calculator': deferred(<BudgetCalculatorPage />),
+  '/tracking': deferred(<TrackingCenterPage />),
 };
 
 const featureRoutes: RouteObject[] = NAV_ITEMS.filter((item) => item.path !== '/').map((item) => ({

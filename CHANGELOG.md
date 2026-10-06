@@ -4,6 +4,60 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 10 — the Tracking Center
+
+The surface that makes the measurement layer usable: one page answering the question an agency
+cannot otherwise answer — is any of this actually working?
+
+### Added
+
+- `src/features/tracking/` — `TrackingCenterPage`, `IssueList`, `SourceRegistration`,
+  `ConversionEditor`, types, api and hooks over all seven measurement endpoints.
+- A `/tracking` nav item gated on `tracking.view`, English and Arabic translations, 11 component
+  tests and 10 end-to-end tests.
+
+### Changed
+
+- Conversion save failures now show **the server's own message** rather than a generic one. Every
+  refusal names the thing to change — which raw name is already taken, that a primary must also be a
+  conversion — and the generic string threw that away. The fallback is now reserved for a failure
+  with no message at all.
+
+### Decisions worth recording
+
+- **The issue list comes first.** A page opening on a tidy table of sources invites the conclusion
+  that everything is fine, which is precisely the conclusion this product exists to prevent. There
+  is an end-to-end test asserting the order, because it is a product decision rather than a layout
+  one.
+- **Evidence and remedy are on the page, not behind a tooltip.** A tracking centre that says
+  "purchase event missing" without saying how it knows is one people stop believing after the first
+  false alarm — and a false alarm is certain, because the product only sees what a provider reports.
+  The evidence is what lets somebody disagree, which is the only reason they will trust it when it is
+  right.
+- **An empty issue list is a rendered state with its own words.** Silence is the goal, so a blank
+  area would read as a loading failure.
+- **Registering a property is discovery-driven.** Nobody can be expected to type
+  `properties/412006881` correctly, and a mistyped id produces a source that syncs nothing while
+  looking perfectly configured. The list is deliberately unfiltered, with the site and `G-` id beside
+  each entry, because an agency's Google account holds properties for clients it has left.
+- **The conversion editor never infers a meaning.** Raw names come from typing or from the property's
+  key events; the meaning is the person's choice, and a suggestion applies one only where the
+  product can cite it. The intent-signal warning appears at the moment of choosing, not only in the
+  issue list later.
+- **A sync reports its caveats.** A bare "synced" toast would hide that a run read 8% of the data,
+  and the person who pressed the button is the one about to quote the number.
+- **`0` and `—` are rendered differently for an observed count.** "Asked and never happened" and
+  "nobody looked" are different facts, and collapsing them turns the second into the first.
+- **An unreadable evidence value renders as a dash**, not `[object Object]`, which would look like a
+  bug in the product rather than a gap in the formatting.
+
+### Not yet in place
+
+- **Container readiness is not on this page.** The endpoint is complete; placing a live provider call
+  beside data that always loads needs a design decision worth making deliberately.
+- **No charts.** An event-count trend was left out on purpose: this page answers "is it working", and
+  a sparkline invites reading it as performance.
+
 ## Phase 9 — Google Tag Manager
 
 Container readiness: whether what somebody built is deployed and able to fire. Read-only

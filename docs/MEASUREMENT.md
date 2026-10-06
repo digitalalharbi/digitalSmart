@@ -13,7 +13,8 @@ reveals. So this layer holds exactly two records and one derived answer:
 | **Event definition**   | What counts as success here, and which raw event names mean it? |
 | **Tracking health**    | Is any of it actually working? (derived, never stored) |
 
-Tracking health has its own document: [TRACKING.md](TRACKING.md).
+Tracking health has its own document: [TRACKING.md](TRACKING.md). The surface that shows all of
+this is the Tracking Center at `/tracking`, delivered in Phase 10.
 
 ## The rule that governs this layer
 
