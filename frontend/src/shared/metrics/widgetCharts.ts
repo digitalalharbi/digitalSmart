@@ -1,10 +1,29 @@
 import type { EChartsCoreOption } from 'echarts/core';
 import { formatCompact } from '@/shared/lib/format';
-import { readChartPalette } from '@/shared/ui/chart/theme';
+import { foldToOther, readChartPalette, seriesColour } from '@/shared/ui/chart';
 import { formatMetric } from './format';
 import type { AnalyticsPayload, BreakdownRowPayload, MetricDefinition } from './types';
 
-type Context = { locale: string; isRtl: boolean };
+type Context = {
+  locale: string;
+  isRtl: boolean;
+  /**
+   * The few words these charts have to put on a canvas themselves.
+   *
+   * Passed in rather than translated here: this module has no component to hang a
+   * translation hook on, and a chart that hard-codes English is a chart that is wrong
+   * for half this product's readers.
+   */
+  labels: {
+    /** Names the row that the folded tail was summed into. */
+    other: string;
+    /** Names an indexed axis, given the date the index is based on. */
+    indexed: (date: string) => string;
+  };
+};
+
+/** A donut stops being readable past this many slices. Past it, the tail folds. */
+const MAX_SLICES = 6;
 
 /**
  * Chart options for the widget types the dashboard builder offers.
@@ -43,6 +62,8 @@ function base(context: Context): EChartsCoreOption {
       borderWidth: 1,
       padding: [8, 12],
       textStyle: { color: palette.textPrimary, fontSize: 12, fontFamily: palette.fontFamily },
+      // Solid: a dashed rule reads as a projection or a threshold, and this is a crosshair.
+      axisPointer: { type: 'line', lineStyle: { color: palette.axis, width: 1, type: 'solid' } },
     },
   };
 }
@@ -76,7 +97,7 @@ export function widgetBarOption(
     xAxis: {
       type: 'value',
       inverse: context.isRtl,
-      splitLine: { lineStyle: { color: palette.grid } },
+      splitLine: { lineStyle: { color: palette.grid, type: 'solid' } },
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
@@ -98,7 +119,15 @@ export function widgetBarOption(
         name: definitions.get(metric)?.label ?? metric,
         type: 'bar',
         barMaxWidth: 16,
-        itemStyle: { borderRadius: context.isRtl ? [3, 0, 0, 3] : [0, 3, 3, 0] },
+        /*
+         * One colour for every bar. The categories have no inherent order, so there is
+         * nothing for a colour ramp to encode, and shading each bar by its own value
+         * would spend the identity channel restating what bar length already says.
+         */
+        itemStyle: {
+          color: seriesColour(palette, 0),
+          borderRadius: context.isRtl ? [3, 0, 0, 3] : [0, 3, 3, 0],
+        },
         data: ordered.map((row) => numericValue(row, metric)),
       },
     ],
@@ -119,11 +148,29 @@ export function widgetShareOption(
 ): EChartsCoreOption {
   const palette = readChartPalette();
 
-  const slices = rows
+  const present = rows
     .map((row) => ({ name: row.label, value: numericValue(row, metric) }))
     .filter(
       (slice): slice is { name: string; value: number } => slice.value !== null && slice.value > 0,
-    );
+    )
+    .sort((a, b) => b.value - a.value);
+
+  /*
+   * Six slices, then one that says how much the rest came to.
+   *
+   * Hiding the tail would make the remaining slices look like the whole; giving each of
+   * twenty rows its own colour would mean generated hues that a colour-blind reader
+   * cannot separate. Summing it keeps both the readable chart and the honest total.
+   */
+  const { rows: slices, folded } = foldToOther(present, MAX_SLICES, (tail) => ({
+    name: context.labels.other,
+    value: tail.reduce((sum, slice) => sum + slice.value, 0),
+  }));
+
+  const colours = slices.map((_, index) =>
+    // The folded row wears the de-emphasis grey: it is a residue, not a competitor.
+    index === slices.length - 1 && folded > 0 ? palette.comparison : seriesColour(palette, index),
+  );
 
   return {
     ...base(context),
@@ -146,9 +193,14 @@ export function widgetShareOption(
         radius: ['45%', '72%'],
         center: context.isRtl ? ['65%', '50%'] : ['35%', '50%'],
         avoidLabelOverlap: true,
-        itemStyle: { borderWidth: 2, borderColor: palette.tooltipSurface },
+        // A 2px gap in the surface colour between slices, rather than a stroke around
+        // each one: a border adds ink that is not data.
+        itemStyle: { borderWidth: 2, borderColor: palette.surface },
         label: { show: false },
-        data: slices,
+        data: slices.map((slice, index) => ({
+          ...slice,
+          itemStyle: { color: colours[index] },
+        })),
       },
     ],
   };
@@ -208,15 +260,40 @@ export function widgetScatterOption(
     },
     xAxis: { ...axis(xMetric), inverse: context.isRtl },
     yAxis: axis(yMetric, 'left'),
-    series: [{ type: 'scatter', symbolSize: 10, itemStyle: { opacity: 0.75 }, data: points }],
+    series: [
+      {
+        type: 'scatter',
+        symbolSize: 11,
+        // The ring keeps two entities at similar values from reading as one point, and
+        // counts towards the hover target.
+        itemStyle: {
+          color: seriesColour(palette, 0),
+          borderColor: palette.surface,
+          borderWidth: 2,
+          opacity: 0.85,
+        },
+        data: points,
+      },
+    ],
   };
 }
 
 /**
- * One or two metrics over time.
+ * One or more metrics over time.
+ *
+ * **Several metrics are indexed to 100 at their common starting point, not plotted in
+ * their own units.** A widget is too small for stacked plots, and the two alternatives
+ * are both wrong: one shared axis flattens whichever metric is smaller into a line along
+ * the floor, and a second axis invents a correlation, because where the two scales line
+ * up is an arbitrary choice and every crossing it produces means nothing.
+ *
+ * Indexing says the only thing a small multi-metric chart can honestly say — which of
+ * these moved, and by how much relative to where it started. The absolute figures are a
+ * hover away, and in the table beside the chart.
  *
  * `connectNulls` stays off, as everywhere: a line drawn through a gap says delivery
- * continued when it had stopped.
+ * continued when it had stopped. Nor is a line smoothed — a spline passes through values
+ * nobody measured and overshoots the real extremes.
  */
 export function widgetLineOption(
   payload: AnalyticsPayload,
@@ -225,7 +302,47 @@ export function widgetLineOption(
   context: Context,
 ): EChartsCoreOption {
   const palette = readChartPalette();
-  const points = context.isRtl ? [...payload.series].reverse() : payload.series;
+  const points = payload.series;
+  const isIndexed = metrics.length > 1;
+
+  const raw = metrics.map((metric) =>
+    points.map((point) => {
+      const value = point.values[metric];
+
+      return value === undefined || value.value === null
+        ? null
+        : value.is_minor_units
+          ? value.value / 100
+          : value.value;
+    }),
+  );
+
+  /*
+   * The first day on which every metric reported, which is the only base that lets the
+   * series be compared. A base of zero cannot be indexed at all, so it is skipped too.
+   */
+  const baseIndex = points.findIndex((_, day) =>
+    raw.every((values) => {
+      const value = values[day];
+
+      return value !== null && value !== undefined && value !== 0;
+    }),
+  );
+
+  const plotted =
+    isIndexed && baseIndex !== -1
+      ? raw.map((values) =>
+          values.map((value) => {
+            const basis = values[baseIndex];
+
+            return value === null || basis === null || basis === undefined || basis === 0
+              ? null
+              : (value / basis) * 100;
+          }),
+        )
+      : raw;
+
+  const indexedFrom = baseIndex === -1 ? null : (points[baseIndex]?.date ?? null);
 
   return {
     ...base(context),
@@ -242,6 +359,9 @@ export function widgetLineOption(
     xAxis: {
       type: 'category',
       data: points.map((point) => point.date),
+      // Mirrored by inverting the axis, never by reversing the data: every index then
+      // still means the day it says it means.
+      inverse: context.isRtl,
       boundaryGap: false,
       axisLine: { lineStyle: { color: palette.grid } },
       axisTick: { show: false },
@@ -255,7 +375,15 @@ export function widgetLineOption(
     yAxis: {
       type: 'value',
       position: context.isRtl ? 'right' : 'left',
-      splitLine: { lineStyle: { color: palette.grid } },
+      ...(isIndexed && indexedFrom !== null
+        ? {
+            // Named, because an unlabelled axis of numbers around 100 looks like a
+            // percentage and is not one.
+            name: context.labels.indexed(indexedFrom),
+            nameTextStyle: { color: palette.axisLabel, fontSize: 10, padding: [0, 0, 4, 0] },
+          }
+        : {}),
+      splitLine: { lineStyle: { color: palette.grid, type: 'solid' } },
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
@@ -267,20 +395,16 @@ export function widgetLineOption(
     series: metrics.map((metric, index) => ({
       name: definitions.get(metric)?.label ?? metric,
       type: 'line' as const,
-      smooth: 0.2,
+      // See the note above the function: neither of these is a style preference.
+      smooth: false,
       showSymbol: false,
       connectNulls: false,
       lineStyle: { width: 2 },
-      areaStyle: index === 0 ? { opacity: 0.08 } : { opacity: 0 },
-      data: points.map((point) => {
-        const value = point.values[metric];
-
-        return value === undefined || value.value === null
-          ? null
-          : value.is_minor_units
-            ? value.value / 100
-            : value.value;
-      }),
+      itemStyle: { color: seriesColour(palette, index) },
+      // A wash under a single series; nothing under several, where two overlapping
+      // washes make a third colour that means nothing.
+      areaStyle: metrics.length === 1 ? { opacity: 0.1 } : { opacity: 0 },
+      data: plotted[index] ?? [],
     })),
   };
 }

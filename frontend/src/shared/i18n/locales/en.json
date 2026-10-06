@@ -838,5 +838,27 @@
     },
     "pending_one": "{{count}} order is placed and not yet paid for, worth {{amount}}. Not counted above — cash on delivery becomes revenue when it is collected, and some of it comes back instead.",
     "pending_other": "{{count}} orders are placed and not yet paid for, worth {{amount}} together. Not counted above — cash on delivery becomes revenue when it is collected, and some of it comes back instead."
+  },
+  "chart": {
+    "view": {
+      "label": "How to read this",
+      "chart": "Chart",
+      "table": "Table"
+    },
+    "empty": {
+      "title": "Nothing to plot yet",
+      "body": "No figures have been recorded for this period. That is not the same as zero — a chart would show a flat line, which would be wrong."
+    },
+    "unavailable": {
+      "title": "Not available",
+      "body": "This platform does not report the figures this chart needs."
+    },
+    "axis": {
+      "indexed": "Indexed to 100 at {{date}}"
+    },
+    "legend": {
+      "other": "Other",
+      "unattributed": "Not attributed"
+    }
   }
 }

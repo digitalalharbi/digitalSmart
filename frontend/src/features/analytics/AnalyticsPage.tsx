@@ -195,11 +195,17 @@ export function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               {trend === null ? (
-                <div className="bg-surface-sunken h-[320px] animate-pulse rounded-lg" />
+                <div className="bg-surface-sunken h-[400px] animate-pulse rounded-lg" />
               ) : (
                 <Chart
                   option={trend}
-                  height={320}
+                  /*
+                   * Taller than a single plot, because this is two: the chosen metric
+                   * above, spend beneath it, sharing one time axis. Sized to include both
+                   * x-axis bands — a container that fits only the plots gives the card a
+                   * tiny nested scrollbar.
+                   */
+                  height={400}
                   ariaLabel={t('analytics.trend.aria', {
                     metric: catalogue.definitions.get(trendMetric)?.label ?? trendMetric,
                     start: data?.range.start ?? '',

@@ -1,14 +1,23 @@
 /**
  * ECharts theming from the design tokens.
  *
- * The tokens are CSS custom properties in OKLCH, which ECharts cannot resolve —
- * it draws to a canvas and needs literal colours. So they are read from the
- * computed style of the document root at render time. The consequence is that the
- * chart follows a theme switch and the brand accent without any colour being
- * duplicated in TypeScript, which is the only way two screens cannot drift apart.
+ * The tokens are CSS custom properties in OKLCH, which ECharts cannot use: it draws to
+ * a canvas, and it does not merely pass colours through — it parses them to lift a hue
+ * on hover and to build an area gradient, with a parser that predates OKLCH. So each
+ * token is read from the computed style of the document root and resolved to a plain
+ * hex here. The consequence is that a chart follows a theme switch and the brand accent
+ * without a single colour being duplicated in TypeScript, which is the only way two
+ * screens cannot drift apart.
  */
+import { hexFromOklch } from './colour';
+
 export type ChartPalette = {
+  /** The eight categorical slots, in their fixed order. Never cycled, never reordered. */
   series: string[];
+  /** One hue, light → dark, for scales where the order is the meaning. */
+  steps: string[];
+  /** A diverging scale: cool pole, neutral middle, warm pole. */
+  poles: { low: string; lowWeak: string; mid: string; highWeak: string; high: string };
   grid: string;
   axis: string;
   axisLabel: string;
@@ -18,15 +27,45 @@ export type ChartPalette = {
   threshold: string;
   textPrimary: string;
   textSecondary: string;
+  textTertiary: string;
+  /** The surface a chart is drawn on — the colour of the gap between touching marks. */
+  surface: string;
   accent: string;
   success: string;
+  warning: string;
   danger: string;
   fontFamily: string;
 };
 
-/** Values used before the document is available (tests, SSR). */
+/**
+ * How many categorical series a chart form can carry.
+ *
+ * `adjacent` covers bars, stacks and lines, where slots are handed out in order so
+ * only neighbours ever touch. `anyPair` covers scatter, bubble and small multiples,
+ * where any two marks can land side by side and so every pair has to clear the gate —
+ * which it does only for the first four slots. Past the cap the answer is to fold the
+ * tail into one "other" row or to facet, never to invent a ninth colour: a generated
+ * hue is indistinguishable from an existing one under colour blindness.
+ *
+ * Measured, not asserted — see `palette.gates.test.ts`.
+ */
+export const seriesCap = { adjacent: 8, anyPair: 4 } as const;
+
+/**
+ * Values used before the document is available — unit tests and any render that
+ * happens before styles apply. These are the resolved tokens, not stand-ins, so a
+ * chart never flashes a colour the design system does not contain.
+ */
 const FALLBACK: ChartPalette = {
-  series: ['#4f46e5', '#0ea5a4', '#d97706', '#dc2626', '#9333ea', '#16a34a', '#2563eb', '#f59e0b'],
+  series: ['#3860bb', '#8a2b60', '#b3910b', '#036819', '#00a68f', '#b2511e', '#a37fde', '#a73e3b'],
+  steps: ['#8cb3ff', '#729cf3', '#5985e4', '#406dd6', '#3159b8', '#244699'],
+  poles: {
+    low: '#3860bb',
+    lowWeak: '#8aa7e8',
+    mid: '#e5e6e9',
+    highWeak: '#e79b92',
+    high: '#a73e3b',
+  },
   grid: 'rgba(17, 24, 39, 0.08)',
   axis: '#9ca3af',
   axisLabel: '#6b7280',
@@ -36,15 +75,28 @@ const FALLBACK: ChartPalette = {
   threshold: '#6b7280',
   textPrimary: '#111827',
   textSecondary: '#4b5563',
+  textTertiary: '#6b7280',
+  surface: '#ffffff',
   accent: '#4f46e5',
-  success: '#16a34a',
-  danger: '#dc2626',
+  success: '#0d7a4a',
+  warning: '#c5760d',
+  danger: '#c02730',
   fontFamily: 'Inter, sans-serif',
 };
 
 function readVar(style: CSSStyleDeclaration, name: string, fallback: string): string {
   const value = style.getPropertyValue(name).trim();
-  return value === '' ? fallback : value;
+
+  if (value === '') {
+    return fallback;
+  }
+
+  /*
+   * A browser hands back whatever the author wrote, so an OKLCH token arrives as
+   * `oklch(...)`. Resolved to hex here; anything already in a form ECharts
+   * understands — `rgb()`, a hex, a keyword — is passed through untouched.
+   */
+  return hexFromOklch(value) ?? value;
 }
 
 export function readChartPalette(): ChartPalette {
@@ -58,8 +110,20 @@ export function readChartPalette(): ChartPalette {
     readVar(style, `--ds-chart-${index}`, FALLBACK.series[position] ?? FALLBACK.series[0]!),
   );
 
+  const steps = [1, 2, 3, 4, 5, 6].map((index, position) =>
+    readVar(style, `--ds-chart-step-${index}`, FALLBACK.steps[position] ?? FALLBACK.steps[0]!),
+  );
+
   return {
     series,
+    steps,
+    poles: {
+      low: readVar(style, '--ds-chart-pole-low', FALLBACK.poles.low),
+      lowWeak: readVar(style, '--ds-chart-pole-low-weak', FALLBACK.poles.lowWeak),
+      mid: readVar(style, '--ds-chart-pole-mid', FALLBACK.poles.mid),
+      highWeak: readVar(style, '--ds-chart-pole-high-weak', FALLBACK.poles.highWeak),
+      high: readVar(style, '--ds-chart-pole-high', FALLBACK.poles.high),
+    },
     grid: readVar(style, '--ds-chart-grid', FALLBACK.grid),
     axis: readVar(style, '--ds-chart-axis', FALLBACK.axis),
     axisLabel: readVar(style, '--ds-chart-axis-label', FALLBACK.axisLabel),
@@ -69,14 +133,22 @@ export function readChartPalette(): ChartPalette {
     threshold: readVar(style, '--ds-chart-threshold', FALLBACK.threshold),
     textPrimary: readVar(style, '--ds-text-primary', FALLBACK.textPrimary),
     textSecondary: readVar(style, '--ds-text-secondary', FALLBACK.textSecondary),
+    textTertiary: readVar(style, '--ds-text-tertiary', FALLBACK.textTertiary),
+    /*
+     * The surface, not the page behind it: the 2px gap that separates two touching
+     * bars is drawn in the colour of the card, so on a sunken panel it would show as
+     * a pale seam.
+     */
+    surface: readVar(style, '--ds-surface', FALLBACK.surface),
     accent: readVar(style, '--ds-accent', FALLBACK.accent),
     success: readVar(style, '--ds-success', FALLBACK.success),
+    warning: readVar(style, '--ds-warning', FALLBACK.warning),
     danger: readVar(style, '--ds-danger', FALLBACK.danger),
     /*
-     * ECharts draws text itself and inherits nothing from CSS, so the family has
-     * to be handed to it. In Arabic that must be the mixed stack: a chart axis
-     * carries Arabic labels beside Latin numerals and currency codes, and the
-     * Latin-first stack would render the Arabic in a fallback face.
+     * ECharts draws text itself and inherits nothing from CSS, so the family has to be
+     * handed to it. In Arabic that must be the mixed stack: a chart axis carries Arabic
+     * labels beside Latin numerals and currency codes, and the Latin-first stack would
+     * render the Arabic in a fallback face.
      */
     fontFamily:
       document.documentElement.dir === 'rtl'

@@ -86,7 +86,8 @@ export function pacingOption(
       borderWidth: 1,
       padding: [8, 12],
       textStyle: { color: palette.textPrimary, fontSize: 12, fontFamily: palette.fontFamily },
-      axisPointer: { type: 'line', lineStyle: { color: palette.axis, width: 1, type: 'dashed' } },
+      // Solid: a dashed rule reads as a projection, and this one is a crosshair.
+      axisPointer: { type: 'line', lineStyle: { color: palette.axis, width: 1, type: 'solid' } },
     },
     legend: {
       top: 0,
@@ -108,7 +109,8 @@ export function pacingOption(
     yAxis: {
       type: 'value',
       position: isRtl ? 'right' : 'left',
-      splitLine: { lineStyle: { color: palette.grid, type: 'dashed' } },
+      // Solid hairlines. Dashing a grid adds noise and makes it read as a threshold.
+      splitLine: { lineStyle: { color: palette.grid, type: 'solid' } },
       axisLabel: {
         color: palette.textSecondary,
         fontSize: 11,
@@ -145,7 +147,13 @@ export function pacingOption(
         data: evenPace,
         smooth: false,
         showSymbol: false,
-        lineStyle: { width: 1.5, type: 'dashed' },
+        /*
+         * Dashed, thin, and in the de-emphasis grey — the three things that say "this
+         * line was calculated, not spent". Given a series colour it would read as a
+         * second platform's spend, which is the one thing it must never be mistaken for.
+         */
+        itemStyle: { color: palette.comparison },
+        lineStyle: { width: 1.5, type: 'dashed', color: palette.comparison },
       },
     ],
   };

@@ -60,7 +60,18 @@ export function DashboardWidget({ widget, inherited }: DashboardWidgetProps) {
 
   const { data, isPending, isError, error } = useAnalytics(query);
 
-  const chartContext = useMemo(() => ({ locale: i18n.language, isRtl }), [i18n.language, isRtl]);
+  const chartContext = useMemo(
+    () => ({
+      locale: i18n.language,
+      isRtl,
+      // The handful of words a canvas has to carry itself; see widgetCharts' Context.
+      labels: {
+        other: t('chart.legend.other'),
+        indexed: (date: string) => t('chart.axis.indexed', { date }),
+      },
+    }),
+    [i18n.language, isRtl, t],
+  );
 
   const option = useMemo(() => {
     if (data === undefined) {

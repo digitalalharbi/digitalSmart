@@ -104,18 +104,45 @@ describe('trendOption', () => {
     const ltr = trendOption(payload, ['spend'], definitions, { locale: 'en', isRtl: false });
     const rtl = trendOption(payload, ['spend'], definitions, { locale: 'ar', isRtl: true });
 
-    const ltrDates = (ltr.xAxis as { data: string[] }).data;
-    const rtlDates = (rtl.xAxis as { data: string[] }).data;
+    const ltrAxis = ltr.xAxis as { data: string[]; inverse: boolean };
+    const rtlAxis = rtl.xAxis as { data: string[]; inverse: boolean };
 
     /*
-     * A time series reading left-to-right inside a right-to-left interface asks
-     * the reader to change direction mid-page, so the category order reverses and
-     * the value axis moves to the other side.
+     * A time series reading left-to-right inside a right-to-left interface asks the
+     * reader to change direction mid-page, so the time axis mirrors and the value axis
+     * moves to the other side.
+     *
+     * Mirrored by inverting the axis, not by reversing the data: the dates stay in
+     * order, so anything that looks a point up by its index still finds the right one.
      */
-    expect(ltrDates[0]).toBe('2026-09-01');
-    expect(rtlDates[0]).toBe('2026-09-04');
-    expect((ltr.yAxis as { position: string }[])[0]?.position).toBe('left');
-    expect((rtl.yAxis as { position: string }[])[0]?.position).toBe('right');
+    expect(ltrAxis.data[0]).toBe('2026-09-01');
+    expect(rtlAxis.data[0]).toBe('2026-09-01');
+    expect(ltrAxis.inverse).toBe(false);
+    expect(rtlAxis.inverse).toBe(true);
+    expect((ltr.yAxis as { position: string }).position).toBe('left');
+    expect((rtl.yAxis as { position: string }).position).toBe('right');
+  });
+
+  it('never puts two value scales on one plot', () => {
+    const option = trendOption(payload, ['ctr', 'spend'], definitions, {
+      locale: 'en',
+      isRtl: false,
+    });
+
+    const grids = option.grid as unknown[];
+    const yAxes = option.yAxis as { gridIndex?: number }[];
+
+    /*
+     * The rule this test exists for: two measures of different scale get two plots, never
+     * two scales on one plot. Where a second axis lines up with the first is an arbitrary
+     * choice, so the lines appear to cross and diverge at moments that mean nothing — and
+     * "conversions track spend" is exactly the sort of claim a budget gets approved on.
+     */
+    expect(grids).toHaveLength(2);
+    expect(new Set(yAxes.map((axis) => axis.gridIndex ?? 0)).size).toBe(yAxes.length);
+
+    // And one crosshair runs through both, so the comparison is still a single glance.
+    expect(option.axisPointer).toEqual({ link: [{ xAxisIndex: 'all' }] });
   });
 
   it('plots spend alongside whatever else was chosen', () => {

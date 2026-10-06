@@ -148,66 +148,49 @@ Target **WCAG 2.2 AA**.
 
 ## Charts
 
-**Engine: Apache ECharts**, chosen over the alternatives for three reasons that
-matter for this product specifically: it renders to canvas, so a 90-day ad-level
-scatter stays interactive where SVG-based libraries stall; it supports a true
-right-to-left layout rather than only mirrored text; and it treats `null` as a gap
-rather than zero, which is the behaviour every chart here depends on.
+**Engine: Apache ECharts.** The full method — how the palette was derived and is tested,
+the mark specs, the forms, and the rules a chart is not allowed to break — is in
+[DATA_VISUALISATION.md](DATA_VISUALISATION.md). The summary a designer needs:
 
-Only the chart types in use are registered (`shared/ui/chart/Chart.tsx`). The full
-bundle is roughly a megabyte, and a dashboard that loads slowly is one people stop
-opening — so adding a chart type is a deliberate edit, and the whole engine is in a
-lazily loaded chunk rather than the initial bundle.
-
-### Series colours
-
-A categorical sequence of its own (`--ds-chart-1` … `--ds-chart-8`), deliberately
-**not** the platform colours: a chart of four Meta campaigns would otherwise be
-four shades of one blue. Ordered so the first three are distinguishable under the
-common forms of colour blindness, and so adjacent pairs differ in lightness as well
-as hue — a line read in greyscale or printed must still be legible. Dark mode lifts
-each value's lightness while keeping its hue, so a chart does not change identity
-when the theme does.
-
-The tokens are OKLCH custom properties, which a canvas cannot resolve, so they are
-read from the computed root style at render time. That is what lets a chart follow a
-theme switch without a single colour being duplicated in TypeScript.
-
-### Rules every chart follows
-
-- **A gap is a gap.** Days with no data are `null` and the line is *broken*
-  (`connectNulls: false`). A line drawn through a gap says delivery continued at
-  some level when in fact it stopped — the most misleading thing a performance
-  chart can do, and the thing a client would notice last.
-- **It answers a question.** Each chart states what it is for: the efficiency
-  scatter carries "which campaigns deserve more budget, and which are expensive at
-  size?" above it, because a scatter plot is not self-explanatory. A chart without
-  a question is decoration.
-- **It is readable without the canvas.** `ariaLabel` is a required prop, not an
-  optional one, and the figures are also rendered as text in a visually hidden
-  caption. A canvas is invisible to a screen reader, so a chart without one is a
-  hole in the page.
-- **It respects motion preferences.** `prefers-reduced-motion` disables animation,
-  read in JavaScript because a canvas is not styled by CSS.
-- **It resizes with its container,** via `ResizeObserver` rather than a window
-  listener: these live in a grid whose columns change with the sidebar, so a chart
-  can need to resize when the window has not.
-- **Gridlines stay faint.** They are the most over-weighted element in most
-  dashboards. They exist so a reader can judge a value; the data should be the
-  loudest thing on the canvas.
-- **A cumulative line stops where the data stops.** The pacing chart's actual series
-  ends at the last day a provider reported rather than being carried flat to today. A
-  flat cumulative segment means "nothing was spent since"; a sync that has not landed
-  means "we do not know", and those are different facts about somebody's money.
+- **Eight categorical slots in a fixed order** (`--ds-chart-1` … `-8`), plus a six-step
+  **ordinal ramp** (`--ds-chart-step-*`) for scales whose order is their meaning, and a
+  **diverging pair** with a neutral grey midpoint. The order of the categorical slots is
+  the colour-blind-safety mechanism and must not be changed without re-deriving it; the
+  gates are executable (`palette.gates.test.ts`).
+- **Scatter and small-multiple charts carry at most four series.** Any two points can sit
+  side by side there, so every pair has to be separable, and four is the measured cap. A
+  fifth folds into one "other" row. A ninth hue is never invented.
+- **Platform colours are never series colours** — four Meta campaigns would be four shades
+  of one blue. They are identifier chips only.
+- **Marks are thin and chrome is recessive:** bars ≤ 24px with a 4px rounded data end,
+  2px lines, solid hairline gridlines, a 2px gap in the surface colour between touching
+  marks rather than a border around them.
+- **Lines are never smoothed and gaps are never bridged.** Both invent values that were
+  not measured.
+- **Never two value scales on one plot.** Two plots sharing a time axis, or both series
+  indexed to 100 at a common date, on a named axis.
+- **Every chart has a table twin and a source badge,** both from `ChartFrame`, and an
+  `ariaLabel` is a required prop. A canvas is invisible to a screen reader and a tooltip
+  needs a pointer, so neither can be the only way to read a value.
+- **Empty is a sentence, not an empty grid**, and a refresh dims the previous render
+  rather than flashing a skeleton.
+- **A chart answers a question or it does not ship.** Each one states what it is for above
+  it — a scatter plot is not self-explanatory.
+- `prefers-reduced-motion` disables animation, read in JavaScript because a canvas is not
+  styled by CSS. Charts resize with their container via `ResizeObserver`, since these live
+  in a grid whose columns change with the sidebar.
+- **A cumulative line stops where the data stops.** The pacing chart's actual series ends
+  at the last day a provider reported rather than being carried flat to today: a flat
+  cumulative segment means "nothing was spent since", a sync that has not landed means "we
+  do not know", and those are different facts about somebody's money.
 
 ### Right-to-left
 
-Charts are mirrored, not merely translated. In Arabic the category axis reverses,
-the value axis moves to the other side, the legend follows the reading direction,
-and bar corner radii flip. A time series reading left-to-right inside a
-right-to-left interface asks the reader to change direction mid-page. ECharts also
-draws its own text and inherits nothing from CSS, so the Arabic font stack is
-handed to it explicitly — otherwise axis labels fall back to a Latin-first face.
+Charts are mirrored, not merely translated: the value axis moves to the other side, the
+legend follows the reading direction, bar corner radii flip, and the time axis mirrors —
+by **inverting the axis, never by reversing the data**, so every index still means what it
+says. ECharts draws its own text and inherits nothing from CSS, so the Arabic font stack is
+handed to it explicitly.
 
 ## Showing where a number came from
 
