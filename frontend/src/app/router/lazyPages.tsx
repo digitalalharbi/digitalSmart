@@ -42,3 +42,7 @@ export const BudgetCalculatorPage = lazy(async () => ({
 export const TrackingCenterPage = lazy(async () => ({
   default: (await import('@/features/tracking/TrackingCenterPage')).TrackingCenterPage,
 }));
+
+export const StoreAnalyticsPage = lazy(async () => ({
+  default: (await import('@/features/commerce/StoreAnalyticsPage')).StoreAnalyticsPage,
+}));

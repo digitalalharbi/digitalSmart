@@ -28,7 +28,7 @@ sit.
 | 11    | **Commerce domain** — normalised stores, orders, items, products, variants, customers, refunds, shipments, webhook events; two state axes, revenue sources, attribution evidence | **Complete**; provider adapters are Phases 12–13 |
 | 12    | **Salla** integration — entities, HMAC webhook verification, queued handling, reconciliation sync, two-axis status mapping | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 13    | **Zid** integration — the same normalised domain, which Zid fits natively; Basic Auth webhooks, custom merchant statuses | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
-| 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with a required revenue source on every request | **Backend complete**; the frontend surface is outstanding |
+| 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with a required revenue source on every request | **Complete** |
 | 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome, CRM bridge | Planned |
 | 16    | **Customer journeys** — touchpoints, identity evidence, identity confidence, Journey Explorer | Planned |
 | 17    | **Attribution** — first/last/paid-last/linear/position/time-decay models, each exposing coverage, data quality, confidence and revenue source | Planned |
@@ -664,10 +664,28 @@ is excluded from a total.
   evidence rather than its weakest — which would have flattered every row invisibly.
 - 29 tests.
 
-### Not yet done in Phase 14
+### Phase 14 — the store revenue page
 
-- **No frontend surface.** The endpoint is complete and tested; the page belongs with a design decision
-  about how a revenue-source selector reads, which is worth making deliberately.
+- **The revenue-source selector is the first control on the page**, always visible, and what it is set to
+  is repeated in words on the total itself. The page refuses to make that choice quietly.
+- **Three different sentences for three kinds of claim**: an invoiced figure is "the closest thing to what
+  the client actually earned", a reported one "a measurement of sales, not a record of them", and a
+  modelled one carries an explicit instruction not to present it to a client as actual.
+- **Pending orders are an amber banner beside the totals**, never folded into them, naming the amount and
+  why it is excluded.
+- **Attribution coverage sits beside the breakdowns** and turns amber below 70%, because it changes what
+  every row below it can be read as.
+- **Each breakdown row shows the weakest evidence it rests on with its confidence**, and a coupon-backed
+  row is styled as a warning rather than as neutral.
+- **The unattributed row is labelled and kept**, because a reader who cannot see it reads every other row
+  as a larger share of the business than it is.
+- Summary figures are built as `MetricValue`s so the shared card handles null-as-absent and the source
+  badge, rather than reimplementing either differently.
+- The chart draws refunds as a second series rather than netting them away invisibly: a flat month caused
+  by returns is a different business problem from a month where nobody bought anything.
+- 11 component tests and 4 end-to-end tests; full suite 154 passing.
+
+### Not yet done in Phase 14
 - **Mixed currencies are not converted.** A client selling in two currencies has no single total, and
   summing minor units across them would be wrong by whatever the exchange rate is. The scope reports the
   first store's currency and a caller is expected to narrow; a proper answer needs a rates source and a

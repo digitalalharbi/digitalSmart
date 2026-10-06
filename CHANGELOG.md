@@ -61,10 +61,30 @@ to spot afterwards.
 - **Visibility is the same rule as the measurement sources'** — the clients of the actor's projects,
   applied in SQL — so the two surfaces cannot disagree about who can see what.
 
-### Not yet in place
+### The page
 
-- **No frontend surface.** The endpoint is complete and tested; the page belongs with a design decision
-  about how a revenue-source selector reads.
+- `src/features/commerce/` — `StoreAnalyticsPage`, `BreakdownTable`, `RevenueChart`, money helpers, types,
+  api and hooks; a `/commerce` nav item; English and Arabic translations; 11 component tests and 4
+  end-to-end tests.
+- **The revenue-source selector is the first control and is never defaulted silently.** What it is set to
+  is repeated in words on the total, in one of three sentences: an invoiced figure is the closest thing to
+  what the client earned, a reported one is a measurement rather than a record, and a modelled one carries
+  an explicit instruction not to show it to a client as actual.
+- **Pending orders get their own amber banner**, naming the amount and why it is excluded.
+- **Coverage sits beside the breakdowns and turns amber below 70%**, because it changes what every row
+  below it can be read as. A coupon-backed row is styled as a warning rather than as neutral, since the
+  number beside it is the one most likely to be acted on wrongly.
+- Summary figures are built as `MetricValue`s so the shared card carries null-as-absent and the source
+  badge, rather than reimplementing either differently.
+- The chart draws refunds as a second series rather than netting them away: a flat month caused by returns
+  is a different problem from a month where nobody bought.
+- The query key includes the revenue source, because changing it asks a different question rather than
+  refining the answer — caching two authorities under one key would show one total under the other's
+  label.
+- A plural key was written in i18next's v3 `_plural` spelling, which silently falls back to the singular;
+  corrected to `_one`/`_other`.
+
+### Not yet in place
 - **Mixed currencies are not converted.** A client selling in two has no single total, and summing minor
   units across them would be wrong by the exchange rate. A proper answer needs a rates source and a
   decision about which day's rate.

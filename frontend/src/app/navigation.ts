@@ -81,6 +81,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'tracking.view',
   },
   {
+    path: '/commerce',
+    labelKey: 'nav.commerce',
+    icon: 'ShoppingBag',
+    section: 'intelligence',
+    phase: 'Phase 14',
+    // The endpoint checks the same permission the rest of the reporting surface does.
+    permission: 'analytics.view',
+  },
+  {
     path: '/analytics',
     labelKey: 'nav.analytics',
     icon: 'ChartNoAxesCombined',

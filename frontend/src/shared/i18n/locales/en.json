@@ -26,7 +26,8 @@
       "system": "System"
     },
     "dashboards": "Dashboards",
-    "tracking": "Tracking"
+    "tracking": "Tracking",
+    "commerce": "Store revenue"
   },
   "actions": {
     "search": "Search",
@@ -767,5 +768,75 @@
       "live_version_id": "Published version",
       "measurement_ids_found": "Ids found"
     }
+  },
+  "commerce": {
+    "title": "Store revenue",
+    "subtitle": "What a client's stores sold, according to one named authority. These figures are never mixed across sources — they measure different things and they will disagree.",
+    "loadFailed": "Could not load the revenue picture. Try again in a moment.",
+    "summary": "Revenue summary",
+    "client": "Client",
+    "allClients": "All clients",
+    "trend": "Day by day",
+    "trendTooShort": "A single day is not a trend. Widen the period to see one.",
+    "source": {
+      "label": "Revenue according to",
+      "hint": "There is no combined figure. A store counts invoices; analytics counts what a browser reported; an ad platform reports what it believes it caused."
+    },
+    "sources": {
+      "salla": "Salla",
+      "zid": "Zid",
+      "crm": "CRM",
+      "google_analytics": "Google Analytics",
+      "platform_reported": "Ad platforms",
+      "attributed": "Attributed (modelled)",
+      "manual": "Entered by hand"
+    },
+    "claim": {
+      "invoiced": "{{source}} invoiced this money. It is the closest thing to what the client actually earned.",
+      "reported": "{{source}} reported this. It is a measurement of sales, not a record of them, and it will not match the store's own total.",
+      "modelled": "This is modelled, not recorded. {{source}} revenue is a model's output and must not be presented to a client as actual."
+    },
+    "period": {
+      "label": "Period",
+      "days": "{{count}} days"
+    },
+    "metrics": {
+      "netRevenue": "Net revenue",
+      "netRevenueHint": "{{gross}} sold, {{refunded}} refunded, {{units}} units.",
+      "orders": "Paid orders",
+      "aov": "Average order",
+      "customers": "Customers",
+      "noOrders": "No paid order in this period, so there is no average to show."
+    },
+    "attribution": {
+      "title": "Where the revenue came from",
+      "hint": "Only what the orders themselves carried. An order with no campaign parameters is unattributed, not assigned to whatever was running — and the confidence on each row is the weakest link inside it.",
+      "coverage": "{{percent}}% traceable",
+      "noCoverage": "Nothing to trace"
+    },
+    "breakdown": {
+      "channel": "By channel",
+      "campaign": "By campaign",
+      "product": "By product",
+      "row": "Row",
+      "orders": "Orders",
+      "units": "Units",
+      "revenue": "Net revenue",
+      "unattributed": "Unattributed",
+      "evidence": "{{evidence}} · {{confidence}}%",
+      "empty": "Nothing to show for this period."
+    },
+    "chart": {
+      "label": "Net revenue by day from {{from}} to {{until}}, totalling {{total}}.",
+      "description": "Best day {{best}}. Weakest day {{worst}}.",
+      "net": "Net revenue",
+      "refunded": "Refunded"
+    },
+    "empty": {
+      "title": "No {{source}} revenue in this period",
+      "body": "Either nothing sold, or no store is connected for this authority yet. The integrations page is where a store is connected."
+    },
+    "pending_one": "{{count}} order is placed and not yet paid for, worth {{amount}}. Not counted above — cash on delivery becomes revenue when it is collected, and some of it comes back instead.",
+    "pending_other": "{{count}} orders are placed and not yet paid for, worth {{amount}} together. Not counted above — cash on delivery becomes revenue when it is collected, and some of it comes back instead."
   }
 }

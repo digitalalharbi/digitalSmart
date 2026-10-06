@@ -51,6 +51,15 @@ export const queryKeys = {
      */
     forecast: (params: Record<string, unknown>) => ['budgets', 'forecast', params] as const,
   },
+  commerce: {
+    all: () => ['commerce'] as const,
+    /*
+     * Keyed by the whole query, revenue source included. Changing the source does not refine the answer,
+     * it asks a different question — and caching two authorities under one key would show one total under
+     * the other's label.
+     */
+    analytics: (query: Record<string, unknown>) => ['commerce', 'analytics', query] as const,
+  },
   measurement: {
     all: () => ['measurement'] as const,
     /*
