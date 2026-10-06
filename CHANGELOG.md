@@ -61,6 +61,10 @@ phase made the measurable parts measurable, and shipped the two surfaces that we
   been unlucky, and "the server could not be reached" is a conclusion a single failed connection does
   not support. GET and HEAD by default, plus signing in, which is the one write in this product that
   can be repeated without repeating its effect.
+- **A table twin for every chart whose figures appear nowhere else** — the analytics trend, the
+  commerce trend, the overview trend, every Lead Center chart and the Tracking Center's. The two
+  analytics charts without one plot values the breakdown table at the foot of that page already
+  holds, by the same dimension.
 - `docs/DATA_VISUALISATION.md`, with the design system's chart section rewritten around it.
 
 ### The end-to-end suite — and the API defect behind it

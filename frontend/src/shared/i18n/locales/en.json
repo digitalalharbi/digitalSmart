@@ -381,7 +381,8 @@
       "aria": "Each point is a campaign, positioned by spend against cost per acquisition. Lower and further right is better."
     },
     "table": {
-      "title": "{{dimension}} detail"
+      "title": "{{dimension}} detail",
+      "day": "Day"
     },
     "empty": {
       "title": "No performance data for this period",
@@ -864,7 +865,13 @@
       "body": "Either nothing sold, or no store is connected for this authority yet. The integrations page is where a store is connected."
     },
     "pending_one": "{{count}} order is placed and not yet paid for, worth {{amount}}. Not counted above — cash on delivery becomes revenue when it is collected, and some of it comes back instead.",
-    "pending_other": "{{count}} orders are placed and not yet paid for, worth {{amount}} together. Not counted above — cash on delivery becomes revenue when it is collected, and some of it comes back instead."
+    "pending_other": "{{count}} orders are placed and not yet paid for, worth {{amount}} together. Not counted above — cash on delivery becomes revenue when it is collected, and some of it comes back instead.",
+    "table": {
+      "day": "Day",
+      "netRevenue": "Net revenue",
+      "refunded": "Refunded"
+    },
+    "trendSubtitle": "Refunds are drawn beside net revenue rather than netted away: a flat month because returns rose is a different problem from a month nobody bought in."
   },
   "chart": {
     "view": {

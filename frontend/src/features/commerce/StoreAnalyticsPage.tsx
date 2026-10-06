@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useClientsQuery } from '@/features/clients';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
-import { Card } from '@/shared/ui/card';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { MetricCard } from '@/shared/ui/metric-card';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { SourceBadge } from '@/shared/ui/source-badge';
+import { ChartFrame } from '@/shared/ui/chart';
 import { BreakdownTable } from './BreakdownTable';
 import { RevenueChart } from './RevenueChart';
 import { useStoreAnalyticsQuery } from './useCommerce';
@@ -184,18 +184,39 @@ export function StoreAnalyticsPage() {
                 </Alert>
               ) : null}
 
-              <section className="flex flex-col gap-3" aria-labelledby="commerce-trend">
-                <h2 id="commerce-trend" className="text-content text-lg font-semibold">
-                  {t('commerce.trend')}
-                </h2>
-                <Card className="p-4">
-                  <RevenueChart
-                    points={analytics.data?.daily ?? []}
-                    currency={summary.currency}
-                    locale={locale}
-                  />
-                </Card>
-              </section>
+              {/*
+                The daily figures, with a table of the same numbers.
+
+                The breakdowns further down have their own tables already; these days appear
+                nowhere else on the page, so this is the only route to them for anyone reading
+                without a pointer or without colour.
+              */}
+              <ChartFrame
+                title={t('commerce.trend')}
+                subtitle={t('commerce.trendSubtitle')}
+                source={summary.source}
+                table={{
+                  columns: [
+                    t('commerce.table.day'),
+                    t('commerce.table.netRevenue'),
+                    t('commerce.table.refunded'),
+                  ],
+                  rows: (analytics.data?.daily ?? []).map((point) => ({
+                    key: point.date,
+                    label: point.date,
+                    cells: [
+                      formatMinor(point.net_revenue_minor, summary.currency, locale),
+                      formatMinor(point.refunded_minor, summary.currency, locale),
+                    ],
+                  })),
+                }}
+              >
+                <RevenueChart
+                  points={analytics.data?.daily ?? []}
+                  currency={summary.currency}
+                  locale={locale}
+                />
+              </ChartFrame>
 
               <section className="flex flex-col gap-3" aria-labelledby="commerce-attribution">
                 <div className="flex flex-wrap items-center justify-between gap-2">

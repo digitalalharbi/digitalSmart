@@ -813,8 +813,13 @@ waiting on it.
 
 ### Not yet done in Phase 17
 
-- **Existing surfaces are not all retrofitted to `ChartFrame`.** Analytics, campaigns and store revenue use the
-  shared marks and the fixed palette; moving their cards into the frame is mechanical and is worth doing when
-  each is next touched.
+- **Two charts still have no table of their own:** the analytics mix and efficiency charts. They do not need
+  one — the breakdown table at the foot of that page holds every value they plot, by the same dimension — and
+  giving each a twin would put the same figures on screen three times. Everything whose numbers appear nowhere
+  else now has a table: the analytics trend, the commerce trend, the overview trend, every Lead Center chart and
+  the Tracking Center's.
+- **The campaigns explorer and the pacing panel are not in the frame.** Both use the shared marks and the
+  measured palette, and both already sit beside tables of their own figures; moving the cards into `ChartFrame`
+  is mechanical and worth doing when each is next touched.
 - **No texture channel.** The palette clears every gate on colour alone in both themes, so the backup channel
   for full colour-blindness, grey print and forced-colors mode is not yet implemented.

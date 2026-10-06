@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Chart } from '@/shared/ui/chart/Chart';
+import { Chart, ChartFrame } from '@/shared/ui/chart';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { MetricCard, MetricCardSkeleton } from '@/shared/ui/metric-card';
 import { SourceNotice } from '@/shared/ui/source-badge';
@@ -183,52 +183,75 @@ export function AnalyticsPage() {
         />
       ) : (
         <>
-          {/* Trend */}
-          <Card>
-            <CardHeader className="flex-row items-center justify-between gap-3">
-              <CardTitle>
-                {t('analytics.trend.title', {
-                  metric: catalogue.definitions.get(trendMetric)?.label ?? trendMetric,
-                })}
-              </CardTitle>
-              <span className="text-content-tertiary text-xs">{t('analytics.trend.hint')}</span>
-            </CardHeader>
-            <CardContent>
-              {trend === null ? (
-                <div className="bg-surface-sunken h-[400px] animate-pulse rounded-lg" />
-              ) : (
-                <Chart
-                  option={trend}
-                  /*
-                   * Taller than a single plot, because this is two: the chosen metric
-                   * above, spend beneath it, sharing one time axis. Sized to include both
-                   * x-axis bands — a container that fits only the plots gives the card a
-                   * tiny nested scrollbar.
-                   */
-                  height={400}
-                  ariaLabel={t('analytics.trend.aria', {
-                    metric: catalogue.definitions.get(trendMetric)?.label ?? trendMetric,
-                    start: data?.range.start ?? '',
-                    end: data?.range.end ?? '',
-                  })}
-                >
-                  {/* The same figures in text, for anyone who cannot see the canvas. */}
-                  <ul>
-                    {(data?.series ?? []).map((point) => {
-                      const value = point.values[trendMetric];
+          {/*
+            The trend, in a frame that carries a table of the same figures.
 
-                      return (
-                        <li key={point.date}>
-                          {point.date}:{' '}
-                          {value === undefined ? '—' : formatMetric(value, i18n.language)}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </Chart>
-              )}
-            </CardContent>
-          </Card>
+            The two charts below it do not need their own twin: the breakdown table at the
+            bottom of the page holds every one of their values, by the same dimension. The
+            trend's daily figures appear nowhere else.
+          */}
+          {trend === null ? (
+            <div className="bg-surface-sunken h-[400px] animate-pulse rounded-lg" />
+          ) : (
+            <ChartFrame
+              title={t('analytics.trend.title', {
+                metric: catalogue.definitions.get(trendMetric)?.label ?? trendMetric,
+              })}
+              subtitle={t('analytics.trend.hint')}
+              {...(data === undefined ? {} : { source: data.source })}
+              table={{
+                columns: [
+                  t('analytics.table.day'),
+                  catalogue.definitions.get(trendMetric)?.label ?? trendMetric,
+                  catalogue.definitions.get('spend')?.label ?? 'spend',
+                ],
+                rows: (data?.series ?? []).map((point) => {
+                  const chosen = point.values[trendMetric];
+                  const spend = point.values.spend;
+
+                  return {
+                    key: point.date,
+                    label: point.date,
+                    cells: [
+                      // A missing figure is a dash with its reason, never a zero.
+                      chosen === undefined ? '—' : formatMetric(chosen, i18n.language),
+                      spend === undefined ? '—' : formatMetric(spend, i18n.language),
+                    ],
+                  };
+                }),
+              }}
+            >
+              <Chart
+                option={trend}
+                /*
+                 * Taller than a single plot, because this is two: the chosen metric above,
+                 * spend beneath it, sharing one time axis. Sized to include both x-axis
+                 * bands — a container that fits only the plots gives the card a tiny
+                 * nested scrollbar.
+                 */
+                height={400}
+                ariaLabel={t('analytics.trend.aria', {
+                  metric: catalogue.definitions.get(trendMetric)?.label ?? trendMetric,
+                  start: data?.range.start ?? '',
+                  end: data?.range.end ?? '',
+                })}
+              >
+                {/* The same figures in text, for anyone who cannot see the canvas. */}
+                <ul>
+                  {(data?.series ?? []).map((point) => {
+                    const value = point.values[trendMetric];
+
+                    return (
+                      <li key={point.date}>
+                        {point.date}:{' '}
+                        {value === undefined ? '—' : formatMetric(value, i18n.language)}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Chart>
+            </ChartFrame>
+          )}
 
           {/* Mix and efficiency, side by side on a wide canvas */}
           <div className="grid gap-5 xl:grid-cols-2">
