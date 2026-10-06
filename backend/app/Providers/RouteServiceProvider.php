@@ -34,6 +34,18 @@ final class RouteServiceProvider extends ServiceProvider
          * protects a specific user, and it stays in force even where the
          * per-IP budget is raised for a shared address.
          */
+        /*
+         * Store webhooks. Public, so it needs a ceiling; generous, because a busy shop on a sale day
+         * genuinely delivers hundreds of events a minute and throttling a real client's orders would
+         * be worse than the abuse it prevents.
+         *
+         * Keyed by merchant rather than by IP: providers deliver from shared infrastructure, so an IP
+         * key would let one noisy shop throttle every other shop on the same platform. A 429 is the
+         * right answer here — the provider redelivers, and nothing is lost.
+         */
+        RateLimiter::for('webhooks', fn (Request $request): Limit => Limit::perMinute($this->limit('webhooks'))
+            ->by('merchant:'.(string) $request->input('merchant', $request->ip())));
+
         RateLimiter::for('auth', /** @return list<Limit> */ fn (Request $request): array => [
             Limit::perMinute($this->limit('auth'))->by('ip:'.(string) $request->ip()),
             Limit::perMinute($this->limit('auth'))->by('email:'.strtolower((string) $request->input('email'))),

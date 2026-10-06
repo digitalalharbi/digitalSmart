@@ -118,7 +118,7 @@ it.
 | `stores` | Client-scoped and required: a store with no client is orders nobody can report on. Unique per workspace, provider and external id |
 | `store_customers` | The client's customers. Lifetime totals are **derived**, not taken from the provider |
 | `store_products`, `store_product_variants` | `stock` is nullable: untracked is not zero |
-| `store_orders` | The two state axes, money, attribution, revenue source, and the honesty label |
+| `store_orders` | The two state axes, money, attribution, revenue source, and the honesty label. The amount **breakdown is nullable**: Salla's order list reports a total and nothing else, and zero would read as "nothing was charged for shipping" |
 | `store_order_items` | Name and price **as sold**, not as the catalogue reads today |
 | `store_refunds` | Individually, with dates |
 | `store_shipments` | Several per order — a split delivery is two shipments of one sale |
@@ -177,6 +177,12 @@ Zero rows inserted means "already seen", which is the signal to answer `200` and
 **A provider that sends no event id is processed anyway.** This product will not invent an identity
 from a payload hash: two genuinely distinct events — two items of the same product added a second
 apart — can hash identically, and silently dropping the second would lose a real sale.
+
+**Two workspaces can register the same merchant**, because stores are unique per
+`(workspace, provider, external_id)` and two agencies may both manage one shop. The signature decides
+whose delivery it is: every candidate store is found and the signature is checked against each one's own
+secret. Routing by first match would put one agency's client's orders into the other's workspace, which
+nothing downstream could detect.
 
 **An unverified signature is recorded as `rejected` and never processed.** The arrival is a fact worth
 keeping — it is how somebody finds out an endpoint is being probed — and writing down which it was is

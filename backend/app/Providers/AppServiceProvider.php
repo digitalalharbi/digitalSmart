@@ -16,7 +16,12 @@ use App\Application\Budget\Contract\BudgetRepository;
 use App\Application\Budget\Contract\BudgetSpendReadModel;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Commerce\Contract\CommerceStore;
+use App\Application\Commerce\Contract\CommerceSyncAdapterRegistry as CommerceSyncAdapterRegistryContract;
+use App\Application\Commerce\Contract\StoreLocator;
+use App\Application\Commerce\Contract\StoreOrderMapperRegistry as StoreOrderMapperRegistryContract;
 use App\Application\Commerce\Contract\WebhookEventJournal;
+use App\Application\Commerce\Contract\WebhookEventReader;
+use App\Application\Commerce\Contract\WebhookSignatureVerifier;
 use App\Application\Dashboard\Contract\DashboardRepository;
 use App\Application\Dashboard\Contract\SavedViewRepository;
 use App\Application\Identity\Contract\Authenticator;
@@ -55,6 +60,10 @@ use App\Infrastructure\Access\WorkspaceAccessSynchroniser;
 use App\Infrastructure\Advertising\Sandbox\SandboxFixtures;
 use App\Infrastructure\Advertising\SyncAdapterRegistry;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
+use App\Infrastructure\Commerce\CommerceSyncAdapterRegistry;
+use App\Infrastructure\Commerce\Sandbox\CommerceFixtures;
+use App\Infrastructure\Commerce\StoreOrderMapperRegistry;
+use App\Infrastructure\Commerce\Webhook\StoreWebhookVerifiers;
 use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
 use App\Infrastructure\Integration\LaravelCredentialCipher;
@@ -86,8 +95,10 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepo
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentStoreLocator;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
 use App\Infrastructure\System\CacheHealthProbe;
@@ -175,7 +186,12 @@ final class AppServiceProvider extends ServiceProvider
 
         // Commerce (Phase 11)
         CommerceStore::class => EloquentCommerceStore::class,
+        CommerceSyncAdapterRegistryContract::class => CommerceSyncAdapterRegistry::class,
         WebhookEventJournal::class => EloquentWebhookEventJournal::class,
+        WebhookEventReader::class => EloquentWebhookEventReader::class,
+        StoreLocator::class => EloquentStoreLocator::class,
+        StoreOrderMapperRegistryContract::class => StoreOrderMapperRegistry::class,
+        WebhookSignatureVerifier::class => StoreWebhookVerifiers::class,
         EventDefinitionRepository::class => EloquentEventDefinitionRepository::class,
         ObservedEventReadModel::class => EloquentObservedEventReadModel::class,
     ];
@@ -216,6 +232,15 @@ final class AppServiceProvider extends ServiceProvider
          * silent since the fixture was written.
          */
         $this->app->singleton(MeasurementFixtures::class, fn ($app): MeasurementFixtures => new MeasurementFixtures(
+            database_path('fixtures/providers'),
+            $app->make(Clock::class)->now(),
+        ));
+
+        /*
+         * Commerce fixtures shift their dates the same way, so a sandbox store looks like it has been
+         * trading this month rather than whenever the fixture was written.
+         */
+        $this->app->singleton(CommerceFixtures::class, fn ($app): CommerceFixtures => new CommerceFixtures(
             database_path('fixtures/providers'),
             $app->make(Clock::class)->now(),
         ));

@@ -1,0 +1,167 @@
+[
+  {
+    "_newest_days_ago": 1,
+    "id": 760011001,
+    "reference_id": 41201,
+    "date": { "date": "2026-06-05 14:22:11.000000", "timezone_type": 3, "timezone": "Asia/Riyadh" },
+    "updated_at": "2026-06-05 15:00:00",
+    "status": { "id": 1298199191, "name": "Completed", "slug": "completed", "customized": null },
+    "payment_method": "mada",
+    "is_pending_payment": false,
+    "coupon": "RAMADAN20",
+    "total": { "amount": 925.5, "currency": "SAR" },
+    "amounts": {
+      "sub_total": { "amount": 870, "currency": "SAR" },
+      "shipping_cost": { "amount": 25, "currency": "SAR" },
+      "cash_on_delivery": { "amount": 0, "currency": "SAR" },
+      "tax": { "percent": "15%", "amount": { "amount": 120.5, "currency": "SAR" } },
+      "discounts": [{ "code": "RAMADAN20", "amount": { "amount": 90, "currency": "SAR" } }],
+      "total": { "amount": 925.5, "currency": "SAR" }
+    },
+    "customer": {
+      "id": 1842003311,
+      "full_name": "Layla Al-Harbi",
+      "email": "layla@example.test",
+      "mobile": 555000111,
+      "country_code": "SA"
+    },
+    "items": [
+      {
+        "id": 990011,
+        "name": "عباية كلاسيك",
+        "sku": "ABA-CL-001-S",
+        "quantity": 2,
+        "product": { "id": 2290114501, "name": "عباية كلاسيك" },
+        "amounts": {
+          "price_without_tax": { "amount": 435, "currency": "SAR" },
+          "total": { "amount": 870, "currency": "SAR" }
+        }
+      }
+    ],
+    "shipments": [
+      {
+        "id": 55001,
+        "courier_name": "SMSA Express",
+        "tracking_number": "SM998877",
+        "status": "delivered",
+        "shipped_at": "2026-06-06 09:00:00",
+        "delivered_at": "2026-06-07 13:30:00"
+      }
+    ]
+  },
+  {
+    "_newest_days_ago": 2,
+    "id": 760011002,
+    "reference_id": 41202,
+    "date": { "date": "2026-06-04 10:05:00.000000", "timezone_type": 3, "timezone": "Asia/Riyadh" },
+    "updated_at": "2026-06-04 10:05:00",
+    "status": { "id": 1298199192, "name": "Shipped", "slug": "shipped", "customized": null },
+    "payment_method": "cod",
+    "is_pending_payment": true,
+    "total": { "amount": 265, "currency": "SAR" },
+    "amounts": {
+      "sub_total": { "amount": 240, "currency": "SAR" },
+      "shipping_cost": { "amount": 25, "currency": "SAR" },
+      "cash_on_delivery": { "amount": 15, "currency": "SAR" },
+      "tax": { "percent": "15%", "amount": { "amount": 0, "currency": "SAR" } },
+      "discounts": [],
+      "total": { "amount": 265, "currency": "SAR" }
+    },
+    "customer": { "id": 1842003312, "full_name": "Omar Nasser", "email": "omar@example.test", "mobile": 555000222, "country_code": "SA" },
+    "items": [
+      {
+        "id": 990012,
+        "name": "شماغ قطن",
+        "sku": "SHM-002",
+        "quantity": 2,
+        "product": { "id": 2290114502, "name": "شماغ قطن" },
+        "amounts": { "price_without_tax": { "amount": 120, "currency": "SAR" }, "total": { "amount": 240, "currency": "SAR" } }
+      }
+    ],
+    "marketing": {
+      "utm_source": "meta",
+      "utm_medium": "cpc",
+      "utm_campaign": "eid-launch",
+      "fbclid": "IwAR2sandboxclick"
+    },
+    "shipments": []
+  },
+  {
+    "_newest_days_ago": 3,
+    "id": 760011003,
+    "reference_id": 41203,
+    "date": { "date": "2026-06-03 19:44:00.000000", "timezone_type": 3, "timezone": "Asia/Riyadh" },
+    "updated_at": "2026-06-03 19:44:00",
+    "status": { "id": 1298199193, "name": "Payment pending", "slug": "payment_pending", "customized": null },
+    "payment_method": "bank",
+    "is_pending_payment": true,
+    "total": { "amount": 690, "currency": "SAR" },
+    "amounts": {
+      "sub_total": { "amount": 690, "currency": "SAR" },
+      "shipping_cost": { "amount": 0, "currency": "SAR" },
+      "discounts": [],
+      "total": { "amount": 690, "currency": "SAR" }
+    },
+    "customer": { "id": 1842003313, "full_name": "Hind Qassim", "mobile": 555000333, "country_code": "SA" },
+    "items": [
+      {
+        "id": 990013,
+        "name": "حقيبة جلد",
+        "sku": "BAG-004",
+        "quantity": 1,
+        "product": { "id": 2290114504, "name": "حقيبة جلد" },
+        "amounts": { "price_without_tax": { "amount": 690, "currency": "SAR" }, "total": { "amount": 690, "currency": "SAR" } }
+      }
+    ],
+    "shipments": []
+  },
+  {
+    "_newest_days_ago": 5,
+    "id": 760011004,
+    "reference_id": 41204,
+    "date": { "date": "2026-06-01 12:00:00.000000", "timezone_type": 3, "timezone": "Asia/Riyadh" },
+    "updated_at": "2026-06-08 09:30:00",
+    "status": { "id": 1298199194, "name": "Delivered", "slug": "delivered", "customized": null },
+    "payment_method": "mada",
+    "is_pending_payment": false,
+    "total": { "amount": 450, "currency": "SAR" },
+    "amounts": {
+      "sub_total": { "amount": 450, "currency": "SAR" },
+      "shipping_cost": { "amount": 0, "currency": "SAR" },
+      "discounts": [],
+      "total": { "amount": 450, "currency": "SAR" }
+    },
+    "customer": { "id": 1842003311, "full_name": "Layla Al-Harbi", "email": "layla@example.test", "mobile": 555000111, "country_code": "SA" },
+    "items": [
+      {
+        "id": 990014,
+        "name": "عباية كلاسيك",
+        "sku": "ABA-CL-001-L",
+        "quantity": 1,
+        "product": { "id": 2290114501, "name": "عباية كلاسيك" },
+        "amounts": { "price_without_tax": { "amount": 450, "currency": "SAR" }, "total": { "amount": 450, "currency": "SAR" } }
+      }
+    ],
+    "refunds": [
+      { "id": 70001, "amount": { "amount": 450, "currency": "SAR" }, "reason": "Returned — wrong size", "date": "2026-06-08 09:30:00" }
+    ],
+    "shipments": []
+  },
+  {
+    "_newest_days_ago": 6,
+    "id": 760011005,
+    "reference_id": 41205,
+    "date": { "date": "2026-05-31 08:10:00.000000", "timezone_type": 3, "timezone": "Asia/Riyadh" },
+    "updated_at": "2026-05-31 09:00:00",
+    "status": { "id": 1298199195, "name": "Canceled", "slug": "canceled", "customized": null },
+    "payment_method": "mada",
+    "is_pending_payment": false,
+    "total": { "amount": 120, "currency": "SAR" },
+    "amounts": { "total": { "amount": 120, "currency": "SAR" } },
+    "customer": { "id": 1842003314, "full_name": "Faisal Otaibi", "email": "faisal@example.test", "mobile": 555000444, "country_code": "SA" },
+    "items": [
+      { "id": 990015, "name": "شماغ قطن", "sku": "SHM-002", "quantity": 1, "product": { "id": 2290114502 } }
+    ],
+    "shipments": []
+  }
+]

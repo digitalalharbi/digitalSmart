@@ -65,6 +65,7 @@ arch('credentials never reach the interface layer directly')
         'App\Application\Commerce',
         'App\Infrastructure\Integration',
         'App\Infrastructure\Advertising',
+        'App\Infrastructure\Commerce',
         'App\Infrastructure\Measurement',
         'App\Infrastructure\Persistence\Eloquent\Repository',
         /*
@@ -118,11 +119,19 @@ arch('no measurement adapter is referenced outside infrastructure and its regist
     ]);
 
 arch('provider mappers never touch the database')
-    ->expect(['App\Infrastructure\Advertising\Mapper', 'App\Infrastructure\Measurement\Mapper'])
+    ->expect([
+        'App\Infrastructure\Advertising\Mapper',
+        'App\Infrastructure\Measurement\Mapper',
+        'App\Infrastructure\Commerce\Mapper',
+    ])
     ->not->toUse(['Illuminate\Database', 'Illuminate\Support\Facades']);
 
 arch('measurement use cases depend on ports, never a concrete adapter')
     ->expect('App\Application\Measurement')
+    ->not->toUse('App\Infrastructure');
+
+arch('commerce use cases depend on ports, never a concrete adapter')
+    ->expect('App\Application\Commerce')
     ->not->toUse('App\Infrastructure');
 
 arch('advertising use cases depend on ports, never a concrete adapter')

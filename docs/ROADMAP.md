@@ -26,7 +26,7 @@ sit.
 | 9     | **Google Tag Manager** — accounts, containers, published versions, tags, triggers; evidence-backed readiness checks that refuse to read a tag's purpose from its name | **Complete**; BLOCKED_EXTERNAL on an authorised OAuth client, sandbox end to end |
 | 10    | **Tracking Center** — per client: what is measuring, what counts as success, and what needs attention, with the evidence behind every finding | **Complete** |
 | 11    | **Commerce domain** — normalised stores, orders, items, products, variants, customers, refunds, shipments, webhook events; two state axes, revenue sources, attribution evidence | **Complete**; provider adapters are Phases 12–13 |
-| 12    | **Salla** integration — OAuth, entities, webhooks with signature verification, idempotent queued handling, reconciliation sync | Planned |
+| 12    | **Salla** integration — entities, HMAC webhook verification, queued handling, reconciliation sync, two-axis status mapping | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 13    | **Zid** integration — the same normalised domain without forcing Salla semantics onto it | Planned |
 | 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with an explicit revenue source on every figure | Planned |
 | 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome, CRM bridge | Planned |
@@ -558,3 +558,39 @@ agency reporting on one client per platform would otherwise be comparing two dif
 - **Payments are folded onto the order** as `payment_method` and `gateway` rather than given their own
   table. A separate payments table earns its place when a platform reports split payments, and neither
   Salla nor Zid is known to yet.
+
+### Phase 12 — Salla
+
+The first store platform, read against the published Merchant API v2 and mapped into the Phase 11 shape
+rather than being allowed to define it.
+
+- **Salla has one status axis; this product has two.** Five of its twelve documented slugs state the
+  payment outright and the mapper quotes the documentation for each. The other seven describe a parcel —
+  and in a market where cash on delivery is normal, `shipped` means "not paid" for one order and "paid
+  last week" for another. Those read Salla's documented `is_pending_payment` boolean rather than guessing
+  from the slug, and fall back to `pending` when it is absent, because an agency that finds its revenue
+  low goes looking while one that finds it high has already sent the report.
+- **Pages are walked in sequence**, because Salla documents that a page out of order returns an empty
+  response. A sync that parallelised would read nothing and report success.
+- **Webhook signatures are HMAC-SHA256 over the raw body**, compared in constant time, with an
+  unconfigured secret and an unknown strategy both verifying nothing. The fixture body is Arabic, so an
+  implementation that re-encoded before hashing fails the suite immediately rather than in production.
+- **The signature decides which workspace a delivery belongs to.** Two agencies can register the same
+  shop; routing by first match would leak one client's orders into the other's workspace.
+- **Salla sends no event id, and it does not matter**: the work is an upsert keyed on the order's own id,
+  so a redelivery writes the same row. No identity is synthesised from a payload hash.
+- **The reconciliation sync and the webhook path share one mapper**, with a test asserting they agree. A
+  second mapper is how a client's revenue comes to change whenever a nightly sync overwrites what a
+  webhook wrote an hour earlier.
+- **A Phase 11 schema correction**: the order amount breakdown is now nullable, because Salla's list
+  endpoint reports a total and nothing else and a stored zero would read as a real charge of nothing.
+- 58 tests.
+
+### Not yet done in Phase 12
+
+- **The live transport**, on a Partner app install and the OAuth handshake.
+- **Order details are not fetched per order.** The list's total is used and the breakdown left null;
+  one request per order is a quota decision worth making deliberately rather than by default.
+- **No scheduled syncing.** Queue-ready and driven directly today.
+- **No webhook subscription management**, because creating a subscription is a write and this
+  integration does not write.

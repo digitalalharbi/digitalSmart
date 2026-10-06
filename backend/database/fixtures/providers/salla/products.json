@@ -1,0 +1,62 @@
+[
+  {
+    "id": 2290114501,
+    "name": "عباية كلاسيك",
+    "sku": "ABA-CL-001",
+    "status": "sale",
+    "price": { "amount": 450, "currency": "SAR" },
+    "main_image": { "url": "https://cdn.salla.sa/sandbox/abaya.jpg" },
+    "quantity": 24,
+    "skus": [
+      {
+        "id": 2290114511,
+        "name": "S",
+        "sku": "ABA-CL-001-S",
+        "price": { "amount": 450, "currency": "SAR" },
+        "stock_quantity": 6
+      },
+      {
+        "id": 2290114512,
+        "name": "M",
+        "sku": "ABA-CL-001-M",
+        "price": { "amount": 450, "currency": "SAR" },
+        "stock_quantity": 0
+      },
+      {
+        "id": 2290114513,
+        "name": "L",
+        "sku": "ABA-CL-001-L",
+        "price": { "amount": 475, "currency": "SAR" }
+      }
+    ],
+    "updated_at": "2026-06-01 07:00:00"
+  },
+  {
+    "id": 2290114502,
+    "name": "شماغ قطن",
+    "sku": "SHM-002",
+    "status": "sale",
+    "price": { "amount": 120, "currency": "SAR" },
+    "quantity": 80,
+    "skus": [],
+    "updated_at": "2026-06-01 07:05:00"
+  },
+  {
+    "id": 2290114503,
+    "name": "Gift card",
+    "sku": null,
+    "status": "hidden",
+    "price": { "amount": 0, "currency": "SAR" },
+    "skus": [],
+    "updated_at": "2026-06-01 07:10:00"
+  },
+  {
+    "id": 2290114504,
+    "name": "حقيبة جلد",
+    "sku": "BAG-004",
+    "status": "out",
+    "price": { "amount": 690, "currency": "SAR" },
+    "skus": [],
+    "updated_at": "2026-06-01 07:15:00"
+  }
+]

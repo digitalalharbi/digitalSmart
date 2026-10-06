@@ -4,6 +4,93 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 12 — Salla
+
+The first store platform, read against the published Merchant API v2 and mapped into the Phase 11 shape
+rather than being allowed to define it. Read-only, and still BLOCKED_EXTERNAL on a Partner app install.
+
+### Added
+
+- `SallaMapper`, `SallaSyncAdapter`, `CommerceFixtures` and four fixture files in the documented
+  response shapes.
+- `SallaWebhookVerifier`, `StoreWebhookVerifiers`, `ReceiveStoreWebhook`, `ProcessStoreWebhook`,
+  `ProcessStoreWebhookJob`, `EloquentStoreLocator`, `EloquentWebhookEventReader` and a public
+  `POST /api/webhooks/stores/{provider}` endpoint, rate limited by merchant.
+- `SyncStore`, the reconciliation sync. `docs/SALLA.md` and 58 tests.
+
+### Fixed
+
+- **An order's amount breakdown can now be absent.** Phase 11 defaulted subtotal, discount, shipping and
+  tax to zero; Salla's order *list* reports a total and no breakdown at all. A stored zero reads as
+  "nothing was charged for shipping", and a subtotal report built on it is confidently incorrect rather
+  than visibly absent — the exact conflation this product refuses elsewhere. The columns are nullable and
+  the amounts CHECK was rewritten, because `NULL >= 0` is unknown rather than true.
+
+### Decisions worth recording
+
+- **Salla's single status axis is mapped onto two, from documented facts only.** Five of its twelve slugs
+  state the payment outright and the mapper quotes the documentation in each branch. The other seven
+  describe a parcel.
+- **For those seven, `is_pending_payment` is read rather than the slug guessed at.** This is the decision
+  that matters most in this market: cash on delivery is normal here, so `shipped` means "the money has
+  not arrived" for one order and "it arrived last week" for another. Mapping the slug to `paid` would
+  overstate a COD store's revenue by everything in transit; mapping it to `pending` would understate a
+  prepaid store's to nothing. Salla publishes a boolean that answers exactly this question, and reading
+  it is the difference between a fact and a guess from a label. Absent, it falls back to `pending`,
+  because an agency that finds its revenue low goes looking while one that finds it high has already sent
+  the report.
+- **A refund outranks the workflow status.** Salla will show an order as `delivered` while the money has
+  gone back, and the two axes let both be true.
+- **Pages are walked in sequence**, because Salla documents that a page out of order returns an empty
+  response and caches sequential requests for fifteen minutes. A sync that parallelised its pages, or
+  resumed from page four after a crash, would read nothing and report success — a silent failure rather
+  than an error, so the fixture loader reproduces the behaviour.
+- **Webhook signatures are hashed over the raw body**, never a re-encoding. `json_decode` then
+  `json_encode` changes key order, unicode escaping and float formatting; an implementation that
+  re-encodes appears to work until a payload carries an Arabic product name, and then rejects every
+  webhook from every Arabic store — which here is most of them. The fixture body is Arabic so this cannot
+  regress unnoticed.
+- **Constant-time comparison**, because `===` on a hash leaks it through timing one byte at a time to
+  anybody who can send requests and measure.
+- **An unconfigured secret verifies nothing**, and so does an unrecognised strategy. A deployment that
+  forgot the secret rejects webhooks instead of accepting forgeries: a gap somebody notices rather than a
+  silent door.
+- **The signature decides which workspace a delivery belongs to.** Stores are unique per workspace, so
+  two agencies can both register one shop, each with its own installed app and secret. Every candidate is
+  found and the signature checked against each one's own secret. Routing by first match would put one
+  agency's client's orders into the other's workspace — a cross-tenant leak nothing downstream could
+  detect.
+- **Every delivery is answered 2xx, including refusals.** A non-2xx makes Salla redeliver, and
+  redelivering a payload that will never verify achieves nothing but filling the journal.
+- **Salla sends no event id, and it does not matter.** The work is an upsert keyed on the order's own id,
+  so idempotency comes from the data — which is stronger than idempotency by an identifier the provider
+  does not send. No identity is synthesised from a payload hash, because two genuinely distinct events can
+  hash identically and dropping the second would lose a real sale.
+- **The worker reads the payload back from the journal row**, the only payload that has been through the
+  signature check, and refuses an unverified row even though the endpoint never queues one. A job can be
+  enqueued by anything with queue access, and this is the last gate before a payload becomes revenue.
+- **Webhooks and the reconciliation sync share one mapper**, with a test asserting they agree. A second
+  mapper is how a client's revenue comes to change whenever a nightly sync overwrites what a webhook wrote
+  an hour earlier.
+- **A webhook writes `Live` and a sync writes `Synced`**, so a reader can see which way a figure arrived.
+- **Customers and products are read before orders**, because an order line names a product and reading
+  orders first would leave nulls the next run quietly fixes — with a window in which a client's product
+  report was missing its best-selling item for no visible reason.
+- **Order timestamps keep their time zone.** A Riyadh store read as UTC moves three hours of every
+  evening's sales onto the previous day, which shifts revenue between months at a month boundary.
+- **A customer's mobile is read as a string with its country code**, because Salla sends it as an integer
+  and a phone number that has been through an integer may no longer dial.
+- **Webhooks are rate limited by merchant, not by IP.** Providers deliver from shared infrastructure, so
+  an IP key would let one busy shop throttle every other shop on the platform.
+
+### Not yet in place
+
+- **The live transport**, on a Partner app install and the OAuth handshake.
+- **Order details are not fetched per order**; the breakdown is left null. One request per order is a
+  quota decision worth making deliberately.
+- **No scheduled syncing**, and **no webhook subscription management** — creating a subscription is a
+  write, and this integration does not write.
+
 ## Phase 11 — the commerce domain
 
 One normalised shape for every store platform, written before either provider so that neither gets to

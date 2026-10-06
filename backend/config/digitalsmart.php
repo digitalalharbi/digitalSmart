@@ -40,6 +40,9 @@ return [
         'api_guest' => (int) env('RATE_LIMIT_API_GUEST', 30),
         'health' => (int) env('RATE_LIMIT_HEALTH', 60),
         'auth' => (int) env('RATE_LIMIT_AUTH', 5),
+        // A shop on a sale day delivers hundreds a minute; throttling real orders is the worse
+        // failure, and a 429 only makes the provider redeliver.
+        'webhooks' => (int) env('RATE_LIMIT_WEBHOOKS', 600),
     ],
 
 ];

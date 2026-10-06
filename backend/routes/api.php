@@ -9,6 +9,7 @@ use App\Interface\Http\Controller\Budget\BudgetController;
 use App\Interface\Http\Controller\Budget\ForecastController;
 use App\Interface\Http\Controller\Budget\PacingController;
 use App\Interface\Http\Controller\Client\ClientController;
+use App\Interface\Http\Controller\Commerce\StoreWebhookController;
 use App\Interface\Http\Controller\Dashboard\DashboardController;
 use App\Interface\Http\Controller\Dashboard\SavedViewController;
 use App\Interface\Http\Controller\Identity\SessionController;
@@ -41,6 +42,22 @@ Route::get('health', HealthController::class)
     ->name('system.health');
 
 // ---------------------------------------------------------------- Guests ---
+/*
+ * Store webhooks.
+ *
+ * Unauthenticated by necessity: a provider has no session and cannot be given one. Every delivery is
+ * verified by signature inside the use case, against the secret of the workspace whose app sent it —
+ * and two workspaces can legitimately have registered the same merchant, so the signature is what
+ * decides whose order this is.
+ *
+ * Throttled, because the endpoint is public and a provider having a bad hour must not be able to fill
+ * the queue. Rate-limited deliveries are redelivered by the provider, which is the correct outcome for
+ * a 429 — unlike a failed signature, which is answered 200 and recorded rather than retried forever.
+ */
+Route::post('webhooks/stores/{provider}', StoreWebhookController::class)
+    ->middleware('throttle:webhooks')
+    ->name('webhooks.stores');
+
 Route::middleware('guest')->group(function (): void {
     Route::post('auth/login', [SessionController::class, 'store'])
         ->middleware('throttle:auth')

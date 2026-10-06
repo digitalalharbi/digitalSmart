@@ -1,0 +1,51 @@
+[
+  {
+    "id": 1842003311,
+    "first_name": "Layla",
+    "last_name": "Al-Harbi",
+    "full_name": "Layla Al-Harbi",
+    "email": "layla@example.test",
+    "mobile": 555000111,
+    "mobile_code": "+966",
+    "country_code": "SA",
+    "city": "Riyadh",
+    "gender": "female",
+    "updated_at": "2026-06-01 09:12:00"
+  },
+  {
+    "id": 1842003312,
+    "first_name": "Omar",
+    "last_name": "Nasser",
+    "full_name": "Omar Nasser",
+    "email": "omar@example.test",
+    "mobile": 555000222,
+    "mobile_code": "+966",
+    "country_code": "SA",
+    "city": "Jeddah",
+    "updated_at": "2026-06-01 11:40:00"
+  },
+  {
+    "id": 1842003313,
+    "first_name": "Hind",
+    "last_name": "Qassim",
+    "full_name": "Hind Qassim",
+    "email": null,
+    "mobile": 555000333,
+    "mobile_code": "+966",
+    "country_code": "SA",
+    "city": "Dammam",
+    "updated_at": "2026-06-02 08:05:00"
+  },
+  {
+    "id": 1842003314,
+    "first_name": "Faisal",
+    "last_name": "Otaibi",
+    "full_name": "Faisal Otaibi",
+    "email": "faisal@example.test",
+    "mobile": 555000444,
+    "mobile_code": "+966",
+    "country_code": "SA",
+    "city": "Riyadh",
+    "updated_at": "2026-06-02 15:22:00"
+  }
+]

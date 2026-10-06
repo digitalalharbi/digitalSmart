@@ -35,10 +35,15 @@ final readonly class OrderRecord
         public ?string $reference = null,
         public ?string $rawPaymentStatus = null,
         public ?string $rawFulfilmentStatus = null,
-        public int $subtotalMinor = 0,
-        public int $discountMinor = 0,
-        public int $shippingMinor = 0,
-        public int $taxMinor = 0,
+        /*
+         * Null where the provider did not report it, which is common: Salla's order *list* gives a
+         * total and no breakdown at all. Zero would read as "nothing was charged for shipping", and
+         * a subtotal report built on that would be confidently wrong rather than visibly absent.
+         */
+        public ?int $subtotalMinor = null,
+        public ?int $discountMinor = null,
+        public ?int $shippingMinor = null,
+        public ?int $taxMinor = null,
         public int $refundedMinor = 0,
         public ?string $paymentMethod = null,
         public ?string $gateway = null,
