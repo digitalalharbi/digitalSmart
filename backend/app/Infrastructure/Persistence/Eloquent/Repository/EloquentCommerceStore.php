@@ -11,6 +11,7 @@ use App\Application\Commerce\DTO\OrderRecord;
 use App\Application\Commerce\DTO\ProductRecord;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Commerce\RevenueSource;
+use App\Domain\Shared\ValueObject\ContactPoint;
 use App\Infrastructure\Persistence\Eloquent\Model\Store;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
@@ -177,6 +178,13 @@ final readonly class EloquentCommerceStore implements CommerceStore
         $rows = [];
 
         foreach ($customers as $customer) {
+            /*
+             * Normalised with the same value object the leads use, so an enquiry and an order from one person
+             * are recognised as one person. Two modules normalising a phone number differently would be two
+             * modules that disagree about how many customers a client has.
+             */
+            $contact = ContactPoint::of($customer->email, $customer->phone);
+
             $rows[] = [
                 'id' => (string) Str::uuid7(),
                 'workspace_id' => $workspaceId,
@@ -185,6 +193,8 @@ final readonly class EloquentCommerceStore implements CommerceStore
                 'name' => $customer->name,
                 'email' => $customer->email,
                 'phone' => $customer->phone,
+                'email_key' => $contact->email,
+                'phone_key' => $contact->phone,
                 'city' => $customer->city,
                 'country' => $customer->country,
                 'created_at' => $now,
@@ -202,7 +212,7 @@ final readonly class EloquentCommerceStore implements CommerceStore
             DB::table('store_customers')->upsert(
                 $chunk,
                 ['store_id', 'external_id'],
-                ['name', 'email', 'phone', 'city', 'country', 'updated_at'],
+                ['name', 'email', 'phone', 'email_key', 'phone_key', 'city', 'country', 'updated_at'],
             );
         }
 

@@ -30,7 +30,7 @@ sit.
 | 13    | **Zid** integration — the same normalised domain, which Zid fits natively; Basic Auth webhooks, custom merchant statuses | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with a required revenue source on every request | **Complete** |
 | 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome | **Backend complete**; the CRM bridge and the frontend surface are outstanding |
-| 16    | **Customer journeys** — touchpoints, identity evidence, identity confidence, Journey Explorer | Planned |
+| 16    | **Customer journeys** — identity evidence, identity confidence, conversion timelines | **Complete for what the data supports**; multi-touch journeys need event-level data this product does not have — see docs/JOURNEYS.md |
 | 17    | **Attribution** — first/last/paid-last/linear/position/time-decay models, each exposing coverage, data quality, confidence and revenue source | Planned |
 | 18    | **Creative operations** — briefs, requests, assets, versions, specs, validation, comments, approval workflow, Kanban | Planned |
 | 19    | **Operations** — tasks, approvals engine, client requests, notifications and realtime | Planned |
@@ -735,3 +735,44 @@ Built around one sentence: **a lead is a person who did something, and a click i
 - **No lead scoring.** A score is a model, and a model presented as a fact is what this product refuses. It
   belongs with the AI phase, labelled as modelled.
 - **No frontend surface.**
+
+### Phase 16 — customer journeys
+
+Three of the four things this phase asked for are delivered. The fourth is **blocked by the data, not by the
+work**, and that finding is the most useful thing in the phase.
+
+- **Multi-touch journeys are not buildable from what this product has.** Google Analytics' Data API returns
+  aggregated reports rather than per-user event streams, and the documented route to event-level data is a
+  BigQuery export this product does not read. So the clicks, sessions and impressions before a conversion are
+  absent rather than nonexistent, and `docs/JOURNEYS.md` says what would unblock it: a GA4 → BigQuery export
+  (needs a Cloud project with billing, and costs money per query, which makes it a decision for whoever pays)
+  or first-party tracking (larger, and brings consent obligations).
+- **What is delivered is a person's history of conversions** — enquiries and orders, linked on normalised
+  contact details — which is a fact an agency cannot currently get anywhere.
+- **A single record is never drawn as a journey.** `is_multi_touch` exists so an interface says "one enquiry,
+  nothing else recorded" instead of rendering a one-step funnel, which reads as a complete picture and gets
+  acted on as one. `span_in_days` is null rather than zero for the same reason.
+- **The journey has no attribution of its own.** Each touchpoint keeps what it carried; deciding which touch
+  earned the credit is a model, and a model presented as a fact is what this product refuses. The response
+  offers the earliest *record* that carried an attribution, and a test asserts there is no journey-level campaign
+  field.
+- **`IdentityEvidence` mirrors the attribution discipline**, with a reliability line drawn above the shared click
+  identifier: a shared-device match is worth showing to somebody who can judge it and not worth counting in a
+  funnel.
+- **Matching is exact and never on a name.** Two people called Mohammed Al-Harbi are two people; the cost of a
+  missed link is one unlinked journey, and the cost of a wrong one is a record nobody can untangle.
+- **Resolved on read, never stored.** A stored identity graph goes stale the moment the next order lands.
+  `store_customers` gained normalised contact keys for this, because normalising a phone number in SQL is not
+  possible.
+- **`ContactPoint` moved to the shared domain**, so the leads module and the commerce module recognise a person
+  by one rule rather than two.
+- A real inconsistency fixed on the way: the journey lookup was not visibility-scoped, so an out-of-reach lead
+  answered with an empty journey rather than a 404 — which confirms the id exists.
+- 16 tests.
+
+### Not yet done in Phase 16
+
+- **Multi-touch touchpoints**, as above. This is the phase's honest ceiling.
+- **No Journey Explorer surface.** The endpoint is complete; the page is worth building once there is more than
+  one kind of touchpoint to show on it.
+- **No manual merge** of two records a human knows are one person, which Phase 15 also notes.

@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Leads;
+namespace App\Domain\Shared\ValueObject;
 
 /**
  * A normalised way of reaching a person, used to recognise the same person twice.
+ *
+ * Shared rather than owned by the leads module, because recognising a person is the same problem whether the
+ * record in front of you is an enquiry, an order or a CRM row — and two modules normalising a phone number
+ * differently would be two modules that disagree about how many people a client has.
  *
  * Normalising matters more here than it looks: the same customer arrives as `+966 55 500 1122` from a form,
  * `966555001122` from WhatsApp and `0555001122` from a phone log, and an agency that counts those as three

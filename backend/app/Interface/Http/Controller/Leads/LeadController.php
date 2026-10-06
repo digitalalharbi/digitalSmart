@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Http\Controller\Leads;
 
+use App\Application\Journeys\Query\GetJourney;
 use App\Application\Leads\Command\ChangeLeadStage;
 use App\Application\Leads\Command\RecordLead;
 use App\Application\Leads\DTO\LeadView;
@@ -12,6 +13,7 @@ use App\Application\Leads\Query\ListLeads;
 use App\Domain\Leads\LeadStage;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Request\Leads\RecordLeadRequest;
+use App\Interface\Http\Resource\Leads\JourneyResource;
 use App\Interface\Http\Resource\Leads\LeadResource;
 use DateTimeImmutable;
 use Exception;
@@ -96,6 +98,17 @@ final class LeadController extends Controller
                 $request->integer('days') ?: null,
             )),
         ]);
+    }
+
+    /**
+     * Everything recorded for the person this lead belongs to.
+     *
+     * The response states what is missing from it: the marketing touches before a conversion are not available
+     * to this product, and a reader has to know they are absent rather than nonexistent.
+     */
+    public function journey(string $lead, GetJourney $journey): JsonResponse
+    {
+        return response()->json(['data' => JourneyResource::journey($journey($lead))]);
     }
 
     private function date(Request $request, string $key): ?DateTimeImmutable

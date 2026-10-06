@@ -71,6 +71,7 @@ make e2e        # Playwright (stack must be running)
 | `docs/SALLA.md`          | Salla: status mapping, webhook signatures, reconciliation |
 | `docs/ZID.md`            | Zid: two native state axes, custom statuses, Basic Auth webhooks |
 | `docs/LEADS.md`          | Leads: a click is not a lead, and every rate's denominator |
+| `docs/JOURNEYS.md`       | Journeys, identity evidence, and why multi-touch is blocked |
 | `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |
 | `docs/SECURITY.md`       | Controls, threat notes, secret handling                 |
 | `docs/TESTING.md`        | Test layers, database strategy, conventions             |

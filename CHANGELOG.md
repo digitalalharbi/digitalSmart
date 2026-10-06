@@ -4,6 +4,73 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 16 — customer journeys
+
+Three of the four things this phase asked for are delivered. The fourth is blocked by the data rather than by
+the work, and naming that precisely is the most useful outcome here.
+
+### The blocker, named
+
+**Multi-touch customer journeys are not buildable from the data this product has.** Google Analytics' Data API
+returns aggregated reports — tables of dimensions and metrics — not per-user event streams, and there is no
+user-level identifier available through it. The documented route to event-level data is a **BigQuery export**,
+a separate integration this product does not read.
+
+So the clicks, sessions, page views and ad impressions before a conversion are **absent rather than
+nonexistent**. What would unblock it: a GA4 → BigQuery export (needs a Cloud project with billing and costs
+money per query, which makes it a decision for whoever pays) or first-party tracking (larger, and brings consent
+obligations). Both are recorded in `docs/JOURNEYS.md` rather than half-built.
+
+### Added
+
+- `app/Domain/Journeys/` — `IdentityEvidence`, `TouchpointKind`, `Touchpoint` and `Journey`.
+- `JourneyReadModel` and its Eloquent implementation, `GetJourney`, `JourneyResource`,
+  `GET /api/leads/{lead}/journey`, `docs/JOURNEYS.md` and 16 tests.
+- `email_key` and `phone_key` on `store_customers`, so a person can be recognised across surfaces.
+- `ContactPoint` moved to `App\Domain\Shared\ValueObject`, because recognising a person is the same problem
+  whether the record is an enquiry or an order — and two modules normalising a phone number differently would be
+  two modules that disagree about how many customers a client has.
+
+### Fixed
+
+- **The journey lookup was not visibility-scoped.** An out-of-reach lead answered with an empty journey rather
+  than a 404, which confirms the id exists — itself across the tenant boundary. Now checked on the lead lookup
+  as well as inside the contact resolution, because the second is reachable on its own.
+
+### Decisions worth recording
+
+- **A single record is never drawn as a journey.** `is_multi_touch` exists so an interface says "one enquiry,
+  nothing else recorded" rather than rendering a one-step funnel — which reads as a *complete picture* and gets
+  acted on as one: a reader concludes the customer appeared from nowhere, or that the channel deserves no credit.
+  `span_in_days` is null rather than zero for the same reason, and a zero would be averaged into a cycle time as
+  though the customer had bought instantly.
+- **The journey has no attribution of its own.** Each touchpoint keeps what it carried, and no touchpoint
+  inherits another's. Deciding which touch earned the credit is a model — first-touch, last-touch, linear and
+  time-decay disagree by design — and a model presented as a fact is what this product refuses. The response
+  offers `earliest_attributed_touchpoint` as a fact about *that record*, and a test asserts there is no
+  journey-level campaign field.
+- **`IdentityEvidence` mirrors the attribution discipline**, because deciding two records are one person changes
+  what a client is told about their funnel. The reliability line is drawn **above** the shared click identifier:
+  it is strong about the click and weak about the person, since a shared device or a forwarded link puts one
+  person's click on another's order. Worth showing to somebody who can judge it; not worth counting in a funnel.
+- **Matching is exact and never on a name.** Two people called Mohammed Al-Harbi are two people. The cost of a
+  missed link is one unlinked journey; the cost of a wrong link is a record nobody can disentangle afterwards.
+- **The platform's own customer link outranks anything this product infers.** The shop made it — the customer
+  signed in, or the platform matched them itself.
+- **Resolved on read, never stored.** A stored identity graph goes stale the moment the next order lands and
+  nobody dares rebuild it; resolving on read means the answer is always made of rows a person can go and look at.
+- **Existing store customers are not backfilled with normalised keys.** A half-normalised key would match some
+  records and not others, which is worse than none — the next sync computes them properly, and until then an
+  unlinked journey is honestly unlinked rather than inconsistently linked.
+- **The limitations are in the response, not only in the documentation**, and are assembled per journey: the
+  person reading the page is the one who would otherwise draw the wrong conclusion.
+
+### Not yet in place
+
+- **Multi-touch touchpoints**, as above. This is the phase's honest ceiling.
+- **No Journey Explorer surface.** Worth building once there is more than one kind of touchpoint to show.
+- **No manual merge** of two records a human knows are one person.
+
 ## Phase 15 — lead intelligence
 
 Built around one sentence: **a lead is a person who did something, and a click is not a lead.**

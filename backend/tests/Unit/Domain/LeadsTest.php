@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Domain\Leads\ContactPoint;
 use App\Domain\Leads\LeadFunnel;
 use App\Domain\Leads\LeadSourceKind;
 use App\Domain\Leads\LeadStage;
+use App\Domain\Shared\ValueObject\ContactPoint;
 
 /*
 |--------------------------------------------------------------------------

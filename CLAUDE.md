@@ -198,6 +198,7 @@ Maintain:
 - docs/SALLA.md
 - docs/ZID.md
 - docs/LEADS.md
+- docs/JOURNEYS.md
 - docs/DESIGN_SYSTEM.md
 - docs/SECURITY.md
 - docs/TESTING.md

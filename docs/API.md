@@ -857,3 +857,27 @@ is usually the largest, since most enquiries carry no parameters and many arrive
 funnel and is never summed with it, and **no ratio between the two is published.** A tap and a lead do not share
 a denominator — the same person taps three times, or taps and then phones instead — so the response carries
 `signals_note` rather than a rate.
+
+### `GET /api/leads/{lead}/journey`
+
+Everything recorded for the person a lead belongs to. Needs `leads.view`.
+
+**Read this alongside [JOURNEYS.md](JOURNEYS.md), which states the blocker first:** only enquiries and orders
+appear. The clicks, sessions and ad impressions before them are not available to this product — Google
+Analytics' Data API returns aggregated reports rather than per-user event streams, and the documented route to
+event-level data is a BigQuery export this product does not read.
+
+| Field | Notes |
+| ----- | ----- |
+| `identity_evidence`, `identity_confidence`, `is_reliable` | What makes us think these records are one person. `is_reliable` is false for a shared click identifier: strong about the click, weak about the person |
+| `touchpoint_count`, `is_multi_touch` | **`is_multi_touch` is the guard against a one-step funnel being read as a whole customer history.** A single record is not a journey, and the response says so |
+| `span_in_days` | Null for a single touchpoint, because "nothing elapsed" and "nothing to measure" are different facts |
+| `earliest_attributed_touchpoint` | The first record that carried an attribution, as a fact about **that record** |
+| `touchpoints[]` | Each with its **own** attribution, state and value. A touchpoint never inherits another's |
+| `limitations[]` | What is missing, as data rather than documentation |
+
+**There is no journey-level `campaign` or `attribution`, deliberately.** Deciding which touch earned the credit
+is a model — first-touch, last-touch and linear disagree — and a model presented as a fact is what this product
+refuses. That belongs to the attribution phase, labelled as modelled.
+
+A lead the actor cannot reach is a `404` rather than an empty journey: an empty one would confirm the id exists.

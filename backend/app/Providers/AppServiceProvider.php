@@ -30,6 +30,7 @@ use App\Application\Identity\Contract\IdentityReadModel;
 use App\Application\Integration\Contract\CredentialCipher;
 use App\Application\Integration\Contract\IntegrationReadModel;
 use App\Application\Integration\Contract\ProviderAdapterRegistry as ProviderAdapterRegistryContract;
+use App\Application\Journeys\Contract\JourneyReadModel;
 use App\Application\Leads\Contract\LeadReadModel;
 use App\Application\Leads\Contract\LeadRepository;
 use App\Application\Measurement\Contract\EventDefinitionRepository;
@@ -80,6 +81,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBenchmarkReadModel
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentJourneyReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentLeadReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentObservedEventReadModel;
@@ -201,6 +203,9 @@ final class AppServiceProvider extends ServiceProvider
         // Leads (Phase 15)
         LeadRepository::class => EloquentLeadRepository::class,
         LeadReadModel::class => EloquentLeadReadModel::class,
+
+        // Journeys (Phase 16)
+        JourneyReadModel::class => EloquentJourneyReadModel::class,
         StoreOrderMapperRegistryContract::class => StoreOrderMapperRegistry::class,
         WebhookSignatureVerifier::class => StoreWebhookVerifiers::class,
         EventDefinitionRepository::class => EloquentEventDefinitionRepository::class,

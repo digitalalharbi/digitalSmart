@@ -18,9 +18,17 @@ final class StoreCustomer extends Model
 {
     use HasUuidPrimaryKey;
 
+    /**
+     * Contact details and their matching keys are never serialised by accident.
+     *
+     * @var list<string>
+     */
+    protected $hidden = ['email', 'phone', 'email_key', 'phone_key'];
+
     /** @var list<string> */
     protected $fillable = [
-        'workspace_id', 'store_id', 'external_id', 'name', 'email', 'phone', 'city', 'country',
+        'workspace_id', 'store_id', 'external_id', 'name', 'email', 'phone', 'email_key', 'phone_key',
+        'city', 'country',
         'orders_count', 'total_spent_minor', 'first_order_at', 'last_order_at',
     ];
 

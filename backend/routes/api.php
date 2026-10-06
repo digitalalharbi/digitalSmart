@@ -241,6 +241,12 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('leads/{lead}/stage', [LeadController::class, 'stage'])
         ->whereUuid('lead')->name('leads.stage');
     Route::get('leads/centre', [LeadController::class, 'centre'])->name('leads.centre');
+    /*
+     * One person's history. Enquiries and orders only: the marketing touches before them need event-level data
+     * this product does not have, and the response says so rather than implying a complete picture.
+     */
+    Route::get('leads/{lead}/journey', [LeadController::class, 'journey'])
+        ->whereUuid('lead')->name('leads.journey');
 
     /*
      * Store analytics. `revenue_source` is required on every request, because a Salla total and a GA4
