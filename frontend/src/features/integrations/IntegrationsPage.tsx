@@ -6,7 +6,30 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { useProjectsQuery } from '@/features/projects';
 import { AccountBindingPanel } from './AccountBindingPanel';
 import { ProviderCard } from './ProviderCard';
+import type { ProviderRow } from './types';
 import { useProvidersQuery } from './api';
+
+/**
+ * Providers by category, in the registry's own order.
+ *
+ * Insertion order, not alphabetical: the registry lists advertising first because that is
+ * where most of the work happens, and an alphabetical page would open on commerce.
+ */
+function groupByCategory(providers: ProviderRow[]): Array<[string, ProviderRow[]]> {
+  const groups = new Map<string, ProviderRow[]>();
+
+  for (const provider of providers) {
+    const existing = groups.get(provider.category);
+
+    if (existing === undefined) {
+      groups.set(provider.category, [provider]);
+    } else {
+      existing.push(provider);
+    }
+  }
+
+  return [...groups.entries()];
+}
 
 export function IntegrationsPage() {
   const { t } = useTranslation();
@@ -72,13 +95,24 @@ export function IntegrationsPage() {
         </Alert>
       ) : null}
 
-      {providers ? (
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {providers.map((provider) => (
-            <ProviderCard key={provider.provider} provider={provider} />
-          ))}
-        </section>
-      ) : null}
+      {/*
+       * Grouped by what each provider *is*, because eleven cards in one grid is a list
+       * to scan rather than a page to read — and because the categories are the thing
+       * that must never be totalled together. The headings come from the registry, so
+       * adding a provider puts it in the right place without touching this file.
+       */}
+      {providers
+        ? groupByCategory(providers).map(([category, rows]) => (
+            <section key={category} className="flex flex-col gap-3">
+              <h2 className="text-content text-sm font-semibold">{rows[0]?.category_label}</h2>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {rows.map((provider) => (
+                  <ProviderCard key={provider.provider} provider={provider} />
+                ))}
+              </div>
+            </section>
+          ))
+        : null}
 
       <section className="border-line-subtle border-t pt-8">
         <AccountBindingPanel projects={projects} isLoadingProjects={loadingProjects} />

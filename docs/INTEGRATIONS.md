@@ -10,6 +10,50 @@ and tests are built regardless, and the rest of the roadmap continues unaffected
 Nothing in this repository fabricates a successful connection or invents metrics. An
 unconfigured provider reports exactly that.
 
+## The provider registry
+
+`App\Domain\Integration\Provider` is the **single source of truth for provider
+vocabulary**. What a platform is called, what kind of thing it is, what its API can do,
+how a workspace authorises it, what records it exposes, how often it may be called and
+where its contract is published are all answered there and nowhere else.
+
+| Question | Answered by |
+| -------- | ----------- |
+| What is it called? | `label()` — never written in a page or a mapper |
+| What kind of thing is it? | `category()`: advertising, analytics, tag management, commerce |
+| Can we reach its API at all? | `apiStatus()`: generally available, requires approval, or no public API |
+| How is it authorised? | `authMethod()` plus `requiredCredentialKeys()` |
+| What can its API do? | `capabilities()` |
+| What records does it expose? | `supportedEntities()` |
+| How often may we call it? | `rateLimit()`, or null where the provider publishes nothing |
+| Where is the contract? | `documentationUrl()` |
+
+Four rules hold it honest, each asserted by a test:
+
+- **Capabilities describe the provider's API, not our progress.** `metrics_sync` on X means
+  X publishes a reporting API, whether or not an adapter exists. What *we* have built is
+  answered by the adapter registry. Conflating the two would make shipping an adapter look
+  like a provider gaining a feature.
+- **Nothing is inferred from a provider's own interface.** Meta's web console does things
+  the Marketing API cannot.
+- **A capability belonging to one kind of provider cannot appear on another.** A store
+  claiming `campaign_discovery` would be offered as an allocation target and its orders
+  compared with an advertising budget. Capabilities that genuinely span categories —
+  discovering accounts, reading reporting figures, receiving webhooks — declare no category
+  at all rather than being filed under a convenient one.
+- **An undocumented rate limit is null, never a guess.** A sync that paces itself against a
+  number nobody set is slow for a reason nobody can find; one that trusts an invented
+  number gets throttled in production instead of in the retry logic.
+
+The registry travels to the frontend on the same response as the connection state, at
+`GET /api/integrations/providers`. That is deliberate: splitting them would mean every page
+needing a provider's *name* had to join two endpoints, which is how a second list of
+platform labels gets written — the exact drift this registry exists to prevent.
+
+`ProviderCategory::totalsWith()` encodes the rule the taxonomy is for: **figures never
+total across categories.** An ad platform's claimed revenue, an analytics property's
+recorded revenue and a store's invoiced revenue are three different numbers.
+
 ## What is needed, per provider
 
 | Provider   | Required to unblock                                                                 | Env keys |
@@ -20,6 +64,10 @@ unconfigured provider reports exactly that.
 | Snapchat   | Snap Business app with Marketing API access                                          | `SNAPCHAT_ADS_CLIENT_ID`, `SNAPCHAT_ADS_CLIENT_SECRET` |
 | X Ads      | X developer app, **Ads API access** via X's access form (up to 3 business days), plus a per-user **OAuth 1.0a** access token — X is the one provider here that is not OAuth 2.0 | `X_ADS_CONSUMER_KEY`, `X_ADS_CONSUMER_SECRET` |
 | LinkedIn   | LinkedIn app with Advertising API access (partner programme approval)                 | `LINKEDIN_ADS_CLIENT_ID`, `LINKEDIN_ADS_CLIENT_SECRET` |
+| Google Analytics 4 | A Google Cloud project with the Analytics Admin and Data APIs enabled, an OAuth client with the redirect URI allow-listed, and a user who can read the property. Scope `https://www.googleapis.com/auth/analytics.readonly`. **No programme to be admitted to** — the blocker is configuration and consent | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
+| Google Tag Manager | The same Google Cloud project with the Tag Manager API enabled, and a user with read access to the container | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
+| Salla | An app registered in the Salla Partners Portal, and a merchant who installs it. Self-service | `SALLA_CLIENT_ID`, `SALLA_CLIENT_SECRET` |
+| Zid | An app registered in Zid's partner dashboard, and a merchant who installs it. Self-service | `ZID_CLIENT_ID`, `ZID_CLIENT_SECRET` |
 | ChatGPT Ads| Programme availability and API access — **not generally available**; contract and capability set unknown until access is granted | `OPENAI_ADS_API_KEY` |
 
 These are business/account actions, not engineering work: they need the owner's
@@ -390,6 +438,61 @@ carries long lists of URNs.
 > are approximate; nothing here reconciles that away. The post a creative sponsors is
 > not read, so no creative headline, image or link is reported. Revenue attribution
 > (`attributedRevenueMetrics`, which needs a connected CRM) is not read either.
+
+### Google Analytics 4 — registry only
+
+`https://analyticsadmin.googleapis.com/v1beta/` for accounts, properties and data streams;
+the Data API for reporting. OAuth 2.0 with `analytics.readonly`, and service accounts are
+also supported for server-to-server use.
+
+**Read-only by design.** The Admin API can write, and this product never will: changing
+somebody's analytics configuration from a reporting tool is not a feature, it is a way to
+break a measurement setup nobody can then explain. The registry says so — no capability on
+this provider is a write.
+
+Unlike the advertising platforms there is no programme to be admitted to, so its API status
+is *generally available*: the blocker is a Cloud project, an OAuth client and a user's
+consent. Phase 8 builds the adapter, the property binding and the event mapping.
+
+### Google Tag Manager — registry only
+
+`https://www.googleapis.com/tagmanager/v2/`, hierarchy accounts → containers → workspaces →
+tags, triggers and variables, plus container versions.
+
+**Inspection only**, for the same reason: this product reads a container to answer "is the
+tracking actually in place", and a dashboard that silently republished somebody's container
+is how measurement breaks on a Friday afternoon.
+
+Its published quota is the tightest here and the most surprising: **0.25 queries per second
+on a 100-second sliding window and 10,000 requests a day, both per Google Cloud project** —
+so every workspace on one deployment draws from the same allowance. Exceeding it answers
+**403**, not 429, which is worth knowing because the usual retry heuristics look for 429.
+
+### Salla — registry only
+
+OAuth 2.0 at `https://accounts.salla.sa/oauth2/auth` and `/oauth2/token`, Merchant API at
+`https://api.salla.dev/admin/v2/`. Two documented facts shape the connection model:
+
+- A refresh token is issued **only** when `offline_access` is among the requested scopes.
+  Without it the connection dies after two weeks with no way back except re-consent.
+- **Refresh tokens are single-use.** Salla documents that reusing one — which two concurrent
+  jobs would do — can invalidate the authorisation entirely. Refreshing therefore has to be
+  serialised per connection rather than attempted opportunistically.
+
+Access tokens last two weeks, refresh tokens a month. Webhooks are verified by an HMAC
+SHA-256 signature (`X-Salla-Signature`) or a token strategy, selected per registration.
+
+### Zid — registry only
+
+OAuth 2.0 at `https://oauth.zid.sa/oauth/authorize` and `/oauth/token`, API at
+`https://api.zid.sa/v1`.
+
+**Two headers carry two different tokens**, and they are not interchangeable:
+`Authorization: Bearer <authorization>` grants access to the API at all, while
+`X-Manager-Token` carries the `access_token` and scopes the request to one store. Sending
+the same value in both — the obvious mistake — fails in a way that reads like a permissions
+problem. Both the manager token and the refresh token last a year, so rotation is a
+scheduled concern; Zid recommends refreshing at around ten months.
 
 ### ChatGPT Ads — not implemented
 

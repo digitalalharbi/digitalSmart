@@ -103,8 +103,20 @@ final class ProviderController extends Controller
         return [
             'provider' => $view->provider,
             'label' => $view->label,
+            'category' => $view->category,
+            'category_label' => $view->categoryLabel,
+            /*
+             * Separate from `blocked_external`, which says a workspace cannot proceed.
+             * This says *why*: a programme to be admitted to, an app to register, or no
+             * public API at all. The three need different actions from different people.
+             */
+            'api_status' => $view->apiStatus,
+            'api_status_label' => $view->apiStatusLabel,
             'auth_method' => $view->authMethod,
             'capabilities' => $view->capabilities,
+            'entities' => $view->entities,
+            'rate_limit' => $view->rateLimit,
+            'documentation_url' => $view->documentationUrl,
             'connection_id' => $view->connectionId,
             'status' => $view->status,
             'status_label' => $view->statusLabel,

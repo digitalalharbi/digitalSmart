@@ -54,7 +54,14 @@ function provider(overrides: Partial<ProviderRow> = {}): ProviderRow {
   return {
     provider: 'meta',
     label: 'Meta Ads',
+    category: 'advertising',
+    category_label: 'Advertising',
+    api_status: 'requires_approval',
+    api_status_label: 'Requires provider approval',
     auth_method: 'oauth2',
+    entities: [{ slug: 'campaign', label: 'Campaigns' }],
+    rate_limit: null,
+    documentation_url: 'https://developers.facebook.com/docs/marketing-apis',
     capabilities: [
       { slug: 'metrics_sync', label: 'Sync performance metrics', is_write: false },
       { slug: 'budget_mutation', label: 'Change budgets', is_write: true },

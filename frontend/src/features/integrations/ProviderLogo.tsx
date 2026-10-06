@@ -16,6 +16,10 @@ const MARKS: Record<ProviderSlug, { initials: string; token: string }> = {
   x: { initials: 'X', token: '--ds-platform-x' },
   linkedin: { initials: 'in', token: '--ds-platform-linkedin' },
   openai: { initials: 'AI', token: '--ds-platform-openai' },
+  google_analytics: { initials: 'GA', token: '--ds-platform-google-analytics' },
+  google_tag_manager: { initials: 'GT', token: '--ds-platform-google-tag-manager' },
+  salla: { initials: 'SA', token: '--ds-platform-salla' },
+  zid: { initials: 'Z', token: '--ds-platform-zid' },
 };
 
 export function ProviderLogo({

@@ -43,6 +43,28 @@ final class SandboxAccounts
                 // X sync fixtures report against, so discovery and sync agree.
                 new DiscoveredAccount('18ce54d4x5t', 'SANDBOX — Najd Fintech (X)', 'SAR', 'Asia/Riyadh', ExternalAccountStatus::Active),
             ],
+            /*
+             * A GA4 "account" is the container for properties, and has no currency or
+             * timezone of its own — those are property settings. Nulls rather than
+             * borrowed values, so nothing downstream reads an invented currency.
+             */
+            Provider::GoogleAnalytics => [
+                new DiscoveredAccount('123456789', 'SANDBOX — Smart Code Analytics', null, null, ExternalAccountStatus::Active),
+            ],
+            // A GTM account id is a bare number, like Analytics'.
+            Provider::GoogleTagManager => [
+                new DiscoveredAccount('6001234567', 'SANDBOX — Smart Code Tag Manager', null, null, ExternalAccountStatus::Active),
+            ],
+            /*
+             * For a store the "account" is the merchant store itself, which does have a
+             * currency and a timezone — a store invoices in one.
+             */
+            Provider::Salla => [
+                new DiscoveredAccount('1234567890', 'SANDBOX — Alhambra Retail (Salla)', 'SAR', 'Asia/Riyadh', ExternalAccountStatus::Active),
+            ],
+            Provider::Zid => [
+                new DiscoveredAccount('98765', 'SANDBOX — Najd Fintech Store (Zid)', 'SAR', 'Asia/Riyadh', ExternalAccountStatus::Active),
+            ],
             Provider::LinkedIn => [
                 // A LinkedIn ad account id is a bare long, and this is the account the
                 // LinkedIn sync fixtures report against.

@@ -151,7 +151,7 @@ enum SystemRole: string
                 /*
                  * No budget permission, deliberately. A budget carries internal notes
                  * and an agency's own allocation thinking; what a client may see is
-                 * decided explicitly by the sharing in Phase 7, not by a role that
+                 * decided explicitly by the client portal's sharing, not by a role that
                  * happens to open the screen.
                  */
             ],

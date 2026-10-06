@@ -58,15 +58,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     labelKey: 'nav.creativeHub',
     icon: 'Palette',
     section: 'work',
-    phase: 'Phase 6',
+    phase: 'Phase 18',
   },
-  { path: '/tasks', labelKey: 'nav.tasks', icon: 'ListChecks', section: 'work', phase: 'Phase 6' },
+  { path: '/tasks', labelKey: 'nav.tasks', icon: 'ListChecks', section: 'work', phase: 'Phase 19' },
   {
     path: '/approvals',
     labelKey: 'nav.approvals',
     icon: 'BadgeCheck',
     section: 'work',
-    phase: 'Phase 6',
+    phase: 'Phase 19',
   },
   {
     path: '/analytics',
@@ -105,7 +105,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     labelKey: 'nav.reports',
     icon: 'FileChartColumn',
     section: 'intelligence',
-    phase: 'Phase 7',
+    phase: 'Phase 20',
     permission: 'projects.view_assigned',
   },
   {
@@ -113,14 +113,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     labelKey: 'nav.aiAssistant',
     icon: 'Sparkles',
     section: 'intelligence',
-    phase: 'Phase 8',
+    phase: 'Phase 22',
   },
   {
     path: '/presentations',
     labelKey: 'nav.presentations',
     icon: 'Presentation',
     section: 'intelligence',
-    phase: 'Phase 9',
+    phase: 'Phase 23',
   },
   {
     path: '/integrations',
@@ -135,7 +135,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     labelKey: 'nav.notifications',
     icon: 'Bell',
     section: 'system',
-    phase: 'Phase 6',
+    phase: 'Phase 19',
   },
   {
     path: '/administration',

@@ -36,7 +36,7 @@ test.describe('application shell', () => {
     await page.goto('/reports');
 
     await expect(page.getByRole('heading', { level: 1, name: 'Reports' })).toBeVisible();
-    await expect(page.getByText('Planned for Phase 7')).toBeVisible();
+    await expect(page.getByText('Planned for Phase 20')).toBeVisible();
     await expect(page.getByText(/delivered in a later phase/)).toBeVisible();
   });
 });

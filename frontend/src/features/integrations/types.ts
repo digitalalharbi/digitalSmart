@@ -1,5 +1,46 @@
+/**
+ * Every provider in the registry, in its canonical slug form.
+ *
+ * Mirrors the backend's `Provider` enum. The *labels* are never written here: they come
+ * from the registry on every response, so a page cannot drift from what a platform is
+ * actually called.
+ */
 export type ProviderSlug =
-  'meta' | 'google_ads' | 'tiktok' | 'snapchat' | 'x' | 'linkedin' | 'openai';
+  | 'meta'
+  | 'google_ads'
+  | 'tiktok'
+  | 'snapchat'
+  | 'x'
+  | 'linkedin'
+  | 'openai'
+  | 'google_analytics'
+  | 'google_tag_manager'
+  | 'salla'
+  | 'zid';
+
+export type ProviderCategorySlug = 'advertising' | 'analytics' | 'tag_management' | 'commerce';
+
+/** How reachable a provider's API is in principle — not whether this workspace connected it. */
+export type ProviderApiStatus = 'generally_available' | 'requires_approval' | 'unavailable';
+
+export type ProviderEntityRow = {
+  slug: string;
+  label: string;
+};
+
+/**
+ * What the provider published about how often it may be called.
+ *
+ * Null where the provider documents nothing. Never filled in with a guess: a ceiling
+ * nobody set is a ceiling nobody can check.
+ */
+export type ProviderRateLimit = {
+  requests: number | null;
+  window_seconds: number | null;
+  scope: string | null;
+  daily_requests: number | null;
+  note: string | null;
+};
 
 export type ConnectionStatus =
   'not_configured' | 'configured' | 'connected' | 'expired' | 'revoked' | 'error';
@@ -14,8 +55,19 @@ export type Capability = {
 export type ProviderRow = {
   provider: ProviderSlug;
   label: string;
+  category: ProviderCategorySlug;
+  category_label: string;
+  /*
+   * Separate from `blocked_external`, which says a workspace cannot proceed. This says
+   * why: a programme to be admitted to, an app to register, or no public API at all.
+   */
+  api_status: ProviderApiStatus;
+  api_status_label: string;
   auth_method: 'oauth2' | 'oauth1' | 'unknown';
   capabilities: Capability[];
+  entities: ProviderEntityRow[];
+  rate_limit: ProviderRateLimit | null;
+  documentation_url: string | null;
   connection_id: string | null;
   status: ConnectionStatus;
   status_label: string;

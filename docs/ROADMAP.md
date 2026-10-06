@@ -5,20 +5,68 @@ every substantial feature ships migrations, domain/application code, API contrac
 frontend UI, tests and documentation together. The repository stays runnable at all
 times.
 
+The product grew in October 2026 from a multi-platform advertising dashboard into the
+Smart Code Marketing Operating System described in `CLAUDE.md`: measurement, tracking
+governance, commerce, leads, journeys and attribution alongside the advertising work. The
+phases below were renumbered to carry that scope rather than bolted on as appendices —
+phases 1–5 are unchanged and delivered, and the new work slots in where its dependencies
+sit.
+
 | Phase | Scope                                                                          | Status |
 | ----- | ------------------------------------------------------------------------------ | ------ |
 | 0     | Repository baseline, dev stack, CI, formatting, linting, tests, env examples, architectural skeleton | **Complete** |
 | 1     | Auth, workspaces, users, roles, permissions, clients, projects, audit logs      | **Complete** |
 | 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | **Complete** |
-| 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | **Ingestion complete**; six provider adapters implemented against published schemas, all SANDBOX until credentials exist |
+| 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | **Ingestion complete**; six advertising adapters implemented against published schemas, all SANDBOX until credentials exist |
 | 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | **Complete** |
 | 5     | Budgets, pacing, calculator, forecasting, alerts                                | **Complete** |
-| 6     | Creative hub, tasks, approvals, files, notifications/realtime                   | Planned |
-| 7     | Reports, shared client portals, exports                                         | Planned |
-| 8     | AI assistant/recommendations with approval gates                                | Planned |
-| 9     | Presentation generator                                                          | Planned |
-| 10    | Provider write operations, only where API and permissions support them          | Planned |
-| 11    | Hardening, load/performance, security, accessibility, observability, backup/recovery, production readiness | Planned |
+| 6     | **Provider registry** — one canonical catalogue of providers, categories, capabilities, auth strategies and API status, consumed by both ends | **Complete** |
+| 7     | **Measurement foundation** — measurement sources, tracking properties, normalised events, event mapping, sessions, touchpoints, conversion registry, tracking health | Planned |
+| 8     | **Google Analytics 4** — accounts, properties, data streams, dimensions, metrics, key events, per-project property binding, freshness states | Planned |
+| 9     | **Google Tag Manager** — accounts, containers, workspaces, tags, triggers, variables, versions; tracking-readiness checks with evidence-backed states | Planned |
+| 10    | **Tracking Center** — per client and project: what is connected, what is verified, what is missing, last event, last sync, issues by severity | Planned |
+| 11    | **Commerce domain** — normalised stores, orders, items, products, variants, customers, refunds, payments, shipments, webhook events, sync runs | Planned |
+| 12    | **Salla** integration — OAuth, entities, webhooks with signature verification, idempotent queued handling, reconciliation sync | Planned |
+| 13    | **Zid** integration — the same normalised domain without forcing Salla semantics onto it | Planned |
+| 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with an explicit revenue source on every figure | Planned |
+| 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome, CRM bridge | Planned |
+| 16    | **Customer journeys** — touchpoints, identity evidence, identity confidence, Journey Explorer | Planned |
+| 17    | **Attribution** — first/last/paid-last/linear/position/time-decay models, each exposing coverage, data quality, confidence and revenue source | Planned |
+| 18    | **Creative operations** — briefs, requests, assets, versions, specs, validation, comments, approval workflow, Kanban | Planned |
+| 19    | **Operations** — tasks, approvals engine, client requests, notifications and realtime | Planned |
+| 20    | **Reporting** — report builder, saved reports, exports, secure client live reports and snapshots | Planned |
+| 21    | **Client portal** — per-module visibility, never leaking internal notes | Planned |
+| 22    | **AI** — Ask/Analyze/Investigate/Report/Plan, evidence-backed, permission-aware, recommendation-first | Planned |
+| 23    | **Presentation generator** — PPTX and PDF, Arabic RTL, Smart Code theme, real charts and tables | Planned |
+| 24    | **Provider write operations** — only where the API supports them, behind capability, permission, explicit approval and audit | Planned |
+| 25    | **Production hardening** — security, performance, load, queue resilience, observability, backup and restore, WCAG 2.2 AA, deployment and runbooks | Planned |
+
+Phases 6–17 are new scope. The sequence is a dependency order, not a preference: the
+registry has to exist before anything new consumes provider vocabulary; measurement has to
+exist before GA4 and GTM have somewhere to land; the commerce domain has to exist before
+Salla or Zid can normalise into it; and attribution cannot be honest until journeys,
+conversions and revenue sources are all real.
+
+`CLAUDE.md` lists its own phases 6–11 (creative hub, reports, AI, presentations, provider
+writes, hardening). Those are phases 18–25 here, with the same content: the numbers moved
+to make room, the scope did not. `CLAUDE.md` stays the authoritative statement of *what*
+the product is; this file is the order it gets built in.
+
+### Vocabulary this product keeps separate
+
+These are deliberately *not* merged anywhere, because each answers a different question and
+a reader comparing them needs to know which they are looking at:
+
+| Concept | Means |
+| ------- | ----- |
+| Platform-reported revenue | What an ad platform claims it drove, under its own attribution |
+| GA4 revenue | What the analytics property recorded |
+| Store revenue | What Salla or Zid actually invoiced |
+| Attributed revenue | What this product assigned to a campaign, with a stated model and confidence |
+
+The same applies to conversions: a Google Ads conversion, a GA4 key event, a Salla order
+and a CRM-won deal are four different records of possibly the same thing, and silently
+adding them is the most expensive mistake this product could make.
 
 ## Phase 0 — delivered
 
@@ -221,7 +269,7 @@ built around them.
 
 ### Not yet done in Phase 4
 
-- Nothing. Pivot-style reports and CSV/XLSX/PDF export belong to Phase 7; annotations
+- Nothing. Pivot-style reports and CSV/XLSX/PDF export belong to Phase 20; annotations
   and threshold lines on charts are deferred to Phase 5 where pacing targets make
   them meaningful.
 - Conversion-action metrics (purchases, leads, installs) in the analytics layer:
@@ -275,9 +323,31 @@ built around them.
   delivery shows a reason instead of a number.
 - 20 domain tests, 58 backend feature tests, 30 frontend tests, 9 Playwright specs.
 
+### Phase 6 — the provider registry
+
+- `Provider` answers everything about a platform: label, category, API status, auth method,
+  credential keys, capabilities, entities, rate limit and documentation URL. No page or
+  mapper keeps its own copy, and the labels briefly hard-coded in the allocation editor are
+  gone.
+- Four providers added with connection adapters and honest statuses — **GA4**, **GTM**,
+  **Salla** and **Zid** — so each appears with a status somebody can act on before its sync
+  adapter exists.
+- Capabilities that genuinely span categories declare none, which is what keeps the
+  registry's consistency check meaningful: a store cannot claim it reports campaign metrics.
+- GA4 and GTM declare **no write capability**, though both publish write APIs. Changing
+  somebody's measurement setup from a reporting tool is a hazard, and the registry is where
+  that decision is visible.
+- The integrations page groups by category, from the registry's own ordering.
+
+### Not yet done in Phase 6
+
+- OAuth flows for the four new providers. The registry, the adapters and the credential
+  model are in place; the live handshakes are BLOCKED_EXTERNAL on app registration exactly
+  as the six advertising providers are.
+
 ### Not yet done in Phase 5
 - Pacing alerts as notifications. The list is computed and exposed; delivering it to
-  somebody is Phase 6, where notifications and realtime live.
+  somebody is Phase 19, where notifications and realtime live.
 - Allocation at the **account** level between platform and campaign. Every allocation row
   can name an external account, but the three levels are platform, campaign and ad group —
   an agency running two Meta accounts for one client splits them as two platform rows

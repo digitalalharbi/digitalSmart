@@ -14,7 +14,7 @@ final class HorizonServiceProvider extends HorizonApplicationServiceProvider
     {
         parent::boot();
 
-        // Operational notification routing is configured in Phase 11 (observability).
+        // Operational notification routing is configured during production hardening.
     }
 
     /**

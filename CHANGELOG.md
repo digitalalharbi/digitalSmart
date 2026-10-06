@@ -4,6 +4,59 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 6 — the provider registry
+
+One canonical catalogue of every platform, consumed by both ends. The registry existed in
+miniature already — an enum of providers with capabilities and auth methods — and this makes
+it the thing the directive asks for: the single source of truth for provider vocabulary.
+
+### Added
+
+- `ProviderCategory` (advertising, analytics, tag management, commerce), `ProviderApiStatus`
+  (generally available, requires approval, no public API), `ProviderEntity` and
+  `ProviderRateLimit`.
+- Four new providers in the registry with connection adapters, honest statuses and sandbox
+  accounts: **Google Analytics 4**, **Google Tag Manager**, **Salla** and **Zid**. Their
+  sync adapters come in their own phases; the registry entries are what make them appear
+  with a status somebody can act on.
+- Every registry field is published on `GET /api/integrations/providers`, and the
+  integrations page now groups providers by category — eleven cards in one grid is a list to
+  scan rather than a page to read.
+
+### Decisions worth recording
+
+- **The registry and the connection state travel on one response.** Splitting them would
+  mean every page needing a provider's *name* had to join two endpoints, which is how a
+  second list of platform labels gets written — the drift this registry exists to prevent.
+- **`api_status` is separate from `blocked_external`.** The second says a workspace cannot
+  proceed; the first says why — a programme to be admitted to, an app to register, or no
+  public API at all. Those need different actions from different people, and rendering all
+  three as "not connected" sends somebody looking for a setting that cannot help them.
+- **Capabilities that span categories declare no category.** Discovering accounts, reading
+  reporting figures and receiving webhooks are things an ad platform, an analytics property
+  and a store all do. Filing them under a convenient one would have made the registry's own
+  consistency check meaningless — and that check is what stops a store claiming it can
+  report campaign metrics.
+- **GA4 and Tag Manager declare no write capability at all**, though both publish write
+  APIs. Changing somebody's measurement setup from a reporting tool is a hazard, not a
+  feature, and the registry is where that decision is visible rather than implicit in what
+  we happened not to build.
+- **An undocumented rate limit is null, never a guess.** Tag Manager's is published and
+  surprising — 0.25 QPS and 10,000 requests a day, both per *Google Cloud project*, so every
+  workspace on one deployment shares it, and exceeding it answers 403 rather than 429. Salla
+  and Zid publish nothing, so they say so and back off on the provider's own throttling.
+- `ProviderCategory::totalsWith()` encodes the rule the whole taxonomy is for: figures never
+  total across categories, because an ad platform's claimed revenue, an analytics property's
+  recorded revenue and a store's invoiced revenue are three different numbers.
+
+### Tests
+
+Nine registry tests, including that a provider claiming an API must have documentation and
+entities to go with it, that the read-only integrations declare no writes, and that no
+provider borrows another category's capability. The existing architecture test caught the
+four new providers before any of this ran — it asserts every provider in the enum has an
+adapter, which is what it was written for. Backend 676 passed, frontend 173.
+
 ## Phase 5 — budgets, pacing and forecasting
 
 Completes Phase 5. The governance hierarchy from CLAUDE.md, the arithmetic a client's

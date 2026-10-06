@@ -12,6 +12,8 @@ use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Domain\Access\Permission;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderCapability;
+use App\Domain\Integration\ProviderEntity;
+use App\Domain\Integration\ProviderRateLimit;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use DateTimeInterface;
 
@@ -56,6 +58,14 @@ final readonly class ListProviders
             $views[] = new ProviderView(
                 provider: $provider->value,
                 label: $provider->label(),
+                /*
+                 * The registry's own answers. Published so no page has to keep its own map
+                 * of what a provider is called or what kind of thing it is.
+                 */
+                category: $provider->category()->value,
+                categoryLabel: $provider->category()->label(),
+                apiStatus: $provider->apiStatus()->value,
+                apiStatusLabel: $provider->apiStatus()->label(),
                 authMethod: $provider->authMethod()->value,
                 capabilities: array_map(
                     static fn (ProviderCapability $capability): array => [
@@ -67,6 +77,15 @@ final readonly class ListProviders
                     // is what is actually implemented.
                     $adapter->capabilities(),
                 ),
+                entities: array_map(
+                    static fn (ProviderEntity $entity): array => [
+                        'slug' => $entity->value,
+                        'label' => $entity->label(),
+                    ],
+                    $provider->supportedEntities(),
+                ),
+                rateLimit: $this->rateLimit($provider->rateLimit()),
+                documentationUrl: $provider->documentationUrl(),
                 connectionId: $connection?->id->value,
                 status: $status->value,
                 statusLabel: $status->label(),
@@ -84,5 +103,28 @@ final readonly class ListProviders
         }
 
         return $views;
+    }
+
+    /**
+     * What the provider publishes about its own limits, or null.
+     *
+     * Null stays null: a provider that documents no ceiling must not appear to have one,
+     * because a number nobody set is a number nobody can check.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function rateLimit(?ProviderRateLimit $limit): ?array
+    {
+        if ($limit === null || ! $limit->isDocumented()) {
+            return null;
+        }
+
+        return [
+            'requests' => $limit->requests,
+            'window_seconds' => $limit->windowSeconds,
+            'scope' => $limit->scope,
+            'daily_requests' => $limit->dailyRequests,
+            'note' => $limit->note,
+        ];
     }
 }
