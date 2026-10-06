@@ -38,6 +38,19 @@ export const queryKeys = {
     list: () => ['dashboards', 'list'] as const,
     detail: (id: string) => ['dashboards', 'detail', id] as const,
   },
+  budgets: {
+    all: () => ['budgets'] as const,
+    list: (params: Record<string, unknown>) => ['budgets', 'list', params] as const,
+    detail: (id: string) => ['budgets', 'detail', id] as const,
+    pacing: (id: string) => ['budgets', 'pacing', id] as const,
+    alerts: () => ['budgets', 'alerts'] as const,
+    /*
+     * The forecast is keyed by its whole input, because it is a pure function of it:
+     * the same question gets the cached answer and a changed assumption gets a fresh
+     * one, which is what a reader trying numbers expects.
+     */
+    forecast: (params: Record<string, unknown>) => ['budgets', 'forecast', params] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,

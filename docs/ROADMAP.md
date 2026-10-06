@@ -12,7 +12,7 @@ times.
 | 2     | Integrations foundation, provider connections, external accounts, project bindings, credential encryption | **Complete** |
 | 3     | Campaign data model, sync jobs, normalised metrics, analytics ingestion         | **Ingestion complete**; six provider adapters implemented against published schemas, all SANDBOX until credentials exist |
 | 4     | Premium dashboard, filters, saved views, charts, campaign explorer              | **Complete** |
-| 5     | Budgets, pacing, calculator, forecasting, alerts                                | **Backend complete**; Media Planner and Budget Calculator surfaces outstanding |
+| 5     | Budgets, pacing, calculator, forecasting, alerts                                | **Complete** |
 | 6     | Creative hub, tasks, approvals, files, notifications/realtime                   | Planned |
 | 7     | Reports, shared client portals, exports                                         | Planned |
 | 8     | AI assistant/recommendations with approval gates                                | Planned |
@@ -228,7 +228,7 @@ built around them.
   they live in `conversion_metrics` rather than `daily_metrics`, so the read model
   reports them as not read. Deferred to Phase 5, where budget pacing needs them.
 
-### Phase 5 — budgets, pacing and forecasting (backend)
+### Phase 5 — budgets, pacing and forecasting
 
 - `budgets` and `budget_allocations`, the governance hierarchy from CLAUDE.md: an
   approved client budget split across platforms, campaigns and ad groups, with five CHECK
@@ -255,12 +255,27 @@ built around them.
   of the account's own daily rate, headline rates are weighted rather than averaged, every
   projection is labelled `estimated`, and the sample behind it is published as a version
   string so a figure quoted in a meeting can be reproduced.
-- 20 domain tests, 58 feature tests.
+- A **Media Planner**: the budget list, the draft form, approve and archive, the
+  allocation tree editor, and the pacing panel on one surface — because those are one
+  conversation. A planner looking at an overspending platform wants to move money now,
+  and sending them to another screen to do it is how allocations go stale.
+- The allocation editor shows the remainder at every level and **does not auto-fill it**.
+  A control that spread the leftover across children would be making a media decision on
+  somebody's behalf and calling it a convenience.
+- The platforms it offers come from the **provider registry**, filtered to those whose API
+  can report metrics: an allocation that can never be compared with spend is a number in a
+  spreadsheet rather than a budget. No page keeps its own list of platform names.
+- A **pacing chart** answering one question — is this budget going to land where it was
+  meant to? Cumulative spend against the even pace, with the approved budget as a line.
+  The actual series **stops at the last day a provider reported** rather than being carried
+  flat to today, because a flat cumulative line means "spent nothing since" and a missing
+  sync means "we do not know".
+- A **Budget Calculator** in both directions, showing each figure's band, its confidence,
+  the assumptions in words, the sample version, and the gaps — a platform with too little
+  delivery shows a reason instead of a number.
+- 20 domain tests, 58 backend feature tests, 30 frontend tests, 9 Playwright specs.
 
 ### Not yet done in Phase 5
-
-- The **Media Planner** and **Budget Calculator** surfaces. The API is complete and
-  tested; the two nav items are still placeholders.
 - Pacing alerts as notifications. The list is computed and exposed; delivering it to
   somebody is Phase 6, where notifications and realtime live.
 - Allocation at the **account** level between platform and campaign. Every allocation row

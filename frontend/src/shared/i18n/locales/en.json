@@ -509,6 +509,153 @@
   },
   "common": {
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "budgets": {
+    "forbidden": {
+      "title": "No access to budgets",
+      "description": "Your role does not include budgets. Budgets carry what a client agreed to spend, so access is granted deliberately."
+    },
+    "errors": {
+      "save": "The budget could not be saved.",
+      "allocations": "The allocations could not be saved.",
+      "approve": "The budget could not be approved.",
+      "archive": "The budget could not be archived.",
+      "delete": "The budget could not be deleted."
+    },
+    "allocations": {
+      "title": "Allocation",
+      "edit": "Edit allocation",
+      "save": "Save allocation",
+      "none": "Nothing is allocated yet. Split the budget by platform to compare it with spend.",
+      "label": "Label",
+      "amount": "Amount ({{currency}})",
+      "platform": "Platform",
+      "addPlatform": "Add a platform",
+      "newPlatform": "New platform",
+      "remove": "Remove {{label}}",
+      "allocatedOf": "{{allocated}} of {{budget}} allocated",
+      "unallocated": "{{amount}} not allocated yet",
+      "over": "{{amount}} over the budget",
+      "childrenUnallocated": "{{amount}} of this not allocated further",
+      "childrenOver": "{{amount}} more than this allocation holds",
+      "add": {
+        "campaign": "Add a campaign",
+        "ad_group": "Add an ad group"
+      },
+      "new": {
+        "campaign": "New campaign",
+        "ad_group": "New ad group"
+      }
+    },
+    "pacing": {
+      "notPaced": "Not paced",
+      "noData": "No spend reported",
+      "noProjection": "Nothing to project from yet",
+      "risksOverspend": "On course to go over the budget",
+      "risksUnderDelivery": "On course to land short of the budget",
+      "dayOf": "Day {{elapsed}} of {{total}}",
+      "evenPaceNote": "Budget spread evenly, ±{{tolerance}} tolerance",
+      "allocationsCaption": "Each allocation against the spend that landed inside it.",
+      "figures": {
+        "budget": "Approved",
+        "spent": "Spent",
+        "expected": "Expected by today",
+        "projected": "Projected at this rate"
+      },
+      "table": {
+        "allocation": "Allocation",
+        "level": "Level",
+        "planned": "Planned",
+        "spent": "Spent",
+        "variance": "Variance",
+        "status": "Status"
+      },
+      "chart": {
+        "actual": "Spent",
+        "evenPace": "Even pace",
+        "budget": "Approved budget",
+        "spendUnknown": "not available",
+        "description": "Cumulative spend against an even pace. Approved {{budget}}, spent {{spent}}."
+      },
+      "region": "Pacing"
+    }
+  },
+  "mediaPlanner": {
+    "title": "Media planner",
+    "subtitle": "What a client agreed to, how it is split across platforms, and how it is running.",
+    "newBudget": "New budget",
+    "picker": "Budgets",
+    "approve": "Approve",
+    "archive": "Archive",
+    "alerts": {
+      "title": "Needs looking at"
+    },
+    "empty": {
+      "title": "No budgets yet",
+      "description": "A budget records what a client agreed to spend, and is what pacing is measured against."
+    },
+    "detail": {
+      "scope": "{{client}} · {{project}}",
+      "wholeClient": "Whole client",
+      "period": "{{from}} to {{to}} · {{amount}}",
+      "approvedBy": "Approved by {{name}}",
+      "amountFixed": "Approved, so the amount and period are fixed. To change them, archive this budget and approve a new one — both stay on the record."
+    },
+    "form": {
+      "create": "New budget",
+      "edit": "Edit budget",
+      "name": "Name",
+      "amount": "Amount ({{currency}})",
+      "periodStart": "From",
+      "periodEnd": "To",
+      "client": "Client",
+      "clientHint": "A budget belongs to a client. Leave the project unset for a budget the whole client spends.",
+      "notes": "Internal notes",
+      "notesHint": "Never shown to a client, and deliberately left out of the change log.",
+      "save": "Save budget",
+      "notApprovedYet": "Saved as a draft. {{amount}} is not committed until somebody approves it."
+    }
+  },
+  "budgetCalculator": {
+    "title": "Budget calculator",
+    "subtitle": "What a budget might buy, or what a target might cost — from this workspace's own delivery.",
+    "estimate": "Estimate",
+    "ownDataOnly": "Rates come from this workspace's own past delivery. No industry averages are used.",
+    "error": "The estimate could not be worked out.",
+    "noProjection": "Nothing can be estimated for this platform yet.",
+    "assumptions": "Worked out from",
+    "sample": "Rates observed {{from}} to {{to}} · sample {{version}}",
+    "direction": {
+      "label": "Which way round",
+      "budget": "Budget → results",
+      "target": "Target → budget"
+    },
+    "targets": {
+      "conversions": "Conversions",
+      "clicks": "Clicks",
+      "impressions": "Impressions"
+    },
+    "fields": {
+      "budget": "Budget",
+      "targetMetric": "Target",
+      "targetValue": "How many",
+      "window": "Rates from the last",
+      "windowDays": "{{days}} days",
+      "windowHint": "A longer window is steadier; a shorter one reflects how the account runs now."
+    },
+    "figures": {
+      "requiredBudget": "Budget needed",
+      "impressions": "Impressions",
+      "clicks": "Clicks",
+      "conversions": "Conversions"
+    },
+    "empty": {
+      "title": "Nothing to estimate from",
+      "description": "No platform in this workspace has enough observed delivery yet. Connect a platform and sync it, and the rates will follow."
+    },
+    "observedDays_one": "{{count}} day of delivery observed",
+    "observedDays_other": "{{count}} days of delivery observed"
   }
 }

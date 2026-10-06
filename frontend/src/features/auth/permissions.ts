@@ -27,6 +27,14 @@ export const PERMISSIONS = {
   analyticsView: 'analytics.view',
   analyticsExport: 'analytics.export',
   savedViewsManage: 'saved_views.manage',
+  budgetsView: 'budgets.view',
+  budgetsManage: 'budgets.manage',
+  /*
+   * Separate from managing, as on the server: drafting a plan and committing a client
+   * to a figure are different acts, so the approve control is hidden from people who
+   * would be refused it anyway.
+   */
+  budgetsApprove: 'budgets.approve',
   auditView: 'audit.view',
 } as const;
 

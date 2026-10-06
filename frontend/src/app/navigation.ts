@@ -90,6 +90,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'CalendarRange',
     section: 'intelligence',
     phase: 'Phase 5',
+    permission: 'budgets.view',
   },
   {
     path: '/budget-calculator',
@@ -97,6 +98,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'Calculator',
     section: 'intelligence',
     phase: 'Phase 5',
+    permission: 'budgets.view',
   },
   {
     path: '/reports',

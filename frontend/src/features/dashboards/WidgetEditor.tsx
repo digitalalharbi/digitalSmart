@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, X } from 'lucide-react';
 import { useMetricCatalogue } from '@/features/analytics';
-import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
+import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { Input } from '@/shared/ui/input';
 import { MAX_HEIGHT, MIN_HEIGHT, WIDTH_PRESETS, clampHeight, draftKey } from './layout';
 import type { WidgetDraft, WidgetTypeValue } from './types';
@@ -133,7 +133,7 @@ export function WidgetEditor({ widget, onSave, onCancel }: WidgetEditorProps) {
         submit();
       }}
     >
-      <Field label={t('dashboards.editor.type')}>
+      <ChoiceGroup label={t('dashboards.editor.type')}>
         <div className="flex flex-wrap gap-1.5">
           {TYPES.map((entry) => (
             <Choice
@@ -145,9 +145,9 @@ export function WidgetEditor({ widget, onSave, onCancel }: WidgetEditorProps) {
             </Choice>
           ))}
         </div>
-      </Field>
+      </ChoiceGroup>
 
-      <Field
+      <ChoiceGroup
         label={t('dashboards.editor.metrics')}
         hint={
           spec.metrics === 1
@@ -169,10 +169,10 @@ export function WidgetEditor({ widget, onSave, onCancel }: WidgetEditorProps) {
         {needsSecondMetric && (
           <p className="text-warning text-xs">{t('dashboards.editor.needsTwoMetrics')}</p>
         )}
-      </Field>
+      </ChoiceGroup>
 
       {availableDimensions.length > 0 && (
-        <Field label={t('dashboards.editor.groupBy')}>
+        <ChoiceGroup label={t('dashboards.editor.groupBy')}>
           <div className="flex flex-wrap gap-1.5">
             {availableDimensions.map((value) => (
               <Choice
@@ -184,11 +184,11 @@ export function WidgetEditor({ widget, onSave, onCancel }: WidgetEditorProps) {
               </Choice>
             ))}
           </div>
-        </Field>
+        </ChoiceGroup>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={t('dashboards.editor.width')}>
+        <ChoiceGroup label={t('dashboards.editor.width')}>
           <div className="flex flex-wrap gap-1.5">
             {WIDTH_PRESETS.map((preset) => (
               <Choice key={preset} isSelected={preset === width} onSelect={() => setWidth(preset)}>
@@ -198,9 +198,9 @@ export function WidgetEditor({ widget, onSave, onCancel }: WidgetEditorProps) {
               </Choice>
             ))}
           </div>
-        </Field>
+        </ChoiceGroup>
 
-        <Field label={t('dashboards.editor.height')}>
+        <ChoiceGroup label={t('dashboards.editor.height')}>
           <div className="flex flex-wrap gap-1.5">
             {Array.from(
               { length: MAX_HEIGHT - MIN_HEIGHT + 1 },
@@ -211,17 +211,17 @@ export function WidgetEditor({ widget, onSave, onCancel }: WidgetEditorProps) {
               </Choice>
             ))}
           </div>
-        </Field>
+        </ChoiceGroup>
       </div>
 
-      <Field label={t('dashboards.editor.title')} hint={t('dashboards.editor.titleHint')}>
+      <ChoiceGroup label={t('dashboards.editor.title')} hint={t('dashboards.editor.titleHint')}>
         <Input
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           placeholder={t(`dashboards.widgetTypes.${type}`)}
           maxLength={120}
         />
-      </Field>
+      </ChoiceGroup>
 
       <div className="flex items-center justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onCancel}>
@@ -234,50 +234,5 @@ export function WidgetEditor({ widget, onSave, onCancel }: WidgetEditorProps) {
         </Button>
       </div>
     </form>
-  );
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="text-content text-sm font-medium">{label}</legend>
-      {hint !== undefined && <p className="text-content-tertiary text-xs">{hint}</p>}
-      {children}
-    </fieldset>
-  );
-}
-
-function Choice({
-  isSelected,
-  onSelect,
-  children,
-}: {
-  isSelected: boolean;
-  onSelect: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={isSelected}
-      className={cn(
-        'focus-visible:ring-accent/40 rounded-md border px-2.5 py-1 text-xs font-medium',
-        'ease-standard transition-colors duration-[var(--ds-duration-fast)] focus-visible:ring-2 focus-visible:outline-none',
-        isSelected
-          ? 'border-accent bg-accent-subtle text-content-brand'
-          : 'border-line text-content-secondary hover:bg-surface-hover',
-      )}
-    >
-      {children}
-    </button>
   );
 }

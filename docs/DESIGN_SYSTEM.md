@@ -195,6 +195,10 @@ theme switch without a single colour being duplicated in TypeScript.
 - **Gridlines stay faint.** They are the most over-weighted element in most
   dashboards. They exist so a reader can judge a value; the data should be the
   loudest thing on the canvas.
+- **A cumulative line stops where the data stops.** The pacing chart's actual series
+  ends at the last day a provider reported rather than being carried flat to today. A
+  flat cumulative segment means "nothing was spent since"; a sync that has not landed
+  means "we do not know", and those are different facts about somebody's money.
 
 ### Right-to-left
 
@@ -251,3 +255,10 @@ interface never re-derives that from the sign.
 Primitives live in `frontend/src/shared/ui`, shadcn/ui-style: unstyled behaviour plus
 `cva` variants, composed rather than configured. Variant definitions sit in their own
 module (`button.variants.ts`) so component files stay fast-refresh friendly.
+
+A primitive moves into `shared/ui` the second time a surface needs it, not the third.
+`Choice`/`ChoiceGroup` — a labelled set of mutually exclusive toggles, as a `fieldset`
+with a `legend` so a screen reader announces the group before each option — started life
+inside the dashboard widget editor and moved out when the planner and the calculator
+needed the same thing. Three copies of a toggle is how two of them end up with different
+focus rings.

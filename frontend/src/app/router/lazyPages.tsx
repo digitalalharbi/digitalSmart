@@ -25,3 +25,16 @@ export const CampaignsPage = lazy(async () => ({
 export const DashboardsPage = lazy(async () => ({
   default: (await import('@/features/dashboards/DashboardsPage')).DashboardsPage,
 }));
+
+export const MediaPlannerPage = lazy(async () => ({
+  default: (await import('@/features/budgets/MediaPlannerPage')).MediaPlannerPage,
+}));
+
+/*
+ * The calculator draws no charts, but it shares the budget feature's modules with the
+ * planner — so splitting it the same way keeps one chunk for both rather than
+ * duplicating the shared code into the initial bundle.
+ */
+export const BudgetCalculatorPage = lazy(async () => ({
+  default: (await import('@/features/budgets/BudgetCalculatorPage')).BudgetCalculatorPage,
+}));

@@ -21,6 +21,13 @@ export default defineConfig({
   workers: 2,
 
   // Same reason: allow for a queued request rather than racing the server.
+  /*
+   * Generous, because the stack under test is a single development server shared by two
+   * browser projects: a sign-in costs a bcrypt verification and a dashboard first paint
+   * waits on a chart chunk plus several analytics queries. A tight timeout here fails
+   * tests for the harness's throughput rather than the product's behaviour.
+   */
+  timeout: 45_000,
   expect: { timeout: 10_000 },
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: {

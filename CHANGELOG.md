@@ -4,11 +4,10 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
-## Phase 5 — budgets, pacing and forecasting (backend)
+## Phase 5 — budgets, pacing and forecasting
 
-The governance hierarchy from CLAUDE.md, and the arithmetic a client's money is judged
-by. The two surfaces — Media Planner and Budget Calculator — are not built yet, so the
-API is complete and tested but not yet reachable from the product; see docs/ROADMAP.md.
+Completes Phase 5. The governance hierarchy from CLAUDE.md, the arithmetic a client's
+money is judged by, and the two surfaces that make it usable.
 
 ### Added
 
@@ -74,12 +73,39 @@ API is complete and tested but not yet reachable from the product; see docs/ROAD
 - A budget whose spend could not be totalled still appears in the alert list, with its
   reason. Dropping it would make the list look reassuringly short.
 
+### The two surfaces
+
+- A **Media Planner** holding the budget list, the draft form, approve and archive, the
+  allocation editor and the pacing panel on one screen, because those are one
+  conversation. A planner looking at an overspending platform wants to move money now.
+- The **allocation editor** shows the remainder at every level and does not auto-fill it:
+  spreading the leftover would be a media decision made on somebody's behalf and called a
+  convenience. Over-allocation warns here and is refused by the server — the warning is
+  the fast feedback, the refusal is the rule.
+- Platform choices come from the **provider registry**, filtered to providers whose API
+  can report metrics. No page keeps its own list of platform names any more; the labels
+  that were briefly hard-coded here are gone.
+- A **pacing chart** answering one question: is this budget going to land where it was
+  meant to? Cumulative spend against the even pace, with the approved budget as a line.
+  The actual series stops at the last reported day rather than running flat to today,
+  because a flat cumulative line means "spent nothing since" and a missing sync means "we
+  do not know".
+- A **Budget Calculator** in both directions, showing each figure's band, its confidence,
+  the assumptions in words and the sample version — and a reason instead of a number where
+  a platform has too little delivery.
+- `Choice`/`ChoiceGroup` promoted out of the dashboard widget editor into shared UI, so
+  the planner, the calculator and the builder share one labelled-toggle pattern rather
+  than three copies.
+
 ### Tests
 
 20 domain tests on the pacing arithmetic alone, including that a budget nobody has set is
-reported as *unknown* rather than "on track"; 58 feature tests covering approval,
+reported as *unknown* rather than "on track"; 58 backend feature tests covering approval,
 visibility, the allocation tree, pacing against really-synced spend and the forecast's
-refusals. Backend 668 passed, PHPStan level 8 and Pint clean.
+refusals; 30 frontend tests including that a role which may plan is not offered approval,
+and that an untotallable spend shows its reason rather than a zero; 9 Playwright specs.
+Backend 668 passed, frontend 173, E2E 136, PHPStan level 8, Pint, ESLint and Prettier
+clean.
 
 ## LinkedIn sync
 
