@@ -9,14 +9,16 @@ use App\Application\Commerce\Contract\CommerceSyncAdapterRegistry as Registry;
 use App\Application\Integration\Exception\ProviderUnavailable;
 use App\Domain\Integration\Provider;
 use App\Infrastructure\Commerce\Adapter\SallaSyncAdapter;
+use App\Infrastructure\Commerce\Adapter\ZidSyncAdapter;
 use Illuminate\Contracts\Container\Container;
 
-/** Which store platforms this product can read. Zid joins in its own phase. */
+/** Which store platforms this product can read. */
 final readonly class CommerceSyncAdapterRegistry implements Registry
 {
     /** @var array<string, class-string<CommerceSyncAdapter>> */
     private const array ADAPTERS = [
         Provider::Salla->value => SallaSyncAdapter::class,
+        Provider::Zid->value => ZidSyncAdapter::class,
     ];
 
     public function __construct(private Container $container) {}

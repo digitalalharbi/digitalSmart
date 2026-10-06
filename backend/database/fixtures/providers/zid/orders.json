@@ -1,0 +1,116 @@
+[
+  {
+    "_newest_days_ago": 1,
+    "id": 8810001,
+    "code": "RW-5501",
+    "created_at": "2026-06-05 13:10:00",
+    "updated_at": "2026-06-05 18:00:00",
+    "order_status": { "name": "Delivered", "code": "delivered" },
+    "payment_status": "paid",
+    "currency_code": "SAR",
+    "order_total": "391.00",
+    "order_total_string": "391.00 ر.س",
+    "products_total": "340.00",
+    "shipping_cost": "25.00",
+    "tax_amount": "26.00",
+    "payment_method": "mada",
+    "is_marketplace_order": false,
+    "customer": { "id": 9910001, "name": "نورة السبيعي", "email": "noura@example.test", "mobile": "+966555111222" },
+    "products": [
+      {
+        "id": 77001,
+        "product_id": 5520001,
+        "variant_id": 5520011,
+        "name": "مفرش قطن",
+        "sku": "BED-001-K",
+        "quantity": 1,
+        "price": "340.00",
+        "total": "340.00"
+      }
+    ],
+    "shipping": {
+      "method": { "name": "Aramex" },
+      "tracking_number": "ARX7781200",
+      "status": "delivered",
+      "shipped_at": "2026-06-06 09:00:00",
+      "delivered_at": "2026-06-07 11:00:00"
+    },
+    "source": { "utm_source": "tiktok", "utm_medium": "paid_social", "utm_campaign": "ramadan-home" }
+  },
+  {
+    "_newest_days_ago": 2,
+    "id": 8810002,
+    "code": "RW-5502",
+    "created_at": "2026-06-04 09:40:00",
+    "updated_at": "2026-06-04 09:40:00",
+    "order_status": { "name": "In delivery", "code": "indelivery" },
+    "payment_status": "pending",
+    "currency_code": "SAR",
+    "order_total": "190.00",
+    "products_total": "190.00",
+    "payment_method": "cod",
+    "is_marketplace_order": false,
+    "customer": { "id": 9910002, "name": "Khalid Zahrani", "email": "khalid@example.test", "mobile": "+966555333444" },
+    "products": [
+      { "id": 77002, "product_id": 5520002, "name": "شمعة عود", "sku": "CND-002", "quantity": 2, "price": "95.00", "total": "190.00" }
+    ],
+    "coupon": { "code": "HOME15" }
+  },
+  {
+    "_newest_days_ago": 3,
+    "id": 8810003,
+    "code": "RW-5503",
+    "created_at": "2026-06-03 21:05:00",
+    "updated_at": "2026-06-03 21:05:00",
+    "order_status": { "name": "تم التحقق يدويًا", "code": "manual_verified" },
+    "payment_status": "paid",
+    "currency_code": "SAR",
+    "order_total": "160.00",
+    "products_total": "160.00",
+    "payment_method": "bank",
+    "is_marketplace_order": false,
+    "customer": { "id": 9910003, "name": "Sara Mutairi", "mobile": "+966555555666" },
+    "products": [
+      { "id": 77003, "product_id": 5520004, "name": "سجادة صلاة", "sku": "RUG-004", "quantity": 1, "price": "160.00", "total": "160.00" }
+    ]
+  },
+  {
+    "_newest_days_ago": 4,
+    "id": 8810004,
+    "code": "RW-5504",
+    "created_at": "2026-06-02 15:20:00",
+    "updated_at": "2026-06-09 10:00:00",
+    "order_status": { "name": "Reversed", "code": "reversed" },
+    "payment_status": "paid",
+    "currency_code": "SAR",
+    "order_total": "340.00",
+    "products_total": "340.00",
+    "payment_method": "mada",
+    "is_marketplace_order": false,
+    "customer": { "id": 9910001, "name": "نورة السبيعي", "email": "noura@example.test", "mobile": "+966555111222" },
+    "products": [
+      { "id": 77004, "product_id": 5520001, "variant_id": 5520012, "name": "مفرش قطن", "sku": "BED-001-Q", "quantity": 1, "price": "340.00", "total": "340.00" }
+    ],
+    "credit_notes": [
+      { "id": 66001, "amount": "340.00", "reason": "Returned by customer", "created_at": "2026-06-09 10:00:00" }
+    ]
+  },
+  {
+    "_newest_days_ago": 5,
+    "id": 8810005,
+    "code": "RW-5505",
+    "created_at": "2026-06-01 11:00:00",
+    "updated_at": "2026-06-01 11:30:00",
+    "order_status": { "name": "New", "code": "new" },
+    "payment_status": "paid",
+    "currency_code": "SAR",
+    "order_total": "95.00",
+    "products_total": "95.00",
+    "payment_method": "applepay",
+    "is_marketplace_order": true,
+    "customer": { "id": 9910004, "name": "****", "email": "masked@zid.sa", "mobile": "****" },
+    "products": [
+      { "id": 77005, "product_id": 5520002, "name": "شمعة عود", "sku": "CND-002", "quantity": 1, "price": "95.00", "total": "95.00" }
+    ]
+  }
+]

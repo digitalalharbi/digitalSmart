@@ -46,9 +46,13 @@ final readonly class SallaWebhookVerifier
      * Whether this request is genuinely from Salla.
      *
      * @param  string  $rawBody  the body exactly as it arrived, before any decoding
+     * @param  array<string, string|null>  $headers  lower-cased header names
      */
-    public function verify(string $rawBody, ?string $signature, ?string $strategy, ?string $secret): bool
+    public function verify(string $rawBody, array $headers, ?string $secret): bool
     {
+        $signature = $headers[strtolower(self::HEADER_SIGNATURE)] ?? null;
+        $strategy = $headers[strtolower(self::HEADER_STRATEGY)] ?? null;
+
         if ($secret === null || $secret === '' || $signature === null || $signature === '') {
             /*
              * Nothing to check against, or nothing to check. False either way: refusing a legitimate

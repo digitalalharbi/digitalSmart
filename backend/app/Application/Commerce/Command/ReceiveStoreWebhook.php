@@ -34,25 +34,20 @@ use App\Domain\Workspace\WorkspaceId;
 final readonly class ReceiveStoreWebhook
 {
     /**
-     * Topics this product acts on.
+     * The prefix of every topic this product acts on.
      *
-     * Everything else is recorded and ignored, which is not a failure: a merchant's app subscription
-     * sends customer logins and cart updates too, and a wall of `failed` rows would make the real
-     * failures unfindable.
+     * Deliberately a prefix rather than a list of names. The platforms do not agree on their event
+     * vocabulary — Salla sends `order.updated` and `order.status.updated`, Zid sends `order.create` and
+     * `order.status.update` — and an explicit list written against one of them silently ignored every
+     * event from the other. That is exactly how one provider's semantics get forced onto the next, and
+     * it was found by the first Zid test that expected work to happen.
      *
-     * @var list<string>
+     * Over-matching is safe here, and that is what makes the simpler rule the right one: the queued
+     * worker refuses any payload that carries no order and marks it ignored, so a future `order.*` topic
+     * this product does not understand costs one journal row and nothing else. Under-matching would cost
+     * a client's orders.
      */
-    private const array ACTIONABLE = [
-        'order.created',
-        'order.updated',
-        'order.status.updated',
-        'order.payment.updated',
-        'order.refunded',
-        'order.cancelled',
-        'order.shipment.created',
-        'order.shipment.updated',
-        'order.deleted',
-    ];
+    private const string ACTIONABLE_PREFIX = 'order.';
 
     public function __construct(
         private StoreLocator $stores,
@@ -63,14 +58,15 @@ final readonly class ReceiveStoreWebhook
 
     /**
      * @param  array<string, mixed>  $payload  the decoded body, for routing only
-     * @param  string  $rawBody  the body exactly as it arrived — what the signature covers
+     * @param  string  $rawBody  the body exactly as it arrived — what a signature covers
+     * @param  array<string, string|null>  $headers  lower-cased header names; each provider takes what
+     *                                               its own documentation says to take
      */
     public function __invoke(
         Provider $provider,
         array $payload,
         string $rawBody,
-        ?string $signature,
-        ?string $strategy,
+        array $headers,
     ): WebhookReceipt {
         $topic = $this->topicOf($payload);
         $merchantId = $this->merchantOf($payload);
@@ -101,7 +97,7 @@ final readonly class ReceiveStoreWebhook
         foreach ($candidates as $candidate) {
             $connection = $this->connections->findForProvider(new WorkspaceId($candidate->workspaceId), $provider);
 
-            if ($this->verifier->verify($provider, $rawBody, $signature, $strategy, $connection?->credentials()->get('webhook_secret'))) {
+            if ($this->verifier->verify($provider, $rawBody, $headers, $connection?->credentials()->get('webhook_secret'))) {
                 $store = $candidate;
                 $verified = true;
 
@@ -131,7 +127,7 @@ final readonly class ReceiveStoreWebhook
             return WebhookReceipt::rejected($topic, $eventId);
         }
 
-        if (! in_array($topic, self::ACTIONABLE, true)) {
+        if (! str_starts_with($topic, self::ACTIONABLE_PREFIX)) {
             $this->journal->markIgnored($eventId, 'This product does not act on this topic.');
 
             return WebhookReceipt::ignored($topic, $eventId);

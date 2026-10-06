@@ -27,7 +27,7 @@ sit.
 | 10    | **Tracking Center** — per client: what is measuring, what counts as success, and what needs attention, with the evidence behind every finding | **Complete** |
 | 11    | **Commerce domain** — normalised stores, orders, items, products, variants, customers, refunds, shipments, webhook events; two state axes, revenue sources, attribution evidence | **Complete**; provider adapters are Phases 12–13 |
 | 12    | **Salla** integration — entities, HMAC webhook verification, queued handling, reconciliation sync, two-axis status mapping | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
-| 13    | **Zid** integration — the same normalised domain without forcing Salla semantics onto it | Planned |
+| 13    | **Zid** integration — the same normalised domain, which Zid fits natively; Basic Auth webhooks, custom merchant statuses | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with an explicit revenue source on every figure | Planned |
 | 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome, CRM bridge | Planned |
 | 16    | **Customer journeys** — touchpoints, identity evidence, identity confidence, Journey Explorer | Planned |
@@ -594,3 +594,42 @@ rather than being allowed to define it.
 - **No scheduled syncing.** Queue-ready and driven directly today.
 - **No webhook subscription management**, because creating a subscription is a write and this
   integration does not write.
+
+### Phase 13 — Zid
+
+The second store platform, and the test of whether the Phase 11 domain was secretly Salla-shaped.
+
+- **Zid fits it natively.** It publishes a dedicated `payment_status` alongside its `order_status`, so
+  where Salla needed a documented boolean to recover the payment axis, Zid simply states it. The
+  two-axis design was a judgement call made before either provider existed; this is the evidence it was
+  right.
+- **A merchant can invent its own order statuses.** An unrecognised code maps to `processing` — which
+  claims only that the order is in progress and, crucially, is *not settled*, so the sync keeps
+  re-reading until the order reaches a state this product understands. A state we cannot interpret should
+  keep us looking, not stop us.
+- **`reverse_in_progress` is not `returned`**, for the same reason: `returned` is settled, and an order
+  mid-reversal is still moving.
+- **Zid authenticates webhooks with Basic Auth, not a signature**, and it is implemented as what it is.
+  It proves the caller knows a password and says nothing about the body; the secret travels on every
+  request; there is no replay protection. What makes that tolerable is the upsert, and the document says
+  so plainly rather than implying parity with Salla's HMAC.
+- **A Salla signature is refused on the Zid endpoint**, with a test, so the weaker mechanism's
+  assumptions cannot leak into the stronger one's code.
+- **A real bug Zid found**: the webhook use case had a hard-coded list of actionable topics written
+  against Salla's vocabulary, and Zid's event names differ (`order.status.update` against
+  `order.status.updated`). Every Zid order webhook would have been recorded, marked `ignored` and
+  silently dropped, with the endpoint looking healthy throughout. Now matched by the `order.` prefix,
+  because over-matching costs one journal row and under-matching costs a client's orders.
+- **Marketplace orders arrive with the customer masked**, and that is handled structurally: nothing writes
+  a customer from an order payload, so a placeholder has no route into the customers table.
+- `order_total`, never the formatted `order_total_string`; Arabic preferred for localised names;
+  `is_infinite` stock stored as null.
+- 50 tests.
+
+### Not yet done in Phase 13
+
+- **The live transport**, on a Partner app install and the OAuth handshake.
+- **No scheduled syncing**, and **no webhook subscription management** — creating a subscription is a
+  write.
+- **`total_order_count_per_status` is ignored.** This product derives its own counts from the orders it
+  stored, so a figure a reader can reconcile is never replaced by one they cannot.

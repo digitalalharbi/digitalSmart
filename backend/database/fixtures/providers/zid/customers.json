@@ -1,0 +1,52 @@
+[
+  {
+    "id": 9910001,
+    "name": "نورة السبيعي",
+    "email": "noura@example.test",
+    "mobile": "+966555111222",
+    "city": {
+      "name": "Riyadh"
+    },
+    "country": {
+      "code": "SA"
+    },
+    "created_at": "2026-06-01 08:00:00"
+  },
+  {
+    "id": 9910002,
+    "first_name": "Khalid",
+    "last_name": "Zahrani",
+    "email": "khalid@example.test",
+    "mobile": "+966555333444",
+    "city": {
+      "name": "Abha"
+    },
+    "country": {
+      "code": "SA"
+    },
+    "created_at": "2026-06-01 10:30:00"
+  },
+  {
+    "id": 9910003,
+    "name": "Sara Mutairi",
+    "email": null,
+    "mobile": "+966555555666",
+    "country": {
+      "code": "SA"
+    },
+    "created_at": "2026-06-02 12:10:00"
+  },
+  {
+    "id": 9910005,
+    "name": "Mona Harbi",
+    "email": "mona@example.test",
+    "mobile": "+966555777888",
+    "city": {
+      "name": "Khobar"
+    },
+    "country": {
+      "code": "SA"
+    },
+    "created_at": "2026-06-03 09:15:00"
+  }
+]

@@ -4,6 +4,71 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 13 — Zid
+
+The second store platform, read against the published API v1 — and the test of whether the Phase 11
+domain was secretly Salla-shaped.
+
+### Added
+
+- `ZidMapper`, `ZidSyncAdapter`, `ZidWebhookVerifier` and four fixture files in the documented response
+  shapes. `docs/ZID.md` and 50 tests.
+
+### Fixed
+
+- **Zid's order webhooks would all have been silently dropped.** The receiving use case held a
+  hard-coded list of actionable topics written while implementing Salla — `order.created`,
+  `order.updated`, `order.status.updated` — and Zid's events are named `order.create`,
+  `order.status.update`, `order.payment_status.update`. Every Zid order webhook would have been recorded,
+  marked `ignored` and discarded, with the endpoint looking healthy and the journal filling with
+  `ignored` rows that are an ordinary sight. Caught by the first Zid test that expected work to happen.
+  Topics are now matched by the `order.` prefix: over-matching costs one journal row, because the worker
+  refuses any payload carrying no order, while under-matching costs a client's orders.
+- **The webhook verifier port now takes the whole header bag** rather than two Salla-shaped arguments.
+  Salla signs the body and sends its own headers; Zid sends Basic credentials in `Authorization`. Those
+  are not the same security property and cannot be hidden behind one signature.
+
+### Decisions worth recording
+
+- **Zid fits the normalised domain natively**, which is the most useful thing learned in this phase. It
+  publishes `payment_status` alongside `order_status`, so no inference is needed at all — where Salla
+  needed a documented boolean to recover the payment axis from one workflow status. The two-axis design
+  was a judgement call made before either provider existed.
+- **An unknown order status maps to `processing`.** Zid lets a merchant define custom codes, so an
+  unrecognised one is ordinary rather than a defect, and guessing from its name is what this product
+  refuses to do everywhere. `processing` claims only that the order is in progress and is *not settled*,
+  so the sync keeps re-reading until the order reaches a state this product understands. A state we
+  cannot interpret should keep us looking, not stop us.
+- **`reverse_in_progress` is not `returned`**, for the same reason: `returned` is settled, and an order
+  mid-reversal is still moving. The exact code survives in `raw_fulfilment_status`.
+- **Zid's Basic Auth is implemented as what it is.** It proves the caller knows a password and says
+  nothing about the body; the secret travels on every request, base64 being an encoding rather than
+  encryption; and there is no timestamp or nonce, so a captured delivery can be replayed indefinitely.
+  What makes that harmless is the upsert, and the documentation says so rather than implying parity with
+  an HMAC. The comparison is still constant time — a weaker mechanism is no reason to leak the password
+  through timing as well.
+- **A Salla signature is refused on the Zid endpoint.** Each platform's verifier is separate so the
+  weaker mechanism's assumptions cannot leak into the stronger one's code, and so accepting a mechanism
+  Zid does not use is not possible.
+- **Marketplace masking is handled structurally, not by a flag.** Nothing in this product writes a
+  customer from an order payload, so Zid's masked placeholder has no route into the customers table. The
+  order is still stored — it is a real sale — and its customer id links to nothing, which is the truth. A
+  fabricated e-mail in a client's customer list would be indistinguishable from a real one afterwards.
+- **`order_total`, never `order_total_string`.** The second is formatted for display, including Arabic
+  digits where the locale asks, and parsing it would work until a store switched language.
+- **Arabic is preferred for localised names**, because these are Saudi stores and the Arabic name is the
+  one on the merchant's screen.
+- **`is_infinite` stock is stored as null.** Reporting unlimited stock as zero would pause a campaign on
+  a product that is always available.
+- **`total_order_count_per_status` is ignored.** This product derives its own counts from the orders it
+  stored, so a figure a reader can reconcile is never replaced by one they cannot.
+
+### Not yet in place
+
+- **The live transport**, on a Partner app install and the OAuth handshake.
+- **No scheduled syncing**, and **no webhook subscription management** — creating a subscription is a
+  write, and this integration does not write.
+
 ## Phase 12 — Salla
 
 The first store platform, read against the published Merchant API v2 and mapped into the Phase 11 shape

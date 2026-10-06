@@ -319,15 +319,18 @@ describe('the live transport is blocked', function (): void {
             ->and($store->getAttribute('orders_synced_through'))->toBeNull();
     });
 
-    it('skips a provider with no commerce adapter instead of failing', function (): void {
+    it('skips a provider that is not a store at all, instead of failing', function (): void {
         $setup = sallaSyncScenario();
 
         $result = app(SyncStore::class)(
             (string) $setup['scenario']->workspace->getKey(),
             (string) $setup['store']->getKey(),
-            // Zid arrives in its own phase; until then there is nothing to read, which is not an error.
-            Provider::Zid,
-            'zid-store-1',
+            /*
+             * Meta is an ad platform and has no orders to read. Skipped rather than failed, so the
+             * interface can disable the action instead of offering one that errors.
+             */
+            Provider::Meta,
+            'act_sandbox_1001',
         );
 
         expect($result->status)->toBe(SyncStatus::Skipped)

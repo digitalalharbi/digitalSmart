@@ -196,6 +196,7 @@ Maintain:
 - docs/GOOGLE_TAG_MANAGER.md
 - docs/ECOMMERCE.md
 - docs/SALLA.md
+- docs/ZID.md
 - docs/DESIGN_SYSTEM.md
 - docs/SECURITY.md
 - docs/TESTING.md

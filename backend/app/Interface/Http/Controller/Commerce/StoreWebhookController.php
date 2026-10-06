@@ -49,8 +49,13 @@ final class StoreWebhookController extends Controller
             provider: $resolved,
             payload: $payload,
             rawBody: $rawBody,
-            signature: $request->header('X-Salla-Signature'),
-            strategy: $request->header('X-Salla-Security-Strategy'),
+            /*
+             * Every header, lower-cased, rather than the two Salla happens to use. The platforms
+             * authenticate differently — Salla signs the body, Zid sends Basic credentials — and a
+             * controller that named one provider's headers would have to be edited, in the
+             * security-critical path, for every platform added after it.
+             */
+            headers: $this->headerBag($request),
         );
 
         if ($receipt->shouldProcess() && $receipt->eventId !== null) {
@@ -63,5 +68,21 @@ final class StoreWebhookController extends Controller
         }
 
         return response()->json(['outcome' => $receipt->outcome], Response::HTTP_OK);
+    }
+
+    /**
+     * The request's headers with lower-cased names and one value each.
+     *
+     * @return array<string, string|null>
+     */
+    private function headerBag(Request $request): array
+    {
+        $headers = [];
+
+        foreach ($request->headers->keys() as $name) {
+            $headers[strtolower($name)] = $request->headers->get($name);
+        }
+
+        return $headers;
     }
 }
