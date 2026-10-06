@@ -204,8 +204,10 @@ question it raises.
 - **No provider reads anything yet.** `CommerceSyncAdapter` is the contract Salla (Phase 12) and Zid
   (Phase 13) implement. The schema, the write port, the webhook journal and the rules above are
   complete and tested.
-- **No HTTP surface.** Store analytics endpoints arrive with Phase 14, where the revenue-source
-  selection they need is designed.
+- **The analytics surface is `GET /api/commerce/analytics`** (Phase 14), which requires a named revenue
+  source on every request — see [API.md](API.md#commerce). It counts only orders whose payment state
+  recognises revenue, reports net of refunds, keeps pending orders beside the total rather than inside
+  it, and produces an unattributed row rather than distributing it.
 - **No sync bookkeeping beyond the watermark.** Cursors and run journalling are deliberately deferred
   to Phase 12, where a real provider's pagination determines their shape. Building bookkeeping before
   the thing that needs it is how it ends up fitting nothing.

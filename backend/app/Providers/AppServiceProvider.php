@@ -17,6 +17,7 @@ use App\Application\Budget\Contract\BudgetSpendReadModel;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Commerce\Contract\CommerceStore;
 use App\Application\Commerce\Contract\CommerceSyncAdapterRegistry as CommerceSyncAdapterRegistryContract;
+use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
 use App\Application\Commerce\Contract\StoreLocator;
 use App\Application\Commerce\Contract\StoreOrderMapperRegistry as StoreOrderMapperRegistryContract;
 use App\Application\Commerce\Contract\WebhookEventJournal;
@@ -80,6 +81,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadMod
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentObservedEventReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentStoreAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
@@ -190,6 +192,7 @@ final class AppServiceProvider extends ServiceProvider
         WebhookEventJournal::class => EloquentWebhookEventJournal::class,
         WebhookEventReader::class => EloquentWebhookEventReader::class,
         StoreLocator::class => EloquentStoreLocator::class,
+        StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
         StoreOrderMapperRegistryContract::class => StoreOrderMapperRegistry::class,
         WebhookSignatureVerifier::class => StoreWebhookVerifiers::class,
         EventDefinitionRepository::class => EloquentEventDefinitionRepository::class,

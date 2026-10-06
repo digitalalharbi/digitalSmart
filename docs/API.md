@@ -728,3 +728,65 @@ A source pointing at a container the connection can no longer read is a `404` �
 different container would be the worst available outcome. Real credentials with no authorised OAuth
 client are `503` `provider_not_configured`: reporting "ready" or "never published" would both be
 fabrications, and either would be acted on.
+
+## Commerce
+
+### `GET /api/commerce/analytics`
+
+What a client's stores sold. Needs `analytics.view` — a client's revenue is reporting, and a role that
+may not read analytics has no business reading it.
+
+**`revenue_source` is required.** There is no default and no "all" value, and a request without one is a
+`422` `revenue_source_required` listing the allowed values. A Salla total counts invoices; a GA4 total
+counts what a browser reported before the payment failed. Answering a request that did not say which
+would be answering a question nobody asked, and the answer would be quoted to a client.
+
+| Parameter | Notes |
+| --------- | ----- |
+| `revenue_source` | **Required.** `salla`, `zid`, `google_analytics`, `platform_reported`, `crm`, `manual`, `attributed` |
+| `from` / `until` | Inclusive both ends; `until` covers the whole of its day. Defaults to the last 30 days |
+| `client_id` / `store_id` | Narrow the scope |
+| `limit` | Breakdown rows, clamped to 100 |
+
+A period that runs backwards is a `422` `invalid_period`.
+
+#### The summary
+
+| Field | Notes |
+| ----- | ----- |
+| `revenue_source`, `is_invoiced`, `is_modelled` | Who is claiming this. Only a store or a CRM invoiced it; `attributed` is a model's output and must never be shown as actual |
+| `source`, `source_label` | The **weakest** honesty label behind the total. A figure spanning a sandbox store and a live one is a sandbox figure |
+| `orders`, `revenue_minor`, `refunded_minor`, `net_revenue_minor` | Net is what a client should be shown; gross is published beside it so a refund is visible rather than inferred from a smaller number |
+| `average_order_value_minor` | **Null when nothing counted.** A denominator of zero has no average, and "0.00" invites a comparison with last month |
+| `pending_orders`, `pending_revenue_minor` | Real orders that are not yet money — mostly cash on delivery. Beside the total, never inside it |
+| `attributed_*`, `attribution_coverage` | What share of the money can be traced to marketing at all. A channel report at 30% coverage is a different document from one at 95% |
+
+**Only `paid` and `partially_refunded` orders count.** A pending cash-on-delivery order is a real order
+and is not money; in this market there are a great many of them, and counting them would overstate every
+report in the week before the courier either collects or comes back.
+
+#### The breakdowns
+
+`by_channel`, `by_campaign`, `by_product` and `daily`. Each row carries `net_revenue_minor`, the
+**weakest** `evidence` anything in it rests on, and that evidence's `confidence`.
+
+Weakest rather than strongest, deliberately: a group's total is only as defensible as the flimsiest link
+inside it, and showing the best one would flatter the row.
+
+Two rules worth stating plainly:
+
+- **`by_campaign` names a campaign only where the evidence can name one.** An order carrying a bare
+  `utm_source` names a *channel*; splitting it across a client's campaigns would be inventing the split.
+  A coupon-only order does appear, under the code somebody minted, at a confidence below half.
+- **The unattributed row is produced, not dropped.** It is usually the largest, and omitting it so the
+  percentages add to a hundred is how a channel report comes to overstate every channel in it. It is
+  `is_unattributed: true` with a null evidence, so a chart can mark it as the "we do not know" bucket
+  rather than drawing it as a channel. It is omitted only when it would be empty.
+
+Breakdowns are limited to `limit` rows and therefore do not add up to the summary, which is why the
+summary travels with them: a reader sees the difference as "the rest" rather than concluding the total is
+wrong.
+
+Product rows report **no refunds**. A refund is recorded against an order, and splitting it across lines
+would be a guess at which item came back; it is visible on the summary, where it is a fact rather than an
+allocation.

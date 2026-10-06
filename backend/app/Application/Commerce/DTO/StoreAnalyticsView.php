@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Commerce\DTO;
+
+use DateTimeImmutable;
+
+/**
+ * One answer about what a client's stores sold.
+ *
+ * The breakdowns are limited to a number of rows, so they do not add up to the summary — and that is why
+ * the summary travels with them rather than being left for a caller to compute. A reader comparing the
+ * two sees the difference as "the rest", which is the truth, instead of concluding the total is wrong.
+ */
+final readonly class StoreAnalyticsView
+{
+    /**
+     * @param  list<RevenueBreakdownRow>  $byChannel
+     * @param  list<RevenueBreakdownRow>  $byCampaign
+     * @param  list<RevenueBreakdownRow>  $byProduct
+     * @param  list<DailyRevenuePoint>  $daily
+     */
+    public function __construct(
+        public StoreRevenueSummary $summary,
+        public array $byChannel,
+        public array $byCampaign,
+        public array $byProduct,
+        public array $daily,
+        public DateTimeImmutable $from,
+        public DateTimeImmutable $until,
+    ) {}
+}

@@ -4,6 +4,73 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 14 — store analytics and revenue sources
+
+Where the commerce domain becomes a figure somebody quotes to a client. Nearly all of it is about what is
+excluded from a total, which is the only part of a revenue report that is hard to get right and impossible
+to spot afterwards.
+
+### Added
+
+- `StoreAnalyticsReadModel` and its Eloquent implementation, `GetStoreAnalytics`, five DTOs, a
+  `StoreAnalyticsResource`, and `GET /api/commerce/analytics`. 29 tests.
+
+### Fixed
+
+- **A `source` alias shadowed the orders table's own `source` column.** PostgreSQL resolves a `GROUP BY`
+  name to the real column in preference to a select alias, so the channel breakdown grouped by the honesty
+  label instead of the UTM source and the query failed outright. Aliased `channel_source` now.
+- **The evidence rank aggregate returned each group's strongest evidence, not its weakest.** The rank is
+  `100 - confidence`, so the weakest link is the *highest* rank — `max`, not `min`. Getting it backwards
+  labelled every group with its best evidence, which is exactly the flattering this figure must not do, and
+  it would have been invisible on the page.
+- **Coupon-only orders vanished from the campaign breakdown.** They carry no `utm_campaign`; the campaign
+  they name is the code somebody minted, as `OrderAttribution::campaignName()` already knew. The query now
+  applies the same fallback — they were not wrong before, they were simply absent.
+
+### Decisions worth recording
+
+- **`revenue_source` is required, with no default and no "all" value.** A Salla total counts invoices; a
+  GA4 total counts what a browser reported before the payment failed. A request that did not name its
+  authority is refused rather than answered, because the answer would be quoted to a client.
+- **Only `paid` and `partially_refunded` orders count.** A pending cash-on-delivery order is a real order
+  and is not money. In this market that is most of a busy week, so they are reported *beside* the total —
+  counting them would overstate every report until the courier either collects or comes back, and
+  reporting them nowhere would hide real demand.
+- **Revenue is net of refunds, with gross beside it.** A refund should be visible rather than inferred from
+  a smaller number.
+- **Average order value is null when nothing counted.** A denominator of zero has no average, and
+  rendering one as "0.00" invites a reader to compare it with last month's.
+- **Attribution coverage travels with every summary.** A channel report at 30% coverage is a different
+  document from one at 95%, and the figure that tells them apart belongs beside it rather than in a
+  footnote.
+- **A breakdown row carries the weakest evidence anything in it rests on**, not the strongest. A group's
+  total is only as defensible as its flimsiest link.
+- **`by_campaign` names a campaign only where the evidence can name one.** A bare `utm_source` names a
+  channel; splitting it across a client's campaigns would be inventing the split.
+- **The unattributed row is produced, not dropped.** It is usually the largest, and omitting it so the
+  percentages add to a hundred is how a channel report comes to overstate every channel in it. It is
+  omitted only when it would be empty.
+- **The summary's honesty label is the weakest of its rows**, so a total spanning a sandbox store and a
+  live one is a sandbox figure. This is the one number in the product that must never be flattered.
+- **Product rows report no refunds.** A refund is recorded against an order, and splitting it across lines
+  would be a guess at which item came back. It is on the summary, where it is a fact rather than an
+  allocation.
+- **Breakdowns are limited and therefore do not add up to the summary**, which is why the summary travels
+  with them: a reader sees the difference as "the rest" rather than concluding the total is wrong.
+- **Visibility is the same rule as the measurement sources'** — the clients of the actor's projects,
+  applied in SQL — so the two surfaces cannot disagree about who can see what.
+
+### Not yet in place
+
+- **No frontend surface.** The endpoint is complete and tested; the page belongs with a design decision
+  about how a revenue-source selector reads.
+- **Mixed currencies are not converted.** A client selling in two has no single total, and summing minor
+  units across them would be wrong by the exchange rate. A proper answer needs a rates source and a
+  decision about which day's rate.
+- **No new versus returning split.** The data is there; the definition is a product decision rather than a
+  query.
+
 ## Phase 13 — Zid
 
 The second store platform, read against the published API v1 — and the test of whether the Phase 11

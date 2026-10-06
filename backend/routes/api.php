@@ -9,6 +9,7 @@ use App\Interface\Http\Controller\Budget\BudgetController;
 use App\Interface\Http\Controller\Budget\ForecastController;
 use App\Interface\Http\Controller\Budget\PacingController;
 use App\Interface\Http\Controller\Client\ClientController;
+use App\Interface\Http\Controller\Commerce\StoreAnalyticsController;
 use App\Interface\Http\Controller\Commerce\StoreWebhookController;
 use App\Interface\Http\Controller\Dashboard\DashboardController;
 use App\Interface\Http\Controller\Dashboard\SavedViewController;
@@ -230,6 +231,13 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      * call to Tag Manager — and a provider outage must not empty the tracking page of facts it
      * already had.
      */
+    /*
+     * Store analytics. `revenue_source` is required on every request, because a Salla total and a GA4
+     * total measure different things and there is no total across them that means anything.
+     */
+    Route::get('commerce/analytics', StoreAnalyticsController::class)
+        ->name('commerce.analytics');
+
     Route::get('measurement/containers', [MeasurementController::class, 'containers'])
         ->name('measurement.containers');
     Route::get('measurement/sources/{source}/readiness', [MeasurementController::class, 'readiness'])

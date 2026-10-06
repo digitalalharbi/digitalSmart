@@ -28,7 +28,7 @@ sit.
 | 11    | **Commerce domain** — normalised stores, orders, items, products, variants, customers, refunds, shipments, webhook events; two state axes, revenue sources, attribution evidence | **Complete**; provider adapters are Phases 12–13 |
 | 12    | **Salla** integration — entities, HMAC webhook verification, queued handling, reconciliation sync, two-axis status mapping | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 13    | **Zid** integration — the same normalised domain, which Zid fits natively; Basic Auth webhooks, custom merchant statuses | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
-| 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with an explicit revenue source on every figure | Planned |
+| 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with a required revenue source on every request | **Backend complete**; the frontend surface is outstanding |
 | 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome, CRM bridge | Planned |
 | 16    | **Customer journeys** — touchpoints, identity evidence, identity confidence, Journey Explorer | Planned |
 | 17    | **Attribution** — first/last/paid-last/linear/position/time-decay models, each exposing coverage, data quality, confidence and revenue source | Planned |
@@ -633,3 +633,44 @@ The second store platform, and the test of whether the Phase 11 domain was secre
   write.
 - **`total_order_count_per_status` is ignored.** This product derives its own counts from the orders it
   stored, so a figure a reader can reconcile is never replaced by one they cannot.
+
+### Phase 14 — store analytics and revenue sources
+
+Where the commerce domain becomes a figure somebody quotes to a client, so nearly all of it is about what
+is excluded from a total.
+
+- **`revenue_source` is a required parameter with no default and no "all" value.** A Salla total counts
+  invoices; a GA4 total counts what a browser reported before the payment failed. A request without one is
+  refused rather than answered.
+- **Only `paid` and `partially_refunded` orders count.** Pending cash-on-delivery orders are reported
+  beside the total, never inside it — in this market that is most of a busy week, and counting them would
+  overstate every report until the courier collects or comes back.
+- **Revenue is net of refunds**, with gross published beside it so a refund is visible rather than inferred
+  from a smaller number.
+- **Average order value is null when nothing counted.** A denominator of zero has no average, and "0.00"
+  invites a comparison with last month.
+- **Attribution coverage travels with every summary**, because a channel report at 30% coverage is a
+  different document from one at 95%.
+- **A breakdown row carries the weakest evidence it rests on**, not the strongest: a group's total is only
+  as defensible as its flimsiest link.
+- **`by_campaign` names a campaign only where the evidence can.** A bare `utm_source` names a channel, and
+  splitting it across campaigns would be inventing the split.
+- **The unattributed row is produced, not dropped.** It is usually the largest, and omitting it so the
+  percentages add to a hundred overstates every row above it.
+- **The summary's honesty label is the weakest of its rows**, so a total spanning a sandbox store and a
+  live one is a sandbox figure.
+- Two real bugs found by the tests: a `source` alias that shadowed the orders table's own `source` column
+  and silently grouped by the wrong one, and a rank aggregate that returned each group's *strongest*
+  evidence rather than its weakest — which would have flattered every row invisibly.
+- 29 tests.
+
+### Not yet done in Phase 14
+
+- **No frontend surface.** The endpoint is complete and tested; the page belongs with a design decision
+  about how a revenue-source selector reads, which is worth making deliberately.
+- **Mixed currencies are not converted.** A client selling in two currencies has no single total, and
+  summing minor units across them would be wrong by whatever the exchange rate is. The scope reports the
+  first store's currency and a caller is expected to narrow; a proper answer needs a rates source and a
+  decision about which day's rate, which is its own piece of work.
+- **No new versus returning customer split.** The data is there — `store_customers.first_order_at` — and
+  the definition is a product decision (returning within what window?) rather than a query.
