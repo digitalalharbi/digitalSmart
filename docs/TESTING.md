@@ -53,12 +53,37 @@ weakened checks:
   runner raises the per-IP budgets for that process only; production keeps the
   defaults, and the per-account login limit — the one that actually protects a
   user against brute force — stays in force.
-- **Concurrency.** `php artisan serve` is single-process: it handles one
-  request at a time. Running four browser workers against it stretches
-  responses past a second and tests begin failing on timing rather than
-  behaviour, so the suite runs two workers with a 10s assertion timeout. A
-  multi-process runtime (FPM, or Octane) would lift that, and is a Phase 11
-  concern.
+- **Concurrency.** `php artisan serve` handles one request at a time *per
+  worker*, and by default it has one. The runner starts it with
+  `PHP_CLI_SERVER_WORKERS=16 --no-reload` — the flag is required, or Laravel
+  warns and falls back to a single worker — against two browser workers, a 10s
+  assertion timeout and a 45s test timeout. Sixteen is headroom rather than a
+  measured optimum. A multi-process runtime (FPM, or Octane) would make it
+  unnecessary, and is a hardening concern.
+
+  **The suite shares the machine, and that is the thing to know.** An
+  intermittent failure chased through this stack turned out to be neither the
+  product nor the suite's own concurrency: another project's test run on the
+  same host was starving it, which surfaced as a *refused connection* the
+  application reported correctly. Two measurements made it obvious — the same
+  suite finished in 1.9 minutes all green on an idle machine and took 19 minutes
+  with three failures on a busy one, and serialising the browsers made it worse
+  rather than better. Before suspecting the code, check the load.
+
+  Three mitigations are in place and all three are worth having regardless:
+
+  - The sign-in helper distinguishes a *slow* response (waited out — retrying a
+    request still in flight only adds load) from a *dropped* one (retried with a
+    backoff, since an immediate retry lands in the same congested moment).
+  - The suite allows one Playwright retry. A retried test is reported as
+    **flaky** rather than as a pass, which is the point: the signal stays in the
+    output rather than being hidden by a longer timeout.
+  - `scripts/e2e.sh` kills whatever holds either port on exit. Both servers put
+    processes beyond the reach of the PID it recorded — `artisan serve` forks
+    workers as grandchildren, `npm run preview` runs through a shell — and a
+    leaked preview server is worse than a leaked API one because it keeps a Node
+    process busy rather than idle. Ten accumulated across runs before this
+    existed, on the machine running the tests.
 - **Locale.** The app picks its language from the browser, which is correct
   behaviour, so on an Arabic-locale machine it renders the Arabic interface and
   every English selector misses. Playwright pins `en-US`, and

@@ -25,18 +25,25 @@ export const DEMO_PASSWORD = 'password';
  *    behind one development server, so a login can legitimately take many seconds. That
  *    is waited out, not retried — retrying a request that is still in flight just adds
  *    load to the thing that is already busy.
- *  - **Dropped.** PHP's built-in development server occasionally drops a connection under
- *    concurrency. The application reports that correctly — "the server could not be
- *    reached" — which is the behaviour we want and which the suite asserts elsewhere. What
- *    it cannot do is turn a request that never arrived into a permission result, so the
- *    attempt is made again.
+ *  - **Dropped.** The development server can refuse a connection outright when the host is
+ *    starved — a machine running another project's test suite at the same time will do it.
+ *    The application reports that correctly — "the server could not be reached" — which is
+ *    the behaviour we want and which the suite asserts elsewhere. What it cannot do is turn
+ *    a request that never arrived into a permission result, so the attempt is made again.
  *
  * The two are told apart by racing the navigation against that alert, so the dropped case
- * retries immediately instead of waiting out a timeout it will never satisfy. A real
- * refusal renders a validation error instead and still fails the test.
+ * retries at once instead of waiting out a timeout it will never satisfy. A real refusal
+ * renders a validation error instead and still fails the test.
+ *
+ * Retries **back off**, because they must. An immediate second attempt lands in the same
+ * congested moment that dropped the first, which is exactly what was observed before this
+ * delay existed: two refusals a second apart while the server's own log showed it
+ * answering a thousand other requests.
  */
+const RETRY_DELAYS_MS = [400, 1_200];
+
 export async function signIn(page: Page, email: string): Promise<void> {
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
     await page.goto('/login');
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password').fill(DEMO_PASSWORD);
@@ -55,8 +62,14 @@ export async function signIn(page: Page, email: string): Promise<void> {
       return;
     }
 
-    if (attempt === 1) {
-      throw new Error(`Sign-in for ${email} could not reach the server, twice.`);
+    const delay = RETRY_DELAYS_MS[attempt];
+
+    if (delay === undefined) {
+      throw new Error(
+        `Sign-in for ${email} could not reach the server after ${String(RETRY_DELAYS_MS.length + 1)} attempts.`,
+      );
     }
+
+    await page.waitForTimeout(delay);
   }
 }

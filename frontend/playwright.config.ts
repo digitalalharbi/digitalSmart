@@ -10,17 +10,32 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  /*
+   * One retry, everywhere — not only in CI.
+   *
+   * This stack is a development server on a developer's machine, and that machine may be
+   * running something else: a suite that failed a test here was twice starved by another
+   * project's test run on the same host, which showed up as a *refused connection* the
+   * application reported correctly. A retry absorbs that.
+   *
+   * A retried test is reported as **flaky**, not as a pass, which is the point: the signal
+   * stays in the output instead of being hidden by a longer timeout. A test that flakes for
+   * a product reason still has to be fixed, and the report is where that is noticed.
+   */
+  retries: 1,
 
   /*
-   * `php artisan serve` is single-process: it handles one request at a time.
-   * Four browser workers queue behind each other, responses stretch past a
-   * second, and assertions start failing on timing rather than behaviour.
-   * Two workers keep the suite honest and still finish quickly.
+   * Two browser workers against a sixteen-worker development server (see scripts/e2e.sh).
+   * More than two queue behind each other on a laptop and assertions start failing on
+   * timing rather than behaviour; one serialises the suite for no benefit — measured at
+   * nineteen minutes on a loaded machine against two minutes on an idle one, with *more*
+   * failures, because the load was never this suite's concurrency.
+   *
+   * `E2E_WORKERS=1` is there for the case where it genuinely is: a host already busy with
+   * something else.
    */
-  workers: 2,
+  workers: Number.parseInt(process.env.E2E_WORKERS ?? '2', 10),
 
-  // Same reason: allow for a queued request rather than racing the server.
   /*
    * Generous, because the stack under test is a single development server shared by two
    * browser projects: a sign-in costs a bcrypt verification and a dashboard first paint

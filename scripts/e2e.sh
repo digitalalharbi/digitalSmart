@@ -28,16 +28,20 @@ cleanup() {
     kill "$pid" 2>/dev/null || true
   done
 
-  # And then the workers, by the port they hold.
+  # And then whatever still holds either port.
   #
-  # `artisan serve` runs `php -S` as a child, which forks PHP_CLI_SERVER_WORKERS
-  # grandchildren. Killing the recorded PID and its children leaves those workers
-  # reparented to init, still listening — and the next run fails its own port check
-  # for what looks like a stale process of the developer's making. Matching the
-  # listener is the only thing that reliably reaches them.
-  local holders
-  holders=$(lsof -nP -iTCP:"$API_PORT" -sTCP:LISTEN -t 2>/dev/null || true)
-  [[ -n "$holders" ]] && kill $holders 2>/dev/null || true
+  # Both servers put processes beyond the reach of the recorded PID. `artisan serve` runs
+  # `php -S` as a child which forks PHP_CLI_SERVER_WORKERS grandchildren; `npm run preview`
+  # runs `vite preview` through a shell. Killing the PID and its direct children leaves the
+  # rest reparented to init and still listening — and a leaked preview server is worse than
+  # a leaked API one, because it keeps a Node process busy rather than idle. Ten of them
+  # accumulated across runs before this existed, and the machine they were on was the one
+  # running the tests.
+  for port in "$API_PORT" "$WEB_PORT"; do
+    local holders
+    holders=$(lsof -nP -iTCP:"$port" -sTCP:LISTEN -t 2>/dev/null || true)
+    [[ -n "$holders" ]] && kill $holders 2>/dev/null || true
+  done
 }
 trap cleanup EXIT
 
@@ -98,10 +102,13 @@ E2E_STATEFUL="127.0.0.1:$WEB_PORT,localhost:$WEB_PORT"
 # for the workers to be created at all — Laravel warns and falls back to one
 # otherwise — and costs nothing here, because the suite runs a build rather than code
 # somebody is editing.
+#
+# Sixteen is headroom, not a measured optimum. Enough that a browser never waits on an
+# accept queue, few enough that the forked processes are not themselves the load.
 echo "==> Starting API on :$API_PORT"
 (
   cd "$ROOT/backend"
-  PHP_CLI_SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-10}" \
+  PHP_CLI_SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-16}" \
   DB_DATABASE="$E2E_DB" \
   FRONTEND_URL="$E2E_ORIGIN" \
   SANCTUM_STATEFUL_DOMAINS="$E2E_STATEFUL" \
