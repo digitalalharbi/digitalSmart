@@ -67,6 +67,7 @@ make e2e        # Playwright (stack must be running)
 | `docs/TRACKING.md`       | Tracking health: the issue codes, and what it refuses to infer |
 | `docs/GOOGLE_ANALYTICS.md` | GA4 Admin and Data APIs, sampling honesty, key-event suggestions |
 | `docs/GOOGLE_TAG_MANAGER.md` | Container readiness: what it concludes, and what it refuses to |
+| `docs/ECOMMERCE.md`      | The normalised store domain, revenue sources, attribution evidence |
 | `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |
 | `docs/SECURITY.md`       | Controls, threat notes, secret handling                 |
 | `docs/TESTING.md`        | Test layers, database strategy, conventions             |

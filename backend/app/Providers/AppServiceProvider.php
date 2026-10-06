@@ -15,6 +15,8 @@ use App\Application\Budget\Contract\BenchmarkReadModel;
 use App\Application\Budget\Contract\BudgetRepository;
 use App\Application\Budget\Contract\BudgetSpendReadModel;
 use App\Application\Client\Contract\ClientReadModel;
+use App\Application\Commerce\Contract\CommerceStore;
+use App\Application\Commerce\Contract\WebhookEventJournal;
 use App\Application\Dashboard\Contract\DashboardRepository;
 use App\Application\Dashboard\Contract\SavedViewRepository;
 use App\Application\Identity\Contract\Authenticator;
@@ -72,6 +74,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCommerceStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDashboardRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentEventDefinitionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
@@ -84,6 +87,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
 use App\Infrastructure\System\CacheHealthProbe;
@@ -168,6 +172,10 @@ final class AppServiceProvider extends ServiceProvider
          * ceremony that hides that fact rather than a seam anybody needs.
          */
         TagContainerReadAdapter::class => GoogleTagManagerReadAdapter::class,
+
+        // Commerce (Phase 11)
+        CommerceStore::class => EloquentCommerceStore::class,
+        WebhookEventJournal::class => EloquentWebhookEventJournal::class,
         EventDefinitionRepository::class => EloquentEventDefinitionRepository::class,
         ObservedEventReadModel::class => EloquentObservedEventReadModel::class,
     ];

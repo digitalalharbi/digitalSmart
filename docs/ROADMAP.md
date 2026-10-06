@@ -25,7 +25,7 @@ sit.
 | 8     | **Google Analytics 4** — accounts, properties, data streams, metadata-driven metrics, key events as suggestions, event counts, sampling and thresholding honesty, freshness states | **Complete**; BLOCKED_EXTERNAL on an authorised OAuth client, sandbox end to end |
 | 9     | **Google Tag Manager** — accounts, containers, published versions, tags, triggers; evidence-backed readiness checks that refuse to read a tag's purpose from its name | **Complete**; BLOCKED_EXTERNAL on an authorised OAuth client, sandbox end to end |
 | 10    | **Tracking Center** — per client: what is measuring, what counts as success, and what needs attention, with the evidence behind every finding | **Complete** |
-| 11    | **Commerce domain** — normalised stores, orders, items, products, variants, customers, refunds, payments, shipments, webhook events, sync runs | Planned |
+| 11    | **Commerce domain** — normalised stores, orders, items, products, variants, customers, refunds, shipments, webhook events; two state axes, revenue sources, attribution evidence | **Complete**; provider adapters are Phases 12–13 |
 | 12    | **Salla** integration — OAuth, entities, webhooks with signature verification, idempotent queued handling, reconciliation sync | Planned |
 | 13    | **Zid** integration — the same normalised domain without forcing Salla semantics onto it | Planned |
 | 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with an explicit revenue source on every figure | Planned |
@@ -522,3 +522,39 @@ pages.
 - **No charts.** An event-count trend is the obvious candidate and was left out on purpose: the
   question this page answers is "is it working", and a sparkline would invite reading it as
   performance.
+
+### Phase 11 — the commerce domain
+
+One shape for every store platform, written **before** either provider so neither defines it. An
+agency reporting on one client per platform would otherwise be comparing two different meanings of
+"paid".
+
+- **Payment and fulfilment are separate columns.** Every platform has both axes, and a single `status`
+  makes "delivered but refunded" unrepresentable — an entirely ordinary thing for a shop. The
+  provider's own strings travel alongside, because a mapping will be disputed.
+- **Only `paid` and `partially_refunded` count as revenue.** Cash on delivery that never arrives is not
+  a sale, and in this region that is a large share of orders.
+- **`RevenueSource` is never silently merged.** An ad platform reports what it believes it caused, an
+  analytics property what a browser said, a store what was invoiced, a CRM what somebody recorded.
+  Adding two together produces a number nobody can defend and everybody quotes.
+- **`AttributionEvidence` makes "never falsely assign an order to a campaign" enforceable**, with a
+  confidence per level and a database CHECK that evidence must be backed by a field on the order. A
+  bare `utm_source` is `partial_utm` and cannot name a campaign; `none` is a legitimate and common
+  answer.
+- Everything upserts; order lines are replaced; variants are not, because order items reference them.
+- Customer lifetime totals are derived from stored orders rather than taken from the provider.
+- The webhook journal records every arrival before any work, with `ON CONFLICT DO NOTHING` — a caught
+  violation would abort the surrounding transaction, which a handler that also writes an order will be
+  inside.
+- 32 tests.
+
+### Not yet done in Phase 11
+
+- **No provider reads anything.** `CommerceSyncAdapter` is the contract Salla and Zid implement.
+- **No HTTP surface.** Store analytics arrive with Phase 14, where the revenue-source selection they
+  need is designed.
+- **No cursors or run journalling.** Deliberately deferred to Phase 12, where a real provider's
+  pagination determines their shape — bookkeeping built before the thing that needs it fits nothing.
+- **Payments are folded onto the order** as `payment_method` and `gateway` rather than given their own
+  table. A separate payments table earns its place when a platform reports split payments, and neither
+  Salla nor Zid is known to yet.

@@ -4,6 +4,85 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 11 — the commerce domain
+
+One normalised shape for every store platform, written before either provider so that neither gets to
+define it.
+
+### Added
+
+- `app/Domain/Commerce/` — `PaymentState`, `FulfilmentState`, `RevenueSource`, `AttributionEvidence`
+  and `OrderAttribution`.
+- Eight tables: `stores`, `store_customers`, `store_products`, `store_product_variants`,
+  `store_orders`, `store_order_items`, `store_refunds`, `store_shipments`, `store_webhook_events`.
+- `CommerceSyncAdapter` (the contract Salla and Zid implement), `CommerceStore` (the write port),
+  `WebhookEventJournal`, their Eloquent implementations, nine record DTOs, `docs/ECOMMERCE.md` and 32
+  tests.
+
+### Decisions worth recording
+
+- **Payment and fulfilment are separate columns.** Every platform has both axes. A single `status`
+  makes "delivered but refunded" unrepresentable — an entirely ordinary thing for a shop, where the
+  customer received the goods, complained and got their money back — and the first thing anybody does
+  with a single status is sum revenue by it. Each provider's own strings are kept verbatim alongside,
+  because a mapping will be disputed the first time a client's figures differ from their platform
+  dashboard.
+- **Only `paid` and `partially_refunded` recognise revenue.** The kept part of a partial refund is real
+  money; the refund comes off the amount, not off the order's existence. `pending` and `authorised` do
+  not count, because cash on delivery that never arrives is not a sale — and counting it overstates
+  every report in the week before the courier comes back, which in this region is a large share of
+  orders.
+- **A discount is a positive amount taken off**, never a negative one added. Mixing those conventions
+  across providers is how a discount comes to increase revenue, and a CHECK refuses a negative.
+- **`RevenueSource` exists so figures are never silently merged.** An ad platform reports what it
+  believes it caused, an analytics property what a browser said before the payment failed, a store what
+  was invoiced, a CRM what a person recorded. Adding two together produces a number no one can defend
+  and everyone will quote.
+- **Attribution records only what the order carried.** Not the hour it arrived, not the customer's
+  city, not being the only order on a day a campaign ran. Those correlations are invisible once they
+  reach a report, and acting on them means telling a client which campaign earned their money on the
+  strength of a coincidence.
+- **The evidence has levels, and a bare `utm_source` is not one that names a campaign.** It names a
+  channel; a report splitting revenue across a client's Meta campaigns on that basis would be inventing
+  the split. A coupon code sits deliberately below half confidence, because a code is typed by somebody
+  who may have had it from a friend, an influencer or an aggregator.
+- **`none` is a legitimate and common answer**, and the one a dishonest implementation would quietly
+  fill in. Analytics placeholders — `(not set)`, `(none)` — are treated as absent, because stored
+  verbatim they become a campaign literally called "(not set)" in a client's report.
+- **A database CHECK requires evidence to be backed by a field.** An order claiming campaign parameters
+  with no parameters on it is the one defect here that no report could reveal afterwards, so a second
+  write path cannot produce it.
+- **Everything upserts**, because every sync re-reads a restatement window and an insert would multiply
+  a client's revenue by the number of runs — which would look exactly like growth. Order lines, refunds
+  and shipments are *replaced*; variants are *upserted*, because order items reference them and deleting
+  one would lose which variant a past sale was for; and an item's product reference is nullable, because
+  an order can name a product somebody has since deleted and the line is still a real sale.
+- **Customer lifetime totals are derived from stored orders**, and a customer re-sync cannot overwrite
+  them. The provider's own total includes orders this workspace never read and counts refunds on its own
+  terms; the figure that reconciles against the orders in front of the reader is worth more than the one
+  that is larger.
+- **`orders_synced_through` moves forward only**, settled in SQL, so a backfill of an older window
+  cannot make the next sync skip the days between — the silent half of that failure.
+- **The webhook insert uses `ON CONFLICT DO NOTHING` rather than catching the violation.** In PostgreSQL
+  a constraint violation aborts the whole surrounding transaction, so catching one would turn a harmless
+  redelivery into a failed request for any caller inside a transaction — and a handler that also writes
+  an order will be. Found while writing the test for it.
+- **An event with no provider id is processed anyway.** This product will not invent an identity from a
+  payload hash: two genuinely distinct events can hash identically, and silently dropping the second
+  would lose a real sale.
+- **An unverified signature is recorded as `rejected`, not discarded.** The arrival is how somebody
+  finds out an endpoint is being probed, and writing down which it was is the only way to be sure
+  afterwards that it was not acted on.
+
+### Not yet in place
+
+- **No provider reads anything yet**; the adapters are Phases 12 and 13.
+- **No HTTP surface**; store analytics arrive with Phase 14.
+- **No cursors or run journalling**, deferred to Phase 12 where a real provider's pagination determines
+  their shape.
+- **Payments are folded onto the order.** A separate table earns its place when a platform reports split
+  payments.
+
 ## Phase 10 — the Tracking Center
 
 The surface that makes the measurement layer usable: one page answering the question an agency

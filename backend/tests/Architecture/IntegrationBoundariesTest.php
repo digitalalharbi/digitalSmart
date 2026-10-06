@@ -57,6 +57,12 @@ arch('credentials never reach the interface layer directly')
          * this list protects is that nothing in Interface, and no API response, ever sees one.
          */
         'App\Application\Measurement',
+        /*
+         * And to commerce, for the third time and the same reason: a store is read with the
+         * workspace's own credentials, the use case hands them to the adapter without reading them,
+         * and nothing in Interface or in any response ever sees one.
+         */
+        'App\Application\Commerce',
         'App\Infrastructure\Integration',
         'App\Infrastructure\Advertising',
         'App\Infrastructure\Measurement',

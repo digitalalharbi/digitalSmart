@@ -225,3 +225,52 @@ to another one.
 
 Deletes cascade in the direction meaning flows: observed counts go with their source, because
 they only ever meant anything *as read through it*, and mappings go with their definition.
+
+### Commerce (Phase 11, implemented)
+
+Eight tables behind [ECOMMERCE.md](ECOMMERCE.md), written before either store provider so that
+neither defines the shape.
+
+`stores` is client-scoped and the client is **required**: a store with no client is a set of orders
+nobody can report on. Unique per workspace, provider and external id.
+
+`store_orders` carries **two state columns**, `payment_state` and `fulfilment_state`, and that is the
+most consequential decision in the schema. Every platform has both axes; a single `status` makes
+"delivered but refunded" unrepresentable, and the first thing anybody does with a single status is sum
+revenue by it. Each provider's own strings travel alongside in `raw_payment_status` and
+`raw_fulfilment_status`, because a mapping will be disputed the first time a client's figures differ
+from their platform dashboard.
+
+Money is integer minor units with its currency. A discount is a **positive amount taken off**, never a
+negative one added — mixing those conventions across providers is how a discount comes to increase
+revenue, and a CHECK refuses a negative.
+
+The constraint this schema exists to carry:
+
+```sql
+CHECK (attribution_evidence = 'none'
+       OR utm_source IS NOT NULL OR utm_medium IS NOT NULL OR utm_campaign IS NOT NULL
+       OR click_identifier IS NOT NULL OR coupon_code IS NOT NULL OR referrer IS NOT NULL)
+```
+
+An order claiming campaign parameters with no parameters on it is the one defect here that no report
+could reveal afterwards, so the database refuses it and a second write path cannot produce it.
+
+`store_order_items` keeps the name and price **as sold**. A line that read the catalogue would rewrite
+last quarter's revenue whenever somebody changed a price. Its product reference is nullable, because an
+order can name a product since deleted and the line is still a real line of a real sale.
+
+`store_customers` holds the client's customers' contact details and **derives** its lifetime totals
+from the orders actually stored, counting only states that recognise revenue and subtracting refunds. A
+provider's own total includes orders this workspace never read; the figure that reconciles is worth more
+than the one that is larger. This is personal data belonging to the client — see `docs/SECURITY.md`.
+
+`store_webhook_events` is written before any work is done, with a unique index on
+`(provider, external_event_id)` and an `ON CONFLICT DO NOTHING` insert. A violation would abort the
+surrounding PostgreSQL transaction, turning a harmless redelivery into a failed request for a handler
+that also writes an order.
+
+Everything upserts, because every sync re-reads a restatement window and an insert would multiply a
+client's revenue by the number of runs. Order lines, refunds and shipments are **replaced** — the lines
+are the whole truth about what was sold. Variants are **upserted**, because order items reference them
+and deleting one would lose which variant a past sale was for.
