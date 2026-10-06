@@ -30,6 +30,8 @@ use App\Application\Identity\Contract\IdentityReadModel;
 use App\Application\Integration\Contract\CredentialCipher;
 use App\Application\Integration\Contract\IntegrationReadModel;
 use App\Application\Integration\Contract\ProviderAdapterRegistry as ProviderAdapterRegistryContract;
+use App\Application\Leads\Contract\LeadReadModel;
+use App\Application\Leads\Contract\LeadRepository;
 use App\Application\Measurement\Contract\EventDefinitionRepository;
 use App\Application\Measurement\Contract\MeasurementSourceRepository;
 use App\Application\Measurement\Contract\MeasurementSyncAdapterRegistry as MeasurementSyncAdapterRegistryContract;
@@ -78,6 +80,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBenchmarkReadModel
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentLeadReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentObservedEventReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
@@ -90,6 +93,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDashboardReposito
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentEventDefinitionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMeasurementSourceRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMembershipRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentObservedEventWriter;
@@ -193,6 +197,10 @@ final class AppServiceProvider extends ServiceProvider
         WebhookEventReader::class => EloquentWebhookEventReader::class,
         StoreLocator::class => EloquentStoreLocator::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
+
+        // Leads (Phase 15)
+        LeadRepository::class => EloquentLeadRepository::class,
+        LeadReadModel::class => EloquentLeadReadModel::class,
         StoreOrderMapperRegistryContract::class => StoreOrderMapperRegistry::class,
         WebhookSignatureVerifier::class => StoreWebhookVerifiers::class,
         EventDefinitionRepository::class => EloquentEventDefinitionRepository::class,

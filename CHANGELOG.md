@@ -4,6 +4,82 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 15 — lead intelligence
+
+Built around one sentence: **a lead is a person who did something, and a click is not a lead.**
+
+### Added
+
+- `app/Domain/Leads/` — `LeadStage`, `LeadSourceKind`, `LeadFunnel`, `ContactPoint` and
+  `InvalidLeadTransition`.
+- `leads` and `lead_events` tables, `EloquentLeadRepository`, `EloquentLeadReadModel`, `RecordLead`,
+  `ChangeLeadStage`, `ListLeads`, `GetLeadCentre`, four endpoints, `leads.view` / `leads.manage`, three audit
+  actions, `docs/LEADS.md` and 47 tests.
+
+### Decisions worth recording
+
+- **`LeadSourceKind` has no member for a click, a tap or a form view.** Every member is a completed action by a
+  person — a form submitted, a message received, a call answered, an order placed — so no value exists to pass
+  that would turn a counted signal into a lead. The rule is enforced by absence rather than by a check somebody
+  could remove, and there is a test asserting the absence. An agency reporting WhatsApp clicks as leads reports
+  a cost per lead a fraction of the real one, wins the next month's budget on it, and cannot explain afterwards
+  why the client's sales did not move.
+- **Signals sit beside the leads and are never summed with them, and no ratio between the two is published.** A
+  tap and a lead do not share a denominator: the same person taps three times, taps and then phones instead, or
+  taps on a device the form never loaded on. Four hundred taps and one conversation is a real shape for a month,
+  and showing both answers the question an agency has while making the thing it must never do impossible to do
+  by accident. The response carries a note instead of a rate.
+- **Every rate's denominator is the defensible one, and every rate is null rather than zero when empty.** Wins
+  divide by *closed* leads — an open lead is not a loss, and a pipeline a fortnight old is mostly open.
+  Qualification divides by leads somebody *reached* — a lead nobody has phoned has not failed to qualify. `0%`
+  and "nothing to measure" look identical on a card and mean opposite things.
+- **There is deliberately no lead-to-session rate.** Sessions come from an analytics property and leads from a
+  form; dividing one by the other assumes every session had the chance to convert. That comparison belongs where
+  both numbers' sources are named.
+- **`contacted` is an attempt, not contact.** Three voicemails are not contact, so `first_contacted_at` is set
+  when a lead reaches a stage that means somebody got through. That is what makes `hours_to_first_contact` the
+  figure that distinguishes a bad campaign from a slow sales team.
+- **A disqualification must say why**, in the use case and in a CHECK constraint. "Not a real enquiry", "out of
+  area", "price" and "wrong product" lead to four different conversations with a client paying for leads. The
+  reason is cleared when a lead moves on, because leaving it attached to a lead that was later qualified makes
+  the record say something nobody believes — and a reopened lead loses its closing time, because a stale
+  `closed_at` makes every cycle-time figure wrong.
+- **A Saudi phone number written four ways is one lead.** `+966555001122`, `00966555001122`, `0555001122` and
+  `555001122` normalise to one key; counting them separately would report four times the volume at a quarter of
+  the cost. The leading zero is a national trunk prefix rather than part of the number, which is why dropping it
+  is right here and would be wrong elsewhere.
+- **E-mails are lower-cased and nothing more.** No Gmail dot-stripping: it is right for Gmail and wrong for a
+  server that distinguishes addresses, and merging two real people is worse than counting one twice. Nothing
+  matches on a name at all.
+- **Deduplication runs for a day.** Within it the same phone is one person resubmitting; beyond it, a new
+  enquiry about something else. An enquiry with no contact details is always new, because refusing the second
+  would lose one that happened.
+- **A follow-up can improve an attribution, never weaken it, and only wholly.** An in-app browser strips the
+  parameters and the customer resubmits properly, so taking the stronger arrival is better than a lead stuck as
+  unattributed — but a half-merged attribution, this submission's click id beside the previous one's campaign,
+  would be a link to a campaign nobody can verify.
+- **A media buyer may read the pipeline and not qualify a lead.** A cost per *qualified* lead is the only honest
+  measure of their work, and judging the quality of what you bought is not a judgement to hand to the buyer.
+- **One attribution vocabulary shared with the orders**, including the CHECK requiring evidence to be backed by
+  a field, so a cross-surface report holds both figures to one standard of proof.
+- **The unattributed campaign row is always produced.** For leads it is usually the largest — most enquiries
+  carry no parameters and many arrive by phone — so hiding it would make every named campaign look responsible
+  for far more of the pipeline than it is.
+- **Rates are computed in the domain, not in SQL.** A win rate written as a SQL expression is a win rate nobody
+  reviews, and the wrong denominator is the commonest defect in this area.
+- Contact columns are hidden on the model by default, and no resource puts them in a client-portal response:
+  they belong to the agency's client's prospects.
+
+### Not yet in place
+
+- **No CRM bridge.** The source kind exists and nothing populates it; a CRM integration needs a provider, its
+  OAuth, and a decision about which system owns a stage when both have one.
+- **No automatic lead from an order**, because "every customer is a lead" is true for some clients and nonsense
+  for others.
+- **No lead merge**, and **no lead scoring** — a score is a model, and a model presented as a fact is what this
+  product refuses.
+- **No frontend surface.**
+
 ## Phase 14 — store analytics and revenue sources
 
 Where the commerce domain becomes a figure somebody quotes to a client. Nearly all of it is about what is

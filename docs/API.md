@@ -790,3 +790,70 @@ wrong.
 Product rows report **no refunds**. A refund is recorded against an order, and splitting it across lines
 would be a guess at which item came back; it is visible on the summary, where it is a fact rather than an
 allocation.
+
+## Leads
+
+A lead is a person who did something. Counted taps and form starts are **signals**, they live in the
+measurement layer, and nothing turns one into a lead — see [LEADS.md](LEADS.md).
+
+`leads.view` to read, `leads.manage` to record and work. A media buyer has view only: a cost per *qualified*
+lead is the honest measure of their work, and judging the quality of what you bought is not a judgement to hand
+to the buyer.
+
+### `GET /api/leads`
+
+Filters on `client_id`, repeated `stage[]`, `from`, `until` and `limit` (clamped to 500). Contact details are
+included, because the people working a pipeline need them; they are never part of a client-portal response.
+
+`hours_to_first_contact` is derived from when somebody actually **got through**, not from when they tried. A
+lead contacted within an hour converts at a different rate from one contacted next week, and without that
+figure an agency cannot tell a bad campaign from a slow sales team.
+
+`is_measured` is false for a hand-entered or imported lead. Those are real leads and must never be reported as
+campaign results.
+
+### `POST /api/leads`
+
+| Field | Notes |
+| ----- | ----- |
+| `client_id` | Required |
+| `source_kind` | Required, and restricted to the kinds a person may record: `form_submission`, `whatsapp_message`, `phone_call`, `chat`, `manual`. `import` and `crm` are refused — letting somebody type one would let a hand-entered row claim to have come from a system |
+| `name` / `email` / `phone` | **At least one.** A lead nobody can identify cannot be worked |
+| `received_at` | Defaults to now |
+| `value` / `currency` | Decimal major units, as everywhere else in this API |
+| `utm_*`, `click_identifier`, `referrer`, `landing_page` | Whatever the lead carried. Never invented by the server |
+
+A click is not a valid `source_kind`, and the enum has no member for one.
+
+**Recording the same person twice within a day returns the existing lead.** A Saudi number written four ways is
+one phone, and counting them separately would report four times the volume at a quarter of the cost. Outside the
+window it is a new lead, because the same person enquiring four months later is enquiring about something else.
+A later arrival can **improve** an attribution — an in-app browser strips the parameters and the customer
+resubmits properly — but never weaken one.
+
+### `POST /api/leads/{lead}/stage`
+
+`stage` is required. **A disqualification must carry a `reason`**, refused with `422`
+`invalid_lead_transition` otherwise: "not a real enquiry", "out of area" and "price" lead to three different
+conversations with a client paying for leads.
+
+Moving a lead on clears a disqualification reason, and reopening one clears its closing time — a stale
+`closed_at` makes every cycle-time figure wrong, and a CHECK requires the two to agree. Every move is written to
+`lead_events` and to the audit log with both stages.
+
+### `GET /api/leads/centre`
+
+The Lead Center, over `days` (default 30, max 365).
+
+`funnel` carries the counts and the rates. **Every rate is null rather than zero when its denominator is
+empty**, and each denominator is the defensible one: the win rate divides by **closed** leads, because an open
+lead is not a loss; the qualification rate by leads somebody **reached**, because a lead nobody has phoned has
+not failed to qualify.
+
+`by_source` and `by_campaign` break the pipeline down, with the unattributed row always produced — for leads it
+is usually the largest, since most enquiries carry no parameters and many arrive by phone.
+
+`signals` is the counted-tap column: `whatsapp_click`, `phone_click`, `form_start`. It sits **beside** the
+funnel and is never summed with it, and **no ratio between the two is published.** A tap and a lead do not share
+a denominator — the same person taps three times, or taps and then phones instead — so the response carries
+`signals_note` rather than a rate.

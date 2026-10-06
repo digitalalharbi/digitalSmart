@@ -197,6 +197,7 @@ Maintain:
 - docs/ECOMMERCE.md
 - docs/SALLA.md
 - docs/ZID.md
+- docs/LEADS.md
 - docs/DESIGN_SYSTEM.md
 - docs/SECURITY.md
 - docs/TESTING.md

@@ -86,6 +86,8 @@ enum SystemRole: string
                 Permission::BudgetsApprove,
                 Permission::TrackingView,
                 Permission::TrackingManage,
+                Permission::LeadsView,
+                Permission::LeadsManage,
                 Permission::AuditView,
             ],
 
@@ -113,6 +115,12 @@ enum SystemRole: string
                 Permission::BudgetsApprove,
                 Permission::TrackingView,
                 Permission::TrackingManage,
+                /*
+                 * A project manager runs the pipeline conversation with the client, so working and
+                 * qualifying leads sits with the role that has it.
+                 */
+                Permission::LeadsView,
+                Permission::LeadsManage,
                 Permission::AuditView,
             ],
 
@@ -137,6 +145,12 @@ enum SystemRole: string
                  */
                 Permission::TrackingView,
                 Permission::TrackingManage,
+                /*
+                 * A buyer reads the pipeline, because a cost per *qualified* lead is the only honest
+                 * measure of their work — and does not qualify leads themselves. Judging the quality of
+                 * what you bought is not a judgement to hand to the buyer.
+                 */
+                Permission::LeadsView,
             ],
 
             self::Creative => [

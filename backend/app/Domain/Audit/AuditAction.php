@@ -56,6 +56,9 @@ enum AuditAction: string
      */
     case MeasurementSourceSaved = 'measurement.source_saved';
     case MeasurementSourceDeleted = 'measurement.source_deleted';
+    case LeadRecorded = 'lead_recorded';
+    case LeadStageChanged = 'lead_stage_changed';
+    case LeadAssigned = 'lead_assigned';
     case ConversionDefined = 'measurement.conversion_defined';
     case ConversionChanged = 'measurement.conversion_changed';
     case ConversionDeleted = 'measurement.conversion_deleted';

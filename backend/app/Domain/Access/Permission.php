@@ -58,6 +58,8 @@ enum Permission: string
     case BudgetsApprove = 'budgets.approve';
 
     // Measurement and tracking
+    case LeadsView = 'leads.view';
+    case LeadsManage = 'leads.manage';
     case TrackingView = 'tracking.view';
     case TrackingManage = 'tracking.manage';
 
@@ -96,6 +98,8 @@ enum Permission: string
             self::ProjectsUpdate => 'Change projects',
             self::ProjectsDelete => 'Archive or delete projects',
             self::ProjectsManageMembers => 'Assign people to projects',
+            self::LeadsView => 'View the lead pipeline',
+            self::LeadsManage => 'Work and qualify leads',
             self::AnalyticsView => 'View performance analytics',
             self::AnalyticsExport => 'Export analytics data',
             self::SavedViewsManage => 'Create and share saved views',

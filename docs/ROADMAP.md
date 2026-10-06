@@ -29,7 +29,7 @@ sit.
 | 12    | **Salla** integration — entities, HMAC webhook verification, queued handling, reconciliation sync, two-axis status mapping | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 13    | **Zid** integration — the same normalised domain, which Zid fits natively; Basic Auth webhooks, custom merchant statuses | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with a required revenue source on every request | **Complete** |
-| 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome, CRM bridge | Planned |
+| 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome | **Backend complete**; the CRM bridge and the frontend surface are outstanding |
 | 16    | **Customer journeys** — touchpoints, identity evidence, identity confidence, Journey Explorer | Planned |
 | 17    | **Attribution** — first/last/paid-last/linear/position/time-decay models, each exposing coverage, data quality, confidence and revenue source | Planned |
 | 18    | **Creative operations** — briefs, requests, assets, versions, specs, validation, comments, approval workflow, Kanban | Planned |
@@ -692,3 +692,46 @@ is excluded from a total.
   decision about which day's rate, which is its own piece of work.
 - **No new versus returning customer split.** The data is there — `store_customers.first_order_at` — and
   the definition is a product decision (returning within what window?) rather than a query.
+
+### Phase 15 — lead intelligence
+
+Built around one sentence: **a lead is a person who did something, and a click is not a lead.**
+
+- **`LeadSourceKind` has no member for a click, a tap or a form view.** Every member is a completed action — a
+  form submitted, a message received, a call answered, an order placed — so there is no value to pass that would
+  turn a counted signal into a lead. The rule is enforced by absence rather than by a check somebody could
+  remove.
+- **Signals appear beside the leads and are never summed with them**, and no ratio between the two columns is
+  published. A tap and a lead do not share a denominator: the same person taps three times, or taps and then
+  phones instead. The gap is information; a percentage would be a claim.
+- **Every rate's denominator is the defensible one.** Wins divide by *closed* leads, because an open lead is not
+  a loss and a pipeline a fortnight old is mostly open. Qualification divides by leads somebody *reached*,
+  because a lead nobody has phoned has not failed to qualify. Each returns null rather than zero when empty.
+- **`contacted` is an attempt, not contact.** Three voicemails are not contact, and `first_contacted_at` is set
+  when somebody got through — which is what makes `hours_to_first_contact` the figure that tells a bad campaign
+  from a slow sales team.
+- **A disqualification must say why**, in the use case and in a database CHECK. A disqualified pile with no
+  reasons is the least useful thing an agency can hand back.
+- **A Saudi phone number written four ways is one lead.** Deduplicated within a day, and treated as a new
+  enquiry beyond it; an anonymous enquiry is always new, because refusing the second would lose one that
+  happened.
+- **A follow-up can improve an attribution, never weaken it** — and only wholly, because a half-merged
+  attribution is a link nobody can verify.
+- **A media buyer may read the pipeline and not qualify a lead.** Judging the quality of what you bought is not
+  a judgement to hand to the buyer.
+- One attribution vocabulary shared with the orders, so a cross-surface report holds both figures to one
+  standard of proof.
+- 47 tests.
+
+### Not yet done in Phase 15
+
+- **No CRM bridge.** The source kind exists and nothing populates it. A CRM integration needs a named provider,
+  its OAuth, and a decision about which system owns a stage when both have one — the last part is a product
+  question.
+- **No automatic lead from an order.** The column is there and the link is not made, because "every customer is
+  a lead" is true for some clients and nonsense for others.
+- **No merge of two leads a human knows are one person.** The event type is reserved; the operation needs a UI
+  and a decision about whose history survives.
+- **No lead scoring.** A score is a model, and a model presented as a fact is what this product refuses. It
+  belongs with the AI phase, labelled as modelled.
+- **No frontend surface.**

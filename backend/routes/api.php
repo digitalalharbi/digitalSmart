@@ -18,6 +18,7 @@ use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
 use App\Interface\Http\Controller\Integration\ExternalAccountController;
 use App\Interface\Http\Controller\Integration\ProjectBindingController;
 use App\Interface\Http\Controller\Integration\ProviderController;
+use App\Interface\Http\Controller\Leads\LeadController;
 use App\Interface\Http\Controller\Measurement\MeasurementController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
@@ -231,6 +232,16 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      * call to Tag Manager — and a provider outage must not empty the tracking page of facts it
      * already had.
      */
+    /*
+     * Leads. A lead is a person who did something; counted taps and form starts are signals and live in the
+     * measurement layer. The Lead Center shows both, side by side, and no ratio between them.
+     */
+    Route::get('leads', [LeadController::class, 'index'])->name('leads.index');
+    Route::post('leads', [LeadController::class, 'store'])->name('leads.store');
+    Route::post('leads/{lead}/stage', [LeadController::class, 'stage'])
+        ->whereUuid('lead')->name('leads.stage');
+    Route::get('leads/centre', [LeadController::class, 'centre'])->name('leads.centre');
+
     /*
      * Store analytics. `revenue_source` is required on every request, because a Salla total and a GA4
      * total measure different things and there is no total across them that means anything.
