@@ -62,13 +62,22 @@ export const NAV_ITEMS: readonly NavItem[] = [
     // The permission the endpoints check. A client viewer is refused outright.
     permission: 'creative.view',
   },
-  { path: '/tasks', labelKey: 'nav.tasks', icon: 'ListChecks', section: 'work', phase: 'Phase 19' },
+  {
+    path: '/tasks',
+    labelKey: 'nav.tasks',
+    icon: 'ListChecks',
+    section: 'work',
+    phase: 'Phase 20',
+    // The permission the endpoints check. A client viewer is refused outright: an agency's board carries
+    // its own reasons for things being blocked, and that is an internal conversation.
+    permission: 'tasks.view',
+  },
   {
     path: '/approvals',
     labelKey: 'nav.approvals',
     icon: 'BadgeCheck',
     section: 'work',
-    phase: 'Phase 19',
+    phase: 'Phase 20',
   },
   {
     path: '/tracking',
@@ -147,7 +156,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     labelKey: 'nav.reports',
     icon: 'FileChartColumn',
     section: 'intelligence',
-    phase: 'Phase 20',
+    phase: 'Phase 21',
     permission: 'projects.view_assigned',
   },
   {
@@ -177,7 +186,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     labelKey: 'nav.notifications',
     icon: 'Bell',
     section: 'system',
-    phase: 'Phase 19',
+    phase: 'Phase 20',
   },
   {
     path: '/administration',

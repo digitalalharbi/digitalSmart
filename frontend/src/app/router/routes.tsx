@@ -20,6 +20,7 @@ import {
   DashboardsPage,
   LeadCentrePage,
   MediaPlannerPage,
+  OperationsPage,
   StoreAnalyticsPage,
   TrackingCenterPage,
 } from '@/app/router/lazyPages';
@@ -45,6 +46,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/leads': deferred(<LeadCentrePage />),
   '/attribution': deferred(<AttributionPage />),
   '/creative-hub': deferred(<CreativeHubPage />),
+  '/tasks': deferred(<OperationsPage />),
   '/commerce': deferred(<StoreAnalyticsPage />),
 };
 

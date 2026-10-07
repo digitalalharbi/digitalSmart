@@ -52,6 +52,13 @@ export const PERMISSIONS = {
   creativeView: 'creative.view',
   creativeManage: 'creative.manage',
   creativeApprove: 'creative.approve',
+  /*
+   * One permission for creating, moving and assigning. Deliberately not split the way creative and budget
+   * approval are: nothing about moving a card is a judgement somebody else needs protecting from, and a
+   * board where only a manager may tick something done is a board kept by hand.
+   */
+  tasksView: 'tasks.view',
+  tasksManage: 'tasks.manage',
   auditView: 'audit.view',
 } as const;
 

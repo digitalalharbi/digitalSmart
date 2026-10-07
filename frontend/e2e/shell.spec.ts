@@ -29,14 +29,21 @@ test.describe('application shell', () => {
 
   test('navigates to a surface that a later phase delivers', async ({ page }) => {
     /*
-     * Reports is still a placeholder. Analytics used to be the example here and
-     * stopped being one in Phase 4 — exactly the drift this assertion is meant to
-     * catch, so it moves to the next undelivered surface rather than being deleted.
+     * Reports is still a placeholder. Analytics used to be the example here and stopped
+     * being one in Phase 4 — exactly the drift this assertion is meant to catch, so it
+     * moves to the next undelivered surface rather than being deleted.
+     *
+     * The phase number is asserted literally, and it is *meant* to break when the
+     * roadmap is renumbered: it did, when operations took the number 20 and reports
+     * moved to 21. A placeholder that names the wrong phase is a promise to a client
+     * with the wrong date on it, so the test holds the number rather than reading it
+     * from the same registry the page does — which would agree with itself and prove
+     * nothing.
      */
     await page.goto('/reports');
 
     await expect(page.getByRole('heading', { level: 1, name: 'Reports' })).toBeVisible();
-    await expect(page.getByText('Planned for Phase 20')).toBeVisible();
+    await expect(page.getByText('Planned for Phase 21')).toBeVisible();
     await expect(page.getByText(/delivered in a later phase/)).toBeVisible();
   });
 });

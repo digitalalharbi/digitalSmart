@@ -9,18 +9,30 @@ analysis and presentation generation.
 
 ## Status
 
-**Phases 0 and 1 complete.** See `docs/ROADMAP.md`.
+**Phases 0–19 complete; Phase 20 in progress.** See `docs/ROADMAP.md` for the per-phase
+detail and for the external authorizations that are blocked.
 
-Working today: sign-in and sessions, workspaces with switching, six system roles
-with server-enforced permissions, clients, projects with assignment-based
-visibility, project and workspace membership, and an audit trail — in English
-and Arabic, light and dark, desktop and mobile.
+Working today: sign-in, sessions and workspace switching; six system roles with
+server-enforced permissions; clients and projects with assignment-based visibility; an
+audit trail; six advertising adapters built against published schemas; budgets, pacing
+and forecasting; a measurement layer with a conversion registry; Google Analytics 4 and
+Tag Manager; a normalised commerce domain with Salla and Zid; store analytics; the Lead
+Center; conversion timelines; attribution with coverage on every figure; creative
+operations with recorded platform specifications; and an operations board. In English and
+Arabic, light and dark, desktop and mobile.
+
+**Every provider's live handshake is `BLOCKED_EXTERNAL`** on an authorization this
+repository cannot grant — an OAuth client, a partner app install, a developer-program
+approval. Each adapter is built against the published schema and runs end to end against
+documented-schema fixtures, and every figure drawn from one is labelled `SANDBOX` on every
+screen that shows it. `docs/INTEGRATIONS.md` names the exact missing credential per
+provider.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 160 passed, 451 assertions — architecture, unit, feature |
-| Frontend tests (Vitest)   | 56 passed                                           |
-| End-to-end (Playwright)   | Chromium + mobile Safari, signing in as real roles  |
+| Backend tests (Pest)      | 1 195 passed — architecture, unit, feature          |
+| Frontend tests (Vitest)   | 294 passed                                          |
+| End-to-end (Playwright)   | 206 passed — Chromium + mobile Safari, signing in as real roles |
 | Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
 | Style                     | Pint, ESLint and Prettier, clean                    |
 
@@ -72,6 +84,10 @@ make e2e        # Playwright (stack must be running)
 | `docs/ZID.md`            | Zid: two native state axes, custom statuses, Basic Auth webhooks |
 | `docs/LEADS.md`          | Leads: a click is not a lead, and every rate's denominator |
 | `docs/JOURNEYS.md`       | Journeys, identity evidence, and why multi-touch is blocked |
+| `docs/ATTRIBUTION.md`    | Attribution models, coverage, and the three this product refuses |
+| `docs/CREATIVE.md`       | Creative operations, and why a specification is recorded knowledge |
+| `docs/OPERATIONS.md`     | The work board: undated work, and when overdue means lateness |
+| `docs/DATA_VISUALISATION.md` | The measured chart palette, its gates, and the mark rules |
 | `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |
 | `docs/SECURITY.md`       | Controls, threat notes, secret handling                 |
 | `docs/TESTING.md`        | Test layers, database strategy, conventions             |

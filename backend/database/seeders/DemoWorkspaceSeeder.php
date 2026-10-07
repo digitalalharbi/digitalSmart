@@ -20,6 +20,9 @@ use App\Application\Leads\DTO\LeadInput;
 use App\Application\Measurement\Command\SaveMeasurementSource;
 use App\Application\Measurement\Command\SyncMeasurementSource;
 use App\Application\Measurement\DTO\MeasurementSourceInput;
+use App\Application\Operations\Command\MoveTask;
+use App\Application\Operations\Command\OpenTask;
+use App\Application\Operations\DTO\TaskInput;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\SystemRole;
@@ -39,6 +42,8 @@ use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use App\Domain\Leads\LeadSourceKind;
 use App\Domain\Leads\LeadStage;
 use App\Domain\Measurement\MeasurementSourceKind;
+use App\Domain\Operations\TaskPriority;
+use App\Domain\Operations\TaskState;
 use App\Domain\Project\ProjectStatus;
 use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceId;
@@ -140,6 +145,7 @@ final class DemoWorkspaceSeeder extends Seeder
         $this->demoCommerce($workspace->getKey());
         $this->demoLeads($workspace->getKey());
         $this->demoCreative($workspace->getKey());
+        $this->demoTasks($workspace->getKey());
 
         $actor->clear();
 
@@ -689,5 +695,88 @@ final class DemoWorkspaceSeeder extends Seeder
         ));
 
         $this->command?->line('  Creative: 5 requests briefed, one approved, one sent back with a reason.');
+    }
+
+    /**
+     * An operations board with the shapes that matter on it.
+     *
+     * Built through the real use cases, so the demo exercises the rules rather than bypassing them: a
+     * blocked task carries its reason, a cancelled one carries its own, and done work carries the moment it
+     * was finished. The honest part is what the board is *missing* — two of these tasks have no due date and
+     * one has nobody on it, because that is what a real board looks like, and the figures beside it are the
+     * ones that say so rather than reporting a tidy pipeline.
+     */
+    private function demoTasks(mixed $workspaceId): void
+    {
+        /** @var Client|null $client */
+        $client = Client::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('status', ClientStatus::Active->value)
+            ->orderBy('created_at')
+            ->first();
+
+        if ($client === null) {
+            return;
+        }
+
+        /** @var Project|null $project */
+        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->first();
+
+        /** @var User|null $buyer */
+        $buyer = User::query()->where('email', self::PEOPLE[2]['email'])->first();
+        /** @var User|null $creative */
+        $creative = User::query()->where('email', self::PEOPLE[3]['email'])->first();
+
+        $open = app(OpenTask::class);
+        $move = app(MoveTask::class);
+
+        $brief = static fn (
+            string $title,
+            TaskPriority $priority,
+            ?int $dueInDays,
+            ?User $assignee,
+        ): TaskInput => new TaskInput(
+            title: $title,
+            priority: $priority,
+            description: 'SANDBOX task. Created for the demo workspace.',
+            clientId: (string) $client->getKey(),
+            projectId: $project === null ? null : (string) $project->getKey(),
+            assigneeId: $assignee === null ? null : (string) $assignee->getKey(),
+            dueOn: $dueInDays === null
+                ? null
+                : (new DateTimeImmutable('today'))->modify($dueInDays.' days'),
+        );
+
+        // Overdue and urgent: the card the board exists to put in front of somebody.
+        $late = $open($brief('Rebuild the Ramadan audience lists', TaskPriority::Urgent, -3, $buyer));
+        $move($late->id, TaskState::InProgress);
+
+        // Blocked, with the reason that makes it actionable by somebody else.
+        $blocked = $open($brief('Get the pixel onto the checkout page', TaskPriority::High, 2, $buyer));
+        $move($blocked->id, TaskState::InProgress);
+        $move($blocked->id, TaskState::Blocked, "Waiting on the client's developer for template access.");
+
+        // Finished, so the board has a completion rate with a denominator that exists.
+        $done = $open($brief('Draft the Eid media plan', TaskPriority::Normal, -8, $buyer));
+        $move($done->id, TaskState::InProgress);
+        $move($done->id, TaskState::Done);
+
+        // In review: work sitting with somebody else, which the board counts separately.
+        $review = $open($brief('Second pass on the story copy', TaskPriority::Normal, 1, $creative));
+        $move($review->id, TaskState::InProgress);
+        $move($review->id, TaskState::InReview);
+
+        /*
+         * Two undated tasks and one with nobody on it. Deliberately: these are the rows that make the
+         * board's own honesty figures non-trivial, and a demo of tidy work would demonstrate nothing.
+         */
+        $open($brief('Write up the attribution caveats for the monthly deck', TaskPriority::Normal, null, $creative));
+        $open($brief('Audit the UTM naming on last quarter\'s campaigns', TaskPriority::Low, null, null));
+
+        // Cancelled, with its reason, so the completion rate has something to be a share of.
+        $dropped = $open($brief('Set up the TikTok Spark Ads handoff', TaskPriority::Low, 5, $buyer));
+        $move($dropped->id, TaskState::Cancelled, 'The client postponed the TikTok activity to next quarter.');
+
+        $this->command?->line('  Operations: 7 tasks, one overdue, one blocked with a reason, two undated.');
     }
 }

@@ -71,6 +71,21 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    /*
+     * Fifteen seconds rather than the five-second default.
+     *
+     * Not because any test here is slow: every one of them asserts the result of a render or a click. The
+     * suite builds a fresh jsdom per file — thirty-odd of them, in parallel — and on a loaded machine the
+     * construction of that environment alone can eat most of a five-second budget before the test body
+     * runs. The symptom is a test that passes alone and times out in the full run, which is the worst kind
+     * of failure to have: it looks like a defect in whatever was touched last.
+     *
+     * This raises an infrastructure budget, not an assertion. Nothing here asserts how fast a render is,
+     * so a longer ceiling cannot hide a regression; a genuinely hung test still fails, fifteen seconds
+     * later. The alternative — running the files serially — would slow every run to protect against a
+     * condition that only appears under load.
+     */
+    testTimeout: 15_000,
     setupFiles: ['./src/test/setup.ts'],
     css: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],

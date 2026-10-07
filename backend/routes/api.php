@@ -22,6 +22,7 @@ use App\Interface\Http\Controller\Integration\ProjectBindingController;
 use App\Interface\Http\Controller\Integration\ProviderController;
 use App\Interface\Http\Controller\Leads\LeadController;
 use App\Interface\Http\Controller\Measurement\MeasurementController;
+use App\Interface\Http\Controller\Operations\TaskController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
 use App\Interface\Http\Controller\System\HealthController;
@@ -289,6 +290,27 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      */
     Route::post('creative-versions/{version}/decision', [CreativeController::class, 'decide'])
         ->whereUuid('version')->name('creative.versions.decide');
+    // ------------------------------------------------------------- Operations ---
+    /*
+     * The board's own vocabulary: columns, legal moves, the priority scale and the due buckets. Fetched
+     * rather than hard-coded, so an interface cannot offer a move the server refuses.
+     */
+    Route::get('tasks/vocabulary', [TaskController::class, 'vocabulary'])->name('tasks.vocabulary');
+    Route::get('tasks/board', [TaskController::class, 'board'])->name('tasks.board');
+    Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
+    Route::get('tasks/{task}', [TaskController::class, 'show'])
+        ->whereUuid('task')->name('tasks.show');
+    Route::patch('tasks/{task}', [TaskController::class, 'update'])
+        ->whereUuid('task')->name('tasks.update');
+    Route::post('tasks/{task}/state', [TaskController::class, 'move'])
+        ->whereUuid('task')->name('tasks.move');
+    /*
+     * Its own route rather than a field on the patch, matching its own use case and its own audit action.
+     * "Who was asked to do this" is the entry people go looking for, and a generic update buries it.
+     */
+    Route::post('tasks/{task}/assignee', [TaskController::class, 'assign'])
+        ->whereUuid('task')->name('tasks.assign');
+
     /*
      * One person's history. Enquiries and orders only: the marketing touches before them need event-level data
      * this product does not have, and the response says so rather than implying a complete picture.

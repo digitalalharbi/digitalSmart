@@ -73,6 +73,15 @@ enum Permission: string
      */
     case CreativeApprove = 'creative.approve';
 
+    // Operations
+    case TasksView = 'tasks.view';
+    /*
+     * One permission for creating, moving and assigning. Deliberately not split: unlike approving a
+     * budget or signing off a version, nothing about moving a card is a judgement somebody else needs
+     * protecting from. A board where only a manager may tick something done is a board kept by hand.
+     */
+    case TasksManage = 'tasks.manage';
+
     // Auditability
     case AuditView = 'audit.view';
 
@@ -113,6 +122,8 @@ enum Permission: string
             self::CreativeView => 'View creative requests, versions and their approval trail',
             self::CreativeManage => 'Brief creative work, move it along and upload versions',
             self::CreativeApprove => 'Approve a version, or send it back with a reason',
+            self::TasksView => 'View the operations board and what it is carrying',
+            self::TasksManage => 'Create tasks, move them, assign them and set their dates',
             self::AnalyticsView => 'View performance analytics',
             self::AnalyticsExport => 'Export analytics data',
             self::SavedViewsManage => 'Create and share saved views',

@@ -72,6 +72,15 @@ enum AuditAction: string
      */
     case CreativeDecided = 'creative.decided';
 
+    case TaskOpened = 'task.opened';
+    case TaskMoved = 'task.moved';
+    /*
+     * Its own action rather than part of `TaskUpdated`. Handing work to somebody is the entry a person
+     * goes looking for when they want to know who was asked, and a generic "updated" buries it.
+     */
+    case TaskAssigned = 'task.assigned';
+    case TaskUpdated = 'task.updated';
+
     case WorkspaceMemberInvited = 'workspace.member_invited';
     case WorkspaceMemberRoleChanged = 'workspace.member_role_changed';
     case WorkspaceMemberSuspended = 'workspace.member_suspended';

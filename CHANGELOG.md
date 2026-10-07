@@ -4,6 +4,79 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 20 — operations: the board
+
+Tasks, their state machine, and the figures a work board usually hides. Approvals, client requests,
+notifications and realtime are the rest of this phase and are not in this slice; `docs/OPERATIONS.md` lists
+what is missing.
+
+### The argument
+
+A work board is the easiest surface in a product to make dishonest, because the dishonest version is also
+the tidier one. "Three overdue" beside neat columns reads as a team in control; it is frequently a team with
+forty tasks nobody has dated, where three describes the small minority of work that *could* be late.
+
+So this slice publishes the counts a board hides and refuses the arithmetic a board fudges.
+
+### Added
+
+- `app/Domain/Operations/` — `TaskState` with its legal moves as data, `TaskPriority`, `DueHorizon`,
+  `TaskSubjectType`, `TaskWorkload`, and the two refusals they carry.
+- **Undated work is its own bucket, never "later".** `DueHorizon` has five cases and the fifth is the point:
+  work with no due date is work that *cannot be late*, which is a different fact. Folding it into "later" is
+  how a board reports a pipeline it does not have. It is drawn as its own bar and counted in its own figure
+  on the page, beside the overdue one.
+- **Only open work is overdue.** Work finished a week late is history, not outstanding; counting it leaves a
+  figure nobody can ever clear.
+- **The overdue figure says when it cannot be read as lateness.** Once less than 80% of the open board
+  carries a date, `TaskWorkload::isLatenessReportable()` is false and the page says so above the chart and
+  outside its frame, so the sentence survives the switch to the table view. The threshold is a product
+  decision with its reasoning beside it, the same judgement attribution coverage makes at 70%.
+- **A completion rate over settled work, not over the board.** Done plus cancelled is the denominator: a
+  team that has just taken on fifty tasks has not got worse at finishing things, and dividing by everything
+  would say it had. Null, never zero, when nothing has settled.
+- **Blocked does not lead to done**, and the refusal is named rather than generic, because it is the move
+  people actually try. The shortcut loses both the fact that somebody did the work and any way to measure
+  what the block cost. The message lists where the card can go.
+- **Five schema CHECKs**: blocked needs a reason, cancelled needs its own, `(state = 'done') =
+  (completed_at IS NOT NULL)` in both directions, `due_on` is a `date` rather than a timestamp, and a
+  subject link is whole or absent.
+- **A task's subject is a link, never a claim.** Tasks point at a creative request, lead, campaign, budget
+  or project without a foreign key — `TaskSubjectType` states the trade — so the read model resolves every
+  subject on every read and the interface says *"this has been deleted"* rather than rendering a dead link
+  as a live one.
+- `tasks` table, repository, four use cases (`OpenTask`, `MoveTask`, `AssignTask`, `UpdateTask`), two
+  queries, `TaskController`, `TaskResource`, seven routes.
+- `tasks.view` / `tasks.manage`, granted to owners, administrators, project managers, media buyers and
+  creatives. **Not to a client viewer**: an agency's reasons for work being blocked are an internal
+  conversation, and what a client may see is Phase 22's portal rather than a role that happens to open a
+  screen.
+- Four audit actions, with assignment as its own rather than part of an update — "who was asked to do this"
+  is the entry people go looking for, and a generic "updated" buries it.
+- `frontend/src/features/operations/` — the board, the detail panel, a composer, and two charts: the due
+  profile and the per-person load. Fifteen tests.
+- `docs/OPERATIONS.md`, and seven demo tasks whose shape is deliberately untidy — one overdue, one blocked
+  with its reason, two undated, one unowned — because a demo of tidy work demonstrates none of this.
+
+### Changed
+
+- **Cards and counts come from different queries.** A column publishes `total` (the whole column, in SQL)
+  beside `tasks` (the capped page on screen). Counting the rows that came back would be one query fewer and
+  a wrong number the day a client got busy.
+- `assignee_id=me` and `=unassigned` are resolved on the server. A front end sending its own idea of who the
+  actor is would be one session-restore defect away from showing somebody else's week.
+- A `PATCH` with an empty `due_on` **clears** it. A board where a deadline can be set but never removed
+  accumulates dates nobody agreed to, and then the overdue figure is noise.
+
+### Fixed
+
+- **Two timeouts that made the frontend suite flaky under load**, not two defects in the code they caught.
+  Vitest's 5s per-test ceiling and Testing Library's 1s `findBy` ceiling are both spent largely on building
+  one of thirty-odd parallel jsdom environments, so a test would pass alone and fail in the full run —
+  blaming whatever was touched last. Raised to 15s and 5s with the reasoning recorded in place. Both are
+  waiting budgets, not assertions: nothing in this suite asserts how fast a render is, so neither ceiling
+  can hide a regression, and a genuinely hung test still fails. Five consecutive full runs clean.
+
 ## Phase 19 — creative operations
 
 Briefs, versions, approvals, comments, and the checking of a file against what a platform asks for. The

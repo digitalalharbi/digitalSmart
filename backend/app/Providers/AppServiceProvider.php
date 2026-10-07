@@ -42,6 +42,7 @@ use App\Application\Measurement\Contract\MeasurementSyncAdapterRegistry as Measu
 use App\Application\Measurement\Contract\ObservedEventReadModel;
 use App\Application\Measurement\Contract\ObservedEventWriter;
 use App\Application\Measurement\Contract\TagContainerReadAdapter;
+use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
 use App\Application\Shared\Contract\ActorContext;
@@ -111,6 +112,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectio
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentStoreLocator;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTaskRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
 use App\Infrastructure\Support\SystemClock;
@@ -208,6 +210,9 @@ final class AppServiceProvider extends ServiceProvider
         AttributionReadModel::class => EloquentAttributionReadModel::class,
         CreativeSpecRegistry::class => EloquentCreativeSpecRegistry::class,
         CreativeRepository::class => EloquentCreativeRepository::class,
+
+        // Operations (Phase 20)
+        TaskRepository::class => EloquentTaskRepository::class,
 
         // Leads (Phase 15)
         LeadRepository::class => EloquentLeadRepository::class,

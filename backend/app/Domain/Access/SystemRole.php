@@ -91,6 +91,8 @@ enum SystemRole: string
                 Permission::CreativeView,
                 Permission::CreativeManage,
                 Permission::CreativeApprove,
+                Permission::TasksView,
+                Permission::TasksManage,
                 Permission::AuditView,
             ],
 
@@ -131,6 +133,12 @@ enum SystemRole: string
                 Permission::CreativeView,
                 Permission::CreativeManage,
                 Permission::CreativeApprove,
+                /*
+                 * Runs the board. The role that decides what the week is for is the role that puts the
+                 * work on it.
+                 */
+                Permission::TasksView,
+                Permission::TasksManage,
                 Permission::AuditView,
             ],
 
@@ -166,6 +174,12 @@ enum SystemRole: string
                  * approving the work they asked for removes the only check on it.
                  */
                 Permission::CreativeView,
+                /*
+                 * Works the board rather than only reading it: a buyer who cannot tick their own task done
+                 * is a buyer whose manager keeps the board by hand, and then the board is fiction.
+                 */
+                Permission::TasksView,
+                Permission::TasksManage,
             ],
 
             self::Creative => [
@@ -179,6 +193,8 @@ enum SystemRole: string
                  */
                 Permission::CreativeView,
                 Permission::CreativeManage,
+                Permission::TasksView,
+                Permission::TasksManage,
             ],
 
             /*
@@ -193,6 +209,12 @@ enum SystemRole: string
             self::ClientViewer => [
                 Permission::ProjectsViewAssigned,
                 Permission::AnalyticsView,
+                /*
+                 * No task permission either. An agency's board carries its own reasons for things being
+                 * blocked and its own estimates of how long work takes; a client seeing them is an
+                 * internal conversation leaking. What a client may see is Phase 22's client portal,
+                 * decided explicitly rather than by a role that happens to open a screen.
+                 */
                 /*
                  * No budget permission, deliberately. A budget carries internal notes
                  * and an agency's own allocation thinking; what a client may see is

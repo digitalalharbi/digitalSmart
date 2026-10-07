@@ -108,6 +108,17 @@ export const queryKeys = {
      */
     journey: (leadId: string) => ['leads', 'journey', leadId] as const,
   },
+  tasks: {
+    all: () => ['tasks'] as const,
+    vocabulary: () => ['tasks', 'vocabulary'] as const,
+    /*
+     * Keyed by the whole scope. Narrowing the board does not refine the answer, it asks a different
+     * question — the figures beside the cards are computed over the same filter, so two scopes cached
+     * under one key would show one scope's counts beside the other's cards.
+     */
+    board: (scope: Record<string, unknown>) => ['tasks', 'board', scope] as const,
+    detail: (taskId: string) => ['tasks', 'detail', taskId] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,
