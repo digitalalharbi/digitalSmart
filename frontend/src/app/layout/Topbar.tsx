@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Languages, Moon, PanelsTopLeft, Search, Sun } from 'lucide-react';
+import { NotificationBell } from '@/features/notifications';
 import { AccountMenu } from './AccountMenu';
 import { Button } from '@/shared/ui/button';
 import { useUiStore, resolveTheme } from '@/shared/store/ui-store';
@@ -47,6 +48,11 @@ export function Topbar() {
       </button>
 
       <div className="ms-auto flex items-center gap-1">
+        {/*
+          The bell lives here because it is the one control present on every screen, which is also why it owns
+          the realtime subscription: a notification arriving while somebody reads a chart still moves the number.
+        */}
+        <NotificationBell />
         <Button
           variant="ghost"
           size="icon"

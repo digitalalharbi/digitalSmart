@@ -28,8 +28,14 @@ final readonly class ApprovalView
         public ?string $clientName,
         public ?string $projectId,
         public ?string $projectName,
+        /*
+         * The ids as well as the names. Both are needed: a name is for a reader, and an id is who a notification
+         * goes to. Resolving the requester by name would be a lookup that fails the day two people share one.
+         */
+        public ?string $requestedById,
         public ?string $requestedByName,
         public DateTimeImmutable $createdAt,
+        public ?string $decidedById,
         public ?string $decidedByName,
         public ?DateTimeImmutable $decidedAt,
         public ?string $decisionReason,

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Notifications\Command\Announce;
+use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Operations\Contract\ApprovalRepository;
 use App\Application\Operations\DTO\ApprovalView;
 use App\Application\Shared\Contract\ActorContext;
@@ -15,6 +17,7 @@ use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Notifications\NotificationKind;
 use App\Domain\Operations\ApprovalState;
 use App\Domain\Operations\EnactmentState;
 use App\Domain\Operations\Exception\InvalidApprovalTransition;
@@ -47,6 +50,7 @@ final readonly class DecideApproval
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private Clock $clock,
+        private Announce $announce,
     ) {}
 
     public function __invoke(
@@ -123,6 +127,22 @@ final readonly class DecideApproval
                 'enacted_by_product' => $decided->kind->isEnactedByThisProduct(),
             ],
         ));
+
+        /*
+         * The person who asked, and only them. The body carries the decline reason, because a notification saying
+         * "declined" with the reason a click away is a notification that generates a second conversation.
+         */
+        if ($current->requestedById !== null) {
+            ($this->announce)(new NotificationDraft(
+                kind: NotificationKind::ApprovalDecided,
+                title: $decided->title,
+                subjectId: $requestId,
+                body: $outcome->label().($reason === null ? '.' : ' — '.$reason),
+                onlyUserId: $current->requestedById,
+                aboutProjectId: $decided->projectId,
+                aboutClientId: $decided->clientId,
+            ));
+        }
 
         return $decided;
     }

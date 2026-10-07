@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Notifications\Command\Announce;
+use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Operations\DTO\TaskInput;
 use App\Application\Operations\DTO\TaskView;
@@ -15,6 +17,7 @@ use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Notifications\NotificationKind;
 use App\Domain\Operations\Exception\InvalidTaskSubject;
 
 /**
@@ -37,6 +40,7 @@ final readonly class OpenTask
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
+        private Announce $announce,
     ) {}
 
     public function __invoke(TaskInput $input): TaskView
@@ -81,6 +85,27 @@ final readonly class OpenTask
                     : $task->subject->type->value.':'.$task->subject->id,
             ],
         ));
+
+        if ($task->assigneeId !== null) {
+            /*
+             * Opening a task already in somebody's name is the commonest way work gets assigned, and it is the
+             * same event from the recipient's side — so it is announced here as well as in `AssignTask`. Leaving
+             * it out would mean the most frequent assignment was the one nobody was told about.
+             *
+             * `Announce` drops the actor, so somebody filing their own work is told nothing.
+             */
+            ($this->announce)(new NotificationDraft(
+                kind: NotificationKind::TaskAssigned,
+                title: $task->title,
+                subjectId: $task->id,
+                body: $task->dueOn === null
+                    ? 'No due date.'
+                    : 'Due '.$task->dueOn->format('Y-m-d').'.',
+                onlyUserId: $task->assigneeId,
+                aboutProjectId: $task->projectId,
+                aboutClientId: $task->clientId,
+            ));
+        }
 
         return $task;
     }

@@ -4,6 +4,90 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 20 — operations: notifications and realtime
+
+Four kinds of notification, a bell that counts what is waiting rather than what is unread, and a
+WebSocket layer whose payload deliberately carries nothing worth reading.
+
+### The argument
+
+A notification is a **disclosure**. "Raise the Ramadan daily budget is waiting for your decision"
+names a client, a campaign and an intention. So the rule is the same one every read in this product
+follows: a person may be told about something only if they could have read it.
+
+And a notification centre that announces every state change teaches people to ignore the bell — after
+which the one notification that mattered, an approval for a change to live spend, arrives in a stream
+nobody opens.
+
+### Added
+
+- `app/Domain/Notifications/` — `NotificationKind` (four kinds, each declaring the permission its
+  recipient must hold), `NotificationSubject`, `NotificationDigest`.
+- **The audience is resolved by rule, never by a list of user ids.**
+  `PermissionAwareRecipientResolver` checks three things in SQL: active membership of the workspace,
+  the permission the kind requires **plus the second one the kind names**, and visibility of what it
+  is about. A spend change reaches only the people who hold `budgets.approve` — telling five people
+  when three cannot approve it is how a bell comes to be ignored, and it invites somebody to a
+  decision the server refuses.
+- **Nobody is told what they just did.** `Announce` drops the actor before writing. Unassigning tells
+  nobody: there is no new owner, and notifying the person it was taken from is a complaint rather than
+  a task.
+- **Announcing never fails the action it describes**, like the audit recorder. An approval recorded
+  whose notification threw would leave a decision made, a requester never told, and a caller shown a
+  failure for something that did happen.
+- **`waiting`, not `unread`, is the number on the bell.** Unread measures how long somebody has been
+  away; waiting is a to-do list. Being told an answer is unread without being waiting. The bell shows
+  no badge when nothing is waiting and a plain dot — not a count — for the merely unread, because a
+  dot that is always there is a dot nobody reads.
+- **One row per recipient**, fanned out in one insert, because a row with a list of recipients cannot
+  record that one of them has read it. Deliberately not Laravel's own table, which is polymorphic,
+  untyped and has no workspace column.
+- **The sentence is stored as announced**, never re-rendered. A notification about something since
+  deleted keeps its wording and loses only its link.
+- **Reading needs no permission, and that is correct**: rows are scoped to the reader's own id and the
+  permission was checked when the notification was written. Gating the read again would make a
+  notification somebody was already sent disappear when they lost a permission.
+- Marking read is scoped by workspace **and** user in the WHERE clause; somebody else's row answers
+  **404, not 403**, because "forbidden" would confirm it exists.
+- **One private channel per person per workspace.** `ChannelAuthorizer` re-checks identity and active
+  membership on every subscription, so a socket cannot outlive the access that opened it.
+  `/broadcasting/auth` now carries `web` and `auth` middleware.
+- **The socket payload is a signal, not the notification** — id, kind, needs-action, timestamp, and
+  nothing a person would read. The browser refetches over the authenticated endpoint. One extra
+  request buys the property that a notification's contents never travel over a socket.
+- `notifications` table, store, resolver, broadcaster, `Announce`, three more use cases, a controller
+  with four routes, and announcements raised from `OpenTask`, `AssignTask`, `RequestApproval`,
+  `DecideApproval` and `RecordEnactment`.
+- `frontend/src/shared/realtime/echo.ts` — Echo and Pusher as **dynamic imports**, 73 kB a build that
+  never connects never pays for. The notification centre and the bell, with fourteen tests.
+- Notifications half of `docs/OPERATIONS.md`, including the testing trap below.
+
+### Fixed
+
+- **"Live" claimed on one side's evidence.** A checkout with `BROADCAST_CONNECTION=reverb` and no app
+  key told every reader the page was live while nothing was subscribed — the exact failure the message
+  warns about, caught by the end-to-end suite. Fixed at the source twice: the server's
+  `isConfigured()` now requires a key rather than a connection name, and the page requires the
+  server's answer **and** its own browser having a key.
+- **A set of channel tests that passed while asserting nothing.** `Broadcast::channel()` registers on
+  whichever broadcaster was default when the channels file loaded, and neither the `null` nor the
+  `log` driver consults channel callbacks — so an unregistered channel and a denied one produce the
+  same 403. The file now re-requires the channels against the test driver, and the test expecting a
+  subscription to **succeed** is what proves the rule is wired.
+- **Opening a task already assigned told nobody.** Only re-assignment announced, which meant the
+  commonest way work gets handed over was the one with no notification.
+- Two `npm audit` criticals that arrived with `laravel-echo`'s transitive dependencies, resolved.
+
+### Not done
+
+- No digest, grouping or collapsing — that is where a notification centre starts deciding what
+  somebody has already seen, and being wrong about it.
+- No preferences: four kinds that each need action is not a stream worth filtering, and the screen
+  would mostly be an invitation to switch off the approval notifications.
+- No e-mail or push delivery, and no realtime on the boards themselves — pushing a board means
+  reconciling a server-aggregated figure with a local mutation, which done badly produces drifting
+  counts.
+
 ## Phase 20 — operations: the approvals engine
 
 Who asked to change what, who said yes, and — the part nothing else in this space records — whether

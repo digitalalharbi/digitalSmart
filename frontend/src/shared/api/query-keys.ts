@@ -130,6 +130,15 @@ export const queryKeys = {
      */
     detail: (requestId: string) => ['approvals', 'detail', requestId] as const,
   },
+  notifications: {
+    all: () => ['notifications'] as const,
+    vocabulary: () => ['notifications', 'vocabulary'] as const,
+    /*
+     * One key for the feed, and the unread filter is part of it: the filtered list and the whole list are
+     * different answers, and the counts beside them are computed over everything either way.
+     */
+    feed: (unreadOnly: boolean) => ['notifications', 'feed', unreadOnly] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,

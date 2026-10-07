@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Notifications\Command\Announce;
+use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Operations\DTO\TaskView;
 use App\Application\Shared\Contract\ActorContext;
@@ -14,6 +16,7 @@ use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Notifications\NotificationKind;
 
 /**
  * Hand work to somebody, or to nobody.
@@ -32,6 +35,7 @@ final readonly class AssignTask
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
+        private Announce $announce,
     ) {}
 
     public function __invoke(string $taskId, ?string $assigneeId): TaskView
@@ -56,6 +60,26 @@ final readonly class AssignTask
                 : sprintf('Assigned "%s" to %s', $assigned->title, $assigned->assigneeName ?? 'somebody'),
             changes: ['from' => $current->assigneeId, 'to' => $assigneeId],
         ));
+
+        if ($assigneeId !== null) {
+            /*
+             * Only the new assignee, and never the actor — `Announce` drops them. Somebody picking up their own
+             * work does not need telling they did it, and unassigning tells nobody: there is no new owner, and
+             * notifying the person it was taken from would be a complaint rather than a task.
+             */
+            ($this->announce)(new NotificationDraft(
+                kind: NotificationKind::TaskAssigned,
+                title: $assigned->title,
+                subjectId: $assigned->id,
+                body: $assigned->dueOn === null
+                    // Said, because an assignment with no date is the common case and the one that drifts.
+                    ? 'No due date.'
+                    : 'Due '.$assigned->dueOn->format('Y-m-d').'.',
+                onlyUserId: $assigneeId,
+                aboutProjectId: $assigned->projectId,
+                aboutClientId: $assigned->clientId,
+            ));
+        }
 
         return $assigned;
     }

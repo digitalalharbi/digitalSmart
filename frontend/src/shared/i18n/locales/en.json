@@ -1377,5 +1377,45 @@
         "abandoned": "Why the approved change will not be made"
       }
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "What is waiting on you, and what you have been told.",
+    "loadFailed": "Could not load your notifications. Try again in a moment.",
+    "counts": "Notification summary",
+    "list": "Your notifications",
+    "markAll": "Mark everything read",
+    "markRead": "Mark read",
+    "waiting": "Waiting on you",
+    "unread": "Unread",
+    "open": "Open the {{subject}}",
+    "subjectGone": "This {{subject}} has been deleted",
+    "live": "Live. New notifications arrive as they happen.",
+    "polling": "Live updates are off for this session, so this page checks for new notifications every minute. Nothing is lost — they are recorded either way.",
+    "whatArrives": "Something appears here when a task is assigned to you, when a change needs your decision, when a request of yours is answered, or when a change you approved is carried out.",
+    "scope": {
+      "show": "Show",
+      "everything": "Everything",
+      "unread": "Unread only"
+    },
+    "count": {
+      "waiting": "Waiting on you",
+      "waitingNote": "Needs you",
+      "unread": "Unread",
+      "total": "All time"
+    },
+    "empty": {
+      "title": "Nothing yet",
+      "body": "You have not been told anything in this workspace.",
+      "unreadTitle": "Nothing unread",
+      "unreadBody": "You have read everything you were told."
+    },
+    "bell": {
+      "quiet": "Notifications. Nothing waiting on you.",
+      "waiting": "Notifications. {{count}} thing waiting on you.",
+      "waiting_other": "Notifications. {{count}} things waiting on you.",
+      "unread": "Notifications. {{count}} unread.",
+      "unread_other": "Notifications. {{count}} unread."
+    }
   }
 }

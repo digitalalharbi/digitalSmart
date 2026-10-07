@@ -42,6 +42,9 @@ use App\Application\Measurement\Contract\MeasurementSyncAdapterRegistry as Measu
 use App\Application\Measurement\Contract\ObservedEventReadModel;
 use App\Application\Measurement\Contract\ObservedEventWriter;
 use App\Application\Measurement\Contract\TagContainerReadAdapter;
+use App\Application\Notifications\Contract\NotificationBroadcaster;
+use App\Application\Notifications\Contract\NotificationStore;
+use App\Application\Notifications\Contract\RecipientResolver;
 use App\Application\Operations\Contract\ApprovalRepository;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Project\Contract\ProjectMemberRepository;
@@ -81,6 +84,9 @@ use App\Infrastructure\Integration\ProviderAdapterRegistry;
 use App\Infrastructure\Measurement\Adapter\GoogleTagManagerReadAdapter;
 use App\Infrastructure\Measurement\MeasurementSyncAdapterRegistry;
 use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
+use App\Infrastructure\Notifications\EloquentNotificationStore;
+use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
+use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAttributionReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
@@ -216,6 +222,9 @@ final class AppServiceProvider extends ServiceProvider
         // Operations (Phase 20)
         TaskRepository::class => EloquentTaskRepository::class,
         ApprovalRepository::class => EloquentApprovalRepository::class,
+        NotificationStore::class => EloquentNotificationStore::class,
+        RecipientResolver::class => PermissionAwareRecipientResolver::class,
+        NotificationBroadcaster::class => ReverbNotificationBroadcaster::class,
 
         // Leads (Phase 15)
         LeadRepository::class => EloquentLeadRepository::class,

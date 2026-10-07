@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Notifications\Command\Announce;
+use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Operations\Contract\ApprovalRepository;
 use App\Application\Operations\DTO\ApprovalInput;
 use App\Application\Operations\DTO\ApprovalView;
@@ -15,6 +17,7 @@ use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Notifications\NotificationKind;
 use App\Domain\Operations\Exception\InvalidApprovalRequest;
 use App\Domain\Operations\Exception\InvalidTaskSubject;
 
@@ -41,6 +44,7 @@ final readonly class RequestApproval
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
+        private Announce $announce,
     ) {}
 
     public function __invoke(ApprovalInput $input): ApprovalView
@@ -95,6 +99,21 @@ final readonly class RequestApproval
                 'supersedes' => $request->supersedesId,
                 'client_id' => $request->clientId,
             ],
+        ));
+
+        /*
+         * Everybody who could actually decide it. `alsoRequires` carries the second permission this kind needs,
+         * so a spend change reaches the people who hold `budgets.approve` and nobody else — telling five people
+         * when three of them cannot approve it is how a bell comes to be ignored.
+         */
+        ($this->announce)(new NotificationDraft(
+            kind: NotificationKind::ApprovalRequested,
+            title: $request->title,
+            subjectId: $request->id,
+            body: $request->kind->label().($request->kind->touchesLiveSpend() ? ' — moves money.' : '.'),
+            aboutProjectId: $request->projectId,
+            aboutClientId: $request->clientId,
+            alsoRequires: $request->kind->decidedWith()?->value,
         ));
 
         return $request;

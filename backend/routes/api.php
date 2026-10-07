@@ -22,6 +22,7 @@ use App\Interface\Http\Controller\Integration\ProjectBindingController;
 use App\Interface\Http\Controller\Integration\ProviderController;
 use App\Interface\Http\Controller\Leads\LeadController;
 use App\Interface\Http\Controller\Measurement\MeasurementController;
+use App\Interface\Http\Controller\Notifications\NotificationController;
 use App\Interface\Http\Controller\Operations\ApprovalController;
 use App\Interface\Http\Controller\Operations\TaskController;
 use App\Interface\Http\Controller\Project\ProjectController;
@@ -311,6 +312,18 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      */
     Route::post('tasks/{task}/assignee', [TaskController::class, 'assign'])
         ->whereUuid('task')->name('tasks.assign');
+
+    /*
+     * Notifications. No permission on these routes: every row is scoped to the reader's own user id, and the
+     * permission that decided whether they could be told was checked when the notification was written.
+     */
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/vocabulary', [NotificationController::class, 'vocabulary'])
+        ->name('notifications.vocabulary');
+    Route::post('notifications/read-all', [NotificationController::class, 'readAll'])
+        ->name('notifications.read_all');
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])
+        ->whereUuid('notification')->name('notifications.read');
 
     /*
      * Approvals. The vocabulary publishes, per kind, whether approving a request makes the change — which today

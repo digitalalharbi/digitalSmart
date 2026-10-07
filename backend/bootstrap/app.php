@@ -25,9 +25,20 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
-        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
         apiPrefix: 'api',
+    )
+    /*
+     * Registered explicitly rather than through `withRouting(channels: ...)`, so the authorisation endpoint
+     * carries middleware. The default registration has none, which means an unauthenticated subscription is
+     * answered rather than refused — and the channel callback never runs, because there is no actor to pass it.
+     *
+     * `web` for the session cookie this SPA authenticates with, and `auth` so a request with no session is a 401
+     * from the framework rather than a channel rule quietly returning false.
+     */
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php',
+        attributes: ['middleware' => ['web', 'auth']],
     )
     ->withCommands([
         SyncAccessCatalogue::class,

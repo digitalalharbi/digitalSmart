@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Notifications\Command\Announce;
+use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Operations\Contract\ApprovalRepository;
 use App\Application\Operations\DTO\ApprovalView;
 use App\Application\Shared\Contract\ActorContext;
@@ -15,6 +17,7 @@ use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Notifications\NotificationKind;
 use App\Domain\Operations\ApprovalState;
 use App\Domain\Operations\EnactmentState;
 use App\Domain\Operations\Exception\InvalidApprovalTransition;
@@ -41,6 +44,7 @@ final readonly class RecordEnactment
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private Clock $clock,
+        private Announce $announce,
     ) {}
 
     public function __invoke(
@@ -103,6 +107,23 @@ final readonly class RecordEnactment
                         ->diff($this->clock->now()->setTime(0, 0))->days,
             ],
         ));
+
+        /*
+         * Back to whoever decided it, which closes the loop this module exists to keep open: the person who
+         * approved a change to live spend is the person who should learn whether it actually happened. Nobody
+         * else is told — a change being made is not news to the people who were not asked about it.
+         */
+        if ($current->decidedById !== null) {
+            ($this->announce)(new NotificationDraft(
+                kind: NotificationKind::ApprovalEnacted,
+                title: $recorded->title,
+                subjectId: $requestId,
+                body: $enactment->label().($note === null ? '.' : ' — '.trim($note)),
+                onlyUserId: $current->decidedById,
+                aboutProjectId: $recorded->projectId,
+                aboutClientId: $recorded->clientId,
+            ));
+        }
 
         return $recorded;
     }

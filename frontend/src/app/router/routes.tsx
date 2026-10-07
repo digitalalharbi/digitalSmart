@@ -10,6 +10,7 @@ import { IntegrationsPage } from '@/features/integrations';
 import { ClientsPage } from '@/features/clients';
 import { OverviewPage } from '@/features/overview';
 import { ProjectsPage } from '@/features/projects';
+import { NotificationsPage } from '@/features/notifications';
 import { PlaceholderPage } from '@/features/placeholder';
 import {
   AnalyticsPage,
@@ -49,6 +50,11 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/creative-hub': deferred(<CreativeHubPage />),
   '/tasks': deferred(<OperationsPage />),
   '/approvals': deferred(<ApprovalsPage />),
+  /*
+   * Not deferred. The bell already loads this feature on every screen, so a second chunk for the page would be
+   * a download that buys nothing.
+   */
+  '/notifications': <NotificationsPage />,
   '/commerce': deferred(<StoreAnalyticsPage />),
 };
 

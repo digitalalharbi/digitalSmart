@@ -3,8 +3,8 @@
 The board an agency runs its week from: what is open, what is late, what nobody has dated, and
 who is carrying it.
 
-Phase 20 delivers **tasks** and the **approvals engine**. Client requests, notifications and
-realtime are the rest of the phase; what is not built is listed at the end.
+Phase 20 delivers **tasks**, the **approvals engine**, and **notifications with realtime**. Client
+requests are the remaining slice; what is not built is listed at the end.
 
 ## The question this module is for
 
@@ -387,15 +387,194 @@ field a decider cannot read — on exactly the proposals that needed the most ca
 
 An empty proposal is refused. "Approve this" with nothing in it is a signature on a blank page.
 
+
+---
+
+# Notifications
+
+## The list is short on purpose
+
+Four kinds, and the test of whether something belongs on the list is not "is this interesting" but
+**"is there somebody with something to do about it"**:
+
+| Kind | Who is told | Permission required |
+| ---- | ----------- | ------------------- |
+| A task was assigned to you | The new assignee | `tasks.view` |
+| A change is waiting for your decision | Everyone who could actually decide it | `approvals.decide`, plus the kind's second permission |
+| Your request was answered | The person who asked | `approvals.view` |
+| An approved change was carried out | Whoever decided it | `approvals.view` |
+
+A notification centre that announces every state change teaches people to ignore the bell, and then
+the one notification that mattered — an approval for a change to live spend, sitting unread — arrives
+in a stream nobody reads.
+
+The last kind closes the loop the approvals engine exists to keep open: the person who approved a
+change to live spend is the person who should learn whether it actually happened.
+
+## A notification is a disclosure
+
+"Raise the Ramadan daily budget is waiting for your decision" names a client, a campaign and an
+intention. So the rule is one sentence, and it is the same rule every read in this product follows:
+**a person may be told about something only if they could have read it.**
+
+`PermissionAwareRecipientResolver` resolves that in SQL, as three conditions. Leaving any one out
+leaks something:
+
+1. **Active membership of this workspace.** A suspended member keeps their row and loses their
+   notifications — otherwise somebody whose access was revoked keeps receiving a running commentary
+   on the client they were removed from.
+2. **The permission the kind requires**, plus a second where the kind names one. A spend change
+   reaches only the people who hold `budgets.approve`: telling five people when three of them cannot
+   approve it is how a bell comes to be ignored, and it invites somebody to a decision the server
+   refuses.
+3. **Visibility of what it is about.** `projects.view_all` sees everything; everybody else is
+   narrowed to their assigned projects, with the same "a record with no project is reached through
+   its client" rule the boards use.
+
+And **nobody is ever told what they just did.** `Announce` drops the actor before anything is
+written. Unassigning tells nobody: there is no new owner, and notifying the person it was taken from
+would be a complaint rather than a task.
+
+## Announcing must never fail the action it describes
+
+`Announce` catches and reports, like the audit recorder, for the same reason: an approval that was
+recorded but whose notification threw would leave a decision made, a requester never told, and a
+caller shown a failure for something that did happen.
+
+An empty recipient list is a legitimate outcome, not an error. A one-person workspace assigning
+themselves a task has nobody to tell, and a workspace where nobody can decide a spend change has a
+permissions problem rather than a notification problem.
+
+## Waiting, not unread
+
+| Figure | Means |
+| ------ | ----- |
+| `unread` | How many notifications have not been opened |
+| `waiting` | Unread **and** of a kind the reader is expected to act on |
+
+`waiting` is what the bell carries and what the page leads with. "Twelve unread" measures how long
+somebody has been away; "two waiting on you" is a to-do list. Being told an answer is unread without
+being waiting, and that distinction is what keeps the number trustworthy.
+
+The bell shows **no badge** when nothing is waiting, and a plain dot — not a count — for things that
+are merely unread. A dot that is always there is a dot nobody reads, and a zero in a badge is a
+number pretending to be information.
+
+Every count is aggregated in SQL in one grouped query. A badge computed from whatever is in a
+browser's cache disagrees with the list below it, and a person who has seen that disagreement stops
+believing the badge. Marking one read returns the **whole feed** for the same reason: a client
+decrementing the counts itself would be a second implementation of arithmetic that does not know
+which kinds count as waiting.
+
+## What the schema holds
+
+One row per recipient — fan-out at write time, in one insert. A single row with a list of recipients
+cannot record that one of them has read it, which is the only state that matters.
+
+Deliberately **not** Laravel's own `notifications` table: that one is polymorphic over a notifiable,
+carries untyped JSON and has no workspace column, and this module needs the opposite of all three.
+
+**The sentence is stored as it was announced.** `title` and `body` are a record of what was said, not
+a template rendered later. A notification whose wording changes when the underlying record changes is
+not a record of anything — and a notification about something since deleted keeps its sentence and
+loses only its link.
+
+`read_at` is nullable and nothing else records read state. No boolean beside it to disagree with.
+Marking something read twice is not an error and does not move the time it was first read.
+
+## Reading them needs no permission
+
+The one query in this product with no permission check, and that is correct: every row is scoped to
+the reader's own user id, and the permission that decided whether they could be told was checked when
+the notification was written. A second gate would mean somebody who lost a permission could no longer
+read a notification they had already been sent — the record of having been told would disappear,
+which is worse than not having been told.
+
+Marking read is scoped by workspace **and** user in the WHERE clause, so there is no path where a
+guessed id marks somebody else's notification read. A request for somebody else's row answers **404
+rather than 403**: "forbidden" would confirm the notification exists and belongs to someone else.
+
+## Realtime
+
+**One private channel per person per workspace**, and nothing broader. A workspace-wide channel would
+be shorter and would mean every member's browser receiving every notification and filtering it
+client-side — which is not filtering, it is delivery followed by politeness.
+
+`ChannelAuthorizer` is the access control on the realtime layer: identity, plus active membership,
+re-checked on **every** subscription. Somebody suspended between opening the page and the next
+notification must stop receiving them, and a socket authorised once would otherwise keep delivering
+for as long as the tab stayed open. `/broadcasting/auth` carries `web` and `auth` middleware, so an
+unauthenticated subscription is a 401 rather than a channel rule quietly returning false.
+
+### The payload is a signal, not the notification
+
+The socket carries the id, the kind, whether it needs action, and when it arrived. **No title, no
+body, no subject.** The browser treats the event as "go and read the feed", which it does over the
+authenticated endpoint that already decides what a reader may see.
+
+One extra request buys a property worth having: the contents of a notification never travel over a
+socket. A payload is the one place in a codebase where a field added without thinking is delivered to
+a browser whose permissions nobody re-checked, and this shape makes that impossible rather than
+unlikely. It also keeps the shaping of a notification for a reader in exactly one place.
+
+### Realtime is optional, and both sides must agree
+
+With no key there is no WebSocket server to reach: `connectRealtime()` returns null, nothing
+subscribes, the page says live updates are off, and notifications arrive on the next read — later,
+never missing. Throwing would break a page over a feature it does not need; attempting a connection
+anyway would fill every console with retrying socket errors until nobody reads the console.
+
+**"Live" requires both sides**, and taking the server's word alone was a real defect caught by the
+end-to-end suite: a checkout with `BROADCAST_CONNECTION=reverb` and no app key told every reader the
+page was live while nothing was subscribed. Two fixes, both at the source:
+
+- `isConfigured()` on the server requires a **key**, not just a connection name. A connection with no
+  key is a configuration half-finished, not a feature.
+- The page requires the server's answer **and** its own browser having a key to subscribe with.
+
+When it is polling, the feed refetches every sixty seconds — long enough not to be chatty, short
+enough that a bell is not an hour stale. A page being pushed to does not poll at all.
+
+Echo and Pusher are **dynamic imports**: 73 kB that a build which never connects never pays for.
+
+## The notifications API
+
+| Method | Path | Notes |
+| ------ | ---- | ----- |
+| `GET` | `/api/notifications` | `unread`, `limit` |
+| `GET` | `/api/notifications/vocabulary` | The kinds and the permission each requires |
+| `POST` | `/api/notifications/{notification}/read` | Returns the whole feed |
+| `POST` | `/api/notifications/read-all` | Returns the feed, and how many were cleared |
+
+## A note on testing the channel
+
+`Broadcast::channel()` registers on whichever broadcaster was default when `routes/channels.php` was
+loaded, and neither the `null` nor the `log` driver consults the channel callbacks — both have an
+empty `auth()`. A test that switched the connection and asserted a refusal would therefore pass
+**without the rule existing at all**, because an unregistered channel and a denied one produce the
+same 403.
+
+`tests/Feature/Notifications/BroadcastChannelTest.php` re-requires the channels file against the new
+driver, and the first test in it — the one expecting a subscription to *succeed* — is what proves the
+rule is wired. That trap is recorded in the file, because it is the kind of thing that looks like a
+passing test suite.
+
 ---
 
 ## Not done in this slice
 
 - **Client requests.** Intake from a client, triage, and the link to the work it produces.
-- **Notifications and realtime.** Reverb is configured on the backend; nothing broadcasts yet and
-  the frontend has no Echo client. Until it does, the board and the queue are refreshed by their
-  fifteen-second staleness window, not pushed. An approval waiting for a decision is exactly the
-  thing a notification is for, so this is the next slice.
+- **Notifications on anything other than the four kinds above.** No digest, no grouping, no
+  collapsing: each event is one notification. Grouping is where a notification centre starts deciding
+  what somebody has already seen, and it is wrong about it.
+- **Notification preferences.** Nobody can turn a kind off. Four kinds that each need action is not
+  a stream worth filtering, and a preference screen would be an invitation to switch off the approval
+  notifications — which are the ones that matter.
+- **E-mail or push delivery.** In-app only. Sending mail needs a transport, a template system and an
+  unsubscribe story, none of which this slice would do well.
+- **Realtime on the boards themselves.** The bell is pushed to; the task board and the approval queue
+  still refresh on their fifteen-second staleness window. Pushing a board means reconciling a
+  server-aggregated figure with a local mutation, and doing that badly produces counts that drift.
 - **Provider write operations**, which is what would make an approval enactable. Phase 24. Until
   then the engine is the gate those writes will pass through, and it says so on every request.
 - **Raising a request from the interface.** The API accepts one and the demo seeds five; the surface
