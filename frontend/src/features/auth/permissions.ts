@@ -44,6 +44,14 @@ export const PERMISSIONS = {
   leadsManage: 'leads.manage',
   trackingView: 'tracking.view',
   trackingManage: 'tracking.manage',
+  /*
+   * Approving is separate from managing for the same reason approving a budget is: producing the work
+   * and signing it off are different acts, and the separation is what makes "approved" mean anything on
+   * an approval trail.
+   */
+  creativeView: 'creative.view',
+  creativeManage: 'creative.manage',
+  creativeApprove: 'creative.approve',
   auditView: 'audit.view',
 } as const;
 

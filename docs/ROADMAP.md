@@ -33,7 +33,7 @@ sit.
 | 16    | **Customer journeys** — identity evidence, identity confidence, conversion timelines | **Complete for what the data supports**; multi-touch journeys need event-level data this product does not have — see docs/JOURNEYS.md. The timeline surface ships with the Lead Center |
 | 17    | **Visualisation layer** — a measured chart palette with executable gates, mark specs in one module, a chart frame carrying source state and a table twin, the Lead Center and the journey timeline | **Complete** |
 | 18    | **Attribution** — models with coverage, data quality, confidence and revenue source on every figure, and a surface that leads with coverage | **Complete for what the data supports**; three models need a touch path this product does not hold, and are declared, explained and refused — see docs/ATTRIBUTION.md |
-| 19    | **Creative operations** — briefs, requests, assets, versions, specs, validation, comments, approval workflow, Kanban | Planned |
+| 19    | **Creative operations** — briefs, versions, recorded platform specifications with provenance, validation that refuses to say "valid", comments with an audience, an approval trail attached to versions, and a board | **Complete for what the platforms publish**; the platforms do not expose creative specifications in a machine-readable form, so they are recorded with their source and age — see docs/CREATIVE.md. File upload and measurement are the next slice |
 | 20    | **Operations** — tasks, approvals engine, client requests, notifications and realtime | Planned |
 | 21    | **Reporting** — report builder, saved reports, exports, secure client live reports and snapshots | Planned |
 | 22    | **Client portal** — per-module visibility, never leaking internal notes | Planned |

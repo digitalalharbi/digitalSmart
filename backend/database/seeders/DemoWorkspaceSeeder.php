@@ -6,6 +6,14 @@ namespace Database\Seeders;
 
 use App\Application\Advertising\Command\SyncBoundAccount;
 use App\Application\Commerce\Command\SyncStore;
+use App\Application\Creative\Command\AddCreativeVersion;
+use App\Application\Creative\Command\CommentOnRequest;
+use App\Application\Creative\Command\DecideOnVersion;
+use App\Application\Creative\Command\MoveCreativeRequest;
+use App\Application\Creative\Command\OpenCreativeRequest;
+use App\Application\Creative\DTO\CommentInput;
+use App\Application\Creative\DTO\CreativeRequestInput;
+use App\Application\Creative\DTO\VersionInput;
 use App\Application\Leads\Command\ChangeLeadStage;
 use App\Application\Leads\Command\RecordLead;
 use App\Application\Leads\DTO\LeadInput;
@@ -17,6 +25,11 @@ use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\SystemRole;
 use App\Domain\Client\ClientStatus;
 use App\Domain\Commerce\OrderAttribution;
+use App\Domain\Creative\ApprovalOutcome;
+use App\Domain\Creative\AssetKind;
+use App\Domain\Creative\AssetMeasurements;
+use App\Domain\Creative\CommentVisibility;
+use App\Domain\Creative\CreativeState;
 use App\Domain\Identity\UserId;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
@@ -126,6 +139,7 @@ final class DemoWorkspaceSeeder extends Seeder
         $this->demoSignals($workspace->getKey());
         $this->demoCommerce($workspace->getKey());
         $this->demoLeads($workspace->getKey());
+        $this->demoCreative($workspace->getKey());
 
         $actor->clear();
 
@@ -551,5 +565,129 @@ final class DemoWorkspaceSeeder extends Seeder
             $result->status->value,
             $result->ordersWritten,
         ));
+    }
+
+    /**
+     * A creative board with work on it, in every state that matters.
+     *
+     * Built through the real use cases, so the demo exercises the rules rather than bypassing them: an
+     * approval attaches to a version, a rejection carries its reason, and a version added after an approval
+     * sends the work back for review. The honest part is what the specification checks say — one piece of work
+     * is checked against a Snapchat specification read from Snapchat's own developer documentation, and the
+     * rest report "no spec recorded", which is what most placements genuinely are.
+     */
+    private function demoCreative(mixed $workspaceId): void
+    {
+        /** @var list<Client> $clients */
+        $clients = Client::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('status', ClientStatus::Active->value)
+            ->orderBy('created_at')
+            ->get()
+            ->all();
+
+        $client = $clients[0] ?? null;
+
+        if ($client === null) {
+            return;
+        }
+
+        /** @var Project|null $project */
+        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->first();
+
+        $open = app(OpenCreativeRequest::class);
+        $move = app(MoveCreativeRequest::class);
+        $addVersion = app(AddCreativeVersion::class);
+        $decide = app(DecideOnVersion::class);
+        $comment = app(CommentOnRequest::class);
+
+        $brief = static fn (string $title, AssetKind $kind, ?string $provider, ?string $placement, int $dueInDays): CreativeRequestInput => new CreativeRequestInput(
+            clientId: (string) $client->getKey(),
+            title: $title,
+            kind: $kind,
+            projectId: $project === null ? null : (string) $project->getKey(),
+            brief: 'SANDBOX brief. Produced for the demo workspace, not for a client.',
+            provider: $provider,
+            placement: $placement,
+            dueAt: (new DateTimeImmutable('now'))->modify('+'.$dueInDays.' days'),
+        );
+
+        // 1. Approved work, checked against a recorded Snapchat specification and passing.
+        $approved = $open($brief('Ramadan Story preview', AssetKind::Image, 'snapchat', 'story_ad_preview_image', 6));
+        $move($approved->id, CreativeState::Briefed);
+        $move($approved->id, CreativeState::InProduction);
+        $withVersion = $addVersion($approved->id, new VersionInput(
+            kind: AssetKind::Image,
+            measurements: new AssetMeasurements(widthPx: 360, heightPx: 600, fileSizeBytes: 740_000, format: 'png'),
+            label: 'Cut 1',
+            storagePath: 'sandbox/creative/ramadan-story-v1.png',
+        ));
+        $move($approved->id, CreativeState::InReview);
+        $version = $withVersion->latestVersion();
+
+        if ($version !== null) {
+            $decide($version->id, ApprovalOutcome::Approved);
+        }
+
+        $comment($approved->id, new CommentInput(
+            body: 'Signed off on the call. Keep this framing for the follow-up.',
+            visibility: CommentVisibility::Client,
+        ));
+
+        // 2. Work sent back, with a reason — and a failing check that says which number is wrong.
+        $rejected = $open($brief('App end card', AssetKind::Image, 'snapchat', 'app_end_card', 3));
+        $move($rejected->id, CreativeState::Briefed);
+        $move($rejected->id, CreativeState::InProduction);
+        $withRejected = $addVersion($rejected->id, new VersionInput(
+            kind: AssetKind::Image,
+            // Too small and too heavy for the recorded specification, deliberately.
+            measurements: new AssetMeasurements(widthPx: 640, heightPx: 1138, fileSizeBytes: 2_400_000, format: 'png'),
+            label: 'Cut 1',
+            storagePath: 'sandbox/creative/end-card-v1.png',
+        ));
+        $move($rejected->id, CreativeState::InReview);
+        $rejectedVersion = $withRejected->latestVersion();
+
+        if ($rejectedVersion !== null) {
+            $decide($rejectedVersion->id, ApprovalOutcome::ChangesRequested, 'Below the minimum width, and over the file size limit.');
+        }
+
+        $comment($rejected->id, new CommentInput(
+            body: 'Export at 1080 wide and compress harder before the next review.',
+            visibility: CommentVisibility::Internal,
+        ));
+
+        // 3. Work on a placement nobody has a specification for, so the check honestly says so.
+        $unchecked = $open($brief('Reels launch film', AssetKind::Video, 'meta', 'reels', 9));
+        $move($unchecked->id, CreativeState::Briefed);
+        $move($unchecked->id, CreativeState::InProduction);
+        $addVersion($unchecked->id, new VersionInput(
+            kind: AssetKind::Video,
+            measurements: new AssetMeasurements(
+                widthPx: 1080,
+                heightPx: 1920,
+                fileSizeBytes: 18_400_000,
+                durationSeconds: 21.5,
+                format: 'mp4',
+            ),
+            label: 'Rough cut',
+            storagePath: 'sandbox/creative/reels-launch-v1.mp4',
+        ));
+
+        // 4. A brief nobody has started, and one whose file could not be measured at all.
+        $open($brief('Eid carousel concepts', AssetKind::Carousel, null, null, 14));
+
+        $unmeasured = $open($brief('Headline options', AssetKind::Copy, 'snapchat', 'headline', 2));
+        $move($unmeasured->id, CreativeState::Briefed);
+        $move($unmeasured->id, CreativeState::InProduction);
+        $addVersion($unmeasured->id, new VersionInput(
+            kind: AssetKind::Copy,
+            // Thirty-eight characters, against a recorded maximum of thirty-four.
+            measurements: new AssetMeasurements(textLength: 38),
+            label: 'Option A',
+            body: 'Everything you need, before Ramadan ends',
+        ));
+
+        $this->command?->line('  Creative: 5 requests briefed, one approved, one sent back with a reason.');
     }
 }

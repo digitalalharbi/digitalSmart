@@ -75,6 +75,18 @@ export const queryKeys = {
     containers: () => ['measurement', 'containers'] as const,
     readiness: (sourceId: string) => ['measurement', 'readiness', sourceId] as const,
   },
+  creative: {
+    all: () => ['creative'] as const,
+    vocabulary: () => ['creative', 'vocabulary'] as const,
+    specs: () => ['creative', 'specs'] as const,
+    board: (scope: Record<string, unknown>) => ['creative', 'board', scope] as const,
+    /*
+     * One key per request. A request carries its versions' spec verdicts, which are composed against the
+     * newest recorded specification — so two requests must not share a cache entry and a stale one must not
+     * outlive a write.
+     */
+    request: (requestId: string) => ['creative', 'request', requestId] as const,
+  },
   attribution: {
     all: () => ['attribution'] as const,
     models: () => ['attribution', 'models'] as const,

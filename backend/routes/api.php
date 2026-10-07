@@ -12,6 +12,7 @@ use App\Interface\Http\Controller\Budget\PacingController;
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Commerce\StoreAnalyticsController;
 use App\Interface\Http\Controller\Commerce\StoreWebhookController;
+use App\Interface\Http\Controller\Creative\CreativeController;
 use App\Interface\Http\Controller\Dashboard\DashboardController;
 use App\Interface\Http\Controller\Dashboard\SavedViewController;
 use App\Interface\Http\Controller\Identity\SessionController;
@@ -265,6 +266,29 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::get('attribution/comparison', [AttributionController::class, 'comparison'])
         ->name('attribution.comparison');
     Route::get('attribution', [AttributionController::class, 'show'])->name('attribution.show');
+
+    /*
+     * Creative operations. The vocabulary first, so a board never carries its own copy of the legal moves —
+     * a front end that did would offer a drop target the server refuses.
+     */
+    Route::get('creative/vocabulary', [CreativeController::class, 'vocabulary'])->name('creative.vocabulary');
+    Route::get('creative/specs', [CreativeController::class, 'specs'])->name('creative.specs');
+    Route::get('creative/board', [CreativeController::class, 'board'])->name('creative.board');
+    Route::post('creative', [CreativeController::class, 'store'])->name('creative.store');
+    Route::get('creative/{creative}', [CreativeController::class, 'show'])
+        ->whereUuid('creative')->name('creative.show');
+    Route::post('creative/{creative}/state', [CreativeController::class, 'move'])
+        ->whereUuid('creative')->name('creative.move');
+    Route::post('creative/{creative}/versions', [CreativeController::class, 'addVersion'])
+        ->whereUuid('creative')->name('creative.versions.store');
+    Route::post('creative/{creative}/comments', [CreativeController::class, 'comment'])
+        ->whereUuid('creative')->name('creative.comments.store');
+    /*
+     * The decision is on a **version**, and the route says so. A path under the request would invite an
+     * endpoint that approves "the request", which is the one thing an approval trail must not record.
+     */
+    Route::post('creative-versions/{version}/decision', [CreativeController::class, 'decide'])
+        ->whereUuid('version')->name('creative.versions.decide');
     /*
      * One person's history. Enquiries and orders only: the marketing touches before them need event-level data
      * this product does not have, and the response says so rather than implying a complete picture.

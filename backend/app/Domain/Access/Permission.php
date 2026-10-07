@@ -63,6 +63,16 @@ enum Permission: string
     case TrackingView = 'tracking.view';
     case TrackingManage = 'tracking.manage';
 
+    // Creative operations
+    case CreativeView = 'creative.view';
+    case CreativeManage = 'creative.manage';
+    /*
+     * Separate from managing, for the same reason approving a budget is: producing the work and signing
+     * it off are different acts, and the separation is the only thing that makes "approved" mean
+     * anything on an approval trail.
+     */
+    case CreativeApprove = 'creative.approve';
+
     // Auditability
     case AuditView = 'audit.view';
 
@@ -100,6 +110,9 @@ enum Permission: string
             self::ProjectsManageMembers => 'Assign people to projects',
             self::LeadsView => 'View the lead pipeline',
             self::LeadsManage => 'Work and qualify leads',
+            self::CreativeView => 'View creative requests, versions and their approval trail',
+            self::CreativeManage => 'Brief creative work, move it along and upload versions',
+            self::CreativeApprove => 'Approve a version, or send it back with a reason',
             self::AnalyticsView => 'View performance analytics',
             self::AnalyticsExport => 'Export analytics data',
             self::SavedViewsManage => 'Create and share saved views',

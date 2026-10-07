@@ -63,6 +63,15 @@ enum AuditAction: string
     case ConversionChanged = 'measurement.conversion_changed';
     case ConversionDeleted = 'measurement.conversion_deleted';
 
+    case CreativeRequested = 'creative.requested';
+    case CreativeMoved = 'creative.moved';
+    case CreativeVersionAdded = 'creative.version_added';
+    /*
+     * The entry an approval trail is for. It names the version, not the request: "approved" without a
+     * version number is the claim a client disputes three months later and nobody can settle.
+     */
+    case CreativeDecided = 'creative.decided';
+
     case WorkspaceMemberInvited = 'workspace.member_invited';
     case WorkspaceMemberRoleChanged = 'workspace.member_role_changed';
     case WorkspaceMemberSuspended = 'workspace.member_suspended';

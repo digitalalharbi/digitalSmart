@@ -54,3 +54,7 @@ export const LeadCentrePage = lazy(async () => ({
 export const AttributionPage = lazy(async () => ({
   default: (await import('@/features/attribution/AttributionPage')).AttributionPage,
 }));
+
+export const CreativeHubPage = lazy(async () => ({
+  default: (await import('@/features/creative/CreativeHubPage')).CreativeHubPage,
+}));

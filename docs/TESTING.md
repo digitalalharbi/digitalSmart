@@ -135,6 +135,18 @@ weakened checks:
   browser gets Arabic, right to left, with Latin digits, without touching a
   toggle.
 
+## The suite's own memory
+
+`phpunit.xml` raises `memory_limit` to **1G**. The architecture tests parse every source file to build their
+object graph, so the suite's need grows with the codebase rather than with any one test: the default 128M was
+exhausted around Phase 3, and 512M carried it to roughly 1,125 tests before dying mid-run at about 1,150 — in
+the Analytics suite rather than in whatever had actually grown.
+
+The failure mode is what makes the headroom worth having. A fatal error naming a vendor file partway through a
+run reads as a broken test, and the first instinct is to go and look at the test. Running the suite in parallel
+would bound this per process instead and is the better answer once creating per-worker databases is part of the
+local setup.
+
 ## Database strategy
 
 Feature tests run against **real PostgreSQL** (`digitalsmart_test`), never SQLite. The

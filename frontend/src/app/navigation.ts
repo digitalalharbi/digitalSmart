@@ -58,7 +58,9 @@ export const NAV_ITEMS: readonly NavItem[] = [
     labelKey: 'nav.creativeHub',
     icon: 'Palette',
     section: 'work',
-    phase: 'Phase 18',
+    phase: 'Phase 19',
+    // The permission the endpoints check. A client viewer is refused outright.
+    permission: 'creative.view',
   },
   { path: '/tasks', labelKey: 'nav.tasks', icon: 'ListChecks', section: 'work', phase: 'Phase 19' },
   {

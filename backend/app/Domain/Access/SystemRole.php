@@ -88,6 +88,9 @@ enum SystemRole: string
                 Permission::TrackingManage,
                 Permission::LeadsView,
                 Permission::LeadsManage,
+                Permission::CreativeView,
+                Permission::CreativeManage,
+                Permission::CreativeApprove,
                 Permission::AuditView,
             ],
 
@@ -121,6 +124,13 @@ enum SystemRole: string
                  */
                 Permission::LeadsView,
                 Permission::LeadsManage,
+                /*
+                 * Briefs the work and signs it off, because they are the person in the conversation with
+                 * the client about whether it is right.
+                 */
+                Permission::CreativeView,
+                Permission::CreativeManage,
+                Permission::CreativeApprove,
                 Permission::AuditView,
             ],
 
@@ -151,6 +161,11 @@ enum SystemRole: string
                  * what you bought is not a judgement to hand to the buyer.
                  */
                 Permission::LeadsView,
+                /*
+                 * Reads the creative that will run on their campaigns, and signs nothing off. A buyer
+                 * approving the work they asked for removes the only check on it.
+                 */
+                Permission::CreativeView,
             ],
 
             self::Creative => [
@@ -158,6 +173,12 @@ enum SystemRole: string
                 Permission::UsersView,
                 Permission::ClientsView,
                 Permission::ProjectsViewAssigned,
+                /*
+                 * The role the creative surface exists for: reads the brief, uploads versions, moves the
+                 * work along — and does not approve its own work, which is the whole point of a trail.
+                 */
+                Permission::CreativeView,
+                Permission::CreativeManage,
             ],
 
             /*

@@ -14,6 +14,7 @@ import { PlaceholderPage } from '@/features/placeholder';
 import {
   AnalyticsPage,
   AttributionPage,
+  CreativeHubPage,
   BudgetCalculatorPage,
   CampaignsPage,
   DashboardsPage,
@@ -43,6 +44,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/tracking': deferred(<TrackingCenterPage />),
   '/leads': deferred(<LeadCentrePage />),
   '/attribution': deferred(<AttributionPage />),
+  '/creative-hub': deferred(<CreativeHubPage />),
   '/commerce': deferred(<StoreAnalyticsPage />),
 };
 

@@ -1100,5 +1100,84 @@
       "spend": "Spend",
       "roas": "Return on spend"
     }
+  },
+  "creative": {
+    "title": "Creative Hub",
+    "subtitle": "Briefs, the versions produced for them, what each file measures against the platform's own requirements, and who signed off on which one.",
+    "loadFailed": "Could not load the creative board. Try again in a moment.",
+    "board": "The board",
+    "counts": "Creative summary",
+    "denied": {
+      "title": "The Creative Hub is not part of your access",
+      "body": "It carries internal notes and work nobody has approved yet. Ask a workspace owner if you need it."
+    },
+    "scope": {
+      "client": "Client",
+      "allClients": "All clients"
+    },
+    "count": {
+      "open": "Open",
+      "waiting": "Waiting on a reviewer",
+      "overdue": "Overdue",
+      "needsAttention": "Needs attention"
+    },
+    "card": {
+      "versions": "{{count}} version",
+      "versions_other": "{{count}} versions",
+      "overdue": "Overdue",
+      "due": "Due in {{days}} days",
+      "noPlacement": "No placement"
+    },
+    "workload": {
+      "title": "Where the work sits",
+      "subtitle": "Requests per stage, in the order work moves through them",
+      "stage": "Stage",
+      "count": "Requests",
+      "caveat": "Cancelled work is left out: it is not a stage work passes through, and counting it would make an abandoned brief look like a bottleneck at the end.",
+      "emptyTitle": "Nothing on the board",
+      "emptyBody": "No creative has been briefed for this scope yet.",
+      "aria": "How many creative requests sit at each stage, darkening towards the end of the process."
+    },
+    "coverage": {
+      "title": "What can be checked",
+      "subtitle": "The placements with a recorded specification",
+      "why": "The platforms do not publish their creative requirements in a form a program can read, so each of these was read off a platform's own page and recorded with the date. Any placement not listed here reports \"no spec recorded\" — which means work going out on it is not checked against anything.",
+      "stale": "May be out of date",
+      "read": "Read {{date}} · {{days}} days ago"
+    },
+    "spec": {
+      "blocks": "Would be rejected",
+      "noSpec": "Nobody has recorded a specification for this placement, so nothing was checked. That is a gap in this product, not a problem with the file.",
+      "notMeasured": "Not measured",
+      "source": "Read from the platform's own page on {{date}}, {{days}} days ago.",
+      "openSource": "Open the source"
+    },
+    "measure": {
+      "size": "Size",
+      "ratio": "Ratio",
+      "format": "Format",
+      "duration": "Duration",
+      "length": "Characters"
+    },
+    "detail": {
+      "pickTitle": "Choose a piece of work",
+      "pickBody": "Its brief, its versions and the decisions made on each appear here.",
+      "versions": "Versions",
+      "version": "Version {{number}}",
+      "undecided": "Not decided",
+      "noVersionsTitle": "Nothing produced yet",
+      "noVersionsBody": "There is nothing to check or approve until a version is added.",
+      "staleApproval": "This request is marked approved, and its newest version has not been decided on. The approval belongs to the earlier file — do not tell the client the latest cut is signed off.",
+      "noPlacement": "No placement decided, so nothing can be checked against a specification",
+      "approve": "Approve this version",
+      "requestChanges": "Request changes",
+      "whatToChange": "What needs to change",
+      "sendBack": "Send it back",
+      "comments": "Comments",
+      "addComment": "Add a comment",
+      "audience": "Who is this for",
+      "audienceHint": "Chosen every time, never remembered. An internal note reaching the client is not a mistake worth risking.",
+      "postComment": "Post"
+    }
   }
 }

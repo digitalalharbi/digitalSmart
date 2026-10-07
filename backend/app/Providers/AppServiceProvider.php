@@ -24,6 +24,8 @@ use App\Application\Commerce\Contract\StoreOrderMapperRegistry as StoreOrderMapp
 use App\Application\Commerce\Contract\WebhookEventJournal;
 use App\Application\Commerce\Contract\WebhookEventReader;
 use App\Application\Commerce\Contract\WebhookSignatureVerifier;
+use App\Application\Creative\Contract\CreativeRepository;
+use App\Application\Creative\Contract\CreativeSpecRegistry;
 use App\Application\Dashboard\Contract\DashboardRepository;
 use App\Application\Dashboard\Contract\SavedViewRepository;
 use App\Application\Identity\Contract\Authenticator;
@@ -69,6 +71,7 @@ use App\Infrastructure\Commerce\CommerceSyncAdapterRegistry;
 use App\Infrastructure\Commerce\Sandbox\CommerceFixtures;
 use App\Infrastructure\Commerce\StoreOrderMapperRegistry;
 use App\Infrastructure\Commerce\Webhook\StoreWebhookVerifiers;
+use App\Infrastructure\Creative\EloquentCreativeSpecRegistry;
 use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
 use App\Infrastructure\Integration\LaravelCredentialCipher;
@@ -93,6 +96,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCommerceStore;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCreativeRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDashboardRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentEventDefinitionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
@@ -202,6 +206,8 @@ final class AppServiceProvider extends ServiceProvider
         StoreLocator::class => EloquentStoreLocator::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
         AttributionReadModel::class => EloquentAttributionReadModel::class,
+        CreativeSpecRegistry::class => EloquentCreativeSpecRegistry::class,
+        CreativeRepository::class => EloquentCreativeRepository::class,
 
         // Leads (Phase 15)
         LeadRepository::class => EloquentLeadRepository::class,

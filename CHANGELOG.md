@@ -4,6 +4,79 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 19 — creative operations
+
+Briefs, versions, approvals, comments, and the checking of a file against what a platform asks for. The
+phase began with research and the research is what shaped it.
+
+### The finding
+
+**The advertising platforms do not publish their creative specifications in any form a program can read.**
+Established rather than assumed: Meta's Marketing API reference states that limits exist and points at a
+marketing page rendered by JavaScript, whose own hub does not carry the numbers either; TikTok's business
+portal is a JavaScript shell with nothing in the fetched document; the third-party guides that aggregate
+these numbers disagree with each other and go stale silently. **Snapchat is the exception** — its developer
+documentation states concrete numbers, and those are recorded.
+
+So a specification in this product is **data a person recorded, with the page they read it on and the date
+they read it**, and most placements have none. Saying so is the feature: the list of placements with no
+recorded requirement is the list an agency's work goes out on unchecked.
+
+### Added
+
+- `app/Domain/Creative/` — `CreativeState` with its legal moves as data, `SpecVerdict`, `SpecRequirement`,
+  `SpecBound`, `SpecProvenance`, `AssetMeasurements`, `CreativeSpec`, `SpecReport`, `ApprovalOutcome`,
+  `CommentVisibility` and `AssetKind`.
+- **Five verdicts, and only one of them is "valid".** `pass`, `fail`, `unchecked`, `no_spec`, `stale`. An
+  asset's overall verdict is the **weakest** of its checks, because eleven passes and one unmeasured
+  dimension is an unchecked asset and a green tick over a set containing an unknown is how a creative tool
+  misleads somebody until the platform rejects the upload. **Only a measured failure blocks a publish** —
+  blocking on this product's own gaps would teach people to click past warnings.
+- **Specifications go stale and say so.** Past six months a pass becomes `stale` and a failure stays a
+  failure: an asset inside a requirement nobody has re-read since last year is not evidence that today's
+  platform agrees, while an asset outside one is still worth looking at.
+- **Bounds say what the platform said** — "at least", "at most", "one of", "between" — because flattening
+  them into one shape would mean inventing a maximum nobody published, and an invented maximum rejects files
+  the platform accepts. An empty bound is legal and reports `unchecked`.
+- **An approval belongs to a version.** `creative_approvals` keys on the version and there is deliberately no
+  approval column on the request. A new version onto approved work sends it back to review and the earlier
+  approval stays attached to the file it was about; `newest_is_approved` makes a stale "approved" state
+  visible. Decisions are appended rather than replaced, so a file that was once rejected still shows it.
+- **Sending work back must say why**, enforced in the use case, the state machine and a database CHECK.
+- **A comment states its audience**, with no default in the DTO or the column, and the client-facing filter
+  lives in the query rather than in the caller.
+- `GET /api/creative/vocabulary` so no board carries its own copy of the legal moves; `GET /api/creative/specs`
+  so an agency can see exactly what is covered; the board, the request, the state change, versions, comments,
+  and the decision endpoint **under the version** rather than the request.
+- **The Creative Hub** (`features/creative`): a read-only board, a request detail showing both numbers for
+  every check and the page each requirement came from, the stale-approval warning, an explicit comment
+  audience, and a workload chart on the ordinal ramp — because the columns are stages of one process, so the
+  order belongs in the colour.
+- 24 domain tests, 24 feature tests, 10 page tests, 7 end-to-end tests, and `docs/CREATIVE.md`.
+- Demo seeding: five briefs covering an approval, a rejection with its reason, a passing check, a failing
+  check, a placement with no recorded specification, and a brief with no placement at all.
+
+### Fixed
+
+- **The test suite died partway through with a fatal error naming a vendor file.** The architecture tests
+  parse every source file, so the suite's memory need grows with the codebase: 512M carried it to roughly
+  1,125 tests and was exhausted at about 1,150, in the Analytics suite rather than in whatever had grown.
+  Raised to 1G, with the reasoning recorded — the failure mode reads as a broken test, which is what makes the
+  headroom worth having.
+
+### Decisions worth recording
+
+- **Specifications are not workspace-scoped and are read-only through the API.** They describe a platform
+  rather than a client, so one recording serves every tenant — and a workspace able to edit them would be
+  editing every other workspace's checks.
+- **The board cannot approve or cancel.** An approval needs a version and a decider and a cancellation needs a
+  reason; a column drag has neither, and the trail would record that somebody approved something without
+  saying who approved what.
+- **A requirement an asset kind cannot have is not reported as unchecked.** A duration check on an image is
+  inapplicable, and filling a review with warnings nobody can act on is how reviewers learn to ignore them.
+- **Every write re-reads through the query a GET uses**, so a POST answers with exactly the shape a read does.
+  A write response missing the `spec` block would work until somebody relied on the field.
+
 ## Phase 18 — attribution
 
 The phase that turns "somebody bought something" into "this campaign earned the money" — the most

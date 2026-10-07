@@ -31,10 +31,20 @@
         <!--
             The architecture tests parse every source file to build their object
             graph, so the suite's memory need grows with the codebase rather
-            than with any one test. 512M leaves plenty of headroom; the default
-            128M is exhausted around the size this project already is.
+            than with any one test. The default 128M is exhausted around the
+            size this project reached in Phase 3; 512M carried it to about
+            1,125 tests and was exhausted mid-run at roughly 1,150, in the
+            Analytics suite rather than in whatever had grown.
+
+            1G rather than a smaller bump because the failure mode is
+            expensive: the suite dies partway with a fatal error naming a
+            vendor file, which reads as a broken test rather than as a limit.
+            Running the suite in parallel would bound this per process instead,
+            and is the better answer once creating per-worker databases is part
+            of the local setup. (A double hyphen cannot appear in an XML
+            comment, which is why that flag is described rather than written.)
         -->
-        <ini name="memory_limit" value="512M"/>
+        <ini name="memory_limit" value="1G"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
