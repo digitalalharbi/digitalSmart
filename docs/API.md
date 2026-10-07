@@ -889,3 +889,55 @@ is a model — first-touch, last-touch and linear disagree — and a model prese
 refuses. That belongs to the attribution phase, labelled as modelled.
 
 A lead the actor cannot reach is a `404` rather than an empty journey: an empty one would confirm the id exists.
+
+## Attribution
+
+`analytics.view`, the same permission the rest of the reporting surface uses. Attribution is a view of
+money already readable through analytics and commerce, and a separate permission would let somebody be
+granted the modelled view and denied the recorded one.
+
+### `GET /api/attribution/models`
+
+The catalogue, so no client hard-codes attribution vocabulary — the same rule the provider registry
+sets. It includes the three models that **cannot be computed**, each with `is_available: false`,
+`missing` and `would_unblock`. They are published rather than omitted because an absent option gets
+asked for again every quarter and an explained one does not.
+
+`is_modelled` is false for exactly one member, `last_recorded`, which reports the campaign the order
+arrived carrying. Every surface showing one of these figures is obliged to act on that field.
+
+### `GET /api/attribution`
+
+**`model` and `revenue_source` are both required, with no defaults.** Each is a decision that changes
+the answer — "last-recorded revenue from Salla" and "first-recorded revenue from GA4" are different
+claims about the same period, and neither is wrong — so a default would make the decision on somebody's
+behalf. A missing model answers `model_required` with both the full list and the computable subset;
+asking for one that needs a touch path answers `model_not_available` with what is missing and what would
+unblock it.
+
+`coverage` is not optional and is built from the same scan as the rows. It carries the **unattributed
+revenue as its own figure**, both coverage rates, the share of attributed conversions that name a
+campaign rather than a channel, the **weakest** evidence in the set, and a revenue-weighted confidence.
+`is_reportable` is false below 70%, at which point the interface leads with the coverage rather than the
+rows.
+
+Each row carries a `link` saying how firmly it ties to an ad campaign, and `link_explanation` saying why
+an empty spend cell is empty. **Only `exact_name` carries spend**, matched case-insensitively with
+surrounding space removed and nothing looser. `roas` is null wherever it would be meaningless: no spend,
+zero spend, a link that does not join spend, or two different currencies.
+
+`unmatched_spend_minor` is ad spend in the period that no attributed revenue was matched to — half the
+question an agency is asked.
+
+`lookback_days` applies to models that read a person's history and is published with the answer, because
+a different window credits different campaigns for the same orders.
+
+### `GET /api/attribution/comparison`
+
+Every available model over one period, plus `campaigns` with each model's figure and the spread between
+them. `material_disagreements` counts the campaigns where the choice of model moves the figure by more
+than a fifth — the number the surface leads with, because that is the honest headline.
+
+A campaign absent from a model's rows is **zero** when that model's breakdown was not truncated and
+**null** when it was: the first is a real disagreement, the second would be a pagination artefact
+reported as one.

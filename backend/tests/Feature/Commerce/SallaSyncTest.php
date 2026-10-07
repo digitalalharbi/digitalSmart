@@ -198,7 +198,13 @@ describe('what the figures mean', function (): void {
          * report shows the second as unattributed rather than dividing it among whatever was running.
          */
         expect($attributed->attribution_evidence)->toBe('click_identifier')
-            ->and($attributed->utm_campaign)->toBe('eid-launch')
+            /*
+             * The fixture names a campaign that exists in the sandbox ad account, so the demo
+             * workspace can show an attributed order matched to real spend. The value is demo content
+             * rather than part of Salla's shape; what is being asserted is that the mapper carries it
+             * through untouched.
+             */
+            ->and($attributed->utm_campaign)->toBe('SANDBOX — Alhambra | Ramadan Sales | KSA')
             ->and($unattributed->attribution_evidence)->toBe('none')
             ->and($unattributed->utm_campaign)->toBeNull();
     });

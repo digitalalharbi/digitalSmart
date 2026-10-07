@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Application\Advertising\Command\SyncBoundAccount;
+use App\Application\Commerce\Command\SyncStore;
 use App\Application\Leads\Command\ChangeLeadStage;
 use App\Application\Leads\Command\RecordLead;
 use App\Application\Leads\DTO\LeadInput;
@@ -32,6 +33,7 @@ use App\Infrastructure\Persistence\Eloquent\Model\Client;
 use App\Infrastructure\Persistence\Eloquent\Model\ExternalAccount;
 use App\Infrastructure\Persistence\Eloquent\Model\Project;
 use App\Infrastructure\Persistence\Eloquent\Model\ProjectIntegrationBinding;
+use App\Infrastructure\Persistence\Eloquent\Model\Store;
 use App\Infrastructure\Persistence\Eloquent\Model\User;
 use App\Infrastructure\Persistence\Eloquent\Model\WorkspaceMember;
 use App\Infrastructure\Workspace\WorkspaceProvisioner;
@@ -122,6 +124,7 @@ final class DemoWorkspaceSeeder extends Seeder
         $actor->bind(new UserId((string) $owner->getKey()), new WorkspaceId((string) $workspace->getKey()));
 
         $this->demoSignals($workspace->getKey());
+        $this->demoCommerce($workspace->getKey());
         $this->demoLeads($workspace->getKey());
 
         $actor->clear();
@@ -473,5 +476,80 @@ final class DemoWorkspaceSeeder extends Seeder
             LeadStage::Lost => [LeadStage::Contacted, LeadStage::Qualified, LeadStage::Lost],
             default => [],
         };
+    }
+
+    /**
+     * A Salla storefront in sandbox, synced, so the commerce and attribution surfaces have orders.
+     *
+     * The honest part of this demo is what it fails to match. One fixture order carries parameters
+     * naming a campaign that exists in the sandbox ad account, so a matched row with a real ROAS
+     * appears; the others carry a coupon, a bare click identifier, and nothing at all. That is roughly
+     * what a real account looks like, and it exercises every branch of the attribution join rather than
+     * the flattering one.
+     */
+    private function demoCommerce(mixed $workspaceId): void
+    {
+        /** @var Client|null $client */
+        $client = Client::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('status', ClientStatus::Active->value)
+            ->orderBy('created_at')
+            ->first();
+
+        if ($client === null) {
+            return;
+        }
+
+        $connections = app(ProviderConnectionRepository::class);
+        $provider = Provider::Salla;
+        $credentials = [];
+
+        foreach ($provider->requiredCredentialKeys() as $key) {
+            $credentials[$key] = Credentials::SANDBOX_TOKEN;
+        }
+
+        $existing = $connections->findForProvider(new WorkspaceId((string) $workspaceId), $provider);
+
+        if ($existing instanceof ProviderConnection) {
+            $existing->replaceCredentials(new Credentials($credentials));
+            $connection = $existing;
+        } else {
+            $connection = ProviderConnection::register(
+                id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
+                workspaceId: new WorkspaceId((string) $workspaceId),
+                provider: $provider,
+                name: 'SANDBOX — '.$provider->label(),
+                credentials: new Credentials($credentials),
+            );
+        }
+
+        $connections->save($connection);
+
+        $externalId = '1183363243';
+
+        /** @var Store $store */
+        $store = Store::query()->updateOrCreate(
+            ['workspace_id' => $workspaceId, 'provider' => $provider->value, 'external_id' => $externalId],
+            [
+                'client_id' => $client->getKey(),
+                'provider_connection_id' => $connection->id->value,
+                'name' => 'SANDBOX — Noon Retail storefront',
+                'currency' => 'SAR',
+                'timezone' => 'Asia/Riyadh',
+            ],
+        );
+
+        $result = app(SyncStore::class)(
+            (string) $workspaceId,
+            (string) $store->getKey(),
+            $provider,
+            $externalId,
+        );
+
+        $this->command?->line(sprintf(
+            '  Commerce: %s, %d orders written.',
+            $result->status->value,
+            $result->ordersWritten,
+        ));
     }
 }

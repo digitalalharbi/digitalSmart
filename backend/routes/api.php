@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Interface\Http\Controller\Analytics\AnalyticsController;
 use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
+use App\Interface\Http\Controller\Attribution\AttributionController;
 use App\Interface\Http\Controller\Audit\AuditLogController;
 use App\Interface\Http\Controller\Budget\BudgetController;
 use App\Interface\Http\Controller\Budget\ForecastController;
@@ -253,6 +254,17 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('leads/{lead}/stage', [LeadController::class, 'stage'])
         ->whereUuid('lead')->name('leads.stage');
     Route::get('leads/centre', [LeadController::class, 'centre'])->name('leads.centre');
+
+    /*
+     * Attribution. The catalogue first, so a client never hard-codes the model vocabulary and so the
+     * models this product cannot compute can be offered, explained and refused rather than quietly
+     * missing.
+     */
+    Route::get('attribution/models', [AttributionController::class, 'models'])
+        ->name('attribution.models');
+    Route::get('attribution/comparison', [AttributionController::class, 'comparison'])
+        ->name('attribution.comparison');
+    Route::get('attribution', [AttributionController::class, 'show'])->name('attribution.show');
     /*
      * One person's history. Enquiries and orders only: the marketing touches before them need event-level data
      * this product does not have, and the response says so rather than implying a complete picture.

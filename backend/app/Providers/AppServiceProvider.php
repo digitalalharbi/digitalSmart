@@ -10,6 +10,7 @@ use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegis
 use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Analytics\Contract\AnalyticsReadModel;
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Attribution\Contract\AttributionReadModel;
 use App\Application\Audit\Contract\AuditReadModel;
 use App\Application\Budget\Contract\BenchmarkReadModel;
 use App\Application\Budget\Contract\BudgetRepository;
@@ -76,6 +77,7 @@ use App\Infrastructure\Measurement\Adapter\GoogleTagManagerReadAdapter;
 use App\Infrastructure\Measurement\MeasurementSyncAdapterRegistry;
 use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAttributionReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBenchmarkReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadModel;
@@ -199,6 +201,7 @@ final class AppServiceProvider extends ServiceProvider
         WebhookEventReader::class => EloquentWebhookEventReader::class,
         StoreLocator::class => EloquentStoreLocator::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
+        AttributionReadModel::class => EloquentAttributionReadModel::class,
 
         // Leads (Phase 15)
         LeadRepository::class => EloquentLeadRepository::class,

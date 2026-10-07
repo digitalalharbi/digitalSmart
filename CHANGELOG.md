@@ -4,6 +4,73 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 18 — attribution
+
+The phase that turns "somebody bought something" into "this campaign earned the money" — the most
+quotable claim this product makes, and the easiest one to make indefensibly. So most of what landed
+here is a refusal.
+
+### Added
+
+- `app/Domain/Attribution/` — `AttributionModel`, `AttributionRequirement`, `AttributionCoverage` and
+  `CampaignLink`. One member of the model enum has `isModelled() === false`, and only one: `last_recorded`
+  reports the campaign the order arrived carrying, which is a record. Everything else is an opinion, and
+  every surface showing one is obliged to say so.
+- **Three models declared and refused.** Linear, position-based and time-decay need the sequence of
+  marketing touches before a conversion, which this product does not hold — the same finding Phase 16
+  recorded about journeys. Asking for one returns a 422 naming what is missing and what would unblock it
+  (a GA4 → BigQuery export, or first-party tracking). They are declared rather than omitted because an
+  absent option gets asked for again every quarter, and because computing something shaped like time-decay
+  from a single recorded touch would produce a number named after a model it is not.
+- **Coverage is a required part of every answer**, built from the same scan as the rows. It publishes the
+  unattributed revenue as its own figure, both coverage rates, the share of attributed conversions that
+  name a campaign rather than a channel, the **weakest** evidence in the set, and a revenue-weighted
+  confidence. The reportable threshold is 70% rather than 90%, because direct traffic, returning customers
+  and messaging apps that strip parameters land in the unattributed bucket legitimately and a threshold
+  nobody can reach is one everybody learns to ignore.
+- **Spend joined to attributed revenue, with the join's own honesty.** `CampaignLink` records how firmly
+  each row ties to an ad campaign, and only an exact campaign-name match carries spend — case and
+  surrounding space folded, nothing looser, because `autumn-range` and `autumn-range-v2` are two campaigns.
+  ROAS is null wherever it would be meaningless: no spend, zero spend, a link that does not join spend, or
+  two different currencies. Spend the orders never mentioned is reported rather than dropped.
+- **A comparison endpoint**, which is the honest surface. A model selector teaches a reader that one
+  option is right; running all of them and reporting where they disagree teaches the truth. A
+  disagreement is material above a fifth of the larger figure, and a campaign absent from a model's rows
+  is a zero when that model's breakdown was not truncated and null when it was — the first is a real
+  disagreement, the second would be a pagination artefact reported as one.
+- `GET /api/attribution/models`, `GET /api/attribution`, `GET /api/attribution/comparison`, 19 unit tests,
+  25 feature tests, and `docs/ATTRIBUTION.md`.
+- **The demo workspace now syncs a sandbox Salla storefront**, so commerce and attribution have orders.
+  What it demonstrates is the failure rather than the success: one campaign matched to real sandbox spend
+  with a ROAS of 0.21, one coupon-only order naming a campaign nobody connected, and most of the sandbox's
+  spend unmatched — roughly what a real account looks like before anybody fixes its tagging, and it
+  exercises every branch of the join rather than the flattering one.
+
+### Fixed
+
+- **No sandbox order was both paid and carrying campaign parameters**, so the Salla fixtures never
+  exercised attributed revenue at all — the figure this whole phase is built on. The existing attributed
+  order is cash on delivery and correctly maps to pending, which is a realistic case worth keeping, so a
+  paid order carrying marketing parameters was added beside it.
+
+### Decisions worth recording
+
+- **Every model runs over one scan of the same rows and groups in PHP.** Aggregating each model in its own
+  SQL statement would be faster and would mean a disagreement between two models could come from the two
+  queries differing rather than from the models differing — which is exactly what the comparison surface
+  exists to measure. The cost is a row-level read bounded by the date range; a materialised attribution
+  table is the answer when that stops being acceptable, and it would keep the same grouping code.
+- **`first_recorded` is a model of the person's earliest recorded *conversion*, not their first ad.** For a
+  customer who enquired through one campaign and bought through another it credits the enquiry — a
+  defensible view of what began the relationship, and not the same claim as "first touch" usually means.
+  The lookback window is published with the answer because a different one credits different campaigns.
+- **A first-time customer is credited with what their own order carried.** A first-recorded model that
+  reported nothing for them would understate every campaign that wins new business, which is most of what
+  an agency is paid for.
+- **No separate permission.** `analytics.view`, because attribution is a view of money already readable
+  through analytics and commerce, and a separate permission would let somebody be granted the modelled
+  view and denied the recorded one.
+
 ## Phase 17 — the visualisation layer
 
 Charts are the part of this product most able to mislead and least likely to be reviewed for it. This
