@@ -32,7 +32,7 @@ sit.
 | 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome | **Complete**; the CRM bridge is outstanding |
 | 16    | **Customer journeys** — identity evidence, identity confidence, conversion timelines | **Complete for what the data supports**; multi-touch journeys need event-level data this product does not have — see docs/JOURNEYS.md. The timeline surface ships with the Lead Center |
 | 17    | **Visualisation layer** — a measured chart palette with executable gates, mark specs in one module, a chart frame carrying source state and a table twin, the Lead Center and the journey timeline | **Complete** |
-| 18    | **Attribution** — models with coverage, data quality, confidence and revenue source on every figure | **Complete for what the data supports**; three models need a touch path this product does not hold, and are declared, explained and refused — see docs/ATTRIBUTION.md |
+| 18    | **Attribution** — models with coverage, data quality, confidence and revenue source on every figure, and a surface that leads with coverage | **Complete for what the data supports**; three models need a touch path this product does not hold, and are declared, explained and refused — see docs/ATTRIBUTION.md |
 | 19    | **Creative operations** — briefs, requests, assets, versions, specs, validation, comments, approval workflow, Kanban | Planned |
 | 20    | **Operations** — tasks, approvals engine, client requests, notifications and realtime | Planned |
 | 21    | **Reporting** — report builder, saved reports, exports, secure client live reports and snapshots | Planned |

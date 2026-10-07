@@ -50,3 +50,7 @@ export const StoreAnalyticsPage = lazy(async () => ({
 export const LeadCentrePage = lazy(async () => ({
   default: (await import('@/features/leads/LeadCentrePage')).LeadCentrePage,
 }));
+
+export const AttributionPage = lazy(async () => ({
+  default: (await import('@/features/attribution/AttributionPage')).AttributionPage,
+}));

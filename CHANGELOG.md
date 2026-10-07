@@ -40,6 +40,13 @@ here is a refusal.
   disagreement, the second would be a pagination artefact reported as one.
 - `GET /api/attribution/models`, `GET /api/attribution`, `GET /api/attribution/comparison`, 19 unit tests,
   25 feature tests, and `docs/ATTRIBUTION.md`.
+- **The attribution surface** (`features/attribution`), which leads with coverage rather than with the
+  campaign rows: an attributed figure read as a total is the specific way this page could mislead. A
+  meter rather than a chart for that — one ratio against one limit — amber below the threshold, with the
+  sentence that says to treat the rows as a sample. The selector shows the models that cannot be
+  computed, disabled and explained. The campaign chart greys the rows that cannot carry spend, and the
+  comparison is grouped rather than stacked, with its headline outside the frame so it survives the
+  switch to the table view.
 - **The demo workspace now syncs a sandbox Salla storefront**, so commerce and attribution have orders.
   What it demonstrates is the failure rather than the success: one campaign matched to real sandbox spend
   with a ROAS of 0.21, one coupon-only order naming a campaign nobody connected, and most of the sandbox's

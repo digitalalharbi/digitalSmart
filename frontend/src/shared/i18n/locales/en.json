@@ -28,7 +28,8 @@
     "dashboards": "Dashboards",
     "tracking": "Tracking",
     "commerce": "Store revenue",
-    "leads": "Lead Center"
+    "leads": "Lead Center",
+    "attribution": "Attribution"
   },
   "actions": {
     "search": "Search",
@@ -1020,6 +1021,84 @@
       "carried": "Carried {{campaign}} — {{evidence}}",
       "emptyTitle": "Nothing linked",
       "emptyBody": "No contact details on this lead could be matched to anything else, which is common and honest."
+    }
+  },
+  "attribution": {
+    "title": "Attribution",
+    "subtitle": "Which campaign earned the money — under a model you choose, from an authority you choose, with the share of the period it accounts for stated before the campaigns are.",
+    "loadFailed": "Could not load the attribution. Try again in a moment.",
+    "denied": {
+      "title": "Attribution is not part of your access",
+      "body": "It is a view of a client's revenue against their spend, so it is limited to the roles that read analytics. Ask a workspace owner if you need it."
+    },
+    "model": {
+      "label": "Model",
+      "hint": "Each one answers a different question, so there is no default. One of these is a record; the rest are claims.",
+      "modelled": "Modelled",
+      "recorded": "Recorded",
+      "unavailable": "Cannot be computed",
+      "wouldUnblock": "What would unblock it:"
+    },
+    "source": {
+      "label": "Revenue from",
+      "hint": "The authority that counts the money. A figure from one cannot be mixed with another."
+    },
+    "sources": {
+      "salla": "Salla",
+      "zid": "Zid",
+      "crm": "CRM",
+      "manual": "Entered by hand"
+    },
+    "period": {
+      "label": "Period",
+      "days": "Last {{count}} days"
+    },
+    "lookback": {
+      "label": "Look back",
+      "hint": "How far back to search for an earlier conversion by the same person. A different window credits different campaigns."
+    },
+    "scope": {
+      "client": "Client",
+      "allClients": "All clients"
+    },
+    "coverage": {
+      "title": "How much of the period this accounts for",
+      "reportable": "Enough to lead with",
+      "thin": "Below {{threshold}}%",
+      "attributed": "Attributed revenue",
+      "unattributed": "No campaign can be credited",
+      "weakest": "Weakest evidence behind it",
+      "explain": "{{named}} of the attributed orders name a campaign rather than only a channel. The rest are counted but not placed on a campaign row.",
+      "warning": "These campaigns account for a minority of the period's revenue. The rest arrived with no marketing information and is not divided among them — it is unknown, which is different from zero. Treat the rows below as a sample, not as the month."
+    },
+    "campaigns": {
+      "title": "Attributed revenue by campaign",
+      "subtitle": "Under {{model}}. A grey bar is revenue that cannot be put beside spend; the table says why.",
+      "unmatchedSpend": "{{amount}} of ad spend was on campaigns no order mentioned. That is a tagging problem with a size, not a gap in the report.",
+      "noSpend": "No ad spend was found for this period, so no row can carry a return on it.",
+      "emptyTitle": "Nothing attributed",
+      "emptyBody": "No order in this period carried marketing information this model can use.",
+      "aria": "Attributed revenue per campaign under {{model}}, with the campaigns that cannot carry spend shown in grey."
+    },
+    "comparison": {
+      "title": "What the choice of model is worth",
+      "subtitle": "The same campaigns under every model that can be computed",
+      "headline": "On {{count}} campaigns the choice of model moves the figure by more than a fifth. Neither figure should be quoted as what the campaign earned.",
+      "agree": "The models agree closely here, so the choice between them changes little for this period.",
+      "material": "Changes the answer",
+      "spread": "Disagreement",
+      "notInRows": "Not among this model's rows",
+      "caveat": "These are alternative accounts of the same money, so they are shown side by side rather than stacked — adding them would produce a total that exists nowhere. A campaign missing from one model's rows is shown as a gap rather than a zero when that model's breakdown was cut short by the row limit.",
+      "emptyTitle": "Nothing to compare",
+      "emptyBody": "No campaign was credited by any model in this period.",
+      "aria": "Attributed revenue per campaign under each available model, grouped so the models can be compared without being added together."
+    },
+    "table": {
+      "campaign": "Campaign",
+      "orders": "Orders",
+      "revenue": "Attributed revenue",
+      "spend": "Spend",
+      "roas": "Return on spend"
     }
   }
 }

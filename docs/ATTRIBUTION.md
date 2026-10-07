@@ -154,6 +154,36 @@ exercises every branch of the join rather than the flattering one.
 
 See [API.md](API.md#attribution).
 
+## The surface
+
+`frontend/src/features/attribution` — the page that has to carry every refusal above to a reader.
+
+**Coverage leads it.** The meter sits above the campaign rows, not below them, because an attributed
+figure read as a total is the specific way this page could mislead and the coverage is what prevents
+it. Below the threshold the meter turns amber and the card says *"treat the rows below as a sample, not
+as the month"*.
+
+A **meter** rather than a chart, because this is one ratio against one limit — the single case where a
+filled track says more than a bar would. Its track is a pale step of the fill's own ramp so the state
+reads across the whole width.
+
+**The model selector shows the models that cannot be computed**, disabled, with what is missing and
+what would unblock them. Each option says whether it is a model or a record, and exactly one is a
+record. The list comes from the server's catalogue rather than from a constant in the page, for the same
+reason the provider vocabulary does.
+
+**The campaign chart greys the rows that cannot carry spend** — not a value ramp, a two-state
+distinction that decides whether a row has a return on spend at all — and the table beside it carries
+the sentence explaining every empty cell.
+
+**The comparison is grouped, never stacked.** The models are alternative accounts of the same money,
+and stacking them would produce a total that exists nowhere. Its headline — how many campaigns the
+choice of model moves by more than a fifth — sits outside the chart frame, so it is still on screen when
+a reader switches to the table.
+
+The lookback control appears only for a model that reads a person's history, because for the others it
+changes nothing and a control that silently does nothing teaches a reader to distrust the rest.
+
 ## Tests
 
 - `backend/tests/Unit/Domain/AttributionTest.php` — the refusals: a model that will not be computed, a
@@ -161,3 +191,8 @@ See [API.md](API.md#attribution).
 - `backend/tests/Feature/Attribution/AttributionTest.php` — the endpoints, including loose name
   matching refused, two currencies refused, the paid-only filter, the lookback window, the first-recorded
   disagreement, and the truncation rule in both directions.
+- `frontend/src/features/attribution/AttributionPage.test.tsx` — the refusals as a reader meets them: a
+  disabled model that explains itself, the coverage warning, the reason a spend cell is empty, the
+  comparison headline, a truncated model shown as a gap, and the server's own words for a refused model.
+- `frontend/e2e/attribution.spec.ts` — the same in a browser, in both languages, plus the table twin and
+  the role that may not see the surface at all.

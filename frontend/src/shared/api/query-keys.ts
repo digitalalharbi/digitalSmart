@@ -75,6 +75,17 @@ export const queryKeys = {
     containers: () => ['measurement', 'containers'] as const,
     readiness: (sourceId: string) => ['measurement', 'readiness', sourceId] as const,
   },
+  attribution: {
+    all: () => ['attribution'] as const,
+    models: () => ['attribution', 'models'] as const,
+    /*
+     * Keyed by the whole query, model and revenue source included. Changing either does not refine
+     * the answer, it asks a different question — and caching two models under one key would show one
+     * model's figures under the other's label.
+     */
+    answer: (query: Record<string, unknown>) => ['attribution', 'answer', query] as const,
+    comparison: (query: Record<string, unknown>) => ['attribution', 'comparison', query] as const,
+  },
   leads: {
     all: () => ['leads'] as const,
     centre: (scope: Record<string, unknown>) => ['leads', 'centre', scope] as const,

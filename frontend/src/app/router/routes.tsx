@@ -13,6 +13,7 @@ import { ProjectsPage } from '@/features/projects';
 import { PlaceholderPage } from '@/features/placeholder';
 import {
   AnalyticsPage,
+  AttributionPage,
   BudgetCalculatorPage,
   CampaignsPage,
   DashboardsPage,
@@ -41,6 +42,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/budget-calculator': deferred(<BudgetCalculatorPage />),
   '/tracking': deferred(<TrackingCenterPage />),
   '/leads': deferred(<LeadCentrePage />),
+  '/attribution': deferred(<AttributionPage />),
   '/commerce': deferred(<StoreAnalyticsPage />),
 };
 

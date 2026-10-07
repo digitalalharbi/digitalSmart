@@ -100,6 +100,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'analytics.view',
   },
   {
+    path: '/attribution',
+    labelKey: 'nav.attribution',
+    icon: 'GitBranch',
+    section: 'intelligence',
+    phase: 'Phase 18',
+    // The endpoint checks the same permission the rest of the reporting surface does.
+    permission: 'analytics.view',
+  },
+  {
     path: '/analytics',
     labelKey: 'nav.analytics',
     icon: 'ChartNoAxesCombined',
