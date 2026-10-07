@@ -3,8 +3,8 @@
 The board an agency runs its week from: what is open, what is late, what nobody has dated, and
 who is carrying it.
 
-Phase 20 delivers **tasks**, the **approvals engine**, and **notifications with realtime**. Client
-requests are the remaining slice; what is not built is listed at the end.
+Phase 20 delivers **tasks**, the **approvals engine**, **notifications with realtime**, and
+**client requests**. What is not built is listed at the end.
 
 ## The question this module is for
 
@@ -559,11 +559,200 @@ driver, and the first test in it — the one expecting a subscription to *succee
 rule is wired. That trap is recorded in the file, because it is the kind of thing that looks like a
 passing test suite.
 
+
 ---
+
+# Client requests
+
+## The one surface a client can write to
+
+`client_requests.submit` is the only permission in this product that lets somebody outside the
+agency write anything, and a client viewer holds it. That is the point of the module: **an intake
+queue only agency staff can write to is just another task list.**
+
+| Permission | Who holds it |
+| ---------- | ------------ |
+| `client_requests.submit` | Owner, administrator, project manager, media buyer — **and a client viewer** |
+| `client_requests.view` | The same, **except** a client viewer |
+| `client_requests.triage` | Owner, administrator, project manager |
+
+The absence of `client_requests.view` is **load-bearing**. A reader without it is treated as
+client-facing, and internal messages are excluded in the WHERE clause rather than filtered after
+loading — a row that was selected has been hydrated into a DTO and is one careless refactor from a
+response.
+
+A creative holds none of these. Their work arrives as a brief in the Creative Hub and as tasks on
+the board; the intake queue carries every client's commercial asks and the agency's reasoning about
+them, which is a wider view than the role works from.
+
+**One surface serves both sides.** The server decides what each may see and tells the page which
+side it is showing through `is_agency_view`. A separate client API would be a second place for the
+visibility rules to drift, and the one that drifted would be the one a client reads.
+
+## What is withheld from a client
+
+| Withheld | Why |
+| -------- | --- |
+| Internal messages | Excluded in SQL. An agency's note about a client reaching that client ends a relationship. |
+| The tasks raised to answer them | The agency's plan of work — its assignees, its estimates, its wording — is the same leak an internal note is. |
+| `owner_name` | Who inside an agency is handling something is the agency's business, and it is the field a client would chase by name. |
+| `submitted_by_name` | A client knows who they are; this would only tell them which of their own words somebody re-typed. |
+| The queue's figures and charts | They are about the agency's performance across every client. |
+
+`promised_by_name` is deliberately **not** withheld. A promise was made *to* the client, so who made
+it is part of the promise rather than an internal detail.
+
+## Waiting on us, waiting on them
+
+The figure this module exists for is a **pair**:
+
+- `on_the_agency` — submitted, accepted, in progress.
+- `on_the_client` — waiting on information.
+
+A single "open" count lets a conversation stalled on the client hide behind work the agency has not
+started, and **only one of those is the agency's to fix**. `NeedsInformation` exists as a state for
+exactly this reason, and reaching it requires saying *what* is needed — "we need something from you"
+is a message nobody can answer, and it is the state most likely to sit for weeks.
+
+## A promise has a person on it
+
+`(promised_at IS NULL) = (promised_by IS NULL)`, as a CHECK. A date an agency committed to is a date
+*somebody* committed to; one that appeared with nobody behind it is the date a client quotes in a
+meeting and nobody can account for.
+
+`PromiseClientRequest` is its own use case with its own audit action, because a promised date is the
+thing a client quotes back. The entry records **both sides** of a change — an entry with only the new
+date cannot answer "it was the eighth last week" — and withdrawing a promise writes its own entry
+rather than leaving silence.
+
+`wanted_by` is separate and is labelled a **wish**: what the client asked for, not what the agency
+agreed.
+
+The queue publishes `unpromised` — accepted work with no agreed date — because *"we are on it"* is
+the whole of what those clients have been told, and a queue with no promises can be neither late nor
+on time.
+
+## The client's urgency is not the agency's priority
+
+`StatedUrgency` is its own enum, not `TaskPriority`, and the distinction is the whole of it: this is
+a **claim the client made**, and the agency's priority is a judgement it makes afterwards. One field
+for both would let a client set an agency's priorities by typing, and a board where every card is
+urgent is a board nobody triages.
+
+So nothing in this product orders anything by it. It is labelled *"Client said: …"* on every card,
+the chart of it says in its caveat that it is not a priority, the composer's hint tells the client it
+reorders nobody's work, and a task raised from a request takes the agency's own priority — defaulted
+to normal.
+
+## Raising work links, it does not convert
+
+`RaiseTaskForRequest` creates a task whose subject is the request. **The request stays a request**,
+with its own state, its own promised date and the half of the conversation a client can see. An
+intake queue whose rows vanish into a task board is one where nobody can tell a client what happened
+to what they asked for.
+
+Two refusals:
+
+- **Nothing is raised for a question.** A question needs an answer; a board filled with cards whose
+  completion is a sentence in a reply is a board nobody trusts. The panel says so rather than hiding
+  the control.
+- **Nothing is raised against a settled request.** Work to answer something already declined or
+  delivered is a mistake or a sign the request should be reopened — and reopening is a decision with
+  its own record.
+
+## The messages
+
+| Rule | Where it is enforced |
+| ---- | -------------------- |
+| No default audience | The controller refuses an absent one; the interface disables the send button until one is chosen, and restates the choice *on* the button |
+| A client's own message is always client-visible | Forced by the use case, and by a CHECK: `is_from_client = false OR audience = 'client'` |
+| Only a client-visible message from the agency counts as answering | `first_answered_at`, stamped once. Writing to each other is not answering, and a figure that counted internal notes would report a responsive queue while the client heard nothing |
+
+The audit entry records the **audience** and deliberately **not the message body**: the audit log is
+not a second place a client's internal notes live, with none of this module's visibility rules on it.
+
+## Delivered work can be reopened
+
+*"This is not what I asked for"* is the most important message in this module. A terminal delivered
+state would make the honest response a second request that loses the history of the first.
+
+## What the schema enforces
+
+| Rule | Why |
+| ---- | --- |
+| `declined` requires a reason | It is shown to the client. A request that vanished from an intake queue with nobody told why is the worst thing this module could do. |
+| `needs_information` requires the question | "We need something from you" is unanswerable. |
+| `(promised_at IS NULL) = (promised_by IS NULL)` | See above. |
+| `audience` has no default | An internal note reaching a client ends a relationship. |
+| `is_from_client = false OR audience = 'client'` | An interface bug must not hide a client's own words from them. |
+| A client request always has a client | A request with no client is not a client request. |
+
+## Patience
+
+`IntakeLoad::PATIENCE_DAYS` is **two** — deliberately shorter than the approvals queue's three. An
+internal request waiting over a long weekend is untidy; a client waiting that long has been ignored.
+Past it, the page says so in those words: *"That is not a busy queue — it is somebody who has not
+heard back."*
+
+`waiting_for_answer_days` keeps running while a request is unanswered, measured to **now** rather
+than returning null — otherwise the row that matters most would report nothing.
+
+## The charts
+
+**Where the open requests are sitting** — the open states in board order, on the ordinal ramp because
+they are stages one conversation passes through. Who each stage waits on is in the **table**, not the
+colour: colour already carries the order, and a second meaning in the same channel is how a reader
+learns to distrust a palette.
+
+**How urgent the clients said it was** — the stated-urgency scale, ordinal because it is ordered, with
+a caveat that says in so many words that this is not how the work has been prioritised.
+
+## The requests API
+
+| Method | Path | Notes |
+| ------ | ---- | ----- |
+| `GET` | `/api/client-requests/vocabulary` | States with both waiting-on flags, kinds, the client's urgency scale, audiences |
+| `GET` | `/api/client-requests/queue` | `client_id`, `kind`, `on_the_agency`, `per_column` |
+| `POST` | `/api/client-requests` | |
+| `GET` | `/api/client-requests/{request}` | |
+| `POST` | `/api/client-requests/{request}/state` | |
+| `POST` | `/api/client-requests/{request}/promise` | An absent date withdraws the promise |
+| `POST` | `/api/client-requests/{request}/owner` | An absent owner removes it |
+| `POST` | `/api/client-requests/{request}/messages` | |
+| `POST` | `/api/client-requests/{request}/tasks` | Links a task; never converts the request |
+
+## Query budgets
+
+`tests/Feature/Operations/ClientRequestQueryBudgetTest.php` asserts a **query count**, not a
+duration. It exists because a detail read once ran thirty-six queries and nothing noticed: the
+spawned-task lookup went through the task board, which is six queries by design — one per column —
+and the request was re-read after every write.
+
+The fix was `TaskRepository::forSubject()`, one query for the tasks about one subject, plus an
+immutable `ClientRequestView::withTasks()` so raising a task re-reads the task list rather than the
+whole request. A detail read is now four queries over the module's own data regardless of how long
+the conversation is.
+
+A duration test fails on a loaded machine and passes on a fast one, which teaches people to re-run
+it. A count is deterministic, and the budgets sit a little above what the code does — so a refactor
+that adds one query is allowed and one that adds a join per message is not.
 
 ## Not done in this slice
 
-- **Client requests.** Intake from a client, triage, and the link to the work it produces.
+- **Attachments.** Not in the model. A client sending a file is the obvious next thing a request
+  needs, and it needs a storage story, a scan story and a retention story before it needs a column.
+- **A client login of its own.** A client viewer is a workspace member today. Secure per-client links
+  and the rest of the portal are Phase 22.
+- **Notification of a client when their request moves.** The agency is told when a client asks;
+  a client is not yet told when the agency answers, because telling them means e-mail, and e-mail
+  means a transport, a template system and an unsubscribe story.
+- **A flat, paginated list.** The queue is a board with a per-column cap and server-side filters,
+  which is how it is read. A spreadsheet view belongs with Phase 21's reporting.
+
+---
+
+## Not done in the phase
+
 - **Notifications on anything other than the four kinds above.** No digest, no grouping, no
   collapsing: each event is one notification. Grouping is where a notification centre starts deciding
   what somebody has already seen, and it is wrong about it.

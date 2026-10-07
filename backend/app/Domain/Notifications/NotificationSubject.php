@@ -18,11 +18,14 @@ enum NotificationSubject: string
 
     case Approval = 'approval';
 
+    case ClientRequest = 'client_request';
+
     public function table(): string
     {
         return match ($this) {
             self::Task => 'tasks',
             self::Approval => 'approval_requests',
+            self::ClientRequest => 'client_requests',
         };
     }
 
@@ -37,6 +40,7 @@ enum NotificationSubject: string
         return match ($this) {
             self::Task => '/tasks',
             self::Approval => '/approvals',
+            self::ClientRequest => '/client-requests',
         };
     }
 
@@ -45,6 +49,7 @@ enum NotificationSubject: string
         return match ($this) {
             self::Task => 'Task',
             self::Approval => 'Approval request',
+            self::ClientRequest => 'Client request',
         };
     }
 

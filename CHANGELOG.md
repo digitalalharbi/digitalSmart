@@ -4,6 +4,100 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 20 — operations: client requests
+
+What a client asked for, what was said back, and who promised what — on one surface that serves both
+the agency and the client, with the server deciding what each may see.
+
+### The argument
+
+`client_requests.submit` is the only permission in this product that lets somebody outside the agency
+write anything, and a client viewer holds it. That is the point: **an intake queue only agency staff
+can write to is just another task list.**
+
+The figure the module exists for is a pair — **waiting on us** beside **waiting on them**. A single
+"open" count lets a conversation stalled on the client hide behind work the agency has not started,
+and only one of those is the agency's to fix.
+
+### Added
+
+- `app/Domain/Operations/` — `ClientRequestState` (including `NeedsInformation`, the state that stops
+  a stall hiding), `ClientRequestKind`, `StatedUrgency`, `MessageAudience`, `IntakeLoad`.
+- **Internal messages are excluded in SQL for a client-facing reader**, not filtered after loading. A
+  row that was selected has been hydrated into a DTO and is one careless refactor from a response.
+  The absence of `client_requests.view` is what makes a reader client-facing.
+- **The agency's plan of work is withheld too** — the tasks raised to answer a request, the owner's
+  name, the name of whoever filed it. `promised_by_name` is deliberately *not* withheld: a promise was
+  made *to* the client, so who made it is part of the promise.
+- **A promise carries the person who made it**, as a CHECK: `(promised_at IS NULL) = (promised_by IS
+  NULL)`. Its own use case and its own audit action, recording **both sides** of a change — an entry
+  with only the new date cannot answer "it was the eighth last week" — and writing an entry when a
+  promise is withdrawn rather than leaving silence.
+- **The client's urgency is not the agency's priority.** `StatedUrgency` is its own enum for exactly
+  that reason: one field for both would let a client set an agency's priorities by typing. Nothing
+  orders anything by it, every card says *"Client said: …"*, and a task raised from a request takes the
+  agency's own priority, defaulted to normal.
+- **Raising work links, it does not convert.** The request keeps its state, its promised date and the
+  half of the conversation a client can see. A question is refused — it needs an answer, not a card —
+  and so is work against a settled request, because reopening is a decision with its own record.
+- **Only a client-visible message from the agency counts as answering.** `first_answered_at` is
+  stamped once; writing to each other is not answering, and a figure that counted internal notes would
+  report a responsive queue while the client heard nothing.
+- **No default audience anywhere**, and the send button restates the choice: a control set once and
+  forgotten is the one that leaks. A client's own message is forced client-visible by the use case and
+  by a CHECK, so an interface bug cannot hide somebody's words from themselves.
+- **Delivered work can be reopened.** "This is not what I asked for" is the most important message in
+  this module, and a terminal state would make the honest response a second request.
+- **Patience is two days**, deliberately shorter than approvals' three: an internal request waiting
+  over a long weekend is untidy, and a client waiting that long has been ignored. Past it the page says
+  *"That is not a busy queue — it is somebody who has not heard back."*
+- `client_requests` and `client_request_messages`, a repository, six use cases, two queries, a
+  controller with nine routes, three permissions, five audit actions, and `client_request` added to the
+  task and approval subject vocabularies.
+- `frontend/src/features/requests/` — one page for both sides, the conversation with every message
+  marked by audience, and two charts. Twenty tests, twelve end-to-end.
+- Client-requests half of `docs/OPERATIONS.md`, and seven demo requests whose shape is deliberately
+  uncomfortable: one ignored for five days, one waiting on the client, one accepted with no promised
+  date, one open question.
+
+### Fixed
+
+- **A detail read that ran thirty-six queries, and nothing noticed.** The spawned-task lookup went
+  through the task board — six queries by design, one per column — and the request was re-read after
+  every write. Now `TaskRepository::forSubject()` (one query) plus an immutable
+  `ClientRequestView::withTasks()`, so raising a task re-reads the task list rather than the whole
+  request. Four queries over the module's own data, regardless of conversation length, and guarded by
+  `ClientRequestQueryBudgetTest` — a **query count**, not a duration: a duration fails on a loaded
+  machine and teaches people to re-run it.
+- **An audit assertion that passed for the wrong reason.** It ordered two entries written inside the
+  same second by timestamp, so it asserted whichever row Postgres returned — and would have kept
+  passing with the value it meant to check missing. Entries are now found by the content under
+  assertion, and `ClientRequestAuditTest` names the actor, action, subject and workspace on every one.
+- **An audit entry that called an internal note the first answer**, contradicting the column it
+  described. Found by the test above.
+- **The internal owner's name reached the client**, along with the name of whoever filed the request.
+  Found by a test written to check exactly that.
+- **`?? 'unset'` used to look for a null value** in two assertions, which cannot distinguish an absent
+  key from a null one — so the filter matched nothing and the tests failed for a reason unrelated to
+  the code.
+- **A nav icon nobody registered.** `navigation.test.ts` caught `/client-requests` wanting `Inbox`,
+  which is the drift that once left three surfaces sharing one icon.
+- **Two Playwright projects colliding on one seeded database.** A fixed task title was created twice
+  and a strict locator then resolved to two buttons — a shared-fixture collision that reads as a
+  product defect. Titles are now named per project and per retry, like the suite's sign-in helpers.
+- **A stale test premise my own change invalidated**: the owner's notification centre is no longer
+  empty, because a client now raises a request in the demo and the owner is correctly told. The
+  empty-state test moved to the media buyer, who holds the permission and is on no project — so the
+  recipient resolver excludes them, which is the rule working.
+- **A Pest helper name collision** (`budgetScenario`) that was fatal in the full suite and invisible
+  when the file ran alone.
+
+### Changed
+
+- **A creative no longer sees the intake queue.** Their work arrives as a brief and as tasks; the queue
+  carries every client's commercial asks and the agency's reasoning about them, which is wider than the
+  role works from.
+
 ## Phase 20 — operations: notifications and realtime
 
 Four kinds of notification, a bell that counts what is waiting rather than what is unread, and a

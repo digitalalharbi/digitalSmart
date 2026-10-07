@@ -217,6 +217,30 @@ final readonly class EloquentTaskRepository implements TaskRepository
         return $columns;
     }
 
+    public function forSubject(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        TaskSubjectType $type,
+        string $subjectId,
+        int $limit,
+    ): array {
+        $rows = $this->scope($workspaceId, $visibleProjectIds)
+            ->where('t.subject_type', $type->value)
+            ->where('t.subject_id', $subjectId)
+            ->orderByDesc('t.created_at')
+            ->limit($limit)
+            ->get();
+
+        /** @var list<array<string, mixed>> $values */
+        $values = [];
+
+        foreach ($rows as $row) {
+            $values[] = (array) $row;
+        }
+
+        return $this->views($values);
+    }
+
     public function exceedsCap(
         string $workspaceId,
         ?array $visibleProjectIds,

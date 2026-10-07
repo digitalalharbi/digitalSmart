@@ -9,6 +9,7 @@ use App\Application\Operations\DTO\TaskChange;
 use App\Application\Operations\DTO\TaskInput;
 use App\Application\Operations\DTO\TaskView;
 use App\Domain\Operations\TaskState;
+use App\Domain\Operations\TaskSubjectType;
 use App\Domain\Operations\TaskWorkload;
 use DateTimeImmutable;
 
@@ -56,6 +57,24 @@ interface TaskRepository
         ?array $visibleProjectIds,
         TaskFilter $filter,
         int $limitPerColumn,
+    ): array;
+
+    /**
+     * The tasks raised about one thing, newest first.
+     *
+     * Its own method rather than a filtered board, because a board is six queries — one per column — and a list
+     * of tasks about one subject is one. Reading it through `board()` was measurably slow enough to show up in the
+     * test suite, which is the right place to notice that a query shaped for a board was being used as a lookup.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return list<TaskView>
+     */
+    public function forSubject(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        TaskSubjectType $type,
+        string $subjectId,
+        int $limit,
     ): array;
 
     /**

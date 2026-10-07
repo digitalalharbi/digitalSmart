@@ -40,6 +40,15 @@ enum NotificationKind: string
      */
     case ApprovalEnacted = 'approval_enacted';
 
+    /**
+     * A client asked for something.
+     *
+     * The one kind raised by somebody outside the agency, and the reason it needs action: a client request nobody
+     * has answered is a client waiting, and that is measured in this product against a shorter patience than
+     * anything internal.
+     */
+    case ClientRequestSubmitted = 'client_request_submitted';
+
     public function label(): string
     {
         return match ($this) {
@@ -47,6 +56,7 @@ enum NotificationKind: string
             self::ApprovalRequested => 'A change is waiting for your decision',
             self::ApprovalDecided => 'Your request was answered',
             self::ApprovalEnacted => 'An approved change was carried out',
+            self::ClientRequestSubmitted => 'A client asked for something',
         };
     }
 
@@ -61,6 +71,11 @@ enum NotificationKind: string
             self::TaskAssigned => Permission::TasksView,
             self::ApprovalRequested => Permission::ApprovalsDecide,
             self::ApprovalDecided, self::ApprovalEnacted => Permission::ApprovalsView,
+            /*
+             * The agency's own view of the queue, which a client viewer does not hold — so a client is never
+             * told about another client's request, and never told about their own arriving.
+             */
+            self::ClientRequestSubmitted => Permission::ClientRequestsView,
         };
     }
 
@@ -72,7 +87,9 @@ enum NotificationKind: string
      */
     public function needsAction(): bool
     {
-        return $this === self::TaskAssigned || $this === self::ApprovalRequested;
+        return $this === self::TaskAssigned
+            || $this === self::ApprovalRequested
+            || $this === self::ClientRequestSubmitted;
     }
 
     public function subject(): NotificationSubject
@@ -80,6 +97,7 @@ enum NotificationKind: string
         return match ($this) {
             self::TaskAssigned => NotificationSubject::Task,
             self::ApprovalRequested, self::ApprovalDecided, self::ApprovalEnacted => NotificationSubject::Approval,
+            self::ClientRequestSubmitted => NotificationSubject::ClientRequest,
         };
     }
 

@@ -29,7 +29,8 @@
     "tracking": "Tracking",
     "commerce": "Store revenue",
     "leads": "Lead Center",
-    "attribution": "Attribution"
+    "attribution": "Attribution",
+    "requests": "Requests"
   },
   "actions": {
     "search": "Search",
@@ -1416,6 +1417,136 @@
       "waiting_other": "Notifications. {{count}} things waiting on you.",
       "unread": "Notifications. {{count}} unread.",
       "unread_other": "Notifications. {{count}} unread."
+    }
+  },
+  "requests": {
+    "title": "Client requests",
+    "titleClient": "Your requests",
+    "subtitle": "What clients have asked for, who is waiting on whom, and what was promised.",
+    "subtitleClient": "What you have asked us for, and where each one has got to.",
+    "loadFailed": "Could not load the requests. Try again in a moment.",
+    "counts": "Intake summary",
+    "board": "The intake queue",
+    "denied": {
+      "title": "Requests are not part of your access",
+      "body": "Ask a workspace owner if you need to raise or read client requests."
+    },
+    "scope": {
+      "client": "Client",
+      "allClients": "All clients",
+      "waitingOn": "Waiting on",
+      "everything": "Everything",
+      "onUs": "Only what is on us"
+    },
+    "count": {
+      "onUs": "Waiting on us",
+      "onUsNote": "Ours to move",
+      "onThem": "Waiting on the client",
+      "onThemNote": "We asked them something",
+      "unpromised": "Accepted, no date promised",
+      "unpromisedNote": "\"We are on it\" is all they were told",
+      "overdue": "Past the promised date",
+      "overdueNote": "We said a day and missed it"
+    },
+    "rates": {
+      "noneClosed": "Nothing has closed yet, so there is no delivery rate to report.",
+      "delivered": "{{rate}} of the {{closed}} closed requests were delivered rather than declined or withdrawn.",
+      "nonePromised": "Nothing is accepted and open, so there is no promised share to report.",
+      "promised": "{{rate}} of the accepted work carries a date somebody agreed."
+    },
+    "card": {
+      "clientSaid": "Client said: {{urgency}}",
+      "pastPromise": "Past the promised date",
+      "noPromise": "No date promised",
+      "unanswered": "Unanswered for {{days}} days"
+    },
+    "flow": {
+      "title": "Where the open requests are sitting",
+      "subtitle": "Open requests by stage, in the order a conversation moves through them",
+      "stage": "Stage",
+      "count": "Requests",
+      "waitingOn": "Waiting on",
+      "theAgency": "Us",
+      "theClient": "The client",
+      "aria": "Open client requests by stage",
+      "caveatSplit": "Who each stage is waiting on is in the table rather than in the colour. Colour is already carrying the order of the stages, and a second meaning in the same channel is how a reader learns to distrust a palette.",
+      "caveatClosed": "Delivered, declined and withdrawn requests are left out. They are not where work is sitting, and a column of them would make a productive month look like a backlog.",
+      "ignored": "A client has been waiting {{days}} days for any answer at all, against the {{patience}} days this product treats as reasonable. That is not a busy queue — it is somebody who has not heard back.",
+      "emptyTitle": "Nothing open",
+      "emptyBody": "No client is waiting on anything right now."
+    },
+    "urgency": {
+      "title": "How urgent the clients said it was",
+      "subtitle": "Open requests by the urgency the client stated",
+      "level": "The client said",
+      "count": "Requests",
+      "aria": "Open client requests by the urgency the client stated",
+      "caveat": "This is what clients told us, not how we have prioritised the work. Nothing on any board is ordered by it — the tasks raised from these requests carry our own priority instead.",
+      "emptyTitle": "Nothing open",
+      "emptyBody": "No open request has an urgency to report."
+    },
+    "detail": {
+      "pickTitle": "Pick a request",
+      "pickBody": "Choose one to read what was asked, what was said back, and what was promised.",
+      "clientSaid": "the client called it {{urgency}}",
+      "pastPromise": "Past the promised date",
+      "needsInformation": "We are waiting on the client for: {{what}}",
+      "declined": "Declined: {{reason}}",
+      "promised": "Promised",
+      "nothingPromised": "No date promised",
+      "promisedBy": "· promised by {{name}}",
+      "wanted": "The client asked for",
+      "waiting": "Waiting for an answer",
+      "answeredIn": "First answered after",
+      "days": "{{count}} day",
+      "days_other": "{{count}} days",
+      "owner": "Owner",
+      "noOwner": "Nobody yet",
+      "turnaround": "Days from asking to delivery",
+      "conversation": "The conversation",
+      "nothingSaid": "Nothing has been said on this yet.",
+      "somebody": "Somebody",
+      "clientSees": "The client sees this",
+      "internalOnly": "Internal only",
+      "reply": "Reply",
+      "whoSees": "Who sees this",
+      "whoSeesHint": "Chosen every time, with no default. An internal note reaching a client ends a relationship.",
+      "sendToClient": "Send to the client",
+      "sendInternal": "Save as an internal note",
+      "chooseAudience": "Choose who sees this first",
+      "send": "Send",
+      "moves": "Where it can go",
+      "noMoves": "There is nowhere for this request to go from here.",
+      "declineReason": "Why it is being declined",
+      "askReason": "What we need from the client",
+      "reasonHint": "The client is shown this, so write it to them.",
+      "confirmMove": "Save and move",
+      "promiseADate": "Promise a date",
+      "promise": "Promise it",
+      "withdrawPromise": "Withdraw the promise",
+      "work": "The work on it",
+      "noWork": "No tasks have been raised for this yet.",
+      "settledNoWork": "This request is settled, so there is nothing to raise work for. Reopen it first.",
+      "questionNeedsAnAnswer": "A question needs an answer rather than a task. Reply above instead.",
+      "raiseTask": "Raise a task for this",
+      "addToBoard": "Add to the board",
+      "dates": "Dates on this request",
+      "handling": "Who is handling it",
+      "messages": "Messages on this request"
+    },
+    "composer": {
+      "open": "Raise a request for a client",
+      "openClient": "Ask us for something",
+      "title": "New request",
+      "client": "Client",
+      "kind": "What is this about",
+      "titleField": "What do you need",
+      "detail": "Anything else we should know",
+      "urgency": "How soon do you need it",
+      "urgencyHint": "Your own sense of how soon. It is recorded as what you told us, and it does not reorder anybody's work on its own.",
+      "wantedBy": "A date you would like it by",
+      "wantedByHint": "Optional, and a wish rather than a commitment. We will come back with a date we can promise.",
+      "submit": "Send the request"
     }
   }
 }

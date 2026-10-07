@@ -73,6 +73,18 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'tasks.view',
   },
   {
+    path: '/client-requests',
+    labelKey: 'nav.requests',
+    icon: 'Inbox',
+    section: 'work',
+    phase: 'Phase 20',
+    /*
+     * The one surface in this product a client viewer can reach and write to. `submit` rather than `view`: an
+     * intake queue only agency staff can write to is just another task list.
+     */
+    permission: 'client_requests.submit',
+  },
+  {
     path: '/approvals',
     labelKey: 'nav.approvals',
     icon: 'BadgeCheck',

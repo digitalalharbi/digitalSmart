@@ -24,6 +24,7 @@ use App\Interface\Http\Controller\Leads\LeadController;
 use App\Interface\Http\Controller\Measurement\MeasurementController;
 use App\Interface\Http\Controller\Notifications\NotificationController;
 use App\Interface\Http\Controller\Operations\ApprovalController;
+use App\Interface\Http\Controller\Operations\ClientRequestController;
 use App\Interface\Http\Controller\Operations\TaskController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
@@ -312,6 +313,39 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      */
     Route::post('tasks/{task}/assignee', [TaskController::class, 'assign'])
         ->whereUuid('task')->name('tasks.assign');
+
+    /*
+     * Client requests. The same endpoints serve the agency and a client: the read model decides what each sees
+     * from whether the caller holds `client_requests.view`, so there is no second API for a client to drift
+     * against. A client's own message has its audience forced to client-visible.
+     */
+    Route::get('client-requests/vocabulary', [ClientRequestController::class, 'vocabulary'])
+        ->name('client_requests.vocabulary');
+    Route::get('client-requests/queue', [ClientRequestController::class, 'queue'])
+        ->name('client_requests.queue');
+    Route::post('client-requests', [ClientRequestController::class, 'store'])
+        ->name('client_requests.store');
+    Route::get('client-requests/{clientRequest}', [ClientRequestController::class, 'show'])
+        ->whereUuid('clientRequest')->name('client_requests.show');
+    Route::post('client-requests/{clientRequest}/state', [ClientRequestController::class, 'triage'])
+        ->whereUuid('clientRequest')->name('client_requests.triage');
+    /*
+     * Its own route, because a promised date is the thing a client quotes back. "You said the fifteenth" has to
+     * be answerable from the record rather than from somebody's memory of a call.
+     */
+    Route::post('client-requests/{clientRequest}/promise', [ClientRequestController::class, 'promise'])
+        ->whereUuid('clientRequest')->name('client_requests.promise');
+    Route::post('client-requests/{clientRequest}/messages', [ClientRequestController::class, 'answer'])
+        ->whereUuid('clientRequest')->name('client_requests.answer');
+    Route::post('client-requests/{clientRequest}/owner', [ClientRequestController::class, 'assign'])
+        ->whereUuid('clientRequest')->name('client_requests.assign');
+    /*
+     * Raising work for a request **links** a task to it rather than converting it. The request keeps its own
+     * state, its promised date and the half of the conversation a client can see; an intake queue whose rows
+     * vanish into a task board is one where nobody can tell a client what happened to what they asked for.
+     */
+    Route::post('client-requests/{clientRequest}/tasks', [ClientRequestController::class, 'raiseTask'])
+        ->whereUuid('clientRequest')->name('client_requests.raise_task');
 
     /*
      * Notifications. No permission on these routes: every row is scoped to the reader's own user id, and the

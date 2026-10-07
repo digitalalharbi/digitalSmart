@@ -46,6 +46,7 @@ use App\Application\Notifications\Contract\NotificationBroadcaster;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\Contract\RecipientResolver;
 use App\Application\Operations\Contract\ApprovalRepository;
+use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
@@ -104,6 +105,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentApprovalRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRequestRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCommerceStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCreativeRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDashboardRepository;
@@ -222,6 +224,7 @@ final class AppServiceProvider extends ServiceProvider
         // Operations (Phase 20)
         TaskRepository::class => EloquentTaskRepository::class,
         ApprovalRepository::class => EloquentApprovalRepository::class,
+        ClientRequestRepository::class => EloquentClientRequestRepository::class,
         NotificationStore::class => EloquentNotificationStore::class,
         RecipientResolver::class => PermissionAwareRecipientResolver::class,
         NotificationBroadcaster::class => ReverbNotificationBroadcaster::class,

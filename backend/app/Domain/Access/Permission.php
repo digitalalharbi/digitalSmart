@@ -89,6 +89,15 @@ enum Permission: string
      */
     case ApprovalsRequest = 'approvals.request';
     case ApprovalsDecide = 'approvals.decide';
+    /*
+     * Three permissions, and the split is what makes a client portal possible at all. `view` opens the agency's
+     * intake queue, which carries internal notes; `submit` only lets somebody raise a request and read the
+     * client-facing side of their own. A client viewer holds `submit` and not `view`, and the absence of `view`
+     * is what the read model uses to decide that internal messages are excluded in SQL.
+     */
+    case ClientRequestsView = 'client_requests.view';
+    case ClientRequestsSubmit = 'client_requests.submit';
+    case ClientRequestsTriage = 'client_requests.triage';
 
     // Auditability
     case AuditView = 'audit.view';
@@ -135,6 +144,9 @@ enum Permission: string
             self::ApprovalsView => 'View the approval queue, and what has been approved but not yet done',
             self::ApprovalsRequest => 'Ask for approval, withdraw a request, and record that a change was made',
             self::ApprovalsDecide => 'Approve or decline a requested change',
+            self::ClientRequestsView => 'View the client intake queue, including internal notes on it',
+            self::ClientRequestsSubmit => 'Raise a request, and read the client-facing side of it',
+            self::ClientRequestsTriage => 'Accept, decline, promise a date for and deliver a client request',
             self::AnalyticsView => 'View performance analytics',
             self::AnalyticsExport => 'Export analytics data',
             self::SavedViewsManage => 'Create and share saved views',

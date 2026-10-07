@@ -96,6 +96,9 @@ enum SystemRole: string
                 Permission::ApprovalsView,
                 Permission::ApprovalsRequest,
                 Permission::ApprovalsDecide,
+                Permission::ClientRequestsView,
+                Permission::ClientRequestsSubmit,
+                Permission::ClientRequestsTriage,
                 Permission::AuditView,
             ],
 
@@ -149,6 +152,9 @@ enum SystemRole: string
                 Permission::ApprovalsView,
                 Permission::ApprovalsRequest,
                 Permission::ApprovalsDecide,
+                Permission::ClientRequestsView,
+                Permission::ClientRequestsSubmit,
+                Permission::ClientRequestsTriage,
                 Permission::AuditView,
             ],
 
@@ -197,6 +203,12 @@ enum SystemRole: string
                  */
                 Permission::ApprovalsView,
                 Permission::ApprovalsRequest,
+                /*
+                 * Reads the intake queue and answers on it, and does not triage. Agreeing to work for a client
+                 * and committing a date is the conversation a project manager owns.
+                 */
+                Permission::ClientRequestsView,
+                Permission::ClientRequestsSubmit,
             ],
 
             self::Creative => [
@@ -218,6 +230,13 @@ enum SystemRole: string
                  */
                 Permission::ApprovalsView,
                 Permission::ApprovalsRequest,
+                /*
+                 * No client-request access, deliberately. A creative's work arrives as a brief in the Creative
+                 * Hub and as tasks on the board; the intake queue carries every client's commercial asks and the
+                 * agency's internal reasoning about them, which is a wider view than the role needs. Narrowing a
+                 * role to what it works from is the only version of least privilege that survives contact with a
+                 * growing product.
+                 */
             ],
 
             /*
@@ -232,6 +251,16 @@ enum SystemRole: string
             self::ClientViewer => [
                 Permission::ProjectsViewAssigned,
                 Permission::AnalyticsView,
+                /*
+                 * Submit, and deliberately **not** view. This is the one permission a client holds that writes
+                 * anything, and it is the whole reason the intake queue exists: an intake only agency staff can
+                 * write to is just another task list.
+                 *
+                 * The absence of `client_requests.view` is load-bearing. The read model treats a reader without
+                 * it as client-facing and excludes internal notes **in SQL**, so an agency's note about a client
+                 * is never selected for that reader at all — not filtered out afterwards.
+                 */
+                Permission::ClientRequestsSubmit,
                 /*
                  * No task permission either. An agency's board carries its own reasons for things being
                  * blocked and its own estimates of how long work takes; a client seeing them is an

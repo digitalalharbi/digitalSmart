@@ -91,6 +91,16 @@ enum AuditAction: string
      */
     case ApprovalEnacted = 'approval.enacted';
 
+    case ClientRequestSubmitted = 'client_request.submitted';
+    case ClientRequestMoved = 'client_request.moved';
+    /*
+     * Its own action. A promised date is the thing a client quotes back, so "who committed us to this" has to be
+     * answerable from the record rather than from somebody's memory of a meeting.
+     */
+    case ClientRequestPromised = 'client_request.promised';
+    case ClientRequestAnswered = 'client_request.answered';
+    case ClientRequestOwnerChanged = 'client_request.owner_changed';
+
     case WorkspaceMemberInvited = 'workspace.member_invited';
     case WorkspaceMemberRoleChanged = 'workspace.member_role_changed';
     case WorkspaceMemberSuspended = 'workspace.member_suspended';

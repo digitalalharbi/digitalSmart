@@ -139,6 +139,12 @@ export const queryKeys = {
      */
     feed: (unreadOnly: boolean) => ['notifications', 'feed', unreadOnly] as const,
   },
+  clientRequests: {
+    all: () => ['client-requests'] as const,
+    vocabulary: () => ['client-requests', 'vocabulary'] as const,
+    queue: (scope: Record<string, unknown>) => ['client-requests', 'queue', scope] as const,
+    detail: (requestId: string) => ['client-requests', 'detail', requestId] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,

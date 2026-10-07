@@ -78,3 +78,34 @@ it('seeds an approval queue with approved work nobody has carried out', function
 
     expect($requests->firstWhere('state', 'declined')?->decision_reason)->not->toBeNull();
 });
+
+it('seeds an intake queue whose shape shows both halves of why a queue is slow', function (): void {
+    test()->seed(DemoWorkspaceSeeder::class);
+
+    $requests = DB::table('client_requests')->get();
+
+    expect($requests)->toHaveCount(7);
+
+    $byState = $requests->groupBy('state')->map->count();
+
+    expect($byState['needs_information'] ?? 0)->toBe(1);
+    expect($byState['declined'] ?? 0)->toBe(1);
+    expect($byState['delivered'] ?? 0)->toBe(1);
+
+    /*
+     * The three shapes the module exists to publish: a client nobody has answered, accepted work with no promised
+     * date, and an open question — which is the one kind that produces no task.
+     */
+    expect($requests->whereNull('first_answered_at'))->toHaveCount(2);
+    expect($requests->where('state', 'accepted')->whereNull('promised_at'))->toHaveCount(1);
+    expect($requests->where('kind', 'question')->whereIn('state', ['submitted']))->toHaveCount(1);
+
+    // A decline carries the reason the client is shown, and a request for information says what is needed.
+    expect($requests->firstWhere('state', 'declined')?->declined_reason)->not->toBeNull();
+    expect($requests->firstWhere('state', 'needs_information')?->needed_information)->not->toBeNull();
+
+    // And a promised date carries the person who promised it, which a CHECK also requires.
+    $promised = $requests->whereNotNull('promised_at')->first();
+
+    expect($promised?->promised_by)->not->toBeNull();
+});

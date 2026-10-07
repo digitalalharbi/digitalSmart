@@ -30,6 +30,9 @@ enum TaskSubjectType: string
 
     case Project = 'project';
 
+    /** Work a client asked for. The link that keeps an intake queue from becoming a second task board. */
+    case ClientRequest = 'client_request';
+
     /** The table the subject's label is read from. */
     public function table(): string
     {
@@ -39,6 +42,7 @@ enum TaskSubjectType: string
             self::Campaign => 'campaigns',
             self::Budget => 'budgets',
             self::Project => 'projects',
+            self::ClientRequest => 'client_requests',
         };
     }
 
@@ -51,8 +55,8 @@ enum TaskSubjectType: string
     public function labelColumn(): string
     {
         return match ($this) {
-            // A brief is called a title; everything else here is called a name.
-            self::CreativeRequest => 'title',
+            // A brief and a client's request are called titles; everything else here is called a name.
+            self::CreativeRequest, self::ClientRequest => 'title',
             self::Budget, self::Project, self::Campaign, self::Lead => 'name',
         };
     }
@@ -65,6 +69,7 @@ enum TaskSubjectType: string
             self::Campaign => 'Campaign',
             self::Budget => 'Budget',
             self::Project => 'Project',
+            self::ClientRequest => 'Client request',
         };
     }
 
@@ -77,6 +82,7 @@ enum TaskSubjectType: string
             self::Campaign => '/campaigns',
             self::Budget => '/media-planner',
             self::Project => '/projects/'.$id,
+            self::ClientRequest => '/client-requests',
         };
     }
 

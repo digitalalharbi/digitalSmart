@@ -9,7 +9,7 @@ analysis and presentation generation.
 
 ## Status
 
-**Phases 0–19 complete; Phase 20 in progress.** See `docs/ROADMAP.md` for the per-phase
+**Phases 0–20 complete.** See `docs/ROADMAP.md` for the per-phase
 detail and for the external authorizations that are blocked.
 
 Working today: sign-in, sessions and workspace switching; six system roles with
@@ -19,8 +19,8 @@ and forecasting; a measurement layer with a conversion registry; Google Analytic
 Tag Manager; a normalised commerce domain with Salla and Zid; store analytics; the Lead
 Center; conversion timelines; attribution with coverage on every figure; creative
 operations with recorded platform specifications; an operations board; an approvals engine
-that records whether an authorised change was ever actually made; and notifications with optional
-realtime. In English and
+that records whether an authorised change was ever actually made; notifications with optional
+realtime; and a client intake queue clients can write to. In English and
 Arabic, light and dark, desktop and mobile.
 
 **Every provider's live handshake is `BLOCKED_EXTERNAL`** on an authorization this
@@ -32,9 +32,9 @@ provider.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 1 263 passed — architecture, unit, feature          |
-| Frontend tests (Vitest)   | 323 passed                                          |
-| End-to-end (Playwright)   | 230 passed — Chromium + mobile Safari, signing in as real roles |
+| Backend tests (Pest)      | 1 341 passed — architecture, unit, feature          |
+| Frontend tests (Vitest)   | 343 passed                                          |
+| End-to-end (Playwright)   | 254 passed — Chromium + mobile Safari, signing in as real roles |
 | Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
 | Style                     | Pint, ESLint and Prettier, clean                    |
 

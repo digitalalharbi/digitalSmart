@@ -9,11 +9,14 @@ async function openCentre(page: Page, account: string = ACCOUNTS.owner): Promise
 test.describe('notifications', () => {
   test('says what would put something here when nothing has', async ({ page }) => {
     /*
-     * The demo seeds its approvals as the owner, and nobody is told what they did themselves — so the owner's
-     * centre is genuinely empty, which is the state worth testing. An empty notification centre is usually a
-     * quiet week rather than a broken feature, and the page names the four things that would fill it.
+     * The media buyer, who is on no project in the demo. They hold the permissions that would be told about a
+     * client request, and the recipient resolver still excludes them — because a notification is a disclosure and
+     * they can see none of these clients. So their centre is genuinely empty, which is the state worth testing.
+     *
+     * The owner is no longer the right account for this: a client now raises a request in the demo, and the owner
+     * is correctly told about it.
      */
-    await openCentre(page);
+    await openCentre(page, ACCOUNTS.buyer);
 
     await expect(page.getByRole('heading', { level: 1, name: 'Notifications' })).toBeVisible({
       timeout: 30_000,
@@ -23,7 +26,7 @@ test.describe('notifications', () => {
   });
 
   test('says live updates are off rather than implying it is live', async ({ page }) => {
-    await openCentre(page);
+    await openCentre(page, ACCOUNTS.buyer);
 
     /*
      * "Live" needs both sides: a server that can push and a browser with a key to subscribe with. The

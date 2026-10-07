@@ -23,6 +23,7 @@ import {
   LeadCentrePage,
   MediaPlannerPage,
   OperationsPage,
+  RequestsPage,
   StoreAnalyticsPage,
   TrackingCenterPage,
 } from '@/app/router/lazyPages';
@@ -50,6 +51,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/creative-hub': deferred(<CreativeHubPage />),
   '/tasks': deferred(<OperationsPage />),
   '/approvals': deferred(<ApprovalsPage />),
+  '/client-requests': deferred(<RequestsPage />),
   /*
    * Not deferred. The bell already loads this feature on every screen, so a second chunk for the page would be
    * a download that buys nothing.

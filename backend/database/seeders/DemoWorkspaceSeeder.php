@@ -20,12 +20,17 @@ use App\Application\Leads\DTO\LeadInput;
 use App\Application\Measurement\Command\SaveMeasurementSource;
 use App\Application\Measurement\Command\SyncMeasurementSource;
 use App\Application\Measurement\DTO\MeasurementSourceInput;
+use App\Application\Operations\Command\AnswerClientRequest;
 use App\Application\Operations\Command\DecideApproval;
 use App\Application\Operations\Command\MoveTask;
 use App\Application\Operations\Command\OpenTask;
+use App\Application\Operations\Command\PromiseClientRequest;
 use App\Application\Operations\Command\RecordEnactment;
 use App\Application\Operations\Command\RequestApproval;
+use App\Application\Operations\Command\SubmitClientRequest;
+use App\Application\Operations\Command\TriageClientRequest;
 use App\Application\Operations\DTO\ApprovalInput;
+use App\Application\Operations\DTO\ClientRequestInput;
 use App\Application\Operations\DTO\TaskInput;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\IdentifierGenerator;
@@ -48,7 +53,11 @@ use App\Domain\Leads\LeadStage;
 use App\Domain\Measurement\MeasurementSourceKind;
 use App\Domain\Operations\ApprovalKind;
 use App\Domain\Operations\ApprovalState;
+use App\Domain\Operations\ClientRequestKind;
+use App\Domain\Operations\ClientRequestState;
 use App\Domain\Operations\EnactmentState;
+use App\Domain\Operations\MessageAudience;
+use App\Domain\Operations\StatedUrgency;
 use App\Domain\Operations\TaskPriority;
 use App\Domain\Operations\TaskState;
 use App\Domain\Project\ProjectStatus;
@@ -157,6 +166,7 @@ final class DemoWorkspaceSeeder extends Seeder
         $this->demoCreative($workspace->getKey());
         $this->demoTasks($workspace->getKey());
         $this->demoApprovals($workspace->getKey());
+        $this->demoClientRequests($workspace->getKey(), $roles);
 
         $actor->clear();
 
@@ -924,6 +934,194 @@ final class DemoWorkspaceSeeder extends Seeder
         ProjectMember::query()->updateOrCreate(
             ['project_id' => $project->getKey(), 'user_id' => $creative->getKey()],
             ['role_id' => $role->getKey()],
+        );
+    }
+
+    /**
+     * An intake queue with both halves of why a queue is slow on it.
+     *
+     * Built through the real use cases, so the rules are exercised: a decline carries the reason the client sees,
+     * a request for information says what is needed, and a promised date carries the person who promised it.
+     *
+     * The shape is deliberately uncomfortable. One request has been sitting unanswered for five days, one is
+     * waiting on the client, and one accepted request has no promised date at all — because those are the three
+     * figures this module exists to publish, and a queue where everything was answered the same day would
+     * demonstrate none of them.
+     *
+     * One request is submitted **as the client**, through the client viewer's own account, because that is the
+     * only path in this product where somebody outside the agency writes anything.
+     *
+     * @param  array<string, \App\Infrastructure\Persistence\Eloquent\Model\Role>  $roles
+     */
+    private function demoClientRequests(mixed $workspaceId, array $roles): void
+    {
+        /** @var Client|null $client */
+        $client = Client::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('status', ClientStatus::Active->value)
+            ->orderBy('created_at')
+            ->first();
+
+        if ($client === null) {
+            return;
+        }
+
+        /** @var Project|null $project */
+        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->first();
+
+        if ($project === null) {
+            return;
+        }
+
+        /*
+         * The client viewer, put on the project so they can see their own requests. That assignment is what the
+         * whole client-facing side rests on: visibility comes from projects, exactly as it does everywhere else.
+         */
+        $viewer = $this->user(self::PEOPLE[4]);
+        $viewerRole = $roles[SystemRole::ClientViewer->value] ?? null;
+
+        if ($viewerRole !== null) {
+            ProjectMember::query()->updateOrCreate(
+                ['project_id' => $project->getKey(), 'user_id' => $viewer->getKey()],
+                ['role_id' => $viewerRole->getKey()],
+            );
+        }
+
+        $submit = app(SubmitClientRequest::class);
+        $triage = app(TriageClientRequest::class);
+        $promise = app(PromiseClientRequest::class);
+        $answer = app(AnswerClientRequest::class);
+        $actor = app(ActorContextBinder::class);
+
+        $ask = static fn (
+            ClientRequestKind $kind,
+            string $title,
+            string $detail,
+            StatedUrgency $urgency,
+            ?int $wantedInDays,
+        ): ClientRequestInput => new ClientRequestInput(
+            clientId: (string) $client->getKey(),
+            kind: $kind,
+            title: $title,
+            detail: $detail,
+            projectId: (string) $project->getKey(),
+            urgency: $urgency,
+            wantedBy: $wantedInDays === null
+                ? null
+                : (new DateTimeImmutable('today'))->modify('+'.$wantedInDays.' days'),
+        );
+
+        /*
+         * 1. Raised by the client, and nobody has answered. Backdated five days, which is over the two-day
+         *    patience this module publishes — so the queue leads with a client who has been ignored.
+         */
+        $actor->bind(new UserId((string) $viewer->getKey()), new WorkspaceId((string) $workspaceId));
+
+        $ignored = $submit($ask(
+            ClientRequestKind::Change,
+            'Can we pause the retargeting over Eid?',
+            'We will be closed for the holiday and would rather not pay for traffic that cannot buy.',
+            StatedUrgency::ThisWeek,
+            6,
+        ));
+
+        $actor->clear();
+
+        DB::table('client_requests')->where('id', $ignored->id)->update([
+            'created_at' => now()->subDays(5),
+            'first_answered_at' => null,
+        ]);
+
+        // Back to the owner for everything the agency does.
+        $owner = $this->user(self::PEOPLE[0]);
+        $actor->bind(new UserId((string) $owner->getKey()), new WorkspaceId((string) $workspaceId));
+
+        // 2. Accepted and promised, with the person who promised it on the record.
+        $promised = $submit($ask(
+            ClientRequestKind::Creative,
+            'Three new story creatives for the Eid push',
+            'Same framing as the Ramadan set, with the Eid greeting.',
+            StatedUrgency::ThisMonth,
+            12,
+        ));
+        $triage($promised->id, ClientRequestState::Accepted);
+        $promise($promised->id, (new DateTimeImmutable('today'))->modify('+8 days'));
+        $answer($promised->id, MessageAudience::Client, 'Booked in for the 15th. We will share the first cut on the 12th.');
+        $answer($promised->id, MessageAudience::Internal, 'Reuse the Ramadan masters; do not re-shoot.');
+
+        // 3. Accepted and *not* promised, which is the figure a queue usually hides.
+        $unpromised = $submit($ask(
+            ClientRequestKind::Report,
+            'A breakdown of last month by city',
+            'The board asked where the Riyadh spend went.',
+            StatedUrgency::WheneverYouCan,
+            null,
+        ));
+        $triage($unpromised->id, ClientRequestState::Accepted);
+        $answer($unpromised->id, MessageAudience::Client, 'We can do this. Checking what the data supports before we commit to a date.');
+
+        // 4. Waiting on the client, with the question stated — the state that stops a stall hiding.
+        $waiting = $submit($ask(
+            ClientRequestKind::NewCampaign,
+            'Launch something for the new Jeddah branch',
+            'Opening in three weeks.',
+            StatedUrgency::Urgent,
+            20,
+        ));
+        $triage(
+            $waiting->id,
+            ClientRequestState::NeedsInformation,
+            'We need the opening date and whether the branch has its own phone number for the ads.',
+        );
+
+        // 5. Declined, with the reason the client is shown.
+        $declined = $submit($ask(
+            ClientRequestKind::Change,
+            'Can we run ads for the competitor brand too?',
+            'Same team manages both.',
+            StatedUrgency::WheneverYouCan,
+            null,
+        ));
+        $triage(
+            $declined->id,
+            ClientRequestState::Declined,
+            'We cannot run both sides of a category from one account without telling each of you. Happy to talk '
+            .'about a separate engagement.',
+        );
+
+        /*
+         * 6. An open question, raised by the client. Kept open deliberately: a question is the one kind that
+         *    produces no work, and the queue can only show that refusal on a request somebody could still act on.
+         */
+        $actor->bind(new UserId((string) $viewer->getKey()), new WorkspaceId((string) $workspaceId));
+
+        $submit($ask(
+            ClientRequestKind::Question,
+            'Is the Riyadh audience still the biggest one?',
+            'We are planning next quarter and want to know where the demand actually is.',
+            StatedUrgency::ThisMonth,
+            null,
+        ));
+
+        $actor->clear();
+        $actor->bind(new UserId((string) $owner->getKey()), new WorkspaceId((string) $workspaceId));
+
+        // 7. Delivered, so the queue has a delivery rate with a denominator that exists.
+        $done = $submit($ask(
+            ClientRequestKind::Question,
+            'Why did the cost per purchase jump on the 2nd?',
+            'It looks like it doubled for a day.',
+            StatedUrgency::ThisWeek,
+            null,
+        ));
+        $triage($done->id, ClientRequestState::Accepted);
+        $triage($done->id, ClientRequestState::InProgress);
+        $answer($done->id, MessageAudience::Client, 'A bidding change we made on the 1st. Reverted, and the cost is back where it was.');
+        $triage($done->id, ClientRequestState::Delivered);
+
+        $this->command?->line(
+            '  Client requests: 7, one unanswered for five days, one waiting on the client, one accepted '
+            .'with no promised date, one open question.'
         );
     }
 }

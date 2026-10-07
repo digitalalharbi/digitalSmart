@@ -67,6 +67,15 @@ export const PERMISSIONS = {
   approvalsView: 'approvals.view',
   approvalsRequest: 'approvals.request',
   approvalsDecide: 'approvals.decide',
+  /*
+   * Three, and the split is what makes a client portal possible: `view` opens the agency's intake queue, which
+   * carries internal notes, while `submit` only lets somebody raise a request and read the client-facing side of
+   * their own. A client viewer holds `submit` and not `view`, and the absence of `view` is what tells the server
+   * to exclude internal messages in SQL.
+   */
+  clientRequestsView: 'client_requests.view',
+  clientRequestsSubmit: 'client_requests.submit',
+  clientRequestsTriage: 'client_requests.triage',
   auditView: 'audit.view',
 } as const;
 
