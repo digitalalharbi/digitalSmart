@@ -43,6 +43,11 @@ return [
         // A shop on a sale day delivers hundreds a minute; throttling real orders is the worse
         // failure, and a 429 only makes the provider redeliver.
         'webhooks' => (int) env('RATE_LIMIT_WEBHOOKS', 600),
+        /*
+         * Shared report links. Twenty a minute per address: a recipient opens one a handful of times, and anybody
+         * needing more is not reading a report. The endpoint is unauthenticated, so this is the only limit on it.
+         */
+        'shared_reports' => (int) env('RATE_LIMIT_SHARED_REPORTS', 20),
     ],
 
 ];

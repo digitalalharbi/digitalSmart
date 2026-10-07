@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Analytics\DTO;
+namespace App\Domain\Shared\ValueObject;
 
-use App\Application\Shared\Exception\InvalidDateRange;
+use App\Domain\Shared\Exception\InvalidDateRange;
 use DateTimeImmutable;
 
 /**
@@ -14,6 +14,14 @@ use DateTimeImmutable;
  * and converting to UTC would shift spend between days — which is how a Monday
  * report stops matching the platform's own.
  */
+/*
+ * Moved out of the application layer, where it started.
+ *
+ * A date range that knows its own length, the equally long period before it and the same dates a year earlier is
+ * arithmetic about a business concept, not a transport shape — and the reporting enums that resolve a saved window
+ * into one are domain rules. Leaving it in `Application\Analytics\DTO` meant the domain depending on the
+ * application layer, which the architecture test caught and was right to.
+ */
 final readonly class DateRange
 {
     public function __construct(
@@ -21,7 +29,7 @@ final readonly class DateRange
         public DateTimeImmutable $end,
     ) {
         if ($start > $end) {
-            throw InvalidDateRange::endBeforeStart();
+            throw InvalidDateRange::endsBeforeStart();
         }
     }
 

@@ -35,7 +35,7 @@ sit.
 | 18    | **Attribution** — models with coverage, data quality, confidence and revenue source on every figure, and a surface that leads with coverage | **Complete for what the data supports**; three models need a touch path this product does not hold, and are declared, explained and refused — see docs/ATTRIBUTION.md |
 | 19    | **Creative operations** — briefs, versions, recorded platform specifications with provenance, validation that refuses to say "valid", comments with an audience, an approval trail attached to versions, and a board | **Complete for what the platforms publish**; the platforms do not expose creative specifications in a machine-readable form, so they are recorded with their source and age — see docs/CREATIVE.md. File upload and measurement are the next slice |
 | 20    | **Operations** — tasks, approvals engine, client requests, notifications and realtime | **Complete**; the board publishes the figures a work board hides — undated work as its own count, a completion rate over settled work, and a refusal to read the overdue figure as lateness when most of the board carries no date. The approvals engine records who authorised a change and whether anybody ever made it, because this product does not write to the platforms — approval is not execution, and every request says so. Notifications treat telling somebody as a disclosure — permission, visibility and active membership all checked — and the socket payload carries no readable content at all. Client requests are the one surface a client can write to, with internal notes excluded in SQL rather than filtered — see docs/OPERATIONS.md |
-| 21    | **Reporting** — report builder, saved reports, exports, secure client live reports and snapshots | Planned |
+| 21    | **Reporting** — report builder, saved reports, exports, secure client live reports and snapshots | **Complete for CSV**; XLSX and PDF are outstanding. The module's subject is the one artefact that leaves the building, so comparability is computed rather than assumed — unequal lengths, a running period and overlapping ranges are each refused with a reason that goes where the percentages would have been. A shape decides which metrics it accepts, so reach is never offered in a ranking: it counts deduplicated people and a per-platform reach column has no meaning. A snapshot returns its stored payload unchanged, which is the only way to answer "the report said this" after a platform restates a figure. A shared link is treated as a credential — hashed, expiring, revocable with a reason — and its page is the one unauthenticated read in the product: it always answers with a state, and a token nobody issued gets the same answer as a revoked one. Nothing here computes a metric; every section is one analytics call, so there is no second set of numbers to reconcile in front of a client — see docs/REPORTING.md |
 | 22    | **Client portal** — per-module visibility, never leaking internal notes | Planned |
 | 23    | **AI** — Ask/Analyze/Investigate/Report/Plan, evidence-backed, permission-aware, recommendation-first | Planned |
 | 24    | **Presentation generator** — PPTX and PDF, Arabic RTL, Smart Code theme, real charts and tables | Planned |
@@ -270,9 +270,10 @@ built around them.
 
 ### Not yet done in Phase 4
 
-- Nothing. Pivot-style reports and CSV/XLSX/PDF export belong to Phase 20; annotations
-  and threshold lines on charts are deferred to Phase 5 where pacing targets make
-  them meaningful.
+- Nothing. CSV export landed in Phase 21 and XLSX/PDF remain outstanding there; pivot-style
+  ad-hoc exploration is explicitly not planned — it would need its own honesty rules about
+  denominators. Annotations and threshold lines on charts are deferred to Phase 5, where
+  pacing targets make them meaningful.
 - Conversion-action metrics (purchases, leads, installs) in the analytics layer:
   they live in `conversion_metrics` rather than `daily_metrics`, so the read model
   reports them as not read. Deferred to Phase 5, where budget pacing needs them.

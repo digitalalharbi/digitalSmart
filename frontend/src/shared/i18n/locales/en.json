@@ -1548,5 +1548,127 @@
       "wantedByHint": "Optional, and a wish rather than a commitment. We will come back with a date we can promise.",
       "submit": "Send the request"
     }
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Saved reports, the frozen copies behind them, and the links they went out on.",
+    "loadFailed": "Could not load the reports. Try again in a moment.",
+    "saved": "Saved reports",
+    "new": "New report",
+    "denied": {
+      "title": "Reports are not part of your access",
+      "body": "Ask a workspace owner if you need to build or read reports."
+    },
+    "scope": {
+      "client": "Client",
+      "allClients": "All clients"
+    },
+    "empty": {
+      "title": "No reports yet",
+      "body": "A report is a saved question: a period, a few metrics and the shapes that answer it. Build one and it stays useful next month."
+    },
+    "pick": {
+      "title": "Pick a report",
+      "body": "Choose one to read it, freeze it, or send it out."
+    },
+    "card": {
+      "internal": "Internal",
+      "clientSafe": "Safe to send",
+      "snapshots": "{{count}} snapshot",
+      "snapshots_other": "{{count}} snapshots",
+      "shared": "{{count}} live link",
+      "shared_other": "{{count}} live links"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "view": {
+      "allClients": "Across every client",
+      "days": "{{count}} day",
+      "days_other": "{{count}} days",
+      "csv": "Download CSV",
+      "incomplete": "This period is still running, so the figures will move for the rest of it.",
+      "notComparable": "The change against {{comparison}} is not shown.",
+      "comparedWith": "Compared with {{label}}: {{from}} – {{until}}.",
+      "internalNote": "Internal note: {{note}}",
+      "renderedAt": "Figures as at {{at}}.",
+      "emptyTitle": "Nothing recorded in this period",
+      "emptyBody": "No section of this report has data for these dates. That is not the same as a total of zero."
+    },
+    "section": {
+      "emptyTitle": "Nothing recorded",
+      "emptyBody": "This section has no data for the report's period."
+    },
+    "table": {
+      "metric": "Metric",
+      "value": "Value",
+      "change": "Change",
+      "date": "Date",
+      "row": "Row"
+    },
+    "builder": {
+      "new": "New report",
+      "edit": "Edit report",
+      "name": "Name",
+      "description": "What this report is for",
+      "client": "Client",
+      "clientHint": "Leave this across every client for an agency-wide report.",
+      "everyClient": "Every client",
+      "period": "Period",
+      "periodHint": "Saved as a rule, not as two dates, so the report stays useful next month. Every relative period ends yesterday, because today is still accumulating.",
+      "stillRunning": "still running",
+      "from": "From",
+      "until": "Until",
+      "comparison": "Compare with",
+      "audience": "Who this is for",
+      "audienceHint": "Internal unless you say otherwise. A client-safe report is written to be read by the client, not the internal one with the notes removed.",
+      "internalNote": "Internal note",
+      "internalNoteHint": "Never appears in a client-safe render or on a shared link.",
+      "sections": "Sections",
+      "addSection": "Add a section",
+      "removeSection": "Remove this section",
+      "shape": "Shape",
+      "metrics": "Metrics",
+      "metricsHint": "Up to {{cap}} in this shape. Past that it stops being readable — add a second section instead.",
+      "groupBy": "Group by",
+      "carriesComparison": "This section carries the comparison",
+      "save": "Save the report"
+    },
+    "share": {
+      "title": "Snapshots and links",
+      "snapshots": "Snapshots",
+      "snapshotsHint": "A snapshot stores the figures as they are now and never recalculates them. It is the only way to answer \"the report said this\" months later.",
+      "noSnapshots": "No snapshots yet.",
+      "snapshotLabel": "What to call this snapshot",
+      "takeSnapshot": "Take a snapshot",
+      "links": "Links out",
+      "noLinks": "This report has never been shared.",
+      "internalCannotBeShared": "This report is marked internal, so it cannot be shared. A client-safe report is written to be read by the client — in its titles, in which metrics are on it and in what is left out — so mark it safe to send only after reading it as they would.",
+      "showing": "The link shows",
+      "showingHint": "A live link recalculates every time it is opened. A snapshot never does, and the recipient is told which they have.",
+      "live": "Today's figures",
+      "days": "Lasts (days)",
+      "daysHint": "Up to {{max}}. A link with no end outlives the engagement.",
+      "recipient": "Who it is for",
+      "create": "Create the link",
+      "copy": "Copy the link",
+      "tokenOnce": "This is the only time the link is shown. It is not stored anywhere it can be read back — if it is lost, create a new one and turn this one off.",
+      "frozen": "Frozen",
+      "meta": "Expires {{expires}} · opened {{views}} times",
+      "revokedBecause": "Turned off: {{reason}}",
+      "revoke": "Turn off",
+      "revokeReason": "Why it is being turned off",
+      "confirmRevoke": "Turn it off"
+    }
+  },
+  "sharedReport": {
+    "chrome": "Report",
+    "unavailable": "This report is not available",
+    "expired": "This link has expired. Ask whoever sent it for a new one.",
+    "revoked": "This link has been turned off. Ask whoever sent it for a new one.",
+    "unreachable": "The report could not be loaded. That is a connection problem, not an expired link — try again.",
+    "preparedFor": "Prepared for {{recipient}}.",
+    "footer": "Figures are as at the time shown above. A live link recalculates each time it is opened; a frozen copy never does, and says which it is."
   }
 }

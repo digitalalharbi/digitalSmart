@@ -6,13 +6,13 @@ namespace App\Interface\Http\Request\Dashboard;
 
 use App\Application\Analytics\DTO\AnalyticsFilters;
 use App\Application\Analytics\DTO\AnalyticsRequest;
-use App\Application\Analytics\DTO\DateRange;
 use App\Application\Dashboard\DTO\SavedViewInput;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
 use App\Domain\Dashboard\Visibility;
 use App\Domain\Integration\Provider;
+use App\Domain\Shared\ValueObject\DateRange;
 use DateTimeImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

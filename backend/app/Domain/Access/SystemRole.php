@@ -99,6 +99,9 @@ enum SystemRole: string
                 Permission::ClientRequestsView,
                 Permission::ClientRequestsSubmit,
                 Permission::ClientRequestsTriage,
+                Permission::ReportsView,
+                Permission::ReportsManage,
+                Permission::ReportsShare,
                 Permission::AuditView,
             ],
 
@@ -155,6 +158,13 @@ enum SystemRole: string
                 Permission::ClientRequestsView,
                 Permission::ClientRequestsSubmit,
                 Permission::ClientRequestsTriage,
+                /*
+                 * Builds reports and sends them. The role in the conversation with the client is the role that
+                 * decides what that client is shown.
+                 */
+                Permission::ReportsView,
+                Permission::ReportsManage,
+                Permission::ReportsShare,
                 Permission::AuditView,
             ],
 
@@ -209,6 +219,12 @@ enum SystemRole: string
                  */
                 Permission::ClientRequestsView,
                 Permission::ClientRequestsSubmit,
+                /*
+                 * Builds reports and does not share them. A buyer reporting on their own performance to a client,
+                 * with nobody reading it first, is the one review this module exists to keep.
+                 */
+                Permission::ReportsView,
+                Permission::ReportsManage,
             ],
 
             self::Creative => [

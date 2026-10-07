@@ -4,6 +4,100 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 21 — reporting
+
+The one artefact in this product that leaves the building: a saved question, the figures that answer
+it today, a frozen copy of the figures that answered it last month, and a link a client can read
+without an account.
+
+### The argument
+
+Every other surface here is read by the people who built it. A report is pasted into a deck, quoted
+in a meeting the agency is not in, and read six weeks later by somebody deciding whether to renew.
+A dashboard that is briefly wrong gets refreshed; **a report that is wrong is a sentence an account
+manager has already said out loud.**
+
+So the module spends its effort on the four things a reporting feature usually leaves to the reader:
+whether the comparison is arithmetically sound, whether the figures are live or frozen, whether the
+period has finished, and who may read it and until when.
+
+### Added
+
+- `app/Domain/Reporting/` — `ReportWindow` (eight cases; **every relative window ends yesterday**,
+  because today is still accumulating and a partial last day reads as a drop in performance),
+  `ComparisonMode`, `Comparability`, `SectionKind`, `ReportAudience`, `RenderMode`, `ShareState`.
+- **Comparability is computed, not assumed.** "Spend is up 40%" is the most quoted sentence an agency
+  produces and it is worthless when the periods differ in length. Three refusals with codes —
+  `unequal_length`, `period_incomplete`, `overlapping` — and a fourth, `not_requested`, that
+  separates *we will not show you a change* from *you did not ask for one*. **When a comparison is
+  refused the reason goes where the percentages would have been**, above the sections: a reader who
+  finds no comparison and no explanation does the arithmetic themselves, against whatever period
+  they pick.
+- **It deliberately says nothing about seasonality.** `Comparable` means the arithmetic is sound, not
+  that the comparison is meaningful — comparing Ramadan with the month after it is a bad comparison
+  and no code can know that. Claiming otherwise is the more dangerous error, because a reader told a
+  comparison is valid stops thinking about it.
+- **A report is a rule, not two dates.** `last_30_days` still answers its question next month;
+  `custom` is the only window carrying dates, and a CHECK enforces both-or-neither.
+- **A shape decides which metrics it accepts.** Caps of 6/4/3/8, and **non-additive metrics refused
+  in a ranking or a table** — reach counts deduplicated people, so a per-platform reach column is not
+  merely wrong, it has no meaning. The builder does not offer it there at all: a form that offers
+  what the server rejects teaches people to distrust the form.
+- **Only the scorecard carries the comparison.** A ranking's rows are different entities each period,
+  so "Meta is up 12%" against a ranking that did not contain Meta last month is a sentence with no
+  referent.
+- **Snapshots return the stored payload unchanged** — not re-rendered, not merged with today's
+  figures. The only way to answer "the report said 1.2 million" months later, when the platform has
+  since restated the number. `live` or `snapshot` is on the document, not inferred.
+- **Audience is a rewrite, not a filter.** A client-safe report is written to be read by the client —
+  in its title, its metrics and what was left out — so a new report defaults to **internal**. The
+  internal note is never loaded on a client-safe render, `ShareReport` refuses to share an internal
+  report at all, and `ReadSharedReport` passes `ClientSafe` explicitly so no future configuration can
+  make the unauthenticated path serve an internal render. Three locks on one door.
+- **A link is a credential.** 48 random bytes, stored as SHA-256 plus a 12-character hint, looked up
+  by hash; no endpoint returns a token and the interface says so when it shows one. `expires_at` is
+  NOT NULL and capped at 90 days — a link with no end outlives the engagement, the account manager
+  and sometimes the relationship. Revocation requires a reason, as a CHECK.
+- **`ShareState::Expired` is derived, never stored.** A stored flag needs something to write it, and
+  whatever that is would be the thing that fails to run — leaving a link expired in principle and
+  working in practice.
+- **Views are counted, not logged.** A count and a last-viewed time; not who, and not when each time.
+  An agency legitimately wants to know whether the client opened it; a log of a client's reading
+  habits is data this product has no reason to hold.
+- **One unauthenticated read**, `GET /api/shared-reports/{token}`: the token is in the path and
+  nothing else is, the route is constrained to `[A-Fa-f0-9]{96}`, it **always answers 200 with a
+  state** — a 404 on a link a client was sent reads as a broken site and they ask for it again
+  rather than learning it lapsed — and **a token nobody issued gets the same answer as a revoked
+  one**, because telling a visitor the difference tells anybody guessing tokens when they have
+  guessed one. Its own rate limit, per address, because there is no user to key one to.
+- **`/shared-reports/:token`** — the page the link actually opens, outside the shell and outside
+  `RequireSession`: no navigation of any kind, because there is nowhere to go and a chrome full of
+  controls leading to a sign-in screen would invite a visitor to try them. It renders the state in
+  the reader's own language rather than echoing the server's English, and offers no export.
+- **The CSV is a document, not a dump** — a header block carrying the period, the source state,
+  live-or-frozen and the comparison warning; major units, because a spreadsheet is read by a person;
+  an unavailable figure writes its reason rather than a blank, because a blank becomes a zero in the
+  next formula; and a cell beginning `=`, `+`, `-` or `@` is prefixed with an apostrophe, because a
+  campaign name is attacker-controlled text as far as a spreadsheet is concerned.
+- **Sharing is its own permission.** A media buyer may build a report and not send one: a buyer
+  reporting on their own performance to a client, with nobody reading it first, is the one review this
+  module exists to keep. The interface says why rather than hiding the control.
+- Ten CHECK constraints across four tables, with the window, comparison, audience and section-kind
+  vocabularies generated from their enums so the database and the domain cannot drift.
+- `docs/REPORTING.md`.
+
+### Changed
+
+- `DateRange` **moved into the domain** (`App\Domain\Shared\ValueObject\DateRange`) from the
+  analytics application layer, where the reporting domain could not reach it without inverting the
+  dependency the architecture tests enforce. Twelve files repointed; it now throws
+  `Domain\Shared\Exception\InvalidDateRange`.
+- Nothing in this module computes a metric. Every section is one `AnalyticsReadModel` call, so a
+  report carries the same figures, source states and unavailability reasons as the analytics surface —
+  including `MetricSource::weakest()` rolling up to the section and then to the document. A reporting
+  feature with its own aggregation is a second set of numbers to reconcile, and the reconciliation
+  always happens in front of a client.
+
 ## Phase 20 — operations: client requests
 
 What a client asked for, what was said back, and who promised what — on one surface that serves both

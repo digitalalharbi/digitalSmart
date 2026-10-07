@@ -70,3 +70,16 @@ export const ApprovalsPage = lazy(async () => ({
 export const RequestsPage = lazy(async () => ({
   default: (await import('@/features/requests/RequestsPage')).RequestsPage,
 }));
+
+export const ReportsPage = lazy(async () => ({
+  default: (await import('@/features/reports/ReportsPage')).ReportsPage,
+}));
+
+/*
+ * The shared-link page, which is the one surface a visitor with no account ever loads. Split for the opposite
+ * reason to the rest: not to keep the charting engine out of the first paint, but to keep the signed-in
+ * application out of a page that a client opens from an email.
+ */
+export const SharedReportPage = lazy(async () => ({
+  default: (await import('@/features/reports/SharedReportPage')).SharedReportPage,
+}));

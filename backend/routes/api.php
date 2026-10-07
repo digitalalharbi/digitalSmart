@@ -28,6 +28,8 @@ use App\Interface\Http\Controller\Operations\ClientRequestController;
 use App\Interface\Http\Controller\Operations\TaskController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
+use App\Interface\Http\Controller\Reporting\ReportController;
+use App\Interface\Http\Controller\Reporting\SharedReportController;
 use App\Interface\Http\Controller\System\HealthController;
 use App\Interface\Http\Controller\Workspace\MemberController;
 use App\Interface\Http\Middleware\BindActorContext;
@@ -83,6 +85,22 @@ Route::post('webhooks/stores/{provider}', StoreWebhookController::class)
 Route::post('auth/login', [SessionController::class, 'store'])
     ->middleware('throttle:auth')
     ->name('auth.login');
+
+/*
+ * Reading a report through a shared link, with no account.
+ *
+ * The only unauthenticated read in this product. The token is the whole of the authorisation and it names exactly
+ * one report: there is no other parameter, so there is nothing a visitor can change to reach a different document.
+ *
+ * Throttled on its own bucket, and tighter than the authenticated API's. That limit is per user; this has no user,
+ * so it is per address — and a bare token in a URL is the one thing here worth brute forcing. The response is always
+ * 200 with a state, because a 404 on a link a client was sent reads as a broken site and they ask for it again
+ * instead of learning that it lapsed.
+ */
+Route::get('shared-reports/{token}', SharedReportController::class)
+    ->middleware('throttle:shared-reports')
+    ->where('token', '[A-Fa-f0-9]{96}')
+    ->name('shared_reports.show');
 
 // --------------------------------------------------------- Authenticated ---
 Route::middleware(['auth:sanctum', BindActorContext::class])->group(function (): void {
@@ -405,6 +423,41 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->name('measurement.containers');
     Route::get('measurement/sources/{source}/readiness', [MeasurementController::class, 'readiness'])
         ->whereUuid('source')->name('measurement.sources.readiness');
+
+    // -------------------------------------------------------------- Reporting ---
+    Route::get('reports/vocabulary', [ReportController::class, 'vocabulary'])
+        ->name('reports.vocabulary');
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::post('reports', [ReportController::class, 'store'])->name('reports.store');
+    /*
+     * The rendered report and its definition are separate reads. Rendering costs one analytics aggregation per
+     * section, and an editor that paid for it on every keystroke would be the slowest screen in the product.
+     */
+    Route::get('reports/{report}', [ReportController::class, 'show'])
+        ->whereUuid('report')->name('reports.show');
+    Route::get('reports/{report}/definition', [ReportController::class, 'definition'])
+        ->whereUuid('report')->name('reports.definition');
+    Route::put('reports/{report}', [ReportController::class, 'update'])
+        ->whereUuid('report')->name('reports.update');
+    Route::delete('reports/{report}', [ReportController::class, 'destroy'])
+        ->whereUuid('report')->name('reports.destroy');
+    /* The caveats travel in the file — see `ReportCsv`. */
+    Route::get('reports/{report}/csv', [ReportController::class, 'csv'])
+        ->whereUuid('report')->name('reports.csv');
+    /*
+     * A snapshot is stored output, never recomputed. It is the only way this product can answer "the report said
+     * 1.2 million" three months later.
+     */
+    Route::get('reports/{report}/snapshots', [ReportController::class, 'snapshots'])
+        ->whereUuid('report')->name('reports.snapshots');
+    Route::post('reports/{report}/snapshots', [ReportController::class, 'snapshot'])
+        ->whereUuid('report')->name('reports.snapshot');
+    Route::get('reports/{report}/shares', [ReportController::class, 'shares'])
+        ->whereUuid('report')->name('reports.shares');
+    Route::post('reports/{report}/shares', [ReportController::class, 'share'])
+        ->whereUuid('report')->name('reports.share');
+    Route::delete('report-shares/{share}', [ReportController::class, 'revokeShare'])
+        ->whereUuid('share')->name('reports.shares.revoke');
 
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])

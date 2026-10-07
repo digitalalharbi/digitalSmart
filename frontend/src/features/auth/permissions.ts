@@ -76,6 +76,14 @@ export const PERMISSIONS = {
   clientRequestsView: 'client_requests.view',
   clientRequestsSubmit: 'client_requests.submit',
   clientRequestsTriage: 'client_requests.triage',
+  /*
+   * Sharing is its own permission, and the one that matters: `manage` builds a document, `share` hands a client's
+   * performance data to whoever holds a link. A media buyer has the first and not the second — somebody reporting on
+   * their own performance to a client, with nobody reading it first, is the one review this keeps.
+   */
+  reportsView: 'reports.view',
+  reportsManage: 'reports.manage',
+  reportsShare: 'reports.share',
   auditView: 'audit.view',
 } as const;
 

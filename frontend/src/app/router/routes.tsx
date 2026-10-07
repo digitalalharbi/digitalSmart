@@ -23,7 +23,9 @@ import {
   LeadCentrePage,
   MediaPlannerPage,
   OperationsPage,
+  ReportsPage,
   RequestsPage,
+  SharedReportPage,
   StoreAnalyticsPage,
   TrackingCenterPage,
 } from '@/app/router/lazyPages';
@@ -52,6 +54,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/tasks': deferred(<OperationsPage />),
   '/approvals': deferred(<ApprovalsPage />),
   '/client-requests': deferred(<RequestsPage />),
+  '/reports': deferred(<ReportsPage />),
   /*
    * Not deferred. The bell already loads this feature on every screen, so a second chunk for the page would be
    * a download that buys nothing.
@@ -69,6 +72,11 @@ const featureRoutes: RouteObject[] = NAV_ITEMS.filter((item) => item.path !== '/
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
+  /*
+   * Outside the shell and outside `RequireSession`, which is the whole point of it: a client opens this from an
+   * email and has no account to be sent to a sign-in screen for. The token is in the path and nothing else is.
+   */
+  { path: '/shared-reports/:token', element: deferred(<SharedReportPage />) },
   {
     path: '/',
     element: (

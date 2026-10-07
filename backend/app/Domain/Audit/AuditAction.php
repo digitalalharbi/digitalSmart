@@ -101,6 +101,16 @@ enum AuditAction: string
     case ClientRequestAnswered = 'client_request.answered';
     case ClientRequestOwnerChanged = 'client_request.owner_changed';
 
+    case ReportSaved = 'report.saved';
+    case ReportDeleted = 'report.deleted';
+    case ReportSnapshotTaken = 'report.snapshot_taken';
+    /*
+     * Its own action, and the most important one in this module: a share hands a client's performance data to
+     * whoever holds a link. "Who sent this out, to whom, and when does it stop working" has to be answerable.
+     */
+    case ReportShared = 'report.shared';
+    case ReportShareRevoked = 'report.share_revoked';
+
     case WorkspaceMemberInvited = 'workspace.member_invited';
     case WorkspaceMemberRoleChanged = 'workspace.member_role_changed';
     case WorkspaceMemberSuspended = 'workspace.member_suspended';

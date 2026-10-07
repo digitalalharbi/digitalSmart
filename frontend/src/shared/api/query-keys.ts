@@ -145,6 +145,24 @@ export const queryKeys = {
     queue: (scope: Record<string, unknown>) => ['client-requests', 'queue', scope] as const,
     detail: (requestId: string) => ['client-requests', 'detail', requestId] as const,
   },
+  reports: {
+    all: () => ['reports'] as const,
+    vocabulary: () => ['reports', 'vocabulary'] as const,
+    list: (clientId: string | null) => ['reports', 'list', clientId] as const,
+    /*
+     * The rendered report and its definition are separate keys, because they are separate reads for a reason: one
+     * costs an analytics aggregation per section and the other does not.
+     */
+    rendered: (reportId: string) => ['reports', 'rendered', reportId] as const,
+    draft: (reportId: string) => ['reports', 'draft', reportId] as const,
+    snapshots: (reportId: string) => ['reports', 'snapshots', reportId] as const,
+    shares: (reportId: string) => ['reports', 'shares', reportId] as const,
+    /*
+     * A report read through a shared link. Keyed by the token because that is all the reader has — there is no
+     * report id on that path, and deliberately so.
+     */
+    shared: (token: string) => ['reports', 'shared', token] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,

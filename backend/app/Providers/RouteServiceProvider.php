@@ -46,6 +46,17 @@ final class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('webhooks', fn (Request $request): Limit => Limit::perMinute($this->limit('webhooks'))
             ->by('merchant:'.(string) $request->input('merchant', $request->ip())));
 
+        /*
+         * Shared report links, keyed by address.
+         *
+         * Tighter than the authenticated API's bucket, which is keyed per user — this endpoint has no user, and a
+         * bare token in a URL is the one thing in this product worth brute forcing. A legitimate recipient opens a
+         * link a handful of times; anybody needing more than that per minute is not reading a report.
+         */
+        RateLimiter::for('shared-reports', fn (Request $request): Limit => Limit::perMinute(
+            $this->limit('shared_reports'),
+        )->by('ip:'.(string) $request->ip()));
+
         RateLimiter::for('auth', /** @return list<Limit> */ fn (Request $request): array => [
             Limit::perMinute($this->limit('auth'))->by('ip:'.(string) $request->ip()),
             Limit::perMinute($this->limit('auth'))->by('email:'.strtolower((string) $request->input('email'))),

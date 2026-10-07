@@ -99,6 +99,16 @@ enum Permission: string
     case ClientRequestsSubmit = 'client_requests.submit';
     case ClientRequestsTriage = 'client_requests.triage';
 
+    // Reporting
+    case ReportsView = 'reports.view';
+    case ReportsManage = 'reports.manage';
+    /*
+     * Sharing a report outside the workspace is its own permission, and the one that matters: `manage` builds a
+     * document, `share` hands a client's performance data to somebody with a link. They are different acts and the
+     * second is the one somebody will be asked about.
+     */
+    case ReportsShare = 'reports.share';
+
     // Auditability
     case AuditView = 'audit.view';
 
@@ -147,6 +157,9 @@ enum Permission: string
             self::ClientRequestsView => 'View the client intake queue, including internal notes on it',
             self::ClientRequestsSubmit => 'Raise a request, and read the client-facing side of it',
             self::ClientRequestsTriage => 'Accept, decline, promise a date for and deliver a client request',
+            self::ReportsView => 'View saved reports and run them',
+            self::ReportsManage => 'Build, change and delete reports, and take snapshots',
+            self::ReportsShare => 'Create and revoke links that let somebody outside the workspace read a report',
             self::AnalyticsView => 'View performance analytics',
             self::AnalyticsExport => 'Export analytics data',
             self::SavedViewsManage => 'Create and share saved views',

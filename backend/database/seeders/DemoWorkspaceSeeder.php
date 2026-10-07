@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Application\Advertising\Command\SyncBoundAccount;
+use App\Application\Analytics\DTO\AnalyticsFilters;
 use App\Application\Commerce\Command\SyncStore;
 use App\Application\Creative\Command\AddCreativeVersion;
 use App\Application\Creative\Command\CommentOnRequest;
@@ -32,9 +33,15 @@ use App\Application\Operations\Command\TriageClientRequest;
 use App\Application\Operations\DTO\ApprovalInput;
 use App\Application\Operations\DTO\ClientRequestInput;
 use App\Application\Operations\DTO\TaskInput;
+use App\Application\Reporting\Command\SaveReport;
+use App\Application\Reporting\Command\TakeSnapshot;
+use App\Application\Reporting\DTO\ReportDefinition;
+use App\Application\Reporting\DTO\SectionDefinition;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\SystemRole;
+use App\Domain\Analytics\Dimension;
+use App\Domain\Analytics\Metric;
 use App\Domain\Client\ClientStatus;
 use App\Domain\Commerce\OrderAttribution;
 use App\Domain\Creative\ApprovalOutcome;
@@ -61,6 +68,10 @@ use App\Domain\Operations\StatedUrgency;
 use App\Domain\Operations\TaskPriority;
 use App\Domain\Operations\TaskState;
 use App\Domain\Project\ProjectStatus;
+use App\Domain\Reporting\ComparisonMode;
+use App\Domain\Reporting\ReportAudience;
+use App\Domain\Reporting\ReportWindow;
+use App\Domain\Reporting\SectionKind;
 use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceId;
 use App\Infrastructure\Persistence\Eloquent\Model\Client;
@@ -167,6 +178,7 @@ final class DemoWorkspaceSeeder extends Seeder
         $this->demoTasks($workspace->getKey());
         $this->demoApprovals($workspace->getKey());
         $this->demoClientRequests($workspace->getKey(), $roles);
+        $this->demoReports($workspace->getKey());
 
         $actor->clear();
 
@@ -1122,6 +1134,82 @@ final class DemoWorkspaceSeeder extends Seeder
         $this->command?->line(
             '  Client requests: 7, one unanswered for five days, one waiting on the client, one accepted '
             .'with no promised date, one open question.'
+        );
+    }
+
+    /**
+     * Two reports, one of each audience, and a frozen copy of the shareable one.
+     *
+     * Built through the real use cases, so the validation runs: the ranking carries only metrics whose rows add up,
+     * and the client-safe report has no internal note on it.
+     *
+     * The shapes are chosen to make the module's refusals visible. The internal report is deliberately **not
+     * shareable** — the surface says why rather than hiding the control — and the client-safe one has a snapshot
+     * behind it, so a link can be frozen and the difference between frozen and live is something a reader can see.
+     */
+    private function demoReports(mixed $workspaceId): void
+    {
+        /** @var Client|null $client */
+        $client = Client::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('status', ClientStatus::Active->value)
+            ->orderBy('created_at')
+            ->first();
+
+        if ($client === null) {
+            return;
+        }
+
+        $save = app(SaveReport::class);
+        $snapshot = app(TakeSnapshot::class);
+
+        $internal = $save(new ReportDefinition(
+            name: 'Monthly performance — internal',
+            window: ReportWindow::LastMonth,
+            comparison: ComparisonMode::PreviousPeriod,
+            audience: ReportAudience::Internal,
+            filters: new AnalyticsFilters(clientId: (string) $client->getKey()),
+            sections: [
+                new SectionDefinition(
+                    kind: SectionKind::Scorecard,
+                    metrics: [Metric::Spend, Metric::Clicks, Metric::Ctr, Metric::Cpc],
+                ),
+                new SectionDefinition(kind: SectionKind::Trend, metrics: [Metric::Spend, Metric::Clicks]),
+                new SectionDefinition(
+                    kind: SectionKind::Breakdown,
+                    metrics: [Metric::Spend],
+                    dimension: Dimension::Provider,
+                ),
+            ],
+            description: 'What the month did, with our own notes on it.',
+            clientId: (string) $client->getKey(),
+            internalNote: 'SANDBOX note. Internal commentary never leaves the workspace or appears on a link.',
+        ));
+
+        $clientSafe = $save(new ReportDefinition(
+            name: 'Monthly performance',
+            window: ReportWindow::LastMonth,
+            comparison: ComparisonMode::PreviousPeriod,
+            audience: ReportAudience::ClientSafe,
+            filters: new AnalyticsFilters(clientId: (string) $client->getKey()),
+            sections: [
+                new SectionDefinition(kind: SectionKind::Scorecard, metrics: [Metric::Spend, Metric::Clicks]),
+                new SectionDefinition(kind: SectionKind::Trend, metrics: [Metric::Spend]),
+                new SectionDefinition(
+                    kind: SectionKind::Table,
+                    metrics: [Metric::Spend, Metric::Clicks],
+                    dimension: Dimension::Campaign,
+                ),
+            ],
+            description: 'Written to be read by the client.',
+            clientId: (string) $client->getKey(),
+        ));
+
+        // A frozen copy, so a link can show what was true when it was taken rather than today's figures.
+        $snapshot($clientSafe->id, 'Last month, as sent');
+
+        $this->command?->line(
+            '  Reports: 2 saved — one internal and unshareable, one client-safe with a snapshot behind it.'
         );
     }
 }

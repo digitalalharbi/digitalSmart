@@ -33,6 +33,14 @@ OAuth connections to ad platforms are **integrations**, not application auth —
 `docs/INTEGRATIONS.md`. Sanctum API tokens exist for machine clients; Passport would
 only be introduced if digitalSmart itself became an OAuth2 provider.
 
+**One route answers without a session:** `GET /api/shared-reports/{token}`, where the token
+*is* the authorisation and authorises exactly one report. There is no report id and no other
+parameter on that path, the route is constrained to `[A-Fa-f0-9]{96}` so nothing of the wrong
+shape reaches the application, it is rate-limited per address rather than per user, and it
+always answers 200 with a state rather than 404 — see `docs/REPORTING.md`. Webhook receivers
+are also unauthenticated in the session sense and are verified by provider signature instead;
+see `docs/SALLA.md` and `docs/ZID.md`.
+
 ## Errors
 
 Standard Laravel shape:
@@ -64,10 +72,14 @@ disclosed across tenant boundaries.
 | `api`    | 120/min per user, 30/min per IP (guests) | all `/api` routes     |
 | `health` | 60/min per IP                            | `GET /api/health`     |
 | `auth`   | 5/min per IP **and** 5/min per e-mail    | credential endpoints  |
+| `shared-reports` | 20/min per IP                    | `GET /api/shared-reports/{token}` |
 
 Budgets are configurable (`RATE_LIMIT_*`) so they can be tuned per environment.
 `auth` applies per IP *and* per e-mail address: raising the per-IP budget for a
-shared address does not weaken the per-account protection.
+shared address does not weaken the per-account protection. `shared-reports` is keyed
+by address because it has no user to key to, and is much tighter than the API's guest
+budget: a recipient opens a report a handful of times, and a bare token in a URL is the
+one thing in this product worth brute forcing.
 
 ## Endpoints
 

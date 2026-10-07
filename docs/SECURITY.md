@@ -20,7 +20,7 @@
 | Strict CORS allow-list     | `config/cors.php` — origins from `FRONTEND_URL`, no wildcard  |
 | SPA session auth           | Sanctum stateful API; encrypted session cookies               |
 | CSRF                       | `XSRF-TOKEN` cookie + `X-XSRF-TOKEN` header, sent by the API client |
-| Rate limiting              | `api`, `health`, `auth` limiters, budgets configurable with secure defaults |
+| Rate limiting              | `api`, `health`, `auth`, `webhooks`, `shared-reports` limiters, budgets configurable with secure defaults |
 | Security headers           | `SecurityHeaders` middleware (CSP, nosniff, DENY, Referrer-Policy, Permissions-Policy, HSTS on TLS) |
 | Stack disclosure removed   | `X-Powered-By` / `Server` stripped at both Symfony and SAPI level |
 | Request correlation        | `AssignRequestId`; inbound ids accepted only if valid UUIDs, so logs cannot be injected |
@@ -49,6 +49,19 @@ account.
 **Why request ids are validated.** An attacker-supplied header lands in log lines; an
 unvalidated value allows forged log entries. Only UUIDs are accepted; anything else is
 replaced with a freshly generated id.
+
+**Why a shared report link is treated as a credential.** `GET /api/shared-reports/{token}` is
+the only route in this product that answers without a session, so the token is the whole
+authorisation. It is 48 random bytes, stored as a SHA-256 hash plus a 12-character hint and
+looked up by hash — the plaintext exists once, in the response that created it, and no endpoint
+returns it again. `expires_at` is NOT NULL and capped at 90 days, because a link with no end is a
+credential with no end: it outlives the engagement, the account manager and sometimes the
+relationship. The route is constrained to `[A-Fa-f0-9]{96}`, has its own per-address limiter
+because there is no user to key one to, and **answers a token nobody issued exactly as it answers
+a revoked one** — telling a visitor the difference between "never existed" and "turned off" tells
+anybody enumerating tokens when they have guessed one. Views are counted and not logged: an agency
+may know whether the report was opened, and a log of a client's reading habits is data this
+product has no reason to hold. See `docs/REPORTING.md`.
 
 **Why the queue is "degraded", not "down".** Treating a stalled worker as a hard outage
 would take the whole platform offline for a non-critical dependency. The distinction is

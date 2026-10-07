@@ -6,11 +6,11 @@ namespace App\Application\Analytics\Contract;
 
 use App\Application\Analytics\DTO\AnalyticsFilters;
 use App\Application\Analytics\DTO\BreakdownRow;
-use App\Application\Analytics\DTO\DateRange;
 use App\Application\Analytics\DTO\MetricSet;
 use App\Application\Analytics\DTO\SeriesPoint;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
+use App\Domain\Shared\ValueObject\DateRange;
 
 /**
  * Reading aggregated performance.

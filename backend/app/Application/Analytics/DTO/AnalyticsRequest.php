@@ -6,6 +6,7 @@ namespace App\Application\Analytics\DTO;
 
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
+use App\Domain\Shared\ValueObject\DateRange;
 
 /**
  * What a caller asked for.

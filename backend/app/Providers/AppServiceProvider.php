@@ -50,6 +50,9 @@ use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
+use App\Application\Reporting\Contract\ReportRepository;
+use App\Application\Reporting\Contract\ReportShareStore;
+use App\Application\Reporting\Contract\SnapshotSerialiser;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\ApplicationInfo;
@@ -119,18 +122,21 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentObservedEventWrit
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentReportRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentStoreLocator;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTaskRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
+use App\Infrastructure\Reporting\EloquentReportShareStore;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
 use App\Infrastructure\System\CacheHealthProbe;
 use App\Infrastructure\System\DatabaseHealthProbe;
 use App\Infrastructure\System\LaravelApplicationInfo;
 use App\Infrastructure\System\QueueHealthProbe;
+use App\Interface\Http\Resource\Reporting\ReportResource;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -225,6 +231,15 @@ final class AppServiceProvider extends ServiceProvider
         TaskRepository::class => EloquentTaskRepository::class,
         ApprovalRepository::class => EloquentApprovalRepository::class,
         ClientRequestRepository::class => EloquentClientRequestRepository::class,
+
+        // Reporting (Phase 21)
+        ReportRepository::class => EloquentReportRepository::class,
+        ReportShareStore::class => EloquentReportShareStore::class,
+        /*
+         * The resource formats a live render and stores a snapshot, so a frozen report and a live one cannot render
+         * differently in the same interface.
+         */
+        SnapshotSerialiser::class => ReportResource::class,
         NotificationStore::class => EloquentNotificationStore::class,
         RecipientResolver::class => PermissionAwareRecipientResolver::class,
         NotificationBroadcaster::class => ReverbNotificationBroadcaster::class,

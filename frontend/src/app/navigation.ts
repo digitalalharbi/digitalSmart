@@ -171,21 +171,22 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'FileChartColumn',
     section: 'intelligence',
     phase: 'Phase 21',
-    permission: 'projects.view_assigned',
+    // The permission the endpoints check. A client viewer and a creative are refused outright.
+    permission: 'reports.view',
   },
   {
     path: '/ai-assistant',
     labelKey: 'nav.aiAssistant',
     icon: 'Sparkles',
     section: 'intelligence',
-    phase: 'Phase 22',
+    phase: 'Phase 23',
   },
   {
     path: '/presentations',
     labelKey: 'nav.presentations',
     icon: 'Presentation',
     section: 'intelligence',
-    phase: 'Phase 23',
+    phase: 'Phase 24',
   },
   {
     path: '/integrations',
