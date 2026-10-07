@@ -93,6 +93,9 @@ enum SystemRole: string
                 Permission::CreativeApprove,
                 Permission::TasksView,
                 Permission::TasksManage,
+                Permission::ApprovalsView,
+                Permission::ApprovalsRequest,
+                Permission::ApprovalsDecide,
                 Permission::AuditView,
             ],
 
@@ -139,6 +142,13 @@ enum SystemRole: string
                  */
                 Permission::TasksView,
                 Permission::TasksManage,
+                /*
+                 * Decides. The role in the conversation with the client about what their money does is the
+                 * role that signs off changing it.
+                 */
+                Permission::ApprovalsView,
+                Permission::ApprovalsRequest,
+                Permission::ApprovalsDecide,
                 Permission::AuditView,
             ],
 
@@ -180,6 +190,13 @@ enum SystemRole: string
                  */
                 Permission::TasksView,
                 Permission::TasksManage,
+                /*
+                 * Asks, and does not decide. A buyer approving their own change to a client's spend removes
+                 * the only check on it — the same reason they may plan a budget and not approve one. They do
+                 * record that they made the change, because they are the person who goes and makes it.
+                 */
+                Permission::ApprovalsView,
+                Permission::ApprovalsRequest,
             ],
 
             self::Creative => [
@@ -195,6 +212,12 @@ enum SystemRole: string
                 Permission::CreativeManage,
                 Permission::TasksView,
                 Permission::TasksManage,
+                /*
+                 * Asks for a publish and records having done it. Approving their own work would undo the
+                 * separation the creative trail is built on.
+                 */
+                Permission::ApprovalsView,
+                Permission::ApprovalsRequest,
             ],
 
             /*

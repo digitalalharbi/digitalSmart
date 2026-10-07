@@ -22,6 +22,7 @@ use App\Interface\Http\Controller\Integration\ProjectBindingController;
 use App\Interface\Http\Controller\Integration\ProviderController;
 use App\Interface\Http\Controller\Leads\LeadController;
 use App\Interface\Http\Controller\Measurement\MeasurementController;
+use App\Interface\Http\Controller\Operations\ApprovalController;
 use App\Interface\Http\Controller\Operations\TaskController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
@@ -310,6 +311,34 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      */
     Route::post('tasks/{task}/assignee', [TaskController::class, 'assign'])
         ->whereUuid('task')->name('tasks.assign');
+
+    /*
+     * Approvals. The vocabulary publishes, per kind, whether approving a request makes the change — which today
+     * is never: this product does not write to the ad platforms, so an approval authorises a person and the
+     * queue counts the change until somebody records having made it.
+     */
+    Route::get('approvals/vocabulary', [ApprovalController::class, 'vocabulary'])
+        ->name('approvals.vocabulary');
+    Route::get('approvals/queue', [ApprovalController::class, 'queue'])->name('approvals.queue');
+    Route::post('approvals', [ApprovalController::class, 'store'])->name('approvals.store');
+    Route::get('approvals/{approval}', [ApprovalController::class, 'show'])
+        ->whereUuid('approval')->name('approvals.show');
+    Route::patch('approvals/{approval}', [ApprovalController::class, 'amend'])
+        ->whereUuid('approval')->name('approvals.amend');
+    /*
+     * A decision must send the fingerprint its sender's screen displayed. A mismatch answers 409 with the
+     * proposal as it stands, because a request that was correct when it was read is not a validation failure.
+     */
+    Route::post('approvals/{approval}/decision', [ApprovalController::class, 'decide'])
+        ->whereUuid('approval')->name('approvals.decide');
+    Route::post('approvals/{approval}/withdrawal', [ApprovalController::class, 'withdraw'])
+        ->whereUuid('approval')->name('approvals.withdraw');
+    /*
+     * Its own route, because approval is not execution. This records a person saying they made the change, with
+     * no claim that the product verified it.
+     */
+    Route::post('approvals/{approval}/enactment', [ApprovalController::class, 'enact'])
+        ->whereUuid('approval')->name('approvals.enact');
 
     /*
      * One person's history. Enquiries and orders only: the marketing touches before them need event-level data

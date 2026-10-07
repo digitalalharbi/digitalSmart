@@ -78,6 +78,8 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'BadgeCheck',
     section: 'work',
     phase: 'Phase 20',
+    // The permission the endpoints check. A client viewer is refused outright.
+    permission: 'approvals.view',
   },
   {
     path: '/tracking',

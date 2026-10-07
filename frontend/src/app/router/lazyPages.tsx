@@ -62,3 +62,7 @@ export const CreativeHubPage = lazy(async () => ({
 export const OperationsPage = lazy(async () => ({
   default: (await import('@/features/operations/OperationsPage')).OperationsPage,
 }));
+
+export const ApprovalsPage = lazy(async () => ({
+  default: (await import('@/features/approvals/ApprovalsPage')).ApprovalsPage,
+}));

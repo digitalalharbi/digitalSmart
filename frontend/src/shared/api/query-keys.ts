@@ -119,6 +119,17 @@ export const queryKeys = {
     board: (scope: Record<string, unknown>) => ['tasks', 'board', scope] as const,
     detail: (taskId: string) => ['tasks', 'detail', taskId] as const,
   },
+  approvals: {
+    all: () => ['approvals'] as const,
+    vocabulary: () => ['approvals', 'vocabulary'] as const,
+    queue: (scope: Record<string, unknown>) => ['approvals', 'queue', scope] as const,
+    /*
+     * One key per request, and never shared. A stale proposal in a cache is the one thing this module cannot
+     * tolerate: the fingerprint on screen has to be the fingerprint of what is stored, or a decision is
+     * refused for a reason the reader cannot see.
+     */
+    detail: (requestId: string) => ['approvals', 'detail', requestId] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,

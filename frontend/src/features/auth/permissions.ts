@@ -59,6 +59,14 @@ export const PERMISSIONS = {
    */
   tasksView: 'tasks.view',
   tasksManage: 'tasks.manage',
+  /*
+   * Asking and deciding are separate, which is the whole point of the module: somebody who could approve their
+   * own change to a client's spend has an approvals screen rather than an approvals process. Some kinds need a
+   * second permission on top of deciding — the server publishes which, per kind.
+   */
+  approvalsView: 'approvals.view',
+  approvalsRequest: 'approvals.request',
+  approvalsDecide: 'approvals.decide',
   auditView: 'audit.view',
 } as const;
 

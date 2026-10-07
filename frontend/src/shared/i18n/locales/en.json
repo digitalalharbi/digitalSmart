@@ -1276,5 +1276,106 @@
       "dueHint": "Optional. Left empty, the task is reported as undated rather than given a deadline nobody agreed to.",
       "submit": "Open the task"
     }
+  },
+  "approvals": {
+    "title": "Approvals",
+    "subtitle": "What is waiting for a decision, and what has been approved and still not carried out.",
+    "loadFailed": "Could not load the approval queue. Try again in a moment.",
+    "counts": "Approval summary",
+    "denied": {
+      "title": "Approvals are not part of your access",
+      "body": "The queue carries internal reasoning about a client's spend. Ask a workspace owner if you need it."
+    },
+    "scope": {
+      "client": "Client",
+      "allClients": "All clients",
+      "what": "Which changes",
+      "everything": "Everything",
+      "spendOnly": "Only what moves money"
+    },
+    "count": {
+      "pending": "Waiting for a decision",
+      "spend": "Would move money",
+      "spendNote": "Needs a budget approver",
+      "outstanding": "Approved, not yet done",
+      "outstandingNote": "Nothing has changed yet",
+      "confirmed": "Carried out"
+    },
+    "rates": {
+      "noneDecided": "Nothing has been decided yet, so there is no approval rate to report.",
+      "approved": "{{rate}} of the {{decided}} decided requests were approved.",
+      "noneCarriedOut": "Nothing approved has been settled one way or the other yet.",
+      "carriedOut": "Of the approved changes that were settled, {{rate}} were actually made."
+    },
+    "queue": {
+      "pending": "Waiting for a decision",
+      "outstanding": "Approved, waiting to be carried out",
+      "nonePending": "Nothing is waiting for a decision.",
+      "noneOutstanding": "Nothing approved is waiting to be carried out."
+    },
+    "chart": {
+      "title": "Where the waiting is",
+      "subtitle": "How long each queue has waited, oldest on the right",
+      "pending": "Waiting for a decision",
+      "outstanding": "Approved, not yet done",
+      "age": "Waiting",
+      "aria": "Requests waiting for a decision and approved changes waiting to be carried out, by age",
+      "caveatGrouped": "Grouped, not stacked. A request nobody has answered and a change nobody has made are different problems with different owners, and their sum describes neither.",
+      "caveatAge": "A pending request is aged from when it was asked; an approved one from when it was approved, because the question then is how long the change has gone unmade.",
+      "outstandingWarning": "{{count}} approved change has not been carried out, the oldest approved {{days}} days ago. Until somebody records making it, nothing has changed on the platform.",
+      "outstandingWarning_other": "{{count}} approved changes have not been carried out, the oldest approved {{days}} days ago. Until somebody records making them, nothing has changed on the platforms.",
+      "emptyTitle": "Nothing waiting",
+      "emptyBody": "No request is waiting for a decision and no approved change is waiting to be made."
+    },
+    "kinds": {
+      "title": "What is waiting for a decision",
+      "subtitle": "Pending requests by the kind of change they ask for",
+      "kind": "Kind",
+      "waiting": "Waiting",
+      "spend": "Moves money",
+      "aria": "Pending requests by kind",
+      "caveat": "Kinds with nothing waiting are left out of the chart and kept in the table: a bar of zero reads as a measurement of nothing.",
+      "emptyTitle": "Nothing waiting",
+      "emptyBody": "No request is waiting for a decision."
+    },
+    "proposal": {
+      "title": "What is being proposed",
+      "caption": "The proposal, field by field",
+      "field": "Field",
+      "value": "Value",
+      "fingerprint": "Version {{hash}}",
+      "empty": "Nothing was recorded, which should not be possible — a request with an empty proposal is refused."
+    },
+    "detail": {
+      "pickTitle": "Pick a request",
+      "pickBody": "Choose one to read what is being proposed, who asked, and what happens if it is approved.",
+      "internal": "Internal",
+      "movesMoney": "Moves money",
+      "askedBy": "asked by {{name}}",
+      "why": "Why",
+      "about": "About",
+      "decision": "Decision",
+      "decidedBy": "{{name}}, after {{days}} days",
+      "carriedOut": "Carried out",
+      "enactedBy": "{{state}} — recorded by {{name}}",
+      "enactmentNote": "Note on carrying it out: {{note}}",
+      "decisionReason": "Reason given: {{reason}}",
+      "withdrawnReason": "Withdrawn: {{reason}}",
+      "subjectGone": "This {{type}} has been deleted",
+      "awaitingHand": "Approved, and waiting for somebody to make the change — {{days}} days so far. Nothing has changed on the platform yet.",
+      "supersedes": "This request replaces an earlier one. Both decisions stay on the record.",
+      "waiting": "Waiting {{days}} days.",
+      "approve": "Approve",
+      "decline": "Decline",
+      "withdraw": "Withdraw",
+      "markDone": "I have made this change",
+      "markAbandoned": "Not going to make it",
+      "confirm": "Save",
+      "reason": {
+        "declined": "Why it is being declined",
+        "withdrawn": "Why it is being withdrawn",
+        "abandoned": "Why the approved change will not be made"
+      }
+    }
   }
 }

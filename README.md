@@ -18,7 +18,8 @@ audit trail; six advertising adapters built against published schemas; budgets, 
 and forecasting; a measurement layer with a conversion registry; Google Analytics 4 and
 Tag Manager; a normalised commerce domain with Salla and Zid; store analytics; the Lead
 Center; conversion timelines; attribution with coverage on every figure; creative
-operations with recorded platform specifications; and an operations board. In English and
+operations with recorded platform specifications; an operations board; and an approvals engine
+that records whether an authorised change was ever actually made. In English and
 Arabic, light and dark, desktop and mobile.
 
 **Every provider's live handshake is `BLOCKED_EXTERNAL`** on an authorization this
@@ -30,9 +31,9 @@ provider.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 1 195 passed — architecture, unit, feature          |
-| Frontend tests (Vitest)   | 294 passed                                          |
-| End-to-end (Playwright)   | 206 passed — Chromium + mobile Safari, signing in as real roles |
+| Backend tests (Pest)      | 1 239 passed — architecture, unit, feature          |
+| Frontend tests (Vitest)   | 309 passed                                          |
+| End-to-end (Playwright)   | 220 passed — Chromium + mobile Safari, signing in as real roles |
 | Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
 | Style                     | Pint, ESLint and Prettier, clean                    |
 

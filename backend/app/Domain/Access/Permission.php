@@ -81,6 +81,14 @@ enum Permission: string
      * protecting from. A board where only a manager may tick something done is a board kept by hand.
      */
     case TasksManage = 'tasks.manage';
+    case ApprovalsView = 'approvals.view';
+    /*
+     * Requesting and deciding are separate, and this is the separation the module exists for: somebody who
+     * could approve their own spend change has an approvals screen rather than an approvals process. Some
+     * kinds need a second permission on top of `approvals.decide` — see `ApprovalKind::decidedWith()`.
+     */
+    case ApprovalsRequest = 'approvals.request';
+    case ApprovalsDecide = 'approvals.decide';
 
     // Auditability
     case AuditView = 'audit.view';
@@ -124,6 +132,9 @@ enum Permission: string
             self::CreativeApprove => 'Approve a version, or send it back with a reason',
             self::TasksView => 'View the operations board and what it is carrying',
             self::TasksManage => 'Create tasks, move them, assign them and set their dates',
+            self::ApprovalsView => 'View the approval queue, and what has been approved but not yet done',
+            self::ApprovalsRequest => 'Ask for approval, withdraw a request, and record that a change was made',
+            self::ApprovalsDecide => 'Approve or decline a requested change',
             self::AnalyticsView => 'View performance analytics',
             self::AnalyticsExport => 'Export analytics data',
             self::SavedViewsManage => 'Create and share saved views',

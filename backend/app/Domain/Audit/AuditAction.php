@@ -81,6 +81,16 @@ enum AuditAction: string
     case TaskAssigned = 'task.assigned';
     case TaskUpdated = 'task.updated';
 
+    case ApprovalRequested = 'approval.requested';
+    case ApprovalDecided = 'approval.decided';
+    case ApprovalAmended = 'approval.amended';
+    case ApprovalWithdrawn = 'approval.withdrawn';
+    /*
+     * Its own action, and the one this module exists for: approval is not execution. The entry records that a
+     * person says they made the change, with no claim that the product verified it.
+     */
+    case ApprovalEnacted = 'approval.enacted';
+
     case WorkspaceMemberInvited = 'workspace.member_invited';
     case WorkspaceMemberRoleChanged = 'workspace.member_role_changed';
     case WorkspaceMemberSuspended = 'workspace.member_suspended';

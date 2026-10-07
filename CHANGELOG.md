@@ -4,6 +4,80 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 20 — operations: the approvals engine
+
+Who asked to change what, who said yes, and — the part nothing else in this space records — whether
+anybody ever did it.
+
+### The argument
+
+**Approval is not execution.** This product does not write to the advertising platforms; those
+adapters are a later phase. So approving a request to pause a campaign pauses nothing: a person goes
+and does it in the platform afterwards. Every tool in this space treats the approval as the end of
+the story, which is how an agency tells a client a campaign was stopped on Tuesday and learns from
+the invoice that it ran all week.
+
+This module cannot close that gap by acting. It refuses to hide it.
+
+### Added
+
+- `app/Domain/Operations/` — `ApprovalKind`, `ApprovalState`, `EnactmentState`, `ApprovalAge`,
+  `ApprovalLoad`, `ProposalFingerprint`, and three exceptions that each name a thing an approval
+  trail must not be asked to record.
+- **Every kind says it is not carried out here, and why.** `isEnactedByThisProduct()` is false for
+  all six, with a per-kind sentence naming what is missing rather than "not supported". A unit test
+  asserts it for every case, so a write adapter landing is a deliberate change to that test rather
+  than a silent one.
+- **An approved change waits on a person.** It moves to `awaiting_hand`, and only somebody recording
+  *"I have made this change"* moves it to carried-out, with their name and the time. The audit entry
+  carries `verified_by_product: false`, because an audit of live spend has to tell somebody's word
+  from a reading off a platform — and this product only has the former.
+- **The queue publishes how much approved work nobody has carried out**, and the age of the oldest.
+  Not a process metric: a list of things somebody currently believes that may not be true.
+- **A decision names the proposal it read.** `ProposalFingerprint` hashes a canonical form — keys
+  sorted at every depth, list order preserved — and a decision must send back the fingerprint its
+  screen displayed. A mismatch is **409 with the proposal as it stands**, not 422: the request was
+  correct when its sender read the screen, and only a re-read resolves it. Without this the race is
+  silent and the record claims somebody approved a change they never saw.
+- **Amendment is allowed only while pending**, which is what makes that check real rather than
+  theoretical. Nothing settled is ever re-decided: a changed proposal is a new request naming the one
+  it replaces, and both decisions stay on the record — the rule an approved budget already follows.
+- **Some kinds need a second permission.** A spend change or a launch needs `budgets.approve` on top
+  of `approvals.decide`, so the person who signs off what a client spends is the person who signs off
+  changing it. **Pausing needs none**: stopping spend is the safe direction, and requiring a budget
+  approver to halt a runaway campaign is how it keeps running over a weekend.
+- **Asking and deciding are separate permissions.** A media buyer may ask and may not decide — a
+  buyer who could approve their own change to a client's spend removes the only check on it. They do
+  record having made the change, because they are the person who goes and makes it.
+- Seven schema CHECKs: a rationale is required, a decline and a withdrawal each carry their own
+  reason, a decided state requires both a timestamp and a fingerprint in both directions, enactment
+  cannot exist without approval, a carried-out change records when, and an abandoned one says why.
+- `approval_requests` table, repository, five use cases, two queries, `ApprovalController`,
+  `ApprovalResource`, eight routes, three permissions, five audit actions.
+- `frontend/src/features/approvals/` — two queues side by side, the detail panel that says *before*
+  the buttons that approving will not make the change, the proposal shown field by field with its
+  version, and two charts. Fifteen tests, seven end-to-end.
+- Approvals half of `docs/OPERATIONS.md`, and five demo requests — one approved and carried out, one
+  approved and still waiting nine days, because a queue where everything was done the same day
+  demonstrates nothing.
+
+### Changed
+
+- The demo workspace now **assigns one account to a project**. Nobody was assigned to anything, so
+  four of the five demo accounts saw empty screens and assignment-based visibility — which every
+  project-scoped surface in this product enforces — could not be demonstrated at all. The media buyer
+  is left deliberately unassigned, because the other half of that rule matters just as much and the
+  end-to-end suite asserts both halves.
+
+### Not done
+
+- Raising a request from the interface. The API accepts one and the demo seeds five; a generic
+  key-value form would invite exactly the half-stated proposal this module refuses, so it waits for
+  per-kind fields worth asking for.
+- Notifications, which is what an approval waiting for a decision is for, and the next slice.
+- Provider writes, which are what would make an approval enactable. Until then this engine is the
+  gate they will pass through, and it says so on every request.
+
 ## Phase 20 — operations: the board
 
 Tasks, their state machine, and the figures a work board usually hides. Approvals, client requests,

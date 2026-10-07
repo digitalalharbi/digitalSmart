@@ -48,3 +48,33 @@ it('seeds a board whose shape makes the honesty figures non-trivial', function (
     expect($tasks->whereNull('due_on')->count())->toBe(2);
     expect($tasks->whereNull('assignee_id')->count())->toBe(1);
 });
+
+it('seeds an approval queue with approved work nobody has carried out', function (): void {
+    test()->seed(DemoWorkspaceSeeder::class);
+
+    $requests = DB::table('approval_requests')->get();
+
+    expect($requests)->toHaveCount(5);
+
+    $byState = $requests->groupBy('state')->map->count();
+
+    expect($byState['pending'] ?? 0)->toBe(2);
+    expect($byState['approved'] ?? 0)->toBe(2);
+    expect($byState['declined'] ?? 0)->toBe(1);
+
+    /*
+     * The shape that makes the module's point visible: one approved change carried out, and one still waiting
+     * on somebody nine days later. A queue where everything was done the same day would demonstrate nothing.
+     */
+    $awaiting = $requests->where('enactment', 'awaiting_hand');
+    expect($awaiting)->toHaveCount(1);
+    expect($requests->where('enactment', 'confirmed'))->toHaveCount(1);
+
+    // Every decision names the proposal it read. A CHECK requires it; this asserts the seeder honours it.
+    foreach ($requests->whereIn('state', ['approved', 'declined']) as $decided) {
+        expect($decided->decided_fingerprint)->toBe($decided->proposal_fingerprint);
+        expect($decided->decided_at)->not->toBeNull();
+    }
+
+    expect($requests->firstWhere('state', 'declined')?->decision_reason)->not->toBeNull();
+});

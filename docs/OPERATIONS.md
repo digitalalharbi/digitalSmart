@@ -3,8 +3,8 @@
 The board an agency runs its week from: what is open, what is late, what nobody has dated, and
 who is carrying it.
 
-Phase 20 delivers **tasks**. Approvals, client requests, notifications and realtime are the rest
-of the phase and are not in this slice; what is not built is listed at the end.
+Phase 20 delivers **tasks** and the **approvals engine**. Client requests, notifications and
+realtime are the rest of the phase; what is not built is listed at the end.
 
 ## The question this module is for
 
@@ -203,15 +203,208 @@ An unrecognised enum value is a 422 naming the field and listing what is allowed
 fall back to a default: a filter somebody mistyped and a filter nobody sent are different
 situations, and treating the second as the first answers a narrowed question with the whole board.
 
+
+---
+
+# Approvals
+
+## The distinction the whole module is built around
+
+**Approval is not execution.**
+
+This product does not write to the advertising platforms. Provider write operations are a later
+phase, so approving a request to pause a campaign pauses nothing — a person goes and does it in the
+platform's own interface afterwards. Every other tool in this space treats the approval as the end
+of the story, which is how an agency can tell a client a campaign was stopped on Tuesday and find
+out from the invoice that it ran all week.
+
+This module cannot close that gap by acting. It can only refuse to hide it:
+
+- `ApprovalKind::isEnactedByThisProduct()` returns **false** for every kind, and says why per kind
+  rather than "not supported". A unit test asserts it for all six, so when a write adapter lands,
+  that test is the thing somebody has to change deliberately.
+- An approved request moves to **`awaiting_hand`**, not to done.
+- Only a person recording *"I have made this change"* moves it to `confirmed`, with their name and
+  the time. The audit entry carries `verified_by_product: false`, because an audit of live spend
+  changes has to be able to tell somebody's word from a reading taken off a platform — and this
+  product only has the former.
+- The queue publishes **how much approved work nobody has carried out**, and how old the oldest is.
+  That figure is not a process metric. It is a list of things somebody currently believes that may
+  not be true.
+
+The interface says it before the buttons, not after the decision. A decider who presses Approve
+believing the budget is now raised will tell a client so.
+
+## A decision names the proposal it read
+
+`ProposalFingerprint` is a SHA-256 over a **canonical** form of the proposal — keys sorted at every
+depth, list order preserved, because the order of a list is part of what it says. A decision must
+send back the fingerprint its screen displayed.
+
+If the proposal was amended in between, the decision is refused with **409 Conflict** and the
+proposal as it now stands. It is not a 422: the request was well formed and was correct when its
+sender read the screen, and answering with a validation code would send a client down the "fix your
+input" path for something only a re-read resolves.
+
+Without this the race is silent, and the record claims somebody approved a change they never saw —
+which looks exactly like a correct approval afterwards. It is the same defect a creative approval
+avoids by attaching to a version rather than to a request.
+
+The hash is canonical so that a key reordering does not trip the rule. A check that fired on
+serialisation order would teach people to click past it.
+
+## Nothing settled is ever re-decided
+
+Approved, declined and withdrawn are **terminal**. A settled request cannot be amended or decided
+again, because a trail in which one request was both declined and approved cannot say which
+decision the client was told about.
+
+A changed proposal after a decision is a **new request**, which may name the one it replaces
+through `supersedes_id`. Both decisions stay on the record. It is the rule an approved budget
+already follows — the figure a client agreed is archived rather than quietly revised.
+
+Amendment is allowed **while pending**, which is what makes the fingerprint check real rather than
+theoretical: anyone holding the old proposal is refused and sent back to read the new one.
+
+## The kinds
+
+| Kind | Moves money | Decided with, in addition to `approvals.decide` |
+| ---- | ----------- | ---------------------------------------------- |
+| Launch a campaign | yes | `budgets.approve` |
+| Pause a campaign | yes | — |
+| Change spend | yes | `budgets.approve` |
+| Change targeting | yes | — |
+| Publish creative | no | `creative.approve` |
+| Change tracking | no | `tracking.manage` |
+
+Targeting counts as moving money. It does not change how much is spent, but it changes who it is
+spent on — the same conversation with the client, and the same thing they ask about afterwards.
+
+The second permission exists so that the person who signs off what a client spends is the person
+who signs off changing it. Without it an approvals administrator quietly becomes a budget approver.
+
+**Pausing needs no second permission.** Stopping spend is the safe direction, and requiring a budget
+approver to halt a runaway campaign is how a runaway campaign keeps running over a weekend.
+
+## Permissions
+
+| Permission | Who has it |
+| ---------- | ---------- |
+| `approvals.view` | Owner, administrator, project manager, media buyer, creative |
+| `approvals.request` | The same — asking, withdrawing, and recording that a change was made |
+| `approvals.decide` | Owner, administrator, project manager |
+
+A media buyer may ask and may not decide. A buyer who could approve their own change to a client's
+spend removes the only check on it — the same reason they may plan a budget and not approve one.
+They do record having made the change, because they are the person who goes and makes it.
+
+A client viewer has none of these.
+
+## What the schema enforces
+
+Seven CHECK constraints, each for a rule with an obvious wrong version:
+
+| Rule | Why |
+| ---- | --- |
+| `rationale` is non-empty | A change to a client's spend with no stated reason is not something anybody can approve. |
+| A decline carries a reason | It is what the next proposal is built on. |
+| A withdrawal carries its own | Otherwise it is a request that vanished, which is indistinguishable from one dropped to avoid a no. |
+| `(state IN ('approved','declined')) = (decided_at IS NOT NULL AND decided_fingerprint IS NOT NULL)` | Both directions. A decision always says when, and always says which proposal it read. |
+| `enactment = 'not_required' OR state = 'approved'` | No row can claim a declined change was carried out. |
+| `enactment = 'confirmed'` requires `enacted_at` | A change carried out records when. |
+| `enactment = 'abandoned'` requires a note | Not carrying out an approved change is a second decision, and the one a client asks about. |
+
+Plus the same whole-or-absent subject rule tasks follow.
+
+`enactment` accepts only `confirmed` and `abandoned` from a caller. `not_required` and
+`awaiting_hand` are the module's own states, and letting a caller write them would be a way to clear
+the outstanding queue without anybody doing anything.
+
+## The rates, and when they are null
+
+| Figure | Denominator | Null when |
+| ------ | ----------- | --------- |
+| Approval rate | Approved + declined | Nothing decided |
+| Carried-out rate | Confirmed + abandoned | No enactment settled |
+
+Withdrawals are excluded from the approval denominator: a request the asker took back was never
+decided, so it says nothing about how decisions go.
+
+Work still waiting is excluded from the carried-out denominator: it is not yet a failure to act.
+
+The approval rate is published even when it is 100%, deliberately. An agency that approves
+everything does not have an approvals process, it has a formality — and that is worth knowing about
+your own organisation.
+
+## Two queues, two clocks
+
+A pending request is aged from **when it was asked**. An approved one awaiting a hand is aged from
+**when it was approved** — because the question then is not how long the decision took but how long
+the change has gone unmade, and measuring from the request would flatter a slow decision followed by
+prompt action.
+
+Both lists are sorted **oldest first**. A queue sorted newest-first hides exactly the row somebody
+needs to see.
+
+`ApprovalLoad::PATIENCE_DAYS` is three: a judgement about an agency's rhythm, not a measurement,
+which is why it is a named constant with the reasoning beside it. A request to change live spend that
+has sat for longer than a long weekend is either not important or not being read.
+
+## The charts
+
+**Where the waiting is** — the two queues as grouped bars on one ordered age axis. Colour encodes
+which queue (identity, categorical hues in fixed order); position encodes how long (the ordered
+scale). **Grouped, not stacked**: a request nobody has answered plus a change nobody has made is a
+total that describes neither problem, and the two have different owners. Drawing them together is the
+point — an agency looking at one queue sees a process that works.
+
+**What is waiting for a decision** — pending requests by kind, one series and one colour, no legend.
+The kinds are named on the axis, so colour would re-encode a fact already stated in words. Which
+kinds move money is a badge in the table rather than a second hue, so colour keeps doing one job.
+Kinds with nothing waiting are left out of the chart and kept in the table: a bar of zero reads as a
+measurement of nothing, while a zero in a table is information.
+
+## The approvals API
+
+| Method | Path | Notes |
+| ------ | ---- | ----- |
+| `GET` | `/api/approvals/vocabulary` | Kinds (with `is_enacted_here` and why not), states, enactments, age buckets |
+| `GET` | `/api/approvals/queue` | `client_id`, `kind`, `spend_only`, `limit` |
+| `POST` | `/api/approvals` | |
+| `GET` | `/api/approvals/{approval}` | |
+| `PATCH` | `/api/approvals/{approval}` | Amend a pending proposal; moves the fingerprint |
+| `POST` | `/api/approvals/{approval}/decision` | Requires `fingerprint`; 409 on a mismatch |
+| `POST` | `/api/approvals/{approval}/withdrawal` | Requester's act, with a reason |
+| `POST` | `/api/approvals/{approval}/enactment` | `confirmed` or `abandoned` only |
+
+## What the proposal is
+
+A JSONB object, shown to a decider as a table, **never summarised**. This product deliberately does
+not model a platform's targeting schema in order to describe a change to it: a half-modelled schema
+quietly drops the field that mattered, and the approval would then be of something nobody stated. A
+nested value is rendered as JSON rather than coerced to a string, because `[object Object]` is a
+field a decider cannot read — on exactly the proposals that needed the most care.
+
+An empty proposal is refused. "Approve this" with nothing in it is a signature on a blank page.
+
+---
+
 ## Not done in this slice
 
-- **The approvals engine.** Creative approvals exist and attach to a version (see
-  `docs/CREATIVE.md`); a general engine for budget, campaign and release sign-off — including the
-  gate Phase 24's provider writes will need — is the next slice.
 - **Client requests.** Intake from a client, triage, and the link to the work it produces.
 - **Notifications and realtime.** Reverb is configured on the backend; nothing broadcasts yet and
-  the frontend has no Echo client. Until it does, the board is refreshed by its fifteen-second
-  staleness window, not pushed.
+  the frontend has no Echo client. Until it does, the board and the queue are refreshed by their
+  fifteen-second staleness window, not pushed. An approval waiting for a decision is exactly the
+  thing a notification is for, so this is the next slice.
+- **Provider write operations**, which is what would make an approval enactable. Phase 24. Until
+  then the engine is the gate those writes will pass through, and it says so on every request.
+- **Raising a request from the interface.** The API accepts one and the demo seeds five; the surface
+  reads and decides. A composer needs a per-kind form, and a generic key-value form would invite
+  exactly the half-stated proposal the module refuses — so it waits until the kinds that matter have
+  fields worth asking for.
+- **An approval attached to a budget record.** A budget has its own approval, with its own rule that
+  an agreed figure cannot be revised. Pointing this engine at the same state would be a second path
+  to it, which is the one thing worse than two approval trails.
 - **Comments on a task.** Creative requests have them with an explicit audience. Tasks do not yet,
   and adding them without the same audience rule would be the leak that module refuses.
 - **Checklists and subtasks**, and **time tracking**. Neither has a question in this product that

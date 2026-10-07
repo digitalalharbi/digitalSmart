@@ -20,8 +20,12 @@ use App\Application\Leads\DTO\LeadInput;
 use App\Application\Measurement\Command\SaveMeasurementSource;
 use App\Application\Measurement\Command\SyncMeasurementSource;
 use App\Application\Measurement\DTO\MeasurementSourceInput;
+use App\Application\Operations\Command\DecideApproval;
 use App\Application\Operations\Command\MoveTask;
 use App\Application\Operations\Command\OpenTask;
+use App\Application\Operations\Command\RecordEnactment;
+use App\Application\Operations\Command\RequestApproval;
+use App\Application\Operations\DTO\ApprovalInput;
 use App\Application\Operations\DTO\TaskInput;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\IdentifierGenerator;
@@ -42,6 +46,9 @@ use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use App\Domain\Leads\LeadSourceKind;
 use App\Domain\Leads\LeadStage;
 use App\Domain\Measurement\MeasurementSourceKind;
+use App\Domain\Operations\ApprovalKind;
+use App\Domain\Operations\ApprovalState;
+use App\Domain\Operations\EnactmentState;
 use App\Domain\Operations\TaskPriority;
 use App\Domain\Operations\TaskState;
 use App\Domain\Project\ProjectStatus;
@@ -51,12 +58,14 @@ use App\Infrastructure\Persistence\Eloquent\Model\Client;
 use App\Infrastructure\Persistence\Eloquent\Model\ExternalAccount;
 use App\Infrastructure\Persistence\Eloquent\Model\Project;
 use App\Infrastructure\Persistence\Eloquent\Model\ProjectIntegrationBinding;
+use App\Infrastructure\Persistence\Eloquent\Model\ProjectMember;
 use App\Infrastructure\Persistence\Eloquent\Model\Store;
 use App\Infrastructure\Persistence\Eloquent\Model\User;
 use App\Infrastructure\Persistence\Eloquent\Model\WorkspaceMember;
 use App\Infrastructure\Workspace\WorkspaceProvisioner;
 use DateTimeImmutable;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -126,6 +135,7 @@ final class DemoWorkspaceSeeder extends Seeder
         }
 
         $this->clients($workspace->getKey(), $owner->getKey());
+        $this->demoProjectMembers($workspace->getKey(), $roles);
         $this->sandboxPerformance($workspace->getKey());
 
         /*
@@ -146,6 +156,7 @@ final class DemoWorkspaceSeeder extends Seeder
         $this->demoLeads($workspace->getKey());
         $this->demoCreative($workspace->getKey());
         $this->demoTasks($workspace->getKey());
+        $this->demoApprovals($workspace->getKey());
 
         $actor->clear();
 
@@ -778,5 +789,141 @@ final class DemoWorkspaceSeeder extends Seeder
         $move($dropped->id, TaskState::Cancelled, 'The client postponed the TikTok activity to next quarter.');
 
         $this->command?->line('  Operations: 7 tasks, one overdue, one blocked with a reason, two undated.');
+    }
+
+    /**
+     * An approval queue with the shape that makes its honesty visible.
+     *
+     * Built through the real use cases, so the rules are exercised: a decision names the fingerprint it read, a
+     * decline carries its reason, and an approved change sits in **awaiting a hand** until somebody records
+     * making it — which is the point. One of these is deliberately left outstanding and backdated, because the
+     * figure this module exists for is approved work nobody has carried out, and a queue where everything was
+     * done the same day would demonstrate nothing.
+     */
+    private function demoApprovals(mixed $workspaceId): void
+    {
+        /** @var Client|null $client */
+        $client = Client::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('status', ClientStatus::Active->value)
+            ->orderBy('created_at')
+            ->first();
+
+        if ($client === null) {
+            return;
+        }
+
+        /** @var Project|null $project */
+        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->first();
+
+        $ask = app(RequestApproval::class);
+        $decide = app(DecideApproval::class);
+        $enact = app(RecordEnactment::class);
+
+        $request = static fn (
+            ApprovalKind $kind,
+            string $title,
+            string $rationale,
+            array $proposal,
+        ): ApprovalInput => new ApprovalInput(
+            kind: $kind,
+            title: $title,
+            rationale: $rationale,
+            proposal: $proposal,
+            clientId: (string) $client->getKey(),
+            projectId: $project === null ? null : (string) $project->getKey(),
+        );
+
+        // 1. Approved, and still waiting on a hand. Backdated, so the outstanding age is not "today".
+        $outstanding = $ask($request(
+            ApprovalKind::SpendChange,
+            'Raise the Ramadan daily budget',
+            'Cost per purchase has held under target for nine days and the format is not fatiguing.',
+            ['campaign' => 'SANDBOX — Ramadan Sales', 'from_daily_minor' => 50_000, 'to_daily_minor' => 80_000, 'currency' => 'SAR'],
+        ));
+        $decide($outstanding->id, ApprovalState::Approved, $outstanding->fingerprint);
+        DB::table('approval_requests')
+            ->where('id', $outstanding->id)
+            ->update(['decided_at' => now()->subDays(9)]);
+
+        // 2. Approved and carried out, so the queue has a carried-out rate with a denominator.
+        $done = $ask($request(
+            ApprovalKind::CampaignPause,
+            'Pause the retargeting set over the weekend',
+            'Frequency is above four and the return has gone negative for three days running.',
+            ['campaign' => 'SANDBOX — Retargeting', 'action' => 'pause'],
+        ));
+        $decide($done->id, ApprovalState::Approved, $done->fingerprint);
+        $enact($done->id, EnactmentState::Confirmed, 'Paused in the platform. Will review on Sunday.');
+
+        // 3. Declined, with the reason the next proposal is built on.
+        $declined = $ask($request(
+            ApprovalKind::TargetingChange,
+            'Broaden the age range to 18–65',
+            'Reach is flattening on the current audience.',
+            ['campaign' => 'SANDBOX — Ramadan Sales', 'from' => '25-44', 'to' => '18-65'],
+        ));
+        $decide(
+            $declined->id,
+            ApprovalState::Declined,
+            $declined->fingerprint,
+            'The client has asked us to stay above 25 until the brand work lands.',
+        );
+
+        // 4. Two still waiting, one of them a change to live spend.
+        $ask($request(
+            ApprovalKind::CampaignLaunch,
+            'Launch the Eid prospecting campaign',
+            'Plan approved; creative is signed off and the audiences are built.',
+            ['campaign' => 'SANDBOX — Eid Prospecting', 'daily_minor' => 120_000, 'currency' => 'SAR'],
+        ));
+        $ask($request(
+            ApprovalKind::TrackingChange,
+            'Count the newsletter sign-up as a conversion',
+            'It is the only signal we have on the content side, and the form now fires reliably.',
+            ['conversion' => 'newsletter_signup', 'counts_as' => 'secondary'],
+        ));
+
+        $this->command?->line(
+            '  Approvals: 5 requests, one approved and carried out, one approved and still waiting nine days.'
+        );
+    }
+
+    /**
+     * Put somebody on a project, so the demo can show what assignment-based visibility actually does.
+     *
+     * Only the creative. Every project-scoped surface in this product narrows to the projects an actor is
+     * assigned to, and a demo workspace where nobody is assigned to anything cannot demonstrate that at all —
+     * four of the five demo accounts see empty screens and the rule looks like a bug.
+     *
+     * The buyer is left **deliberately unassigned**, because the other half of the rule is just as important:
+     * a member of the workspace who is on no project sees nothing, and is told why rather than shown an empty
+     * list. The end-to-end suite asserts both halves, which is why one account has to be on each side.
+     *
+     * @param  array<string, \App\Infrastructure\Persistence\Eloquent\Model\Role>  $roles
+     */
+    private function demoProjectMembers(mixed $workspaceId, array $roles): void
+    {
+        /** @var Project|null $project */
+        $project = Project::query()
+            ->whereIn('client_id', Client::query()->where('workspace_id', $workspaceId)->select('id'))
+            ->orderBy('created_at')
+            ->first();
+
+        if ($project === null) {
+            return;
+        }
+
+        $creative = $this->user(self::PEOPLE[3]);
+        $role = $roles[SystemRole::Creative->value] ?? null;
+
+        if ($role === null) {
+            return;
+        }
+
+        ProjectMember::query()->updateOrCreate(
+            ['project_id' => $project->getKey(), 'user_id' => $creative->getKey()],
+            ['role_id' => $role->getKey()],
+        );
     }
 }
