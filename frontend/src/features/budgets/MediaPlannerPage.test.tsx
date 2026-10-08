@@ -9,6 +9,15 @@ const permissions = vi.hoisted(() => ({
   current: ['budgets.view', 'budgets.manage', 'budgets.approve'] as string[],
 }));
 
+/*
+ * ECharts needs a real canvas and a measured container, and jsdom provides neither — it has no
+ * `ResizeObserver` at all, so the real component throws as it mounts and takes the tree with it. The
+ * chart's own behaviour is its own tests' business; this page only has to ask for one.
+ */
+vi.mock('@/shared/ui/chart/Chart', () => ({
+  Chart: ({ ariaLabel }: { ariaLabel: string }) => <div data-testid="chart">{ariaLabel}</div>,
+}));
+
 vi.mock('@/features/auth', async () => {
   const actual = await vi.importActual<Record<string, unknown>>('@/features/auth');
 

@@ -3,6 +3,16 @@ import { persist } from 'zustand/middleware';
 import { applyDocumentLocale, isLocale, type Locale } from '@/shared/i18n';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
+
+/**
+ * Whether charts separate their series by pattern as well as by colour.
+ *
+ * `auto` means the chart decides from the environment — forced colours, or a print in progress —
+ * which covers the cases a reader cannot be expected to configure. `always` is a reader saying they
+ * need it regardless, which no media query can detect: full colour blindness does not announce
+ * itself to a browser, and neither does a report that is about to be photocopied.
+ */
+export type ChartTexturePreference = 'auto' | 'always';
 export type ResolvedTheme = 'light' | 'dark';
 
 type UiState = {
@@ -12,10 +22,12 @@ type UiState = {
   isSidebarCollapsed: boolean;
   /** Mobile: drawer visibility. Deliberately not persisted. */
   isMobileNavOpen: boolean;
+  chartTexture: ChartTexturePreference;
   setTheme: (theme: ThemePreference) => void;
   setLocale: (locale: Locale) => void;
   toggleSidebar: () => void;
   setMobileNavOpen: (open: boolean) => void;
+  setChartTexture: (preference: ChartTexturePreference) => void;
 };
 
 export function resolveTheme(preference: ThemePreference): ResolvedTheme {
@@ -46,6 +58,7 @@ export const useUiStore = create<UiState>()(
       locale: detectInitialLocale(),
       isSidebarCollapsed: false,
       isMobileNavOpen: false,
+      chartTexture: 'auto',
       setTheme: (theme) => {
         applyTheme(theme);
         set({ theme });
@@ -56,6 +69,7 @@ export const useUiStore = create<UiState>()(
       },
       toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
       setMobileNavOpen: (open) => set({ isMobileNavOpen: open }),
+      setChartTexture: (preference) => set({ chartTexture: preference }),
     }),
     {
       name: 'digitalsmart.ui',
@@ -64,6 +78,11 @@ export const useUiStore = create<UiState>()(
         theme: state.theme,
         locale: state.locale,
         isSidebarCollapsed: state.isSidebarCollapsed,
+        /*
+         * Persisted. Somebody who needs patterns needs them on every page and on every visit, and
+         * asking again tomorrow would be asking them to tell us about their eyesight daily.
+         */
+        chartTexture: state.chartTexture,
       }),
     },
   ),

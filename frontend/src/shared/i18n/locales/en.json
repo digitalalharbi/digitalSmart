@@ -595,7 +595,11 @@
         "evenPace": "Even pace",
         "budget": "Approved budget",
         "spendUnknown": "not available",
-        "description": "Cumulative spend against an even pace. Approved {{budget}}, spent {{spent}}."
+        "description": "Cumulative spend against an even pace. Approved {{budget}}, spent {{spent}}.",
+        "title": "Spend against the plan",
+        "hint": "Cumulative spend against an even pace, read at today. The answer is the gap between the two lines.",
+        "caveat": "The spend line stops at the last day a platform reported, rather than continuing flat: a flat cumulative line would say nothing has been spent since.",
+        "day": "Day"
       },
       "region": "Pacing"
     }
@@ -931,6 +935,10 @@
     "legend": {
       "other": "Other",
       "unattributed": "Not attributed"
+    },
+    "texture": {
+      "label": "Patterns",
+      "hint": "Separate series by pattern as well as colour, in every chart. Patterns are added automatically when printing or in a high-contrast display."
     }
   },
   "leads": {

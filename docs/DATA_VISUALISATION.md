@@ -178,6 +178,68 @@ tells a screen reader nothing at all. The table is also the **relief** the contr
 depends on: where a mark sits below 3:1, the published rule allows it only if the values
 are readable another way.
 
+## Patterns, for when colour is not available
+
+The palette clears every colour-blindness gate it is measured against, and that is still not enough
+in three situations colour cannot reach:
+
+1. **Full colour blindness.** Achromatopsia is rare and real, and no pair of hues separates for
+   somebody who sees none of them.
+2. **Grey printing.** A client prints a report on an office laser and eight hues become eight greys,
+   several of them the same grey.
+3. **Forced colours.** Windows high-contrast mode repaints the page in the reader's own colours and
+   cannot repaint a canvas, so a chart can end up with marks that no longer separate from what is
+   now behind them.
+
+So every chart has a second channel. **The mechanism is ECharts' own `aria.decal`** — the documented
+way to give each series a pattern — rather than patterns painted onto a canvas by hand: the patterns
+are ours, the drawing is theirs. Two consequences of using it are worth knowing.
+
+**`aria.label` is switched off while `aria.decal` is on.** Enabling `aria` also makes ECharts
+generate its own sentence describing the chart and put it on the element. That would be a second,
+machine-written claim about figures this product is careful about, competing with the description
+every chart here is already required to supply — and with the table beside it. So the generated one
+is turned off rather than allowed to contradict them.
+
+**Lines are handled separately.** A decal fills a shape and a line has no fill, so line series get a
+dash pattern by slot instead, from the same fixed order as the colours — `seriesDashes` beside
+`seriesDecals` in `theme.ts`. Slot 1 is dashed too, deliberately: a solid first line beside seven
+dashed ones would read as the real measurement among projections, which is what a dashed line means
+everywhere else in this product. A line that **already** carries a dash is left alone, because it is
+saying "this is not data" — a target, a limit, a comparison — and overwriting that would turn a plan
+into a measurement.
+
+### When it turns on
+
+| Trigger | Why it cannot be left to the reader |
+| ------- | ----------------------------------- |
+| `forced-colors: active` | The page is already repainted; the canvas is not |
+| A print in progress (`beforeprint`) | A canvas prints whatever was last drawn on it, so the patterns have to be there *before* the dialog opens. Otherwise "works on screen" and "works on paper" are different answers, and the paper one is the copy a client keeps |
+| The reader asked | No media query detects full colour blindness, or a report about to be photocopied |
+
+The reader's own preference is a **Patterns** toggle in `ChartFrame`, beside the chart/table switch —
+offered where the problem is noticed, because somebody who cannot tell two series apart is looking at
+a chart and not at a settings page. It is one preference for the whole product, persisted, and the
+control says so: a per-chart switch would mean setting it nine times on a dashboard, and asking again
+tomorrow would be asking somebody to tell us about their eyesight daily.
+
+### What the gate checks, and what it does not
+
+`texture.test.ts` asserts the eight patterns and the eight dashes are pairwise distinct **as
+definitions**, which catches a copy-paste, and that turning the channel off writes the disabling
+values rather than omitting the keys — `setOption` is called with `notMerge`, so an absent key would
+leave whatever the instance already had, and the preference would look like it only ever turns on.
+
+Whether two patterns *look* different at 24 pixels is a design judgement and is **not** pretended to
+be measured, unlike the colour separations, which are computed. The eight are built from four
+distinguishable families — hatching at two opposing angles, a horizontal and a vertical rule, a dot,
+a ring, a wide hatch and a cross grid — rather than eight angles of one hatch, which would give four
+patterns and four near-duplicates.
+
+**One limitation, stated rather than implied:** a single series carrying a colour per datum — an
+ordinal bar chart where each bar is a pipeline stage — is one series to ECharts and gets one decal.
+Those charts separate their bars by axis label, which they all have.
+
 ## Every chart says where its figures came from
 
 `ChartFrame` takes a `source`, and it is not decorative. A chart drawn from sandbox

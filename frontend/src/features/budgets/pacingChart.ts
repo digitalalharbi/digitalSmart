@@ -33,14 +33,20 @@ type PacingChartContext = {
  *  - **The even pace is drawn for the whole period**, including the future. That is the
  *    plan, and the plan exists for days that have not happened yet.
  */
-export function pacingOption(
+/**
+ * The two curves, as numbers.
+ *
+ * Exported so the chart's table twin reads the **same** arithmetic rather than a second
+ * implementation of it. A cumulative series built twice is a cumulative series that disagrees with
+ * itself the first time somebody changes one of them — and the two would be shown side by side,
+ * which is the one place the disagreement is guaranteed to be noticed by a client.
+ */
+export function pacingSeries(
   daily: Array<{ date: string; spendMinor: number }>,
   pacing: PacingFigures,
   periodStart: string,
   periodEnd: string,
-  { isRtl, labels }: PacingChartContext,
-): EChartsCoreOption {
-  const palette = readChartPalette();
+): { dates: string[]; actual: Array<number | null>; evenPace: number[] } {
   const dates = periodDates(periodStart, periodEnd);
   const spendByDate = new Map(daily.map((row) => [row.date, row.spendMinor]));
 
@@ -66,7 +72,24 @@ export function pacingOption(
   });
 
   const budgetMajor = pacing.budget_minor / 100;
-  const evenPace = dates.map((_, index) => ((index + 1) / dates.length) * budgetMajor);
+
+  return {
+    dates,
+    actual,
+    evenPace: dates.map((_, index) => ((index + 1) / dates.length) * budgetMajor),
+  };
+}
+
+export function pacingOption(
+  daily: Array<{ date: string; spendMinor: number }>,
+  pacing: PacingFigures,
+  periodStart: string,
+  periodEnd: string,
+  { isRtl, labels }: PacingChartContext,
+): EChartsCoreOption {
+  const palette = readChartPalette();
+  const { dates, actual, evenPace } = pacingSeries(daily, pacing, periodStart, periodEnd);
+  const budgetMajor = pacing.budget_minor / 100;
 
   return {
     // Actual and plan, two deliberately distinct series colours.

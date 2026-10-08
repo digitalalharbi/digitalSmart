@@ -52,6 +52,54 @@ export type ChartPalette = {
 export const seriesCap = { adjacent: 8, anyPair: 4 } as const;
 
 /**
+ * One pattern per categorical slot, in the same fixed order as the colours.
+ *
+ * The order matters for the same reason it matters for the hues: slot 3 is only ever drawn beside
+ * slots 2 and 4, so the pairs that have to separate are the neighbouring ones. Shuffling this list
+ * would put two similar patterns side by side.
+ *
+ * Shapes are ECharts `decal` objects — `dashArrayX`/`dashArrayY` with a `rotation` draw a line
+ * pattern, and a `symbol` draws a repeated mark. The eight are built from four distinguishable
+ * families rather than eight angles of the same hatch: hatching at two opposing angles, a
+ * horizontal and a vertical rule, a dot, a ring, a wide-spaced hatch and a cross grid. Angles alone
+ * would give four patterns and four near-duplicates.
+ *
+ * **What the gate checks and what it cannot.** `palette.gates.test.ts` asserts the eight are
+ * pairwise distinct as definitions, which catches a copy-paste; whether two patterns *look*
+ * different at 24 pixels is a design judgement and is not pretended to be measured, unlike the
+ * colour separations, which are computed.
+ */
+export const seriesDecals = [
+  { dashArrayX: [1, 0], dashArrayY: [4, 3], rotation: Math.PI / 4 },
+  { dashArrayX: [1, 0], dashArrayY: [4, 3], rotation: -Math.PI / 4 },
+  { dashArrayX: [1, 0], dashArrayY: [4, 4], rotation: 0 },
+  { dashArrayX: [1, 0], dashArrayY: [4, 4], rotation: Math.PI / 2 },
+  { symbol: 'circle', symbolSize: 0.4, dashArrayX: [4, 3], dashArrayY: [4, 3] },
+  { symbol: 'rect', symbolSize: 0.5, dashArrayX: [6, 4], dashArrayY: [6, 4] },
+  { dashArrayX: [1, 0], dashArrayY: [2, 8], rotation: Math.PI / 4 },
+  { dashArrayX: [[6, 6]], dashArrayY: [6, 6], rotation: 0 },
+] as const;
+
+/**
+ * One dash pattern per slot, for line series, which a decal cannot reach.
+ *
+ * Lengths rather than angles, because a line has one direction. The first is deliberately **not**
+ * solid: if slot 1 stayed solid while the rest dashed, a reader would read the solid one as the
+ * real measurement and the others as projections — which is what a dashed line means everywhere
+ * else in this product.
+ */
+export const seriesDashes = [
+  [10, 4],
+  [2, 3],
+  [12, 3, 2, 3],
+  [6, 3],
+  [2, 2, 8, 2],
+  [14, 5],
+  [4, 2, 1, 2],
+  [8, 3, 3, 3],
+] as const;
+
+/**
  * Values used before the document is available — unit tests and any render that
  * happens before styles apply. These are the resolved tokens, not stand-ins, so a
  * chart never flashes a colour the design system does not contain.

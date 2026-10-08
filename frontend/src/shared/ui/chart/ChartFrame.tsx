@@ -1,10 +1,11 @@
-import { Table2, TrendingUp } from 'lucide-react';
+import { Grid2x2Check, Table2, TrendingUp } from 'lucide-react';
 import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MetricSourceValue } from '@/shared/metrics';
 import { cn } from '@/shared/lib/cn';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { SourceBadge } from '@/shared/ui/source-badge';
+import { useUiStore } from '@/shared/store/ui-store';
 import { ChartTable, type ChartTableRow } from './ChartTable';
 
 type ChartFrameProps = {
@@ -69,6 +70,8 @@ export function ChartFrame({
 }: ChartFrameProps) {
   const { t } = useTranslation();
   const [view, setView] = useState<'chart' | 'table'>('chart');
+  const chartTexture = useUiStore((state) => state.chartTexture);
+  const setChartTexture = useUiStore((state) => state.setChartTexture);
   const panelId = useId();
   const titleId = useId();
 
@@ -124,6 +127,32 @@ export function ChartFrame({
             </button>
           ))}
         </div>
+
+        {/*
+          The pattern channel, offered where the problem is noticed.
+          
+          A reader who cannot tell two series apart is looking at a chart, not at a settings page —
+          and there is no media query for full colour blindness or for a report about to be
+          photocopied, so it has to be asked for. The preference is one for the whole product rather
+          than for this chart, and the label says so: somebody who needs patterns needs them
+          everywhere, and a per-chart switch would mean setting it nine times on a dashboard.
+        */}
+        <button
+          type="button"
+          onClick={() => setChartTexture(chartTexture === 'always' ? 'auto' : 'always')}
+          aria-pressed={chartTexture === 'always'}
+          title={t('chart.texture.hint')}
+          className={cn(
+            'focus-visible:ring-accent/40 border-line flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium',
+            'ease-standard transition-colors duration-[var(--ds-duration-fast)] focus-visible:ring-2 focus-visible:outline-none',
+            chartTexture === 'always'
+              ? 'bg-accent-subtle text-content-brand'
+              : 'text-content-secondary hover:bg-surface-hover',
+          )}
+        >
+          <Grid2x2Check aria-hidden className="size-3.5" />
+          {t('chart.texture.label')}
+        </button>
       </header>
 
       <div

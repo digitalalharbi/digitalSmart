@@ -1,6 +1,7 @@
 import * as echarts from 'echarts/core';
 import { BarChart, LineChart, PieChart, ScatterChart } from 'echarts/charts';
 import {
+  AriaComponent,
   DataZoomComponent,
   GridComponent,
   LegendComponent,
@@ -12,6 +13,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import { useEffect, useId, useRef } from 'react';
 import type { EChartsCoreOption } from 'echarts/core';
 import { cn } from '@/shared/lib/cn';
+import { useTextureChannel, withTexture } from './texture';
 
 /*
  * Registered explicitly rather than importing all of ECharts: the full bundle is
@@ -29,6 +31,11 @@ echarts.use([
   TitleComponent,
   DataZoomComponent,
   MarkLineComponent,
+  /*
+   * Registered explicitly, because `aria.decal` — the pattern channel for readers who cannot use
+   * colour — does nothing without it, and ECharts stopped importing it by default in version 5.
+   */
+  AriaComponent,
   CanvasRenderer,
 ]);
 
@@ -61,6 +68,11 @@ export function Chart({
   const containerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<echarts.ECharts | null>(null);
   const titleId = useId();
+  /*
+   * The backup channel for readers colour cannot reach. Resolved here rather than in each chart, so
+   * that no chart can be the one that forgot — the same reason the mark geometry is not per chart.
+   */
+  const hasTexture = useTextureChannel();
 
   useEffect(() => {
     const container = containerRef.current;
@@ -112,8 +124,11 @@ export function Chart({
 
     // `true` replaces the option rather than merging: a series list that shrank
     // would otherwise keep its old members.
-    instance.setOption({ ...option, animation: !prefersReducedMotion }, true);
-  }, [option]);
+    instance.setOption(
+      { ...withTexture(option, hasTexture), animation: !prefersReducedMotion },
+      true,
+    );
+  }, [option, hasTexture]);
 
   useEffect(() => {
     const instance = instanceRef.current;

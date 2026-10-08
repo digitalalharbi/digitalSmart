@@ -8,7 +8,8 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import { formatCurrency, formatPercent } from '@/shared/lib/format';
 import { cn } from '@/shared/lib/cn';
-import { pacingOption } from './pacingChart';
+import { ChartFrame } from '@/shared/ui/chart';
+import { pacingOption, pacingSeries } from './pacingChart';
 import type { AllocationPacingPayload, PacingPayload, PacingStatusValue } from './types';
 
 const Chart = lazy(async () => {
@@ -71,6 +72,20 @@ export function PacingPanel({ pacing }: { pacing: PacingPayload }) {
       },
     );
   }, [pacing, locale, isRtl, currency, t]);
+
+  /* The same arithmetic the chart is drawn from, for the table beside it. */
+  const curves = useMemo(() => {
+    if (pacing.pacing === null) {
+      return null;
+    }
+
+    return pacingSeries(
+      pacing.daily,
+      pacing.pacing,
+      pacing.budget.period_start,
+      pacing.budget.period_end,
+    );
+  }, [pacing]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -173,20 +188,60 @@ export function PacingPanel({ pacing }: { pacing: PacingPayload }) {
           />
         </dl>
 
-        {option === null ? null : (
-          <Suspense fallback={<Skeleton className="h-64" />}>
-            <Chart
-              option={option}
-              height={260}
-              ariaLabel={t('budgets.pacing.chart.description', {
-                budget: formatCurrency(pacing.budget.amount_minor / 100, currency, locale),
-                spent:
-                  pacing.spend.minor_units === null
-                    ? t('budgets.pacing.chart.spendUnknown')
-                    : formatCurrency(pacing.spend.minor_units / 100, currency, locale),
-              })}
-            />
-          </Suspense>
+        {option === null || curves === null ? null : (
+          /*
+           * In the shared frame, like every other chart in the product. Not cosmetic: the frame
+           * carries the table twin and the pattern channel for readers colour cannot reach, and a
+           * chart outside it has no way to turn that channel on. The two curves in the table come
+           * from `pacingSeries`, the same function the chart is drawn from, so the figures beside
+           * the chart cannot disagree with the chart.
+           */
+          <ChartFrame
+            title={t('budgets.pacing.chart.title')}
+            subtitle={t('budgets.pacing.chart.hint')}
+            /*
+             * No source badge here, and that is this panel's own rule applied again: its header
+             * already states where the spend came from, for the four figures as well as the chart,
+             * and the same claim twice reads as two claims. Every other chart in the product carries
+             * its own badge because it is the only thing stating its source.
+             */
+            caveats={[t('budgets.pacing.chart.caveat')]}
+            table={{
+              columns: [
+                t('budgets.pacing.chart.day'),
+                t('budgets.pacing.chart.actual'),
+                t('budgets.pacing.chart.evenPace'),
+              ],
+              rows: curves.dates.map((date, index) => ({
+                key: date,
+                label: date,
+                cells: [
+                  /*
+                   * A day past the last report is a dash, never a repeated total. The chart says
+                   * the same thing by ending the line, and the table has to say it too.
+                   */
+                  curves.actual[index] == null
+                    ? '—'
+                    : formatCurrency(curves.actual[index], currency, locale),
+                  formatCurrency(curves.evenPace[index] ?? 0, currency, locale),
+                ],
+              })),
+            }}
+          >
+            <Suspense fallback={<Skeleton className="h-64" />}>
+              <Chart
+                option={option}
+                height={260}
+                ariaLabel={t('budgets.pacing.chart.description', {
+                  budget: formatCurrency(pacing.budget.amount_minor / 100, currency, locale),
+                  spent:
+                    pacing.spend.minor_units === null
+                      ? t('budgets.pacing.chart.spendUnknown')
+                      : formatCurrency(pacing.spend.minor_units / 100, currency, locale),
+                })}
+              />
+            </Suspense>
+          </ChartFrame>
         )}
       </Card>
 

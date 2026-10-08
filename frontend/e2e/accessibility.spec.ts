@@ -75,6 +75,43 @@ test.describe('accessibility', () => {
   });
 
   /*
+   * The backup channel for readers colour cannot reach. The palette clears every colour-blindness gate it is
+   * measured against, and that is still nothing for somebody who sees no colour at all, or for a report printed
+   * in grey — so patterns are offered where the problem is noticed, beside the chart.
+   */
+  test('offers patterns beside every chart, and remembers the choice', async ({ page }) => {
+    await signIn(page, ACCOUNTS.owner);
+    await page.goto('/analytics');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
+
+    const toggle = page.getByRole('button', { name: 'Patterns' }).first();
+
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+
+    /*
+     * Persisted, because somebody who needs patterns needs them on every page and on every visit. Asking again
+     * tomorrow would be asking them to tell us about their eyesight daily.
+     */
+    await page.reload();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('button', { name: 'Patterns' }).first()).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    /* Left as it was found, because the whole suite shares one browser profile per project. */
+    await page.getByRole('button', { name: 'Patterns' }).first().click();
+    await expect(page.getByRole('button', { name: 'Patterns' }).first()).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
+  /*
    * Its own describe block with `test.use`, rather than a hand-built context: the language is chosen by the
    * browser and the suite pins `locale` for everything else, and this is the supported way to unpin it for one
    * group. RTL is not a mirror of LTR — the direction decides which side a label sits on, which corner a focus

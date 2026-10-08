@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { ChevronRight, Home } from 'lucide-react';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
-import { Chart } from '@/shared/ui/chart/Chart';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Chart, ChartFrame } from '@/shared/ui/chart';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { MetricCard, MetricCardSkeleton } from '@/shared/ui/metric-card';
 import { SourceNotice } from '@/shared/ui/source-badge';
 import { useUiStore } from '@/shared/store/ui-store';
 import { BreakdownTable, FilterBar, useAnalytics, useMetricCatalogue } from '@/features/analytics';
 import {
+  formatMetric,
   trendMetricsFor,
   trendOption,
   type BreakdownRowPayload,
@@ -191,30 +191,49 @@ export function CampaignsPage() {
         />
       ) : (
         <>
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {t('analytics.trend.title', {
+          {/*
+            In the shared frame, like every other chart. Not cosmetic: the frame is what carries the
+            source badge, the table twin and the pattern channel for readers colour cannot reach — a
+            chart outside it has no way to turn that channel on.
+          */}
+          <ChartFrame
+            title={t('analytics.trend.title', {
+              metric: catalogue.definitions.get('spend')?.label ?? 'Spend',
+            })}
+            subtitle={t('analytics.trend.hint')}
+            {...(data === undefined ? {} : { source: data.source })}
+            isEmpty={trend === null}
+            table={{
+              columns: [
+                t('analytics.table.day'),
+                catalogue.definitions.get('spend')?.label ?? 'Spend',
+              ],
+              rows: (data?.series ?? []).map((point) => {
+                const spend = point.values.spend;
+
+                return {
+                  key: point.date,
+                  label: point.date,
+                  // A missing figure is a dash, never a zero: they mean opposite things.
+                  cells: [spend === undefined ? '—' : formatMetric(spend, i18n.language)],
+                };
+              }),
+            }}
+          >
+            {trend === null ? (
+              <div className="bg-surface-sunken h-[260px] animate-pulse rounded-lg" />
+            ) : (
+              <Chart
+                option={trend}
+                height={260}
+                ariaLabel={t('analytics.trend.aria', {
                   metric: catalogue.definitions.get('spend')?.label ?? 'Spend',
+                  start: data?.range.start ?? '',
+                  end: data?.range.end ?? '',
                 })}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {trend === null ? (
-                <div className="bg-surface-sunken h-[260px] animate-pulse rounded-lg" />
-              ) : (
-                <Chart
-                  option={trend}
-                  height={260}
-                  ariaLabel={t('analytics.trend.aria', {
-                    metric: catalogue.definitions.get('spend')?.label ?? 'Spend',
-                    start: data?.range.start ?? '',
-                    end: data?.range.end ?? '',
-                  })}
-                />
-              )}
-            </CardContent>
-          </Card>
+              />
+            )}
+          </ChartFrame>
 
           <section className="flex flex-col gap-3">
             <div className="flex items-baseline justify-between gap-3">

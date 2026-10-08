@@ -4,6 +4,77 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 17 addendum — the pattern channel
+
+The last Phase 17 gap: *"The palette clears every gate on colour alone in both themes, so the backup channel for
+full colour-blindness, grey print and forced-colors mode is not yet implemented."*
+
+### The argument
+
+Clearing the colour gates is the wrong thing to be reassured by. They measure whether two hues separate for the
+common forms of colour blindness; they say nothing about three situations where there is no colour to separate.
+Achromatopsia is rare and real. A client printing a report on an office laser gets eight greys, several of them
+the same grey. And Windows high-contrast mode repaints the page in the reader's own colours and **cannot repaint
+a canvas**, so a chart can end up with marks that no longer separate from what is now behind them.
+
+### Added
+
+- **Patterns, on ECharts' own `aria.decal`** rather than painted onto a canvas by hand: the patterns are ours,
+  the drawing is theirs. Checked against the installed library's type definitions and the Apache ECharts
+  handbook, which is also where two constraints came from — `aria.decal.show` does nothing without
+  `aria.enabled`, and `AriaComponent` has to be registered explicitly since version 5.
+- **`aria.label` is switched off while doing it.** Enabling `aria` also makes ECharts generate its own sentence
+  describing the chart and put it on the element: a second, machine-written claim about figures this product is
+  careful about, competing with the description every chart here is already required to supply and with the table
+  beside it. Turned off rather than allowed to contradict them.
+- **Dash patterns by slot for line series**, because a decal fills a shape and a line has no fill, so ECharts
+  leaves lines untouched. From the same fixed order as the colours, so a line's pattern and its colour always
+  name the same series. **Slot 1 is dashed too**: a solid first line beside seven dashed ones would read as the
+  real measurement among projections, which is what a dashed line means everywhere else here. A line that is
+  *already* dashed is left alone — a target, a limit, a comparison — because overwriting it would turn a plan
+  into a measurement.
+- **It turns itself on where a reader cannot be expected to configure it**: `forced-colors: active`, and before a
+  print. The print case needs `beforeprint` rather than a media query, because a canvas prints whatever was last
+  drawn on it — without it, "works on screen" and "works on paper" are different answers, and the paper one is
+  the copy a client keeps.
+- **A Patterns toggle in `ChartFrame`**, beside the chart/table switch, for what no media query can detect. It is
+  offered where the problem is noticed — somebody who cannot tell two series apart is looking at a chart, not at
+  a settings page — and it is one persisted preference for the whole product, which the control says in its own
+  words: a per-chart switch would mean setting it nine times on a dashboard.
+- **The campaigns explorer and the pacing panel moved into `ChartFrame`.** The roadmap called this mechanical and
+  worth doing when each was next touched; it stopped being merely cosmetic once the frame acquired the toggle,
+  because a chart outside the frame has no way to turn the channel on. The pacing chart's table twin reads
+  `pacingSeries`, the same function the chart is drawn from, so the cumulative arithmetic exists once — two
+  implementations of it would disagree the first time one changed, side by side on the same card.
+
+### What the gate checks, and what it does not
+
+The eight patterns and the eight dashes are asserted pairwise distinct **as definitions**, which catches a
+copy-paste, and turning the channel off is asserted to write the disabling values rather than omit the keys —
+`setOption` is called with `notMerge`, so an absent key would leave whatever the instance had and the preference
+would look like it only ever turns on.
+
+Whether two patterns *look* different at 24 pixels is a design judgement and is **not** pretended to be
+measured, unlike the colour separations. The eight come from four distinguishable families rather than eight
+angles of one hatch, which would give four patterns and four near-duplicates. One limitation is stated rather
+than implied: a single series carrying a colour per datum — an ordinal bar chart where each bar is a stage — is
+one series to ECharts and gets one decal; those charts separate their bars by axis label, which they all have.
+
+### Found by the gates
+
+- **A test was rendering the real ECharts component in jsdom**, which has no `ResizeObserver`, so the component
+  threw as it mounted and took the tree with it. It had been passing by a timing accident — the lazy chunk
+  resolved after the assertion — and the frame changed the timing. Mocked, as every other chart-bearing test
+  does.
+- **Two source badges on one card.** Moving the pacing chart into the frame gave it a badge beside the one the
+  panel header already carries for the same figures. The panel's own rule, written there earlier for a different
+  duplication, settles it: the same claim twice reads as two claims.
+
+### Gates
+
+1 678 backend tests (6 122 assertions), 506 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
+clean, ESLint and Prettier clean, production build, 368 Playwright tests.
+
 ## Phase 15 addendum — merging two leads
 
 `lead_events` had reserved a `merged` type since Phase 15 with nothing writing one. The gap list said why: *"the
@@ -71,7 +142,7 @@ that asks "who decided this, and when" would find nothing.
 ### Gates
 
 1 678 backend tests (6 122 assertions), 490 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
-clean, ESLint and Prettier clean, production build, Playwright green.
+clean, ESLint and Prettier clean, production build, 366 Playwright tests.
 
 ## Phase 14 addendum — new versus returning customers
 
@@ -127,7 +198,7 @@ its first month — while the number was really reporting how long the integrati
 ### Gates
 
 1 647 backend tests (6 041 assertions), 484 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
-clean, ESLint and Prettier clean, production build, Playwright green.
+clean, ESLint and Prettier clean, production build, 364 Playwright tests.
 
 ## Phase 15 addendum — the CRM bridge
 

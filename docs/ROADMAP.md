@@ -515,10 +515,12 @@ pages.
 
 ### Not yet done in Phase 10
 
-- **Container readiness is not on the page yet.** The endpoint and its assessment are complete
-  (Phase 9) and the surface shows analytics sources only; adding a tag-manager panel needs a design
-  decision about how a live provider call behaves beside data that always loads, and it is worth
-  making that deliberately rather than bolting a spinner onto this page.
+- ~~**Container readiness is not on the page yet.**~~ Landed, and deliberately as the **fourth** panel: the
+  first three are derived from this product's own tables and always answer, while this one reads Tag Manager on
+  the workspace's credentials and can fail for reasons that have nothing to do with the client's tracking. It
+  publishes the three things nothing else can — published state rather than saved state, the measurement-id
+  cross-check against the client's own analytics sources, and configuration rather than events — and when the
+  provider refuses, it shows the provider's own words rather than a spinner that never resolves.
 - **Project scope.** The page filters by client, which is how measurement is agreed. Per-project
   filtering is a one-line addition once a project picker exists on a surface that needs it.
 - **No charts.** An event-count trend is the obvious candidate and was left out on purpose: the
@@ -830,8 +832,15 @@ waiting on it.
   giving each a twin would put the same figures on screen three times. Everything whose numbers appear nowhere
   else now has a table: the analytics trend, the commerce trend, the overview trend, every Lead Center chart and
   the Tracking Center's.
-- **The campaigns explorer and the pacing panel are not in the frame.** Both use the shared marks and the
-  measured palette, and both already sit beside tables of their own figures; moving the cards into `ChartFrame`
-  is mechanical and worth doing when each is next touched.
-- **No texture channel.** The palette clears every gate on colour alone in both themes, so the backup channel
-  for full colour-blindness, grey print and forced-colors mode is not yet implemented.
+- ~~**The campaigns explorer and the pacing panel are not in the frame.**~~ Both moved, and it stopped being
+  merely cosmetic once the frame acquired the pattern toggle: a chart outside the frame has no way to turn that
+  channel on. The pacing chart's table twin reads `pacingSeries`, the same function the chart is drawn from, so
+  the cumulative arithmetic exists once — two implementations of it would disagree the first time one changed,
+  side by side on the same card. It carries no source badge of its own: the panel's header already states the
+  spend's source for the four figures and the chart together, and the same claim twice reads as two claims.
+- ~~**No texture channel.**~~ Built, on ECharts' own `aria.decal` rather than hand-painted patterns, with dash
+  patterns by slot for line series because a decal cannot fill a line. It turns itself on in forced-colors mode
+  and before a print — a canvas prints whatever was last drawn on it — and a **Patterns** toggle in `ChartFrame`
+  covers the cases no media query can detect. Enabling `aria` also makes ECharts write its own description of the
+  data, which is switched off: every chart here already has one, and two would disagree. See
+  [DATA_VISUALISATION.md](DATA_VISUALISATION.md#patterns-for-when-colour-is-not-available).
