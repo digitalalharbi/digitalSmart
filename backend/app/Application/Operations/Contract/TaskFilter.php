@@ -33,31 +33,12 @@ final readonly class TaskFilter
         return new self;
     }
 
-    public function forClient(?string $clientId): self
-    {
-        return new self(
-            $clientId,
-            $this->projectId,
-            $this->assigneeId,
-            $this->unassignedOnly,
-            $this->priority,
-            $this->subjectType,
-            $this->subjectId,
-        );
-    }
-
-    public function forAssignee(?string $assigneeId): self
-    {
-        return new self(
-            $this->clientId,
-            $this->projectId,
-            $assigneeId,
-            $this->unassignedOnly,
-            $this->priority,
-            $this->subjectType,
-            $this->subjectId,
-        );
-    }
+    /*
+     * No `withX()` builders. There were two — `forClient` and `forAssignee` — and nothing ever called them: the
+     * one caller builds the filter in a single constructor call, which is the shape that makes a forgotten field
+     * impossible to write. Unexercised builders on a readonly object are a second way to construct it that
+     * nobody tests, and the first thing to drift when a field is added.
+     */
 
     /** @return array<string, mixed> the filter as the audit log and the cache key see it */
     public function toArray(): array

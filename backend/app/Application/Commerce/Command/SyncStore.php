@@ -18,6 +18,7 @@ use App\Domain\Commerce\RevenueSource;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
+use App\Domain\Shared\ValueObject\DateWindow;
 use App\Domain\Workspace\WorkspaceId;
 use DateTimeImmutable;
 
@@ -206,14 +207,37 @@ final readonly class SyncStore
         int $calls,
     ): array {
         $written = 0;
-        $cursor = null;
 
-        do {
-            $page = $adapter->fetchOrders($credentials, $storeExternalId, $from, $until, $cursor);
-            $calls++;
-            $written += $this->store->upsertOrders($workspaceId, $storeId, $page->items, $revenueSource, $source);
-            $cursor = $page->nextCursor;
-        } while ($cursor !== null);
+        /*
+         * Windowed by the limit the adapter itself publishes.
+         *
+         * Salla and Zid both answer at most 92 days in one request, and before this the range went out whole: a
+         * first sync with a year's `since` asked for a year and was refused by the provider — which arrived on a
+         * client's store page as "partial" with nothing anybody could act on. The limit was recorded and ignored,
+         * which is worse than not knowing it, because the adapter looked as though it had been honoured.
+         */
+        foreach (DateWindow::split($from, $until, $adapter->maxRangeDays()) as $window) {
+            $cursor = null;
+
+            do {
+                $page = $adapter->fetchOrders(
+                    $credentials,
+                    $storeExternalId,
+                    $window->from,
+                    $window->until,
+                    $cursor,
+                );
+                $calls++;
+                $written += $this->store->upsertOrders(
+                    $workspaceId,
+                    $storeId,
+                    $page->items,
+                    $revenueSource,
+                    $source,
+                );
+                $cursor = $page->nextCursor;
+            } while ($cursor !== null);
+        }
 
         return [$written, $calls];
     }

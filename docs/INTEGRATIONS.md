@@ -134,6 +134,35 @@ read time, so the sandbox does not age into irrelevance.
 Where a provider publishes no contract, its fixture directory is simply absent
 and `SyncAdapterRegistry::supports()` returns false. Nothing invents a shape.
 
+## A range no provider will refuse
+
+Every sync adapter publishes two numbers about time, and they answer different questions:
+
+| Method | Question |
+| ------ | -------- |
+| `restatementWindowDays()` | How far back **every** sync re-reads, because figures keep moving after a day closes — a cash-on-delivery order is paid at the door, a refund arrives a fortnight later, an analytics figure is restated |
+| `maxRangeDays()` / `maxInsightRangeDays()` | The longest range the provider will answer **in one request** |
+
+**The second one has to be honoured by the caller**, and for two of the three sync modules it was not. The
+advertising sync windowed its insight requests from the start; the commerce and measurement syncs sent the
+requested range whole, while holding an adapter that published a 92-day limit. A first sync with a year's
+`since` asked for a year, was refused by the provider, and the refusal arrived on a client's store page as
+"partial" with nothing anybody could act on. A limit that is recorded and ignored is worse than one nobody
+knows, because the adapter looks as though it had been honoured.
+
+`DateWindow::split()` now does it for all three, in one place. Date arithmetic copied into three files is date
+arithmetic that is off by one in one of them, and the symptom is a single missing day in a client's report — so
+the windows are **inclusive at both ends** (seven days is seven dates; the next window starts on the eighth) and
+a test walks a year to assert that no day is lost or read twice.
+
+A degenerate range still produces one window rather than none. A sync that returned no windows would leave its
+journal with no record of having been asked, and afterwards that reads as a sync that never ran rather than one
+that had nothing to do.
+
+`DateWindow` is deliberately **not** `DateRange`: that one is a validated business range and refuses to end
+before it starts, which is right for a report somebody asked for and wrong for a transport concern that must
+still make one request.
+
 ## Architecture
 
 Provider logic sits behind stable ports. No provider-specific code ever appears in a

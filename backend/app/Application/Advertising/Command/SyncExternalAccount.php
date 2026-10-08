@@ -20,6 +20,7 @@ use App\Domain\Advertising\ProviderErrorCategory;
 use App\Domain\Advertising\SyncKind;
 use App\Domain\Advertising\SyncStatus;
 use App\Domain\Integration\Credentials;
+use App\Domain\Shared\ValueObject\DateWindow;
 use DateTimeImmutable;
 
 /**
@@ -210,32 +211,6 @@ final readonly class SyncExternalAccount
     }
 
     /**
-     * The requested range as consecutive windows no provider will refuse.
-     *
-     * Inclusive at both ends, because that is how every adapter filters a date, so a
-     * window of seven days is seven dates and the next one starts on the eighth. A
-     * range shorter than one window is one window.
-     *
-     * @return list<array{DateTimeImmutable, DateTimeImmutable}>
-     */
-    private function windows(DateTimeImmutable $since, DateTimeImmutable $until, int $maxDays): array
-    {
-        $span = max(1, $maxDays);
-        $windows = [];
-        $from = $since;
-
-        while ($from <= $until) {
-            $to = $from->modify('+'.($span - 1).' days');
-            $windows[] = [$from, $to > $until ? $until : $to];
-            $from = $to->modify('+1 day');
-        }
-
-        // A range that ends before it starts still has to be asked for once, so the
-        // journal records a run rather than silently nothing.
-        return $windows === [] ? [[$since, $until]] : $windows;
-    }
-
-    /**
      * Read performance for every level the provider reports separately.
      *
      * The window always reaches back by the adapter's attribution lookback, even
@@ -275,7 +250,7 @@ final readonly class SyncExternalAccount
          * worse ROAS than they earned. The range is asked for in consecutive windows
          * instead, at the cost of more requests.
          */
-        $windows = $this->windows($since, $until, $adapter->maxInsightRangeDays());
+        $windows = DateWindow::split($since, $until, $adapter->maxInsightRangeDays());
 
         $runId = $this->journal->begin($context, SyncKind::Insights, $since, $until);
         $read = 0;
@@ -284,7 +259,7 @@ final readonly class SyncExternalAccount
 
         try {
             foreach ([AdEntityType::Campaign, AdEntityType::AdGroup, AdEntityType::Ad] as $level) {
-                foreach ($windows as [$from, $to]) {
+                foreach ($windows as $window) {
                     $cursor = null;
 
                     do {
@@ -292,8 +267,8 @@ final readonly class SyncExternalAccount
                             $credentials,
                             $context->externalAccountExternalId,
                             $level,
-                            $from,
-                            $to,
+                            $window->from,
+                            $window->until,
                             $cursor,
                         );
 

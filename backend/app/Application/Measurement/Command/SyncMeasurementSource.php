@@ -22,6 +22,7 @@ use App\Domain\Advertising\SyncStatus;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
+use App\Domain\Shared\ValueObject\DateWindow;
 use DateTimeImmutable;
 
 /**
@@ -94,39 +95,58 @@ final readonly class SyncMeasurementSource
         $weakest = MetricSource::Synced;
         $lastEventDate = null;
         $failure = null;
-        $cursor = null;
 
         try {
-            do {
-                $page = $adapter->fetchEventCounts($credentials, $source->externalId, $from, $until, $cursor);
-                $calls++;
+            /*
+             * Windowed by the limit the adapter itself publishes — 92 days for the GA4 Data API, kept there
+             * because a year of daily rows per event name is a large response to hold for no benefit. Before
+             * this the range went out whole, so a long first sync asked for more than the adapter said it would
+             * answer: the limit was recorded and ignored, which is worse than not knowing it, because the
+             * adapter looked as though it had been honoured.
+             *
+             * A failure now costs one window rather than the whole history, which is the other half of the
+             * reason the limit exists.
+             */
+            foreach (DateWindow::split($from, $until, $adapter->maxRangeDays()) as $window) {
+                $cursor = null;
 
-                $isSandbox = $credentials->isSandbox($source->provider->requiredCredentialKeys());
-                $pageSource = $page->quality->metricSource($isSandbox);
+                do {
+                    $page = $adapter->fetchEventCounts(
+                        $credentials,
+                        $source->externalId,
+                        $window->from,
+                        $window->until,
+                        $cursor,
+                    );
+                    $calls++;
 
-                /*
-                 * `weakest()` is the honesty vocabulary's own comparison, so "sandbox beats
-                 * partial beats synced" is decided in one place rather than re-argued here.
-                 */
-                $weakest = MetricSource::weakest([$weakest, $pageSource]);
+                    $isSandbox = $credentials->isSandbox($source->provider->requiredCredentialKeys());
+                    $pageSource = $page->quality->metricSource($isSandbox);
 
-                foreach ($page->quality->caveats() as $caveat) {
-                    // Deduplicated: the same sampling note on nine pages is one fact.
-                    $caveats[$caveat] = true;
-                }
+                    /*
+                     * `weakest()` is the honesty vocabulary's own comparison, so "sandbox beats
+                     * partial beats synced" is decided in one place rather than re-argued here.
+                     */
+                    $weakest = MetricSource::weakest([$weakest, $pageSource]);
 
-                foreach ($page->items as $record) {
-                    $days[$record->date] = true;
-
-                    if ($lastEventDate === null || $record->date > $lastEventDate) {
-                        $lastEventDate = $record->date;
+                    foreach ($page->quality->caveats() as $caveat) {
+                        // Deduplicated: the same sampling note on nine pages is one fact.
+                        $caveats[$caveat] = true;
                     }
-                }
 
-                $rows += $this->writer->upsert($workspaceId, $source->id, $page->items, $pageSource);
+                    foreach ($page->items as $record) {
+                        $days[$record->date] = true;
 
-                $cursor = $page->nextCursor;
-            } while ($cursor !== null);
+                        if ($lastEventDate === null || $record->date > $lastEventDate) {
+                            $lastEventDate = $record->date;
+                        }
+                    }
+
+                    $rows += $this->writer->upsert($workspaceId, $source->id, $page->items, $pageSource);
+
+                    $cursor = $page->nextCursor;
+                } while ($cursor !== null);
+            }
         } catch (ProviderNotConfigured|ProviderRequestFailed|ProviderUnavailable $exception) {
             /*
              * Caught narrowly — only the three the provider layer raises. A programming error has

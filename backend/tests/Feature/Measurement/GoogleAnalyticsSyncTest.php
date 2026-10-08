@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Application\Measurement\Command\SyncMeasurementSource;
+use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\SystemRole;
+use App\Domain\Identity\UserId;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -583,5 +586,46 @@ describe('the live transport is blocked', function (): void {
             ->getJson('/api/measurement/providers/google_analytics/properties')
             ->assertStatus(503)
             ->assertJsonPath('code', 'provider_not_configured');
+    });
+});
+
+describe('the range the adapter will answer', function (): void {
+    /*
+     * The limit the adapter publishes, honoured. The GA4 adapter caps a request at 92 days — not because the
+     * Data API refuses more, but because a year of daily rows per event name is a large response to hold for no
+     * benefit, and a failure should cost one window rather than the whole history. Before this the range went out
+     * whole, so the cap was recorded and ignored: the adapter looked as though it had been honoured.
+     *
+     * Called directly rather than through HTTP, because the endpoint takes no `since` — the long range is a
+     * backfill a queued job asks for, which is exactly the caller the cap exists for.
+     */
+    it('asks for a year in windows rather than one request', function (): void {
+        $setup = ga4Scenario();
+
+        /*
+         * An actor is bound the way the request middleware binds one, because the use case guards on a
+         * permission — calling it with no actor would exercise a path no live caller takes.
+         */
+        app(ActorContextBinder::class)->bind(
+            new UserId((string) $setup['scenario']->owner->getKey()),
+            new WorkspaceId((string) $setup['scenario']->workspace->getKey()),
+        );
+
+        $sync = fn (?DateTimeImmutable $since) => app(SyncMeasurementSource::class)(
+            (string) $setup['source']->getKey(),
+            $since,
+        );
+
+        $short = $sync(null);
+        $long = $sync(new DateTimeImmutable('-365 days'));
+
+        /*
+         * A year over a 92-day cap is five windows, so the long run makes strictly more requests. Asserted as a
+         * relation rather than a count: the fixture's paging decides the absolute number, and pinning it would
+         * make this a test of the fixture.
+         */
+        expect($long->apiCalls)->toBeGreaterThan($short->apiCalls)
+            // And the figures are still labelled as fixtures, whatever the range was.
+            ->and($long->source->value)->toBe('sandbox');
     });
 });

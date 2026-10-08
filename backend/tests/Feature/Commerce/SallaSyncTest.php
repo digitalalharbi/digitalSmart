@@ -128,6 +128,31 @@ describe('reading a store', function (): void {
             ->and(DB::table('store_products')->count())->toBe(4);
     });
 
+    /*
+     * The limit the adapter publishes, honoured. Salla answers at most 92 days in one request, so a first sync
+     * reaching back a year has to be asked for in windows — and before this it went out whole and was refused by
+     * the provider, which arrived on a client's store page as "partial" with nothing anybody could act on.
+     */
+    it('asks for a long range in windows rather than one request Salla would refuse', function (): void {
+        $setup = sallaSyncScenario();
+
+        $short = runSallaSync($setup);
+        $long = app(SyncStore::class)(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['store']->getKey(),
+            Provider::Salla,
+            '1183363243',
+            new DateTimeImmutable('-400 days'),
+        );
+
+        /*
+         * Four hundred days over a 92-day limit is five windows, so the long sync makes strictly more order
+         * requests than the short one. Asserted as a relation rather than a count: the fixture's paging decides
+         * the absolute number and would make this a test of the fixture.
+         */
+        expect($long->apiCalls)->toBeGreaterThan($short->apiCalls);
+    });
+
     it('links order lines to the products it read first', function (): void {
         $setup = sallaSyncScenario();
 

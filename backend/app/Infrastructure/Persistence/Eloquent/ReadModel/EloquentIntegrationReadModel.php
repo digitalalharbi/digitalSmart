@@ -7,7 +7,6 @@ namespace App\Infrastructure\Persistence\Eloquent\ReadModel;
 use App\Application\Integration\Contract\IntegrationReadModel;
 use App\Application\Integration\DTO\BindingView;
 use App\Application\Integration\DTO\ExternalAccountView;
-use App\Domain\Integration\ExternalAccountId;
 use App\Domain\Integration\ExternalAccountStatus;
 use App\Domain\Integration\Provider;
 use App\Domain\Project\ProjectId;
@@ -109,29 +108,6 @@ final class EloquentIntegrationReadModel implements IntegrationReadModel
             ->all();
 
         return $views;
-    }
-
-    /** @return array<string, int> */
-    public function bindingCounts(WorkspaceId $workspaceId): array
-    {
-        /** @var array<string, int> $counts */
-        $counts = DB::table('project_integration_bindings')
-            ->selectRaw('external_account_id, count(*) as total')
-            ->where('workspace_id', $workspaceId->value)
-            ->groupBy('external_account_id')
-            ->pluck('total', 'external_account_id')
-            ->map(static fn (mixed $value): int => (int) $value)
-            ->all();
-
-        return $counts;
-    }
-
-    public function accountExists(WorkspaceId $workspaceId, ExternalAccountId $id): bool
-    {
-        return DB::table('external_accounts')
-            ->where('workspace_id', $workspaceId->value)
-            ->where('id', $id->value)
-            ->exists();
     }
 
     /** @return array<string, int> */

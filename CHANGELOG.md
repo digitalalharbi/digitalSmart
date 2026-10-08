@@ -4,6 +4,54 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## A sweep of the contracts: a limit nobody honoured, and four dead methods
+
+The lead slice found its work by noticing three repository methods with no caller. That turned out to be worth
+doing systematically, so every public method on every Application contract was checked for a call site outside
+its own implementation and its tests. Fifteen came back; eleven were legitimate (an adapter contract built ahead
+of a blocked transport, a probe called from Infrastructure). Five were not.
+
+### The one that mattered
+
+**`maxRangeDays()` was recorded and ignored.** Every sync adapter publishes the longest range the provider will
+answer in one request — 92 days for Salla, Zid and the GA4 adapter. The advertising sync windowed its requests by
+its own equivalent from the start. The commerce and measurement syncs **sent the requested range whole**, while
+holding an adapter that published the limit they were ignoring.
+
+A first sync with a year's `since` therefore asked for a year, was refused by the provider, and the refusal
+arrived on a client's store page as "partial" with nothing anybody could act on. A limit that is recorded and
+ignored is worse than one nobody knows, because the adapter looks as though it had been honoured.
+
+- **`DateWindow::split()`** — one implementation for all three modules. The advertising sync had this privately;
+  date arithmetic copied into three files is date arithmetic that is off by one in one of them, and the symptom
+  is a single missing day in a client's report. Inclusive at both ends, because that is how every adapter filters
+  a date: seven days is seven dates and the next window starts on the eighth. A test walks a year and asserts no
+  day is lost or read twice.
+- **A degenerate range still produces one window**, deliberately: a sync that returned none would leave its
+  journal with no record of having been asked, which afterwards reads as a sync that never ran rather than one
+  with nothing to do.
+- **Not `DateRange`**, which is a validated business range and refuses to end before it starts — right for a
+  report somebody asked for, wrong for a transport concern that must still make one request.
+- Both syncs are now asserted to make **more** requests for a long range than a short one, as a relation rather
+  than a count: the fixture's paging decides the absolute number, and pinning it would make the test a test of
+  the fixture.
+
+### Removed
+
+- **`IntegrationReadModel::bindingCounts()`** — declared, implemented, never called, and a second way to compute a
+  number the surface already had: `accountsForWorkspace` counts bindings per row in the same query. Not so much
+  dead code as a divergence waiting to be noticed by a client.
+- **`IntegrationReadModel::accountExists()`** — never called and never tested. Untested code that looks like a
+  safeguard is worse than no safeguard, because the next reader assumes it runs.
+- **`TaskFilter::forClient()` and `forAssignee()`** — two builders on a readonly object that nothing used. The one
+  caller constructs the filter in a single call, which is the shape that makes a forgotten field impossible to
+  write; unexercised builders are a second construction path nobody tests and the first thing to drift when a
+  field is added.
+
+### Gates
+
+1 711 backend tests (6 196 assertions), PHPStan level 8 clean, Pint clean. Frontend untouched by this slice.
+
 ## Phase 15 addendum — working a pipeline
 
 Found while closing the merge gap, not from the roadmap: `LeadRepository::assign`, `setValue` and `addNote` had
