@@ -31,6 +31,16 @@ enum NotificationKind: string
     /** Somebody put a task in your name. You are the only recipient. */
     case TaskAssigned = 'task_assigned';
 
+    /**
+     * A lead was put in your name. You are the only recipient.
+     *
+     * Its own kind rather than `TaskAssigned` with a different subject, because the two are read differently.
+     * A task has a due date and waits; a lead is a person who has just asked for something, and the figure
+     * that decides whether the enquiry was worth buying is how long somebody took to answer it. The
+     * notification is the only part of this product that can shorten that number.
+     */
+    case LeadAssigned = 'lead_assigned';
+
     /** A change is waiting for a decision. Everyone who can actually decide it, and nobody else. */
     case ApprovalRequested = 'approval_requested';
 
@@ -94,6 +104,7 @@ enum NotificationKind: string
     {
         return match ($this) {
             self::TaskAssigned => 'A task was assigned to you',
+            self::LeadAssigned => 'A lead is waiting for you',
             self::ApprovalRequested => 'A change is waiting for your decision',
             self::ApprovalDecided => 'Your request was answered',
             self::ApprovalEnacted => 'An approved change was carried out',
@@ -114,6 +125,13 @@ enum NotificationKind: string
     {
         return match ($this) {
             self::TaskAssigned => Permission::TasksView,
+            /*
+             * `leads.view`, which is a stronger condition than it looks: a lead carries a prospect's name and
+             * phone number, so the notification naming it may only reach somebody who could have opened the
+             * record. See `PermissionAwareRecipientResolver` — the visibility check matters here more than
+             * anywhere, because an assignment names one person deliberately.
+             */
+            self::LeadAssigned => Permission::LeadsView,
             self::ApprovalRequested => Permission::ApprovalsDecide,
             self::ApprovalDecided, self::ApprovalEnacted => Permission::ApprovalsView,
             /*
@@ -141,6 +159,8 @@ enum NotificationKind: string
     public function needsAction(): bool
     {
         return $this === self::TaskAssigned
+            /* Somebody is waiting for a reply, and the clock on them started when they enquired. */
+            || $this === self::LeadAssigned
             || $this === self::ApprovalRequested
             || $this === self::ClientRequestSubmitted
             || $this === self::ClientRequestReplied
@@ -156,6 +176,7 @@ enum NotificationKind: string
     {
         return match ($this) {
             self::TaskAssigned => NotificationSubject::Task,
+            self::LeadAssigned => NotificationSubject::Lead,
             self::ApprovalRequested, self::ApprovalDecided, self::ApprovalEnacted => NotificationSubject::Approval,
             self::ClientRequestSubmitted,
             self::ClientRequestMoved,

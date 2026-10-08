@@ -4,6 +4,69 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 15 addendum — working a pipeline
+
+Found while closing the merge gap, not from the roadmap: `LeadRepository::assign`, `setValue` and `addNote` had
+been on the contract and in the Eloquent implementation since Phase 15 with **no caller anywhere** — no use case,
+no route, no test. `AuditAction::LeadAssigned` existed with nothing recording it. The pipeline list had columns
+for an owner and a value that nothing in the product could fill, and `lead_events` had no reader at all.
+
+### The argument
+
+Three dead repository methods are two honest options: build the surfaces or delete them. Building was right. A
+pipeline where nobody can be given a lead is not a pipeline — the owner column names whoever imported the record
+— and the value column is empty on every row a CRM did not produce. Without notes the only trace of a
+conversation is the stage it ended in, which turns a pipeline review into several people remembering
+differently.
+
+### Added
+
+- **`GET /api/leads/{lead}/owners`, and an assignment that refuses anybody not in it.** The reason is specific: a
+  lead carries a prospect's name and phone number, so assigning one to somebody whose projects do not reach that
+  client would put their name in the owner column of a record they can never open — **and the notification
+  telling them would be correctly suppressed by the same visibility rule, so nobody would ever find out.** The
+  column would name a person who does not know. `EloquentLeadOwnerDirectory` mirrors the three conditions
+  `PermissionAwareRecipientResolver` already applies, and a test pins them together: somebody the directory
+  offers must be somebody the notification reaches.
+- **The list is served rather than assembled from the member list**, which would need `users.view` — a permission
+  somebody working a pipeline has no reason to hold — and would offer colleagues the server then refuses. It
+  carries ids and names only: a picker needs no email addresses, and nobody in it agreed to have theirs listed.
+- **`NotificationKind::LeadAssigned`**, its own kind rather than `TaskAssigned` with a different subject. A task
+  has a due date and waits; a lead is a person who has just asked for something, and the figure that decides
+  whether the enquiry was worth buying is how long somebody took to answer. The body carries no contact details —
+  it says a lead is waiting and when it arrived, which is what makes somebody open it.
+- **A value that is said, never inferred.** This is the use case that would have needed an "average deal size",
+  and there is none: a value from an average is a figure about *other* leads wearing this one's name. Clearing is
+  distinguished from zero — nobody has said, versus somebody saying it is worth nothing — a currency is required
+  because a number with no unit is not a figure, nothing is converted, and a CRM-sourced lead is refused for the
+  same reason its stage is.
+- **Notes, and the history that makes them worth writing.** A note nobody can see is a worse surface than no
+  notes at all. `GET /api/leads/{lead}/history` needs **`leads.view`**, not `leads.manage`: reading a pipeline is
+  how it gets reviewed, and a media buyer may read it while not writing to it.
+- **"Who did this" has an honest answer including when it is nobody.** A CRM sync and an arrival have no actor,
+  and the row says "recorded by the system" rather than filling in whoever happened to be signed in.
+- Adding a note is the one write in the module that is deliberately **not** audited: the note *is* the record,
+  carrying its author and time in `lead_events`, and writing both would be one sentence in two places where only
+  one is read. It notifies nobody — a bell for every note is a bell that gets silenced, and then an assignment is
+  missed.
+
+### Found by the gates
+
+- **A hint folded into a control's accessible name.** The owner picker was a hand-written `<label>` wrapping the
+  select and the hint, so a screen reader read the whole sentence back as the field's name on every focus. The
+  `Field` primitive wires a hint as a *description*; the test asking for a combobox called "Owner" is what
+  surfaced it.
+- **A note that was write-only.** The first end-to-end test asserted the note appeared in the journey panel — it
+  does not, because a journey is built from touchpoints and a note is a `lead_event`. Nothing anywhere read
+  `lead_events`. That is how the history surface came to be part of this slice rather than a later one.
+- **A test that raced an in-flight query**, counting the owner options the moment the panel appeared and reading
+  only "Nobody yet". Replaced with a named option and a retrying matcher.
+
+### Gates
+
+1 701 backend tests (6 179 assertions), 518 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
+clean, ESLint and Prettier clean, production build, 370 Playwright tests.
+
 ## Phase 17 addendum — the pattern channel
 
 The last Phase 17 gap: *"The palette clears every gate on colour alone in both themes, so the backup channel for

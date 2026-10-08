@@ -20,18 +20,31 @@ enum NotificationSubject: string
 
     case ClientRequest = 'client_request';
 
+    case Lead = 'lead';
+
     public function table(): string
     {
         return match ($this) {
             self::Task => 'tasks',
             self::Approval => 'approval_requests',
             self::ClientRequest => 'client_requests',
+            self::Lead => 'leads',
         };
     }
 
+    /**
+     * The column holding something a reader would recognise.
+     *
+     * A match rather than a constant, because a lead has no title: it is a person, and the nearest thing to a
+     * title is their name — which is nullable, so a notification about an anonymous enquiry resolves to no label
+     * and the surface says so rather than printing an empty string.
+     */
     public function labelColumn(): string
     {
-        return 'title';
+        return match ($this) {
+            self::Task, self::Approval, self::ClientRequest => 'title',
+            self::Lead => 'name',
+        };
     }
 
     /** Where a reader should be sent. The surface, not a deep link: both surfaces open on a selection. */
@@ -41,6 +54,7 @@ enum NotificationSubject: string
             self::Task => '/tasks',
             self::Approval => '/approvals',
             self::ClientRequest => '/client-requests',
+            self::Lead => '/leads',
         };
     }
 
@@ -50,6 +64,7 @@ enum NotificationSubject: string
             self::Task => 'Task',
             self::Approval => 'Approval request',
             self::ClientRequest => 'Client request',
+            self::Lead => 'Lead',
         };
     }
 

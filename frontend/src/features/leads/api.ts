@@ -2,11 +2,16 @@ import { api } from '@/shared/api/client';
 import type {
   Journey,
   Lead,
+  LeadAssignment,
   LeadCentre,
   LeadDuplicate,
+  LeadHistoryEntry,
   LeadListFilter,
   LeadMerge,
+  LeadNote,
+  LeadOwnerCandidate,
   LeadScope,
+  LeadValue,
   StageChange,
 } from './types';
 
@@ -67,6 +72,49 @@ export async function mergeLeads(merge: LeadMerge): Promise<Lead> {
     stage: merge.stage,
     ...(merge.note === undefined ? {} : { note: merge.note }),
   });
+
+  return data.data;
+}
+
+export async function fetchLeadOwners(leadId: string): Promise<LeadOwnerCandidate[]> {
+  const { data } = await api.get<{ data: LeadOwnerCandidate[] }>(`/leads/${leadId}/owners`);
+
+  return data.data;
+}
+
+/**
+ * Put a lead in somebody's name, or in nobody's.
+ *
+ * The server refuses an owner who could not open the lead, so the picker is built from `fetchLeadOwners` rather
+ * than from the member list: every name in it is one the server will accept.
+ */
+export async function assignLead(assignment: LeadAssignment): Promise<Lead> {
+  const { data } = await api.post<{ data: Lead }>(`/leads/${assignment.leadId}/owner`, {
+    owner_id: assignment.ownerId ?? '',
+  });
+
+  return data.data;
+}
+
+export async function setLeadValue(value: LeadValue): Promise<Lead> {
+  const { data } = await api.post<{ data: Lead }>(`/leads/${value.leadId}/value`, {
+    value_minor: value.valueMinor,
+    ...(value.currency === null ? {} : { currency: value.currency }),
+  });
+
+  return data.data;
+}
+
+export async function addLeadNote(note: LeadNote): Promise<Lead> {
+  const { data } = await api.post<{ data: Lead }>(`/leads/${note.leadId}/notes`, {
+    note: note.note,
+  });
+
+  return data.data;
+}
+
+export async function fetchLeadHistory(leadId: string): Promise<LeadHistoryEntry[]> {
+  const { data } = await api.get<{ data: LeadHistoryEntry[] }>(`/leads/${leadId}/history`);
 
   return data.data;
 }

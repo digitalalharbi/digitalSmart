@@ -1081,6 +1081,35 @@
       "noteHint": "Optional. Goes into the merged lead’s history.",
       "confirm": "Merge these leads",
       "failed": "The merge did not happen. Nothing was changed."
+    },
+    "work": {
+      "title": "Working this lead",
+      "subtitle": "Who is answering it, what somebody says it is worth, and what has happened so far.",
+      "owner": "Owner",
+      "nobody": "Nobody yet",
+      "ownerHint": "Only colleagues who can open this client's leads are listed. A lead carries somebody's name and phone number.",
+      "value": "What it is worth",
+      "valueUnsaid": "Nobody has said yet. That is not the same as nothing.",
+      "valueSaid": "Somebody said {{amount}}.",
+      "valueOwnedByTheCrm": "{{source}} holds this deal's amount. Change it there and it arrives here on the next sync; typing it here would be undone by that sync.",
+      "valueHint": "Said, never worked out from an average of other leads. Clearing it means nobody has said.",
+      "amount": "Amount",
+      "currency": "Currency",
+      "saveValue": "Save the value",
+      "clearValue": "Clear it",
+      "note": "What happened",
+      "noteHint": "Goes into this lead's history with your name and the time. “Rang twice, no answer” is worth more than a stage change on its own.",
+      "saveNote": "Add to the history",
+      "failed": "That did not save. Nothing was changed."
+    },
+    "history": {
+      "title": "What has happened",
+      "subtitle": "Newest first, with who did each thing — or that nobody here did.",
+      "moved": "{{from}} → {{to}}",
+      "bySystem": "recorded by the system",
+      "byPerson": "by {{name}}",
+      "emptyTitle": "Nothing recorded yet",
+      "emptyBody": "Moves, notes and owner changes appear here as they happen."
     }
   },
   "attribution": {

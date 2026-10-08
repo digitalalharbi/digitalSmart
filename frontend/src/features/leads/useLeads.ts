@@ -1,12 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/query-keys';
 import {
+  addLeadNote,
+  assignLead,
   changeStage,
   fetchJourney,
   fetchLeadCentre,
   fetchLeadDuplicates,
+  fetchLeadHistory,
+  fetchLeadOwners,
   fetchLeads,
   mergeLeads,
+  setLeadValue,
 } from './api';
 import type { LeadListFilter, LeadScope } from './types';
 
@@ -94,5 +99,75 @@ export function useMergeLeadsMutation() {
        */
       void client.invalidateQueries({ queryKey: queryKeys.leads.all() });
     },
+  });
+}
+
+/**
+ * Who this lead can be put in the name of.
+ *
+ * Held for a minute: the answer changes when somebody is added to a project, which is rare, and a picker that
+ * refetched on every selection would ask the server a question it already knows the answer to.
+ */
+export function useLeadOwnersQuery(leadId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.leads.owners(leadId ?? ''),
+    queryFn: () => fetchLeadOwners(leadId ?? ''),
+    enabled: enabled && leadId !== null,
+    staleTime: 60_000,
+  });
+}
+
+export function useAssignLeadMutation() {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: assignLead,
+    /*
+     * Everything under `leads`, which includes the history: an assignment is an event on it, and the owner
+     * appears in the pipeline list too.
+     */
+    onSuccess: () => void client.invalidateQueries({ queryKey: queryKeys.leads.all() }),
+  });
+}
+
+export function useSetLeadValueMutation() {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: setLeadValue,
+    /*
+     * Everything, because the value feeds the funnel's won-value total as well as the row. Recomputing that
+     * total in the browser would be a second implementation of arithmetic the domain owns.
+     */
+    onSuccess: () => void client.invalidateQueries({ queryKey: queryKeys.leads.all() }),
+  });
+}
+
+/**
+ * What has happened to this lead.
+ *
+ * The read half of everything the pipeline writes. Without it a note would be a write nobody can see, which is
+ * a worse surface than having no notes at all.
+ */
+export function useLeadHistoryQuery(leadId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.leads.history(leadId ?? ''),
+    queryFn: () => fetchLeadHistory(leadId ?? ''),
+    enabled: leadId !== null,
+    staleTime: 10_000,
+  });
+}
+
+export function useAddLeadNoteMutation() {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: addLeadNote,
+    /*
+     * The history, which is where a note becomes visible. Not the lists: a note changes no figure on them, and
+     * refetching a pipeline because somebody wrote a sentence is work nobody asked for.
+     */
+    onSuccess: (lead) =>
+      void client.invalidateQueries({ queryKey: queryKeys.leads.history(lead.id) }),
   });
 }

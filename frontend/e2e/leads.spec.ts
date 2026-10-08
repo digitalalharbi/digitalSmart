@@ -126,6 +126,50 @@ test.describe('lead centre', () => {
     await expect(stages.getByRole('button', { name: 'Qualified' })).toHaveCount(0);
   });
 
+  /*
+   * Ownership, value and a note — the three things the pipeline had columns for and nothing could set. The owner
+   * list is the assertion that matters: it is served by the server and holds only colleagues who can open this
+   * client's leads, so a name in it is a name the server will accept.
+   */
+  test('works a lead: owner, value and what happened', async ({ page }) => {
+    await openLeads(page);
+
+    const table = page.getByRole('table', { name: /Leads, with their route/ });
+    await expect(table).toBeVisible({ timeout: 30_000 });
+
+    /* Run-unique, because the suite shares one seeded database between two browser projects. */
+    const note = `Rang twice, no answer. ${Date.now()}`;
+
+    await table.getByRole('button', { name: 'Ghada Al-Amri' }).click();
+
+    const panel = page.getByText('Working this lead');
+    await expect(panel).toBeVisible({ timeout: 20_000 });
+
+    const owner = page.getByRole('combobox', { name: 'Owner' });
+    await expect(owner).toBeVisible();
+
+    /*
+     * "Nobody yet" is an option rather than the absence of one. A pipeline that can only ever add an owner
+     * accumulates leads belonging to whoever touched them first.
+     */
+    await expect(owner.getByRole('option', { name: 'Nobody yet' })).toHaveCount(1);
+
+    /*
+     * A named option with a retrying matcher, rather than counting: the list is fetched per lead, so a count
+     * taken the moment the panel appears races the request and reads only "Nobody yet".
+     *
+     * The demo's project manager holds `projects.view_all`, so they can open every client's leads and must be
+     * offered. The media buyer, assigned to one project, is the one this list exists to filter.
+     */
+    await expect(owner.getByRole('option', { name: 'Demo Manager' })).toHaveCount(1);
+
+    await page.getByRole('textbox', { name: 'What happened' }).fill(note);
+    await page.getByRole('button', { name: 'Add to the history' }).click();
+
+    /* It lands in the lead's own history, which is the panel beside this one. */
+    await expect(page.getByText(note)).toBeVisible({ timeout: 20_000 });
+  });
+
   test('keeps the Lead Center away from a role without the permission', async ({ page }) => {
     await openLeads(page, ACCOUNTS.creative);
 

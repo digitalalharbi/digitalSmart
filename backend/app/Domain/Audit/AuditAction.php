@@ -65,6 +65,11 @@ enum AuditAction: string
      * from then on that is the only way to find it.
      */
     case LeadsMerged = 'leads_merged';
+    /*
+     * What somebody said a lead is worth, recorded with who said it. The figure feeds the pipeline's own
+     * won-value total, so "where did this number come from" has to have an answer that outlives the person.
+     */
+    case LeadValued = 'lead_valued';
     case ConversionDefined = 'measurement.conversion_defined';
     case ConversionChanged = 'measurement.conversion_changed';
     case ConversionDeleted = 'measurement.conversion_deleted';

@@ -12,17 +12,24 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import type { MetricValue } from '@/shared/metrics';
 import { BreakdownChart, type BreakdownRow } from './BreakdownChart';
 import { JourneyPanel } from './JourneyPanel';
+import { LeadHistoryPanel } from './LeadHistoryPanel';
+import { LeadWorkPanel } from './LeadWorkPanel';
 import { MergePanel } from './MergePanel';
 import { PipelineChart } from './PipelineChart';
 import { PipelineList } from './PipelineList';
 import { SignalsPanel } from './SignalsPanel';
 import {
+  useAddLeadNoteMutation,
+  useAssignLeadMutation,
   useChangeStageMutation,
   useJourneyQuery,
   useLeadCentreQuery,
   useLeadDuplicatesQuery,
+  useLeadHistoryQuery,
+  useLeadOwnersQuery,
   useLeadsQuery,
   useMergeLeadsMutation,
+  useSetLeadValueMutation,
 } from './useLeads';
 import type { LeadFunnel, LeadStage } from './types';
 
@@ -59,8 +66,21 @@ export function LeadCentrePage() {
   const leads = useLeadsQuery({ client_id: clientId, limit: 100 }, canView);
   const journey = useJourneyQuery(selectedLead);
   const duplicates = useLeadDuplicatesQuery(selectedLead, canManage);
+  const owners = useLeadOwnersQuery(selectedLead, canManage);
+  const history = useLeadHistoryQuery(selectedLead);
   const move = useChangeStageMutation();
   const merge = useMergeLeadsMutation();
+  const assign = useAssignLeadMutation();
+  const value = useSetLeadValueMutation();
+  const addNote = useAddLeadNoteMutation();
+
+  /*
+   * One sentence for three mutations, because a reader does not care which call failed — they care that nothing
+   * was saved. The server's own message wins where there is one: it names the thing to do about it.
+   */
+  const workError = [assign.error, value.error, addNote.error].find(
+    (candidate) => candidate !== null,
+  );
 
   const data = centre.data;
   const selected = leads.data?.find((lead) => lead.id === selectedLead) ?? null;
@@ -235,6 +255,46 @@ export function LeadCentrePage() {
             contact point — a "no duplicates found" on every lead teaches a reader to ignore the one time it
             has something to say.
           */}
+          {/*
+            Beside the journey, where somebody is already looking at who this person is. Absent for a reader who
+            may not manage leads: the controls would be refused by the server anyway, and showing them would be
+            an invitation to try.
+          */}
+          <LeadWorkPanel
+            /*
+             * Keyed by the lead, so selecting a different one remounts the panel and nothing typed for the last
+             * one carries over. A half-written note arriving on somebody else's record is the kind of mistake
+             * that gets saved.
+             */
+            key={selectedLead ?? 'none'}
+            lead={selected}
+            owners={selectedLead === null ? undefined : owners.data}
+            onAssign={(ownerId) =>
+              selectedLead === null ? undefined : assign.mutate({ leadId: selectedLead, ownerId })
+            }
+            onSetValue={(valueMinor, currency) =>
+              selectedLead === null
+                ? undefined
+                : value.mutate({ leadId: selectedLead, valueMinor, currency })
+            }
+            onAddNote={(note) =>
+              selectedLead === null ? undefined : addNote.mutate({ leadId: selectedLead, note })
+            }
+            canManage={canManage}
+            isBusy={assign.isPending || value.isPending || addNote.isPending}
+            error={
+              workError instanceof ApiError && workError.message !== ''
+                ? workError.message
+                : workError === undefined
+                  ? null
+                  : t('leads.work.failed')
+            }
+          />
+
+          {selectedLead === null ? null : (
+            <LeadHistoryPanel entries={history.data} isLoading={history.isPending} />
+          )}
+
           <MergePanel
             lead={selected}
             duplicates={selectedLead === null ? undefined : duplicates.data}

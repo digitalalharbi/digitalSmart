@@ -5,14 +5,21 @@ declare(strict_types=1);
 namespace App\Interface\Http\Controller\Leads;
 
 use App\Application\Journeys\Query\GetJourney;
+use App\Application\Leads\Command\AddLeadNote;
+use App\Application\Leads\Command\AssignLead;
 use App\Application\Leads\Command\ChangeLeadStage;
 use App\Application\Leads\Command\MergeLeads;
 use App\Application\Leads\Command\RecordLead;
+use App\Application\Leads\Command\SetLeadValue;
 use App\Application\Leads\Command\SyncCrmDeals;
 use App\Application\Leads\DTO\LeadDuplicateRow;
+use App\Application\Leads\DTO\LeadHistoryEntry;
+use App\Application\Leads\DTO\LeadOwnerCandidate;
 use App\Application\Leads\DTO\LeadView;
 use App\Application\Leads\Query\FindLeadDuplicates;
 use App\Application\Leads\Query\GetLeadCentre;
+use App\Application\Leads\Query\GetLeadHistory;
+use App\Application\Leads\Query\ListLeadOwners;
 use App\Application\Leads\Query\ListLeads;
 use App\Domain\Leads\LeadStage;
 use App\Interface\Http\Controller\Controller;
@@ -86,6 +93,92 @@ final class LeadController extends Controller
                 $request->string('reason')->value() ?: null,
                 $request->string('note')->value() ?: null,
             )),
+        ]);
+    }
+
+    /**
+     * Put a lead in somebody's name, or in nobody's.
+     *
+     * The owner has to be somebody who can actually open the lead — see `AssignLead`, where the reason is that a
+     * lead carries a prospect's personal data. `GET /api/leads/{lead}/owners` is the list that cannot be wrong.
+     */
+    public function assign(string $lead, Request $request, AssignLead $assign): JsonResponse
+    {
+        $ownerId = $request->string('owner_id')->value();
+
+        return response()->json([
+            'data' => LeadResource::lead($assign($lead, $ownerId === '' ? null : $ownerId)),
+        ]);
+    }
+
+    /** Who this lead can be put in the name of. */
+    public function owners(string $lead, ListLeadOwners $list): JsonResponse
+    {
+        return response()->json([
+            'data' => array_map(
+                static fn (LeadOwnerCandidate $candidate): array => [
+                    'id' => $candidate->id,
+                    'name' => $candidate->name,
+                ],
+                $list($lead),
+            ),
+        ]);
+    }
+
+    /**
+     * What somebody says this lead is worth.
+     *
+     * An empty `value_minor` clears it, which is not the same as zero: null means nobody has said, and zero is a
+     * claim that the lead is worth nothing. Nothing here is ever inferred from an average.
+     */
+    public function value(string $lead, Request $request, SetLeadValue $setValue): JsonResponse
+    {
+        $raw = $request->input('value_minor');
+
+        /*
+         * An absent or empty field clears the value. `null` and `0` are different claims — nobody has said,
+         * versus somebody saying it is worth nothing — so an empty string is read as the first and never coerced
+         * into the second.
+         */
+        $isCleared = $raw === null || $raw === '';
+
+        if (! $isCleared && ! is_numeric($raw)) {
+            return response()->json([
+                'message' => 'A value has to be a number of minor units — 25000 for 250.00.',
+                'code' => 'invalid_lead_value',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'data' => LeadResource::lead($setValue(
+                $lead,
+                $isCleared ? null : (int) $raw,
+                $request->string('currency')->value() ?: null,
+            )),
+        ]);
+    }
+
+    /**
+     * What has happened to this lead, newest first.
+     *
+     * `leads.view`, not `leads.manage`: reading the history is how a pipeline is reviewed, and the people who
+     * read a pipeline are not only the people who write to it.
+     */
+    public function history(string $lead, GetLeadHistory $history): JsonResponse
+    {
+        return response()->json([
+            'data' => array_map(
+                static fn (LeadHistoryEntry $entry): array => LeadResource::historyEntry($entry),
+                $history($lead),
+            ),
+        ]);
+    }
+
+    /** Write down what happened. Goes into the lead's own history with its author and its time. */
+    public function note(string $lead, Request $request, AddLeadNote $addNote): JsonResponse
+    {
+        return response()->json([
+            'data' => LeadResource::lead($addNote($lead, $request->string('note')->value())),
         ]);
     }
 

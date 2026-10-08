@@ -6,6 +6,7 @@ namespace App\Infrastructure\Persistence\Eloquent\Repository;
 
 use App\Application\Leads\Contract\LeadRepository;
 use App\Application\Leads\DTO\LeadDuplicateRow;
+use App\Application\Leads\DTO\LeadHistoryEntry;
 use App\Application\Leads\DTO\LeadInput;
 use App\Application\Leads\DTO\LeadView;
 use App\Application\Shared\Contract\Clock;
@@ -255,6 +256,64 @@ final readonly class EloquentLeadRepository implements LeadRepository
 
             return $this->toView($this->reload($lead));
         });
+    }
+
+    /** @return list<LeadHistoryEntry> */
+    public function historyOf(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        string $id,
+        int $limit = 50,
+    ): array {
+        $lead = $this->visibleQuery($workspaceId, $visibleProjectIds, includeMergedAway: true)
+            ->whereKey($id)
+            ->first();
+
+        if (! $lead instanceof Lead) {
+            return [];
+        }
+
+        $rows = DB::table('lead_events as e')
+            ->leftJoin('users as u', 'u.id', '=', 'e.actor_id')
+            ->where('e.workspace_id', $workspaceId)
+            ->where('e.lead_id', $id)
+            /*
+             * Newest first, and by id after the time: a merge writes two events at the same instant, and a
+             * list whose order changes between two reads of the same data is a list nobody can cite.
+             */
+            ->orderByDesc('e.occurred_at')
+            ->orderByDesc('e.id')
+            ->limit(max(1, min($limit, 200)))
+            ->get(['e.id', 'e.type', 'e.from_stage', 'e.to_stage', 'e.note', 'e.occurred_at', 'u.name']);
+
+        return array_values($rows->map(static function (object $row): LeadHistoryEntry {
+            $type = (string) $row->type;
+
+            return new LeadHistoryEntry(
+                id: (string) $row->id,
+                type: $type,
+                typeLabel: match ($type) {
+                    'received' => 'Arrived',
+                    'contacted' => 'Contacted',
+                    'stage_changed' => 'Moved',
+                    'note_added' => 'Note',
+                    'assigned' => 'Owner changed',
+                    'value_set' => 'Value set',
+                    'merged' => 'Merged',
+                    /*
+                     * A type the database allows and this list has not been taught. Shown as itself rather than
+                     * dropped: an event missing from a history is worse than one with an ugly name.
+                     */
+                    default => $type,
+                },
+                /* Null means the system did it. "Who moved this" has the honest answer that nobody here did. */
+                actorName: is_string($row->name) ? $row->name : null,
+                fromStage: is_string($row->from_stage) ? LeadStage::tryFrom($row->from_stage) : null,
+                toStage: is_string($row->to_stage) ? LeadStage::tryFrom($row->to_stage) : null,
+                note: is_string($row->note) ? $row->note : null,
+                occurredAt: new DateTimeImmutable((string) $row->occurred_at),
+            );
+        })->all());
     }
 
     /** @return list<LeadDuplicateRow> */

@@ -114,6 +114,10 @@ export const queryKeys = {
      * stale row would offer a merge against a record that has already been merged away.
      */
     duplicates: (leadId: string) => ['leads', 'duplicates', leadId] as const,
+    /** What has happened to one lead. Invalidated by anything that writes to it. */
+    history: (leadId: string) => ['leads', 'history', leadId] as const,
+    /** Who a lead can be put in the name of. Per lead, because it depends on the lead's client. */
+    owners: (leadId: string) => ['leads', 'owners', leadId] as const,
   },
   tasks: {
     all: () => ['tasks'] as const,

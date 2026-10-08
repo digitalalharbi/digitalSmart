@@ -3,7 +3,15 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { LeadCentrePage } from './LeadCentrePage';
-import type { Journey, Lead, LeadCentre, LeadDuplicate, LeadFunnel } from './types';
+import type {
+  Journey,
+  Lead,
+  LeadCentre,
+  LeadDuplicate,
+  LeadFunnel,
+  LeadHistoryEntry,
+  LeadOwnerCandidate,
+} from './types';
 
 /*
  * ECharts needs a real canvas and a measured container, neither of which jsdom has. The
@@ -39,6 +47,11 @@ const state = vi.hoisted(() => ({
   leads: [] as Lead[],
   journey: null as Journey | null,
   duplicates: [] as LeadDuplicate[],
+  owners: [] as LeadOwnerCandidate[],
+  history: [] as LeadHistoryEntry[],
+  assigned: null as { leadId: string; ownerId: string | null } | null,
+  valued: null as { leadId: string; valueMinor: number | null; currency: string | null } | null,
+  noted: null as { leadId: string; note: string } | null,
   moved: null as { leadId: string; stage: string; reason?: string } | null,
   merged: null as { leadId: string; otherLeadId: string; stage: string; note?: string } | null,
 }));
@@ -61,6 +74,23 @@ vi.mock('./api', () => ({
     return Promise.resolve(state.leads[0]);
   },
   fetchLeadDuplicates: () => Promise.resolve(state.duplicates),
+  fetchLeadOwners: () => Promise.resolve(state.owners),
+  fetchLeadHistory: () => Promise.resolve(state.history),
+  assignLead: (assignment: { leadId: string; ownerId: string | null }) => {
+    state.assigned = assignment;
+
+    return Promise.resolve(state.leads[0]);
+  },
+  setLeadValue: (value: { leadId: string; valueMinor: number | null; currency: string | null }) => {
+    state.valued = value;
+
+    return Promise.resolve(state.leads[0]);
+  },
+  addLeadNote: (note: { leadId: string; note: string }) => {
+    state.noted = note;
+
+    return Promise.resolve(state.leads[0]);
+  },
   mergeLeads: (merge: { leadId: string; otherLeadId: string; stage: string; note?: string }) => {
     state.merged = merge;
 
@@ -219,8 +249,16 @@ beforeEach(() => {
   state.leads = [lead()];
   state.journey = null;
   state.duplicates = [];
+  state.owners = [
+    { id: 'user-2', name: 'Noura Al-Shehri' },
+    { id: 'user-3', name: 'Omar Al-Qahtani' },
+  ];
+  state.history = [];
   state.moved = null;
   state.merged = null;
+  state.assigned = null;
+  state.valued = null;
+  state.noted = null;
 });
 
 describe('the Lead Center', () => {
@@ -566,5 +604,177 @@ describe('two leads, one person', () => {
 
     /* The panel itself never loads for them, because the query that feeds it needs the same permission. */
     expect(screen.queryByText('Is this the same person?')).not.toBeInTheDocument();
+  });
+});
+
+describe('working a lead', () => {
+  async function openLead() {
+    await renderWithProviders(<LeadCentrePage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+  }
+
+  /*
+   * The owner list is the server's, not the member list. A lead carries a prospect's name and phone number, so
+   * only colleagues who can open this client's leads are offered — and every name shown is one the server will
+   * accept.
+   */
+  it('offers the people the server says can open this lead', async () => {
+    await openLead();
+
+    const owner = screen.getByRole('combobox', { name: 'Owner' });
+
+    expect(within(owner).getByRole('option', { name: 'Noura Al-Shehri' })).toBeInTheDocument();
+
+    await userEvent.selectOptions(owner, 'user-2');
+
+    expect(state.assigned).toEqual({ leadId: 'lead-1', ownerId: 'user-2' });
+  });
+
+  /* Unassigning is a choice, not an absence: a pipeline that can only add owners accumulates them. */
+  it('offers taking the lead back out of somebody’s name', async () => {
+    await openLead();
+
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Owner' }), '');
+
+    expect(state.assigned).toEqual({ leadId: 'lead-1', ownerId: null });
+  });
+
+  it('sends a value in minor units, from an amount typed in major', async () => {
+    state.leads = [lead({ value_minor: null, currency: null })];
+
+    await openLead();
+
+    await userEvent.type(screen.getByRole('textbox', { name: 'Amount' }), '1250.50');
+    await userEvent.click(screen.getByRole('button', { name: 'Save the value' }));
+
+    expect(state.valued).toEqual({ leadId: 'lead-1', valueMinor: 125_050, currency: 'SAR' });
+  });
+
+  /*
+   * Clearing is its own control, because null and zero are different claims: nobody has said, versus somebody
+   * saying it is worth nothing.
+   */
+  it('clears a value without claiming it is zero', async () => {
+    await openLead();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear it' }));
+
+    expect(state.valued).toEqual({ leadId: 'lead-1', valueMinor: null, currency: null });
+  });
+
+  it('says nobody has said, rather than showing a zero', async () => {
+    state.leads = [lead({ value_minor: null, currency: null })];
+
+    await openLead();
+
+    expect(screen.getByText(/Nobody has said yet/)).toBeInTheDocument();
+  });
+
+  /*
+   * The CRM holds the amount. A figure typed here would be undone by the next sync — after both numbers had been
+   * quoted to the same client — so the sentence goes where the control would have been.
+   */
+  it('refuses to offer a value control on a CRM-sourced lead, and says why', async () => {
+    state.leads = [lead({ source_kind: 'crm', source_detail: 'HubSpot · Proposal sent' })];
+
+    await openLead();
+
+    expect(screen.getByText(/holds this deal.s amount/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save the value' })).not.toBeInTheDocument();
+  });
+
+  it('trims a note before sending it, and refuses an empty one', async () => {
+    await openLead();
+
+    const save = screen.getByRole('button', { name: 'Add to the history' });
+
+    expect(save).toBeDisabled();
+
+    await userEvent.type(screen.getByRole('textbox', { name: 'What happened' }), '  Rang twice.  ');
+    await userEvent.click(save);
+
+    expect(state.noted).toEqual({ leadId: 'lead-1', note: 'Rang twice.' });
+  });
+
+  it('shows none of it to somebody who may not manage leads', async () => {
+    permissions.current = ['leads.view'];
+
+    await openLead();
+
+    expect(screen.queryByText('Working this lead')).not.toBeInTheDocument();
+  });
+});
+
+describe('what has happened to a lead', () => {
+  const entry = (overrides: Partial<LeadHistoryEntry> = {}): LeadHistoryEntry => ({
+    id: 'event-1',
+    type: 'note_added',
+    type_label: 'Note',
+    actor_name: 'Noura Al-Shehri',
+    from_stage: null,
+    from_stage_label: null,
+    to_stage: null,
+    to_stage_label: null,
+    note: 'Rang twice, no answer.',
+    occurred_at: '2026-10-05T09:00:00+00:00',
+    ...overrides,
+  });
+
+  /*
+   * The read half of the notes. Without it a note is a write nobody can see, which is a worse surface than
+   * having no notes at all.
+   */
+  it('shows a note that was written', async () => {
+    state.history = [entry()];
+
+    await renderWithProviders(<LeadCentrePage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+
+    expect(await screen.findByText('Rang twice, no answer.')).toBeInTheDocument();
+    expect(screen.getByText('by Noura Al-Shehri')).toBeInTheDocument();
+  });
+
+  /*
+   * "Who moved this" has an honest answer including when it is nobody. A CRM sync has no actor, and filling the
+   * column in with whoever happened to be signed in would make the trail say something untrue.
+   */
+  it('says the system did it where there was no person', async () => {
+    state.history = [
+      entry({
+        type: 'stage_changed',
+        type_label: 'Moved',
+        actor_name: null,
+        note: null,
+        from_stage: 'new',
+        from_stage_label: 'New',
+        to_stage: 'won',
+        to_stage_label: 'Won',
+      }),
+    ];
+
+    await renderWithProviders(<LeadCentrePage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+
+    expect(await screen.findByText('recorded by the system')).toBeInTheDocument();
+    expect(screen.getByText('New → Won')).toBeInTheDocument();
+  });
+
+  it('says nothing is recorded rather than showing an empty list', async () => {
+    await renderWithProviders(<LeadCentrePage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+
+    expect(await screen.findByText('Nothing recorded yet')).toBeInTheDocument();
+  });
+
+  /* Reading a pipeline is how it gets reviewed, and the readers are not only the writers. */
+  it('is shown to somebody who may read leads but not manage them', async () => {
+    permissions.current = ['leads.view'];
+    state.history = [entry()];
+
+    await renderWithProviders(<LeadCentrePage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+
+    expect(await screen.findByText('Rang twice, no answer.')).toBeInTheDocument();
+    expect(screen.queryByText('Working this lead')).not.toBeInTheDocument();
   });
 });

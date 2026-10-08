@@ -7,6 +7,7 @@ namespace App\Interface\Http\Resource\Leads;
 use App\Application\Leads\DTO\LeadBreakdownRow;
 use App\Application\Leads\DTO\LeadCentreView;
 use App\Application\Leads\DTO\LeadDuplicateRow;
+use App\Application\Leads\DTO\LeadHistoryEntry;
 use App\Application\Leads\DTO\LeadSourceRow;
 use App\Application\Leads\DTO\LeadView;
 
@@ -79,6 +80,31 @@ final readonly class LeadResource
              * itself, and so a reader quoting "one lead" knows it was two.
              */
             'absorbed_count' => $lead->absorbedCount,
+        ];
+    }
+
+    /**
+     * One thing that happened to a lead.
+     *
+     * `actor_name` is null where the system did it rather than a person — a CRM sync, an arrival. Published as
+     * null rather than filled in with whoever happened to be signed in, because "who moved this" is the question
+     * a pipeline review asks and an invented answer is worse than an absent one.
+     *
+     * @return array<string, mixed>
+     */
+    public static function historyEntry(LeadHistoryEntry $entry): array
+    {
+        return [
+            'id' => $entry->id,
+            'type' => $entry->type,
+            'type_label' => $entry->typeLabel,
+            'actor_name' => $entry->actorName,
+            'from_stage' => $entry->fromStage?->value,
+            'from_stage_label' => $entry->fromStage?->label(),
+            'to_stage' => $entry->toStage?->value,
+            'to_stage_label' => $entry->toStage?->label(),
+            'note' => $entry->note,
+            'occurred_at' => $entry->occurredAt->format(DATE_ATOM),
         ];
     }
 

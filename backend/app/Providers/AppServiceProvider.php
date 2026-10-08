@@ -48,6 +48,7 @@ use App\Application\Intelligence\Service\FigureScanner;
 use App\Application\Intelligence\Service\Narrator;
 use App\Application\Journeys\Contract\JourneyReadModel;
 use App\Application\Leads\Contract\CrmReadAdapter;
+use App\Application\Leads\Contract\LeadOwnerDirectory;
 use App\Application\Leads\Contract\LeadReadModel;
 use App\Application\Leads\Contract\LeadRepository;
 use App\Application\Measurement\Contract\EventDefinitionRepository;
@@ -90,6 +91,7 @@ use App\Domain\Integration\Repository\IntegrationBindingRepository;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use App\Domain\Project\Repository\ProjectRepository;
 use App\Infrastructure\Access\ActorVisibilityResolver;
+use App\Infrastructure\Access\EloquentLeadOwnerDirectory;
 use App\Infrastructure\Access\PermissionAuthorizationGuard;
 use App\Infrastructure\Access\RequestActorContext;
 use App\Infrastructure\Access\WorkspaceAccessSynchroniser;
@@ -309,6 +311,11 @@ final class AppServiceProvider extends ServiceProvider
 
         // Leads (Phase 15)
         LeadRepository::class => EloquentLeadRepository::class,
+        /*
+         * An access question rather than a lead question, which is why it lives in `Infrastructure\Access`
+         * beside the visibility resolver whose rule it mirrors.
+         */
+        LeadOwnerDirectory::class => EloquentLeadOwnerDirectory::class,
         LeadReadModel::class => EloquentLeadReadModel::class,
 
         // Journeys (Phase 16)

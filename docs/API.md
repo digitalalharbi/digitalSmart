@@ -936,6 +936,61 @@ Moving a lead on clears a disqualification reason, and reopening one clears its 
 `closed_at` makes every cycle-time figure wrong, and a CHECK requires the two to agree. Every move is written to
 `lead_events` and to the audit log with both stages.
 
+### `GET /api/leads/{lead}/owners`
+
+Who this lead can be put in the name of. Needs `leads.manage`. Ids and names only.
+
+Three conditions, the same ones the notification resolver applies: active membership of the workspace,
+`leads.view`, and visibility of the lead's client. **Served rather than assembled from the member list**, which
+would need `users.view` — a permission somebody working a pipeline has no reason to hold — and would offer
+colleagues the assignment endpoint then refuses.
+
+### `POST /api/leads/{lead}/owner`
+
+`owner_id`, or an empty value to take the lead out of somebody's name. Needs `leads.manage`.
+
+Refused with `422` `lead_cannot_be_owned` for anybody not in the list above: a lead carries a prospect's personal
+data, so an owner who cannot open it would be a name in a column attached to a person who was never told — the
+notification would be suppressed by the same rule that hid the lead. The message names the fix, which is adding
+them to one of the client's projects.
+
+Assigning notifies the new owner and nobody else. Unassigning notifies nobody. A CRM-sourced lead **can** be
+assigned: ownership is not a stage. Audited as `lead_assigned`.
+
+### `POST /api/leads/{lead}/value`
+
+`value_minor` and `currency`. Needs `leads.manage`. Audited as `lead_valued`.
+
+| Case | Behaviour |
+| ---- | --------- |
+| A figure and a currency | Stored as given, currency upper-cased. Never converted between currencies |
+| `value_minor` absent, null or empty | Cleared. **Null means nobody has said**, which is not the same as zero |
+| `0` with a currency | Accepted. A deliberate claim that the lead is worth nothing |
+| A figure with no currency | `422` `invalid_lead_value` — a number with no unit |
+| A negative figure | `422` `invalid_lead_value` |
+| A CRM-sourced lead | `422` `invalid_lead_value`, naming where to change it. The CRM holds the amount |
+
+Nothing here is inferred from an average of other leads: that figure would be about other leads wearing this
+one's name.
+
+### `POST /api/leads/{lead}/notes`
+
+`note`, trimmed, up to 2 000 characters. Needs `leads.manage`. An empty note is `422` `invalid_lead_note` — an
+empty entry in a history reads as something that was lost.
+
+Not audited, deliberately: the note *is* the record, and it carries its author and time in `lead_events`.
+Notifies nobody.
+
+### `GET /api/leads/{lead}/history`
+
+What has happened to this lead, newest first, up to 50 entries. Needs **`leads.view`** — reading a pipeline is
+how it gets reviewed, and the readers are not only the writers.
+
+Each entry carries `type`, `type_label`, `actor_name`, the stages where it was a move, the `note` where there was
+one, and `occurred_at`. **`actor_name` is null where the system did it** rather than a person — a CRM sync, an
+arrival — because "who moved this" is the question a review asks and an invented answer is worse than an absent
+one.
+
 ### `GET /api/leads/{lead}/duplicates`
 
 The leads that may be the same person as this one. Needs `leads.manage` — the list exists to be acted on, and it

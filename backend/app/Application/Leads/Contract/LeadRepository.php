@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Leads\Contract;
 
 use App\Application\Leads\DTO\LeadDuplicateRow;
+use App\Application\Leads\DTO\LeadHistoryEntry;
 use App\Application\Leads\DTO\LeadInput;
 use App\Application\Leads\DTO\LeadView;
 use App\Domain\Leads\LeadMergePlan;
@@ -76,6 +77,23 @@ interface LeadRepository
     ): LeadView;
 
     public function addNote(string $workspaceId, string $id, string $note, string $actorId): LeadView;
+
+    /**
+     * What has happened to this lead, newest first.
+     *
+     * The read half of everything the pipeline writes. Without it a note is a write nobody can see, which is a
+     * worse surface than having no notes at all: somebody records what happened on a call and the next person
+     * reviewing the pipeline has no idea it is there.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return list<LeadHistoryEntry>
+     */
+    public function historyOf(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        string $id,
+        int $limit = 50,
+    ): array;
 
     /**
      * Leads that may be the same person as this one.

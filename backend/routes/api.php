@@ -282,6 +282,28 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('lead')->name('leads.stage');
     Route::get('leads/centre', [LeadController::class, 'centre'])->name('leads.centre');
     /*
+     * Ownership, value and notes — the three things a pipeline is actually worked with.
+     *
+     * The owner has to be somebody who can open the lead, so the picker is served rather than assembled from the
+     * member list: a lead carries a prospect's name and phone number, and an owner who cannot see it would be a
+     * name in a column attached to a person who was never told. A value is **said**, never inferred from an
+     * average, and a CRM-sourced lead's value is refused for the same reason its stage is.
+     */
+    Route::get('leads/{lead}/owners', [LeadController::class, 'owners'])
+        ->whereUuid('lead')->name('leads.owners');
+    Route::post('leads/{lead}/owner', [LeadController::class, 'assign'])
+        ->whereUuid('lead')->name('leads.assign');
+    Route::post('leads/{lead}/value', [LeadController::class, 'value'])
+        ->whereUuid('lead')->name('leads.value');
+    Route::post('leads/{lead}/notes', [LeadController::class, 'note'])
+        ->whereUuid('lead')->name('leads.note');
+    /*
+     * The read half. A note nobody can see would be a worse surface than no notes at all, and `leads.view`
+     * rather than `leads.manage` because reading a pipeline is how it gets reviewed.
+     */
+    Route::get('leads/{lead}/history', [LeadController::class, 'history'])
+        ->whereUuid('lead')->name('leads.history');
+    /*
      * Two leads a human knows are one person. The suggestions are read first and the merge names the stage the
      * surviving record keeps, which has to be one of the two — a merge is not a pipeline move. Which record
      * survives is decided by `LeadMergePlan`, not by the caller, and there is no undo.

@@ -181,6 +181,69 @@ this really" unanswerable), two CRM leads, and a stage neither lead is in. Every
 `leads_merged`, naming the survivor, the absorbed lead by id, and whether the age and the attribution were
 inherited — because both change figures a client may already have been shown.
 
+## Working a pipeline: ownership, value and notes
+
+The pipeline list had columns for all three and nothing in the product could fill them. An owner column nothing
+can set names whoever imported the lead; a value column nothing can set is empty on every row a CRM did not
+produce; and with no notes the only record of a conversation is the stage it ended in, which turns a pipeline
+review into several people remembering differently.
+
+### The owner has to be somebody who can see the lead
+
+`GET /api/leads/{lead}/owners` serves the list, and `POST /api/leads/{lead}/owner` refuses anybody not in it.
+The reason is specific rather than procedural: a lead carries a prospect's name and phone number, so assigning
+one to somebody whose projects do not reach that client would put their name in the owner column of a record
+they can never open — **and the notification telling them would be correctly suppressed by the same visibility
+rule, so nobody would ever find out.** The column would name a person who does not know.
+
+The three conditions are the ones `PermissionAwareRecipientResolver` already applies to notifications: active
+membership, `leads.view`, and visibility of the client. `EloquentLeadOwnerDirectory` mirrors it, and a test pins
+the two together — somebody the directory offers must be somebody the assignment notification reaches.
+
+The list carries **ids and names only**. A picker needs no email addresses, and the people in it did not agree
+to have theirs listed to whoever is working a pipeline.
+
+**Unassigning is a first-class outcome.** A pipeline that can only ever add an owner accumulates leads belonging
+to whoever touched them first, and every workload figure after that describes a team that does not exist.
+Nobody is notified: there is no new owner, and telling the person it was taken from would be a complaint rather
+than a task.
+
+**A CRM-sourced lead can still be assigned.** Ownership is not a stage. The CRM owns where a deal stands in its
+own pipeline; who in this agency is chasing it is this product's business.
+
+### A value is said, never inferred
+
+`POST /api/leads/{lead}/value`. There is no "average deal size" anywhere in this product and this is the use case
+that would have needed one: a value taken from an average is a figure about *other* leads wearing this one's
+name, and once it is in the column nothing downstream can tell it from a quote somebody actually gave.
+
+- **Clearing it is not the same as zero.** Null means nobody has said; zero is a claim that the lead is worth
+  nothing, which somebody has to make deliberately. Both are accepted and they are different fields in the audit
+  entry.
+- **A value needs a currency**, because a number with no unit is not a figure — and this workspace has clients
+  in more than one. Nothing is ever converted.
+- **A CRM-sourced lead is refused**, exactly as its stage is: the CRM holds the amount, and a figure typed here
+  would be overwritten by the next sync — after both numbers had been quoted to the same client.
+
+### Notes, and the history that makes them worth writing
+
+`POST /api/leads/{lead}/notes` writes into `lead_events`; `GET /api/leads/{lead}/history` reads it back. The read
+is the point: **a note nobody can see is a worse surface than having no notes at all**, because somebody records
+what happened on a call and the next person reviewing the pipeline never learns it is there.
+
+The history needs `leads.view` rather than `leads.manage`. Reading a pipeline is how it gets reviewed, and a
+media buyer may read the pipeline — cost per *qualified* lead being the only honest measure of their work — while
+not being allowed to write to it.
+
+**"Who did this" has an honest answer including when it is nobody.** A CRM sync and an arrival have no actor, and
+the row says so rather than filling in whoever happened to be signed in. An invented answer is worse than an
+absent one, and the question is exactly what a pipeline review asks.
+
+Adding a note is the one write in this module that is **not** audited, deliberately: the note *is* the record. It
+carries its author and its time in `lead_events`, which is what an audit entry would have said, and writing both
+would be the same sentence in two places where only one is ever read. It also notifies nobody — a bell for every
+note is a bell that gets silenced, and then an assignment is missed.
+
 ## Attribution uses one vocabulary with the orders
 
 The same `AttributionEvidence` levels, the same confidences, the same database CHECK requiring the evidence to

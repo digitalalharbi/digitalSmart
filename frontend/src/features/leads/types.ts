@@ -140,6 +140,35 @@ export type LeadDuplicate = {
   matched_on_label: string;
 };
 
+/** Somebody a lead can be put in the name of. Ids and names only — a picker needs no email addresses. */
+export type LeadOwnerCandidate = { id: string; name: string };
+
+export type LeadAssignment = { leadId: string; ownerId: string | null };
+
+/**
+ * One thing that happened to a lead.
+ *
+ * `actor_name` is null where the system did it rather than a person — a CRM sync, an arrival. The surface says
+ * so rather than inventing a name, because "who moved this" is the question a pipeline review asks.
+ */
+export type LeadHistoryEntry = {
+  id: string;
+  type: string;
+  type_label: string;
+  actor_name: string | null;
+  from_stage: LeadStage | null;
+  from_stage_label: string | null;
+  to_stage: LeadStage | null;
+  to_stage_label: string | null;
+  note: string | null;
+  occurred_at: string;
+};
+
+/** `valueMinor: null` clears it, which is not the same as zero: nobody has said, versus worth nothing. */
+export type LeadValue = { leadId: string; valueMinor: number | null; currency: string | null };
+
+export type LeadNote = { leadId: string; note: string };
+
 export type LeadMerge = {
   leadId: string;
   otherLeadId: string;

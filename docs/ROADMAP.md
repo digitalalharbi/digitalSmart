@@ -747,6 +747,13 @@ Built around one sentence: **a lead is a person who did something, and a click i
   is a judgement. See [LEADS.md](LEADS.md#merging-two-leads-a-human-knows-are-one-person).
 - **No lead scoring.** A score is a model, and a model presented as a fact is what this product refuses. It
   belongs with the AI phase, labelled as modelled.
+- ~~**Ownership, value and notes had no surface.**~~ Found while closing the merge gap: `assign`, `setValue` and
+  `addNote` existed on the repository with no caller anywhere, and the pipeline list had columns for all three
+  that nothing in the product could fill. Now four endpoints and two panels, with the owner list **served** so
+  that a lead carrying a prospect's phone number cannot be assigned to somebody who can never open it — the
+  notification would have been suppressed by the same rule, so nobody would have found out. `lead_events` also
+  had no reader at all, which made the notes a write nobody could see; the history is the other half. See
+  [LEADS.md](LEADS.md#working-a-pipeline-ownership-value-and-notes).
 - ~~**No frontend surface.**~~ The Lead Center shipped with Phase 17, where the chart layer it needed landed.
 
 ### Phase 16 — customer journeys
