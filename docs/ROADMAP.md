@@ -738,8 +738,11 @@ Built around one sentence: **a lead is a person who did something, and a click i
   open. The live app is BLOCKED_EXTERNAL on a HubSpot developer account.
 - **No automatic lead from an order.** The column is there and the link is not made, because "every customer is
   a lead" is true for some clients and nonsense for others.
-- **No merge of two leads a human knows are one person.** The event type is reserved; the operation needs a UI
-  and a decision about whose history survives.
+- ~~**No merge of two leads a human knows are one person.**~~ Built. The decision about whose history survives
+  came apart into four, each answerable from this product's own rules: both histories survive and nothing is
+  deleted, the earlier arrival's age survives whichever record does, a CRM-sourced lead is always the survivor,
+  and the stronger attribution moves wholly. The surviving stage is the one thing asked of a human, because it
+  is a judgement. See [LEADS.md](LEADS.md#merging-two-leads-a-human-knows-are-one-person).
 - **No lead scoring.** A score is a model, and a model presented as a fact is what this product refuses. It
   belongs with the AI phase, labelled as modelled.
 - ~~**No frontend surface.**~~ The Lead Center shipped with Phase 17, where the chart layer it needed landed.
@@ -781,7 +784,9 @@ work**, and that finding is the most useful thing in the phase.
 ### Not yet done in Phase 16
 
 - **Multi-touch touchpoints**, as above. This is the phase's honest ceiling.
-- **No manual merge** of two records a human knows are one person, which Phase 15 also notes.
+- ~~**No manual merge** of two records a human knows are one person, which Phase 15 also notes.~~ Built in
+  Phase 15's addendum. The journey deliberately keeps **both** enquiries after a merge: it is a timeline of what
+  happened to a person, and both of them happened.
 
 ### Phase 17 — the visualisation layer
 

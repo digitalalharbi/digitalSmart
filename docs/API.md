@@ -936,6 +936,46 @@ Moving a lead on clears a disqualification reason, and reopening one clears its 
 `closed_at` makes every cycle-time figure wrong, and a CHECK requires the two to agree. Every move is written to
 `lead_events` and to the audit log with both stages.
 
+### `GET /api/leads/{lead}/duplicates`
+
+The leads that may be the same person as this one. Needs `leads.manage` — the list exists to be acted on, and it
+carries the contact details that make the comparison possible.
+
+Exact matches on a normalised email address or phone number, within the same client, excluding anything already
+merged away. **No fuzzy names and no score.** Every row carries `matched_on` (`email`, `phone` or
+`email_and_phone`) and `matched_on_label`, because a merge cannot be undone and a suggestion with no evidence
+beside it is one somebody accepts without looking. A lead with no contact point returns `[]`.
+
+Unlike the 24-hour deduplication window on `POST /api/leads`, there is **no time window** here: that window
+exists so this product does not decide on its own, and this is a human asking the opposite question.
+
+### `POST /api/leads/{lead}/merge`
+
+Puts two leads' histories on one record. Needs `leads.manage`. **There is no undo.**
+
+| Field | Notes |
+| ----- | ----- |
+| `lead_id` | **Required.** The other lead. Which of the two *survives* is not the caller's choice — see below |
+| `stage` | **Required**, and must be a stage one of the two leads is already in. A third is refused |
+| `note` | Optional, written into the surviving lead's history |
+
+**Which record survives is decided by the server**, in `LeadMergePlan`: a CRM-sourced lead always survives,
+otherwise the earlier arrival does, and the survivor always ends up with the **earlier** `received_at` either
+way — time-to-first-contact is measured from it, and a merge that reset the clock would flatter whoever did the
+merging. The stronger attribution moves wholly, never field by field.
+
+Nothing is deleted. The absorbed lead keeps its row, its history event saying where the person's history
+continues, and its `external_id` so the next provider sync updates it instead of creating a duplicate. It is
+excluded from `GET /api/leads` and from the Lead Center's funnel; `GET /api/leads/{lead}` still returns it, so a
+reader following an old link can be sent to the survivor. `GET /api/leads/{lead}/journey` deliberately still
+shows **both** enquiries: both of them happened.
+
+Refused with `422` `leads_cannot_be_merged` for the same lead twice, two different clients, a lead already
+merged away, two CRM leads, or a stage neither lead is in. Audited as `leads_merged`.
+
+The response is the surviving lead, carrying `absorbed_count`. Full details in
+[LEADS.md](LEADS.md#merging-two-leads-a-human-knows-are-one-person).
+
 ### `GET /api/leads/centre`
 
 The Lead Center, over `days` (default 30, max 365).

@@ -107,6 +107,13 @@ export const queryKeys = {
      * records as they stand, so it is never shared between leads or held across a change.
      */
     journey: (leadId: string) => ['leads', 'journey', leadId] as const,
+    /**
+     * The leads that may be the same person as this one.
+     *
+     * Keyed per lead and never held long: the list is what somebody is about to act on irreversibly, and a
+     * stale row would offer a merge against a record that has already been merged away.
+     */
+    duplicates: (leadId: string) => ['leads', 'duplicates', leadId] as const,
   },
   tasks: {
     all: () => ['tasks'] as const,

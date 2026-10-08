@@ -59,6 +59,12 @@ enum AuditAction: string
     case LeadRecorded = 'lead_recorded';
     case LeadStageChanged = 'lead_stage_changed';
     case LeadAssigned = 'lead_assigned';
+    /*
+     * Merging two leads is the one lead operation with no undo: afterwards the events are on one record and a
+     * split would have to invent a division nobody wrote down. The entry names the absorbed lead by id, because
+     * from then on that is the only way to find it.
+     */
+    case LeadsMerged = 'leads_merged';
     case ConversionDefined = 'measurement.conversion_defined';
     case ConversionChanged = 'measurement.conversion_changed';
     case ConversionDeleted = 'measurement.conversion_deleted';

@@ -292,6 +292,15 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
     ): Builder {
         $builder = DB::table('leads as l')
             ->where('l.workspace_id', $workspaceId)
+            /*
+             * A lead merged into another is counted nowhere. It is kept for its history and its provider id —
+             * see the merge migration — and counting it here would mean the funnel still showed two enquiries
+             * for the person whose two records somebody merged precisely because they are one.
+             *
+             * This is the counting side of the rule the repository applies to lists, in the one other place a
+             * lead becomes a number.
+             */
+            ->whereNull('l.merged_into_id')
             ->where('l.received_at', '>=', $from)
             ->where('l.received_at', '<=', $until);
 

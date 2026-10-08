@@ -31,6 +31,7 @@ final class Lead extends Model
         'attribution_evidence', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content',
         'utm_term', 'click_identifier', 'landing_page', 'referrer',
         'received_at', 'first_contacted_at', 'qualified_at', 'closed_at',
+        'merged_into_id', 'merged_at', 'merged_by_id',
     ];
 
     /**
@@ -79,6 +80,7 @@ final class Lead extends Model
             'first_contacted_at' => 'immutable_datetime',
             'qualified_at' => 'immutable_datetime',
             'closed_at' => 'immutable_datetime',
+            'merged_at' => 'immutable_datetime',
         ];
     }
 }

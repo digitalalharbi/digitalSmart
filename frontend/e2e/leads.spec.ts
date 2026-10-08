@@ -83,6 +83,49 @@ test.describe('lead centre', () => {
     await expect(table.getByText(/HubSpot · Won/).first()).toBeVisible();
   });
 
+  /*
+   * The merge, read-only here on purpose. The suite shares one seeded database between two browser projects, so
+   * carrying a merge out would remove a lead the other project's tests are reading — and a merge has no undo.
+   * What is asserted is everything up to the irreversible click: that the suggestion appears, that it names the
+   * contact point it matched on, that the consequence is stated, and that the surviving stage is asked for and
+   * offers only the two stages the two leads are in.
+   */
+  test('offers to merge two enquiries from one phone number, and says what that will do', async ({
+    page,
+  }) => {
+    await openLeads(page);
+
+    const table = page.getByRole('table', { name: /Leads, with their route/ });
+    await expect(table).toBeVisible({ timeout: 30_000 });
+
+    /* The demo seeds one person who enquired twice, eighteen days apart, through two different routes. */
+    await table.getByRole('button', { name: 'Mohammad Alharbi' }).click();
+
+    const panel = page.getByText('Is this the same person?');
+    await expect(panel).toBeVisible({ timeout: 20_000 });
+
+    /*
+     * The evidence, on the row somebody is about to act on. The two records' names are spelled differently —
+     * deliberately, in the seed — and the match is on the number, which is what the label says.
+     */
+    await expect(page.getByText('Same phone number').first()).toBeVisible();
+
+    await page.getByRole('button', { name: 'Merge with this' }).first().click();
+
+    await expect(page.getByText(/earlier arrival time is kept/)).toBeVisible();
+    await expect(page.getByText(/there is no undo/)).toBeVisible();
+
+    const stages = page.getByRole('group', { name: /Which stage does the merged lead stay in/ });
+    await expect(stages).toBeVisible();
+
+    /* Until a stage is chosen there is nothing to send, and the control says so by being unavailable. */
+    await expect(page.getByRole('button', { name: 'Merge these leads' })).toBeDisabled();
+
+    /* Both leads are new, so one stage is offered rather than two spelling the same thing twice. */
+    await expect(stages.getByRole('button', { name: 'New' })).toBeVisible();
+    await expect(stages.getByRole('button', { name: 'Qualified' })).toHaveCount(0);
+  });
+
   test('keeps the Lead Center away from a role without the permission', async ({ page }) => {
     await openLeads(page, ACCOUNTS.creative);
 

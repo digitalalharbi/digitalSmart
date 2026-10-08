@@ -1059,6 +1059,20 @@
       "carried": "Carried {{campaign}} — {{evidence}}",
       "emptyTitle": "Nothing linked",
       "emptyBody": "No contact details on this lead could be matched to anything else, which is common and honest."
+    },
+    "merge": {
+      "title": "Is this the same person?",
+      "subtitle": "Leads sharing an email address or phone number with this one. Nothing here is matched on a name.",
+      "arrived": "Arrived {{date}} · {{route}} · {{stage}}",
+      "choose": "Merge with this",
+      "notYours": "Merging leads is not yours to do",
+      "consequence": "Both histories move onto one record and the earlier arrival time is kept, so response times stay honest. Nothing is deleted, and there is no undo.",
+      "stage": "Which stage does the merged lead stay in?",
+      "stageHint": "One of the two stages these leads are already in. Moving it anywhere else is a pipeline move and is recorded as one.",
+      "note": "Note",
+      "noteHint": "Optional. Goes into the merged lead’s history.",
+      "confirm": "Merge these leads",
+      "failed": "The merge did not happen. Nothing was changed."
     }
   },
   "attribution": {

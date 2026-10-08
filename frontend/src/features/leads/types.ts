@@ -106,6 +106,45 @@ export type Lead = {
   closed_at: string | null;
   /** How long somebody took to respond. The figure that separates a bad campaign from a slow team. */
   hours_to_first_contact: number | null;
+  /**
+   * The lead this one was merged into, where somebody decided two records were one person.
+   *
+   * Non-null means this record is counted nowhere and the person's history continues elsewhere. The lists never
+   * return one, so a surface holding it arrived by an old link and should send the reader to the survivor.
+   */
+  merged_into_id: string | null;
+  merged_at: string | null;
+  /** How many other enquiries are on this record. Zero for almost every lead. */
+  absorbed_count: number;
+};
+
+/**
+ * Another lead that may be the same person.
+ *
+ * `matched_on_label` is not decoration. A merge cannot be undone, and a suggestion with no evidence beside it
+ * is one somebody accepts without looking — so the row says which contact point matched, exactly. Nothing in
+ * this product matches on a name.
+ */
+export type LeadDuplicate = {
+  id: string;
+  source_kind: string;
+  source_kind_label: string;
+  source_detail: string | null;
+  stage: LeadStage;
+  stage_label: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  received_at: string;
+  matched_on: 'email' | 'phone' | 'email_and_phone';
+  matched_on_label: string;
+};
+
+export type LeadMerge = {
+  leadId: string;
+  otherLeadId: string;
+  stage: LeadStage;
+  note?: string;
 };
 
 export type Touchpoint = {

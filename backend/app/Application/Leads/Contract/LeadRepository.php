@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Application\Leads\Contract;
 
+use App\Application\Leads\DTO\LeadDuplicateRow;
 use App\Application\Leads\DTO\LeadInput;
 use App\Application\Leads\DTO\LeadView;
+use App\Domain\Leads\LeadMergePlan;
 use App\Domain\Leads\LeadStage;
 use DateTimeImmutable;
 
@@ -74,4 +76,37 @@ interface LeadRepository
     ): LeadView;
 
     public function addNote(string $workspaceId, string $id, string $note, string $actorId): LeadView;
+
+    /**
+     * Leads that may be the same person as this one.
+     *
+     * Exact matches on a normalised contact point, within the same client, excluding anything already merged
+     * away. Never a fuzzy name match: two people called Mohammed Al-Harbi are two people, and a merge cannot
+     * be undone.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return list<LeadDuplicateRow>
+     */
+    public function duplicatesOf(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        string $id,
+        int $limit = 10,
+    ): array;
+
+    /**
+     * Put two leads' histories on one record.
+     *
+     * The plan has already decided which record survives, whether it adopts the other's arrival time and
+     * whether it takes the other's attribution; the stage has already been checked to be one of the two. This
+     * does the writing, in one transaction: the events move, the blanks fill, the absorbed row is marked rather
+     * than deleted, and both records gain a `merged` event so each explains itself afterwards.
+     */
+    public function merge(
+        string $workspaceId,
+        LeadMergePlan $plan,
+        LeadStage $stage,
+        string $actorId,
+        ?string $note = null,
+    ): LeadView;
 }

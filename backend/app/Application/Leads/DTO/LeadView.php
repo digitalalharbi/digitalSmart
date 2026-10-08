@@ -42,6 +42,17 @@ final readonly class LeadView
         public ?DateTimeImmutable $firstContactedAt,
         public ?DateTimeImmutable $qualifiedAt,
         public ?DateTimeImmutable $closedAt,
+        /**
+         * The lead this one was merged into, where somebody decided two records were one person.
+         *
+         * Non-null means this record is kept for its history and its provider id and is counted nowhere: the
+         * reads exclude it, and a surface that finds it should send the reader to the survivor rather than show
+         * a lead that looks live.
+         */
+        public ?string $mergedIntoId = null,
+        public ?DateTimeImmutable $mergedAt = null,
+        /** How many other leads were merged into this one. Zero for almost every lead. */
+        public int $absorbedCount = 0,
     ) {}
 
     /**

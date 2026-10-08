@@ -282,6 +282,15 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('lead')->name('leads.stage');
     Route::get('leads/centre', [LeadController::class, 'centre'])->name('leads.centre');
     /*
+     * Two leads a human knows are one person. The suggestions are read first and the merge names the stage the
+     * surviving record keeps, which has to be one of the two — a merge is not a pipeline move. Which record
+     * survives is decided by `LeadMergePlan`, not by the caller, and there is no undo.
+     */
+    Route::get('leads/{lead}/duplicates', [LeadController::class, 'duplicates'])
+        ->whereUuid('lead')->name('leads.duplicates');
+    Route::post('leads/{lead}/merge', [LeadController::class, 'merge'])
+        ->whereUuid('lead')->name('leads.merge');
+    /*
      * Read a CRM's deals as leads. A **read**: the CRM owns a deal's stage and nothing here writes one back, which
      * is why `POST /api/leads/{lead}/stage` refuses a CRM-sourced lead. See docs/CRM.md.
      */

@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Eloquent\Repository;
 
 use App\Application\Leads\Contract\LeadRepository;
+use App\Application\Leads\DTO\LeadDuplicateRow;
 use App\Application\Leads\DTO\LeadInput;
 use App\Application\Leads\DTO\LeadView;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Commerce\AttributionEvidence;
+use App\Domain\Leads\LeadMergePlan;
 use App\Domain\Leads\LeadSourceKind;
 use App\Domain\Leads\LeadStage;
 use App\Domain\Shared\ValueObject\ContactPoint;
@@ -105,7 +107,7 @@ final readonly class EloquentLeadRepository implements LeadRepository
 
     public function find(string $workspaceId, ?array $visibleProjectIds, string $id): ?LeadView
     {
-        $lead = $this->visibleQuery($workspaceId, $visibleProjectIds)
+        $lead = $this->visibleQuery($workspaceId, $visibleProjectIds, includeMergedAway: true)
             ->with(self::RELATIONS)
             ->whereKey($id)
             ->first();
@@ -253,6 +255,245 @@ final readonly class EloquentLeadRepository implements LeadRepository
 
             return $this->toView($this->reload($lead));
         });
+    }
+
+    /** @return list<LeadDuplicateRow> */
+    public function duplicatesOf(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        string $id,
+        int $limit = 10,
+    ): array {
+        $lead = $this->visibleQuery($workspaceId, $visibleProjectIds, includeMergedAway: true)
+            ->whereKey($id)
+            ->first();
+
+        if (! $lead instanceof Lead) {
+            return [];
+        }
+
+        $emailKey = $lead->getAttribute('email_key');
+        $phoneKey = $lead->getAttribute('phone_key');
+
+        if ($emailKey === null && $phoneKey === null) {
+            /*
+             * No contact point, so nothing this product is willing to match on. An empty list rather than a
+             * list of leads that merely arrived nearby: a suggestion with no evidence is one somebody accepts
+             * without thinking, and a merge cannot be undone.
+             */
+            return [];
+        }
+
+        /*
+         * Same client, deliberately. A merge across clients is refused outright — it would move one client's
+         * enquiry into another's count — so offering candidates from elsewhere would only produce a refusal the
+         * reader could not have predicted.
+         */
+        $candidates = $this->visibleQuery($workspaceId, $visibleProjectIds)
+            ->where('client_id', $lead->getAttribute('client_id'))
+            ->whereKeyNot($id)
+            ->where(function (Builder $scope) use ($emailKey, $phoneKey): void {
+                if ($emailKey !== null) {
+                    $scope->orWhere('email_key', $emailKey);
+                }
+
+                if ($phoneKey !== null) {
+                    $scope->orWhere('phone_key', $phoneKey);
+                }
+            })
+            ->orderByDesc('received_at')
+            ->limit(max(1, min($limit, 50)))
+            ->get();
+
+        return array_values($candidates->map(
+            function (Lead $candidate) use ($emailKey, $phoneKey): LeadDuplicateRow {
+                $byEmail = $emailKey !== null && $candidate->getAttribute('email_key') === $emailKey;
+                $byPhone = $phoneKey !== null && $candidate->getAttribute('phone_key') === $phoneKey;
+
+                /** @var LeadSourceKind $sourceKind */
+                $sourceKind = $candidate->getAttribute('source_kind');
+                /** @var LeadStage $stage */
+                $stage = $candidate->getAttribute('stage');
+                /** @var DateTimeImmutable $receivedAt */
+                $receivedAt = $candidate->getAttribute('received_at');
+
+                /*
+                 * Which contact point matched, named exactly. "Both" is a stronger claim than either and is
+                 * worth distinguishing, because it is the case where a reader can accept without checking.
+                 */
+                [$matchedOn, $label] = match (true) {
+                    $byEmail && $byPhone => ['email_and_phone', 'Same email address and phone number'],
+                    $byEmail => ['email', 'Same email address'],
+                    default => ['phone', 'Same phone number'],
+                };
+
+                return new LeadDuplicateRow(
+                    id: (string) $candidate->getKey(),
+                    sourceKind: $sourceKind,
+                    sourceDetail: $candidate->getAttribute('source_detail'),
+                    stage: $stage,
+                    name: $candidate->getAttribute('name'),
+                    email: $candidate->getAttribute('email'),
+                    phone: $candidate->getAttribute('phone'),
+                    receivedAt: $receivedAt,
+                    matchedOn: $matchedOn,
+                    matchedOnLabel: $label,
+                );
+            },
+        )->all());
+    }
+
+    public function merge(
+        string $workspaceId,
+        LeadMergePlan $plan,
+        LeadStage $stage,
+        string $actorId,
+        ?string $note = null,
+    ): LeadView {
+        return DB::transaction(function () use ($workspaceId, $plan, $stage, $actorId, $note): LeadView {
+            /** @var Lead $survivor */
+            $survivor = Lead::query()->where('workspace_id', $workspaceId)
+                ->whereKey($plan->survivor->id)->lockForUpdate()->firstOrFail();
+            /** @var Lead $absorbed */
+            $absorbed = Lead::query()->where('workspace_id', $workspaceId)
+                ->whereKey($plan->absorbed->id)->lockForUpdate()->firstOrFail();
+
+            $now = $this->clock->now();
+            $attributes = ['stage' => $stage->value];
+
+            /*
+             * Contact details and the message fill blanks only, field by field — and that is not the
+             * half-merge the attribution rule forbids. Each of these is an independent fact about one person:
+             * knowing their phone from one enquiry and their email from another leaves both true. An
+             * attribution is a single claim about where they came from, which is why it moves whole or not at
+             * all.
+             */
+            foreach (['name', 'email', 'phone', 'email_key', 'phone_key', 'message', 'landing_page'] as $column) {
+                $value = $absorbed->getAttribute($column);
+
+                if ($value !== null && $value !== '' && $survivor->getAttribute($column) === null) {
+                    $attributes[$column] = $value;
+                }
+            }
+
+            /* An unowned lead takes the other's owner; an owned one keeps its own. */
+            if ($survivor->getAttribute('owner_id') === null && $absorbed->getAttribute('owner_id') !== null) {
+                $attributes['owner_id'] = $absorbed->getAttribute('owner_id');
+            }
+
+            /*
+             * The value of the lead, only where the survivor has none and the currencies cannot disagree. Two
+             * stated values for one person are two people's judgements and this is not the place to pick
+             * between them — the merge note carries the absorbed figure so it is not lost. Nothing is
+             * converted: a value in another currency is a different number, not the same one.
+             */
+            if ($survivor->getAttribute('value_minor') === null && $absorbed->getAttribute('value_minor') !== null) {
+                $attributes['value_minor'] = $absorbed->getAttribute('value_minor');
+                $attributes['currency'] = $absorbed->getAttribute('currency');
+            }
+
+            if ($plan->inheritsAttribution) {
+                /* Wholly. See `LeadMergePlan`. */
+                foreach ([
+                    'attribution_evidence', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content',
+                    'utm_term', 'click_identifier', 'referrer',
+                ] as $column) {
+                    $attributes[$column] = $absorbed->getAttribute($column);
+                }
+            }
+
+            if ($plan->inheritsReceivedAt) {
+                /* The age of the enquiry outlives the record that carried it. */
+                $attributes['received_at'] = $absorbed->getAttribute('received_at');
+            }
+
+            /*
+             * The earliest of each milestone, because each is a "did this happen, and when" fact about one
+             * person: if somebody was contacted on the Tuesday, they were contacted on the Tuesday, whichever
+             * record recorded it.
+             */
+            foreach (['first_contacted_at', 'qualified_at'] as $column) {
+                $earliest = $this->earlier($survivor->getAttribute($column), $absorbed->getAttribute($column));
+
+                if ($earliest !== null) {
+                    $attributes[$column] = $earliest;
+                }
+            }
+
+            /*
+             * The closing time comes from whichever lead is in the chosen stage, never from the clock. The
+             * schema requires a closed lead to have one and an open lead not to, and inventing "now" would
+             * turn every merge into a closure dated the day of the merge.
+             */
+            $holder = $plan->stageIsHeldBy($stage)->id === (string) $survivor->getKey() ? $survivor : $absorbed;
+            $attributes['closed_at'] = $stage->isClosed() ? $holder->getAttribute('closed_at') : null;
+            $attributes['disqualified_reason'] = $stage === LeadStage::Disqualified
+                ? $holder->getAttribute('disqualified_reason')
+                : null;
+
+            $survivor->update($attributes);
+
+            /*
+             * The history moves rather than being copied: a lead's events are the record of what happened to a
+             * person, and that person now has one record. Both `merged` events are written afterwards so they
+             * are last in the trail.
+             */
+            LeadEvent::query()
+                ->where('workspace_id', $workspaceId)
+                ->where('lead_id', $absorbed->getKey())
+                ->update(['lead_id' => $survivor->getKey()]);
+
+            $absorbed->update([
+                'merged_into_id' => $survivor->getKey(),
+                'merged_at' => $now,
+                'merged_by_id' => $actorId,
+            ]);
+
+            $summary = sprintf(
+                'Merged with the lead received %s%s',
+                $plan->absorbed->receivedAt->format('Y-m-d'),
+                $note === null || trim($note) === '' ? '' : '. '.trim($note),
+            );
+
+            if ($absorbed->getAttribute('value_minor') !== null
+                && $survivor->getAttribute('value_minor') !== $absorbed->getAttribute('value_minor')) {
+                /*
+                 * Written down rather than dropped. A figure somebody stated about this person is part of the
+                 * history even when it is not the one the merged record carries.
+                 */
+                $summary .= sprintf(
+                    ' The absorbed lead was valued at %s %s.',
+                    number_format(((int) $absorbed->getAttribute('value_minor')) / 100, 2),
+                    (string) ($absorbed->getAttribute('currency') ?? ''),
+                );
+            }
+
+            $this->recordEvent($survivor, 'merged', actorId: $actorId, note: $summary, occurredAt: $now);
+            $this->recordEvent(
+                $absorbed,
+                'merged',
+                actorId: $actorId,
+                note: 'Merged into the lead received '.$plan->survivor->receivedAt->format('Y-m-d')
+                    .', which is where this person\'s history continues.',
+                occurredAt: $now,
+            );
+
+            return $this->toView($this->reload($survivor));
+        });
+    }
+
+    /** The earlier of two moments, where either exists. */
+    private function earlier(?DateTimeImmutable $first, ?DateTimeImmutable $second): ?DateTimeImmutable
+    {
+        if ($first === null) {
+            return $second;
+        }
+
+        if ($second === null) {
+            return $first;
+        }
+
+        return $first <= $second ? $first : $second;
     }
 
     /**
@@ -421,9 +662,22 @@ final readonly class EloquentLeadRepository implements LeadRepository
      * @param  list<string>|null  $visibleProjectIds
      * @return Builder<Lead>
      */
-    private function visibleQuery(string $workspaceId, ?array $visibleProjectIds): Builder
-    {
+    private function visibleQuery(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        bool $includeMergedAway = false,
+    ): Builder {
         $query = Lead::query()->where('workspace_id', $workspaceId);
+
+        /*
+         * A lead merged into another counts nowhere. It is kept for its history and its provider id — see the
+         * merge migration — and leaving it in a list would show the same person twice in the pipeline the merge
+         * existed to fix. `find()` is the exception: a reader following an old link needs the record itself, so
+         * the surface can send them to the survivor rather than a 404.
+         */
+        if (! $includeMergedAway) {
+            $query->whereNull('merged_into_id');
+        }
 
         if ($visibleProjectIds === null) {
             return $query;
@@ -482,6 +736,18 @@ final readonly class EloquentLeadRepository implements LeadRepository
             firstContactedAt: $lead->getAttribute('first_contacted_at'),
             qualifiedAt: $lead->getAttribute('qualified_at'),
             closedAt: $lead->getAttribute('closed_at'),
+            mergedIntoId: $lead->getAttribute('merged_into_id') === null
+                ? null
+                : (string) $lead->getAttribute('merged_into_id'),
+            mergedAt: $lead->getAttribute('merged_at'),
+            /*
+             * Counted rather than loaded. A surface needs to say "two other enquiries are on this record" so a
+             * reader is not surprised by a history longer than one arrival; it does not need the rows.
+             */
+            absorbedCount: (int) Lead::query()
+                ->where('workspace_id', $lead->getAttribute('workspace_id'))
+                ->where('merged_into_id', $lead->getKey())
+                ->count(),
         );
     }
 }

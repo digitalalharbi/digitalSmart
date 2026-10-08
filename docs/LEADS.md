@@ -107,6 +107,80 @@ would be a link to a campaign nobody can verify.
 Blank fields are filled from a later arrival; populated ones are not. The first touch is the one that earned
 the credit.
 
+## Merging two leads a human knows are one person
+
+`POST /api/leads/{lead}/merge`, needing `leads.manage`, after reading `GET /api/leads/{lead}/duplicates`.
+
+The roadmap recorded this as blocked on "a decision about whose history survives". That decision came apart
+into four, and each had an answer this product's own rules already implied. They live in `LeadMergePlan`, which
+is the one place to read them.
+
+**Both histories survive.** The absorbed lead's `lead_events` move to the survivor, and the absorbed row is
+**kept and marked**, never deleted. Three reasons: a client may already have been told a lead count, and a row
+that vanishes makes last month's report unreproducible; `lead_events` cascades from the lead, so deleting it
+would delete the trail of everything that happened before anybody realised the two were one person; and the
+absorbed lead keeps its own `external_id`, which is where the next sync of a CRM or form provider will look —
+if the row were gone the sync would create a duplicate and the merge would have to be repeated forever.
+
+**The earlier arrival's age survives, whichever record does.** Time-to-first-contact and pipeline duration are
+measured from `received_at` and they are the figures that tell a slow sales team from a bad campaign. If a merge
+could reset that clock, every merge would shorten every speed-of-response number and flatter whoever did the
+merging. The survivor always ends up with `min(received_at)`.
+
+**A CRM-sourced lead is always the survivor**, even when it arrived second — the same position
+`ChangeLeadStage` takes. Merging one away would leave the CRM syncing a record this product had stopped
+counting, and the two would disagree forever with nobody able to see why. **Two CRM leads cannot be merged
+here at all:** that belongs in the CRM, which holds both, and the refusal says so.
+
+**The stronger attribution survives, wholly.** Exactly the rule a re-arrival follows, including the part about
+equal evidence: two leads at the same level of proof are not an improvement on each other, and swapping one
+campaign for another would change what a client is told for no reason anybody could give.
+
+**The surviving stage is asked for, never inferred.** A lead that bought and a lead that enquired again are
+both real, and which stage the merged record belongs in is not derivable from either. The caller states it and
+it must be **one of the two leads' current stages** — a third would move a lead through a pipeline without
+recording a move, and the review that asks "who decided this, and when" would find nothing. The `closed_at` and
+the disqualification reason come from whichever lead held the chosen stage, so a closure keeps its real date
+instead of being dated to the day somebody tidied up two records.
+
+### What else moves, and what does not
+
+| Field | Rule |
+| ----- | ---- |
+| Name, email, phone, message, landing page | Blanks filled from the absorbed lead. Each is an independent fact about one person — knowing their phone from one enquiry and their email from another leaves both true — which is why this is not the "half-merge" the attribution rule forbids |
+| Owner | Taken only where the survivor has none |
+| Value | Taken only where the survivor has none, and never converted between currencies. Where both leads carry a value, the absorbed figure is written into the merge note rather than dropped: somebody stated it, and it is part of the history even when it is not the figure the record carries |
+| `first_contacted_at`, `qualified_at` | The **earlier** of the two. If somebody was contacted on the Tuesday, they were contacted on the Tuesday, whichever record recorded it |
+| `external_id` | Stays on the record that owns it. Nothing is moved, so each provider's re-read still finds its own row |
+
+### What the suggestions will and will not match on
+
+Exact matches on a normalised email address or phone number, within the same client, excluding anything already
+merged away. **No fuzzy names, no score, no "looks similar".** A merge is not reversible by any control this
+product offers, so the only evidence it acts on is evidence that cannot be wrong about identity — and every row
+carries `matched_on_label` saying which contact point matched, because a suggestion with no evidence beside it
+is one somebody accepts without looking.
+
+There is **no time window here**, unlike the deduplication above. That window exists so this product does not
+decide on its own; this is a human asking the opposite question, and an enquiry from the same number six months
+ago is exactly what they want to see.
+
+### Afterwards
+
+A merged-away lead is counted **nowhere**: both the pipeline list and the Lead Center's funnel exclude
+`merged_into_id IS NOT NULL`. `GET /api/leads/{id}` is the deliberate exception, so a reader following an old
+link gets the record and can be sent to the survivor rather than a 404.
+
+**The journey is the other deliberate exception.** It still shows both enquiries, because it is a timeline of
+what happened to a person and both of them did happen — the merge decided they were one person, not that one of
+the enquiries never arrived. That is what makes "they came back in September" readable.
+
+Refusals come back as `leads_cannot_be_merged`: the same lead twice, two different clients (which would move
+one client's enquiry into another's count), a lead already merged away (a chain would make "how many leads is
+this really" unanswerable), two CRM leads, and a stage neither lead is in. Every merge is audited as
+`leads_merged`, naming the survivor, the absorbed lead by id, and whether the age and the attribution were
+inherited — because both change figures a client may already have been shown.
+
 ## Attribution uses one vocabulary with the orders
 
 The same `AttributionEvidence` levels, the same confidences, the same database CHECK requiring the evidence to
@@ -170,8 +244,12 @@ client-portal response, and `docs/SECURITY.md` carries the retention question.
   is the same refusal this product applies to a tag name.
 - **No automatic lead from an order.** `store_order_id` exists on the table and the link is not created
   automatically, because "every customer is a lead" is true for some clients and nonsense for others.
-- **No merge of two leads a human knows are one person.** The event type is reserved; the operation needs a UI
-  and a decision about which record's history survives.
+- ~~**No merge of two leads a human knows are one person.**~~ Built — see
+  [Merging two leads](#merging-two-leads-a-human-knows-are-one-person). The "decision about which record's
+  history survives" turned out to be four decisions, each answerable from this product's existing rules: both
+  histories survive, the earlier arrival's age survives whichever record does, a CRM-sourced lead is always the
+  survivor, and the stronger attribution moves wholly. The only thing left for a human is the surviving stage,
+  which is asked for because it is a judgement and not derivable from either record.
 - **No scoring.** A lead score is a model, and a model presented as a fact is the thing this product refuses.
   It belongs with the AI phase, labelled as modelled.
 - **No cross-source rate.** There is deliberately no lead-to-click or lead-to-session figure. Sessions come

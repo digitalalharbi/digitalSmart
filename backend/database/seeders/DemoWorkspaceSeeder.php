@@ -566,6 +566,51 @@ final class DemoWorkspaceSeeder extends Seeder
         }
 
         /*
+         * One person who enquired twice, months apart, so the merge panel has something real to show.
+         *
+         * Eighteen days apart and through two different routes, which is what makes it a pair rather than a
+         * resubmission: `RecordLead` deduplicates the same contact point inside a day, so these are exactly the
+         * two records that rule deliberately leaves separate — and the only way to join them is a human saying
+         * they are one person.
+         *
+         * Both carry the same phone number and nothing else in common. Their names differ in spelling, which is
+         * the point: the suggestion is made on the number, never on the name.
+         */
+        $firstForDuplicates = $clients[0] ?? null;
+
+        if ($firstForDuplicates !== null) {
+            /** @var Project|null $project */
+            $project = Project::query()
+                ->where('client_id', $firstForDuplicates->getKey())
+                ->orderBy('created_at')
+                ->first();
+
+            foreach ([
+                ['days' => 20, 'kind' => LeadSourceKind::FormSubmission, 'detail' => 'Contact form', 'name' => 'Mohammed Al-Harbi', 'campaign' => 'autumn-range'],
+                ['days' => 2, 'kind' => LeadSourceKind::WhatsAppMessage, 'detail' => 'WhatsApp business', 'name' => 'Mohammad Alharbi', 'campaign' => null],
+            ] as $definition) {
+                $record(new LeadInput(
+                    clientId: (string) $firstForDuplicates->getKey(),
+                    sourceKind: $definition['kind'],
+                    receivedAt: $now->modify('-'.$definition['days'].' days'),
+                    attribution: OrderAttribution::from(
+                        source: $definition['campaign'] === null ? null : 'meta',
+                        medium: $definition['campaign'] === null ? null : 'cpc',
+                        campaign: $definition['campaign'],
+                    ),
+                    projectId: $project === null ? null : (string) $project->getKey(),
+                    sourceDetail: $definition['detail'],
+                    name: $definition['name'],
+                    phone: '0555009999',
+                    valueMinor: null,
+                    currency: null,
+                ));
+
+                $recorded += 1;
+            }
+        }
+
+        /*
          * And a CRM, read rather than written.
          *
          * Without this the Lead Center's one refusal about ownership is invisible in the only workspace anybody

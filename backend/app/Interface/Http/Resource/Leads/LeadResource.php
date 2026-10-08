@@ -6,6 +6,7 @@ namespace App\Interface\Http\Resource\Leads;
 
 use App\Application\Leads\DTO\LeadBreakdownRow;
 use App\Application\Leads\DTO\LeadCentreView;
+use App\Application\Leads\DTO\LeadDuplicateRow;
 use App\Application\Leads\DTO\LeadSourceRow;
 use App\Application\Leads\DTO\LeadView;
 
@@ -66,6 +67,44 @@ final readonly class LeadResource
              * tell a bad campaign from a slow sales team.
              */
             'hours_to_first_contact' => $lead->hoursToFirstContact(),
+            /*
+             * The merge, where there was one. `merged_into_id` on a lead means this record is not counted
+             * anywhere and the person's history continues elsewhere — a surface that has it in hand should send
+             * the reader there rather than render a lead that looks live.
+             */
+            'merged_into_id' => $lead->mergedIntoId,
+            'merged_at' => $lead->mergedAt?->format(DATE_ATOM),
+            /*
+             * How many enquiries are on this record. Published so a history longer than one arrival explains
+             * itself, and so a reader quoting "one lead" knows it was two.
+             */
+            'absorbed_count' => $lead->absorbedCount,
+        ];
+    }
+
+    /**
+     * A lead that may be the same person as another.
+     *
+     * `matched_on_label` travels with every row, because a merge cannot be undone and a suggestion with no
+     * evidence beside it is one somebody accepts without looking. Nothing here matches on a name.
+     *
+     * @return array<string, mixed>
+     */
+    public static function duplicate(LeadDuplicateRow $row): array
+    {
+        return [
+            'id' => $row->id,
+            'source_kind' => $row->sourceKind->value,
+            'source_kind_label' => $row->sourceKind->label(),
+            'source_detail' => $row->sourceDetail,
+            'stage' => $row->stage->value,
+            'stage_label' => $row->stage->label(),
+            'name' => $row->name,
+            'email' => $row->email,
+            'phone' => $row->phone,
+            'received_at' => $row->receivedAt->format(DATE_ATOM),
+            'matched_on' => $row->matchedOn,
+            'matched_on_label' => $row->matchedOnLabel,
         ];
     }
 

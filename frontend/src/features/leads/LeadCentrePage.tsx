@@ -12,6 +12,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import type { MetricValue } from '@/shared/metrics';
 import { BreakdownChart, type BreakdownRow } from './BreakdownChart';
 import { JourneyPanel } from './JourneyPanel';
+import { MergePanel } from './MergePanel';
 import { PipelineChart } from './PipelineChart';
 import { PipelineList } from './PipelineList';
 import { SignalsPanel } from './SignalsPanel';
@@ -19,7 +20,9 @@ import {
   useChangeStageMutation,
   useJourneyQuery,
   useLeadCentreQuery,
+  useLeadDuplicatesQuery,
   useLeadsQuery,
+  useMergeLeadsMutation,
 } from './useLeads';
 import type { LeadFunnel, LeadStage } from './types';
 
@@ -55,7 +58,9 @@ export function LeadCentrePage() {
   const centre = useLeadCentreQuery(scope, canView);
   const leads = useLeadsQuery({ client_id: clientId, limit: 100 }, canView);
   const journey = useJourneyQuery(selectedLead);
+  const duplicates = useLeadDuplicatesQuery(selectedLead, canManage);
   const move = useChangeStageMutation();
+  const merge = useMergeLeadsMutation();
 
   const data = centre.data;
   const selected = leads.data?.find((lead) => lead.id === selectedLead) ?? null;
@@ -217,11 +222,49 @@ export function LeadCentrePage() {
           }
         />
 
-        <JourneyPanel
-          journey={selectedLead === null ? undefined : journey.data}
-          isLoading={selectedLead !== null && journey.isPending}
-          leadName={selected?.name ?? null}
-        />
+        <div className="flex flex-col gap-6">
+          <JourneyPanel
+            journey={selectedLead === null ? undefined : journey.data}
+            isLoading={selectedLead !== null && journey.isPending}
+            leadName={selected?.name ?? null}
+          />
+
+          {/*
+            Beside the journey rather than in the pipeline row, because that is where somebody is already
+            looking at who this person is. The panel is absent when there is nothing matching on an exact
+            contact point — a "no duplicates found" on every lead teaches a reader to ignore the one time it
+            has something to say.
+          */}
+          <MergePanel
+            lead={selected}
+            duplicates={selectedLead === null ? undefined : duplicates.data}
+            /*
+             * `canManage` as well as the selection, because a disabled query reports `isPending` forever — so
+             * without it a reader who may not merge would sit in front of a loading panel that never resolves,
+             * for an operation that is not theirs.
+             */
+            isLoading={canManage && selectedLead !== null && duplicates.isPending}
+            onMerge={(otherLeadId, stage, note) =>
+              selectedLead === null
+                ? undefined
+                : merge.mutate({
+                    leadId: selectedLead,
+                    otherLeadId,
+                    stage,
+                    ...(note === undefined ? {} : { note }),
+                  })
+            }
+            isMerging={merge.isPending}
+            canMerge={canManage}
+            error={
+              merge.error instanceof ApiError && merge.error.message !== ''
+                ? merge.error.message
+                : merge.isError
+                  ? t('leads.merge.failed')
+                  : null
+            }
+          />
+        </div>
       </div>
     </div>
   );

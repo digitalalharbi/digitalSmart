@@ -3,7 +3,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { LeadCentrePage } from './LeadCentrePage';
-import type { Journey, Lead, LeadCentre, LeadFunnel } from './types';
+import type { Journey, Lead, LeadCentre, LeadDuplicate, LeadFunnel } from './types';
 
 /*
  * ECharts needs a real canvas and a measured container, neither of which jsdom has. The
@@ -38,19 +38,53 @@ const state = vi.hoisted(() => ({
   centre: null as LeadCentre | null,
   leads: [] as Lead[],
   journey: null as Journey | null,
+  duplicates: [] as LeadDuplicate[],
   moved: null as { leadId: string; stage: string; reason?: string } | null,
+  merged: null as { leadId: string; otherLeadId: string; stage: string; note?: string } | null,
 }));
 
 vi.mock('./api', () => ({
   fetchLeadCentre: () => Promise.resolve(state.centre),
   fetchLeads: () => Promise.resolve(state.leads),
-  fetchJourney: () => Promise.resolve(state.journey),
+  /*
+   * Rejects rather than resolving null, which is what the server does: `GetJourney` answers 404 for a lead it
+   * cannot build a journey for. A mock that resolved null would hand the panel a value its type says cannot
+   * arrive, and the test would be asserting against a shape production never sees.
+   */
+  fetchJourney: () =>
+    state.journey === null
+      ? Promise.reject(new Error('Not found'))
+      : Promise.resolve(state.journey),
   changeStage: (change: { leadId: string; stage: string; reason?: string }) => {
     state.moved = change;
 
     return Promise.resolve(state.leads[0]);
   },
+  fetchLeadDuplicates: () => Promise.resolve(state.duplicates),
+  mergeLeads: (merge: { leadId: string; otherLeadId: string; stage: string; note?: string }) => {
+    state.merged = merge;
+
+    return Promise.resolve(state.leads[0]);
+  },
 }));
+
+function duplicate(overrides: Partial<LeadDuplicate> = {}): LeadDuplicate {
+  return {
+    id: 'lead-2',
+    source_kind: 'whatsapp_conversation',
+    source_kind_label: 'WhatsApp conversation',
+    source_detail: 'Sales line',
+    stage: 'contacted',
+    stage_label: 'Contacted',
+    name: 'Layla Al-Harbi',
+    email: null,
+    phone: '966555001122',
+    received_at: '2026-09-02T09:00:00+00:00',
+    matched_on: 'phone',
+    matched_on_label: 'Same phone number',
+    ...overrides,
+  };
+}
 
 function funnel(overrides: Partial<LeadFunnel> = {}): LeadFunnel {
   return {
@@ -172,6 +206,9 @@ function lead(overrides: Partial<Lead> = {}): Lead {
     qualified_at: null,
     closed_at: null,
     hours_to_first_contact: null,
+    merged_into_id: null,
+    merged_at: null,
+    absorbed_count: 0,
     ...overrides,
   };
 }
@@ -181,7 +218,9 @@ beforeEach(() => {
   state.centre = centre();
   state.leads = [lead()];
   state.journey = null;
+  state.duplicates = [];
   state.moved = null;
+  state.merged = null;
 });
 
 describe('the Lead Center', () => {
@@ -432,5 +471,100 @@ describe('a lead the CRM owns', () => {
 
     // The refusal is about ownership, not about leads.
     expect(within(table).getByRole('button', { name: 'Mark contacted' })).toBeInTheDocument();
+  });
+});
+
+describe('two leads, one person', () => {
+  /*
+   * Absent rather than empty. A panel saying "no duplicates found" on every lead teaches a reader to ignore it,
+   * and the one time it has something to say it will be ignored too.
+   */
+  it('says nothing at all when no lead shares a contact point', async () => {
+    await renderWithProviders(<LeadCentrePage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+
+    expect(screen.queryByText('Is this the same person?')).not.toBeInTheDocument();
+  });
+
+  it('names the contact point that matched, never a similarity', async () => {
+    state.duplicates = [duplicate()];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+
+    const panel = await screen.findByText('Is this the same person?');
+
+    expect(panel).toBeInTheDocument();
+    expect(screen.getByText('Same phone number')).toBeInTheDocument();
+  });
+
+  /*
+   * The decision the merge will not make for anybody. A lead that bought and a lead that enquired again are
+   * both real, so the surviving stage is asked for — and only the two stages these leads are in are offered,
+   * because a third would move a lead through a pipeline without recording a move.
+   */
+  it('offers only the two stages the leads are in', async () => {
+    state.duplicates = [duplicate()];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Merge with this' }));
+
+    const stages = screen.getByRole('group', { name: /Which stage/ });
+
+    expect(within(stages).getByRole('button', { name: 'New' })).toBeInTheDocument();
+    expect(within(stages).getByRole('button', { name: 'Contacted' })).toBeInTheDocument();
+    expect(within(stages).queryByRole('button', { name: 'Qualified' })).not.toBeInTheDocument();
+  });
+
+  it('states what the merge will do before it is done', async () => {
+    state.duplicates = [duplicate()];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Merge with this' }));
+
+    expect(screen.getByText(/earlier arrival time is kept/)).toBeInTheDocument();
+    expect(screen.getByText(/there is no undo/)).toBeInTheDocument();
+  });
+
+  it('will not merge until a surviving stage is chosen', async () => {
+    state.duplicates = [duplicate()];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Merge with this' }));
+
+    expect(screen.getByRole('button', { name: 'Merge these leads' })).toBeDisabled();
+
+    await userEvent.click(
+      within(screen.getByRole('group', { name: /Which stage/ })).getByRole('button', {
+        name: 'Contacted',
+      }),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Merge these leads' }));
+
+    expect(state.merged).toEqual({
+      leadId: 'lead-1',
+      otherLeadId: 'lead-2',
+      stage: 'contacted',
+    });
+  });
+
+  it('does not offer the merge to somebody who may not manage leads', async () => {
+    permissions.current = ['leads.view'];
+    state.duplicates = [duplicate()];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
+
+    /* The panel itself never loads for them, because the query that feeds it needs the same permission. */
+    expect(screen.queryByText('Is this the same person?')).not.toBeInTheDocument();
   });
 });

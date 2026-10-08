@@ -4,6 +4,75 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 15 addendum — merging two leads
+
+`lead_events` had reserved a `merged` type since Phase 15 with nothing writing one. The gap list said why: *"the
+operation needs a UI and a decision about whose history survives."*
+
+### The argument
+
+That was one question in form and four in substance, and each had an answer this product's own rules already
+implied.
+
+**Whose history survives? Both.** The absorbed lead's events move to the survivor and the absorbed row is kept
+and marked, never deleted. A client may already have been told a lead count, so a row that vanishes makes last
+month's report unreproducible. `lead_events` cascades from the lead, so deleting it would delete the trail of
+everything that happened before anybody realised the two were one person. And the absorbed lead keeps its own
+`external_id`, which is where the next CRM or form-provider sync looks — delete the row and that sync creates a
+duplicate, so the merge would have to be repeated forever.
+
+**Whose age survives? Always the earlier, whichever record does.** Time-to-first-contact and pipeline duration
+are measured from `received_at`, and they are the figures that tell a slow sales team from a bad campaign. A
+merge that could reset that clock would shorten every speed-of-response number and flatter whoever did the
+merging.
+
+**Which record continues? The CRM's, if either came from one.** The same position `ChangeLeadStage` takes.
+Merging a CRM lead away would leave the CRM syncing a record this product had stopped counting, and the two
+would disagree forever with nobody able to see why. Two CRM leads cannot be merged here at all — that belongs in
+the CRM, which holds both.
+
+**Which stage? Neither the product's call.** A lead that bought and a lead that enquired again are both real,
+and the merged record's stage is not derivable from either. It is asked for, and it must be one of the two
+leads' current stages: a third would move a lead through a pipeline without recording a move, and the review
+that asks "who decided this, and when" would find nothing.
+
+### Added
+
+- **`LeadMergePlan`** — the four rules in one readable place, with `LeadMergeCandidate` reducing a lead to the
+  facts the decision turns on so a fifth cannot creep in unnoticed.
+- **`LeadsCannotBeMerged`** — five refusals, each with a sentence naming what to do instead, because a merge is
+  not reversible by any control this product offers. Merging across clients is the one that is about billing
+  rather than history: it would move one client's enquiry into another's count, where nothing downstream could
+  tell it had been moved.
+- **`GET /api/leads/{lead}/duplicates`** — exact matches on a normalised email or phone, within the same client,
+  excluding anything already merged away. No fuzzy names, no score. Every row says which contact point matched,
+  because a suggestion with no evidence beside it is one somebody accepts without looking. Deliberately **no**
+  time window, unlike the 24-hour deduplication on arrival: that window exists so the product does not decide on
+  its own, and this is a human asking the opposite question.
+- **The closing time comes from whichever lead held the chosen stage**, never from the clock. Inventing "now"
+  would date every closure to the day somebody tidied up two records.
+- **Both deliberate exceptions to "a merged lead counts nowhere".** `GET /api/leads/{lead}` still returns it, so
+  an old link reaches the record and the reader can be sent to the survivor rather than a 404. And the journey
+  still shows **both** enquiries: it is a timeline of what happened to a person, and both of them happened — the
+  merge decided they were one person, not that one enquiry never arrived.
+- **The absorbed lead's stated value is written into the merge note** rather than dropped where the survivor
+  already has one. Somebody said it, and it is part of the history even when it is not the figure the record
+  carries. Nothing is converted between currencies.
+- **A deliberate duplicate pair in the demo seed** — one person, two routes, eighteen days apart, with the two
+  names spelled differently. The spelling is the point: the suggestion is made on the number.
+
+### Found by the gates
+
+- **A disabled query reports `isPending` forever**, so the merge panel showed a permanent loading card to a
+  reader who may not merge — an operation that is not theirs. Caught by the permission test.
+- **The journey panel's test mock resolved `null`** where the server answers `404`. The mock was handing the
+  component a value its own type says cannot arrive; now it rejects, as the server does.
+
+### Gates
+
+1 678 backend tests (6 122 assertions), 490 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
+clean, ESLint and Prettier clean, production build, Playwright green.
+
 ## Phase 14 addendum — new versus returning customers
 
 The Phase 14 gap list said the split was *"a product decision (returning within what window?) rather than a
