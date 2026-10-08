@@ -362,6 +362,20 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('client-requests/{clientRequest}/owner', [ClientRequestController::class, 'assign'])
         ->whereUuid('clientRequest')->name('client_requests.assign');
     /*
+     * Files on a request. The upload's type is sniffed from its own bytes rather than read from the header the
+     * uploader sent, and the download is **always** an attachment with the stored type — never inline. See
+     * `docs/OPERATIONS.md`, and `AttachmentType` for what is accepted and why an SVG is not.
+     */
+    Route::post('client-requests/{clientRequest}/attachments', [ClientRequestController::class, 'attach'])
+        ->whereUuid('clientRequest')->name('client_requests.attach');
+    /*
+     * Addressed by the attachment rather than through its request, because a file is the thing being fetched —
+     * and the audience rule is applied in SQL on the join, so an id from another client's request answers 404
+     * rather than revealing that it exists.
+     */
+    Route::get('client-request-attachments/{attachment}', [ClientRequestController::class, 'attachment'])
+        ->whereUuid('attachment')->name('client_requests.attachment');
+    /*
      * Raising work for a request **links** a task to it rather than converting it. The request keeps its own
      * state, its promised date and the half of the conversation a client can see; an intake queue whose rows
      * vanish into a task board is one where nobody can tell a client what happened to what they asked for.

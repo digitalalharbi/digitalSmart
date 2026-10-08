@@ -60,6 +60,12 @@ final readonly class ClientRequestView
          * @var list<TaskView>
          */
         public array $tasks,
+        /**
+         * Files on the thread, already narrowed by the same audience rule the messages are.
+         *
+         * @var list<AttachmentView>
+         */
+        public array $attachments = [],
     ) {}
 
     /**
@@ -98,6 +104,7 @@ final readonly class ClientRequestView
             $this->createdAt,
             $this->messages,
             $tasks,
+            $this->attachments,
         );
     }
 

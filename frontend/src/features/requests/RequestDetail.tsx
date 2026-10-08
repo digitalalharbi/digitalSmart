@@ -1,8 +1,9 @@
-import { CalendarOff, Lock, MessageSquare, TriangleAlert, Users } from 'lucide-react';
+import { CalendarOff, Lock, MessageSquare, Paperclip, TriangleAlert, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/lib/cn';
-import { formatNumber } from '@/shared/lib/format';
+import { attachmentUrl } from './api';
+import { formatNumber, readableSize } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -30,6 +31,11 @@ type RequestDetailProps = {
   onTriage: (state: ClientRequestStateValue, reason?: string) => void;
   onPromise: (promisedAt: string) => void;
   onAnswer: (audience: MessageAudienceValue, body: string) => void;
+  /** Undefined where the reader may not upload — the control is then absent rather than disabled. */
+  onAttach?: ((audience: MessageAudienceValue, file: File) => void) | undefined;
+  /** The server's own refusal, which says what to send instead. */
+  attachError?: string | null;
+  isAttaching?: boolean;
   onRaiseTask: (title: string) => void;
   error: string | null;
 };
@@ -62,6 +68,9 @@ export function RequestDetail({
   onTriage,
   onPromise,
   onAnswer,
+  onAttach,
+  attachError = null,
+  isAttaching = false,
   onRaiseTask,
   error,
 }: RequestDetailProps) {
@@ -343,6 +352,99 @@ export function RequestDetail({
               </Button>
             </div>
           </form>
+        </section>
+
+        <section className="flex flex-col gap-3" aria-label={t('requests.detail.files')}>
+          <h3 className="text-content text-sm font-semibold">{t('requests.detail.files')}</h3>
+
+          {request.attachments.length === 0 ? (
+            <p className="text-content-tertiary text-sm">{t('requests.detail.noFiles')}</p>
+          ) : (
+            <ul aria-label={t('requests.detail.files')} className="flex flex-col gap-2">
+              {request.attachments.map((file) => (
+                <li
+                  key={file.id}
+                  className="border-line-subtle flex flex-wrap items-center gap-2 rounded-lg border p-3"
+                >
+                  <Paperclip aria-hidden className="text-content-tertiary size-4 shrink-0" />
+
+                  {/*
+                    A plain link, so the browser handles it — and the server answers with
+                    `Content-Disposition: attachment`, so it is a file on a disk rather than a document in this
+                    product's origin. Nothing is ever shown inline, including images: a PDF can carry a script and
+                    a browser will guess at a type it was not told.
+                  */}
+                  <a
+                    href={attachmentUrl(file.id)}
+                    className="text-accent text-sm hover:underline"
+                    download={file.name}
+                  >
+                    {file.name}
+                  </a>
+
+                  {/* The type the **bytes** said, which can differ from what the filename claims. */}
+                  <span className="text-content-tertiary text-xs">
+                    {file.type_label} · {readableSize(file.byte_size, locale)}
+                  </span>
+
+                  {isAgencyView ? (
+                    <Badge tone={file.is_visible_to_client ? 'accent' : 'neutral'}>
+                      {file.is_visible_to_client ? (
+                        <Users aria-hidden className="me-1 size-3" />
+                      ) : (
+                        <Lock aria-hidden className="me-1 size-3" />
+                      )}
+                      {t(
+                        file.is_visible_to_client
+                          ? 'requests.detail.clientSees'
+                          : 'requests.detail.internalOnly',
+                      )}
+                    </Badge>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {attachError === null ? null : <Alert tone="danger">{attachError}</Alert>}
+
+          {onAttach === undefined || !isOpen ? null : (
+            <div className="flex flex-col gap-2">
+              <Field label={t('requests.detail.addFile')} hint={t('requests.detail.addFileHint')}>
+                {(props) => (
+                  <input
+                    {...props}
+                    type="file"
+                    disabled={isAttaching || (isAgencyView && audience === null)}
+                    className="text-content-secondary text-sm"
+                    onChange={(event) => {
+                      const chosen = event.target.files?.[0];
+
+                      if (chosen === undefined) {
+                        return;
+                      }
+
+                      /*
+                       * The same audience the reply would use, chosen above. A separate picker here would be a
+                       * second place the choice is made, and the first time the two disagreed an internal
+                       * screenshot would reach the client it is about.
+                       */
+                      onAttach(isAgencyView ? (audience ?? 'internal') : 'client', chosen);
+
+                      /* Cleared, so choosing the same file twice is a second upload rather than nothing. */
+                      event.target.value = '';
+                    }}
+                  />
+                )}
+              </Field>
+
+              {isAgencyView && audience === null ? (
+                <p className="text-content-tertiary text-xs">
+                  {t('requests.detail.chooseAudienceFirst')}
+                </p>
+              ) : null}
+            </div>
+          )}
         </section>
 
         {!isAgencyView || !canTriage ? null : (

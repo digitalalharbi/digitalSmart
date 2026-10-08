@@ -89,6 +89,55 @@ test.describe('client requests', () => {
     await expect(page.getByRole('button', { name: 'Send to the client' })).toBeEnabled();
   });
 
+  test('uploads a file, refuses one that is not what it claims, and downloads it back', async ({
+    page,
+  }) => {
+    await openIntake(page);
+
+    await page.getByRole('button', { name: /Can we pause the retargeting over Eid\?/ }).click();
+
+    const files = page.getByRole('region', { name: 'Files' });
+    await expect(files).toBeVisible({ timeout: 30_000 });
+
+    /* No default audience, for a file as for a message — and here the leak would be worse. */
+    await expect(page.getByLabel('Add a file')).toBeDisabled();
+    await page.getByRole('button', { name: 'The client will see this' }).click();
+
+    /*
+     * A real PNG, by its bytes. The server sniffs the file rather than believing its name, so a test that
+     * uploaded a text file called `.png` would be testing the refusal rather than the upload.
+     */
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==',
+      'base64',
+    );
+
+    await page
+      .getByLabel('Add a file')
+      .setInputFiles({ name: 'screenshot.png', mimeType: 'image/png', buffer: png });
+
+    const uploaded = files.getByRole('link', { name: 'screenshot.png' });
+    await expect(uploaded).toBeVisible({ timeout: 30_000 });
+    await expect(files.getByText('The client sees this').first()).toBeVisible();
+
+    /*
+     * And the refusal that matters: an HTML document with a PNG filename. An extension check and a header check
+     * both pass here, because the uploader chose both — only the bytes disagree.
+     */
+    await page.getByLabel('Add a file').setInputFiles({
+      name: 'brief.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from('<html><body><script>alert(1)</script></body></html>'),
+    });
+
+    await expect(page.getByText(/which we cannot accept/)).toBeVisible({ timeout: 30_000 });
+
+    /* Taken delivery of, so the download really is a download rather than a page. */
+    const [download] = await Promise.all([page.waitForEvent('download'), uploaded.click()]);
+
+    expect(download.suggestedFilename()).toBe('screenshot.png');
+  });
+
   test('raises a task against a request and leaves the request a request', async ({ page }) => {
     /*
      * Named per project and per retry. Both Playwright projects run against **one** seeded database, so a fixed

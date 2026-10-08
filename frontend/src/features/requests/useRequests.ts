@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/query-keys';
 import {
   answerClientRequest,
+  attachToClientRequest,
   assignRequestOwner,
   fetchClientRequest,
   fetchIntakeQueue,
@@ -79,6 +80,10 @@ export function usePromiseMutation() {
 
 export function useAssignOwnerMutation() {
   return useRequestMutation(assignRequestOwner);
+}
+
+export function useAttachMutation() {
+  return useRequestMutation(attachToClientRequest);
 }
 
 export function useAnswerMutation() {

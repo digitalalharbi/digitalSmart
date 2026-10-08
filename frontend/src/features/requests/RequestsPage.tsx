@@ -17,6 +17,7 @@ import { RequestDetail } from './RequestDetail';
 import { StatedUrgencyChart } from './StatedUrgencyChart';
 import {
   useAnswerMutation,
+  useAttachMutation,
   useClientRequestQuery,
   useIntakeQueueQuery,
   usePromiseMutation,
@@ -59,6 +60,7 @@ export function RequestsPage() {
   const triage = useTriageMutation();
   const promise = usePromiseMutation();
   const answer = useAnswerMutation();
+  const attach = useAttachMutation();
   const raiseTask = useRaiseTaskMutation();
   const submit = useSubmitRequestMutation();
 
@@ -291,6 +293,22 @@ export function RequestsPage() {
             answer.mutate({ requestId: selected, audience, body });
           }
         }}
+        onAttach={(audience, file) => {
+          if (selected !== null) {
+            attach.mutate({ requestId: selected, audience, file });
+          }
+        }}
+        /*
+         * Its own error, kept apart from the rest. Every attachment refusal says what to send instead — a smaller
+         * file, a PNG rather than an SVG — and folding it into the shared banner would put that sentence a long
+         * way from the control that caused it.
+         */
+        attachError={
+          attach.error instanceof ApiError && attach.error.message !== ''
+            ? attach.error.message
+            : null
+        }
+        isAttaching={attach.isPending}
         onRaiseTask={(title) => {
           if (selected !== null) {
             raiseTask.mutate({ requestId: selected, title });

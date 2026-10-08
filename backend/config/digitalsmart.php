@@ -18,6 +18,18 @@ return [
     'slow_query_threshold_ms' => (int) env('SLOW_QUERY_THRESHOLD_MS', 500),
 
     /*
+    | Where client-request attachments live.
+    |
+    | The private local disk in development, a bucket in production. It is named here rather than taken from
+    | `filesystems.default` on purpose: the default is what the application uses for its own scratch files, and a
+    | client's uploads should not move the day somebody changes that for an unrelated reason.
+    |
+    | Nothing on this disk is public. Every read goes through the API, because the audience rule — which decides
+    | whether a client may see a given file — lives there and nowhere else.
+    */
+    'attachment_disk' => (string) env('ATTACHMENT_DISK', 'local'),
+
+    /*
     | Demo/sandbox data must always be distinguishable from client data.
     | Seeders tag every record they create with this label.
     */

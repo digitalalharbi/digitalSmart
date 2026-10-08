@@ -73,3 +73,22 @@ export function formatCompact(value: number, locale = 'en'): string {
     maximumFractionDigits: 1,
   }).format(value);
 }
+
+/**
+ * A file size somebody can read.
+ *
+ * Binary units, because that is what every operating system shows for a file and a reader comparing this against
+ * their own file manager should see the same figure. Rounded to one decimal above a kilobyte: the exact byte
+ * count of an upload is not a fact anybody acts on, and 1,048,576 in a list of files is noise.
+ */
+export function readableSize(bytes: number, locale = 'en'): string {
+  if (bytes < 1024) {
+    return `${formatNumber(bytes, locale)} B`;
+  }
+
+  if (bytes < 1_048_576) {
+    return `${formatNumber(bytes / 1024, locale, 0)} KB`;
+  }
+
+  return `${formatNumber(bytes / 1_048_576, locale, 1)} MB`;
+}

@@ -7,10 +7,12 @@ namespace App\Infrastructure\Persistence\Eloquent\Repository;
 use App\Application\Operations\Contract\ClientRequestFilter;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\Contract\TaskRepository;
+use App\Application\Operations\DTO\AttachmentView;
 use App\Application\Operations\DTO\ClientRequestInput;
 use App\Application\Operations\DTO\ClientRequestMessageView;
 use App\Application\Operations\DTO\ClientRequestView;
 use App\Application\Shared\Contract\IdentifierGenerator;
+use App\Domain\Operations\AttachmentType;
 use App\Domain\Operations\ClientRequestKind;
 use App\Domain\Operations\ClientRequestState;
 use App\Domain\Operations\IntakeLoad;
@@ -360,6 +362,84 @@ final readonly class EloquentClientRequestRepository implements ClientRequestRep
         );
     }
 
+    public function attach(
+        string $workspaceId,
+        string $requestId,
+        MessageAudience $audience,
+        string $originalName,
+        string $storedName,
+        AttachmentType $type,
+        int $byteSize,
+        string $checksum,
+        ?string $uploaderId,
+        bool $isFromClient,
+        DateTimeImmutable $at,
+    ): ClientRequestView {
+        DB::table('client_request_attachments')->insert([
+            'id' => $this->identifiers->generate(),
+            'workspace_id' => $workspaceId,
+            'client_request_id' => $requestId,
+            'audience' => $audience->value,
+            'original_name' => $originalName,
+            'stored_name' => $storedName,
+            'sniffed_type' => $type->value,
+            'byte_size' => $byteSize,
+            'checksum' => $checksum,
+            'uploaded_by' => $uploaderId,
+            'is_from_client' => $isFromClient,
+            'created_at' => $at,
+            'updated_at' => $at,
+        ]);
+
+        /*
+         * A file is **not** an answer. `first_answered_at` is deliberately untouched: an agency that attached a
+         * screenshot and said nothing has not answered the client, and a figure that counted it would report a
+         * responsive queue while the client was still waiting for a sentence.
+         */
+        return $this->reread($workspaceId, $requestId);
+    }
+
+    /** @param  list<string>|null  $visibleProjectIds */
+    public function attachment(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        string $attachmentId,
+        bool $clientFacing,
+    ): ?AttachmentView {
+        /*
+         * Joined to the request and run through the same visibility clause every other read uses, so an
+         * attachment id from a client this reader has no project with answers nothing — and the audience is
+         * narrowed in the same WHERE rather than compared afterwards by a caller.
+         */
+        $builder = $this->visible($workspaceId, $visibleProjectIds)
+            ->join('client_request_attachments as a', 'a.client_request_id', '=', 'r.id')
+            ->leftJoin('users as au', 'au.id', '=', 'a.uploaded_by')
+            ->where('a.id', $attachmentId);
+
+        if ($clientFacing) {
+            $builder->where('a.audience', MessageAudience::Client->value);
+        }
+
+        $row = $builder->first(['a.*', 'au.name as uploaded_by_name']);
+
+        if ($row === null) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $values */
+        $values = (array) $row;
+
+        return $this->attachmentView($values);
+    }
+
+    public function countAttachments(string $workspaceId, string $requestId): int
+    {
+        return DB::table('client_request_attachments')
+            ->where('workspace_id', $workspaceId)
+            ->where('client_request_id', $requestId)
+            ->count();
+    }
+
     private function reread(string $workspaceId, string $requestId): ClientRequestView
     {
         return $this->find($workspaceId, null, $requestId, false)
@@ -509,6 +589,63 @@ final readonly class EloquentClientRequestRepository implements ClientRequestRep
              * its own assignees and estimates, and showing them to a client is the same leak an internal note is.
              */
             tasks: $withConversation && ! $clientFacing ? $this->spawnedTasks($workspaceId, $id) : [],
+            attachments: $withConversation ? $this->attachments($workspaceId, $id, $clientFacing) : [],
+        );
+    }
+
+    /**
+     * Files on one request, narrowed in the WHERE clause.
+     *
+     * The same exclusion the messages get, for a worse leak: an internal note is a sentence, and an internal
+     * attachment is a competitor's rate card or a screenshot of an argument about the client.
+     *
+     * @return list<AttachmentView>
+     */
+    private function attachments(string $workspaceId, string $requestId, bool $clientFacing): array
+    {
+        $builder = DB::table('client_request_attachments as a')
+            ->leftJoin('users as u', 'u.id', '=', 'a.uploaded_by')
+            ->where('a.workspace_id', $workspaceId)
+            ->where('a.client_request_id', $requestId);
+
+        if ($clientFacing) {
+            $builder->where('a.audience', MessageAudience::Client->value);
+        }
+
+        $rows = $builder->orderBy('a.created_at')->get(['a.*', 'u.name as uploaded_by_name']);
+        $attachments = [];
+
+        foreach ($rows as $row) {
+            /** @var array<string, mixed> $values */
+            $values = (array) $row;
+
+            $attachments[] = $this->attachmentView($values);
+        }
+
+        return $attachments;
+    }
+
+    /** @param array<string, mixed> $values */
+    private function attachmentView(array $values): AttachmentView
+    {
+        return new AttachmentView(
+            id: (string) ($values['id'] ?? ''),
+            audience: MessageAudience::tryFrom((string) ($values['audience'] ?? ''))
+                // The safe default for a value that somehow does not parse. Never the client.
+                ?? MessageAudience::Internal,
+            originalName: (string) ($values['original_name'] ?? ''),
+            storedName: (string) ($values['stored_name'] ?? ''),
+            /*
+             * A type that does not parse is treated as plain text rather than guessed at. A CHECK makes it
+             * unreachable; if it were ever reached, the least dangerous thing to serve is text.
+             */
+            type: AttachmentType::tryFrom((string) ($values['sniffed_type'] ?? ''))
+                ?? AttachmentType::PlainText,
+            byteSize: (int) ($values['byte_size'] ?? 0),
+            checksum: (string) ($values['checksum'] ?? ''),
+            uploadedByName: $this->text($values['uploaded_by_name'] ?? null),
+            isFromClient: (bool) ($values['is_from_client'] ?? false),
+            uploadedAt: $this->date($values['created_at'] ?? null) ?? new DateTimeImmutable('@0'),
         );
     }
 

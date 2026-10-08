@@ -80,6 +80,20 @@ assistant works without one because the product computes every figure. See `docs
 parameter they left out, and a 422 naming a parameter is a statement that the endpoint exists and would answer.
 Two revenue reads had that ordering wrong and were corrected in Phase 22.
 
+**Why an uploaded file's type is read from its bytes.** An extension and a `Content-Type` header are both chosen
+by the uploader, so a file called `brief.png` that is an HTML document passes every check that reads either —
+and is then served from this product's own origin, which is a script running as whoever opened it. The type is
+sniffed with `finfo` and held to an allow-list that excludes SVG, because an SVG is a document that can carry
+`<script>`. The stored name is generated, so nothing of the uploader's reaches the filesystem; downloads are
+always `Content-Disposition: attachment` with the stored type, a `default-src 'none'; sandbox` policy and
+`nosniff`, so a PDF carrying JavaScript is a file on a disk rather than a document in this origin. **There is no
+virus scanner**, which is stated in `docs/OPERATIONS.md` rather than implied, along with where one would go.
+
+**Why no attachment has a URL.** Every read goes through the API, because the audience rule — which decides
+whether a client may see a given file — lives there. A signed bucket link would be a second place that rule has
+to hold, and the first time the two disagreed a client would be reading an internal file. Downloads are audited
+for the same reason a share is: who took a copy of somebody else's file is a question an argument turns on.
+
 **Why making a change on a platform is its own permission.** `provider_writes.execute` is held by no role that
 only decides. Approving a change and being the credentials that move a client's money are different acts, and a
 workspace that collapsed them would have the person who authorised a budget rise also be the only record that it

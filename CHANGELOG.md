@@ -4,6 +4,67 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 20 addendum — files on a client request
+
+"Screenshots attached" was a sentence a client could write and not act on.
+
+### The argument
+
+A client reporting that three product images are wrong has a screenshot of it. Without somewhere to put the
+screenshot they describe it, the agency guesses, and the thread takes three more messages — or the file goes by
+e-mail, which puts it outside every record this module keeps.
+
+So files, with every rule the messages beside them already follow. The security argument is the whole of the
+design, because an upload is the one thing on a request that can be dangerous as well as confidential.
+
+### Added
+
+- `AttachmentType` — an allow-list decided by the file's **own bytes**, sniffed with `finfo`. Not the extension
+  and not the `Content-Type` header, both of which the uploader chose; Laravel's `mimes:` validation reads the
+  header, so it is deliberately unused. The test that matters uploads an HTML document called `brief.png`, which
+  an extension check and a header check both pass.
+- **SVG is refused**, with the reason in the message. An SVG is a document that can carry `<script>`, every
+  stored-XSS in a file-upload feature is an SVG served inline, and "export it as a PNG" is an answer a client can
+  act on. A zip is refused for the mirror-image reason: a .xlsx and an arbitrary zip are the same magic bytes, and
+  telling them apart would mean trusting the extension again.
+- **Nothing is served inline, including images.** `Content-Disposition: attachment`, the stored sniffed type,
+  `nosniff`, and `default-src 'none'; sandbox` on the response itself. A PDF can carry JavaScript a browser's own
+  viewer will run.
+- **Nothing of the uploader's reaches the filesystem.** The stored name is a generated identifier plus the
+  extension of the sniffed type; a test uploads `../../etc/passwd.png` and asserts where it did not go.
+- **The audience rule, unchanged and in SQL.** A client's upload is forced to client-visible — their own file must
+  reach the person they are talking to, and a CHECK refuses anything else — while an agency member chooses every
+  time with no default. An internal attachment is excluded from a client's read in the WHERE clause, and an id
+  from another client's request answers 404 rather than 403, because a 403 confirms it exists.
+- **Every read goes through the API**, so `AttachmentStore` offers no public URL: a signed bucket link would be a
+  second place the audience rule has to hold. Downloads are audited — who took a copy of somebody else's file.
+- **A file is not an answer.** `first_answered_at` is deliberately untouched by an upload: an agency that attached
+  a screenshot and said nothing has not answered the client, and a figure that counted it would report a
+  responsive queue while the client waited for a sentence.
+- A missing file answers **404**, not 500. A restore from a database backup without the disk behind it produces
+  exactly that state, and the honest answer is that the file is not there.
+- `readableSize` in the shared formatters, in binary units — what every operating system shows for a file, so a
+  reader comparing this against their own file manager sees the same figure.
+
+### Not built, and said rather than implied
+
+**There is no virus scanner.** No scanning service is attached to this repository. The defences are the
+allow-list, the five-megabyte limit, a generated name and a download that is never a document in this origin —
+a file is treated throughout as somebody else's file. `docs/OPERATIONS.md` says so where an operator will read
+it, and says where a scanner would go: between the controller and the use case, the one place the bytes exist in
+memory.
+
+**The bucket is BLOCKED_EXTERNAL.** `ATTACHMENT_DISK` is the private local disk here; production wants object
+storage and no cloud account is attached. Only the driver changes — nothing above `AttachmentStore` knows which
+it is.
+
+### Found while testing
+
+`UploadedFile::fake()` overrides `getMimeType()` with a type derived from the **filename**. Every assertion in
+this feature is about what a sniffer says about the bytes, so the fake would have made the whole suite pass by
+agreeing with the extension — the precise mistake the production code refuses to make. The tests build real
+uploads over real temporary files instead, and the comment above the helper says why.
+
 ## Phase 20 addendum — the client is told
 
 The intake queue could be moved, promised, declined and delivered without the person who raised it ever

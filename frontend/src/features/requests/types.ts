@@ -77,6 +77,27 @@ export type RequestMessage = {
   created_at: string;
 };
 
+/**
+ * One file on a thread.
+ *
+ * `type` is what the **bytes** said, not what the uploader's filename or header claimed — which is why the UI
+ * can show "Image" beside a file called `brief.png` that turned out to be something else. There is no URL here
+ * on purpose: every read goes through the API, because the audience rule lives there.
+ */
+export type RequestAttachment = {
+  id: string;
+  audience: MessageAudienceValue;
+  is_visible_to_client: boolean;
+  name: string;
+  type: string;
+  type_label: string;
+  is_image: boolean;
+  byte_size: number;
+  uploaded_by_name: string | null;
+  is_from_client: boolean;
+  uploaded_at: string;
+};
+
 export type RequestLinkedTask = {
   id: string;
   title: string;
@@ -124,6 +145,8 @@ export type ClientRequest = ClientRequestCard & {
   state_changed_at: string | null;
   turnaround_days: number | null;
   messages: RequestMessage[];
+  /** Narrowed by the same audience rule the messages are, in SQL. */
+  attachments: RequestAttachment[];
   /** Empty on the client's side. The agency's plan of work is the same leak an internal note is. */
   tasks: RequestLinkedTask[];
 };

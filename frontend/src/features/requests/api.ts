@@ -124,6 +124,40 @@ export async function answerClientRequest(input: {
   return data.data;
 }
 
+/**
+ * Upload one file to a request.
+ *
+ * `FormData`, so the browser sets its own multipart boundary — and deliberately **no** `Content-Type` header of
+ * our own, which would break the boundary. The server sniffs the bytes rather than trusting what arrives here,
+ * so nothing on this side needs to be clever about the type.
+ */
+export async function attachToClientRequest(input: {
+  requestId: string;
+  audience: MessageAudienceValue;
+  file: File;
+}): Promise<ClientRequest> {
+  const body = new FormData();
+  body.append('audience', input.audience);
+  body.append('file', input.file);
+
+  const { data } = await api.post<{ data: ClientRequest }>(
+    `/client-requests/${input.requestId}/attachments`,
+    body,
+  );
+
+  return data.data;
+}
+
+/**
+ * Where one attachment's bytes are.
+ *
+ * A plain link, so the browser handles the download — and it is always a download: the server answers with
+ * `Content-Disposition: attachment` and the type it stored, never inline.
+ */
+export function attachmentUrl(attachmentId: string): string {
+  return `/api/client-request-attachments/${attachmentId}`;
+}
+
 export async function raiseTaskForRequest(input: {
   requestId: string;
   title: string;

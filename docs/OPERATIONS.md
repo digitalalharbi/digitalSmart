@@ -443,6 +443,44 @@ And **nobody is ever told what they just did.** `Announce` drops the actor befor
 written. Unassigning tells nobody: there is no new owner, and notifying the person it was taken from
 would be a complaint rather than a task.
 
+## Files are the same rule, and a worse leak
+
+A client request takes files, and every rule the messages beside them follow applies unchanged — in SQL, on the
+same column, by the same decision. An internal *note* is a sentence; an internal *attachment* is a competitor's
+rate card or a screenshot of an argument about the client.
+
+**The type is the file's own.** Decided by `finfo`, from the magic bytes, and never from the extension or the
+`Content-Type` header — both of which the uploader chose. Laravel's `mimes:` validation reads the header, so it
+is deliberately not used here. The test that matters uploads an HTML document called `brief.png`: an extension
+check and a header check both pass it, and only the bytes disagree.
+
+**SVG is refused**, and it is the one omission worth explaining. An SVG is a document that can carry `<script>`,
+and every stored-XSS in a file-upload feature is an SVG served inline. Nothing here needs vector art badly
+enough, and "export it as a PNG" is an answer a client can act on.
+
+**Nothing is served inline — ever, including images.** `Content-Disposition: attachment`, the stored sniffed
+type, `X-Content-Type-Options: nosniff` from the security middleware, and `Content-Security-Policy:
+default-src 'none'; sandbox` on the response itself. A PDF can carry JavaScript that a browser's own viewer
+will run; as an attachment it is a file on somebody's disk rather than a document in this product's origin.
+
+**Nothing of the uploader's reaches the filesystem.** The stored name is a generated identifier plus the
+extension of the *sniffed* type. A path built from an uploaded filename is a path traversal waiting for somebody
+to try `../`, and a test uploads `../../etc/passwd.png` to prove it goes nowhere.
+
+**There is no virus scanner, and this says so rather than implying one.** No scanning service is attached to this
+repository. The defences are the allow-list, the five-megabyte limit, a name this product generated, and a
+download that is never a document in this origin — a file is treated throughout as somebody else's file. An
+operator adding a scanner would put it between the controller and `AttachToClientRequest`, which is the one place
+the bytes exist in memory.
+
+**Every read goes through the API**, which is why `AttachmentStore` offers no public URL. A signed bucket link
+would be a second place the audience rule has to hold, and the first time the two disagreed a client would be
+reading an internal file. A download is also **audited**: who took a copy of somebody else's file, and when.
+
+A missing file answers **404**, not 500. A record pointing at bytes that are gone is a real state — a restore
+from a database backup without the disk behind it produces exactly that — and the honest answer is that the file
+is not there rather than a server error inviting a retry.
+
 ## Four of the nine kinds are about a client request
 
 Nine kinds, and four of them exist because a client request has two sides. Collapsing them would mean one

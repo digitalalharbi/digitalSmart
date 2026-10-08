@@ -99,6 +99,14 @@ enum AuditAction: string
      */
     case ClientRequestPromised = 'client_request.promised';
     case ClientRequestAnswered = 'client_request.answered';
+    /*
+     * Its own action, because a file is the one thing on a request that can be dangerous as well as
+     * confidential: the entry carries the audience, the sniffed type and the size, which are the three fields an
+     * argument about a leaked or a malicious upload turns on.
+     */
+    case ClientRequestAttached = 'client_request.attached';
+    /* A download is a read, and a read of somebody else's file is the read worth recording. */
+    case ClientRequestAttachmentRead = 'client_request.attachment_read';
     case ClientRequestOwnerChanged = 'client_request.owner_changed';
 
     case ReportSaved = 'report.saved';

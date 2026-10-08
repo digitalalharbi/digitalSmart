@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Application\Operations\Contract;
 
+use App\Application\Operations\DTO\AttachmentView;
 use App\Application\Operations\DTO\ClientRequestInput;
 use App\Application\Operations\DTO\ClientRequestView;
+use App\Domain\Operations\AttachmentType;
 use App\Domain\Operations\ClientRequestState;
 use App\Domain\Operations\IntakeLoad;
 use App\Domain\Operations\MessageAudience;
@@ -75,6 +77,51 @@ interface ClientRequestRepository
         bool $isFromClient,
         DateTimeImmutable $at,
     ): ClientRequestView;
+
+    /**
+     * Record one uploaded file against a request.
+     *
+     * The bytes are already stored by the time this is called — `storedName` names them — so this is the row and
+     * nothing else. Returns the request as it now stands, with the attachment on it, read through the same
+     * `clientFacing` rule as everything else.
+     */
+    public function attach(
+        string $workspaceId,
+        string $requestId,
+        MessageAudience $audience,
+        string $originalName,
+        string $storedName,
+        AttachmentType $type,
+        int $byteSize,
+        string $checksum,
+        ?string $uploaderId,
+        bool $isFromClient,
+        DateTimeImmutable $at,
+    ): ClientRequestView;
+
+    /**
+     * One attachment, if this reader may have it.
+     *
+     * `clientFacing` is the same flag the rest of this contract carries, and it is the only thing standing
+     * between a client and an internal file — so the decision is made in SQL here rather than by a caller
+     * comparing an audience afterwards.
+     */
+    /** @param  list<string>|null  $visibleProjectIds */
+    public function attachment(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        string $attachmentId,
+        bool $clientFacing,
+    ): ?AttachmentView;
+
+    /**
+     * How many files a request already holds, counting both audiences.
+     *
+     * Both, deliberately: the limit is a limit on the row, not on what one side can see, and a client told "this
+     * request is full" while the agency's own notes take up the space would be told something that reads as a
+     * lie.
+     */
+    public function countAttachments(string $workspaceId, string $requestId): int;
 
     /**
      * The queue, as columns, capped per column.

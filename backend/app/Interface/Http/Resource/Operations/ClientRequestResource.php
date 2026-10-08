@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Http\Resource\Operations;
 
+use App\Application\Operations\DTO\AttachmentView;
 use App\Application\Operations\DTO\ClientRequestMessageView;
 use App\Application\Operations\DTO\ClientRequestView;
 use App\Application\Operations\DTO\IntakeQueueView;
@@ -135,6 +136,27 @@ final readonly class ClientRequestResource
                 'is_from_client' => $message->isFromClient,
                 'created_at' => $message->createdAt->format(DateTimeImmutable::ATOM),
             ], $view->messages),
+            /*
+             * Files on the thread, already narrowed by the same audience rule the messages are — in SQL, so an
+             * internal attachment is not selected for a client at all.
+             *
+             * `stored_name` and the checksum are deliberately **not** published. A generated name is not a secret,
+             * but publishing one turns it into a name somebody can guess at, and a checksum is for an audit of
+             * what was actually sent rather than for a page. The id is what the download endpoint addresses.
+             */
+            'attachments' => array_map(static fn (AttachmentView $file): array => [
+                'id' => $file->id,
+                'audience' => $file->audience->value,
+                'is_visible_to_client' => $file->audience->isVisibleToClient(),
+                'name' => $file->originalName,
+                'type' => $file->type->value,
+                'type_label' => $file->type->label(),
+                'is_image' => $file->type->isImage(),
+                'byte_size' => $file->byteSize,
+                'uploaded_by_name' => $file->uploadedByName,
+                'is_from_client' => $file->isFromClient,
+                'uploaded_at' => $file->uploadedAt->format(DateTimeImmutable::ATOM),
+            ], $view->attachments),
             /*
              * Empty on the client's side. The tasks raised from a request are the agency's own plan, with its
              * assignees and its estimates, and showing them to a client is the same leak an internal note is.

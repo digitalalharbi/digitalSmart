@@ -42,6 +42,8 @@ const state = vi.hoisted(() => ({
   vocabulary: null as RequestVocabulary | null,
   triaged: null as Record<string, unknown> | null,
   answered: null as Record<string, unknown> | null,
+  attached: null as Record<string, unknown> | null,
+  attachFailsWith: null as Error | null,
   promised: null as Record<string, unknown> | null,
   raised: null as Record<string, unknown> | null,
   submitted: null as Record<string, unknown> | null,
@@ -61,6 +63,14 @@ vi.mock('./api', () => ({
 
     return Promise.resolve(state.request);
   },
+  attachToClientRequest: (input: Record<string, unknown>) => {
+    state.attached = input;
+
+    return state.attachFailsWith === null
+      ? Promise.resolve(state.request)
+      : Promise.reject(state.attachFailsWith);
+  },
+  attachmentUrl: (id: string) => `/api/client-request-attachments/${id}`,
   promiseClientRequest: (input: Record<string, unknown>) => {
     state.promised = input;
 
@@ -258,6 +268,34 @@ function request(overrides: Partial<ClientRequest> = {}): ClientRequest {
         assignee_name: 'Reem',
       },
     ],
+    attachments: [
+      {
+        id: 'file-1',
+        audience: 'internal',
+        is_visible_to_client: false,
+        name: 'competitor-rates.csv',
+        type: 'text/csv',
+        type_label: 'CSV',
+        is_image: false,
+        byte_size: 2048,
+        uploaded_by_name: 'Mohammed',
+        is_from_client: false,
+        uploaded_at: '2026-10-04T09:30:00+00:00',
+      },
+      {
+        id: 'file-2',
+        audience: 'client',
+        is_visible_to_client: true,
+        name: 'screenshot.png',
+        type: 'image/png',
+        type_label: 'Image',
+        is_image: true,
+        byte_size: 1_572_864,
+        uploaded_by_name: 'Reem',
+        is_from_client: true,
+        uploaded_at: '2026-10-04T10:30:00+00:00',
+      },
+    ],
     ...overrides,
   };
 }
@@ -273,6 +311,8 @@ beforeEach(() => {
   state.request = request();
   state.triaged = null;
   state.answered = null;
+  state.attached = null;
+  state.attachFailsWith = null;
   state.promised = null;
   state.raised = null;
   state.submitted = null;
@@ -508,6 +548,7 @@ describe('a request', function () {
       kind_label: 'A question',
       title: 'Why did the cost per purchase jump?',
       tasks: [],
+      attachments: [],
     });
     state.queue = queue({
       columns: [
@@ -537,6 +578,126 @@ describe('a request', function () {
       await screen.findByText(/A question needs an answer rather than a task/),
     ).toBeInTheDocument();
     expect(screen.queryByLabelText('Raise a task for this')).not.toBeInTheDocument();
+  });
+});
+
+describe('files on a request', function () {
+  it('marks every file with who can see it, and links it as a download', async () => {
+    await renderWithProviders(<RequestsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Pause the retargeting/ }));
+
+    const files = await screen.findByRole('list', { name: 'Files' });
+
+    /*
+     * The same badge a message carries, for a worse leak: an internal note is a sentence, and an internal
+     * attachment is a competitor's rate card. A list where the two look alike is a list somebody forwards.
+     */
+    expect(within(files).getByText('competitor-rates.csv')).toBeInTheDocument();
+    expect(within(files).getByText('Internal only')).toBeInTheDocument();
+
+    /* And it is a link, so the browser handles a response the server marks as an attachment. */
+    const link = within(files).getByRole('link', { name: 'screenshot.png' });
+    expect(link).toHaveAttribute('href', '/api/client-request-attachments/file-2');
+
+    /* The size in units a file manager would show, and the type the bytes reported. */
+    expect(within(files).getByText(/1\.5 MB/)).toBeInTheDocument();
+    expect(within(files).getByText(/Image/)).toBeInTheDocument();
+  });
+
+  it('will not upload until the agency has chosen who sees it', async () => {
+    await renderWithProviders(<RequestsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Pause the retargeting/ }));
+
+    const input = await screen.findByLabelText('Add a file');
+
+    /*
+     * No default audience, exactly as for a message — and here the consequence is worse. The control is disabled
+     * rather than defaulting to internal, because a default is how an internal screenshot reaches the client it
+     * is about.
+     */
+    expect(input).toBeDisabled();
+    expect(screen.getByText('Choose who sees it first.')).toBeInTheDocument();
+  });
+
+  it('sends the file with the audience that was chosen', async () => {
+    await renderWithProviders(<RequestsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Pause the retargeting/ }));
+    await userEvent.click(await screen.findByRole('button', { name: 'The client will see this' }));
+
+    const input = await screen.findByLabelText('Add a file');
+    const file = new File(['a,b\n1,2\n'], 'lines.csv', { type: 'text/csv' });
+
+    await userEvent.upload(input, file);
+
+    expect(state.attached).toMatchObject({ requestId: 'request-1', audience: 'client' });
+  });
+
+  it("shows the server's own refusal, which says what to send instead", async () => {
+    const { ApiError } = await import('@/shared/api/client');
+
+    state.attachFailsWith = new ApiError(
+      'That file is 7.2 MB and the limit is 5.0 MB. Send a smaller version, or a link to it.',
+      422,
+    );
+
+    await renderWithProviders(<RequestsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Pause the retargeting/ }));
+    await userEvent.click(await screen.findByRole('button', { name: 'The client will see this' }));
+
+    const input = await screen.findByLabelText('Add a file');
+    await userEvent.upload(input, new File(['x'], 'big.png', { type: 'image/png' }));
+
+    /*
+     * Beside the control rather than in the page's shared banner: every refusal here names the thing to do
+     * instead, and that sentence is useless a long way from the file picker.
+     */
+    expect(await screen.findByText(/Send a smaller version/)).toBeInTheDocument();
+  });
+
+  it('offers no upload on a settled request', async () => {
+    state.request = request({ state: 'declined', state_label: 'Declined' });
+
+    await renderWithProviders(<RequestsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Pause the retargeting/ }));
+
+    await screen.findByRole('list', { name: 'Files' });
+
+    // The thread is finished. Adding to it is how a second piece of work ends up with no record of being asked.
+    expect(screen.queryByLabelText('Add a file')).not.toBeInTheDocument();
+  });
+
+  it('offers a client the upload with no audience to choose', async () => {
+    permissions.current = ['client_requests.submit'];
+    state.queue = queue({ is_agency_view: false, can_triage: false });
+    state.request = request({
+      submitted_by_name: null,
+      owner_name: null,
+      tasks: [],
+      messages: [],
+      attachments: [],
+    });
+
+    await renderWithProviders(<RequestsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Pause the retargeting/ }));
+
+    const input = await screen.findByLabelText('Add a file');
+
+    /*
+     * Theirs always goes to the client audience — the server forces it, and a CHECK refuses anything else — so
+     * there is nothing here for them to get wrong.
+     */
+    expect(input).toBeEnabled();
+    expect(screen.queryByText('Choose who sees it first.')).not.toBeInTheDocument();
+
+    await userEvent.upload(input, new File(['x'], 'mine.png', { type: 'image/png' }));
+
+    expect(state.attached).toMatchObject({ audience: 'client' });
   });
 });
 

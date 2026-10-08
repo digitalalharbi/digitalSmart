@@ -59,6 +59,7 @@ use App\Application\Notifications\Contract\NotificationBroadcaster;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\Contract\RecipientResolver;
 use App\Application\Operations\Contract\ApprovalRepository;
+use App\Application\Operations\Contract\AttachmentStore;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Portal\Contract\PortalRepository;
@@ -111,6 +112,7 @@ use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
 use App\Infrastructure\Notifications\EloquentNotificationStore;
 use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
+use App\Infrastructure\Operations\LocalAttachmentStore;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAttributionReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
@@ -164,6 +166,7 @@ use App\Infrastructure\System\LaravelApplicationInfo;
 use App\Infrastructure\System\QueueHealthProbe;
 use App\Interface\Http\Resource\Reporting\ReportResource;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Auth;
@@ -321,6 +324,16 @@ final class AppServiceProvider extends ServiceProvider
         foreach (self::HEALTH_PROBES as $probe) {
             $this->app->tag($probe, HealthProbe::class);
         }
+
+        /*
+         * Attachments, on whichever disk is configured. The local private disk in development; a bucket in
+         * production, which is BLOCKED_EXTERNAL — no cloud account is attached to this repository.
+         */
+        $this->app->singleton(AttachmentStore::class, fn ($app): AttachmentStore => new LocalAttachmentStore(
+            $app->make(FilesystemFactory::class),
+            $app->make(IdentifierGenerator::class),
+            (string) config('digitalsmart.attachment_disk', 'local'),
+        ));
 
         $this->registerAssistant();
 

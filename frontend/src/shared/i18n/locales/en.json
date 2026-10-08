@@ -1587,7 +1587,12 @@
       "addToBoard": "Add to the board",
       "dates": "Dates on this request",
       "handling": "Who is handling it",
-      "messages": "Messages on this request"
+      "messages": "Messages on this request",
+      "files": "Files",
+      "noFiles": "No files on this thread.",
+      "addFile": "Add a file",
+      "addFileHint": "Images, PDFs, CSVs, spreadsheets, Word documents and plain text, up to 5 MB. An SVG has to be exported as a PNG first.",
+      "chooseAudienceFirst": "Choose who sees it first."
     },
     "composer": {
       "open": "Raise a request for a client",
