@@ -120,14 +120,14 @@ export function PortalRevenuePanel({ clientId }: { clientId: string }) {
               />
 
               <BreakdownTable
-                title={t('commerce.byChannel')}
+                title={t('commerce.breakdown.channel')}
                 rows={analytics.by_channel}
                 currency={summary.currency}
                 locale={locale}
               />
 
               <BreakdownTable
-                title={t('commerce.byProduct')}
+                title={t('commerce.breakdown.product')}
                 rows={analytics.by_product}
                 currency={summary.currency}
                 locale={locale}

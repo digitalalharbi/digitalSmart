@@ -4,6 +4,45 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The client portal was rendering a key path
+
+The contract sweep's third direction: every `t('…')` key the code asks for, checked against the translation
+files. Three had no entry anywhere.
+
+Two of them were on **`PortalRevenuePanel`** — the client portal's revenue panel, which is the one surface an
+agency's client reads. Its two breakdown tables were titled `commerce.byChannel` and `commerce.byProduct`, keys
+that were never written, so the page had been rendering those strings where it should have said "By channel" and
+"By product". The agency's own page uses `commerce.breakdown.*`, which exists; the portal had invented names for
+the same thing and nothing noticed.
+
+The third was `integrations.usedBy`, a plural that was never written, on the account binding panel.
+
+### Why nothing caught it
+
+A missing key is a silent failure: i18next does not throw and the build does not fail. It renders the key path,
+so the defect is visible only to somebody who opens that page in that state — and in this case that somebody was
+a client.
+
+### Added
+
+**`src/shared/i18n/keys.test.ts`**, checking both directions, because they fail differently. A `t()` call with no
+English entry shows a key path to a reader. An English key with no Arabic entry falls back to English, which is
+quieter and worse: the page still reads, in the wrong language, inside an interface that is otherwise right to
+left.
+
+Arabic's plural forms are why this cannot be a set comparison — CLDR gives Arabic six categories and English two,
+so `clients.count` exists as `_one`/`_other` in one file and six suffixes in the other while the call site names
+neither. Template-literal keys are deliberately out of scope: they cannot be resolved without knowing the union,
+and a check that guessed would either miss keys or invent them.
+
+The gate was **verified by breaking it**: putting `commerce.byChannel` back failed the test with the key and the
+file that used it, which is the failure a reader of that output needs.
+
+### Gates
+
+526 frontend tests, TypeScript strict clean, ESLint and Prettier clean, production build, portal end-to-end
+suite green. Backend untouched by this slice.
+
 ## Phase 15 addendum — the CRM read had no way to reach it
 
 The contract sweep had a frontend half: every route in `routes/api.php` checked for a caller in the SPA. Of 167,

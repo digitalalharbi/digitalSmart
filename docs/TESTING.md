@@ -212,6 +212,34 @@ right" come apart, so it tests the second thing:
 Fixture dates are relative and resolved against an injected clock, so the sandbox
 window follows today without the assertions drifting.
 
+## Copy, in both languages
+
+`src/shared/i18n/keys.test.ts` checks the translation files against the code that asks them for sentences. It
+exists because of what it found on its first run: **three keys with no entry at all**, two of them on the client
+portal's revenue panel — the one surface an agency's client reads — where the page had been rendering
+`commerce.byChannel` in place of "By channel".
+
+A missing key is a silent failure. i18next does not throw and the build does not fail: it renders the key path,
+so the defect is visible only to somebody who opens that page in that state. Nothing was looking.
+
+Two directions, and they fail differently:
+
+- **A `t('…')` call with no English entry** shows the key path to a reader. This is the one that was broken.
+- **An English key with no Arabic entry** falls back to English, which is quieter and worse: the page still reads,
+  in the wrong language, inside an interface that is otherwise right to left.
+
+**Arabic's plural forms are why this cannot be a set comparison.** CLDR gives Arabic six plural categories and
+English two, so `clients.count` legitimately exists as `_one` and `_other` in English and as six suffixes in
+Arabic — and the call site names none of them. The check treats a key as satisfied by any of its plural forms.
+
+**Template-literal keys are deliberately out of scope.** `t(`leads.stages.${stage}`)` cannot be resolved without
+knowing the union, and a check that guessed would either miss keys or invent them. Those paths are covered by the
+component tests that render every member of the union.
+
+The file reads the sources through Vite's own `import.meta.glob` rather than `node:fs`, because the app's
+TypeScript project does not include node's types — a test that imported them would be the only file under `src`
+that could touch the filesystem.
+
 ## Analytics and charts
 
 The analytics surfaces are tested at three levels, and each level is there because
