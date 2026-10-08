@@ -113,6 +113,31 @@ depends on the installing account's tier — the lower of the two is recorded. E
 `X-HubSpot-RateLimit-Remaining` and `X-HubSpot-RateLimit-Interval-Milliseconds`; a 429 carries **no** documented
 `Retry-After`, so a retry has to pace itself from the interval header rather than wait to be told.
 
+## The surface
+
+`POST /api/leads/crm-sync` had no caller in the application until the Lead Center gained one: the bridge was
+built, tested and unreachable, which is the same failure as a note nobody can read.
+
+The control sits on the Lead Center, where CRM-sourced leads appear, and it says **read** rather than sync. The
+CRM owns a deal's stage and nothing here writes one back, so a control offering to "sync" would imply traffic in
+both directions that does not exist.
+
+**The client is asked for, not inferred.** A HubSpot portal belongs to one company and a workspace has several
+clients, so the panel refuses to offer a read until a client is chosen — the filter at the top of the page is
+where that happens. Nothing guesses a client from a company name.
+
+**The read reports what it left alone**, beside what it recorded. A bridge reporting only the deals whose stage it
+could interpret would look like one that read almost nothing, when in fact declining to interpret is the
+behaviour it was built for.
+
+**The read says what kind of figures it got.** Every other sync in this product returns its source state and this
+one did not, so a reader was told "12 deals read" with nothing saying they came from fixtures. A count is as
+capable of being quoted to a client as a chart is, so `source` travels with the answer, into the audit entry as
+well — "was that real?" is asked months later — and a sandbox read is labelled on the page where it was run.
+
+**The panel is absent when no CRM is connected**, rather than present and empty. A panel on every workspace that
+has never connected one would be an advertisement, and the place to connect a provider is the integrations page.
+
 ## BLOCKED_EXTERNAL
 
 No HubSpot app exists for this repository. What is missing is exactly:

@@ -228,3 +228,24 @@ export type StageChange = {
   reason?: string;
   note?: string;
 };
+
+/**
+ * What a CRM read did, in its own figures.
+ *
+ * `left_alone` is not padding: a bridge that reported only the deals it understood would look like one that read
+ * almost nothing. A deal at a stage this product cannot read a meaning from is **read successfully** and left at
+ * whatever stage it had, and the count says how often that happened.
+ */
+export type CrmSyncResult = {
+  read: number;
+  recorded: number;
+  left_alone: number;
+  /**
+   * What kind of figures these are.
+   *
+   * A count is as capable of being quoted to a client as a chart is, so the read says whether it came from a
+   * provider or from fixtures. `sandbox` is never presented as production.
+   */
+  source: string;
+  source_label: string;
+};

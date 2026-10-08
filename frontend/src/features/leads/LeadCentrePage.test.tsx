@@ -23,6 +23,10 @@ vi.mock('@/shared/ui/chart/Chart', () => ({
   Chart: ({ ariaLabel }: { ariaLabel: string }) => <div data-testid="chart">{ariaLabel}</div>,
 }));
 
+vi.mock('@/features/integrations', () => ({
+  useProvidersQuery: () => ({ isPending: false, data: state.crmProviders }),
+}));
+
 vi.mock('@/features/clients', () => ({
   useClientsQuery: () => ({
     isPending: false,
@@ -49,6 +53,13 @@ const state = vi.hoisted(() => ({
   duplicates: [] as LeadDuplicate[],
   owners: [] as LeadOwnerCandidate[],
   history: [] as LeadHistoryEntry[],
+  crmRead: null as string | null,
+  crmProviders: [] as {
+    provider: string;
+    label: string;
+    category: string;
+    connection_id: string | null;
+  }[],
   assigned: null as { leadId: string; ownerId: string | null } | null,
   valued: null as { leadId: string; valueMinor: number | null; currency: string | null } | null,
   noted: null as { leadId: string; note: string } | null,
@@ -76,6 +87,17 @@ vi.mock('./api', () => ({
   fetchLeadDuplicates: () => Promise.resolve(state.duplicates),
   fetchLeadOwners: () => Promise.resolve(state.owners),
   fetchLeadHistory: () => Promise.resolve(state.history),
+  syncCrmDeals: (clientId: string) => {
+    state.crmRead = clientId;
+
+    return Promise.resolve({
+      read: 3,
+      recorded: 3,
+      left_alone: 1,
+      source: 'sandbox',
+      source_label: 'Sandbox',
+    });
+  },
   assignLead: (assignment: { leadId: string; ownerId: string | null }) => {
     state.assigned = assignment;
 
@@ -259,6 +281,8 @@ beforeEach(() => {
   state.assigned = null;
   state.valued = null;
   state.noted = null;
+  state.crmRead = null;
+  state.crmProviders = [];
 });
 
 describe('the Lead Center', () => {
@@ -776,5 +800,83 @@ describe('what has happened to a lead', () => {
 
     expect(await screen.findByText('Rang twice, no answer.')).toBeInTheDocument();
     expect(screen.queryByText('Working this lead')).not.toBeInTheDocument();
+  });
+});
+
+describe('reading a CRM', () => {
+  const hubspot = {
+    provider: 'hubspot',
+    label: 'HubSpot',
+    category: 'crm',
+    connection_id: 'connection-1',
+  };
+
+  /*
+   * Absent when there is no CRM connected. A panel on every workspace that has never connected one would be an
+   * advertisement, and the place to connect a provider is the integrations page.
+   */
+  it('says nothing when no CRM is connected', async () => {
+    await renderWithProviders(<LeadCentrePage />);
+
+    await screen.findByRole('heading', { level: 1 });
+
+    expect(screen.queryByText(/Deals in/)).not.toBeInTheDocument();
+  });
+
+  /*
+   * The binding, asked for rather than inferred. A CRM portal belongs to one company and a workspace has several
+   * clients, so nothing here guesses which client's deals those are.
+   */
+  it('asks for a client before offering to read anything', async () => {
+    state.crmProviders = [hubspot];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    expect(await screen.findByText('Deals in HubSpot')).toBeInTheDocument();
+    expect(screen.getByText(/Choose a client above first/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Read the deals' })).not.toBeInTheDocument();
+  });
+
+  it('reads for the chosen client, and reports what it left alone', async () => {
+    state.crmProviders = [hubspot];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Noon Retail' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Read the deals' }));
+
+    expect(state.crmRead).toBe('client-1');
+
+    /*
+     * `left_alone` beside `recorded`, because a bridge reporting only the deals it understood would look like one
+     * that read almost nothing — see `CrmStageMeaning`.
+     */
+    expect(await screen.findByText(/1 left at the stage the CRM owns/)).toBeInTheDocument();
+  });
+
+  /*
+   * A count is as quotable to a client as a chart is, so a sandbox read says so — from the server's own answer
+   * rather than guessed from the connection.
+   */
+  it('never lets a sandbox read pass as the client’s own pipeline', async () => {
+    state.crmProviders = [hubspot];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Noon Retail' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Read the deals' }));
+
+    expect(await screen.findByText(/came from sandbox fixtures/)).toBeInTheDocument();
+  });
+
+  it('does not offer the read to somebody who may not manage leads', async () => {
+    permissions.current = ['leads.view'];
+    state.crmProviders = [hubspot];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    await screen.findByRole('heading', { level: 1 });
+
+    expect(screen.queryByText(/Deals in/)).not.toBeInTheDocument();
   });
 });

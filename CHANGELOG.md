@@ -4,6 +4,42 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 15 addendum — the CRM read had no way to reach it
+
+The contract sweep had a frontend half: every route in `routes/api.php` checked for a caller in the SPA. Of 167,
+two had none. One is `POST /api/webhooks/stores/{provider}`, which providers call and the frontend must not. The
+other was `POST /api/leads/crm-sync` — the CRM bridge was built, tested, documented and **unreachable**, which is
+the same failure as a note nobody can read.
+
+### Added
+
+- **A read on the Lead Center**, where CRM-sourced leads appear. It says *read* rather than sync: the CRM owns a
+  deal's stage and nothing here writes one back — which is why `ChangeLeadStage` refuses a CRM-sourced lead — so a
+  control offering to "sync" would imply traffic in both directions that does not exist.
+- **The client is asked for, not inferred.** The panel refuses to offer a read until one is chosen, because a
+  HubSpot portal belongs to one company and a workspace has several clients. The filter at the top of the page is
+  where that happens, and nothing guesses a client from a company name.
+- **The provider comes from the registry**, not from a hard-coded name: the bridge names HubSpot today, and a page
+  that spelled that out would need editing for the second CRM.
+- **The panel is absent when no CRM is connected**, rather than present and empty. A panel on every workspace that
+  has never connected one would be an advertisement, and the place to connect a provider is the integrations page.
+
+### The honesty gap it exposed
+
+**The read did not say what kind of figures it got.** Every other sync in this product returns its source state
+and this one returned three counts with nothing else, so a reader was told "12 deals read" with no indication they
+came from fixtures. A count is as capable of being quoted to a client as a chart is.
+
+`source` and `source_label` now travel with the answer, into the audit entry as well — "was that real?" is asked
+months later — and the page shows the sandbox warning from the server's own answer rather than guessing it from
+the connection, because the providers list carries no sandbox flag and inventing one would have been a second
+source of truth.
+
+### Gates
+
+1 712 backend tests (6 199 assertions), 523 frontend tests, 372 Playwright tests, PHPStan level 8 clean, Pint
+clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
 ## A sweep of the contracts: a limit nobody honoured, and four dead methods
 
 The lead slice found its work by noticing three repository methods with no caller. That turned out to be worth

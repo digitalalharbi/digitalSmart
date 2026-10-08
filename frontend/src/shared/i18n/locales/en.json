@@ -1110,6 +1110,17 @@
       "byPerson": "by {{name}}",
       "emptyTitle": "Nothing recorded yet",
       "emptyBody": "Moves, notes and owner changes appear here as they happen."
+    },
+    "crm": {
+      "title": "Deals in {{source}}",
+      "subtitle": "A read, not a sync. {{source}} owns where a deal stands; this product reads it and never writes a stage back.",
+      "sandbox": "Those deals came from sandbox fixtures, not from the client’s own CRM. They must not be shown to a client as their pipeline.",
+      "chooseClient": "Choose a client above first. A CRM portal belongs to one company and a workspace has several clients, so nothing here can infer which deals are whose.",
+      "forClient": "Deals will be recorded against {{client}}.",
+      "read": "Read the deals",
+      "reading": "Reading…",
+      "result": "{{read}} read, {{recorded}} recorded, {{leftAlone}} left at the stage the CRM owns.",
+      "failed": "The read did not happen. Nothing was changed."
     }
   },
   "attribution": {

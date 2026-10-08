@@ -170,6 +170,29 @@ test.describe('lead centre', () => {
     await expect(page.getByText(note)).toBeVisible({ timeout: 20_000 });
   });
 
+  /*
+   * The CRM read, which until now had an endpoint and no way to reach it. Read-only here: running it would write
+   * leads into the database the other browser project's tests are reading.
+   */
+  test('offers a CRM read, and asks which client the deals belong to', async ({ page }) => {
+    await openLeads(page);
+
+    await expect(page.getByRole('heading', { level: 1, name: 'Lead Center' })).toBeVisible({
+      timeout: 30_000,
+    });
+
+    /* The demo connects HubSpot on sandbox credentials, so the panel is present and names it. */
+    const panel = page.getByText('Deals in HubSpot');
+    await expect(panel).toBeVisible();
+
+    /*
+     * No client chosen yet, so there is nothing to read: a CRM portal belongs to one company and a workspace has
+     * several clients, and nothing here infers which deals are whose.
+     */
+    await expect(page.getByText(/Choose a client above first/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Read the deals' })).toHaveCount(0);
+  });
+
   test('keeps the Lead Center away from a role without the permission', async ({ page }) => {
     await openLeads(page, ACCOUNTS.creative);
 

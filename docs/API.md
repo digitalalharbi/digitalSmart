@@ -1223,8 +1223,20 @@ that pulled a whole history would import deals closed years ago as fresh leads.
 The response is the sync's own figures:
 
 ```json
-{ "data": { "read": 5, "recorded": 5, "left_alone": 3 } }
+{
+  "data": {
+    "read": 5,
+    "recorded": 5,
+    "left_alone": 3,
+    "source": "sandbox",
+    "source_label": "Sandbox"
+  }
+}
 ```
+
+`source` is the same honesty vocabulary every other figure in this product carries. A count is as capable of
+being quoted to a client as a chart is, so a read against sandbox credentials says so — in the response, on the
+page where it was run, and in the audit entry, because "was that real?" is asked months later.
 
 `left_alone` is the count of deals whose stage this product **declined to interpret**, and it is published rather
 than hidden: a bridge reporting only the stages it understood would look like one that read almost nothing. A

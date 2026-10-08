@@ -1,5 +1,6 @@
 import { api } from '@/shared/api/client';
 import type {
+  CrmSyncResult,
   Journey,
   Lead,
   LeadAssignment,
@@ -115,6 +116,22 @@ export async function addLeadNote(note: LeadNote): Promise<Lead> {
 
 export async function fetchLeadHistory(leadId: string): Promise<LeadHistoryEntry[]> {
   const { data } = await api.get<{ data: LeadHistoryEntry[] }>(`/leads/${leadId}/history`);
+
+  return data.data;
+}
+
+/**
+ * Read a CRM's deals as leads.
+ *
+ * A **read**: the CRM owns a deal's stage and nothing here writes one back. The client is a parameter rather than
+ * something read from the CRM, and that is a limitation stated rather than hidden — a HubSpot portal is one
+ * company's CRM, so mapping its deals onto an agency's several clients needs a binding somebody made
+ * deliberately.
+ */
+export async function syncCrmDeals(clientId: string): Promise<CrmSyncResult> {
+  const { data } = await api.post<{ data: CrmSyncResult }>('/leads/crm-sync', {
+    client_id: clientId,
+  });
 
   return data.data;
 }

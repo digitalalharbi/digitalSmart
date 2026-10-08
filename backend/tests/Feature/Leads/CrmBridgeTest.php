@@ -70,6 +70,20 @@ function syncCrm(array $setup): array
 }
 
 describe('reading deals', function (): void {
+    /*
+     * A count is as capable of being quoted to a client as a chart is, and these figures come from fixtures. The
+     * read says so in its own answer rather than leaving the surface to guess from the connection — every other
+     * sync in this product returns its source state, and this one did not until the Lead Center gained a control
+     * for it.
+     */
+    it('says what kind of figures it read', function (): void {
+        $setup = crmScenario();
+        $result = syncCrm($setup);
+
+        expect($result['source'])->toBe('sandbox')
+            ->and($result['source_label'])->toBe('Sandbox');
+    });
+
     it('records a won deal as won, with its amount', function (): void {
         $setup = crmScenario();
         $result = syncCrm($setup);

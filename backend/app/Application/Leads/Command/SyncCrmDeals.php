@@ -14,6 +14,7 @@ use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
+use App\Domain\Advertising\MetricSource;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Commerce\OrderAttribution;
@@ -67,7 +68,7 @@ final readonly class SyncCrmDeals
     ) {}
 
     /**
-     * @return array{read: int, recorded: int, left_alone: int}
+     * @return array{read: int, recorded: int, left_alone: int, source: string, source_label: string}
      */
     public function __invoke(string $clientId, ?DateTimeImmutable $since = null): array
     {
@@ -83,6 +84,18 @@ final readonly class SyncCrmDeals
             ?? throw ResourceNotFound::of('CRM connection');
 
         $credentials = $connection->credentials();
+        /*
+         * What kind of figures these are, decided before any of them is read.
+         *
+         * Every other sync in this product returns its source state, and this one did not — so a reader was told
+         * "12 deals read" with nothing saying they came from fixtures. A sandbox figure presented without its
+         * label is the single thing this product's honesty rules exist to prevent, and a count is as capable of
+         * being quoted to a client as a chart is.
+         */
+        $source = $credentials->isSandbox(Provider::HubSpot->requiredCredentialKeys())
+            ? MetricSource::Sandbox
+            : MetricSource::Synced;
+
         $pipelines = $this->crm->pipelines($credentials);
 
         $from = $since ?? $this->clock->now()->modify('-'.self::FIRST_SYNC_DAYS.' days');
@@ -121,10 +134,18 @@ final readonly class SyncCrmDeals
                 'recorded' => $recorded,
                 /* Deals whose stage this product declined to interpret. See `CrmStageMeaning`. */
                 'left_at_their_stage' => $leftAlone,
+                /* In the trail for ever, because "was that real?" is asked months later. */
+                'source' => $source->value,
             ],
         ));
 
-        return ['read' => count($deals), 'recorded' => $recorded, 'left_alone' => $leftAlone];
+        return [
+            'read' => count($deals),
+            'recorded' => $recorded,
+            'left_alone' => $leftAlone,
+            'source' => $source->value,
+            'source_label' => $source->label(),
+        ];
     }
 
     /**

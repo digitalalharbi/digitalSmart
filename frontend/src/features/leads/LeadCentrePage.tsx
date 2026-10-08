@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useClientsQuery } from '@/features/clients';
+import { useProvidersQuery } from '@/features/integrations';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
@@ -12,6 +13,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import type { MetricValue } from '@/shared/metrics';
 import { BreakdownChart, type BreakdownRow } from './BreakdownChart';
 import { JourneyPanel } from './JourneyPanel';
+import { CrmReadPanel } from './CrmReadPanel';
 import { LeadHistoryPanel } from './LeadHistoryPanel';
 import { LeadWorkPanel } from './LeadWorkPanel';
 import { MergePanel } from './MergePanel';
@@ -30,6 +32,7 @@ import {
   useLeadsQuery,
   useMergeLeadsMutation,
   useSetLeadValueMutation,
+  useSyncCrmDealsMutation,
 } from './useLeads';
 import type { LeadFunnel, LeadStage } from './types';
 
@@ -73,6 +76,17 @@ export function LeadCentrePage() {
   const assign = useAssignLeadMutation();
   const value = useSetLeadValueMutation();
   const addNote = useAddLeadNoteMutation();
+  const crmRead = useSyncCrmDealsMutation();
+
+  /*
+   * The CRM this workspace has connected, if any. Read from the provider registry rather than hard-coded: the
+   * bridge names HubSpot today, and a page that spelled that out would have to be edited for the second one.
+   */
+  const providers = useProvidersQuery();
+  const crm =
+    providers.data?.find(
+      (provider) => provider.category === 'crm' && provider.connection_id !== null,
+    ) ?? null;
 
   /*
    * One sentence for three mutations, because a reader does not care which call failed — they care that nothing
@@ -294,6 +308,28 @@ export function LeadCentrePage() {
           {selectedLead === null ? null : (
             <LeadHistoryPanel entries={history.data} isLoading={history.isPending} />
           )}
+
+          {/*
+            A read, offered where CRM-sourced leads appear. The client comes from the filter at the top of the
+            page, because a CRM portal belongs to one company and nothing here infers which client's deals those
+            are — see `SyncCrmDeals`.
+          */}
+          <CrmReadPanel
+            crmLabel={crm?.label ?? null}
+            clientId={clientId}
+            clientName={clients.data?.data.find((client) => client.id === clientId)?.name ?? null}
+            onRead={() => (clientId === null ? undefined : crmRead.mutate(clientId))}
+            isReading={crmRead.isPending}
+            result={crmRead.data ?? null}
+            error={
+              crmRead.error instanceof ApiError && crmRead.error.message !== ''
+                ? crmRead.error.message
+                : crmRead.isError
+                  ? t('leads.crm.failed')
+                  : null
+            }
+            canRead={canManage}
+          />
 
           <MergePanel
             lead={selected}

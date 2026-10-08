@@ -12,6 +12,7 @@ import {
   fetchLeads,
   mergeLeads,
   setLeadValue,
+  syncCrmDeals,
 } from './api';
 import type { LeadListFilter, LeadScope } from './types';
 
@@ -169,5 +170,18 @@ export function useAddLeadNoteMutation() {
      */
     onSuccess: (lead) =>
       void client.invalidateQueries({ queryKey: queryKeys.leads.history(lead.id) }),
+  });
+}
+
+export function useSyncCrmDealsMutation() {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: syncCrmDeals,
+    /*
+     * Everything. A read can create leads, move the ones the CRM owns and change the won-value total, so there is
+     * no part of this page that is still correct afterwards.
+     */
+    onSuccess: () => void client.invalidateQueries({ queryKey: queryKeys.leads.all() }),
   });
 }
