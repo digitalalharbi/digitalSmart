@@ -14,6 +14,7 @@ import { PlaceholderPage } from '@/features/placeholder';
 import {
   AnalyticsPage,
   ApprovalsPage,
+  AssistantPage,
   AttributionPage,
   CreativeHubPage,
   BudgetCalculatorPage,
@@ -58,6 +59,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/client-requests': deferred(<RequestsPage />),
   '/reports': deferred(<ReportsPage />),
   '/client-portal': deferred(<PortalPage />),
+  '/ai-assistant': deferred(<AssistantPage />),
   /*
    * Not deferred. The bell already loads this feature on every screen, so a second chunk for the page would be
    * a download that buys nothing.

@@ -20,6 +20,7 @@ use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
 use App\Interface\Http\Controller\Integration\ExternalAccountController;
 use App\Interface\Http\Controller\Integration\ProjectBindingController;
 use App\Interface\Http\Controller\Integration\ProviderController;
+use App\Interface\Http\Controller\Intelligence\AssistantController;
 use App\Interface\Http\Controller\Leads\LeadController;
 use App\Interface\Http\Controller\Measurement\MeasurementController;
 use App\Interface\Http\Controller\Notifications\NotificationController;
@@ -500,6 +501,23 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('client')->whereUuid('report')->name('portal.report');
     Route::get('portal/{client}/tracking', [ClientPortalController::class, 'tracking'])
         ->whereUuid('client')->name('portal.tracking');
+
+    // ------------------------------------------------------------- Assistant ---
+    /*
+     * Reads only. Nothing here writes a report, a budget or a byte to an advertising platform: the assistant
+     * proposes and a person decides, in the module that owns the decision.
+     *
+     * Every answer carries its evidence, who wrote its prose, and the analysers a reader's permissions kept out
+     * of it — see `AssistantResource`.
+     */
+    Route::get('assistant/vocabulary', [AssistantController::class, 'vocabulary'])
+        ->name('assistant.vocabulary');
+    Route::get('assistant/analyse', [AssistantController::class, 'analyse'])->name('assistant.analyse');
+    Route::post('assistant/ask', [AssistantController::class, 'ask'])->name('assistant.ask');
+    /* Proposes a report definition and saves nothing: the reporting module is where a person decides. */
+    Route::get('assistant/report', [AssistantController::class, 'report'])->name('assistant.report');
+    Route::get('assistant/findings/{code}', [AssistantController::class, 'investigate'])
+        ->where('code', '[a-z0-9_.-]+')->name('assistant.investigate');
 
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])

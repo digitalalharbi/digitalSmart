@@ -4,6 +4,84 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 23 — the assistant
+
+What the figures say, with the figures.
+
+### The argument
+
+One sentence holds this module up: **the product computes every number, and the model only writes the prose.**
+
+The alternative is the obvious design — hand a question to a language model, let it decide which figures to fetch
+and do the arithmetic. That is an assistant whose denominators were chosen by a language model, and a wrong
+denominator is the one error in analytics nobody catches, because the answer looks fine.
+
+### Added
+
+- `app/Domain/Intelligence/` — `AssistantMode` (four, with `DeferredMode` carrying the fifth and its reason),
+  `Finding`, `Evidence`, `FindingSeverity`, `Confidence`, `QuestionIntent`.
+- **`NarrativeGuard`, which makes the claim checkable rather than aspirational.** Every number in a model's prose
+  is matched against the figures the product computed; anything unmatched means the model produced a figure, and
+  the narrative is **discarded**. The tolerance is the precision the prose chose — two decimals buys half of the
+  last place — because a relative tolerance would have let "1,250,001" pass as a restatement of "1,250,000", and
+  years are not exempted because that is the hole "up 2024%" walks through.
+- **The permitted list is every figure in the evidence and every number in the brief's own text**, read by the
+  same scanner the guard uses. The rule is therefore: the model may restate the brief and nothing more.
+- **The product's own narrative is held to the same standard**, and a test asserts it. A guard holding a model to
+  a rule the product does not keep would be a guard worth nothing.
+- **The product's narrative is composed first, unconditionally.** A reader never waits on a third party to find
+  out what their own figures did, so a missing, slow or overloaded model costs them a paragraph rather than a
+  request — and the response says who wrote what they got.
+- **A refused narrative is published, not swallowed.** `model_rejected` with its reason, on the response and on
+  the page: a guard nobody can see working is a guard nobody will maintain.
+- **Five analysers, each a pure function over one fetched context** — no database, no clock, no HTTP. That is what
+  lets "a doubling of cost per click on nine clicks is not a finding" be a rule somebody reads and tests, and it
+  means two analysers cannot disagree about what the period's spend was.
+- **Measurement first, and the period's own shape always.** A conversion figure that cannot be trusted outranks a
+  conversion figure that moved; and without a finding that always speaks, a quiet period produces an empty page —
+  which says "nothing is wrong" when it means "nothing matched".
+- **The refusals.** No rate below thirty events, emitted as a finding rather than as silence; no change from a
+  base of zero; no total of zero where there is no data; no recommendation on indicative evidence; and no verdict
+  on where budget should go, because a search click and a feed click are not the same click and this product can
+  see the price and not the plan.
+- **Analysers a reader may not run are named.** An answer that quietly differed by role would leave the reader
+  with fewer permissions unaware a question had gone unasked.
+- **A closed list of six question intents, matched by keyword, Arabic beside English.** `Ask` runs the full
+  analysis and then *selects* from it, so a question cannot choose its own denominator — and a question matching
+  nothing is refused with the list, because an assistant that guesses will eventually answer a different question
+  convincingly and nobody will notice.
+- **The Messages API adapter**, built against the published contract and BLOCKED_EXTERNAL on a key this repository
+  cannot hold: `x-api-key` and `anthropic-version: 2023-06-01`, no `temperature` (deprecated after Claude Opus
+  4.6) and no `thinking` (the accepted settings differ across the models this could run against; adaptive is the
+  default on all of them), one retry on 429/500/504/529 and none on an answer. The whole contract is tested
+  against documented-shape fixtures.
+- **The brief carries no client identity.** Sending a third party "Alhambra's cost per click doubled" discloses a
+  commercial fact about a named company; sending "the account's cost per click doubled" discloses a number.
+- **`Report` proposes and saves nothing**, and validates the definition through the reporting module's own
+  `assertValid()` first — a proposal that module would refuse costs a reader the time to find out. Proposed as
+  internal, always: a client-safe report is one somebody has read as the client would.
+- **`Plan` is published as deferred, with its reason.** A media plan needs the objective, the budget and the
+  flight dates somebody agreed with the client, and drafting one from performance alone would produce a plan
+  shaped entirely by what was easiest to measure last month. A mode that appeared in the interface and produced
+  nothing would be a placeholder wearing a feature's clothes.
+- `docs/INTELLIGENCE.md`.
+
+### Changed
+
+- **`ClientVisibility` — one implementation of "may this reader see this client".** Reporting, the client portal
+  and the assistant all ask it, and three nearly-identical SQL expressions of one rule would eventually be three
+  rules with the loosest one deciding. The assistant checks it **before** reading the client's name, so a reader
+  cannot learn that a client exists by asking about one they are not assigned to.
+- **`TrackingHealthComposer` is now shared by the assistant too**, under its own authorization. The tracking
+  finding and the Tracking Center give one diagnosis of one site.
+- The analysers read `MetricSet`'s own source state rather than a per-figure one. The DTO carries one state for
+  everything in it precisely so a reader gets one badge rather than seven, and reaching past that was a second
+  answer to a question already answered.
+- The navigation's assistant entry now requires `analytics.view`. An assistant that answered questions a reader
+  may not ask directly would be a route around every other gate in this product.
+- The end-to-end placeholder assertion moved to `/presentations` and Phase 24, which is the drift it exists to
+  catch.
+
 ## Phase 22 — the client portal
 
 What each client can read, who decided it, and when.

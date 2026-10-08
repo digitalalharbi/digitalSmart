@@ -70,6 +70,12 @@ every change filed as a security event. Who counts as a client is `portal.read`,
 project assignment says what somebody works on and not who they work for — a creative is assigned to a client's
 project and is plainly not their employee. See `docs/PORTAL.md`.
 
+**Why no client identity is sent to a language model.** The assistant's brief carries findings, figures and each
+finding's subject — the account, a platform, measurement — and no client name, project or campaign. Sending a third
+party "Alhambra's cost per click doubled" discloses a commercial fact about a named company; sending "the account's
+cost per click doubled" discloses a number. The model key itself is BLOCKED_EXTERNAL: none is held here, and the
+assistant works without one because the product computes every figure. See `docs/INTELLIGENCE.md`.
+
 **Why authorization runs before validation.** An endpoint that validates first tells an unauthorised caller which
 parameter they left out, and a 422 naming a parameter is a statement that the endpoint exists and would answer.
 Two revenue reads had that ordering wrong and were corrected in Phase 22.

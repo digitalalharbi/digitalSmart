@@ -193,6 +193,11 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'Sparkles',
     section: 'intelligence',
     phase: 'Phase 23',
+    /*
+     * The same permission the analytics surface uses. An assistant that answered questions a reader may not ask
+     * directly would be a route around every other gate in this product.
+     */
+    permission: 'analytics.view',
   },
   {
     path: '/presentations',

@@ -21,8 +21,9 @@ Center; conversion timelines; attribution with coverage on every figure; creativ
 operations with recorded platform specifications; an operations board; an approvals engine
 that records whether an authorised change was ever actually made; notifications with optional
 realtime; a client intake queue clients can write to; reports that a client can read
-through an expiring link without an account; and a client portal whose every surface is a
-recorded, revocable decision about one client. In English and
+through an expiring link without an account; a client portal whose every surface is a
+recorded, revocable decision about one client; and an assistant that computes every figure
+itself and refuses a model's prose that states one it did not. In English and
 Arabic, light and dark, desktop and mobile.
 
 **Every provider's live handshake is `BLOCKED_EXTERNAL`** on an authorization this
@@ -34,9 +35,9 @@ provider.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 1 451 passed — architecture, unit, feature          |
-| Frontend tests (Vitest)   | 387 passed                                          |
-| End-to-end (Playwright)   | 296 passed — Chromium + mobile Safari, signing in as real roles |
+| Backend tests (Pest)      | 1 501 passed — architecture, unit, feature          |
+| Frontend tests (Vitest)   | 401 passed                                          |
+| End-to-end (Playwright)   | 318 passed — Chromium + mobile Safari, signing in as real roles |
 | Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
 | Style                     | Pint, ESLint and Prettier, clean                    |
 
@@ -93,6 +94,7 @@ make e2e        # Playwright (stack must be running)
 | `docs/OPERATIONS.md`     | The work board: undated work, and when overdue means lateness |
 | `docs/REPORTING.md`      | Reports: computed comparability, snapshots, and a link as a credential |
 | `docs/PORTAL.md`         | The client portal: three closed lists, and who counts as a client |
+| `docs/INTELLIGENCE.md`   | The assistant: the product computes, the model writes, the guard checks |
 | `docs/DATA_VISUALISATION.md` | The measured chart palette, its gates, and the mark rules |
 | `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |
 | `docs/SECURITY.md`       | Controls, threat notes, secret handling                 |

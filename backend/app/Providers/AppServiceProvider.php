@@ -16,6 +16,7 @@ use App\Application\Budget\Contract\BenchmarkReadModel;
 use App\Application\Budget\Contract\BudgetRepository;
 use App\Application\Budget\Contract\BudgetSpendReadModel;
 use App\Application\Client\Contract\ClientReadModel;
+use App\Application\Client\Contract\ClientVisibility;
 use App\Application\Commerce\Contract\CommerceStore;
 use App\Application\Commerce\Contract\CommerceSyncAdapterRegistry as CommerceSyncAdapterRegistryContract;
 use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
@@ -33,6 +34,17 @@ use App\Application\Identity\Contract\IdentityReadModel;
 use App\Application\Integration\Contract\CredentialCipher;
 use App\Application\Integration\Contract\IntegrationReadModel;
 use App\Application\Integration\Contract\ProviderAdapterRegistry as ProviderAdapterRegistryContract;
+use App\Application\Intelligence\Analyser\DeliveryStoppedAnalyser;
+use App\Application\Intelligence\Analyser\EfficiencyDriftAnalyser;
+use App\Application\Intelligence\Analyser\PeriodShapeAnalyser;
+use App\Application\Intelligence\Analyser\SpendConcentrationAnalyser;
+use App\Application\Intelligence\Analyser\TrackingBlindSpotAnalyser;
+use App\Application\Intelligence\Contract\Analyser;
+use App\Application\Intelligence\Contract\LanguageModel;
+use App\Application\Intelligence\Query\Analyse;
+use App\Application\Intelligence\Service\AnalysisAssembler;
+use App\Application\Intelligence\Service\FigureScanner;
+use App\Application\Intelligence\Service\Narrator;
 use App\Application\Journeys\Contract\JourneyReadModel;
 use App\Application\Leads\Contract\LeadReadModel;
 use App\Application\Leads\Contract\LeadRepository;
@@ -86,6 +98,8 @@ use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
 use App\Infrastructure\Integration\LaravelCredentialCipher;
 use App\Infrastructure\Integration\ProviderAdapterRegistry;
+use App\Infrastructure\Intelligence\AnthropicLanguageModel;
+use App\Infrastructure\Intelligence\NoLanguageModel;
 use App\Infrastructure\Measurement\Adapter\GoogleTagManagerReadAdapter;
 use App\Infrastructure\Measurement\MeasurementSyncAdapterRegistry;
 use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
@@ -98,6 +112,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBenchmarkReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientVisibility;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentJourneyReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentLeadReadModel;
@@ -141,6 +156,7 @@ use App\Infrastructure\System\QueueHealthProbe;
 use App\Interface\Http\Resource\Reporting\ReportResource;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -244,6 +260,7 @@ final class AppServiceProvider extends ServiceProvider
         SnapshotSerialiser::class => ReportResource::class,
 
         // Client portal (Phase 22)
+        ClientVisibility::class => EloquentClientVisibility::class,
         PortalRepository::class => EloquentPortalRepository::class,
         NotificationStore::class => EloquentNotificationStore::class,
         RecipientResolver::class => PermissionAwareRecipientResolver::class,
@@ -276,6 +293,8 @@ final class AppServiceProvider extends ServiceProvider
         foreach (self::HEALTH_PROBES as $probe) {
             $this->app->tag($probe, HealthProbe::class);
         }
+
+        $this->registerAssistant();
 
         $this->app->singleton(GetSystemHealth::class, fn ($app): GetSystemHealth => new GetSystemHealth(
             $app->make(ApplicationInfo::class),
@@ -322,6 +341,58 @@ final class AppServiceProvider extends ServiceProvider
      * One actor context per request, shared by the binder, the guard and every
      * use case, so permissions are resolved once rather than per check.
      */
+    /**
+     * The assistant's analysers, and its language model.
+     *
+     * **The analysers are tagged and ordered here**, and the order is the order a reader sees. Measurement first,
+     * because a conversion figure that cannot be trusted outranks a conversion figure that moved; then what
+     * stopped, then what it cost, then where the money went, and the period's own shape last — the one finding
+     * that is always present, so that an empty list cannot be mistaken for a clean bill of health.
+     *
+     * **The model is bound by whether a key exists.** With none — which is every environment in this repository,
+     * because a model key is a production secret it cannot hold — `NoLanguageModel` is bound and the assistant
+     * composes its own prose. The decision is made once, here, rather than by each caller checking a config value.
+     */
+    private function registerAssistant(): void
+    {
+        foreach ([
+            TrackingBlindSpotAnalyser::class,
+            DeliveryStoppedAnalyser::class,
+            EfficiencyDriftAnalyser::class,
+            SpendConcentrationAnalyser::class,
+            PeriodShapeAnalyser::class,
+        ] as $analyser) {
+            $this->app->tag($analyser, Analyser::class);
+        }
+
+        $this->app->bind(Analyse::class, fn ($app): Analyse => new Analyse(
+            $app->tagged(Analyser::class),
+            $app->make(AnalysisAssembler::class),
+            $app->make(Narrator::class),
+            $app->make(FigureScanner::class),
+            $app->make(AuthorizationGuard::class),
+        ));
+
+        $this->app->singleton(LanguageModel::class, function ($app): LanguageModel {
+            /** @var array<string, mixed> $settings */
+            $settings = (array) config('digitalsmart.intelligence', []);
+            $key = is_string($settings['api_key'] ?? null) ? trim($settings['api_key']) : '';
+
+            if ($key === '') {
+                return new NoLanguageModel;
+            }
+
+            return new AnthropicLanguageModel(
+                $app->make(HttpFactory::class),
+                $key,
+                is_string($settings['model'] ?? null) ? $settings['model'] : 'claude-sonnet-5-5',
+                is_int($settings['max_tokens'] ?? null) ? $settings['max_tokens'] : 1024,
+                is_int($settings['timeout'] ?? null) ? $settings['timeout'] : 20,
+                is_string($settings['base_url'] ?? null) ? $settings['base_url'] : 'https://api.anthropic.com',
+            );
+        });
+    }
+
     private function registerActorContext(): void
     {
         $this->app->scoped(RequestActorContext::class);

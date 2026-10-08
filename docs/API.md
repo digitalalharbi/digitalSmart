@@ -261,6 +261,25 @@ works.
 
 Campaign and metrics endpoints arrive in Phase 3.
 
+## Assistant
+
+`GET /api/assistant/analyse`, `POST /api/assistant/ask`, `GET /api/assistant/findings/{code}` and
+`GET /api/assistant/report`. All reads: nothing here writes a report, a budget or a byte to an advertising
+platform.
+
+`client_id` is **required**, and a client the caller cannot see answers 404 rather than 403 — visibility is checked
+before the client's name is read, so a reader cannot learn that a client exists by asking about one they are not
+assigned to.
+
+Every answer carries `narrative.written_by` (`product` or `model`), `narrative.model_rejected` with its reason,
+`evidence` on every finding, and `skipped` — the analysers the caller's permissions kept out of the answer, named
+rather than silently dropped.
+
+`POST` for a question rather than `GET`: a question is content, and a client's question in a URL ends up in every
+access log the request passes through.
+
+See `docs/INTELLIGENCE.md`.
+
 ## Client portal
 
 Two sets of routes, and they are deliberately not one. `/api/portals*` is the agency's control over what a client

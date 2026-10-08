@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Eloquent\Repository;
 
+use App\Application\Client\Contract\ClientVisibility;
 use App\Application\Portal\Contract\PortalRepository;
 use App\Application\Portal\DTO\ModuleExposure;
 use App\Application\Portal\DTO\PortalSummary;
@@ -34,7 +35,10 @@ use Illuminate\Support\Facades\DB;
  */
 final readonly class EloquentPortalRepository implements PortalRepository
 {
-    public function __construct(private IdentifierGenerator $identifiers) {}
+    public function __construct(
+        private IdentifierGenerator $identifiers,
+        private ClientVisibility $clients,
+    ) {}
 
     /** @return list<PortalSummary> */
     public function summaries(string $workspaceId, ?array $visibleProjectIds): array
@@ -263,33 +267,11 @@ final readonly class EloquentPortalRepository implements PortalRepository
     /** @return array<string, string> */
     public function clientsVisibleTo(string $workspaceId, ?array $visibleProjectIds): array
     {
-        if ($visibleProjectIds === []) {
-            return [];
-        }
-
-        $builder = DB::table('clients as c')
-            ->where('c.workspace_id', $workspaceId)
-            ->orderBy('c.name');
-
-        if ($visibleProjectIds !== null) {
-            $builder->whereIn('c.id', function (Builder $sub) use ($workspaceId, $visibleProjectIds): void {
-                $sub->select('client_id')
-                    ->from('projects')
-                    ->where('workspace_id', $workspaceId)
-                    ->whereIn('id', $visibleProjectIds);
-            });
-        }
-
-        $clients = [];
-
-        foreach ($builder->get(['c.id', 'c.name']) as $row) {
-            /** @var array<string, mixed> $record */
-            $record = (array) $row;
-
-            $clients[(string) ($record['id'] ?? '')] = (string) ($record['name'] ?? '');
-        }
-
-        return $clients;
+        /*
+         * Delegated. "May this reader see this client" is one question several modules ask, and three SQL
+         * expressions of it would eventually be three rules with the loosest one deciding.
+         */
+        return $this->clients->visible($workspaceId, $visibleProjectIds);
     }
 
     /** @return array<string, PortalState> */

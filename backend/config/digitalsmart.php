@@ -50,4 +50,34 @@ return [
         'shared_reports' => (int) env('RATE_LIMIT_SHARED_REPORTS', 20),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | The assistant's language model
+    |--------------------------------------------------------------------------
+    |
+    | BLOCKED_EXTERNAL on an API key, which is a production secret this
+    | repository cannot hold. With no key the assistant still works: every
+    | finding and every figure is computed by the product, and the narrative is
+    | composed from them without a model. The key buys better prose and nothing
+    | else, which is deliberate — a language model must not be a dependency of
+    | reading your own figures.
+    |
+    | `max_tokens` is small on purpose. The task is to restate a brief in a few
+    | paragraphs, and a generous ceiling would only pay for a model that had
+    | decided to write an essay.
+    |
+    */
+
+    'intelligence' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-5-5'),
+        'max_tokens' => (int) env('ANTHROPIC_MAX_TOKENS', 1024),
+        /*
+         * Short. The findings are already on screen by the time this is called in anger, so a model that takes
+         * longer than this has already cost the reader more than its paragraph is worth.
+         */
+        'timeout' => (int) env('ANTHROPIC_TIMEOUT', 20),
+    ],
+
 ];

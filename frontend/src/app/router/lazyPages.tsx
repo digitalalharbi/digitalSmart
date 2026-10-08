@@ -96,3 +96,11 @@ export const PortalPage = lazy(async () => ({
 export const MyPortalPage = lazy(async () => ({
   default: (await import('@/features/portal/MyPortalPage')).MyPortalPage,
 }));
+
+/*
+ * The assistant. Split because it pulls the finding and evidence rendering with it, and because an agency member
+ * who never opens it should not pay for it on every other screen.
+ */
+export const AssistantPage = lazy(async () => ({
+  default: (await import('@/features/assistant/AssistantPage')).AssistantPage,
+}));

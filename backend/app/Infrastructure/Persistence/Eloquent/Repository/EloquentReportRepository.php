@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Eloquent\Repository;
 
 use App\Application\Analytics\DTO\AnalyticsFilters;
+use App\Application\Client\Contract\ClientVisibility;
 use App\Application\Reporting\Contract\ReportRepository;
 use App\Application\Reporting\DTO\ReportDefinition;
 use App\Application\Reporting\DTO\ReportSummary;
@@ -40,7 +41,10 @@ use Illuminate\Support\Facades\DB;
  */
 final readonly class EloquentReportRepository implements ReportRepository
 {
-    public function __construct(private IdentifierGenerator $identifiers) {}
+    public function __construct(
+        private IdentifierGenerator $identifiers,
+        private ClientVisibility $clients,
+    ) {}
 
     public function save(string $workspaceId, ReportDefinition $definition, ?string $actorId): SavedReport
     {
@@ -130,29 +134,13 @@ final readonly class EloquentReportRepository implements ReportRepository
 
     public function isClientVisible(string $workspaceId, ?array $visibleProjectIds, string $clientId): bool
     {
-        $exists = DB::table('clients')
-            ->where('workspace_id', $workspaceId)
-            ->where('id', $clientId)
-            ->exists();
-
-        if (! $exists) {
-            return false;
-        }
-
-        if ($visibleProjectIds === null) {
-            return true;
-        }
-
-        if ($visibleProjectIds === []) {
-            return false;
-        }
-
-        // The same rule `scope()` applies, in one place so the two cannot drift.
-        return DB::table('projects')
-            ->where('workspace_id', $workspaceId)
-            ->where('client_id', $clientId)
-            ->whereIn('id', $visibleProjectIds)
-            ->exists();
+        /*
+         * Delegated to the one implementation of the rule, which reporting, the client portal and the assistant
+         * all ask. `scope()` below still expresses it as a join, because a list query needs it in SQL rather than
+         * as a boolean — but the boolean itself has one home now, and three nearly-identical versions of it would
+         * eventually be three rules with the loosest one deciding.
+         */
+        return $this->clients->isVisible($workspaceId, $visibleProjectIds, $clientId);
     }
 
     public function list(string $workspaceId, ?array $visibleProjectIds, ?string $clientId, int $limit): array

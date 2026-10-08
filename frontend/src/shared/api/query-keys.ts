@@ -183,6 +183,20 @@ export const queryKeys = {
       ['portal', 'mine', clientId, 'report', reportId] as const,
     tracking: (clientId: string) => ['portal', 'mine', clientId, 'tracking'] as const,
   },
+  assistant: {
+    all: () => ['assistant'] as const,
+    vocabulary: () => ['assistant', 'vocabulary'] as const,
+    /*
+     * Keyed by the client and the period, because those are the only two inputs: the analysers and their
+     * thresholds are fixed, so the same client over the same days is the same answer.
+     */
+    analysis: (clientId: string, days: number) =>
+      ['assistant', 'analysis', clientId, days] as const,
+    finding: (clientId: string, days: number, code: string) =>
+      ['assistant', 'finding', clientId, days, code] as const,
+    proposal: (clientId: string, days: number) =>
+      ['assistant', 'proposal', clientId, days] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,

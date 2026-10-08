@@ -1775,5 +1775,81 @@
       "noSourcesTitle": "Measurement is not connected yet",
       "noSourcesBody": "Nothing on your site is reporting to us, so there is nothing to check. Your account manager can set this up."
     }
+  },
+  "assistant": {
+    "title": "Assistant",
+    "subtitle": "What the figures say, with the figures. Every number here was computed by the product, not written by a model.",
+    "loadFailed": "Could not run the analysis. Try again in a moment.",
+    "denied": {
+      "title": "The assistant is not part of your access",
+      "body": "It reads a client's performance, so it needs the same permission the analytics surface does."
+    },
+    "client": "Client",
+    "pickClient": {
+      "title": "Pick a client",
+      "body": "The assistant answers about one client at a time: a cost per click averaged over unrelated accounts is a number with no owner."
+    },
+    "period": "Period",
+    "days": "{{count}} days",
+    "run": "Analyse the period",
+    "modes": {
+      "ask": "Ask",
+      "analyse": "Analyse",
+      "investigate": "Investigate",
+      "report": "Report"
+    },
+    "answer": {
+      "period": "{{from}} – {{until}} ({{days}} days)",
+      "comparedWith": "Compared with {{from}} – {{until}}, the period immediately before.",
+      "needsAttention": "{{count}} needs a decision",
+      "needsAttention_other": "{{count}} need a decision",
+      "nothingUrgent": "Nothing needs a decision",
+      "unanswered": "{{count}} question could not be answered from this period",
+      "unanswered_other": "{{count}} questions could not be answered from this period",
+      "skipped": "Not looked at, because your permissions do not cover it: {{codes}}.",
+      "emptyTitle": "Nothing was found",
+      "emptyBody": "That is not the same as nothing having happened: it means no analyser matched. The figures are on the analytics surface."
+    },
+    "narrative": {
+      "byProduct": "Written by digitalSmart from the findings below.",
+      "byModel": "Written by {{model}} from the findings below. Every figure in it was checked against the evidence.",
+      "rejected": "A model answered and its answer was discarded: {{reason}} The text below is the product's own.",
+      "rejectedTitle": "The model's answer was refused"
+    },
+    "finding": {
+      "evidence": "The figures behind this",
+      "recommendation": "Worth considering",
+      "noRecommendation": "No recommendation: the evidence is not firm enough to act on alone.",
+      "confidence": "Confidence: {{level}}",
+      "investigate": "Break this down by platform",
+      "was": "was {{value}}",
+      "unavailable": "not available",
+      "readFrom": "from {{surface}}"
+    },
+    "ask": {
+      "label": "Ask about this client",
+      "placeholder": "How much did we spend?",
+      "submit": "Ask",
+      "understands": "Questions it understands",
+      "refused": "Not understood",
+      "intent": "Taken as: {{label}}"
+    },
+    "report": {
+      "title": "A report proposed from these findings",
+      "body": "Nothing has been saved. Open it in Reports to decide for yourself.",
+      "audience": "Proposed as internal. A client-safe report is one somebody has read as the client would.",
+      "sections": "Sections",
+      "open": "Open in Reports"
+    },
+    "deferred": {
+      "title": "Not built yet",
+      "body": "Published rather than offered as a tab that produces nothing."
+    },
+    "honesty": {
+      "title": "What this does and does not do",
+      "computed": "Every figure is computed by the product from the same analytics the rest of this application reads. A language model, when one is configured, writes the prose and is refused if it states a number the evidence does not contain.",
+      "floor": "No rate is quoted from fewer than {{floor}} events. Below that, the answer is that there was not enough delivery to say.",
+      "enacts": "Nothing here changes anything. No budget, no campaign, no report is written by the assistant: it proposes, and a person decides in the module that owns the decision."
+    }
   }
 }

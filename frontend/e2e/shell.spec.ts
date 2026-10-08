@@ -29,22 +29,20 @@ test.describe('application shell', () => {
 
   test('navigates to a surface that a later phase delivers', async ({ page }) => {
     /*
-     * The AI assistant is still a placeholder. Analytics used to be the example here and stopped
-     * being one in Phase 4; reports stopped being one in Phase 21 — exactly the drift this
-     * assertion is meant to catch, so it moves to the next undelivered surface rather than being
-     * deleted.
+     * The presentation generator is still a placeholder. Analytics used to be the example here and stopped being
+     * one in Phase 4; reports stopped in Phase 21 and the assistant in Phase 23 — exactly the drift this
+     * assertion is meant to catch, so it moves to the next undelivered surface rather than being deleted.
      *
-     * The phase number is asserted literally, and it is *meant* to break when the roadmap is
-     * renumbered: it did when operations took the number 20, and again here — the navigation
-     * registry still said AI was Phase 22 when the roadmap had given 22 to the client portal. A
-     * placeholder that names the wrong phase is a promise to a client with the wrong date on it,
-     * so the test holds the number rather than reading it from the same registry the page does,
-     * which would agree with itself and prove nothing.
+     * The phase number is asserted literally, and it is *meant* to break when the roadmap is renumbered: it did
+     * when operations took the number 20, and again when the navigation registry still called AI Phase 22 after
+     * the roadmap had given 22 to the client portal. A placeholder that names the wrong phase is a promise with
+     * the wrong date on it, so the test holds the number rather than reading it from the same registry the page
+     * does, which would agree with itself and prove nothing.
      */
-    await page.goto('/ai-assistant');
+    await page.goto('/presentations');
 
-    await expect(page.getByRole('heading', { level: 1, name: 'AI Assistant' })).toBeVisible();
-    await expect(page.getByText('Planned for Phase 23')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Presentations' })).toBeVisible();
+    await expect(page.getByText('Planned for Phase 24')).toBeVisible();
     await expect(page.getByText(/delivered in a later phase/)).toBeVisible();
   });
 });
