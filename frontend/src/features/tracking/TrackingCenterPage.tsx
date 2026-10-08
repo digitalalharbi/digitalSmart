@@ -130,7 +130,12 @@ export function TrackingCenterPage() {
                 description={t('tracking.sources.emptyBody')}
               />
             ) : (
-              <Card className="overflow-x-auto">
+              <Card
+                role="group"
+                aria-label={t('tracking.sources.title')}
+                tabIndex={0}
+                className="overflow-x-auto"
+              >
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-content-tertiary border-line-subtle border-b text-start text-xs">

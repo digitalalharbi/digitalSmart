@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from 'lucide-react';
+import { ScrollRegion } from '@/shared/ui/scroll-region';
 import { cn } from '@/shared/lib/cn';
 import { Badge } from '@/shared/ui/badge';
 import { formatMetric } from '@/shared/metrics';
@@ -36,7 +37,7 @@ export function BreakdownTable({
   const isInteractive = onRowSelect !== undefined;
 
   return (
-    <div className="border-line-subtle overflow-x-auto rounded-xl border">
+    <ScrollRegion label={dimensionLabel} className="border-line-subtle rounded-xl border">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-line-subtle bg-surface-sunken border-b">
@@ -128,7 +129,7 @@ export function BreakdownTable({
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 

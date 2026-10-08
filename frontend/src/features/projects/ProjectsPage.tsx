@@ -11,6 +11,7 @@ import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { formatNumber } from '@/shared/lib/format';
 import { useUiStore } from '@/shared/store/ui-store';
+import { ScrollRegion } from '@/shared/ui/scroll-region';
 import { useProjectsQuery } from './api';
 import { ProjectFormDialog } from './ProjectFormDialog';
 import { ProjectRowActions } from './ProjectRowActions';
@@ -167,7 +168,7 @@ export function ProjectsPage() {
 
       {data && data.data.length > 0 ? (
         <>
-          <div className="border-line-subtle overflow-x-auto rounded-xl border">
+          <ScrollRegion label={t('nav.projects')} className="border-line-subtle rounded-xl border">
             <table className="w-full min-w-[52rem] text-sm">
               <caption className="sr-only">{t('nav.projects')}</caption>
               <thead>
@@ -233,7 +234,7 @@ export function ProjectsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
 
           {data.meta.last_page > 1 ? (
             <nav

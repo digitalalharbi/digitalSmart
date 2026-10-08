@@ -124,7 +124,11 @@ export function CreativeHubPage() {
             <SpecCoverage specs={specs.data ?? []} isLoading={specs.isPending} />
           </div>
 
-          <section aria-label={t('creative.board')} className="flex gap-4 overflow-x-auto pb-2">
+          <section
+            aria-label={t('creative.board')}
+            tabIndex={0}
+            className="flex gap-4 overflow-x-auto pb-2"
+          >
             {board.data.columns.map((column) => (
               <div key={column.state} className="flex w-64 shrink-0 flex-col gap-2">
                 <h2 className="text-content-secondary flex items-center justify-between text-xs font-medium tracking-wide uppercase">

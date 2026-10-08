@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { ScrollRegion } from '@/shared/ui/scroll-region';
 import {
   useChangeMemberRoleMutation,
   useChangeMemberStatusMutation,
@@ -90,7 +91,10 @@ export function MembersPanel() {
       {data && data.data.length === 0 ? <EmptyState title={t('administration.noPeople')} /> : null}
 
       {data && data.data.length > 0 ? (
-        <div className="border-line-subtle overflow-x-auto rounded-xl border">
+        <ScrollRegion
+          label={t('administration.people')}
+          className="border-line-subtle rounded-xl border"
+        >
           <table className="w-full min-w-[48rem] text-sm">
             <caption className="sr-only">{t('administration.people')}</caption>
             <thead>
@@ -190,7 +194,7 @@ export function MembersPanel() {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       ) : null}
 
       {data && data.meta.last_page > 1 ? (

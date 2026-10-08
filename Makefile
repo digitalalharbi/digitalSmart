@@ -7,7 +7,7 @@ BACKEND  := backend
 FRONTEND := frontend
 
 .PHONY: help setup up down dev dev-api dev-queue dev-realtime dev-web \
-        verify test lint analyse fix migrate fresh e2e docs clean
+        verify test lint analyse fix migrate fresh e2e a11y load backup restore docs clean
 
 help: ## Show available targets
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -75,6 +75,18 @@ fresh: ## Drop and rebuild the development database
 
 e2e: ## Playwright end-to-end tests against an isolated stack and database
 	./scripts/e2e.sh
+
+a11y: ## WCAG 2.2 AA gates against a seeded stack (axe-core, both browser projects)
+	./scripts/e2e.sh accessibility.spec.ts
+
+load: ## Load profile against a running stack (k6 if installed, else the curl sampler)
+	./scripts/load.sh
+
+backup: ## Dump the database, with a manifest of what it contains
+	./scripts/backup.sh
+
+restore: ## Verify the newest backup restores, into a scratch database that is then dropped
+	./scripts/restore.sh "$$(ls -t storage/backups/*.dump | head -1)" --verify
 
 docs: ## Export the OpenAPI document
 	cd $(BACKEND) && php artisan scramble:export --path=../docs/openapi.json

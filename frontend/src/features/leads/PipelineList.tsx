@@ -10,6 +10,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { ScrollRegion } from '@/shared/ui/scroll-region';
 import { formatMinor } from './money';
 import type { Lead, LeadStage } from './types';
 
@@ -98,7 +99,7 @@ export function PipelineList({
         {leads === undefined || leads.length === 0 ? (
           <EmptyState title={t('leads.list.emptyTitle')} description={t('leads.list.emptyBody')} />
         ) : (
-          <div className="overflow-x-auto">
+          <ScrollRegion label={t('leads.list.caption')}>
             <table className="w-full border-collapse text-sm">
               <caption className="sr-only">{t('leads.list.caption')}</caption>
               <thead>
@@ -267,7 +268,7 @@ export function PipelineList({
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
         )}
       </CardContent>
     </Card>

@@ -4,6 +4,88 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 26 — production hardening
+
+What this product needs to run for somebody other than its author.
+
+### The argument
+
+The brief names eight things: security, performance, load, queue resilience, observability, backup and
+restore, WCAG 2.2 AA, deployment and runbooks. Six of them are buildable here. Two are not, and saying which
+is the first act of hardening — there is no hosting account, no staging environment and no error tracker
+attached to this repository, so **no figure in `docs/PRODUCTION.md` is a production figure**, and that
+document opens by saying so rather than letting a reader assume otherwise.
+
+The rest is the honesty rule applied to the product's own plumbing: a probe that cannot see something must say
+it could not look.
+
+### Added
+
+- **A queue is judged by the age of its oldest waiting job, not its depth.** The previous probe reported *ok*
+  for any backlog under a thousand, so a worker that died with three jobs queued was indistinguishable from
+  an idle, healthy queue — and a dead worker means a sync that never ran and a figure on a dashboard that
+  nobody refreshed. Past five minutes, nothing is consuming it. Five rather than one, because the longest
+  backoff this product schedules is fifteen minutes and a probe that cries wolf at a working retry is a probe
+  somebody turns off.
+- **`WorkBacklog` can answer "I could not look".** Redis publishes a depth and no ages, so the probe's detail
+  says *"this driver does not publish job ages, so a stalled worker is not detected here"* rather than
+  reporting a clean bill of health it has no basis for. An empty backlog and an unreadable one both have a
+  null timestamp; conflating them is the mistake the flag exists to prevent.
+- **A failed job is degraded on the first one, not the tenth.** It is the same class of fact as an approved
+  change nobody carried out: something somebody believes happened and did not. A failed sync leaves
+  yesterday's spend on a dashboard; a failed webhook leaves an order out of a client's revenue. Neither is
+  visible in a queue depth of zero — the queue is empty *because* the work was abandoned. No threshold,
+  deliberately: the first quiet failure is the one worth reading.
+- **Query budgets as scale invariance rather than a ceiling.** The query count must not grow with the number
+  of rows — which needs no magic figure, and catches the one performance defect that is invisible on a
+  developer's three seeded rows and takes a page down on a client with four hundred. Asserted on the client
+  list, the approvals queue and the work board, each run twice with ten times the rows.
+- **`make a11y`** — axe-core over the published `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa`/`wcag22aa` rule sets,
+  against the running application, signed in as a real role: five surfaces, both browser projects, and once in
+  Arabic right to left. Twelve gates. What automated rules *cannot* check is written down rather than implied,
+  because a green run means "no machine-detectable violation", which is a smaller claim than "accessible".
+- **`tokens.contrast.test.ts`** — the cheaper half of the same gate. It parses `tokens.css` and measures every
+  ink against every surface it can be read on, in both themes, at 4.5:1 for text and 3:1 for the focus ring.
+  Parsed rather than copied: a palette asserted against its own duplicate is not a gate.
+- **`ScrollRegion`** — one primitive for the fourteen places a table or a board scrolls sideways. A region
+  that scrolls with no way into it from the keyboard hides its own content: a pointer can drag it and a
+  keyboard user never sees the last three columns.
+- **`make backup` and `make restore`, with a manifest.** The dump is accompanied by every table's row count,
+  the server version and the migration count, and the restore compares against it in a scratch database that
+  is then dropped. The manifest is the whole point: an archive that loads is not an archive that is complete,
+  and the only check that means anything is a count taken at dump time against one taken after. The
+  comparison was itself tested by tampering with a manifest — it reported the mismatch and exited non-zero.
+- **`make load`**, preferring k6 and falling back to a curl sampler that says it is a sampler. Three findings
+  came out of building it, all properties of the product rather than the harness: the rate limiter is **per
+  user**, so a run driven by one account measures the limiter; signing in is throttled at five attempts a
+  minute, so a harness that re-authenticates locks itself out on its second run and the cookie jars are
+  therefore kept; and a 403 is a **correct** answer, so the harness probes every session/endpoint pair once
+  and drives only the readable ones, printing what it excluded — a pair that should be readable disappearing
+  from that list is a permission regression.
+- `docs/PRODUCTION.md`, `docs/RUNBOOKS.md` (seven procedures), and two threat notes in `docs/SECURITY.md`.
+
+### Fixed — five real accessibility defects, found by the new gates
+
+- **Tertiary ink measured 3.66:1** against the sunken surface and 4.03:1 against white, both under AA. It is
+  not decoration: it carries table headers, timestamps and the source labels this product's honesty rests on.
+  Re-derived to a new ramp step at 4.80:1 on the worst surface.
+- **Amber measured 3.07:1 on its own badge tint** — the worst pair in the system, and the colour of a caveat.
+- **The info ink** cleared white and then failed the canvas and its own tint.
+- **Dark-mode badges measured 3.39–4.11:1**, because a dark tint washes the text's own hue over the surface and
+  moves the backdrop *towards* the text instead of away from it. The tint went from 16% to 6%, one alpha for
+  all four: the tint is decoration and the text is information, so the decoration gave way.
+- **Fourteen scrollable regions had no keyboard route into them.** Fixed once, in a shared primitive.
+
+Every replacement step was found by searching the ramp for the lightest one that clears the threshold on every
+surface it appears on — not chosen by eye, and not the threshold lowered.
+
+### Blocked externally
+
+Container images and a pipeline, a staging environment, an error tracker, a metrics backend, an uptime monitor
+and a backup schedule. Each needs a hosting account, a key or a host that only the company can provide.
+`docs/PRODUCTION.md` closes with that list rather than ending on what exists, because a production document
+that names only its own strengths is the one somebody trusts by mistake.
+
 ## Phase 25 — provider write operations
 
 Everything else in this product reads. This is the one place it writes.

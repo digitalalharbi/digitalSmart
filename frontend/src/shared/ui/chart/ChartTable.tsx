@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/shared/lib/cn';
+import { ScrollRegion } from '@/shared/ui/scroll-region';
 
 export type ChartTableRow = {
   key: string;
@@ -33,7 +34,7 @@ type ChartTableProps = {
  */
 export function ChartTable({ columns, rows, caption, className }: ChartTableProps) {
   return (
-    <div className={cn('overflow-x-auto', className)}>
+    <ScrollRegion label={caption} className={className}>
       <table className="w-full border-collapse text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead>
@@ -74,6 +75,6 @@ export function ChartTable({ columns, rows, caption, className }: ChartTableProp
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }

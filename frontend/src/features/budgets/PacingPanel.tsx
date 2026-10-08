@@ -191,7 +191,12 @@ export function PacingPanel({ pacing }: { pacing: PacingPayload }) {
       </Card>
 
       {pacing.allocations.length === 0 ? null : (
-        <Card className="overflow-x-auto p-0">
+        <Card
+          role="group"
+          aria-label={t('budgets.pacing.allocationsCaption')}
+          tabIndex={0}
+          className="overflow-x-auto p-0"
+        >
           <table className="w-full text-sm">
             <caption className="text-content-tertiary px-4 pt-4 pb-2 text-start text-xs">
               {t('budgets.pacing.allocationsCaption')}

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ScrollRegion } from '@/shared/ui/scroll-region';
 
 type ProposalTableProps = {
   proposal: Record<string, unknown>;
@@ -33,7 +34,7 @@ export function ProposalTable({ proposal, fingerprint }: ProposalTableProps) {
       {entries.length === 0 ? (
         <p className="text-content-tertiary text-sm">{t('approvals.proposal.empty')}</p>
       ) : (
-        <div className="overflow-x-auto">
+        <ScrollRegion label={t('approvals.proposal.caption')}>
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">{t('approvals.proposal.caption')}</caption>
             <thead>
@@ -73,7 +74,7 @@ export function ProposalTable({ proposal, fingerprint }: ProposalTableProps) {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
     </section>
   );

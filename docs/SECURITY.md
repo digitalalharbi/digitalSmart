@@ -99,12 +99,29 @@ can tell which contract the attempt was built against.
 would take the whole platform offline for a non-critical dependency. The distinction is
 encoded in `ServiceStatus`.
 
+**Why health is two endpoints rather than one.** `/up` answers whether the process is alive and touches no
+dependency; `/api/health` answers whether it can serve and probes four. Collapsing them is a security problem
+as much as an availability one: a liveness probe that fails because Redis is unreachable restarts a healthy web
+process, which turns a degraded dependency into an outage and loses the in-flight requests that would have
+told somebody what was actually wrong. The readiness endpoint is rate-limited on its own budget because it is
+the one endpoint an unauthenticated caller is meant to poll.
+
+**Why a failed job is a reportable state.** It is work somebody believes happened and did not — a sync that
+leaves yesterday's spend on a dashboard, a webhook that leaves an order out of a client's revenue. Silent
+abandoned work is how a product comes to show figures it cannot defend, so any failure at all degrades the
+health report rather than waiting for a threshold. See `docs/RUNBOOKS.md`.
+
 ## Secrets
 
 - `.env` is git-ignored; `.env.example` documents every key with an empty value.
 - Provider credentials are `BLOCKED_EXTERNAL` until issued — see `docs/INTEGRATIONS.md`.
 - Rotate `APP_KEY` only with a planned re-encryption of stored credentials; it is the
-  key that protects every provider token.
+  key that protects every provider token. `APP_PREVIOUS_KEYS` has to be set **before** `APP_KEY` changes, or
+  every stored credential becomes unreadable and has to be re-issued by its provider — runbook 6 in
+  `docs/RUNBOOKS.md` has the order, and what to do if it was already done in the wrong one.
+- Database dumps are client data. `.gitignore` refuses `/storage/backups/`, and a dump must never live in a
+  bucket the application itself can read: a credential that can reach the backups makes every control above
+  decorative.
 
 ## Reporting
 

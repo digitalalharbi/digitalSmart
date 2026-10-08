@@ -76,6 +76,7 @@ use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Contract\HealthProbe;
 use App\Application\Shared\Contract\IdentifierGenerator;
+use App\Application\Shared\Contract\WorkLedger;
 use App\Application\System\Query\GetSystemHealth;
 use App\Application\Workspace\Contract\MemberReadModel;
 use App\Application\Workspace\Contract\MembershipRepository;
@@ -155,6 +156,8 @@ use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
 use App\Infrastructure\System\CacheHealthProbe;
 use App\Infrastructure\System\DatabaseHealthProbe;
+use App\Infrastructure\System\DatabaseWorkLedger;
+use App\Infrastructure\System\FailedWorkHealthProbe;
 use App\Infrastructure\System\LaravelApplicationInfo;
 use App\Infrastructure\System\QueueHealthProbe;
 use App\Interface\Http\Resource\Reporting\ReportResource;
@@ -180,6 +183,11 @@ final class AppServiceProvider extends ServiceProvider
         DatabaseHealthProbe::class,
         CacheHealthProbe::class,
         QueueHealthProbe::class,
+        /*
+         * Last, and deliberately its own line in the report rather than folded into the queue's. An empty queue
+         * and an empty queue because the work was abandoned are the same depth, and only one of them is fine.
+         */
+        FailedWorkHealthProbe::class,
     ];
 
     /**
@@ -192,6 +200,7 @@ final class AppServiceProvider extends ServiceProvider
         Clock::class => SystemClock::class,
         IdentifierGenerator::class => Uuid7Generator::class,
         AuditRecorder::class => DatabaseAuditRecorder::class,
+        WorkLedger::class => DatabaseWorkLedger::class,
         AuthorizationGuard::class => PermissionAuthorizationGuard::class,
         IdentityReadModel::class => EloquentIdentityReadModel::class,
         Authenticator::class => SessionAuthenticator::class,

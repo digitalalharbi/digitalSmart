@@ -9,7 +9,7 @@ analysis and presentation generation.
 
 ## Status
 
-**Phases 0–25 complete.** See `docs/ROADMAP.md` for the per-phase
+**Phases 0–26 complete.** See `docs/ROADMAP.md` for the per-phase
 detail and for the external authorizations that are blocked.
 
 Working today: sign-in, sessions and workspace switching; six system roles with
@@ -28,7 +28,8 @@ laid out from the same figures every screen reads; and the one place this produc
 platform rather than reading it — three operations, only where that provider's own documentation
 was read for them, behind a separate permission, an explicit approval, an audit entry written
 before the request leaves and a read-back that is the only thing allowed to confirm it. In English and
-Arabic, light and dark, desktop and mobile.
+Arabic, light and dark, desktop and mobile, with the WCAG 2.2 AA contrast and keyboard gates measured by
+machine rather than asserted.
 
 **Every provider's live handshake is `BLOCKED_EXTERNAL`** on an authorization this
 repository cannot grant — an OAuth client, a partner app install, a developer-program
@@ -39,9 +40,10 @@ provider.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 1 568 passed — architecture, unit, feature          |
-| Frontend tests (Vitest)   | 421 passed                                          |
+| Backend tests (Pest)      | 1 586 passed — architecture, unit, feature          |
+| Frontend tests (Vitest)   | 451 passed                                          |
 | End-to-end (Playwright)   | 340 passed — Chromium + mobile Safari, signing in as real roles |
+| Accessibility             | axe-core WCAG 2.2 AA on five surfaces, both browsers, and in Arabic |
 | Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
 | Style                     | Pint, ESLint and Prettier, clean                    |
 
@@ -104,6 +106,8 @@ make e2e        # Playwright (stack must be running)
 | `docs/DATA_VISUALISATION.md` | The measured chart palette, its gates, and the mark rules |
 | `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |
 | `docs/SECURITY.md`       | Controls, threat notes, secret handling                 |
+| `docs/PRODUCTION.md`     | Health, query budgets, the load harness, accessibility gates, deploying |
+| `docs/RUNBOOKS.md`       | Seven procedures, including the write with an unknown outcome |
 | `docs/TESTING.md`        | Test layers, database strategy, conventions             |
 | `docs/DEVELOPMENT.md`    | Ports, setup, running, troubleshooting                  |
 | `docs/ROADMAP.md`        | Phase status and what is blocked                        |

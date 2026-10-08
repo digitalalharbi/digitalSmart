@@ -189,7 +189,14 @@ export function OperationsPage() {
 
           {board.data.is_truncated ? <Alert tone="info">{t('operations.truncated')}</Alert> : null}
 
-          <section aria-label={t('operations.board')} className="flex gap-4 overflow-x-auto pb-2">
+          <section
+            aria-label={t('operations.board')}
+            /* A board scrolls sideways on a phone, and a region that scrolls with no tab stop hides its own
+               last column from anybody on a keyboard. See `ScrollRegion`, which this is the section-shaped
+               version of — a landmark already named, so only the stop was missing. */
+            tabIndex={0}
+            className="flex gap-4 overflow-x-auto pb-2"
+          >
             {board.data.columns.map((column) => (
               <div key={column.state} className="flex w-64 shrink-0 flex-col gap-2">
                 <h2 className="text-content-secondary flex items-center justify-between text-xs font-medium tracking-wide uppercase">

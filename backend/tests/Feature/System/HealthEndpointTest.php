@@ -27,7 +27,11 @@ it('reports healthy services against the real database and cache', function (): 
         ]);
 
     $services = $response->json('data.services');
-    expect(array_column($services, 'name'))->toBe(['database', 'cache', 'queue']);
+    /*
+     * Four, and the fourth is its own line on purpose: an empty queue and an empty queue because the work was
+     * abandoned are the same depth, and only one of them is fine.
+     */
+    expect(array_column($services, 'name'))->toBe(['database', 'cache', 'queue', 'failed_jobs']);
 });
 
 /** Build the real use case with a fixed probe result. */

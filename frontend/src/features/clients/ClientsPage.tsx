@@ -11,6 +11,7 @@ import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { formatNumber } from '@/shared/lib/format';
 import { useUiStore } from '@/shared/store/ui-store';
+import { ScrollRegion } from '@/shared/ui/scroll-region';
 import { useClientsQuery } from './api';
 import { ClientFormDialog } from './ClientFormDialog';
 import { ClientRowActions } from './ClientRowActions';
@@ -156,8 +157,9 @@ export function ClientsPage() {
 
       {data && data.data.length > 0 ? (
         <>
-          <div
-            className="border-line-subtle overflow-x-auto rounded-xl border"
+          <ScrollRegion
+            label={t('nav.clients')}
+            className="border-line-subtle rounded-xl border"
             data-fetching={isFetching ? 'true' : undefined}
           >
             <table className="w-full min-w-[46rem] text-sm">
@@ -212,7 +214,7 @@ export function ClientsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
 
           {data.meta.last_page > 1 ? (
             <nav

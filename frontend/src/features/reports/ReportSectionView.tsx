@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { EChartsCoreOption } from 'echarts/core';
 import { formatChange, formatMetric, MISSING } from '@/shared/metrics';
 import { MetricCard } from '@/shared/ui/metric-card';
+import { ScrollRegion } from '@/shared/ui/scroll-region';
 import {
   barSeries,
   baseOption,
@@ -243,7 +244,7 @@ export function ReportSectionView({ section }: ReportSectionViewProps) {
          * the toggle, which for this one shape shows the same figures twice — harmless, and cheaper than a special
          * case that would make one shape behave unlike the rest.
          */
-        <div className="overflow-x-auto">
+        <ScrollRegion label={section.title}>
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">{section.title}</caption>
             <thead>
@@ -274,7 +275,7 @@ export function ReportSectionView({ section }: ReportSectionViewProps) {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       ) : (
         <Chart
           option={option}

@@ -42,7 +42,7 @@ export function BreakdownTable({
   }
 
   return (
-    <Card className="overflow-x-auto">
+    <Card role="group" aria-label={title} tabIndex={0} className="overflow-x-auto">
       {hideTitle ? null : (
         <p className="text-content border-line-subtle border-b px-4 py-3 text-sm font-medium">
           {title}

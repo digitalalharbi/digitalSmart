@@ -25,6 +25,13 @@ backend/storage/framework/testing/*
 backend/storage/framework/views/*
 backend/storage/logs/*
 backend/public/storage
+
+# Database dumps. Real client data, by definition — never in the repository, and never in a
+# bucket the application itself can read (see docs/RUNBOOKS.md).
+/storage/backups/
+
+# Cookie jars the load harness reuses between runs: real sessions, so never committed.
+/storage/load/
 backend/public/vendor/horizon
 backend/bootstrap/cache/*.php
 !backend/**/.gitignore
