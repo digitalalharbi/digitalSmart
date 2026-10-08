@@ -7,6 +7,7 @@ namespace App\Interface\Http\Resource\Commerce;
 use App\Application\Commerce\DTO\DailyRevenuePoint;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
 use App\Application\Commerce\DTO\StoreAnalyticsView;
+use App\Domain\Commerce\CustomerRecency;
 
 final readonly class StoreAnalyticsResource
 {
@@ -69,6 +70,30 @@ final readonly class StoreAnalyticsResource
                 'net_revenue_minor' => $point->netRevenueMinor,
                 'refunded_minor' => $point->refundedMinor,
             ], $view->daily),
+            /*
+             * The new-versus-returning mix, with its three buckets and the reason there is no share when there is
+             * none. `new_share` is **null** rather than computed whenever too much of the period belongs to
+             * customers who were buying before this store was connected — a share over a denominator that is
+             * mostly "we cannot tell" is a figure somebody puts in a report.
+             */
+            'customer_mix' => [
+                'new_customers' => $view->customerMix->newCustomers,
+                'returning_customers' => $view->customerMix->returningCustomers,
+                'unknown_customers' => $view->customerMix->unknownCustomers,
+                'new_revenue_minor' => $view->customerMix->newRevenueMinor,
+                'returning_revenue_minor' => $view->customerMix->returningRevenueMinor,
+                'unknown_revenue_minor' => $view->customerMix->unknownRevenueMinor,
+                'new_share' => $view->customerMix->newShare(),
+                'unavailable_reason' => $view->customerMix->unavailableReason(),
+                /*
+                 * Published so a reader can see the third bucket exists even when it is empty. A split that only
+                 * mentioned "we cannot tell" when it was large would teach a reader it never happens.
+                 */
+                'buckets' => array_map(static fn (CustomerRecency $recency): array => [
+                    'recency' => $recency->value,
+                    'label' => $recency->label(),
+                ], CustomerRecency::cases()),
+            ],
         ];
     }
 

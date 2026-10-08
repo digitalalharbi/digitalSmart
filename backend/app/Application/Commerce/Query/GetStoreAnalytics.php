@@ -77,6 +77,7 @@ final readonly class GetStoreAnalytics
             byCampaign: $this->analytics->byCampaign($query),
             byProduct: $this->analytics->byProduct($query),
             daily: $this->analytics->daily($query),
+            customerMix: $this->analytics->customerMix($query),
             from: $from,
             until: $until,
         );

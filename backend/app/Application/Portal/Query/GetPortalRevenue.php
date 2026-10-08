@@ -82,6 +82,12 @@ final readonly class GetPortalRevenue
             byCampaign: $this->analytics->byCampaign($query),
             byProduct: $this->analytics->byProduct($query),
             daily: $this->analytics->daily($query),
+            /*
+             * The client's own store, so the client sees its mix. "How much of this month came from people who had
+             * not bought before" is a question about their business rather than about the agency, and the three
+             * buckets carry their own honesty — including the one that says this product cannot tell yet.
+             */
+            customerMix: $this->analytics->customerMix($query),
             from: $period->start,
             until: $period->end,
         );

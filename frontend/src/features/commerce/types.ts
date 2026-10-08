@@ -70,6 +70,29 @@ export type DailyRevenuePoint = {
   refunded_minor: number;
 };
 
+/**
+ * How much of a period came from customers new to the store.
+ *
+ * Three buckets, and the third is why this is publishable. `unknown` counts customers whose first recorded order
+ * sits at the edge of what was ever synced — they may have been buying for years, and calling them new would make
+ * every freshly connected store look like a triumph.
+ *
+ * `new_share` is **null** rather than computed whenever that bucket is a fifth or more of the period, and
+ * `unavailable_reason` says which of the two reasons applies: nothing was sold, or too much cannot be classified.
+ * Only one of those gets better on its own.
+ */
+export type CustomerMix = {
+  new_customers: number;
+  returning_customers: number;
+  unknown_customers: number;
+  new_revenue_minor: number;
+  returning_revenue_minor: number;
+  unknown_revenue_minor: number;
+  new_share: number | null;
+  unavailable_reason: string | null;
+  buckets: { recency: 'new' | 'returning' | 'unknown'; label: string }[];
+};
+
 export type StoreAnalytics = {
   from: string;
   until: string;
@@ -78,6 +101,7 @@ export type StoreAnalytics = {
   by_campaign: RevenueBreakdownRow[];
   by_product: RevenueBreakdownRow[];
   daily: DailyRevenuePoint[];
+  customer_mix: CustomerMix;
 };
 
 export type CommerceQuery = {

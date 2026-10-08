@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Eloquent\ReadModel;
 
 use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
+use App\Application\Commerce\DTO\CustomerMix;
 use App\Application\Commerce\DTO\DailyRevenuePoint;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Commerce\DTO\StoreRevenueSummary;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Commerce\AttributionEvidence;
+use App\Domain\Commerce\CustomerRecency;
 use App\Domain\Commerce\PaymentState;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -281,6 +283,95 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
         }
 
         return $points;
+    }
+
+    public function customerMix(StoreQuery $query): CustomerMix
+    {
+        /*
+         * The earliest order this product holds for the stores in scope. Everything hangs off it: a customer whose
+         * first recorded order is *at* that boundary may have been buying for years before the integration
+         * existed, and calling them new would make every freshly connected store look like a triumph.
+         *
+         * Read from the same scope rather than from the stores table, because what matters is the earliest order
+         * actually synced and not when somebody created the connection.
+         */
+        $earliest = DB::table('store_orders as o')
+            ->join('stores as s', 's.id', '=', 'o.store_id')
+            ->where('o.workspace_id', $query->workspaceId)
+            ->where('o.revenue_source', $query->revenueSource->value)
+            ->when($query->clientId !== null, fn (Builder $b): Builder => $b->where('s.client_id', $query->clientId))
+            ->when($query->storeId !== null, fn (Builder $b): Builder => $b->where('o.store_id', $query->storeId))
+            ->min('o.placed_at');
+
+        $counted = $this->scope($query)
+            ->whereIn('o.payment_state', self::REVENUE_STATES)
+            /*
+             * An order with no customer record cannot be classified at all — a guest checkout the provider did not
+             * attach to anybody. Left out of the mix rather than bucketed, because "we have no customer here" is
+             * not the same claim as "we cannot tell when this customer started".
+             */
+            ->whereNotNull('o.store_customer_id')
+            ->join('store_customers as c', 'c.id', '=', 'o.store_customer_id');
+
+        /*
+         * Grouped in SQL by the three cases, so the classification is one predicate rather than a loop over rows
+         * that a later caller could filter differently. `first_order_at` is nullable — a customer record a
+         * provider sent without one — and that is unknown too.
+         */
+        $boundary = is_string($earliest) ? $earliest : null;
+
+        $rows = (clone $counted)
+            ->selectRaw(
+                'case '
+                .'when c.first_order_at is null then ? '
+                /*
+                 * At or before the earliest order this product ever read. `<=` rather than `<`: a customer whose
+                 * first recorded order *is* the earliest order in the data is exactly the ambiguous case.
+                 */
+                .($boundary === null ? '' : 'when c.first_order_at <= ? then ? ')
+                .'when c.first_order_at >= ? then ? '
+                .'else ? end as recency, '
+                .'count(distinct o.store_customer_id) as customers, '
+                .'coalesce(sum(o.total_minor - o.refunded_minor), 0) as revenue',
+                $boundary === null
+                    ? [
+                        CustomerRecency::Unknown->value,
+                        $query->from,
+                        CustomerRecency::New->value,
+                        CustomerRecency::Returning->value,
+                    ]
+                    : [
+                        CustomerRecency::Unknown->value,
+                        $boundary,
+                        CustomerRecency::Unknown->value,
+                        $query->from,
+                        CustomerRecency::New->value,
+                        CustomerRecency::Returning->value,
+                    ],
+            )
+            ->groupBy('recency')
+            ->get();
+
+        $customers = [];
+        $revenue = [];
+
+        foreach ($rows as $row) {
+            /** @var array<string, mixed> $values */
+            $values = (array) $row;
+            $key = (string) ($values['recency'] ?? '');
+
+            $customers[$key] = (int) ($values['customers'] ?? 0);
+            $revenue[$key] = (int) ($values['revenue'] ?? 0);
+        }
+
+        return new CustomerMix(
+            newCustomers: $customers[CustomerRecency::New->value] ?? 0,
+            returningCustomers: $customers[CustomerRecency::Returning->value] ?? 0,
+            unknownCustomers: $customers[CustomerRecency::Unknown->value] ?? 0,
+            newRevenueMinor: $revenue[CustomerRecency::New->value] ?? 0,
+            returningRevenueMinor: $revenue[CustomerRecency::Returning->value] ?? 0,
+            unknownRevenueMinor: $revenue[CustomerRecency::Unknown->value] ?? 0,
+        );
     }
 
     /**

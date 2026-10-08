@@ -111,6 +111,46 @@ An order claiming campaign parameters with no parameters on it is the one defect
 report could reveal afterwards. It is refused by the database, so a second write path cannot produce
 it.
 
+## New versus returning customers
+
+`GET /api/commerce/analytics` returns a `customer_mix` on every response: three buckets, and the share of
+revenue that came from customers new to the store — **or the reason there is no share.**
+
+**There is no window, and that is the point.** "Returning within ninety days" sounds like a definition and is
+really a knob: move it and the headline moves with it, which is how a figure stops being a measurement. The
+question this product answers instead has one answer for any given period — *was this customer's first order
+with this store inside the period, or before it?* Nobody has to agree on a window to agree on that.
+
+**The third bucket is why the figure is publishable.** A store's history in this product begins when its
+integration was connected. A customer whose earliest synced order sits at that edge may have been buying for
+years, so they are `unknown` — not `new`. Calling them new would make every freshly connected store look like a
+triumph in its first month, and the number would really be measuring how long the integration had been running.
+The boundary is the earliest order ever synced for the store, so it moves backwards as history accumulates and
+the bucket empties on its own.
+
+**The share is withheld, not estimated, when the unknown bucket is a fifth or more of the period's revenue.**
+`new_share` is then `null` and `unavailable_reason` carries a sentence saying which of the two reasons applies:
+nothing was sold at all, or too much cannot be classified. Only the second gets better on its own, which is why
+they are distinguished rather than both rendered as a dash. The boundary is inclusive — **at** exactly a fifth
+the share is already withheld — and it is pinned by its own unit test, because a reader will ask.
+
+**Orders with no customer identifier are excluded from the mix entirely**, not pooled into `unknown`. A guest
+checkout is not an unclassifiable customer; it is an order with nobody to classify, and a bucket that mixed the
+two would mean neither.
+
+**The surface shows no percentages beside the buckets.** `new_share` is the new bucket's share of revenue, so a
+share column next to the revenue it is computed from would hand a reader the exact figure the server declined to
+publish. The buckets carry their customer counts and their revenue; the weight of the unclassified bucket is
+legible from its revenue beside the others. The client portal composes the same component on the same figures —
+a client told a campaign brought revenue deserves to know whether it brought customers.
+
+**What is deliberately not built: "active recently" and reactivation.** Both need a window — thirty days,
+ninety, a year — and that window is a business decision about this agency's clients, not something to infer. A
+reactivation figure also needs to know a customer *stopped*, which is unobservable: the only evidence is an
+absence, and an absence is indistinguishable from a customer who simply has not come back yet. If the window is
+decided, the honest shape is a named cohort with the window in its label — "bought in the last 90 days" — never
+a bare "active customers".
+
 ## Tables
 
 | Table | Notes |

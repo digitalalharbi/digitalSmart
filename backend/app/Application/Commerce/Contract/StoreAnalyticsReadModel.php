@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Commerce\Contract;
 
+use App\Application\Commerce\DTO\CustomerMix;
 use App\Application\Commerce\DTO\DailyRevenuePoint;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
 use App\Application\Commerce\DTO\StoreQuery;
@@ -29,6 +30,19 @@ use App\Application\Commerce\DTO\StoreRevenueSummary;
 interface StoreAnalyticsReadModel
 {
     public function summary(StoreQuery $query): StoreRevenueSummary;
+
+    /**
+     * How much of the period came from customers new to the store.
+     *
+     * **New means their first recorded order falls inside the period.** No window, because the window only
+     * appears if you ask a different question — "active recently" is reactivation, which has a real product
+     * decision behind it and is deliberately not built.
+     *
+     * The third bucket is the one that makes this publishable: a customer whose first recorded order sits at the
+     * edge of what was ever synced may have been buying for years, so they are counted separately rather than
+     * called new. See `CustomerRecency` and `CustomerMix`.
+     */
+    public function customerMix(StoreQuery $query): CustomerMix;
 
     /**
      * Revenue by marketing channel, from what the orders carried.

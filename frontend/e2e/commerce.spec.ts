@@ -54,6 +54,37 @@ test.describe('store revenue', () => {
     await expect(page.getByText(/There is no combined figure/)).toBeVisible();
   });
 
+  test('splits the period into new, returning and unclassifiable customers', async ({ page }) => {
+    await openCommerce(page);
+
+    const split = page.getByRole('region', { name: 'New and returning customers' });
+
+    await expect(split).toBeVisible({ timeout: 20_000 });
+
+    /*
+     * All three buckets, including the one that says the product cannot tell. A split that only named the
+     * third bucket when it was large would teach a reader that it never happens.
+     */
+    await expect(
+      split.getByRole('rowheader', { name: 'Started before this store was connected' }),
+    ).toBeVisible();
+
+    /*
+     * Whichever way the seeded period falls, the panel is consistent with itself: either there is a headline
+     * share and no withholding sentence, or there is a sentence and no percentage anywhere in the split.
+     */
+    const share = split.getByTestId('customer-mix-share');
+
+    if ((await share.count()) > 0) {
+      await expect(share).toContainText('new customers');
+    } else {
+      await expect(
+        split.getByText(/no mix to report|before this store was connected, so/),
+      ).toBeVisible();
+      await expect(split.getByText('%')).toHaveCount(0);
+    }
+  });
+
   test('does not offer store revenue to a creative', async ({ page }) => {
     await signIn(page, ACCOUNTS.creative);
 

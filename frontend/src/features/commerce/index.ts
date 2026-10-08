@@ -5,9 +5,11 @@ export { StoreAnalyticsPage } from './StoreAnalyticsPage';
  * chances to disagree about it.
  */
 export { BreakdownTable } from './BreakdownTable';
+export { CustomerMixPanel } from './CustomerMixPanel';
 export { RevenueChart } from './RevenueChart';
 export { formatMinor, summaryMetrics } from './money';
 export type {
+  CustomerMix,
   DailyRevenuePoint,
   RevenueBreakdownRow,
   RevenueSourceValue,

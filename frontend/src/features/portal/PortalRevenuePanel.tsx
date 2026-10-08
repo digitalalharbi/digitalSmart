@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   BreakdownTable,
+  CustomerMixPanel,
   RevenueChart,
   formatMinor,
   summaryMetrics,
@@ -106,6 +107,17 @@ export function PortalRevenuePanel({ clientId }: { clientId: string }) {
               </p>
 
               <RevenueChart points={analytics.daily} currency={summary.currency} locale={locale} />
+
+              {/*
+                The same split the agency sees, on the same figures. A client who is told a campaign brought
+                revenue deserves to know whether it brought customers, and the third bucket — people buying
+                before this store was connected — keeps the answer honest on a young connection.
+              */}
+              <CustomerMixPanel
+                mix={analytics.customer_mix}
+                currency={summary.currency}
+                locale={locale}
+              />
 
               <BreakdownTable
                 title={t('commerce.byChannel')}

@@ -900,7 +900,16 @@
       "netRevenue": "Net revenue",
       "refunded": "Refunded"
     },
-    "trendSubtitle": "Refunds are drawn beside net revenue rather than netted away: a flat month because returns rose is a different problem from a month nobody bought in."
+    "trendSubtitle": "Refunds are drawn beside net revenue rather than netted away: a flat month because returns rose is a different problem from a month nobody bought in.",
+    "mix": {
+      "title": "New and returning customers",
+      "hint": "New means their first order with this store falls inside this period. There is no window: a customer's first recorded order is either in the period or before it.",
+      "caption": "Customers and revenue by whether they had bought from this store before.",
+      "bucket": "Customer",
+      "customers": "Customers",
+      "revenue": "Revenue",
+      "newShare": "{{share}} of revenue from new customers"
+    }
   },
   "chart": {
     "view": {

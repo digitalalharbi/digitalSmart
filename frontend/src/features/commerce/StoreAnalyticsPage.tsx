@@ -10,6 +10,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import { ChartFrame } from '@/shared/ui/chart';
 import { BreakdownTable } from './BreakdownTable';
+import { CustomerMixPanel } from './CustomerMixPanel';
 import { RevenueChart } from './RevenueChart';
 import { useStoreAnalyticsQuery } from './useCommerce';
 import { formatMinor, summaryMetrics, windowFor } from './money';
@@ -259,6 +260,20 @@ export function StoreAnalyticsPage() {
                   />
                 </div>
               </section>
+
+              {/*
+                The card carries its own heading, so this section is labelled by it rather than by a second one
+                saying the same thing twice to a screen reader.
+              */}
+              {analytics.data === undefined ? null : (
+                <section className="flex flex-col gap-3" aria-label={t('commerce.mix.title')}>
+                  <CustomerMixPanel
+                    mix={analytics.data.customer_mix}
+                    currency={summary.currency}
+                    locale={locale}
+                  />
+                </section>
+              )}
 
               <section className="flex flex-col gap-3" aria-labelledby="commerce-products">
                 <h2 id="commerce-products" className="text-content text-lg font-semibold">

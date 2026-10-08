@@ -90,6 +90,21 @@ function analytics(overrides: Partial<StoreAnalytics> = {}): StoreAnalytics {
       { date: '2026-10-01', orders: 2, net_revenue_minor: 60_000, refunded_minor: 0 },
       { date: '2026-10-02', orders: 2, net_revenue_minor: 40_000, refunded_minor: 20_000 },
     ],
+    customer_mix: {
+      new_customers: 2,
+      returning_customers: 3,
+      unknown_customers: 1,
+      new_revenue_minor: 40_000,
+      returning_revenue_minor: 55_000,
+      unknown_revenue_minor: 5_000,
+      new_share: 0.4,
+      unavailable_reason: null,
+      buckets: [
+        { recency: 'new', label: 'New to this store' },
+        { recency: 'returning', label: 'Bought before' },
+        { recency: 'unknown', label: 'Started before this store was connected' },
+      ],
+    },
     ...overrides,
   };
 }
@@ -97,6 +112,54 @@ function analytics(overrides: Partial<StoreAnalytics> = {}): StoreAnalytics {
 beforeEach(() => {
   state.analytics = analytics();
   state.lastSource = null;
+});
+
+describe('new versus returning customers', () => {
+  it('splits the period three ways and reports the new share', async () => {
+    await renderWithProviders(<StoreAnalyticsPage />);
+
+    await screen.findByText(/Salla invoiced this money/);
+
+    expect(screen.getByTestId('customer-mix-share')).toHaveTextContent(/new customers/);
+    expect(
+      screen.getByRole('rowheader', { name: 'Started before this store was connected' }),
+    ).toBeInTheDocument();
+  });
+
+  /*
+   * The honesty rule reaching the page. `new_share` is the new bucket's share of revenue, so when the server
+   * withholds it the page must not show a percentage anywhere in the split — not in the headline and not
+   * recomputed in a column beside the revenue it was computed from.
+   */
+  it('shows the server’s reason instead of a share, and no percentage anywhere in the split', async () => {
+    state.analytics = analytics({
+      customer_mix: {
+        new_customers: 2,
+        returning_customers: 1,
+        unknown_customers: 4,
+        new_revenue_minor: 20_000,
+        returning_revenue_minor: 10_000,
+        unknown_revenue_minor: 70_000,
+        new_share: null,
+        unavailable_reason:
+          'Too much of this period belongs to customers who were buying before this store was connected.',
+        buckets: [
+          { recency: 'new', label: 'New to this store' },
+          { recency: 'returning', label: 'Bought before' },
+          { recency: 'unknown', label: 'Started before this store was connected' },
+        ],
+      },
+    });
+
+    await renderWithProviders(<StoreAnalyticsPage />);
+
+    await screen.findByText(/buying before this store was connected/);
+
+    const split = screen.getByRole('region', { name: 'New and returning customers' });
+
+    expect(within(split).queryByTestId('customer-mix-share')).not.toBeInTheDocument();
+    expect(within(split).queryByText(/%/)).not.toBeInTheDocument();
+  });
 });
 
 describe('store revenue', function () {

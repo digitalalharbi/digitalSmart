@@ -27,6 +27,14 @@ final readonly class StoreAnalyticsView
         public array $byCampaign,
         public array $byProduct,
         public array $daily,
+        /**
+         * How much of the period came from customers new to the store.
+         *
+         * Carried beside the totals rather than inside the summary, because its denominator is different: the
+         * summary counts every order, and this counts only the orders this product can attach to a customer whose
+         * history it can read. Two different populations should not share one object.
+         */
+        public CustomerMix $customerMix,
         public DateTimeImmutable $from,
         public DateTimeImmutable $until,
     ) {}

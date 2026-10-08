@@ -4,6 +4,62 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 14 addendum — new versus returning customers
+
+The Phase 14 gap list said the split was *"a product decision (returning within what window?) rather than a
+query."*
+
+### The argument
+
+That framing was the obstacle, and it was wrong. A window is not a definition, it is a knob: pick ninety days
+and the headline is one number, pick thirty and it is another, and a figure that moves with a setting nobody
+agreed on is not a measurement. The question with one answer is the other one — **was this customer's first
+order with this store inside the period, or before it?** Nobody has to agree on a window to agree on that, so
+there is no decision to wait for.
+
+What *does* need care is the thing the window was hiding. A store's history in this product begins when its
+integration was connected. The customer whose earliest synced order sits exactly at that edge may have been
+buying for five years, and counting them as new would make every freshly connected store look like a triumph in
+its first month — while the number was really reporting how long the integration had been running.
+
+### Added
+
+- **`CustomerRecency` — three buckets, and the third is the point.** `New`, `Returning` and `Unknown`, where
+  `Unknown` is "started before this store was connected". The boundary is the earliest order ever synced for the
+  store, so it moves backwards as history accumulates and the bucket empties on its own rather than needing a
+  migration.
+- **`CustomerMix::newShare()` returns null rather than a number** when the unknown bucket is a fifth or more of
+  the period's revenue. A share over a denominator that is mostly "we cannot tell" is exactly the figure that
+  ends up in a client report with nobody remembering the caveat. The boundary is inclusive — **at** a fifth it is
+  already withheld — and is pinned by its own unit test, because a reader will ask what happens there.
+- **Two reasons for no share, told apart.** Nothing was sold, or too much cannot be classified.
+  `unavailableReason()` says which, because only the second one gets better on its own, and a reader deciding
+  whether to wait a month needs to know which they have.
+- **Orders with no customer identifier are excluded from the mix**, not pooled into `unknown`. A guest checkout
+  is an order with nobody to classify; a bucket holding both would mean neither.
+- **The surface carries no percentages beside the buckets.** This was found by a test rather than by reading:
+  the first version of the panel had a share column, and because `new_share` *is* the new bucket's share of
+  revenue, that column recomputed — client-side, from numbers that must be shown — the exact figure the server
+  had declined to publish. The withholding rule would have held only in the one place a reader was not looking.
+  The column is gone; the buckets carry counts and revenue, and the weight of the unclassified bucket is legible
+  from its revenue beside the others.
+- **The client portal composes the same component on the same figures.** A client told a campaign brought
+  revenue deserves to know whether it brought customers.
+
+### Deliberately not built
+
+- **"Active recently" and reactivation.** Both need a window, and that window is a business decision about this
+  agency's clients. A reactivation figure additionally needs to know a customer *stopped*, which is
+  unobservable: the only evidence is an absence, and an absence looks identical to a customer who has not come
+  back yet. The honest shape, if the window is ever decided, is a named cohort carrying the window in its label
+  — "bought in the last 90 days" — never a bare "active customers". Recorded in
+  [`docs/ECOMMERCE.md`](docs/ECOMMERCE.md#new-versus-returning-customers).
+
+### Gates
+
+1 647 backend tests (6 041 assertions), 484 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
+clean, ESLint and Prettier clean, production build, Playwright green.
+
 ## Phase 15 addendum — the CRM bridge
 
 `LeadSourceKind::Crm` had existed since Phase 15 with nothing populating it.

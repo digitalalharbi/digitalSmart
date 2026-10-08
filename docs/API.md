@@ -858,6 +858,34 @@ Product rows report **no refunds**. A refund is recorded against an order, and s
 would be a guess at which item came back; it is visible on the summary, where it is a fact rather than an
 allocation.
 
+#### `customer_mix`
+
+Returned on every response. Three buckets — `new`, `returning`, `unknown` — with a customer count and
+revenue for each, plus `new_share` and `unavailable_reason`.
+
+| Field | Notes |
+| ----- | ----- |
+| `new_customers`, `returning_customers`, `unknown_customers` | Distinct customers in the period. `unknown` is a customer whose earliest synced order sits at the edge of what was ever synced for the store: they may have been buying for years |
+| `new_revenue_minor`, `returning_revenue_minor`, `unknown_revenue_minor` | Net revenue per bucket |
+| `new_share` | New customers' share of the period's revenue as a fraction, or **null** |
+| `unavailable_reason` | The sentence to show where the share would have been. Null when there is a share |
+| `buckets` | The three bucket keys with their labels, published even when a bucket is empty, so a reader learns the third one exists |
+
+**There is no window.** "New" means the customer's first order with this store falls inside the period —
+a question with one answer, unlike "returning within ninety days", which has as many answers as there are
+opinions about ninety.
+
+**`new_share` is null, never estimated, when `unknown_revenue_minor` is a fifth or more of the period's
+revenue** (inclusive at exactly a fifth), or when nothing was sold. Those are different situations and
+`unavailable_reason` says which: only one of them improves as the store accumulates its own history.
+
+**Orders with no customer identifier are excluded from the mix**, not pooled into `unknown`. A guest
+checkout is an order with nobody to classify, which is not the same as a customer who cannot be classified.
+
+Interfaces show no percentage beside the buckets: `new_share` *is* the new bucket's share of revenue, so a
+column beside the revenue would recompute the figure the server withheld. See
+[ECOMMERCE.md](ECOMMERCE.md#new-versus-returning-customers).
+
 ## Leads
 
 A lead is a person who did something. Counted taps and form starts are **signals**, they live in the

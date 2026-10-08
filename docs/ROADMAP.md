@@ -692,8 +692,12 @@ is excluded from a total.
   summing minor units across them would be wrong by whatever the exchange rate is. The scope reports the
   first store's currency and a caller is expected to narrow; a proper answer needs a rates source and a
   decision about which day's rate, which is its own piece of work.
-- **No new versus returning customer split.** The data is there — `store_customers.first_order_at` — and
-  the definition is a product decision (returning within what window?) rather than a query.
+- **~~No new versus returning customer split.~~** Closed. The product decision turned out to be avoidable: the
+  split asks whether a customer's first order with this store fell inside the period, which needs no window at
+  all, and customers whose history predates the integration are a third bucket rather than new ones. The share
+  is withheld — with a reason — when that bucket is a fifth or more of the period. See
+  [ECOMMERCE.md](ECOMMERCE.md#new-versus-returning-customers). **"Active recently" and reactivation remain
+  unbuilt**, because those do need a window and it is a business decision; the reason is recorded there too.
 
 ### Phase 15 — lead intelligence
 

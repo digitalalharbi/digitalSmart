@@ -635,3 +635,171 @@ describe('customers', function (): void {
             ->and($data['summary']['orders'])->toBe(3);
     });
 });
+
+describe('new versus returning customers', function (): void {
+    /**
+     * A store with history before the period, and customers on both sides of it.
+     *
+     * @param  array{scenario: WorkspaceScenario, client: Client, project: Project, store: Store}  $setup
+     */
+    function withCustomerHistory(array $setup): void
+    {
+        app(CommerceStore::class)->upsertCustomers(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['store']->getKey(),
+            [
+                new CustomerRecord(externalId: 'old', name: 'Layla'),
+                new CustomerRecord(externalId: 'new', name: 'Omar'),
+                new CustomerRecord(externalId: 'edge', name: 'Sara'),
+            ],
+        );
+
+        writeOrders($setup, [
+            /*
+             * August: the **earliest** order this product holds for the store, and `edge` is the customer on it.
+             * That makes `edge` the ambiguous case — their history begins exactly where the data does, so nothing
+             * here can say whether they had been buying for years beforehand.
+             *
+             * This arrangement is the first thing this suite got wrong. The original version gave `old` and `edge`
+             * the same earliest date, which made *both* of them unclassifiable — correctly, and the test that
+             * expected one returning customer was asserting something the rule cannot produce. A store needs
+             * history of its own before "returning" means anything, which is exactly what the metric says.
+             */
+            analyticsOrder('aug-edge', 25_000, placedAt: '2026-08-01 09:00:00', customer: 'edge'),
+
+            // September: after the boundary and before the period, so `old` is genuinely a returning customer.
+            analyticsOrder('sept-old', 40_000, placedAt: '2026-09-10 09:00:00', customer: 'old'),
+
+            // October: one who bought before, one who did not, and the ambiguous one again.
+            analyticsOrder('oct-old', 30_000, placedAt: '2026-10-05 09:00:00', customer: 'old'),
+            analyticsOrder('oct-new', 50_000, placedAt: '2026-10-06 09:00:00', customer: 'new'),
+            analyticsOrder('oct-edge', 20_000, placedAt: '2026-10-07 09:00:00', customer: 'edge'),
+        ]);
+
+        app(CommerceStore::class)->recalculateCustomerTotals(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['store']->getKey(),
+        );
+    }
+
+    it('counts a customer whose first order is inside the period as new', function (): void {
+        $setup = analyticsScenario();
+        withCustomerHistory($setup);
+
+        $mix = fetchAnalytics($setup)['customer_mix'];
+
+        /*
+         * No window anywhere in this. A customer's first recorded order either falls inside the period or before
+         * it, which is a statement about the data rather than a judgement — and that is why this metric could be
+         * built without the product decision the roadmap was waiting on.
+         */
+        expect($mix['new_customers'])->toBe(1);
+        expect($mix['new_revenue_minor'])->toBe(50_000);
+    });
+
+    it('counts a customer who bought before the period as returning', function (): void {
+        $setup = analyticsScenario();
+        withCustomerHistory($setup);
+
+        $mix = fetchAnalytics($setup)['customer_mix'];
+
+        expect($mix['returning_customers'])->toBe(1);
+        /* Only the October order. The September one is outside the period and belongs to no figure here. */
+        expect($mix['returning_revenue_minor'])->toBe(30_000);
+    });
+
+    it('refuses to call a customer new when their history predates the data', function (): void {
+        $setup = analyticsScenario();
+        withCustomerHistory($setup);
+
+        $mix = fetchAnalytics($setup)['customer_mix'];
+
+        /*
+         * The case that makes this metric publishable. `edge`'s first recorded order is the earliest order this
+         * product holds for the store, so they may have been buying for years before the integration existed.
+         * Counting them as new would invent new customers on day one of every integration — the figure would look
+         * spectacular and be worthless.
+         */
+        expect($mix['unknown_customers'])->toBe(1);
+        expect($mix['unknown_revenue_minor'])->toBe(20_000);
+    });
+
+    it('withholds the share while too much of the period cannot be classified', function (): void {
+        $setup = analyticsScenario();
+        withCustomerHistory($setup);
+
+        $mix = fetchAnalytics($setup)['customer_mix'];
+
+        /*
+         * 20,000 of 100,000 is a fifth, which is the ceiling — a share over a denominator that is substantially
+         * "we cannot tell" is a figure somebody puts in a report. The sentence goes where the percentage would
+         * have been, and says that it becomes available as the store accumulates its own history.
+         */
+        expect($mix['new_share'])->toBeNull();
+        expect($mix['unavailable_reason'])->toContain('before this store was connected');
+    });
+
+    it('reports the share once the unknown bucket is small enough to ignore', function (): void {
+        $setup = analyticsScenario();
+        withCustomerHistory($setup);
+
+        /* More October revenue from a clearly-new customer, which pushes the unknown share under the ceiling. */
+        app(CommerceStore::class)->upsertCustomers(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['store']->getKey(),
+            [new CustomerRecord(externalId: 'new-2', name: 'Faisal')],
+        );
+
+        writeOrders($setup, [
+            analyticsOrder('oct-new-2', 400_000, placedAt: '2026-10-08 09:00:00', customer: 'new-2'),
+        ]);
+
+        app(CommerceStore::class)->recalculateCustomerTotals(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['store']->getKey(),
+        );
+
+        $mix = fetchAnalytics($setup)['customer_mix'];
+
+        expect($mix['unavailable_reason'])->toBeNull();
+        expect($mix['new_share'])->toBeGreaterThan(0.8);
+    });
+
+    it('says nothing was sold rather than reporting a share of nothing', function (): void {
+        $setup = analyticsScenario();
+
+        $mix = fetchAnalytics($setup)['customer_mix'];
+
+        // Two different reasons for no share, and the surface says which. Never 0%.
+        expect($mix['new_share'])->toBeNull();
+        expect($mix['unavailable_reason'])->toContain('Nothing was sold');
+    });
+
+    it('leaves an order with no customer out of the mix entirely', function (): void {
+        $setup = analyticsScenario();
+
+        writeOrders($setup, [
+            // A guest checkout the provider attached to nobody.
+            analyticsOrder('guest', 70_000, placedAt: '2026-10-09 09:00:00'),
+        ]);
+
+        $mix = fetchAnalytics($setup)['customer_mix'];
+
+        /*
+         * Left out rather than bucketed as unknown: "we have no customer here" is not the same claim as "we
+         * cannot tell when this customer started", and folding them together would make the unknown bucket a
+         * measure of guest checkouts.
+         */
+        expect($mix['new_customers'] + $mix['returning_customers'] + $mix['unknown_customers'])->toBe(0);
+        expect($mix['unavailable_reason'])->toContain('Nothing was sold');
+    });
+
+    it('publishes the three buckets even where one is empty', function (): void {
+        $setup = analyticsScenario();
+
+        $buckets = array_column(fetchAnalytics($setup)['customer_mix']['buckets'], 'recency');
+
+        // A split that only mentioned "we cannot tell" when it was large would teach a reader it never happens.
+        expect($buckets)->toBe(['new', 'returning', 'unknown']);
+    });
+});
