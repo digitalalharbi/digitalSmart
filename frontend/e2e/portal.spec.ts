@@ -157,6 +157,38 @@ test.describe('a client reading their portal', () => {
     await expect(page.getByText(/cannot switch this off/)).toBeVisible({ timeout: 30_000 });
   });
 
+  test('is told what changed since it last looked', async ({ page }) => {
+    await signIn(page, ACCOUNTS.client);
+    await page.goto('/portal');
+
+    const updates = page.getByText('Since you last looked');
+    await expect(updates).toBeVisible({ timeout: 30_000 });
+
+    /*
+     * The loop this module exists to close. The demo answers one of the client's own requests, so two things
+     * reach them: the request moved, and the agency answered — and neither needed the client to open the thread
+     * and compare it against their memory.
+     */
+    await expect(
+      page.getByText('Add the new product feed to the shopping campaign').first(),
+    ).toBeVisible();
+    await expect(page.getByText('Your request was answered').first()).toBeVisible();
+
+    /*
+     * And the internal note on the same thread reached nobody. A bell saying "the agency replied" for a note the
+     * client cannot read would be the cruellest bug in this module.
+     */
+    await expect(page.getByText(/missing GTINs/)).toHaveCount(0);
+
+    /*
+     * Clearing them is deliberately *not* asserted here. Both browser projects share one seeded database, so a
+     * run that marked them read would pass under the first project and find an empty panel under the second —
+     * which is exactly what happened before this comment existed. The clear is covered where it can be asserted
+     * deterministically, in `MyPortalPage.test.tsx`.
+     */
+    await expect(page.getByRole('button', { name: 'Mark as read' })).toBeVisible();
+  });
+
   test('is offered no way into the agency application', async ({ page }) => {
     await signIn(page, ACCOUNTS.client);
     await page.goto('/portal');

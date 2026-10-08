@@ -99,7 +99,7 @@ it('seeds an intake queue whose shape shows both halves of why a queue is slow',
 
     $requests = DB::table('client_requests')->get();
 
-    expect($requests)->toHaveCount(7);
+    expect($requests)->toHaveCount(8);
 
     $byState = $requests->groupBy('state')->map->count();
 
@@ -123,4 +123,23 @@ it('seeds an intake queue whose shape shows both halves of why a queue is slow',
     $promised = $requests->whereNotNull('promised_at')->first();
 
     expect($promised?->promised_by)->not->toBeNull();
+
+    /*
+     * One of the client's own requests is answered, and that is what puts anything in the portal's "since you
+     * last looked" panel. Before it the demo was entirely one-sided — every request a client raised was ignored
+     * or still open — so the loop this module exists to close could not be seen at all.
+     */
+    $viewer = DB::table('users')->where('email', 'client@demo.digitalsmart.test')->value('id');
+
+    expect($viewer)->not->toBeNull();
+
+    $theirs = $requests->where('submitted_by', $viewer);
+
+    expect($theirs->whereNotNull('first_answered_at'))->toHaveCount(1);
+
+    /* Two notifications reach them: the move, and the answer. The internal note on the same thread sends none. */
+    $told = DB::table('notifications')->where('user_id', $viewer)->pluck('kind')->all();
+
+    expect($told)->toContain('client_request_moved');
+    expect($told)->toContain('client_request_answered');
 });

@@ -211,3 +211,24 @@ client read would be the one nobody maintained.
   arguably be an e-mail, which needs a sender identity and a bounce story.
 - **No scheduled suspension.** A portal that should close at the end of an engagement has to be closed by
   somebody.
+
+## Since you last looked
+
+The portal has no notification bell and should not have one: it is not the agency's product, and a chrome full
+of controls that refuse a client would invite them to try.
+
+But a client who is told nothing has to open the portal and compare it against their memory, and since the
+intake queue started announcing its own moves there is something to tell them — a request accepted or declined,
+a question the agency needs answered, a reply. So the portal carries the quietest possible surface for it:
+**unread only, no history, no counts of things already seen, and absent entirely when there is nothing to say.**
+A permanently visible panel reading "nothing new" is furniture.
+
+Two rules it inherits rather than re-implements:
+
+- **The sentences are the server's**, written once when the thing happened. A portal that re-composed them from
+  the request's current state would say "your request was answered" about a request that has since moved twice.
+- **An internal note is not an update.** The agency writing to itself announces nothing, which is enforced where
+  the message is written rather than filtered here — see `docs/OPERATIONS.md`.
+
+The one figure it leads with is how many are **waiting on the client**, and only when that is not zero. "Three
+updates" measures how long somebody has been away; "one waiting on you" is a thing to do.

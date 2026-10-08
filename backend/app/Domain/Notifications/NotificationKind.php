@@ -14,7 +14,12 @@ use App\Domain\Access\Permission;
  * every state change teaches people to ignore the bell, and then the one notification that mattered — an
  * approval for a change to live spend, sitting unread — arrives in a stream nobody reads.
  *
- * So: four kinds, each with one recipient group and one thing for them to do.
+ * So: nine kinds, each with one recipient group and one thing for them to do. Four of them are about a client
+ * request, and they are four rather than one because the recipient and the action differ: a client being told
+ * their request moved has nothing to do, a client being asked for information has, an agency being told a client
+ * replied has, and "the agency answered you" goes the other way entirely. Collapsing them would mean a single
+ * notification whose recipient depended on a field, and a disclosure decided by a field is a disclosure
+ * somebody will get wrong.
  *
  * Each kind also declares the permission its recipient must hold. That is not a convenience: a notification is
  * a **disclosure**. Telling somebody that "Raise the Ramadan daily budget is waiting for you" discloses a
@@ -49,6 +54,42 @@ enum NotificationKind: string
      */
     case ClientRequestSubmitted = 'client_request_submitted';
 
+    /**
+     * The request you raised moved.
+     *
+     * Goes to whoever submitted it, which is usually the client. Nothing to do — this is the notification that
+     * closes the loop the intake queue opens: a request that was accepted, declined or delivered with nobody
+     * told is a client checking an inbox that never says anything.
+     */
+    case ClientRequestMoved = 'client_request_moved';
+
+    /**
+     * The agency needs something from you before it can go on.
+     *
+     * Its own kind rather than a `ClientRequestMoved` with a different state, because this is the one move that
+     * puts the work back on the client — and the whole point of `needsAction` is that a reader can tell the two
+     * apart without reading every line.
+     */
+    case ClientRequestNeedsInformation = 'client_request_needs_information';
+
+    /**
+     * The agency answered you.
+     *
+     * Only for a **client-visible** message from an agency member. An internal note announces nothing: writing
+     * to each other is not answering, and a notification saying "the agency replied" for a note the client
+     * cannot read would be the cruellest bug in this module.
+     */
+    case ClientRequestAnswered = 'client_request_answered';
+
+    /**
+     * A client said something on a request.
+     *
+     * The other half of `ClientRequestSubmitted`, and the gap it left: a request that was answered once and then
+     * replied to is a client waiting again, and nothing was telling anybody. Goes to the agency's own readers of
+     * the queue.
+     */
+    case ClientRequestReplied = 'client_request_replied';
+
     public function label(): string
     {
         return match ($this) {
@@ -57,6 +98,10 @@ enum NotificationKind: string
             self::ApprovalDecided => 'Your request was answered',
             self::ApprovalEnacted => 'An approved change was carried out',
             self::ClientRequestSubmitted => 'A client asked for something',
+            self::ClientRequestMoved => 'Your request moved',
+            self::ClientRequestNeedsInformation => 'We need something from you',
+            self::ClientRequestAnswered => 'Your request was answered',
+            self::ClientRequestReplied => 'A client replied on a request',
         };
     }
 
@@ -75,7 +120,15 @@ enum NotificationKind: string
              * The agency's own view of the queue, which a client viewer does not hold — so a client is never
              * told about another client's request, and never told about their own arriving.
              */
-            self::ClientRequestSubmitted => Permission::ClientRequestsView,
+            self::ClientRequestSubmitted, self::ClientRequestReplied => Permission::ClientRequestsView,
+            /*
+             * `submit` rather than `view`: these three go to the person who raised the request, who is usually a
+             * client and deliberately does not hold the agency's view of the queue. The permission a client
+             * viewer *does* hold is the one that let them raise it in the first place.
+             */
+            self::ClientRequestMoved,
+            self::ClientRequestNeedsInformation,
+            self::ClientRequestAnswered => Permission::ClientRequestsSubmit,
         };
     }
 
@@ -89,7 +142,14 @@ enum NotificationKind: string
     {
         return $this === self::TaskAssigned
             || $this === self::ApprovalRequested
-            || $this === self::ClientRequestSubmitted;
+            || $this === self::ClientRequestSubmitted
+            || $this === self::ClientRequestReplied
+            /*
+             * The one client-facing kind with something to do. "Your request was accepted" is news; "we need
+             * something from you" is a to-do list with the client's name on it, and the figure the portal leads
+             * with has to be able to tell them apart.
+             */
+            || $this === self::ClientRequestNeedsInformation;
     }
 
     public function subject(): NotificationSubject
@@ -97,7 +157,11 @@ enum NotificationKind: string
         return match ($this) {
             self::TaskAssigned => NotificationSubject::Task,
             self::ApprovalRequested, self::ApprovalDecided, self::ApprovalEnacted => NotificationSubject::Approval,
-            self::ClientRequestSubmitted => NotificationSubject::ClientRequest,
+            self::ClientRequestSubmitted,
+            self::ClientRequestMoved,
+            self::ClientRequestNeedsInformation,
+            self::ClientRequestAnswered,
+            self::ClientRequestReplied => NotificationSubject::ClientRequest,
         };
     }
 

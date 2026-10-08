@@ -1829,6 +1829,12 @@
       "window": "Measured over the last {{days}} days.",
       "noSourcesTitle": "Measurement is not connected yet",
       "noSourcesBody": "Nothing on your site is reporting to us, so there is nothing to check. Your account manager can set this up."
+    },
+    "updates": {
+      "title": "Since you last looked",
+      "markRead": "Mark as read",
+      "waiting": "{{count}} of these is waiting on you.",
+      "waiting_other": "{{count}} of these are waiting on you."
     }
   },
   "assistant": {

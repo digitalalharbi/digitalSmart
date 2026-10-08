@@ -13,6 +13,7 @@ import { PortalReportsPanel } from './PortalReportsPanel';
 import { PortalRevenuePanel } from './PortalRevenuePanel';
 import { PortalTrackingPanel } from './PortalTrackingPanel';
 import { PortalRequestsPanel } from './PortalRequestsPanel';
+import { PortalUpdates } from './PortalUpdates';
 import { useMyPortalsQuery } from './usePortal';
 import type { PortalEntry, PortalModuleValue } from './types';
 
@@ -138,6 +139,12 @@ export function MyPortalPage() {
                 <p className="text-content-secondary text-sm">{entry.message}</p>
               </section>
             )}
+
+            {/*
+              Above the tabs, because it is about whichever tab the client is not looking at. Absent entirely
+              when there is nothing to say.
+            */}
+            {entry.message !== null ? null : <PortalUpdates />}
 
             {active === undefined ? null : (
               <>

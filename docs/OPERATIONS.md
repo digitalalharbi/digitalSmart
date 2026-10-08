@@ -443,6 +443,38 @@ And **nobody is ever told what they just did.** `Announce` drops the actor befor
 written. Unassigning tells nobody: there is no new owner, and notifying the person it was taken from
 would be a complaint rather than a task.
 
+## Four of the nine kinds are about a client request
+
+Nine kinds, and four of them exist because a client request has two sides. Collapsing them would mean one
+notification whose recipient depended on a field, and a disclosure decided by a field is a disclosure somebody
+will eventually get wrong.
+
+| Kind | Who is told | Something to do? |
+| ---- | ----------- | ---------------- |
+| `client_request_submitted` | The agency's readers of the queue | yes — a client is waiting |
+| `client_request_replied` | The same, when a client says something more | yes — a client is waiting **again**, and this is the gap `submitted` left |
+| `client_request_moved` | Whoever raised it, usually the client | no — "we accepted it" is news |
+| `client_request_needs_information` | The same person, for the one move that puts the work back on them | **yes** |
+| `client_request_answered` | The same person, only for a **client-visible** message from the agency | no — reading is not a to-do |
+
+Three of them are permissioned on `client_requests.submit` rather than `.view`, which is the permission a client
+viewer actually holds: `.view` is the agency's own view of the queue, and a client deliberately does not have it.
+
+Two details carry the module's position on leaks:
+
+- **An internal note announces nothing.** Not a quieter notification — none. A bell saying "the agency replied"
+  for a note the client cannot read would be the cruellest bug here.
+- **The three client-facing drafts name one recipient and carry no project scope.** It is the only place in this
+  product that omits the scope, and the reason is that the audience is the author of the request: "could they
+  have read this" is answered by their having written it. A client viewer who had been taken off their own
+  project would otherwise be silently dropped from the one message they are owed.
+- **The notification carries the state, not the message.** The message is on the request, where the audience rule
+  decides who may read it, and copying it into a bell would be a second place that rule has to hold.
+
+The client's own portal has **no bell**, and should not — it is not the agency's product. It has a quiet
+"since you last looked" panel instead: unread only, no history, absent entirely when there is nothing to say. A
+notification with nowhere to be read is a notification that was not sent.
+
 ## Announcing must never fail the action it describes
 
 `Announce` catches and reports, like the audit recorder, for the same reason: an approval that was

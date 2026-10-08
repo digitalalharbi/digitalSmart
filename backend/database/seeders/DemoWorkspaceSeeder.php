@@ -1215,9 +1215,41 @@ final class DemoWorkspaceSeeder extends Seeder
         $answer($done->id, MessageAudience::Client, 'A bidding change we made on the 1st. Reverted, and the cost is back where it was.');
         $triage($done->id, ClientRequestState::Delivered);
 
+        /*
+         * 8. Raised by the client, and **answered** — the only one of the client's own requests that is.
+         *
+         * The demo was all one-sided before this: every request a client raised was either ignored or still
+         * open, so the portal's "since you last looked" panel had nothing in it and the loop this module exists
+         * to close could not be seen. This one is accepted and replied to, which puts two notifications in the
+         * client's own portal: their request moved, and the agency answered.
+         */
+        $actor->clear();
+        $actor->bind(new UserId((string) $viewer->getKey()), new WorkspaceId((string) $workspaceId));
+
+        $answered = $submit($ask(
+            ClientRequestKind::Change,
+            'Add the new product feed to the shopping campaign',
+            'We have published forty new lines on the store this week.',
+            StatedUrgency::ThisWeek,
+            4,
+        ));
+
+        $actor->clear();
+        $actor->bind(new UserId((string) $owner->getKey()), new WorkspaceId((string) $workspaceId));
+
+        $triage($answered->id, ClientRequestState::Accepted);
+        /*
+         * Promised, deliberately. Request 3 is the one that carries the "accepted with no promised date" shape the
+         * queue exists to publish, and a second one would turn that figure from a point into a pattern.
+         */
+        $promise($answered->id, (new DateTimeImmutable('today'))->modify('+3 days'));
+        $answer($answered->id, MessageAudience::Client, 'Feed is in and the campaign is picking the new lines up.');
+        /* And an internal note on the same thread, which announces nothing to the client. */
+        $answer($answered->id, MessageAudience::Internal, 'Watch the feed for missing GTINs on the new lines.');
+
         $this->command?->line(
-            '  Client requests: 7, one unanswered for five days, one waiting on the client, one accepted '
-            .'with no promised date, one open question.'
+            '  Client requests: 8, one unanswered for five days, one waiting on the client, one accepted '
+            .'with no promised date, one open question, one answered so the client portal has updates.'
         );
     }
 

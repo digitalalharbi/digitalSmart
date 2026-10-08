@@ -485,6 +485,8 @@ final readonly class EloquentClientRequestRepository implements ClientRequestRep
              * request on their behalf tells them only which of their own words were re-typed by somebody else.
              */
             submittedByName: $clientFacing ? null : $this->text($values['submitted_by_name'] ?? null),
+            /* Never serialised — see the note on the DTO. Who to tell is not the same question as what to show. */
+            submittedById: $this->text($values['submitted_by'] ?? null),
             /*
              * Withheld from the client, both of them. Who inside an agency is handling something is the agency's
              * business — and it is the field a client would chase by name, which is a conversation the agency

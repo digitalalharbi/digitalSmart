@@ -34,6 +34,14 @@ final readonly class ClientRequestView
         public ?string $promisedByName,
         public ?string $submittedByName,
         /*
+         * The submitter's id, and it is **not** withheld from a client-facing read the way the name is.
+         *
+         * A name is for a reader and tells a client only which of their own words were re-typed by somebody
+         * else; an id is who a notification goes to. This is the one field on this object that exists for the
+         * resolver rather than for a response, and `ClientRequestResource` does not serialise it.
+         */
+        public ?string $submittedById,
+        /*
          * The id as well as the name. A name is for a reader; an id is who an audit entry records and who a
          * notification goes to, and resolving one from the other fails the day two people share a name.
          */
@@ -79,6 +87,7 @@ final readonly class ClientRequestView
             $this->promisedAt,
             $this->promisedByName,
             $this->submittedByName,
+            $this->submittedById,
             $this->ownerId,
             $this->ownerName,
             $this->declinedReason,

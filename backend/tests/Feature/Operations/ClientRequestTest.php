@@ -793,3 +793,174 @@ describe('owning one', function (): void {
             ->assertForbidden();
     });
 });
+
+describe('telling the client', function (): void {
+    it('tells whoever raised it when the request moves', function (): void {
+        $setup = intakeScenario();
+        $request = raiseRequest($setup, [], $setup['viewer']);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/client-requests/{$request['id']}/state", ['state' => 'accepted'])
+            ->assertOk();
+
+        $feed = test()->actingAs($setup['viewer'])
+            ->getJson('/api/notifications')
+            ->assertOk()
+            ->json('data');
+
+        /*
+         * The loop the intake queue opens, closed. A request accepted with nobody told is a client checking an
+         * inbox that never says anything — the same failure as requiring a decline reason and never showing it.
+         */
+        $row = jsonRow($feed['notifications'], 'kind', 'client_request_moved');
+
+        expect($row['title'])->toBe('Pause the retargeting over Eid');
+        expect($row['body'])->toContain('Accepted');
+
+        /* Told, not tasked. Nothing to do about "we accepted it". */
+        expect($row['needs_action'])->toBeFalse();
+    });
+
+    it('tells the client, with something to do, when the agency needs information', function (): void {
+        $setup = intakeScenario();
+        $request = raiseRequest($setup, [], $setup['viewer']);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/client-requests/{$request['id']}/state", [
+                'state' => 'needs_information',
+                'reason' => 'Which campaigns should stay on over the holiday?',
+            ])
+            ->assertOk();
+
+        $feed = test()->actingAs($setup['viewer'])->getJson('/api/notifications')->assertOk()->json('data');
+        $row = jsonRow($feed['notifications'], 'kind', 'client_request_needs_information');
+
+        /*
+         * Its own kind, because this is the one move that puts the work back on the client — and the only figure
+         * a notification centre leads with usefully is "waiting on you".
+         */
+        expect($row['needs_action'])->toBeTrue();
+        expect($row['body'])->toContain('Which campaigns should stay on');
+        expect($feed['digest']['waiting'])->toBeGreaterThan(0);
+    });
+
+    it('tells the client when the agency answers, and never when it writes to itself', function (): void {
+        $setup = intakeScenario();
+        $request = raiseRequest($setup, [], $setup['viewer']);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/client-requests/{$request['id']}/messages", [
+                'audience' => 'internal',
+                'body' => 'Low priority — their spend is paused anyway.',
+            ])
+            ->assertCreated();
+
+        $afterNote = test()->actingAs($setup['viewer'])
+            ->getJson('/api/notifications')
+            ->assertOk()
+            ->json('data.notifications');
+
+        /*
+         * The cruellest bug this module could have: a bell saying "the agency replied" for a note the client
+         * cannot read. An internal note announces nothing at all — not a quieter notification, none.
+         */
+        expect(array_column($afterNote, 'kind'))->not->toContain('client_request_answered');
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/client-requests/{$request['id']}/messages", [
+                'audience' => 'client',
+                'body' => 'We can pause everything except the brand campaign.',
+            ])
+            ->assertCreated();
+
+        $afterAnswer = test()->actingAs($setup['viewer'])
+            ->getJson('/api/notifications')
+            ->assertOk()
+            ->json('data.notifications');
+
+        expect(array_column($afterAnswer, 'kind'))->toContain('client_request_answered');
+
+        /*
+         * And the message itself is not in the notification. It is already on the request, where the audience
+         * rule decides who may read it, and copying it here would be a second place that rule has to hold.
+         */
+        $row = jsonRow($afterAnswer, 'kind', 'client_request_answered');
+        expect($row['body'])->not->toContain('brand campaign');
+    });
+
+    it('tells the agency when a client replies, which nothing used to', function (): void {
+        $setup = intakeScenario();
+        $request = raiseRequest($setup, [], $setup['viewer']);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/client-requests/{$request['id']}/state", ['state' => 'accepted'])
+            ->assertOk();
+
+        test()->actingAs($setup['viewer'])
+            ->postJson("/api/client-requests/{$request['id']}/messages", [
+                'audience' => 'client',
+                'body' => 'One more thing — can you also pause the search campaign?',
+            ])
+            ->assertCreated();
+
+        $feed = test()->actingAs($setup['scenario']->owner)
+            ->getJson('/api/notifications')
+            ->assertOk()
+            ->json('data');
+
+        /*
+         * The gap `client_request_submitted` left: a request answered once and then replied to is a client
+         * waiting again, and nothing was telling anybody.
+         */
+        $row = jsonRow($feed['notifications'], 'kind', 'client_request_replied');
+
+        expect($row['needs_action'])->toBeTrue();
+        expect($row['title'])->toBe('Pause the retargeting over Eid');
+    });
+
+    it('does not tell somebody about a move they made themselves', function (): void {
+        $setup = intakeScenario();
+        /* Raised by the owner this time, who then moves it. */
+        $request = raiseRequest($setup);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/client-requests/{$request['id']}/state", ['state' => 'accepted'])
+            ->assertOk();
+
+        $feed = test()->actingAs($setup['scenario']->owner)
+            ->getJson('/api/notifications')
+            ->assertOk()
+            ->json('data.notifications');
+
+        // A bell that reports your own actions back to you is a bell people turn off.
+        expect(array_column($feed, 'kind'))->not->toContain('client_request_moved');
+    });
+
+    it('never tells a client about another client\'s request', function (): void {
+        $setup = intakeScenario();
+
+        $otherClient = Client::factory()->create(['workspace_id' => $setup['scenario']->workspace->getKey()]);
+        $otherProject = Project::factory()->forClient($otherClient)->create(['name' => 'Other']);
+
+        $request = raiseRequest($setup, [
+            'client_id' => (string) $otherClient->getKey(),
+            'project_id' => (string) $otherProject->getKey(),
+            'title' => 'Something for somebody else',
+        ]);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/client-requests/{$request['id']}/state", ['state' => 'accepted'])
+            ->assertOk();
+
+        $feed = test()->actingAs($setup['viewer'])
+            ->getJson('/api/notifications')
+            ->assertOk()
+            ->json('data.notifications');
+
+        /*
+         * The notification goes to the **submitter**, and nobody else — which is what makes a single named
+         * recipient with no project scope safe. A client viewer on an unrelated project learns nothing.
+         */
+        expect($feed)->toBe([]);
+    });
+});

@@ -4,6 +4,57 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 20 addendum — the client is told
+
+The intake queue could be moved, promised, declined and delivered without the person who raised it ever
+learning.
+
+### The argument
+
+A declined request carries a required reason that is *shown to the client* — and nothing told the client the
+request had been declined. The reason was there for somebody who happened to look. That is the same failure as
+not requiring one: an intake queue that answers into a void, where a client's only way to learn anything is to
+open the portal and compare it against their memory.
+
+### Added
+
+- **Four notification kinds**, taking the enum from five to nine. Four rather than one because the recipient and
+  the action differ: a client told their request moved has nothing to do, a client asked for information has, an
+  agency told a client replied has, and "the agency answered you" goes the other way entirely. Collapsing them
+  would mean one notification whose recipient depended on a field, and a disclosure decided by a field is a
+  disclosure somebody gets wrong.
+- **`client_request_replied` closes a gap nobody had noticed**: a request answered once and then replied to is a
+  client waiting again, and `client_request_submitted` only ever fired on the first message.
+- **`needs_information` is its own kind**, because it is the one move that puts the work back on the client — and
+  "waiting on you" is the only figure a notification centre leads with usefully.
+- **An internal note announces nothing.** Not a quieter notification: none. A bell saying "the agency replied"
+  for a note the client cannot read would be the cruellest bug in this module, and it is asserted from the
+  client's own session.
+- **The notification carries the state, not the message.** The message is on the request, where the audience rule
+  decides who may read it; copying it into a bell would be a second place that rule has to hold.
+- **The three client-facing drafts name one recipient and carry no project scope** — the only place in this
+  product that omits it. The audience is the author of the request, so "could they have read this" is answered by
+  their having written it, and a client who had been taken off their own project would otherwise be dropped from
+  the one message they are owed. A test asserts a client viewer on an unrelated project is told nothing.
+- **`submittedById` on the request view**, and deliberately not withheld from a client-facing read the way the
+  *name* is: a name tells a client which of their own words were re-typed by somebody else, while an id is who a
+  notification goes to. `ClientRequestResource` does not serialise it.
+- **A "since you last looked" panel in the client's portal.** The portal has no bell and should not have one, but
+  a notification with nowhere to be read is a notification that was not sent. Unread only, no history, absent
+  entirely when there is nothing to say — a permanently visible panel reading "nothing new" is furniture.
+- A migration that widens the `notifications_kind_check` constraint from the enum rather than from a list typed
+  twice, and whose `down()` deletes the rows the narrower constraint would reject instead of leaving a migration
+  that cannot be rolled back.
+- The demo now answers **one** of the client's own requests. Every client-raised request in it was previously
+  ignored or still open, so the loop this module exists to close could not be seen at all — and the portal's new
+  panel would have been empty in the only workspace anybody looks at.
+
+### Fixed
+
+The frontend's `NotificationKindValue` union had been missing `client_request_submitted` since Phase 20. The
+labels come from the server, so nothing was visibly broken; the type was simply lying, and a union that lies is
+worse than no union because it makes a `kind` that stops being announced invisible to the build.
+
 ## Phase 10 addendum — container readiness has a surface
 
 The endpoint had been built since Phase 9; nothing in the interface called it.

@@ -19,6 +19,24 @@ const state = vi.hoisted(() => ({
   entries: [] as PortalEntry[],
   performance: null as PortalPerformance | null,
   reports: [] as unknown[],
+  updates: [] as {
+    id: string;
+    kind_label: string;
+    title: string;
+    body: string | null;
+    needs_action: boolean;
+  }[],
+  markedAllRead: false,
+}));
+
+vi.mock('@/features/notifications', () => ({
+  useNotificationsQuery: () => ({ data: { notifications: state.updates } }),
+  useMarkAllReadMutation: () => ({
+    mutate: () => {
+      state.markedAllRead = true;
+    },
+    isPending: false,
+  }),
 }));
 
 vi.mock('./api', () => ({
@@ -86,6 +104,8 @@ beforeEach(() => {
   state.entries = [entry()];
   state.performance = performance();
   state.reports = [];
+  state.updates = [];
+  state.markedAllRead = false;
 });
 
 describe('MyPortalPage', () => {
@@ -205,5 +225,68 @@ describe('MyPortalPage', () => {
     await renderWithProviders(<MyPortalPage />);
 
     expect(await screen.findByText('Nothing here yet')).toBeInTheDocument();
+  });
+});
+
+describe('what changed since the client last looked', function () {
+  it('says nothing at all when there is nothing to say', async () => {
+    await renderWithProviders(<MyPortalPage />);
+
+    await screen.findByRole('navigation', { name: 'Your portal' });
+
+    // A permanently visible panel reading "nothing new" is furniture, so it is absent rather than empty.
+    expect(screen.queryByText('Since you last looked')).not.toBeInTheDocument();
+  });
+
+  it('shows the sentences the server wrote, and leads with what is waiting', async () => {
+    state.updates = [
+      {
+        id: 'n-1',
+        kind_label: 'We need something from you',
+        title: 'Pause the retargeting over Eid',
+        body: 'Needs information · Which campaigns should stay on?',
+        needs_action: true,
+      },
+      {
+        id: 'n-2',
+        kind_label: 'Your request was answered',
+        title: 'Add the new product feed',
+        body: 'In progress',
+        needs_action: false,
+      },
+    ];
+
+    await renderWithProviders(<MyPortalPage />);
+
+    const panel = await screen.findByText('Since you last looked');
+    expect(panel).toBeInTheDocument();
+
+    /*
+     * The server's own sentence, written once when the thing happened. A portal that re-composed it from the
+     * request's current state would say "your request was answered" about a request that has since moved twice.
+     */
+    expect(screen.getByText('Pause the retargeting over Eid')).toBeInTheDocument();
+    expect(screen.getByText(/Which campaigns should stay on/)).toBeInTheDocument();
+
+    /* And the one figure worth leading with: not how many updates, but how many are a thing to do. */
+    expect(screen.getByText('1 of these is waiting on you.')).toBeInTheDocument();
+  });
+
+  it('lets the client clear them', async () => {
+    state.updates = [
+      {
+        id: 'n-1',
+        kind_label: 'Your request moved',
+        title: 'Add the new product feed',
+        body: 'Delivered',
+        needs_action: false,
+      },
+    ];
+
+    await renderWithProviders(<MyPortalPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Mark as read' }));
+
+    expect(state.markedAllRead).toBe(true);
   });
 });
