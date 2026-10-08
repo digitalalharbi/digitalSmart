@@ -117,7 +117,105 @@ enum Provider: string
     }
 
     /**
-     * What this provider's API can do.
+     * What this product has read about writing to this provider, per operation.
+     *
+     * **Every `Documented` entry below was read in the provider's own current documentation**, and
+     * {@see writeReference()} records the endpoint and the fields that were read. The two `Unverified` entries
+     * are not a judgement about those providers: their documentation simply could not be read from here, and
+     * this product does not claim a write capability on a third party's say-so. See {@see WriteSupport}.
+     *
+     * A capability flag in `capabilities()` says the product *models* the operation. This says whether it will
+     * attempt it. The two are deliberately separate: the interface can show a control that explains why it is
+     * disabled, which is more useful than a control that is absent.
+     */
+    public function writeSupport(WriteOperation $operation): WriteSupport
+    {
+        return match ($this) {
+            /*
+             * Meta Marketing API. `POST /{campaign_id}` updates a campaign; `status` takes ACTIVE, PAUSED,
+             * DELETED or ARCHIVED, and `daily_budget` is updatable — with the documented constraint that a
+             * budget is set at the campaign level or the ad set level and not both.
+             */
+            self::Meta => WriteSupport::Documented,
+
+            /*
+             * Google Ads API. `CampaignService.mutateCampaigns` with an `update_mask` changes `status`
+             * (ENABLED, PAUSED, REMOVED); `CampaignBudgetService.mutateCampaignBudgets` changes
+             * `amount_micros`. The budget is a separate resource from the campaign, which is why a budget change
+             * here is a different service call rather than a different field.
+             */
+            self::GoogleAds => WriteSupport::Documented,
+
+            /*
+             * Snapchat Marketing API. `PATCH /v1/adaccounts/{ad_account_id}/campaigns/{campaign_id}` is the
+             * partial update; `status` takes ACTIVE or PAUSED, and `daily_budget_micro` is an integer of at
+             * least 20,000,000 — a documented floor this product has to respect rather than discover.
+             */
+            self::Snapchat => WriteSupport::Documented,
+
+            /*
+             * LinkedIn Marketing API. `POST /rest/adAccounts/{id}/adCampaigns/{id}` with the header
+             * `X-RestLi-Method: PARTIAL_UPDATE` and a `patch.$set` body; `status` and `dailyBudget` are both
+             * editable, and `dailyBudget` carries its own `currencyCode` which must match the account's.
+             */
+            self::LinkedIn => WriteSupport::Documented,
+
+            /*
+             * TikTok and X: unverified, and refused. TikTok publishes its Business API through a portal that
+             * serves no readable content to a fetcher, and X's developer documentation was not reachable. Both
+             * operations are widely described in third-party libraries, which is not the provider saying so.
+             */
+            self::TikTok, self::X => WriteSupport::Unverified,
+
+            /*
+             * Everything else is a read integration by design. An analytics property, a tag container and a
+             * store are not places this product changes campaigns — see `capabilities()`, which already says
+             * why writing somebody's measurement configuration from a reporting tool is a hazard rather than a
+             * feature.
+             */
+            default => WriteSupport::NotSupported,
+        };
+    }
+
+    /**
+     * The endpoint and fields this product read, for an operation it will attempt.
+     *
+     * Kept in the code rather than only in documentation, because this is the sentence somebody needs when a
+     * write behaves unexpectedly: what did we think the contract was. Null where no attempt is made.
+     */
+    public function writeReference(WriteOperation $operation): ?string
+    {
+        if (! $this->writeSupport($operation)->allowsAttempt()) {
+            return null;
+        }
+
+        return match ($this) {
+            self::Meta => $operation === WriteOperation::SetCampaignDailyBudget
+                ? 'POST /{campaign_id} with daily_budget (minor units) — Meta Marketing API, campaign reference'
+                : 'POST /{campaign_id} with status=ACTIVE|PAUSED — Meta Marketing API, campaign reference',
+            self::GoogleAds => $operation === WriteOperation::SetCampaignDailyBudget
+                ? 'CampaignBudgetService.mutateCampaignBudgets with amount_micros and update_mask — Google Ads API'
+                : 'CampaignService.mutateCampaigns with status=ENABLED|PAUSED and update_mask — Google Ads API',
+            self::Snapchat => $operation === WriteOperation::SetCampaignDailyBudget
+                ? 'PATCH /v1/adaccounts/{ad_account_id}/campaigns/{campaign_id} with daily_budget_micro '
+                    .'(minimum 20,000,000) — Snapchat Marketing API'
+                : 'PATCH /v1/adaccounts/{ad_account_id}/campaigns/{campaign_id} with status=ACTIVE|PAUSED — '
+                    .'Snapchat Marketing API',
+            self::LinkedIn => $operation === WriteOperation::SetCampaignDailyBudget
+                ? 'POST /rest/adAccounts/{id}/adCampaigns/{id} with X-RestLi-Method: PARTIAL_UPDATE and '
+                    .'patch.$set.dailyBudget{amount,currencyCode} — LinkedIn Marketing API'
+                : 'POST /rest/adAccounts/{id}/adCampaigns/{id} with X-RestLi-Method: PARTIAL_UPDATE and '
+                    .'patch.$set.status=ACTIVE|PAUSED — LinkedIn Marketing API',
+            default => null,
+        };
+    }
+
+    /**
+     * What an adapter can do against this provider.
+     *
+     * A capability says the product *models* the operation; {@see writeSupport()} says whether it will attempt a
+     * write. The two are separate so the interface can show a control that explains why it is disabled, which is
+     * more useful than a control that is absent.
      *
      * @return list<ProviderCapability>
      */

@@ -80,6 +80,21 @@ assistant works without one because the product computes every figure. See `docs
 parameter they left out, and a 422 naming a parameter is a statement that the endpoint exists and would answer.
 Two revenue reads had that ordering wrong and were corrected in Phase 22.
 
+**Why making a change on a platform is its own permission.** `provider_writes.execute` is held by no role that
+only decides. Approving a change and being the credentials that move a client's money are different acts, and a
+workspace that collapsed them would have the person who authorised a budget rise also be the only record that it
+happened. The same split is why the carry-out audits the attempt *before* the request leaves: an outcome of
+`unknown` has no response to record, and an entry written beforehand is the only thing that can say a request was
+sent at all. A write against sandbox credentials carries SANDBOX into the audit entry for ever, because a trail
+recording a simulated pause as a real one is worse than no trail. See `docs/PROVIDER_WRITES.md`.
+
+**Why a provider write is refused where the API is merely likely to support it.** `Provider::writeSupport()`
+answers `documented`, `unverified` or `not supported`, and only the first permits an attempt. `unverified` is not
+a smaller yes: TikTok and X almost certainly do accept these writes, nobody here has read the current reference
+for them, and attempting one on that basis would be guessing with somebody else's budget. The endpoint and fields
+actually read are recorded per provider and written into every attempt's audit entry, so a reader a year later
+can tell which contract the attempt was built against.
+
 **Why the queue is "degraded", not "down".** Treating a stalled worker as a hard outage
 would take the whole platform offline for a non-critical dependency. The distinction is
 encoded in `ServiceStatus`.

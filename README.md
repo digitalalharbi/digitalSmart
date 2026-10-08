@@ -9,7 +9,7 @@ analysis and presentation generation.
 
 ## Status
 
-**Phases 0–20 complete.** See `docs/ROADMAP.md` for the per-phase
+**Phases 0–25 complete.** See `docs/ROADMAP.md` for the per-phase
 detail and for the external authorizations that are blocked.
 
 Working today: sign-in, sessions and workspace switching; six system roles with
@@ -23,8 +23,11 @@ that records whether an authorised change was ever actually made; notifications 
 realtime; a client intake queue clients can write to; reports that a client can read
 through an expiring link without an account; a client portal whose every surface is a
 recorded, revocable decision about one client; an assistant that computes every figure
-itself and refuses a model's prose that states one it did not; and editable PowerPoint decks
-laid out from the same figures every screen reads. In English and
+itself and refuses a model's prose that states one it did not; editable PowerPoint decks
+laid out from the same figures every screen reads; and the one place this product writes to a
+platform rather than reading it — three operations, only where that provider's own documentation
+was read for them, behind a separate permission, an explicit approval, an audit entry written
+before the request leaves and a read-back that is the only thing allowed to confirm it. In English and
 Arabic, light and dark, desktop and mobile.
 
 **Every provider's live handshake is `BLOCKED_EXTERNAL`** on an authorization this
@@ -36,9 +39,9 @@ provider.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 1 537 passed — architecture, unit, feature          |
-| Frontend tests (Vitest)   | 413 passed                                          |
-| End-to-end (Playwright)   | 336 passed — Chromium + mobile Safari, signing in as real roles |
+| Backend tests (Pest)      | 1 568 passed — architecture, unit, feature          |
+| Frontend tests (Vitest)   | 421 passed                                          |
+| End-to-end (Playwright)   | 340 passed — Chromium + mobile Safari, signing in as real roles |
 | Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
 | Style                     | Pint, ESLint and Prettier, clean                    |
 
@@ -97,6 +100,7 @@ make e2e        # Playwright (stack must be running)
 | `docs/PORTAL.md`         | The client portal: three closed lists, and who counts as a client |
 | `docs/INTELLIGENCE.md`   | The assistant: the product computes, the model writes, the guard checks |
 | `docs/PRESENTATIONS.md`  | Decks: the theme tokens first, and why the PDF comes from the browser |
+| `docs/PROVIDER_WRITES.md` | The one place this product writes: three operations, seven gates, and `unverified` |
 | `docs/DATA_VISUALISATION.md` | The measured chart palette, its gates, and the mark rules |
 | `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |
 | `docs/SECURITY.md`       | Controls, threat notes, secret handling                 |

@@ -476,6 +476,9 @@ final readonly class EloquentApprovalRepository implements ApprovalRepository
                 rationale: (string) ($values['rationale'] ?? ''),
                 proposal: $this->proposal($values['proposal'] ?? null),
                 fingerprint: (string) ($values['proposal_fingerprint'] ?? ''),
+                decidedFingerprint: $values['decided_fingerprint'] === null
+                    ? null
+                    : (string) $values['decided_fingerprint'],
                 state: ApprovalState::tryFrom((string) ($values['state'] ?? '')) ?? ApprovalState::Pending,
                 enactment: EnactmentState::tryFrom((string) ($values['enactment'] ?? ''))
                     ?? EnactmentState::NotRequired,

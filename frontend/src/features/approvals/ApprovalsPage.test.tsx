@@ -9,6 +9,7 @@ import type {
   ApprovalRequest,
   ApprovalRow,
   ApprovalVocabulary,
+  WriteOutcome,
 } from './types';
 
 vi.mock('@/shared/ui/chart/Chart', () => ({
@@ -31,6 +32,7 @@ vi.mock('@/features/auth', () => ({
     approvalsView: 'approvals.view',
     approvalsRequest: 'approvals.request',
     approvalsDecide: 'approvals.decide',
+    providerWritesExecute: 'provider_writes.execute',
   },
   useSession: () => ({ can: (permission: string) => permissions.current.includes(permission) }),
 }));
@@ -41,6 +43,9 @@ const state = vi.hoisted(() => ({
   vocabulary: null as ApprovalVocabulary | null,
   decided: null as Record<string, unknown> | null,
   enacted: null as Record<string, unknown> | null,
+  asked: null as Record<string, unknown> | null,
+  carriedOut: null as Record<string, unknown> | null,
+  outcome: null as WriteOutcome | null,
   failWith: null as Error | null,
 }));
 
@@ -61,8 +66,58 @@ vi.mock('./api', () => ({
 
     return Promise.resolve(state.request);
   },
-  requestApproval: () => Promise.resolve(state.request),
+  requestApproval: (input: Record<string, unknown>) => {
+    state.asked = input;
+
+    return Promise.resolve(state.request);
+  },
+  carryOutApproval: (input: Record<string, unknown>) => {
+    state.carriedOut = input;
+
+    return state.failWith === null
+      ? Promise.resolve({ request: state.request, outcome: state.outcome })
+      : Promise.reject(state.failWith);
+  },
 }));
+
+/** An approval this product can actually carry out: a provider whose write is documented, and a campaign named. */
+function writable(): Partial<ApprovalRequest> {
+  return {
+    id: 'approval-2',
+    kind: 'campaign_pause',
+    kind_label: 'Pause a campaign',
+    state: 'approved',
+    state_label: 'Approved',
+    enactment: 'awaiting_hand',
+    enactment_label: 'Waiting to be carried out',
+    can_be_carried_out_here: true,
+    carry_out_blocked_because: null,
+    proposal: { provider: 'meta', campaign_id: '23850000000000001' },
+    decided_by_name: 'Mohammed',
+    decided_at: '2026-09-28T09:00:00+00:00',
+    waiting_days: 9,
+  };
+}
+
+function outcome(overrides: Partial<WriteOutcome> = {}): WriteOutcome {
+  return {
+    is_confirmed: true,
+    operation: 'pause_campaign',
+    provider: 'meta',
+    provider_label: 'Meta Ads',
+    confirmed_state: 'PAUSED',
+    source: 'sandbox',
+    failure: null,
+    failure_label: null,
+    guidance: null,
+    safe_to_retry: null,
+    provider_message: null,
+    provider_request_id: 'req_7f3a',
+    source_label: 'Sandbox',
+    summary: 'Meta Ads reported "PAUSED" when the campaign was read back.',
+    ...overrides,
+  };
+}
 
 function vocabulary(): ApprovalVocabulary {
   return {
@@ -73,9 +128,20 @@ function vocabulary(): ApprovalVocabulary {
         touches_live_spend: true,
         is_enacted_here: false,
         enactment_blocked_because:
-          'This product does not change live budgets or bids. Once this is approved, somebody makes the change in the platform and marks it done here.',
+          'Approving this changes no live budget or bid by itself. Where the request names a campaign on a platform whose write is documented, this product can carry it out; otherwise somebody makes the change in the platform and marks it done here.',
         decided_with: 'budgets.approve',
         usual_subject: 'budget',
+      },
+      {
+        /* The one kind in this vocabulary whose write this product has read in Meta's own documentation. */
+        kind: 'campaign_pause',
+        label: 'Pause a campaign',
+        touches_live_spend: false,
+        is_enacted_here: false,
+        enactment_blocked_because:
+          'Approving this starts or stops nothing by itself. Where the request names a campaign on a platform whose write is documented, this product can carry it out; otherwise somebody makes the change in the platform and marks it done here.',
+        decided_with: null,
+        usual_subject: 'campaign',
       },
       {
         kind: 'tracking_change',
@@ -136,7 +202,15 @@ function row(overrides: Partial<ApprovalRow> = {}): ApprovalRow {
     touches_live_spend: true,
     is_enacted_here: false,
     enactment_blocked_because:
-      'This product does not change live budgets or bids. Once this is approved, somebody makes the change in the platform and marks it done here.',
+      'Approving this changes no live budget or bid by itself. Where the request names a campaign on a platform whose write is documented, this product can carry it out; otherwise somebody makes the change in the platform and marks it done here.',
+    /*
+     * Most approvals do not name a platform campaign, so this is the ordinary case: the request says why it
+     * cannot be carried out here rather than offering a button that would guess which campaign was meant.
+     */
+    can_be_carried_out_here: false,
+    carry_out_blocked_because:
+      'This request does not name a platform campaign, so this product cannot carry it out. Most approvals do not — make the change in the platform and record it here.',
+    proposal_matches_decision: true,
     fingerprint: 'abc123def456abc123def456abc123def456abc123def456abc123def4560000',
     fingerprint_short: 'abc123def456',
     client_id: 'client-1',
@@ -228,6 +302,9 @@ beforeEach(() => {
   state.request = request();
   state.decided = null;
   state.enacted = null;
+  state.asked = null;
+  state.carriedOut = null;
+  state.outcome = outcome();
   state.failWith = null;
 });
 
@@ -335,7 +412,7 @@ describe('a request', function () {
      * Before the buttons, not after the decision. Without this sentence a decider presses Approve believing the
      * budget is now raised, and tells a client so.
      */
-    expect(await screen.findByText(/does not change live budgets or bids/)).toBeInTheDocument();
+    expect(await screen.findByText(/changes no live budget or bid by itself/)).toBeInTheDocument();
   });
 
   it('sends back the fingerprint it displayed', async () => {
@@ -424,6 +501,213 @@ describe('a request', function () {
 
     // Somebody's claim, with their name and the time on it. The product did not read the platform.
     expect(state.enacted).toMatchObject({ enactment: 'confirmed' });
+  });
+
+  it('raises a request with the proposal exactly as it was typed', async () => {
+    await renderWithProviders(<ApprovalsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Raise a request' }));
+
+    const dialog = await screen.findByRole('dialog');
+
+    await userEvent.selectOptions(
+      within(dialog).getByLabelText(/What kind of change/),
+      'campaign_pause',
+    );
+    await userEvent.type(
+      within(dialog).getByLabelText(/What the queue will call it/),
+      'Pause the Eid prospecting campaign',
+    );
+    await userEvent.type(
+      within(dialog).getByLabelText(/Why it is wanted/),
+      'Cost per purchase has doubled over four days.',
+    );
+    await userEvent.type(within(dialog).getByLabelText('Field'), 'external_campaign_id');
+    await userEvent.type(within(dialog).getByLabelText('Value'), '23850000000000001');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Send for approval' }));
+
+    /*
+     * Keys and values, not a shape. This product does not model each platform's schema to describe a change to
+     * it, and the fingerprint a decision names covers exactly these characters — so a form that coerced them
+     * would have a decider approve something nobody wrote.
+     */
+    expect(state.asked).toMatchObject({
+      kind: 'campaign_pause',
+      title: 'Pause the Eid prospecting campaign',
+      proposal: { external_campaign_id: '23850000000000001' },
+    });
+  });
+
+  it('refuses a request with nothing proposed', async () => {
+    await renderWithProviders(<ApprovalsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Raise a request' }));
+
+    const dialog = await screen.findByRole('dialog');
+
+    await userEvent.selectOptions(
+      within(dialog).getByLabelText(/What kind of change/),
+      'tracking_change',
+    );
+    await userEvent.type(
+      within(dialog).getByLabelText(/What the queue will call it/),
+      'Count the newsletter sign-up',
+    );
+    await userEvent.type(
+      within(dialog).getByLabelText(/Why it is wanted/),
+      'It is the only signal we have on the content side.',
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Send for approval' }));
+
+    // An approval with an empty proposal is a title somebody is asked to agree to.
+    expect(state.asked).toBeNull();
+    expect(await screen.findByText(/Say what is being proposed/)).toBeInTheDocument();
+  });
+
+  it('says at the moment of asking that approving will not make the change', async () => {
+    await renderWithProviders(<ApprovalsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Raise a request' }));
+
+    const dialog = await screen.findByRole('dialog');
+
+    await userEvent.selectOptions(
+      within(dialog).getByLabelText(/What kind of change/),
+      'spend_change',
+    );
+
+    /*
+     * The requester learns it too, not only the decider. Somebody who raises a spend change believing approval
+     * raises the budget writes the client an email that is wrong by one working day.
+     */
+    expect(within(dialog).getByText('Changes live spend')).toBeInTheDocument();
+    expect(within(dialog).getByText(/changes no live budget or bid by itself/)).toBeInTheDocument();
+  });
+
+  it('offers no way to ask to somebody who may only read the queue', async () => {
+    permissions.current = ['approvals.view', 'approvals.decide'];
+
+    await renderWithProviders(<ApprovalsPage />);
+
+    await screen.findByRole('heading', { level: 1, name: 'Approvals' });
+
+    // Asking and deciding are separate permissions, and the queue is where asking happens.
+    expect(screen.queryByRole('button', { name: 'Raise a request' })).not.toBeInTheDocument();
+  });
+
+  it('offers no platform button where the provider write is not documented', async () => {
+    permissions.current = [
+      'approvals.view',
+      'approvals.request',
+      'approvals.decide',
+      'provider_writes.execute',
+    ];
+
+    state.request = request({
+      id: 'approval-2',
+      state: 'approved',
+      state_label: 'Approved',
+      enactment: 'awaiting_hand',
+      enactment_label: 'Waiting to be carried out',
+      waiting_days: 9,
+    });
+
+    await renderWithProviders(<ApprovalsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Pause the retargeting set/ }));
+
+    /*
+     * The ordinary case, and it is published rather than hidden: the reason is what sends somebody to the
+     * platform, which is the right place when this product cannot name the campaign.
+     */
+    expect(await screen.findByText(/does not name a platform campaign/)).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Carry this out on the platform' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('asks the platform and reports what it read back', async () => {
+    permissions.current = [
+      'approvals.view',
+      'approvals.request',
+      'approvals.decide',
+      'provider_writes.execute',
+    ];
+
+    state.request = request(writable());
+
+    await renderWithProviders(<ApprovalsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Pause the retargeting set/ }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Carry this out on the platform/ }),
+    );
+
+    expect(state.carriedOut).toMatchObject({ requestId: 'approval-2' });
+
+    /*
+     * A confirmation names the state the provider was read back as, not the state this product asked for. And
+     * a sandbox write says so on the same panel — a simulated change recorded as a real one is the one failure
+     * mode this whole feature has to not have.
+     */
+    expect(await screen.findByText('Meta Ads confirmed: PAUSED')).toBeInTheDocument();
+    expect(screen.getByText(/This was a sandbox write/)).toBeInTheDocument();
+  });
+
+  it('names the failure, what to do, and when not to try again', async () => {
+    permissions.current = [
+      'approvals.view',
+      'approvals.request',
+      'approvals.decide',
+      'provider_writes.execute',
+    ];
+
+    state.request = request(writable());
+    state.outcome = outcome({
+      is_confirmed: false,
+      confirmed_state: null,
+      failure: 'unknown',
+      failure_label: 'The outcome is unknown',
+      guidance: 'Check the campaign in the platform before trying again.',
+      safe_to_retry: false,
+      provider_message: 'Request timed out',
+      provider_request_id: 'req_91bc',
+    });
+
+    await renderWithProviders(<ApprovalsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Pause the retargeting set/ }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Carry this out on the platform/ }),
+    );
+
+    /*
+     * The failure that must not be retried. A reader told only "it failed" presses the button again, and a
+     * second attempt after an unknown outcome is how a campaign gets paused twice or a budget set twice.
+     */
+    expect(await screen.findByText(/The outcome is unknown/)).toBeInTheDocument();
+    expect(screen.getByText(/Do not try this again/)).toBeInTheDocument();
+    expect(screen.getByText(/Request timed out/)).toBeInTheDocument();
+  });
+
+  it('withholds the platform button from somebody who may decide but not write', async () => {
+    state.request = request(writable());
+
+    await renderWithProviders(<ApprovalsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Pause the retargeting set/ }));
+
+    await screen.findByText(/Cost per purchase has held/);
+
+    /*
+     * Deciding and writing are separate permissions on purpose: approving a change and being the credentials
+     * that move money are different acts. "I have made this change" stays — recording what a person did by
+     * hand needs no provider permission.
+     */
+    expect(
+      screen.queryByRole('button', { name: 'Carry this out on the platform' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'I have made this change' })).toBeInTheDocument();
   });
 
   it('offers no decision to somebody who may only ask', async () => {

@@ -1358,7 +1358,7 @@
       "about": "About",
       "decision": "Decision",
       "decidedBy": "{{name}}, after {{days}} days",
-      "carriedOut": "Carried out",
+      "carriedOut": "{{provider}} confirmed: {{state}}",
       "enactedBy": "{{state}} — recorded by {{name}}",
       "enactmentNote": "Note on carrying it out: {{note}}",
       "decisionReason": "Reason given: {{reason}}",
@@ -1377,8 +1377,36 @@
         "declined": "Why it is being declined",
         "withdrawn": "Why it is being withdrawn",
         "abandoned": "Why the approved change will not be made"
-      }
-    }
+      },
+      "carryOut": "Carry this out on the platform",
+      "carryOutHint": "Approving this did not change anything. This asks the platform directly, and reads the campaign back to confirm.",
+      "carryOutFailed": "{{label}} — {{guidance}}",
+      "carryOutSandbox": "This was a sandbox write. No platform has issued this workspace credentials, so nothing live was changed.",
+      "providerSaid": "{{provider}} said: {{message}}",
+      "providerRequest": "Provider request {{id}}",
+      "doNotRetry": "Do not try this again until somebody has checked the platform."
+    },
+    "form": {
+      "title": "Raise a request for approval",
+      "description": "Describe the change and why it is wanted. Approving it records a decision; it does not make the change.",
+      "kind": "What kind of change",
+      "selectKind": "Choose a kind",
+      "touchesSpend": "Changes live spend",
+      "titleField": "What the queue will call it",
+      "rationale": "Why it is wanted",
+      "rationaleHint": "The only record of the reason, and the first thing anybody asks about it afterwards.",
+      "client": "Client",
+      "noClient": "No client",
+      "proposal": "What is being proposed",
+      "proposalHint": "Written as fields, so a decider reads exactly what was asked rather than a summary of it. A change this product can carry out itself names provider, external_account_id and external_campaign_id.",
+      "proposalKey": "Field",
+      "proposalValue": "Value",
+      "proposalRequired": "Say what is being proposed. A decider has to be able to read what they are agreeing to.",
+      "addField": "Add a field",
+      "removeField": "Remove this field",
+      "submit": "Send for approval"
+    },
+    "raise": "Raise a request"
   },
   "notifications": {
     "title": "Notifications",

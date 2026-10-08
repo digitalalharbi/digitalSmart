@@ -910,8 +910,35 @@ final class DemoWorkspaceSeeder extends Seeder
             ['conversion' => 'newsletter_signup', 'counts_as' => 'secondary'],
         ));
 
+        /*
+         * 5. Approved, waiting, and the one this product can carry out itself — because its proposal names the
+         * provider, the ad account and the campaign id rather than a campaign's name. Every other approval here
+         * describes something no API call expresses, which is the ordinary case and why the surface explains
+         * itself instead of offering a button that would guess at a campaign.
+         *
+         * The ids are the sandbox account this demo connects and an obviously fictional campaign. The demo holds
+         * no live credentials, so carrying this out goes to the sandbox writer and comes back labelled SANDBOX —
+         * which is the state the surface has to show, and the reason this row is here.
+         */
+        $executable = $ask($request(
+            ApprovalKind::CampaignPause,
+            'Pause the Ramadan prospecting campaign',
+            'Cost per purchase has doubled over four days and the audience is saturated.',
+            [
+                'provider' => Provider::Meta->value,
+                'external_account_id' => 'act_sandbox_1001',
+                'external_campaign_id' => '23850000000000001',
+                'action' => 'pause',
+            ],
+        ));
+        $decide($executable->id, ApprovalState::Approved, $executable->fingerprint);
+        DB::table('approval_requests')
+            ->where('id', $executable->id)
+            ->update(['decided_at' => now()->subDays(2)]);
+
         $this->command?->line(
-            '  Approvals: 5 requests, one approved and carried out, one approved and still waiting nine days.'
+            '  Approvals: 6 requests, one approved and carried out, one approved and still waiting nine days, '.
+            'one approved that this product can carry out on the platform itself.'
         );
     }
 

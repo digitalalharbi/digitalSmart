@@ -4,6 +4,81 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 25 — provider write operations
+
+Everything else in this product reads. This is the one place it writes.
+
+### The argument
+
+The brief's condition is the whole design: **only where the API officially supports it**. Not where the
+provider's own interface offers the change, and not where it is obvious that an API would — the failure mode here
+is not a wrong number on a screen but a campaign paused that should not have been, or a client's budget set twice.
+
+So support is a three-state answer rather than a boolean. `documented` means that provider's current reference
+was read for that operation and the endpoint and fields were recorded. `unverified` means it very likely works
+and nobody here has read it — which is not a smaller yes, and is the state TikTok and X are in. `not supported`
+is the rest. Only the first permits an attempt.
+
+### Added
+
+- `app/Domain/Integration/` — `WriteOperation` (three: pause, resume, set daily budget, each mapped to the
+  approval kind that authorises it and the capability it needs), `WriteSupport`, `WriteTarget`, `WriteFailure`,
+  `WriteOutcome`, `WriteRequest`, and `Exception/WriteRefused` with seven named refusals.
+- **The campaign is read back.** `WriteOutcome::confirmed()` cannot be constructed without the state the provider
+  reported on a subsequent read. An accepted request is not a confirmation: an API that returns 200 and applies
+  the change a minute later, or not at all, is a normal API.
+- **Seven gates in `CarryOutApproval`**, and the fingerprint is among them. A proposal amended after a decision is
+  a different change and needs a different approval — which is the same guarantee the decision itself rests on,
+  applied to the act rather than the record.
+- **`WriteTarget` reads a free-form proposal and refuses anything ambiguous.** It needs `provider`,
+  `external_account_id` and `external_campaign_id`, plus an amount for a budget change. A proposal saying "pause
+  the retail campaign" is not a campaign id, and a product that matched it by name would eventually pause a
+  different campaign with a similar name. A pause carrying an amount is also refused: that is a proposal
+  describing two changes while asking approval for one, which nobody could read correctly.
+- **`provider_writes.execute`, which is not `approvals.decide`.** Approving a change and being the credentials
+  that move a client's money are different acts, and a workspace that collapsed them would have the person who
+  authorised a budget rise also be the only record that it happened.
+- **The attempt is audited before the request leaves.** An outcome of `unknown` — a timeout, a dropped connection
+  — has no response to record, and an entry written beforehand is the only thing that can say a request was sent
+  at all. Confirmation and failure each add their own entry with the provider's own words and request id.
+- **`safe_to_retry` is false for exactly two failures**, and the surface says so in words. `rejected`, because
+  the provider understood and declined and will decline again; and `unknown`, because a second attempt after an
+  unknown outcome is how a budget gets set twice. A reader told only "it failed" presses the button again.
+- **A failed write leaves the request exactly where it was** — approved, awaiting a hand. Not abandoned: nobody
+  decided against the change. That is what lets somebody retry it, or go and do it by hand and record that.
+- **`SandboxCampaignWriter` refuses real credentials** rather than quietly simulating a live account, and every
+  outcome it returns carries `MetricSource::Sandbox` — into the audit entry for ever, and onto the screen beside
+  the confirmation. A simulated pause recorded as a real one is the one failure this feature must not have.
+- **A request form on the approvals queue.** Asking is its own permission and the queue is where somebody asks,
+  and until now nothing in the interface could raise one. The proposal is entered as fields rather than a shape,
+  because this product deliberately does not model each platform's schema to describe a change to it — and the
+  fingerprint a decision names covers exactly the characters that were typed. The kind's consequence is stated at
+  the moment of asking, not only at the moment of deciding: somebody who raises a spend change believing approval
+  raises the budget writes the client an email that is wrong by one working day.
+- **`carry_out_blocked_because` is published rather than the control hidden.** Most approvals name no platform
+  campaign — that is the ordinary case — and the reason is what sends a reader to the platform, which is the right
+  place once they know why.
+- `docs/PROVIDER_WRITES.md`; `POST /api/approvals/{approval}/carry-out` in `docs/API.md`; two threat notes in
+  `docs/SECURITY.md`.
+
+### Blocked externally
+
+The live HTTP adapters, for every provider in the table. Each needs an app approved in that provider's developer
+programme for a write scope (Meta `ads_management`, Google Ads a developer token at standard access, Snapchat and
+LinkedIn their own review), the account owner's OAuth authorisation for it, and a real ad account to verify
+against — a write cannot be verified against a fixture. The contract, the gates, the audit, the failure taxonomy
+and the surface are all real and tested; only the HTTP call is simulated, and the product says so everywhere the
+result appears.
+
+### Changed
+
+- **The demo workspace seeds a sixth approval** — approved, waiting, and naming the sandbox ad account and an
+  obviously fictional campaign, so the surface can demonstrate both halves: a request this product can carry out,
+  and four that it cannot and says why. `DemoBoardTest` asserts exactly one of the waiting requests names a
+  campaign, so the demonstration cannot quietly become two.
+- **The roadmap's duplicate phase 24 is corrected.** Provider writes and production hardening were numbered 24
+  and 25 beside the presentation generator's 24; they are 25 and 26.
+
 ## Phase 24 — the presentation generator
 
 A deck is a report, laid out for a room.

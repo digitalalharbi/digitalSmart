@@ -89,6 +89,18 @@ export type ApprovalRow = {
   touches_live_spend: boolean;
   is_enacted_here: boolean;
   enactment_blocked_because: string | null;
+  /**
+   * Whether this product can carry the change out on the platform.
+   *
+   * Different from `is_enacted_here`, which asks whether *approving* enacts it — still false for every kind,
+   * because approval authorises and carrying out is a second act. This asks whether that second act is
+   * available, which depends on the proposal naming a platform campaign and on the provider's write having
+   * been read in its own documentation.
+   */
+  can_be_carried_out_here: boolean;
+  carry_out_blocked_because: string | null;
+  /** False once somebody has amended the proposal. The write path refuses on it. */
+  proposal_matches_decision: boolean;
   /** The hash a decision must send back. */
   fingerprint: string;
   fingerprint_short: string;
@@ -148,4 +160,27 @@ export type ApprovalQueue = {
   settled: ApprovalRow[];
   load: ApprovalLoad;
   as_of: string;
+};
+
+/** What a platform did when asked to change something. */
+export type WriteOutcome = {
+  is_confirmed: boolean;
+  operation: string;
+  provider: string;
+  provider_label: string;
+  /** What the provider reported when the campaign was read back. Null when nothing was confirmed. */
+  confirmed_state: string | null;
+  failure: string | null;
+  failure_label: string | null;
+  guidance: string | null;
+  /**
+   * False for an unknown outcome, which is the only reason that case exists: a reader told "it failed" tries
+   * again, and trying again after an unknown outcome is how a budget gets set twice.
+   */
+  safe_to_retry: boolean | null;
+  provider_message: string | null;
+  provider_request_id: string | null;
+  source: string;
+  source_label: string;
+  summary: string;
 };

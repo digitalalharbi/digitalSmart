@@ -34,6 +34,7 @@ use App\Application\Identity\Contract\IdentityReadModel;
 use App\Application\Integration\Contract\CredentialCipher;
 use App\Application\Integration\Contract\IntegrationReadModel;
 use App\Application\Integration\Contract\ProviderAdapterRegistry as ProviderAdapterRegistryContract;
+use App\Application\Integration\Contract\ProviderWriterRegistry;
 use App\Application\Intelligence\Analyser\DeliveryStoppedAnalyser;
 use App\Application\Intelligence\Analyser\EfficiencyDriftAnalyser;
 use App\Application\Intelligence\Analyser\PeriodShapeAnalyser;
@@ -99,6 +100,7 @@ use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
 use App\Infrastructure\Integration\LaravelCredentialCipher;
 use App\Infrastructure\Integration\ProviderAdapterRegistry;
+use App\Infrastructure\Integration\Writer\CampaignWriterRegistry;
 use App\Infrastructure\Intelligence\AnthropicLanguageModel;
 use App\Infrastructure\Intelligence\NoLanguageModel;
 use App\Infrastructure\Measurement\Adapter\GoogleTagManagerReadAdapter;
@@ -270,6 +272,12 @@ final class AppServiceProvider extends ServiceProvider
          * browser's own — see docs/PRESENTATIONS.md.
          */
         DeckWriter::class => PptxWriter::class,
+
+        /*
+         * The provider write path (Phase 24). Fails closed: the registry hands anything undocumented to a writer
+         * that refuses — see `CampaignWriterRegistry`.
+         */
+        ProviderWriterRegistry::class => CampaignWriterRegistry::class,
         NotificationStore::class => EloquentNotificationStore::class,
         RecipientResolver::class => PermissionAwareRecipientResolver::class,
         NotificationBroadcaster::class => ReverbNotificationBroadcaster::class,

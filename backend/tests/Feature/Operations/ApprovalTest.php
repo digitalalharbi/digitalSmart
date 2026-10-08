@@ -130,7 +130,7 @@ describe('asking', function (): void {
          * queue has to see it without opening anything.
          */
         expect($data['is_enacted_here'])->toBeFalse();
-        expect($data['enactment_blocked_because'])->toContain('does not change live budgets');
+        expect($data['enactment_blocked_because'])->toContain('changes no live budget or bid by itself');
         expect($data['touches_live_spend'])->toBeTrue();
     });
 

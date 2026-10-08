@@ -28,11 +28,14 @@ use App\Domain\Operations\ProposalFingerprint;
 */
 
 describe('what approval means', function (): void {
-    it('says no kind is carried out by this product, and why', function (): void {
+    it('says approving a kind never makes the change, and why', function (): void {
         foreach (ApprovalKind::cases() as $kind) {
             /*
-             * The claim the whole module rests on. When a write adapter lands, this test is the thing that has
-             * to be changed deliberately — which is the point of asserting it rather than assuming it.
+             * The claim the whole module rests on, and the kind is the only level at which it is unconditional:
+             * approving something never makes it happen. Since Phase 25 this product *can* carry three
+             * operations out, but whether a given request can be is a property of the request — it has to name
+             * the campaign, on a provider whose write was read in its own documentation. Asserted rather than
+             * assumed, so a change to either claim has to be made deliberately.
              */
             expect($kind->isEnactedByThisProduct())->toBeFalse();
             expect($kind->enactmentBlockedBecause())->not->toBeNull();

@@ -212,22 +212,30 @@ situations, and treating the second as the first answers a narrowed question wit
 
 **Approval is not execution.**
 
-This product does not write to the advertising platforms. Provider write operations are a later
-phase, so approving a request to pause a campaign pauses nothing — a person goes and does it in the
-platform's own interface afterwards. Every other tool in this space treats the approval as the end
-of the story, which is how an agency can tell a client a campaign was stopped on Tuesday and find
-out from the invoice that it ran all week.
+Approving a request to pause a campaign pauses nothing. Every other tool in this space treats the
+approval as the end of the story, which is how an agency can tell a client a campaign was stopped on
+Tuesday and find out from the invoice that it ran all week.
 
-This module cannot close that gap by acting. It can only refuse to hide it:
+Since Phase 25 this product can carry three changes out itself — pause, resume, set a daily budget —
+and that did not change the sentence above. Carrying one out is a **second act**, by somebody holding
+`provider_writes.execute`, on a request that names the campaign, against a provider whose write was
+read in its own documentation. Everything else still ends with a person going to the platform. See
+`docs/PROVIDER_WRITES.md`.
 
-- `ApprovalKind::isEnactedByThisProduct()` returns **false** for every kind, and says why per kind
-  rather than "not supported". A unit test asserts it for all six, so when a write adapter lands,
-  that test is the thing somebody has to change deliberately.
+So the module's job is the same: refuse to hide the gap.
+
+- `ApprovalKind::isEnactedByThisProduct()` returns **false** for every kind, because a kind is the
+  wrong place to ask. Whether a given request can be carried out here depends on the request — the
+  provider, the ad account and the campaign id it names — and `ApprovalView::canBeCarriedOutHere()`
+  is what an interface asks. The kind answers the only unconditional part: approving never makes the
+  change by itself. A unit test asserts it for all six, so a change to that claim has to be made
+  deliberately.
 - An approved request moves to **`awaiting_hand`**, not to done.
 - Only a person recording *"I have made this change"* moves it to `confirmed`, with their name and
   the time. The audit entry carries `verified_by_product: false`, because an audit of live spend
-  changes has to be able to tell somebody's word from a reading taken off a platform — and this
-  product only has the former.
+  changes has to be able to tell somebody's word from a reading taken off a platform. Where this
+  product carried the change out itself, the note names the provider rather than a person and the
+  state was read back off the platform — which is the one case where the record is more than a claim.
 - The queue publishes **how much approved work nobody has carried out**, and how old the oldest is.
   That figure is not a process metric. It is a list of things somebody currently believes that may
   not be true.

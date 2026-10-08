@@ -54,21 +54,36 @@ it('seeds an approval queue with approved work nobody has carried out', function
 
     $requests = DB::table('approval_requests')->get();
 
-    expect($requests)->toHaveCount(5);
+    expect($requests)->toHaveCount(6);
 
     $byState = $requests->groupBy('state')->map->count();
 
     expect($byState['pending'] ?? 0)->toBe(2);
-    expect($byState['approved'] ?? 0)->toBe(2);
+    expect($byState['approved'] ?? 0)->toBe(3);
     expect($byState['declined'] ?? 0)->toBe(1);
 
     /*
-     * The shape that makes the module's point visible: one approved change carried out, and one still waiting
-     * on somebody nine days later. A queue where everything was done the same day would demonstrate nothing.
+     * The shape that makes the module's point visible: one approved change carried out, and two still waiting
+     * on somebody — one of them nine days later. A queue where everything was done the same day would
+     * demonstrate nothing.
      */
     $awaiting = $requests->where('enactment', 'awaiting_hand');
-    expect($awaiting)->toHaveCount(1);
+    expect($awaiting)->toHaveCount(2);
     expect($requests->where('enactment', 'confirmed'))->toHaveCount(1);
+
+    /*
+     * And exactly one of them names a provider, an ad account and a campaign id, which is what makes it the one
+     * this product can carry out itself. The rest describe changes no API call expresses — the ordinary case,
+     * and the reason the surface explains itself rather than offering a button that would guess at a campaign.
+     */
+    $executable = $awaiting->filter(function (object $request): bool {
+        /** @var array<string, mixed> $proposal */
+        $proposal = json_decode((string) $request->proposal, true, flags: JSON_THROW_ON_ERROR);
+
+        return isset($proposal['provider'], $proposal['external_account_id'], $proposal['external_campaign_id']);
+    });
+
+    expect($executable)->toHaveCount(1);
 
     // Every decision names the proposal it read. A CHECK requires it; this asserts the seeder honours it.
     foreach ($requests->whereIn('state', ['approved', 'declined']) as $decided) {

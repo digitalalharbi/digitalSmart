@@ -104,6 +104,7 @@ enum SystemRole: string
                 Permission::ReportsShare,
                 Permission::PortalView,
                 Permission::PortalManage,
+                Permission::ProviderWritesExecute,
                 Permission::AuditView,
             ],
 
@@ -169,6 +170,7 @@ enum SystemRole: string
                 Permission::ReportsShare,
                 Permission::PortalView,
                 Permission::PortalManage,
+                Permission::ProviderWritesExecute,
                 Permission::AuditView,
             ],
 
@@ -235,6 +237,12 @@ enum SystemRole: string
                  * what somebody outside the agency can read is a different act, and one the account's owner takes.
                  */
                 Permission::PortalView,
+                /*
+                 * And carries out approved changes. This is the role that would otherwise be making the same
+                 * change by hand in the platform's own interface; the control that matters is the approval it
+                 * cannot proceed without, not the keyboard it is typed on.
+                 */
+                Permission::ProviderWritesExecute,
             ],
 
             self::Creative => [

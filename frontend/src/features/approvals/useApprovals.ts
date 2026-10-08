@@ -5,6 +5,7 @@ import {
   fetchApproval,
   fetchApprovalQueue,
   fetchApprovalVocabulary,
+  carryOutApproval,
   recordEnactment,
   requestApproval,
   withdrawApproval,
@@ -78,4 +79,23 @@ export function useWithdrawApprovalMutation() {
 
 export function useEnactmentMutation() {
   return useApprovalMutation(recordEnactment);
+}
+
+/**
+ * Carrying a change out on the platform.
+ *
+ * Its own mutation rather than a flag on the enactment one, because the two are different acts with different
+ * permissions: recording an enactment is a person saying what they did, and this asks the platform. The mutation
+ * keeps its own result so the surface can show the outcome — including a failure, which leaves the request
+ * unchanged and would otherwise look like nothing happened.
+ */
+export function useCarryOutMutation() {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: carryOutApproval,
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.approvals.all() });
+    },
+  });
 }

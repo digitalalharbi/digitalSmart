@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Operations\DTO;
 
+use App\Domain\Integration\WriteOperation;
+use App\Domain\Integration\WriteTarget;
 use App\Domain\Operations\ApprovalAge;
 use App\Domain\Operations\ApprovalKind;
 use App\Domain\Operations\ApprovalState;
@@ -22,6 +24,14 @@ final readonly class ApprovalView
         public array $proposal,
         /** The hash a decision must name. See `ProposalFingerprint`. */
         public string $fingerprint,
+        /**
+         * The fingerprint the decision was taken against.
+         *
+         * Null until a decision, and then fixed. It is what makes "has this proposal changed since it was
+         * approved" answerable — and carrying out a change nobody approved is the single worst thing the write
+         * path could do, so the question is asked from stored state rather than from trust.
+         */
+        public ?string $decidedFingerprint,
         public ApprovalState $state,
         public EnactmentState $enactment,
         public ?string $clientId,
@@ -100,5 +110,68 @@ final readonly class ApprovalView
     public function isEnactedHere(): bool
     {
         return $this->kind->isEnactedByThisProduct();
+    }
+
+    /**
+     * Whether the proposal still describes what was approved.
+     *
+     * False once somebody has amended it. The write path refuses on this, because executing an amended proposal
+     * would be executing a change nobody signed off.
+     */
+    public function proposalMatchesDecision(): bool
+    {
+        return $this->decidedFingerprint !== null && $this->decidedFingerprint === $this->fingerprint;
+    }
+
+    /**
+     * Whether this product could carry this request out on the platform.
+     *
+     * Distinct from `isEnactedHere()`, which asks whether *approving* it enacts it — that is still false for
+     * every kind, and deliberately so: approval authorises, and carrying out is a second act by somebody holding
+     * `provider_writes.execute`.
+     *
+     * This asks whether that second act is available at all, which depends on three things the kind cannot know:
+     * whether the proposal names a platform campaign, whether the provider's write is documented, and whether
+     * the operation is one this product models.
+     */
+    public function canBeCarriedOutHere(): bool
+    {
+        return $this->carryOutBlockedBecause() === null;
+    }
+
+    /**
+     * Why not, in a sentence an interface can show.
+     *
+     * Shown rather than hiding the control. A missing button produces a support question; the sentence produces
+     * somebody going and making the change in the platform, which is the right outcome.
+     */
+    public function carryOutBlockedBecause(): ?string
+    {
+        $operation = null;
+
+        foreach (WriteOperation::cases() as $candidate) {
+            if ($candidate->authorisedBy() === $this->kind) {
+                $operation = $candidate;
+            }
+        }
+
+        if ($operation === null) {
+            return $this->kind->enactmentBlockedBecause();
+        }
+
+        $target = WriteTarget::fromProposal($this->proposal, $operation);
+
+        if ($target === null) {
+            return 'This request does not name a platform campaign, so this product cannot carry it out. Most '
+                .'approvals do not — make the change in the platform and record it here.';
+        }
+
+        $support = $target->provider->writeSupport($operation);
+
+        return $support->allowsAttempt() ? null : sprintf(
+            '%s: %s',
+            $target->provider->label(),
+            $support->because() ?? 'This write is not available.',
+        );
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Http\Controller\Operations;
 
+use App\Application\Integration\Command\CarryOutApproval;
 use App\Application\Operations\Command\AmendProposal;
 use App\Application\Operations\Command\DecideApproval;
 use App\Application\Operations\Command\RecordEnactment;
@@ -14,6 +15,7 @@ use App\Application\Operations\DTO\ApprovalInput;
 use App\Application\Operations\Query\GetApproval;
 use App\Application\Operations\Query\GetApprovalQueue;
 use App\Application\Shared\Contract\Clock;
+use App\Domain\Integration\Exception\WriteRefused;
 use App\Domain\Operations\ApprovalKind;
 use App\Domain\Operations\ApprovalState;
 use App\Domain\Operations\EnactmentState;
@@ -231,6 +233,54 @@ final class ApprovalController extends Controller
         return response()->json(['data' => ApprovalResource::request($view, $clock->now())]);
     }
 
+    /** @param list<string> $allowed */
+    /**
+     * Carry out an approved change on the platform.
+     *
+     * Every refusal is a 409 with a code and a sentence, because each one is something a person can act on: go
+     * and make the change in the platform, ask for approval of the amended proposal, reconnect the provider.
+     * A 403 would be true of the permission and useless for everything else.
+     */
+    public function carryOut(string $approval, CarryOutApproval $carryOut, Clock $clock): JsonResponse
+    {
+        try {
+            $result = $carryOut($approval);
+        } catch (WriteRefused $refusal) {
+            return response()->json([
+                'message' => $refusal->getMessage(),
+                'code' => $refusal->reasonCode,
+            ], Response::HTTP_CONFLICT);
+        }
+
+        $outcome = $result['outcome'];
+
+        return response()->json([
+            'data' => ApprovalResource::request($result['approval'], $clock->now()),
+            /*
+             * The outcome travels beside the request, whatever it was. A failed write leaves the approval exactly
+             * where it was — which is what lets somebody retry it or go and do it by hand — so the response has
+             * to carry the reason rather than leaving a reader to infer it from an unchanged record.
+             */
+            'outcome' => [
+                'is_confirmed' => $outcome->isConfirmed,
+                'operation' => $outcome->operation->value,
+                'provider' => $outcome->provider->value,
+                'provider_label' => $outcome->provider->label(),
+                'confirmed_state' => $outcome->confirmedState,
+                'failure' => $outcome->failure?->value,
+                'failure_label' => $outcome->failure?->label(),
+                'guidance' => $outcome->failure?->guidance(),
+                /* False for an unknown outcome, which is the only reason that case exists. */
+                'safe_to_retry' => $outcome->failure?->isSafeToRetry(),
+                'provider_message' => $outcome->providerMessage,
+                'provider_request_id' => $outcome->providerRequestId,
+                'source' => $outcome->source->value,
+                'source_label' => $outcome->source->label(),
+                'summary' => $outcome->summary(),
+            ],
+        ]);
+    }
+
     /**
      * 409, with the proposal as it stands.
      *
@@ -274,7 +324,7 @@ final class ApprovalController extends Controller
         return is_array($value) ? $value : [];
     }
 
-    /** @param list<string> $allowed */
+    /** @param  list<string>  $allowed */
     private function unknown(string $field, array $allowed): JsonResponse
     {
         return response()->json([

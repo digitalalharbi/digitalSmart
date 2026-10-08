@@ -70,9 +70,15 @@ enum ApprovalKind: string
     /**
      * Whether approving this makes the change happen.
      *
-     * False for every case, today, and the method exists so that stays visible rather than becoming an
-     * assumption. The write adapters are Phase 24; until one exists for a kind, approval authorises a person
-     * to go and make the change and the record says it is awaiting that hand.
+     * **False for every case, and the kind is the wrong place to ask.** Since Phase 25 this product can carry
+     * out three operations — pause, resume, set a daily budget — but whether *this* request can be carried out
+     * depends on the request: it has to name a provider, an ad account and a campaign id, and that provider's
+     * write has to have been read in its own documentation. `WriteTarget::fromProposal()` answers that, and
+     * `ApprovalView::canBeCarriedOutHere()` is what an interface should ask.
+     *
+     * So the method stays, answering the only question a kind can answer: approving something never makes the
+     * change by itself. An approved request moves to **awaiting a hand**, and either a person records making it
+     * or somebody carries it out here — and the record says which.
      */
     public function isEnactedByThisProduct(): bool
     {
@@ -92,11 +98,17 @@ enum ApprovalKind: string
         }
 
         return match ($this) {
-            self::CampaignLaunch, self::CampaignPause => 'This product does not start or stop campaigns on the '
-                .'platforms. Once this is approved, somebody makes the change in the platform and marks it done '
-                .'here.',
-            self::SpendChange => 'This product does not change live budgets or bids. Once this is approved, '
-                .'somebody makes the change in the platform and marks it done here.',
+            /*
+             * The three kinds that map to a write operation say the honest thing twice over: approving changes
+             * nothing by itself, *and* whether this product can carry it out depends on the request rather than
+             * on the kind. The request's own `carry_out_blocked_because` answers that for a specific request.
+             */
+            self::CampaignLaunch, self::CampaignPause => 'Approving this starts or stops nothing by itself. '
+                .'Where the request names a campaign on a platform whose write is documented, this product can '
+                .'carry it out; otherwise somebody makes the change in the platform and marks it done here.',
+            self::SpendChange => 'Approving this changes no live budget or bid by itself. Where the request '
+                .'names a campaign on a platform whose write is documented, this product can carry it out; '
+                .'otherwise somebody makes the change in the platform and marks it done here.',
             self::TargetingChange => 'This product does not change targeting on the platforms. Once this is '
                 .'approved, somebody makes the change in the platform and marks it done here.',
             self::CreativePublish => 'This product does not upload creative to the platforms. Once this is '

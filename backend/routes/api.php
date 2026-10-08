@@ -408,6 +408,12 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      */
     Route::post('approvals/{approval}/enactment', [ApprovalController::class, 'enact'])
         ->whereUuid('approval')->name('approvals.enact');
+    /*
+     * The second act. Approving never enacts; this carries an approved change out on the platform, behind its own
+     * permission, with the proposal's fingerprint checked against the one approved — see docs/PROVIDER_WRITES.md.
+     */
+    Route::post('approvals/{approval}/carry-out', [ApprovalController::class, 'carryOut'])
+        ->whereUuid('approval')->name('approvals.carry_out');
 
     /*
      * One person's history. Enquiries and orders only: the marketing touches before them need event-level data

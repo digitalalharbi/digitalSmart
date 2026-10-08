@@ -1385,7 +1385,7 @@
       "about": "يتعلّق بـ",
       "decision": "القرار",
       "decidedBy": "{{name}}، بعد {{days}} يومًا",
-      "carriedOut": "التنفيذ",
+      "carriedOut": "أكّدت {{provider}}: {{state}}",
       "enactedBy": "{{state}} — سجّله {{name}}",
       "enactmentNote": "ملاحظة على التنفيذ: {{note}}",
       "decisionReason": "السبب المذكور: {{reason}}",
@@ -1404,8 +1404,36 @@
         "declined": "سبب الرفض",
         "withdrawn": "سبب السحب",
         "abandoned": "سبب عدم تنفيذ التغيير المُعتمَد"
-      }
-    }
+      },
+      "carryOut": "نفّذ ذلك على المنصة",
+      "carryOutHint": "الموافقة وحدها لم تغيّر شيئًا. هذا يطلب من المنصة مباشرة، ثم يقرأ الحملة مرة أخرى للتأكيد.",
+      "carryOutFailed": "{{label}} — {{guidance}}",
+      "carryOutSandbox": "كانت هذه كتابة في البيئة التجريبية. لم تُصدِر أي منصة بيانات اعتماد لمساحة العمل هذه، فلم يتغيّر شيء فعلي.",
+      "providerSaid": "قالت {{provider}}: {{message}}",
+      "providerRequest": "طلب المنصة {{id}}",
+      "doNotRetry": "لا تُعِد المحاولة حتى يتحقّق أحدهم من المنصة."
+    },
+    "form": {
+      "title": "رفع طلب موافقة",
+      "description": "اوصف التغيير وسببه. الموافقة تسجّل قرارًا، ولا تُنفّذ التغيير.",
+      "kind": "نوع التغيير",
+      "selectKind": "اختر النوع",
+      "touchesSpend": "يغيّر صرفًا فعليًا",
+      "titleField": "الاسم الذي سيظهر في الطابور",
+      "rationale": "سبب الطلب",
+      "rationaleHint": "هو السجل الوحيد للسبب، وأول ما يُسأل عنه لاحقًا.",
+      "client": "العميل",
+      "noClient": "بدون عميل",
+      "proposal": "ما هو المقترح",
+      "proposalHint": "يُكتب حقولًا، ليقرأ صاحب القرار ما طُلب بنصه لا ملخصًا له. التغيير الذي يستطيع هذا النظام تنفيذه بنفسه يسمّي provider و external_account_id و external_campaign_id.",
+      "proposalKey": "الحقل",
+      "proposalValue": "القيمة",
+      "proposalRequired": "اذكر ما هو المقترح. لا بد أن يستطيع صاحب القرار قراءة ما يوافق عليه.",
+      "addField": "إضافة حقل",
+      "removeField": "حذف هذا الحقل",
+      "submit": "إرسال للموافقة"
+    },
+    "raise": "رفع طلب"
   },
   "notifications": {
     "title": "الإشعارات",

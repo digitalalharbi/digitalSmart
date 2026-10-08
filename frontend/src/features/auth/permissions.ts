@@ -68,6 +68,12 @@ export const PERMISSIONS = {
   approvalsRequest: 'approvals.request',
   approvalsDecide: 'approvals.decide',
   /*
+   * A third, beyond deciding: approving a change and making it on the platform are different acts, and a
+   * strategist who may decide need not be the one whose credentials move money. The server holds the same gate
+   * — this only decides whether the button is drawn.
+   */
+  providerWritesExecute: 'provider_writes.execute',
+  /*
    * Three, and the split is what makes a client portal possible: `view` opens the agency's intake queue, which
    * carries internal notes, while `submit` only lets somebody raise a request and read the client-facing side of
    * their own. A client viewer holds `submit` and not `view`, and the absence of `view` is what tells the server

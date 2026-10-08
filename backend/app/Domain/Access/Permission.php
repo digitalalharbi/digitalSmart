@@ -109,6 +109,17 @@ enum Permission: string
      */
     case ReportsShare = 'reports.share';
 
+    // Provider write operations
+    /*
+     * Asking a platform to change something, for a request that has already been approved.
+     *
+     * Its own permission, and separate from `approvals.decide` on purpose: deciding that a change *should*
+     * happen and being the person who makes it happen are two acts, and this product's whole approvals argument
+     * rests on their being two. Held by the roles that run accounts — somebody who would otherwise be making the
+     * same change by hand in the platform's own interface.
+     */
+    case ProviderWritesExecute = 'provider_writes.execute';
+
     // Client portal
     /*
      * Two permissions, and the split matters more here than anywhere else in this enum.
@@ -184,6 +195,7 @@ enum Permission: string
             self::ReportsView => 'View saved reports and run them',
             self::ReportsManage => 'Build, change and delete reports, and take snapshots',
             self::ReportsShare => 'Create and revoke links that let somebody outside the workspace read a report',
+            self::ProviderWritesExecute => 'Carry out an approved change on an advertising platform',
             self::PortalView => 'See which surfaces each client\'s portal exposes',
             self::PortalManage => 'Switch a client\'s portal on or off, and change which surfaces it exposes',
             self::PortalRead => 'Read a client portal as the client, for the clients you are assigned to',

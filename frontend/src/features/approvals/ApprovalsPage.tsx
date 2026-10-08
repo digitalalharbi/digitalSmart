@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PERMISSIONS, useSession } from '@/features/auth';
@@ -7,18 +8,21 @@ import { cn } from '@/shared/lib/cn';
 import { formatNumber, formatRate } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ApprovalDetail } from './ApprovalDetail';
 import { KindBreakdown } from './KindBreakdown';
+import { RequestApprovalForm } from './RequestApprovalForm';
 import { WaitingChart } from './WaitingChart';
 import {
   useApprovalQuery,
   useApprovalQueueQuery,
   useApprovalVocabularyQuery,
   useDecideApprovalMutation,
+  useCarryOutMutation,
   useEnactmentMutation,
   useRequestApprovalMutation,
   useWithdrawApprovalMutation,
@@ -44,10 +48,12 @@ export function ApprovalsPage() {
   const canView = can(PERMISSIONS.approvalsView);
   const canDecide = can(PERMISSIONS.approvalsDecide);
   const canRequest = can(PERMISSIONS.approvalsRequest);
+  const canCarryOut = can(PERMISSIONS.providerWritesExecute);
 
   const [clientId, setClientId] = useState<string | null>(null);
   const [spendOnly, setSpendOnly] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [asking, setAsking] = useState(false);
 
   const clients = useClientsQuery({ page: 1, per_page: 100, sort: 'name', direction: 'asc' });
   const vocabulary = useApprovalVocabularyQuery(canView);
@@ -57,17 +63,28 @@ export function ApprovalsPage() {
   const decide = useDecideApprovalMutation();
   const withdraw = useWithdrawApprovalMutation();
   const enact = useEnactmentMutation();
+  const carryOut = useCarryOutMutation();
   const ask = useRequestApprovalMutation();
 
   const error = useMemo(() => {
-    for (const mutation of [decide, withdraw, enact, ask]) {
+    for (const mutation of [decide, withdraw, enact, ask, carryOut]) {
       if (mutation.error instanceof ApiError && mutation.error.message !== '') {
         return mutation.error.message;
       }
     }
 
     return null;
-  }, [decide, withdraw, enact, ask]);
+  }, [decide, withdraw, enact, ask, carryOut]);
+
+  /*
+   * Keyed on its subject rather than cleared in an effect. The detail remounts when the selection changes, but
+   * this mutation lives on the page, so a platform's answer about one campaign must not be read as an answer
+   * about the next request a person opens.
+   */
+  const carriedOut =
+    carryOut.data !== undefined && carryOut.variables?.requestId === selected
+      ? carryOut.data.outcome
+      : undefined;
 
   if (!canView) {
     return (
@@ -111,9 +128,21 @@ export function ApprovalsPage() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-content text-2xl font-semibold">{t('approvals.title')}</h1>
-          <p className="text-content-secondary mt-1 max-w-2xl text-sm">{t('approvals.subtitle')}</p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-content text-2xl font-semibold">{t('approvals.title')}</h1>
+            <p className="text-content-secondary mt-1 max-w-2xl text-sm">
+              {t('approvals.subtitle')}
+            </p>
+          </div>
+
+          {/* Asking is its own permission, and the queue is where somebody asks. */}
+          {canRequest ? (
+            <Button onClick={() => setAsking(true)}>
+              <Plus aria-hidden className="me-1 size-4" />
+              {t('approvals.raise')}
+            </Button>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap gap-6">
@@ -276,7 +305,25 @@ export function ApprovalsPage() {
             });
           }
         }}
+        {...(canCarryOut
+          ? {
+              onCarryOut: () => {
+                if (selected !== null) {
+                  carryOut.mutate({ requestId: selected });
+                }
+              },
+            }
+          : {})}
+        outcome={carriedOut}
+        isCarryingOut={carryOut.isPending}
         error={error}
+      />
+
+      <RequestApprovalForm
+        open={asking}
+        onOpenChange={setAsking}
+        vocabulary={vocabulary.data}
+        clients={clients.data?.data ?? []}
       />
     </div>
   );

@@ -146,6 +146,19 @@ final readonly class ApprovalResource
             'is_enacted_here' => $view->isEnactedHere(),
             'enactment_blocked_because' => $view->kind->enactmentBlockedBecause(),
             /*
+             * And whether the *second* act is available: approving never enacts, but carrying out can now be
+             * done here for a request that names a platform campaign on a provider whose write this product has
+             * read in its own documentation. The sentence is published rather than the control hidden — a missing
+             * button produces a support question, and the sentence produces somebody going to the platform.
+             */
+            'can_be_carried_out_here' => $view->canBeCarriedOutHere(),
+            'carry_out_blocked_because' => $view->carryOutBlockedBecause(),
+            /*
+             * Whether the proposal still matches what was approved. False means somebody amended it, and the
+             * write path refuses — carrying out an amended proposal would carry out a change nobody signed off.
+             */
+            'proposal_matches_decision' => $view->proposalMatchesDecision(),
+            /*
              * The hash a decision must send back. Published on every row because a decider's client has to
              * return the one it displayed — see `ProposalFingerprint`.
              */

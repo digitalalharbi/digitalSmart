@@ -1,4 +1,4 @@
-import { ArrowUpRight, Link2Off, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight, Ban, Link2Off, TriangleAlert, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -12,7 +12,7 @@ import { Field } from '@/shared/ui/field';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Textarea } from '@/shared/ui/textarea';
 import { ProposalTable } from './ProposalTable';
-import type { ApprovalRequest } from './types';
+import type { ApprovalRequest, WriteOutcome } from './types';
 
 type ApprovalDetailProps = {
   request: ApprovalRequest | undefined;
@@ -22,6 +22,11 @@ type ApprovalDetailProps = {
   onDecide: (outcome: 'approved' | 'declined', fingerprint: string, reason?: string) => void;
   onWithdraw: (reason: string) => void;
   onEnact: (enactment: 'confirmed' | 'abandoned', note?: string) => void;
+  /** Ask the platform directly. Undefined when the reader may not — the control is then absent, not disabled. */
+  onCarryOut?: (() => void) | undefined;
+  /** What the platform said, when it has been asked. */
+  outcome?: WriteOutcome | undefined;
+  isCarryingOut?: boolean;
   /** A message from the server, including the 409 that says the proposal changed under the reader. */
   error: string | null;
 };
@@ -30,9 +35,13 @@ type ApprovalDetailProps = {
  * One request: what is being proposed, who asked, and what happens if it is approved.
  *
  * The sentence this panel exists to carry is the one above the decision buttons: **approving this does not make
- * the change.** This product does not write to the ad platforms, so a decision authorises a person, and the
- * change sits in the outstanding queue until somebody records making it. Without that sentence a decider
- * presses Approve believing the campaign is now paused, and tells a client so.
+ * the change.** An approved request sits in the outstanding queue until something happens to it, and the panel
+ * offers the two things that can: this product carrying it out on the platform, where the request names the
+ * campaign and the reader holds the permission, or a person recording that they made the change by hand.
+ * Without that sentence a decider presses Approve believing the campaign is now paused, and tells a client so.
+ *
+ * Where the platform route is unavailable, the reason is shown rather than the control hidden — most approvals
+ * name no platform campaign, and the reason is what sends a reader to the platform, which is the right place.
  *
  * The decision sends back the fingerprint shown here. If the proposal was amended in between, the server
  * answers 409 and the message appears above — a re-read rather than a retry, because the proposal is different
@@ -46,6 +55,9 @@ export function ApprovalDetail({
   onDecide,
   onWithdraw,
   onEnact,
+  onCarryOut,
+  outcome,
+  isCarryingOut = false,
   error,
 }: ApprovalDetailProps) {
   const { t, i18n } = useTranslation();
@@ -121,6 +133,73 @@ export function ApprovalDetail({
             {t('approvals.detail.awaitingHand', { days: request.waiting_days ?? 0 })}
           </Alert>
         ) : null}
+
+        {/*
+          Whether the *second* act is available. Approving never enacts — the sentence above says so — and this
+          says whether this product can make the change itself, or why it cannot: the proposal names no platform
+          campaign, or the provider's write has not been read in its own documentation. Published rather than
+          hidden, because the next thing a reader does is open the platform, which is right once they know why.
+        */}
+        {isOutstanding &&
+        !request.can_be_carried_out_here &&
+        request.carry_out_blocked_because !== null ? (
+          <Alert tone="info" className="flex items-start gap-2">
+            <Ban aria-hidden className="mt-0.5 size-4 shrink-0" />
+            <span>{request.carry_out_blocked_because}</span>
+          </Alert>
+        ) : null}
+
+        {outcome === undefined ? null : outcome.is_confirmed ? (
+          <Alert tone="info" className="flex flex-col gap-1">
+            <span className="flex items-center gap-2">
+              {/* The same source badge the rest of the product uses, from the server's own vocabulary. */}
+              <Badge tone="neutral">{outcome.source_label}</Badge>
+            </span>
+            <span>
+              {t('approvals.detail.carriedOut', {
+                provider: outcome.provider_label,
+                state: outcome.confirmed_state ?? '',
+              })}
+            </span>
+            {/*
+              A write against sandbox credentials is a sandbox write everywhere it appears. No platform has
+              issued this workspace credentials, and recording a simulated change as a real one would be worse
+              than not having the feature.
+            */}
+            {outcome.source !== 'sandbox' ? null : (
+              <span className="text-xs">{t('approvals.detail.carryOutSandbox')}</span>
+            )}
+            {outcome.provider_request_id === null ? null : (
+              <span className="text-xs">
+                {t('approvals.detail.providerRequest', { id: outcome.provider_request_id })}
+              </span>
+            )}
+          </Alert>
+        ) : (
+          <Alert tone="danger" className="flex flex-col gap-1">
+            <span>
+              {t('approvals.detail.carryOutFailed', {
+                label: outcome.failure_label ?? '',
+                guidance: outcome.guidance ?? '',
+              })}
+            </span>
+            {outcome.provider_message === null ? null : (
+              <span className="text-xs">
+                {t('approvals.detail.providerSaid', {
+                  provider: outcome.provider_label,
+                  message: outcome.provider_message,
+                })}
+              </span>
+            )}
+            {/*
+              The one case that must not be retried. A reader told "it failed" tries again, and trying again
+              after an unknown outcome is how a budget gets set twice.
+            */}
+            {outcome.safe_to_retry === false ? (
+              <span className="text-xs font-medium">{t('approvals.detail.doNotRetry')}</span>
+            ) : null}
+          </Alert>
+        )}
 
         <section className="flex flex-col gap-1" aria-label={t('approvals.detail.why')}>
           <h3 className="text-content text-sm font-semibold">{t('approvals.detail.why')}</h3>
@@ -272,9 +351,21 @@ export function ApprovalDetail({
               </Button>
             ) : null}
 
+            {/*
+              The platform button comes first, and only where the provider's write was read in its own
+              documentation. "Mark it done" stays beside it: this product carrying out a change and a person
+              carrying one out are both legitimate, and the record says which happened.
+            */}
+            {isOutstanding && request.can_be_carried_out_here && onCarryOut !== undefined ? (
+              <Button size="sm" onClick={onCarryOut} disabled={isCarryingOut}>
+                <Zap aria-hidden className="me-1 size-3.5" />
+                {t('approvals.detail.carryOut')}
+              </Button>
+            ) : null}
+
             {isOutstanding && canRequest ? (
               <>
-                <Button size="sm" onClick={() => onEnact('confirmed')}>
+                <Button variant="secondary" size="sm" onClick={() => onEnact('confirmed')}>
                   {t('approvals.detail.markDone')}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setPending('abandoned')}>
@@ -284,6 +375,15 @@ export function ApprovalDetail({
             ) : null}
           </div>
         )}
+
+        {/*
+          Said beside the control rather than only in the documentation. The one thing a reader could get wrong
+          here is believing the approval already did this, and the second sentence is why the outcome above can
+          be trusted: a confirmation is a read-back, not an accepted request.
+        */}
+        {isOutstanding && request.can_be_carried_out_here && onCarryOut !== undefined ? (
+          <p className="text-content-tertiary text-xs">{t('approvals.detail.carryOutHint')}</p>
+        ) : null}
 
         {request.supersedes_id === null ? null : (
           /*

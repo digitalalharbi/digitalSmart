@@ -1,6 +1,58 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ACCOUNTS, signIn } from './support/accounts';
 
+/**
+ * A title unique to the run.
+ *
+ * Both browser projects share one seeded database and carrying a change out settles the request, so a test that
+ * consumed the seeded one would pass under chromium and be refused under mobile-safari. Each run raises its own
+ * request through the UI instead, which also exercises the path a real spend change takes.
+ */
+function unique(label: string): string {
+  return `E2E ${label} ${String(Date.now())}`;
+}
+
+/** Raise an approval naming a platform campaign, and approve it — the two acts the carry-out needs. */
+async function raiseAndApprove(page: Page, title: string): Promise<void> {
+  await page.getByRole('button', { name: 'Raise a request' }).click();
+
+  const dialog = page.getByRole('dialog');
+
+  await expect(dialog).toBeVisible({ timeout: 30_000 });
+  await dialog.getByLabel(/What kind of change/).selectOption('campaign_pause');
+  await dialog.getByLabel(/What the queue will call it/).fill(title);
+  await dialog
+    .getByLabel(/Why it is wanted/)
+    .fill('Cost per purchase has doubled over four days and the audience is saturated.');
+
+  /*
+   * The sandbox ad account this demo connects, and an obviously fictional campaign. No live credentials exist
+   * here, so the write goes to the sandbox writer and comes back labelled as such.
+   */
+  const fields: { key: string; value: string }[] = [
+    { key: 'provider', value: 'meta' },
+    { key: 'external_account_id', value: 'act_sandbox_1001' },
+    { key: 'external_campaign_id', value: '23850000000000009' },
+  ];
+
+  for (const [index, field] of fields.entries()) {
+    if (index > 0) {
+      await dialog.getByRole('button', { name: 'Add a field' }).click();
+    }
+
+    /* Exact: "Remove this field" is also labelled, and a substring match would reach for the button. */
+    await dialog.getByLabel('Field', { exact: true }).nth(index).fill(field.key);
+    await dialog.getByLabel('Value', { exact: true }).nth(index).fill(field.value);
+  }
+
+  await dialog.getByRole('button', { name: 'Send for approval' }).click();
+  await expect(dialog).toBeHidden();
+
+  await page.getByRole('button', { name: new RegExp(title) }).click();
+  await page.getByRole('button', { name: 'Approve' }).click();
+  await expect(page.getByText('Approved', { exact: true }).first()).toBeVisible();
+}
+
 async function openQueue(page: Page, account: string = ACCOUNTS.owner): Promise<void> {
   await signIn(page, account);
   await page.goto('/approvals');
@@ -48,7 +100,7 @@ test.describe('approvals', () => {
      * Before the buttons rather than after the decision. Without it a decider presses Approve believing the
      * campaign is now live, and tells a client so.
      */
-    await expect(page.getByText(/does not start or stop campaigns on the platforms/)).toBeVisible({
+    await expect(page.getByText(/starts or stops nothing by itself/)).toBeVisible({
       timeout: 30_000,
     });
   });
@@ -95,6 +147,44 @@ test.describe('approvals', () => {
      */
     await expect(page.getByRole('button', { name: 'Approve' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'I have made this change' })).toBeVisible();
+  });
+
+  test('says why it cannot carry out a request that names no campaign', async ({ page }) => {
+    await openQueue(page);
+
+    await page.getByRole('button', { name: /Raise the Ramadan daily budget/ }).click();
+
+    /*
+     * The ordinary case, published rather than hidden. Most approvals in this product describe things no API
+     * call expresses, and the reason is what sends somebody to the platform — which is the right place.
+     */
+    await expect(page.getByText(/does not name a platform campaign/)).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(page.getByRole('button', { name: 'Carry this out on the platform' })).toHaveCount(
+      0,
+    );
+  });
+
+  test('carries an approved change out on the platform and labels the source', async ({ page }) => {
+    const title = unique('Pause');
+
+    await openQueue(page);
+    await expect(page.getByRole('heading', { level: 1, name: 'Approvals' })).toBeVisible({
+      timeout: 30_000,
+    });
+
+    await raiseAndApprove(page, title);
+
+    await page.getByRole('button', { name: 'Carry this out on the platform' }).click();
+
+    /*
+     * Two assertions, and the second is the one that matters. A confirmation names the state the provider was
+     * read back as — not the state this product asked for — and a write against sandbox credentials says so on
+     * the same panel. A simulated pause recorded as a real one is the single failure this feature must not have.
+     */
+    await expect(page.getByText(/confirmed:/)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText(/This was a sandbox write/)).toBeVisible();
   });
 
   test('refuses the queue to a client viewer', async ({ page }) => {

@@ -1008,3 +1008,63 @@ than a fifth — the number the surface leads with, because that is the honest h
 A campaign absent from a model's rows is **zero** when that model's breakdown was not truncated and
 **null** when it was: the first is a real disagreement, the second would be a pagination artefact
 reported as one.
+
+## Provider write operations
+
+### `POST /api/approvals/{approval}/carry-out`
+
+The one endpoint in this API that changes something in somebody else's system. Requires
+`provider_writes.execute`, which is **not** `approvals.decide` — approving a change and being the
+credentials that make it are different acts.
+
+Returns the request as it now stands and the outcome beside it, whatever it was:
+
+```json
+{
+  "data": { "id": "...", "state": "approved", "enactment": "confirmed" },
+  "outcome": {
+    "is_confirmed": true,
+    "operation": "pause_campaign",
+    "provider": "meta",
+    "provider_label": "Meta Ads",
+    "confirmed_state": "PAUSED",
+    "failure": null,
+    "failure_label": null,
+    "guidance": null,
+    "safe_to_retry": null,
+    "provider_message": null,
+    "provider_request_id": "...",
+    "source": "sandbox",
+    "source_label": "Sandbox",
+    "summary": "Meta Ads reported \"PAUSED\" when the campaign was read back."
+  }
+}
+```
+
+A failed write leaves the request exactly where it was — approved, awaiting a hand — so the outcome has
+to travel with it rather than leaving a caller to infer the reason from an unchanged record. `200` with
+`is_confirmed: false` is therefore the normal shape of a failure, not an error: the request *was* sent.
+
+`safe_to_retry` is `false` for exactly two failures. `rejected` — the provider understood and declined,
+so the same request declines again — and `unknown`, a timeout or dropped connection where nobody knows
+whether the change was made. A caller must not retry either; `unknown` especially, because a second
+attempt is how a budget gets set twice.
+
+`source` is the source state of the write itself and is carried into the audit trail unchanged. Until a
+live adapter exists it is `sandbox` for every provider.
+
+Refusals are **409** with a `code`, because the request was well formed and was correct when its sender
+read the screen:
+
+| `code` | Means |
+| ------ | ----- |
+| `not_approved` | The request is pending, declined or withdrawn |
+| `already_settled` | It has been confirmed or abandoned already — this is also what stops a double click repeating a write |
+| `proposal_changed` | The proposal was amended after the decision, so this is a different change |
+| `proposal_names_no_campaign` | The proposal does not name `provider`, `external_account_id` and `external_campaign_id` (and `daily_budget_minor` for a budget change) |
+| `provider_not_documented` | That provider's write for this operation has not been read in its own documentation |
+| `not_connected` | The workspace has no connection for that provider |
+| `capability_missing` | The provider does not publish the capability the operation needs |
+| `kind_not_executable` | The approval kind describes a change no API call expresses — the ordinary answer |
+
+See `docs/PROVIDER_WRITES.md` for the operations, the providers and what each attempt records.

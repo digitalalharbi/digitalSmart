@@ -117,6 +117,16 @@ enum AuditAction: string
      * with a flag: the two questions asked of this trail are "when could they see it" and "when did that stop",
      * and an entry that answers one by implication answers neither.
      */
+    /*
+     * Asking a platform to change something. Three actions rather than one, because the three questions asked of
+     * this trail are different: what did we send, what did the platform confirm when we read it back, and what
+     * went wrong. An entry that answered the first by implication would be an entry nobody could use after an
+     * outcome of `unknown`, which is the only outcome that matters.
+     */
+    case ProviderWriteAttempted = 'provider.write_attempted';
+    case ProviderWriteConfirmed = 'provider.write_confirmed';
+    case ProviderWriteFailed = 'provider.write_failed';
+
     case PortalEnabled = 'portal.enabled';
     case PortalSuspended = 'portal.suspended';
     case PortalResumed = 'portal.resumed';
@@ -161,6 +171,14 @@ enum AuditAction: string
              */
             self::ReportShared,
             self::ReportShareRevoked,
+            /*
+             * A write to a client's live campaign is the most consequential thing this product does. It belongs
+             * beside "who connected a platform" rather than beside "who renamed a report" — including the
+             * attempt, because an attempt that produced an unknown outcome is the entry somebody needs most.
+             */
+            self::ProviderWriteAttempted,
+            self::ProviderWriteConfirmed,
+            self::ProviderWriteFailed,
             self::PortalEnabled,
             self::PortalSuspended,
             self::PortalResumed,

@@ -4,6 +4,7 @@ import type {
   ApprovalQueue,
   ApprovalRequest,
   ApprovalVocabulary,
+  WriteOutcome,
 } from './types';
 
 export type QueueScope = {
@@ -114,4 +115,21 @@ export async function recordEnactment(input: {
   );
 
   return data.data;
+}
+
+/**
+ * Carry an approved change out on the platform.
+ *
+ * The outcome comes back **beside** the request rather than folded into it, and whatever it was: a failed write
+ * leaves the approval exactly where it was, so a response that only returned the record would leave a reader to
+ * infer the reason from something that had not changed.
+ */
+export async function carryOutApproval(input: {
+  requestId: string;
+}): Promise<{ request: ApprovalRequest; outcome: WriteOutcome }> {
+  const { data } = await api.post<{ data: ApprovalRequest; outcome: WriteOutcome }>(
+    `/approvals/${input.requestId}/carry-out`,
+  );
+
+  return { request: data.data, outcome: data.outcome };
 }
