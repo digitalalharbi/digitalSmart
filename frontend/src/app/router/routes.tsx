@@ -8,7 +8,6 @@ import { LoginPage } from '@/features/auth';
 import { AdministrationPage } from '@/features/administration';
 import { IntegrationsPage } from '@/features/integrations';
 import { ClientsPage } from '@/features/clients';
-import { OverviewPage } from '@/features/overview';
 import { ProjectsPage } from '@/features/projects';
 import { NotificationsPage } from '@/features/notifications';
 import { PlaceholderPage } from '@/features/placeholder';
@@ -23,6 +22,8 @@ import {
   LeadCentrePage,
   MediaPlannerPage,
   OperationsPage,
+  MyPortalPage,
+  PortalPage,
   ReportsPage,
   RequestsPage,
   SharedReportPage,
@@ -30,6 +31,7 @@ import {
   TrackingCenterPage,
 } from '@/app/router/lazyPages';
 import { SurfaceFallback } from '@/app/router/SurfaceFallback';
+import { PortalLanding, PortalRedirectGuard } from '@/app/router/portalGuards';
 
 /** Wraps a lazily loaded surface so its chunk can arrive without a blank page. */
 function deferred(element: ReactElement): ReactElement {
@@ -55,6 +57,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/approvals': deferred(<ApprovalsPage />),
   '/client-requests': deferred(<RequestsPage />),
   '/reports': deferred(<ReportsPage />),
+  '/client-portal': deferred(<PortalPage />),
   /*
    * Not deferred. The bell already loads this feature on every screen, so a second chunk for the page would be
    * a download that buys nothing.
@@ -73,6 +76,21 @@ const featureRoutes: RouteObject[] = NAV_ITEMS.filter((item) => item.path !== '/
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
   /*
+   * The client's own portal, in its own shell rather than the agency's — no sidebar of agency surfaces, no
+   * notification bell. It is behind the session because a client signs in; what it shows is decided by the
+   * portal's module grants rather than by this route.
+   */
+  {
+    path: '/portal',
+    element: (
+      <RequireSession>
+        <PortalRedirectGuard>
+          <MyPortalPage />
+        </PortalRedirectGuard>
+      </RequireSession>
+    ),
+  },
+  /*
    * Outside the shell and outside `RequireSession`, which is the whole point of it: a client opens this from an
    * email and has no account to be sent to a sign-in screen for. The token is in the path and nothing else is.
    */
@@ -85,7 +103,7 @@ export const routes: RouteObject[] = [
       </RequireSession>
     ),
     children: [
-      { index: true, element: <OverviewPage /> },
+      { index: true, element: <PortalLanding /> },
       ...featureRoutes,
       { path: '*', element: <NotFoundPage /> },
     ],

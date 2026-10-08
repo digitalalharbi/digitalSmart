@@ -83,3 +83,16 @@ export const ReportsPage = lazy(async () => ({
 export const SharedReportPage = lazy(async () => ({
   default: (await import('@/features/reports/SharedReportPage')).SharedReportPage,
 }));
+
+/*
+ * The agency's portal configuration, and the client's own portal. Both split: the configuration surface is only
+ * ever opened by somebody deciding a disclosure, and the client shell pulls the chart engine and the revenue and
+ * tracking surfaces with it, none of which belongs in an agency member's first paint.
+ */
+export const PortalPage = lazy(async () => ({
+  default: (await import('@/features/portal/PortalPage')).PortalPage,
+}));
+
+export const MyPortalPage = lazy(async () => ({
+  default: (await import('@/features/portal/MyPortalPage')).MyPortalPage,
+}));

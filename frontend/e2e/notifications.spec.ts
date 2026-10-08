@@ -42,16 +42,21 @@ test.describe('notifications', () => {
 
   test('shows a bell with nothing waiting, and no badge', async ({ page }) => {
     /*
-     * The client, and not the owner, because this assertion needs an account that **cannot** be notified rather
-     * than one that happens not to be.
+     * The buyer, and not the owner, because this assertion needs an account that cannot be notified in this
+     * workspace rather than one that happens not to be.
      *
-     * Every notification kind requires a permission a client viewer does not hold — `tasks.view`,
-     * `approvals.decide`, `approvals.view`, `client_requests.view` — so nothing in this product can announce to
-     * them. The owner holds all four, which made this test depend on whether the approvals and client-request
-     * specs had run yet: it passed for months and then failed on a run where they went first, reporting two
-     * things waiting. The empty state is a real state and deserves a premise that holds under any ordering.
+     * Announcing is a disclosure: the resolver checks the permission, the **visibility** and an active
+     * membership. The demo buyer holds the permissions and is deliberately on no project — see the note in the
+     * demo seeder — so no task, approval or client request in the workspace is visible to them and nothing can
+     * be announced to them.
+     *
+     * It was the owner, who holds every permission and sees every project, which made this test depend on
+     * whether the approvals and client-request specs had run yet; it passed for months and then failed on a run
+     * where they went first, reporting two things waiting. It was then the client, until Phase 22 moved a client
+     * out of the agency shell — where this bell lives — and into their own portal. The empty state is a real
+     * state and deserves a premise that holds under any ordering.
      */
-    await signIn(page, ACCOUNTS.client);
+    await signIn(page, ACCOUNTS.buyer);
     await page.goto('/');
 
     /*

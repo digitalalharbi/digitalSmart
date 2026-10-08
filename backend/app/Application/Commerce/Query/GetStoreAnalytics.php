@@ -28,6 +28,19 @@ use DateTimeImmutable;
  */
 final readonly class GetStoreAnalytics
 {
+    /**
+     * The permission this read needs, published so the Interface layer can apply it **first**.
+     *
+     * Commerce figures are a client's money, so they are gated on the permission the rest of the reporting
+     * surface already uses rather than on a new one: a role that may not read analytics has no business reading
+     * revenue.
+     *
+     * It is a constant rather than a second copy of the name because the endpoint has to refuse an unauthorised
+     * caller *before* it tells them a revenue source is required — a 422 naming the parameter is a statement that
+     * the endpoint exists and would answer.
+     */
+    public const Permission PERMISSION = Permission::AnalyticsView;
+
     public function __construct(
         private StoreAnalyticsReadModel $analytics,
         private AuthorizationGuard $guard,
@@ -43,12 +56,8 @@ final readonly class GetStoreAnalytics
         ?string $storeId = null,
         int $limit = 20,
     ): StoreAnalyticsView {
-        /*
-         * Commerce figures are a client's money, so they are gated on the permission the rest of the
-         * reporting surface already uses rather than on a new one. A role that may not read analytics has
-         * no business reading revenue.
-         */
-        $this->guard->ensure(Permission::AnalyticsView);
+        // Again, so the use case is safe however it is called. See `PERMISSION`.
+        $this->guard->ensure(self::PERMISSION);
 
         $query = new StoreQuery(
             workspaceId: $this->actor->workspaceId()->value,

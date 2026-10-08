@@ -46,11 +46,23 @@ describe('access', function (): void {
         $this->getJson('/api/analytics/views')->assertUnauthorized();
     });
 
-    it('lets a client viewer read views but not author them', function (): void {
+    it('lets a buyer read views but not author them', function (): void {
+        $scenario = WorkspaceScenario::create();
+        $buyer = $scenario->addMember(SystemRole::MediaBuyer);
+
+        /*
+         * Reading and authoring are deliberately different permissions, and a media buyer is now the role that
+         * demonstrates it: a client viewer held `analytics.view` until Phase 22 moved a client's access to their
+         * own portal, so this assertion needed a role that still reads the agency's analytics.
+         */
+        $this->actingAs($buyer)->getJson('/api/analytics/views')->assertOk();
+    });
+
+    it('keeps the agency\'s saved views away from a client', function (): void {
         $scenario = WorkspaceScenario::create();
         $client = $scenario->addMember(SystemRole::ClientViewer);
 
-        $this->actingAs($client)->getJson('/api/analytics/views')->assertOk();
+        $this->actingAs($client)->getJson('/api/analytics/views')->assertForbidden();
 
         $this->actingAs($client)
             ->postJson('/api/analytics/views', viewPayload())

@@ -109,6 +109,30 @@ enum Permission: string
      */
     case ReportsShare = 'reports.share';
 
+    // Client portal
+    /*
+     * Two permissions, and the split matters more here than anywhere else in this enum.
+     *
+     * `view` answers "is anything exposed to this client, and what" — a question anybody handling the account
+     * asks, often while a client is on the phone. `manage` *changes* what somebody outside the agency can read,
+     * which is a disclosure decision and the kind of act somebody is later asked to account for.
+     */
+    case PortalView = 'portal.view';
+    case PortalManage = 'portal.manage';
+    /*
+     * Held by the client's own people, and by nobody in the agency.
+     *
+     * It exists because nothing else in this product says "this person belongs to the client rather than to the
+     * agency". Project assignment does not: a creative is assigned to a client's project and is plainly not their
+     * employee. Inferring it from the absence of some other permission — the trick the intake queue uses, and
+     * documents — would make the portal's reader depend on a role's unrelated grants, so that adding a permission
+     * to a role could silently make somebody a client.
+     *
+     * A reader holding this gets the client side of the portal, over the clients whose projects they are assigned
+     * to. `portal.view` gets the same pages as a preview. Holding neither means there is nothing to read.
+     */
+    case PortalRead = 'portal.read';
+
     // Auditability
     case AuditView = 'audit.view';
 
@@ -160,6 +184,9 @@ enum Permission: string
             self::ReportsView => 'View saved reports and run them',
             self::ReportsManage => 'Build, change and delete reports, and take snapshots',
             self::ReportsShare => 'Create and revoke links that let somebody outside the workspace read a report',
+            self::PortalView => 'See which surfaces each client\'s portal exposes',
+            self::PortalManage => 'Switch a client\'s portal on or off, and change which surfaces it exposes',
+            self::PortalRead => 'Read a client portal as the client, for the clients you are assigned to',
             self::AnalyticsView => 'View performance analytics',
             self::AnalyticsExport => 'Export analytics data',
             self::SavedViewsManage => 'Create and share saved views',

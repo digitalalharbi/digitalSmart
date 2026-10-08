@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Interface\Http\Controller\Commerce;
 
 use App\Application\Commerce\Query\GetStoreAnalytics;
+use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Domain\Commerce\RevenueSource;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Resource\Commerce\StoreAnalyticsResource;
@@ -26,8 +27,19 @@ final class StoreAnalyticsController extends Controller
     /** The window used when a caller gives none. A month is what an agency reviews. */
     private const int DEFAULT_DAYS = 30;
 
-    public function __invoke(Request $request, GetStoreAnalytics $analytics): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        GetStoreAnalytics $analytics,
+        AuthorizationGuard $guard,
+    ): JsonResponse {
+        /*
+         * Before the validation below, not after. A caller who may not read revenue should be refused rather than
+         * told which parameter they left out: a 422 naming `revenue_source` says the endpoint exists and would
+         * answer, which is a sentence about the product nobody outside it has asked for. The use case checks the
+         * same permission again, so neither placement makes the other redundant.
+         */
+        $guard->ensure(GetStoreAnalytics::PERMISSION);
+
         $revenueSource = RevenueSource::tryFrom($request->string('revenue_source')->value());
 
         if ($revenueSource === null) {

@@ -84,6 +84,16 @@ export const PERMISSIONS = {
   reportsView: 'reports.view',
   reportsManage: 'reports.manage',
   reportsShare: 'reports.share',
+  /*
+   * Three, and the split is what the client portal rests on. `view` reads which surfaces a client's portal
+   * exposes — a question anybody handling the account asks, often with the client on the phone. `manage` changes
+   * it, which is a disclosure decision. `read` is held by the client's own people and by nobody in the agency: it
+   * is the only thing in this product that says "this person belongs to the client", because project assignment
+   * says what somebody works on rather than who they work for.
+   */
+  portalView: 'portal.view',
+  portalManage: 'portal.manage',
+  portalRead: 'portal.read',
   auditView: 'audit.view',
 } as const;
 

@@ -6,18 +6,29 @@ export class ApiError extends Error {
   readonly status: number | null;
   readonly errors: Record<string, string[]>;
   readonly isAuthError: boolean;
+  /**
+   * The response body, for the refusals that carry more than a sentence.
+   *
+   * Some of this product's refusals are *the answer*: asking for revenue without naming who counted it comes back
+   * with the authorities the surface will accept, and asking for an attribution model this product cannot compute
+   * comes back with what is missing. A caller that could only read `message` would have to re-fetch a vocabulary
+   * the refusal already handed it.
+   */
+  readonly payload: Record<string, unknown> | null;
 
   constructor(
     message: string,
     status: number | null,
     errors: Record<string, string[]> = {},
     isAuthError = false,
+    payload: Record<string, unknown> | null = null,
   ) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.errors = errors;
     this.isAuthError = isAuthError;
+    this.payload = payload;
   }
 
   /** First validation message for a field, if the server reported one. */
@@ -171,7 +182,15 @@ api.interceptors.response.use(
         ? 'The server could not be reached. Check your connection and try again.'
         : `Request failed with status ${String(status)}.`);
 
-    return Promise.reject(new ApiError(message, status, body?.errors ?? {}, isAuthError));
+    return Promise.reject(
+      new ApiError(
+        message,
+        status,
+        body?.errors ?? {},
+        isAuthError,
+        typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : null,
+      ),
+    );
   },
 );
 

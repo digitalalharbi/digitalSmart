@@ -111,6 +111,18 @@ enum AuditAction: string
     case ReportShared = 'report.shared';
     case ReportShareRevoked = 'report.share_revoked';
 
+    /*
+     * Exposing a surface to a client is a disclosure, and the entry is the only thing that can answer "who let
+     * them see that" after the person who did it has left. Withdrawal is its own action rather than an exposure
+     * with a flag: the two questions asked of this trail are "when could they see it" and "when did that stop",
+     * and an entry that answers one by implication answers neither.
+     */
+    case PortalEnabled = 'portal.enabled';
+    case PortalSuspended = 'portal.suspended';
+    case PortalResumed = 'portal.resumed';
+    case PortalModuleExposed = 'portal.module_exposed';
+    case PortalModuleWithdrawn = 'portal.module_withdrawn';
+
     case WorkspaceMemberInvited = 'workspace.member_invited';
     case WorkspaceMemberRoleChanged = 'workspace.member_role_changed';
     case WorkspaceMemberSuspended = 'workspace.member_suspended';
@@ -142,6 +154,18 @@ enum AuditAction: string
              * the one budget action that has to be as findable as one.
              */
             self::BudgetApproved,
+            /*
+             * And these are data-access grants in everything but name. A share link hands a client's performance
+             * data to whoever holds it; a portal module hands a surface to somebody outside the agency. Both
+             * belong beside "who connected a platform" rather than beside "who renamed a report".
+             */
+            self::ReportShared,
+            self::ReportShareRevoked,
+            self::PortalEnabled,
+            self::PortalSuspended,
+            self::PortalResumed,
+            self::PortalModuleExposed,
+            self::PortalModuleWithdrawn,
         ], true);
     }
 }

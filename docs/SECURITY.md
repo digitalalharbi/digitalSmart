@@ -63,6 +63,17 @@ anybody enumerating tokens when they have guessed one. Views are counted and not
 may know whether the report was opened, and a log of a client's reading habits is data this
 product has no reason to hold. See `docs/REPORTING.md`.
 
+**Why a client's access is a grant and not a role.** `analytics.view` sat on the client role until Phase 22, which
+meant every client in a workspace shared one decision taken once about a category. What a client may read is now
+four grants on their own portal, each exposed by a named person at a recorded time and revocable on its own, with
+every change filed as a security event. Who counts as a client is `portal.read`, held by no agency role, because
+project assignment says what somebody works on and not who they work for — a creative is assigned to a client's
+project and is plainly not their employee. See `docs/PORTAL.md`.
+
+**Why authorization runs before validation.** An endpoint that validates first tells an unauthorised caller which
+parameter they left out, and a 422 naming a parameter is a statement that the endpoint exists and would answer.
+Two revenue reads had that ordering wrong and were corrected in Phase 22.
+
 **Why the queue is "degraded", not "down".** Treating a stalled worker as a hard outage
 would take the whole platform offline for a non-critical dependency. The distinction is
 encoded in `ServiceStatus`.

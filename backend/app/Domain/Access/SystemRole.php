@@ -102,6 +102,8 @@ enum SystemRole: string
                 Permission::ReportsView,
                 Permission::ReportsManage,
                 Permission::ReportsShare,
+                Permission::PortalView,
+                Permission::PortalManage,
                 Permission::AuditView,
             ],
 
@@ -159,12 +161,14 @@ enum SystemRole: string
                 Permission::ClientRequestsSubmit,
                 Permission::ClientRequestsTriage,
                 /*
-                 * Builds reports and sends them. The role in the conversation with the client is the role that
-                 * decides what that client is shown.
+                 * Builds reports and sends them, and decides what the client's portal exposes. The role in the
+                 * conversation with the client is the role that decides what that client is shown.
                  */
                 Permission::ReportsView,
                 Permission::ReportsManage,
                 Permission::ReportsShare,
+                Permission::PortalView,
+                Permission::PortalManage,
                 Permission::AuditView,
             ],
 
@@ -225,6 +229,12 @@ enum SystemRole: string
                  */
                 Permission::ReportsView,
                 Permission::ReportsManage,
+                /*
+                 * Sees what a client's portal exposes and does not change it. A buyer needs to know whether the
+                 * client can already read this week's figures before answering a question about them; widening
+                 * what somebody outside the agency can read is a different act, and one the account's owner takes.
+                 */
+                Permission::PortalView,
             ],
 
             self::Creative => [
@@ -259,14 +269,25 @@ enum SystemRole: string
              * Clients see their own projects and nothing else. No user
              * directory, no other clients, no audit trail.
              *
-             * Analytics is granted, but it is not workspace-wide: without
-             * ProjectsViewAll every analytics query is narrowed to the
-             * projects the actor is assigned to, in SQL. The permission opens
-             * the screen; the assignment decides what is on it.
+             * **No analytics permission.** It was granted until Phase 22, and
+             * removing it is the point of that phase: a role that happens to
+             * open a screen is not a decision anybody took about a particular
+             * client. What a client may read is now the client portal's four
+             * module grants, each one exposed deliberately, by a named person,
+             * with an audit entry — and each one revocable without touching a
+             * role that every client shares.
+             *
+             * The figures themselves are unchanged. The portal reads the same
+             * analytics model with the same source states; it is the
+             * authorization that moved.
              */
             self::ClientViewer => [
                 Permission::ProjectsViewAssigned,
-                Permission::AnalyticsView,
+                /*
+                 * What makes this role a client rather than a member of staff, stated rather than inferred. It
+                 * is the only role that holds it, and the portal's client side is the only thing it opens.
+                 */
+                Permission::PortalRead,
                 /*
                  * Submit, and deliberately **not** view. This is the one permission a client holds that writes
                  * anything, and it is the whole reason the intake queue exists: an intake only agency staff can

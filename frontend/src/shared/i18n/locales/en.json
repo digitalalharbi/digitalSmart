@@ -14,6 +14,7 @@
     "approvals": "Approvals",
     "analytics": "Analytics",
     "reports": "Reports",
+    "clientPortal": "Client portal",
     "presentations": "Presentations",
     "integrations": "Integrations",
     "tasks": "Tasks",
@@ -1670,5 +1671,109 @@
     "unreachable": "The report could not be loaded. That is a connection problem, not an expired link — try again.",
     "preparedFor": "Prepared for {{recipient}}.",
     "footer": "Figures are as at the time shown above. A live link recalculates each time it is opened; a frozen copy never does, and says which it is."
+  },
+  "portal": {
+    "title": "Client portal",
+    "subtitle": "What each client can read, who decided it, and when.",
+    "loadFailed": "Could not load the portals. Try again in a moment.",
+    "denied": {
+      "title": "The client portal is not part of your access",
+      "body": "Ask a workspace owner if you need to see or change what a client can read."
+    },
+    "clients": "Clients",
+    "pick": {
+      "title": "Pick a client",
+      "body": "Choose one to see what their portal exposes."
+    },
+    "card": {
+      "exposed": "{{count}} surface",
+      "exposed_other": "{{count}} surfaces",
+      "nothing": "Exposes nothing",
+      "empty": "{{count}} with nothing behind it",
+      "empty_other": "{{count}} with nothing behind them"
+    },
+    "detail": {
+      "enabled": "Switched on {{at}} by {{who}}.",
+      "enabledUnknown": "Switched on {{at}}.",
+      "suspended": "Switched off {{at}} by {{who}}.",
+      "reason": "Reason recorded: {{reason}}",
+      "reasonInternal": "This reason stays inside the workspace. The client is told the portal is off and to contact their account manager.",
+      "notConfigured": "This client has no portal. Nothing is exposed to them.",
+      "enable": "Switch the portal on",
+      "enableHint": "It opens exposing nothing. Each surface is a separate decision after that.",
+      "suspend": "Switch it off",
+      "suspendReason": "Why it is being switched off",
+      "suspendHint": "Required, and kept. The surfaces close on the next request, and the grants are kept so resuming restores exactly what was exposed.",
+      "confirmSuspend": "Switch it off",
+      "resume": "Switch it back on",
+      "resumeHint": "It will expose exactly what it exposed before."
+    },
+    "modules": {
+      "title": "What this client can read",
+      "choose": "Surfaces",
+      "exposedBadge": "Exposed",
+      "save": "Save what they can read",
+      "exposedBy": "Exposed {{at}} by {{who}}",
+      "exposedAt": "Exposed {{at}}",
+      "needs": "Needs {{prerequisite}}",
+      "empty": "This would show them an empty page: the workspace has no {{prerequisite}} for this client yet.",
+      "emptyWarning": "{{count}} exposed surface would show this client nothing.",
+      "emptyWarning_other": "{{count}} exposed surfaces would show this client nothing."
+    },
+    "always": {
+      "title": "Always available",
+      "body": "Not a setting, for the reason given."
+    },
+    "withheld": {
+      "title": "Never exposed",
+      "body": "These are decisions, not gaps. The reason is kept here so the answer does not depend on who is asked."
+    }
+  },
+  "myPortal": {
+    "title": "Your portal",
+    "loadFailed": "Could not load your portal. Try again in a moment.",
+    "noPortal": {
+      "title": "Nothing here yet",
+      "body": "Your account manager has not set up a portal for you. They can switch it on."
+    },
+    "unavailable": "This portal is not open",
+    "preview": "You are reading this as the client sees it. It is their page, not yours.",
+    "client": "Account",
+    "nav": {
+      "performance": "Performance",
+      "reports": "Reports",
+      "store_revenue": "Store revenue",
+      "tracking": "Tracking",
+      "requests": "Requests"
+    },
+    "performance": {
+      "period": "{{from}} – {{until}} ({{days}} days)",
+      "headline": "Headline figures",
+      "trend": "Over time",
+      "comparedWith": "Compared with {{from}} – {{until}}, the period immediately before.",
+      "endsYesterday": "Every period ends yesterday, because today is still being counted.",
+      "emptyTitle": "Nothing recorded in this period",
+      "emptyBody": "No delivery was recorded for these dates. That is not the same as a total of zero.",
+      "fixed": "These are the figures your agency reports on. They are not a tool for building your own: a number without the context it was measured in is one nobody can answer a question about."
+    },
+    "reports": {
+      "empty": "No reports have been written for you yet.",
+      "back": "All reports",
+      "open": "Read it"
+    },
+    "requests": {
+      "always": "You can always ask for something here, and read what you were told. Your agency cannot switch this off."
+    },
+    "revenue": {
+      "whoIsCounting": "Who is counting",
+      "whoIsCountingHint": "Your store counts invoices. An analytics platform counts what a browser reported, which can include a payment that later failed. The figures differ, and the page says which you are reading.",
+      "chooseTitle": "Choose who is counting",
+      "chooseBody": "Nothing is shown until you choose, because two sources are two different answers about the same period."
+    },
+    "tracking": {
+      "window": "Measured over the last {{days}} days.",
+      "noSourcesTitle": "Measurement is not connected yet",
+      "noSourcesBody": "Nothing on your site is reporting to us, so there is nothing to check. Your account manager can set this up."
+    }
   }
 }

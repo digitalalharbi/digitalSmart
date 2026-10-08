@@ -33,6 +33,8 @@ use App\Application\Operations\Command\TriageClientRequest;
 use App\Application\Operations\DTO\ApprovalInput;
 use App\Application\Operations\DTO\ClientRequestInput;
 use App\Application\Operations\DTO\TaskInput;
+use App\Application\Portal\Command\EnablePortal;
+use App\Application\Portal\Command\SetPortalModules;
 use App\Application\Reporting\Command\SaveReport;
 use App\Application\Reporting\Command\TakeSnapshot;
 use App\Application\Reporting\DTO\ReportDefinition;
@@ -67,6 +69,7 @@ use App\Domain\Operations\MessageAudience;
 use App\Domain\Operations\StatedUrgency;
 use App\Domain\Operations\TaskPriority;
 use App\Domain\Operations\TaskState;
+use App\Domain\Portal\PortalModule;
 use App\Domain\Project\ProjectStatus;
 use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\ReportAudience;
@@ -179,6 +182,7 @@ final class DemoWorkspaceSeeder extends Seeder
         $this->demoApprovals($workspace->getKey());
         $this->demoClientRequests($workspace->getKey(), $roles);
         $this->demoReports($workspace->getKey());
+        $this->demoPortals($workspace->getKey());
 
         $actor->clear();
 
@@ -1210,6 +1214,45 @@ final class DemoWorkspaceSeeder extends Seeder
 
         $this->command?->line(
             '  Reports: 2 saved — one internal and unshareable, one client-safe with a snapshot behind it.'
+        );
+    }
+
+    /**
+     * One client's portal switched on, and the rest deliberately not.
+     *
+     * Built through the real use cases, so the audit entries exist and the module grants went through the same
+     * validation an agency's would. The shape is chosen to make the module's own argument visible on first run:
+     * the first client can read three surfaces, every other client can read nothing, and the agency's list shows
+     * both states side by side — which is the question this surface exists to answer.
+     *
+     * `store_revenue` is deliberately left off. The demo client has no connected store, so exposing it would show
+     * them an empty page, and an empty surface reads to a client as the agency having done nothing.
+     */
+    private function demoPortals(mixed $workspaceId): void
+    {
+        /** @var Client|null $client */
+        $client = Client::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('status', ClientStatus::Active->value)
+            ->orderBy('created_at')
+            ->first();
+
+        if ($client === null) {
+            return;
+        }
+
+        $clientId = (string) $client->getKey();
+
+        app(EnablePortal::class)($clientId);
+
+        app(SetPortalModules::class)($clientId, [
+            PortalModule::Performance,
+            PortalModule::Reports,
+            PortalModule::Tracking,
+        ]);
+
+        $this->command?->line(
+            '  Portal: 1 client reading performance, reports and tracking; the others not set up.'
         );
     }
 }

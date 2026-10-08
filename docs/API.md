@@ -261,6 +261,26 @@ works.
 
 Campaign and metrics endpoints arrive in Phase 3.
 
+## Client portal
+
+Two sets of routes, and they are deliberately not one. `/api/portals*` is the agency's control over what a client
+may read — it carries who exposed what and the suspension reason, and is gated on `portal.view` / `portal.manage`.
+`/api/portal*` is the client's own read, gated on the portal's module grants rather than on a role.
+
+A module that was not exposed answers **404, not 403**. Telling a client that a surface about them exists and is
+being withheld says something about the agency's intentions rather than about the product, and the portal index is
+where a reader learns what they may open.
+
+Agency staff holding `portal.view` read the client routes as a **preview**, through the same code, and every
+response carries `is_preview`.
+
+`GET /api/portal/{client}/revenue` requires `revenue_source` with no default, and the refusal carries the
+authorities the surface accepts — which is not every source the product knows: attributed revenue is a model and is
+never a portal figure. The access check runs **before** that refusal, so a reader who may not open the surface is
+told it is not there rather than told which parameter they left out.
+
+See `docs/PORTAL.md`.
+
 ## Analytics
 
 ### `GET /api/analytics`

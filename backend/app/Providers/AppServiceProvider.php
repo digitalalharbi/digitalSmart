@@ -48,6 +48,7 @@ use App\Application\Notifications\Contract\RecipientResolver;
 use App\Application\Operations\Contract\ApprovalRepository;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\Contract\TaskRepository;
+use App\Application\Portal\Contract\PortalRepository;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
 use App\Application\Reporting\Contract\ReportRepository;
@@ -119,6 +120,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMeasurementSourceRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMembershipRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentObservedEventWriter;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentPortalRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
@@ -240,6 +242,9 @@ final class AppServiceProvider extends ServiceProvider
          * differently in the same interface.
          */
         SnapshotSerialiser::class => ReportResource::class,
+
+        // Client portal (Phase 22)
+        PortalRepository::class => EloquentPortalRepository::class,
         NotificationStore::class => EloquentNotificationStore::class,
         RecipientResolver::class => PermissionAwareRecipientResolver::class,
         NotificationBroadcaster::class => ReverbNotificationBroadcaster::class,

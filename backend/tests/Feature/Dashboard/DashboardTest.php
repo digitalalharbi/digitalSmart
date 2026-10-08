@@ -61,16 +61,20 @@ describe('access', function (): void {
         $this->postJson('/api/dashboards', dashboardPayload())->assertUnauthorized();
     });
 
-    it('lets a client viewer read dashboards but not build them', function (): void {
+    it('keeps the agency\'s dashboards away from a client entirely', function (): void {
         $scenario = WorkspaceScenario::create();
         $client = $scenario->addMember(SystemRole::ClientViewer);
 
         /*
-         * Client viewers hold analytics.view but not saved_views.manage: they see
-         * what was shared with them and cannot reshape it. Reading and authoring are
-         * deliberately different permissions.
+         * Until Phase 22 a client viewer held `analytics.view` and could read this surface. That grant is gone,
+         * and its removal is the point of the client portal: what a client may read is now four module grants on
+         * their own portal, each exposed deliberately by a named person and revocable on its own, rather than a
+         * permission on a role that every client shares.
+         *
+         * A dashboard is also the agency's own composition — which widgets, in which order, against which saved
+         * view — and that is a working document rather than a report written to be read.
          */
-        $this->actingAs($client)->getJson('/api/dashboards')->assertOk();
+        $this->actingAs($client)->getJson('/api/dashboards')->assertForbidden();
 
         $this->actingAs($client)
             ->postJson('/api/dashboards', dashboardPayload())

@@ -163,6 +163,26 @@ export const queryKeys = {
      */
     shared: (token: string) => ['reports', 'shared', token] as const,
   },
+  portal: {
+    all: () => ['portal'] as const,
+    /* The agency's own view of the configuration. */
+    vocabulary: () => ['portal', 'vocabulary'] as const,
+    list: () => ['portal', 'list'] as const,
+    detail: (clientId: string) => ['portal', 'detail', clientId] as const,
+    /*
+     * And the reader's own. Separate from the agency's keys because the two are different documents: invalidating
+     * a configuration change must not leave a client's open page showing what it exposed a moment ago.
+     */
+    mine: () => ['portal', 'mine'] as const,
+    performance: (clientId: string) => ['portal', 'mine', clientId, 'performance'] as const,
+    reports: (clientId: string) => ['portal', 'mine', clientId, 'reports'] as const,
+    /* Keyed by the authority counting, because two sources are two different answers about one period. */
+    revenue: (clientId: string, revenueSource: string | null) =>
+      ['portal', 'mine', clientId, 'revenue', revenueSource] as const,
+    report: (clientId: string, reportId: string) =>
+      ['portal', 'mine', clientId, 'report', reportId] as const,
+    tracking: (clientId: string) => ['portal', 'mine', clientId, 'tracking'] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,

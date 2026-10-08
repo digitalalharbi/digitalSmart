@@ -26,6 +26,8 @@ use App\Interface\Http\Controller\Notifications\NotificationController;
 use App\Interface\Http\Controller\Operations\ApprovalController;
 use App\Interface\Http\Controller\Operations\ClientRequestController;
 use App\Interface\Http\Controller\Operations\TaskController;
+use App\Interface\Http\Controller\Portal\ClientPortalController;
+use App\Interface\Http\Controller\Portal\PortalConfigurationController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
 use App\Interface\Http\Controller\Reporting\ReportController;
@@ -458,6 +460,46 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('report')->name('reports.share');
     Route::delete('report-shares/{share}', [ReportController::class, 'revokeShare'])
         ->whereUuid('share')->name('reports.shares.revoke');
+
+    // --------------------------------------------------------- Client portal ---
+    /*
+     * The agency's control over what each client can read. Every write here changes what somebody outside the
+     * workspace can see, which is why each one is a separate route with its own audit entry rather than one
+     * `PUT /portals/{client}` carrying a state, a reason and a module list together.
+     */
+    Route::get('portals/vocabulary', [PortalConfigurationController::class, 'vocabulary'])
+        ->name('portals.vocabulary');
+    Route::get('portals', [PortalConfigurationController::class, 'index'])->name('portals.index');
+    Route::get('portals/{client}', [PortalConfigurationController::class, 'show'])
+        ->whereUuid('client')->name('portals.show');
+    Route::post('portals/{client}/enable', [PortalConfigurationController::class, 'enable'])
+        ->whereUuid('client')->name('portals.enable');
+    Route::post('portals/{client}/suspend', [PortalConfigurationController::class, 'suspend'])
+        ->whereUuid('client')->name('portals.suspend');
+    Route::post('portals/{client}/resume', [PortalConfigurationController::class, 'resume'])
+        ->whereUuid('client')->name('portals.resume');
+    Route::put('portals/{client}/modules', [PortalConfigurationController::class, 'modules'])
+        ->whereUuid('client')->name('portals.modules');
+
+    /*
+     * The client's own side. Authorization is the portal's module grants, not a role: a module that is not exposed
+     * answers 404, because telling a client a surface about them exists and is withheld says something about the
+     * agency's intentions rather than about the product.
+     *
+     * Agency staff holding `portal.view` read the same routes as a preview, through the same code, and every
+     * response says `is_preview` so a preview cannot be mistaken for their own view of the product.
+     */
+    Route::get('portal', [ClientPortalController::class, 'index'])->name('portal.index');
+    Route::get('portal/{client}/performance', [ClientPortalController::class, 'performance'])
+        ->whereUuid('client')->name('portal.performance');
+    Route::get('portal/{client}/revenue', [ClientPortalController::class, 'revenue'])
+        ->whereUuid('client')->name('portal.revenue');
+    Route::get('portal/{client}/reports', [ClientPortalController::class, 'reports'])
+        ->whereUuid('client')->name('portal.reports');
+    Route::get('portal/{client}/reports/{report}', [ClientPortalController::class, 'report'])
+        ->whereUuid('client')->whereUuid('report')->name('portal.report');
+    Route::get('portal/{client}/tracking', [ClientPortalController::class, 'tracking'])
+        ->whereUuid('client')->name('portal.tracking');
 
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])

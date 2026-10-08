@@ -175,6 +175,19 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'reports.view',
   },
   {
+    path: '/client-portal',
+    labelKey: 'nav.clientPortal',
+    icon: 'DoorOpen',
+    section: 'system',
+    phase: 'Phase 22',
+    /*
+     * `portal.view` rather than `portal.manage`: knowing whether a client can already see this week's figures is
+     * a question anybody handling the account asks, often with the client on the phone. Changing it is a separate
+     * permission the page checks for itself.
+     */
+    permission: 'portal.view',
+  },
+  {
     path: '/ai-assistant',
     labelKey: 'nav.aiAssistant',
     icon: 'Sparkles',

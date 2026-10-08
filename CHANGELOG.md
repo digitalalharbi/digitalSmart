@@ -4,6 +4,98 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 22 — the client portal
+
+What each client can read, who decided it, and when.
+
+### The argument
+
+Until this phase a client's access was a permission on a role: `analytics.view` sat on `ClientViewer` and every
+client in a workspace shared it. **That is not a decision anybody took about a particular client** — it was taken
+once, about a category, by whoever first needed a client to see a chart.
+
+The question an agency actually faces is asked per account. *Can Alhambra see last month's spend? Who let them?
+Since when? Can we stop it this afternoon without taking it away from everybody else?* A role answers none of
+those, so the grant moved: four surfaces per client, each exposed by a named person at a recorded time, each
+revocable on its own.
+
+### Added
+
+- `app/Domain/Portal/` — `PortalModule` (four exposable surfaces), `WithheldModule` (seven that never will be,
+  each with its reason), `AlwaysAvailable` (one that cannot be withheld), `PortalState`.
+- **Three closed lists rather than one.** A portal built the other way round — every surface available, each
+  behind a toggle — makes exposing the agency's own reasoning a *configuration mistake* rather than an
+  impossibility, and configuration mistakes get made on a Friday by whoever is covering. A test holds the three
+  lists disjoint: a surface in two of them would be a product that exposes something it also publishes a refusal
+  for, and whichever list the caller read would decide the answer.
+- **The refusals are published, with reasons.** "Not implemented yet" and "deliberately never" are different
+  answers and only one of them should be given twice; without the sentence, why a client cannot see the budget
+  depends on who is asked. The configuration screen lists them beside what *can* be exposed — the same reason the
+  attribution surface shows the models it cannot compute instead of hiding them.
+- **The client's intake thread is not a setting.** A client writes half of that conversation and a person is
+  entitled to read a conversation they are part of. A switch there would either control nothing or let an agency
+  withhold the answer to a question the client themselves asked.
+- **`portal.read` — the only thing in this product that says somebody belongs to the client.** Project assignment
+  does not: a creative is assigned to a client's project and is plainly not their employee, which is exactly the
+  bug a test found here before the permission existed. Precedence is load-bearing, because the owner role holds
+  every permission by construction: a reader with `portal.view` is staff previewing, and a reader with
+  `portal.read` and without it is the client.
+- **An agency preview reads the client's pages through the same code**, flagged `is_preview` in every response.
+  Reading a page as the client is the thing to do before switching a module on; a preview built from a different
+  query would be a preview of something nobody will see, and an agency member who mistook one for their own view
+  would conclude half the product had disappeared.
+- **Suspension keeps the grants and closes on the next request.** They are what the portal goes back to and the
+  answer to "what could they see while it was on"; clearing them would make resuming an act of reconstruction
+  from somebody's memory of a meeting. The reason is required and **internal** — "payment overdue" is a
+  commercial conversation and a portal page is the worst place to have it, so the client is told the portal is off
+  and to make contact.
+- **Exposed-with-nothing-behind-it is a figure on the page**, not something a reader works out by opening each
+  client. Every module declares what must exist first, and the screen says so *before* the switch is thrown: an
+  empty surface shown to a client reads as the agency having done nothing.
+- **Five audit actions, all of them security events** — filed beside "who connected a platform" rather than
+  beside "who renamed a report". One entry per module *naming it*, because an entry saying "the set is now
+  performance, reports" cannot answer "when did they get the revenue figures"; withdrawal as its own action,
+  because "when could they see it" and "when did that stop" are two questions; and nothing written when nothing
+  changed, because a trail that logged an unchanged form would bury the five real entries in fifty.
+- **The client's own application**, in its own shell: no agency sidebar, no bell, no account menu, and navigation
+  **built from what they may open** — so a module that was not exposed is absent rather than refused, and the
+  server answers 404 rather than 403 for the same reason. A menu item that returned 403 would tell a client a
+  surface about them exists and is being kept from them.
+- **A fixed metric set on the client's performance surface**, with reach and frequency absent because neither adds
+  up across campaigns, and the comparison period named because a change figure with an unstated baseline is one
+  somebody reads against whatever period they had in mind. The period is said to end yesterday, so a client
+  comparing it with a platform dashboard that includes today does not conclude the figures are wrong.
+- **Attributed revenue is refused through the other door too.** Offering it as a portal revenue source would be
+  the disclosure `WithheldModule::Attribution` exists to prevent, arriving by a different route.
+- Ten CHECK constraints across two tables, with the module vocabulary generated from the enum.
+- `docs/PORTAL.md`.
+
+### Changed
+
+- **`analytics.view` removed from `ClientViewer`.** The point of the phase, and the reason two feature tests
+  changed their subject rather than their assertion: a client no longer reads the agency's dashboards or saved
+  views at all, and what they may read is decided per client on their own portal. A dashboard is also the
+  agency's own composition — which widgets, in which order, against which saved view — and that is a working
+  document rather than a report written to be read.
+- **`GetStoreAnalytics` publishes its permission so the endpoint can apply it first.** Found by an end-to-end
+  test: the commerce endpoint validated its required `revenue_source` before checking the permission, so a reader
+  who may not see revenue at all was told which parameter to add. A 422 naming a parameter is a statement that the
+  endpoint exists and would answer. The portal's own revenue read has the same ordering, expressed as a domain
+  exception raised after the access check.
+- **`TrackingHealthComposer` extracted from `GetTrackingHealth`.** The portal needed the same diagnosis under
+  different authorization — the agency gates on `tracking.view`, the portal on whether the module was exposed —
+  and duplicating the composition would have produced two diagnoses of one site, with the client reading the one
+  nobody maintained.
+- **`ApiError` carries the response body.** Some of this product's refusals *are* the answer: asking for revenue
+  without naming who counted it comes back with the authorities the surface accepts. A caller that could only
+  read `message` would have to re-fetch a vocabulary the refusal already handed it.
+- **`ReportShared` and `ReportShareRevoked` are now security events.** They were not, and a share link hands a
+  client's performance data to whoever holds it — a data-access grant in everything but name.
+- Two end-to-end premises moved rather than two assertions weakening. The empty-notification-bell test had used
+  the owner (who holds every permission) and then the client (who no longer renders the agency shell); it now
+  uses the buyer, who holds the permissions and is deliberately on no project, so the resolver's visibility check
+  excludes them from every subject in the workspace.
+
 ## Phase 21 — reporting
 
 The one artefact in this product that leaves the building: a saved question, the figures that answer
