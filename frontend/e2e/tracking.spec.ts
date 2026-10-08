@@ -142,6 +142,35 @@ test.describe('tracking centre', () => {
     await expect(page.getByText(/signal of intent, not a completed action/)).toBeVisible();
   });
 
+  test('reads a container\u2019s published state, and cross-checks its measurement id', async ({
+    page,
+  }) => {
+    await openTracking(page);
+
+    const containers = page.getByRole('region', { name: 'Tag containers' });
+    await expect(containers).toBeVisible({ timeout: 30_000 });
+
+    /*
+     * Asked for one container at a time, because each answer is a live call to Tag Manager. Nothing is read
+     * until somebody chooses one.
+     */
+    await containers.getByRole('button', { name: /Demo web container/ }).click();
+
+    /* The only id that proves a container is the right one. */
+    await expect(containers.getByText('GTM-NR4QX8V')).toBeVisible({ timeout: 30_000 });
+
+    /*
+     * And the cross-check this panel exists for: the demo registers a GA4 property and a container whose
+     * published version refers to a different id, which is exactly the drift that is invisible everywhere else.
+     */
+    await expect(containers.getByText('Expected', { exact: true })).toBeVisible();
+    await expect(containers.getByText('In the published container')).toBeVisible();
+    await expect(containers.getByText(/invisible everywhere else/)).toBeVisible();
+
+    /* And the published state, which is the other thing only this panel can tell. */
+    await expect(containers.getByText(/^(A live version exists|Never published)$/)).toBeVisible();
+  });
+
   test('does not offer the tracking centre to a client viewer', async ({ page }) => {
     await signIn(page, ACCOUNTS.client);
 

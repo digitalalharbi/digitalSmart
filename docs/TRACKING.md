@@ -83,6 +83,31 @@ Issues sort worst-first, which is the order somebody works through them.
 | `intent_signal_as_conversion` | warning | A click or a form start is being counted as a completed action. |
 | `no_primary_conversion` | warning | Nothing says what success means here. |
 
+### The readiness panel is the fourth panel, and the only one that leaves the building
+
+The Tracking Center's first three panels are derived from this product's own tables and always answer. The
+fourth reads a tag container from Tag Manager on the workspace's credentials, which can be slow, rate-limited
+or unauthorised — so it loads on its own, fails on its own, and says so. Folding it into the health query would
+let a provider outage empty the page of facts it already had.
+
+It is asked **per container**, because each answer is a live provider call and a page that fired one per
+container on load would be slow in proportion to how much a client has set up.
+
+Three things it publishes that nothing else can:
+
+- **Published state, not saved state.** A change saved in Tag Manager and never published is not live, and
+  "edited since publishing" is the commonest reason a tag that looks correct is not firing.
+- **The measurement id cross-check.** The expected ids come from the client's *own* analytics sources rather
+  than from anything typed on this screen, so a container publishing a different property than the one somebody
+  registered shows up here and nowhere else.
+- **Configuration, not events.** No freshness is shown. An absence of events is not a container's fault, and
+  labelling every container stale would teach a reader to ignore the word.
+
+A failed read shows the provider's own words. Reporting "no issues" after a call that never arrived is the
+worse of the two possible wrong answers, and reading a container needs `tracking.manage` rather than
+`tracking.view` — the permission is published rather than the panel hidden, because a reader who cannot see why
+it is empty assumes the containers are not connected.
+
 ### Container readiness shares this vocabulary
 
 Six more codes — `container_never_published`, `container_unpublished_changes`, `tag_paused`,

@@ -4,6 +4,38 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 10 addendum — container readiness has a surface
+
+The endpoint had been built since Phase 9; nothing in the interface called it.
+
+### The argument
+
+`GET /api/measurement/sources/{source}/readiness` and its hooks existed and were unused, which meant the one
+thing this product can say about a tag container — whether the **published** version refers to the property
+somebody registered — was reachable only by reading the OpenAPI document. A capability with no surface is a
+capability the people who need it do not have.
+
+### Added
+
+- `ContainerReadiness`, as the Tracking Center's **fourth** panel. The order is the design: the first three are
+  derived from this product's own tables and always answer, and this one reaches Tag Manager on the workspace's
+  credentials. A slow or unauthorised provider cannot empty the page of facts it already had.
+- **Asked per container, not for all of them.** Each answer is a live provider call, and a page that fired one
+  per container on load would be slow in proportion to how much a client has set up.
+- **Published state, separated from saved state.** "Edited since publishing" is the commonest reason a tag that
+  looks correct is not firing, and this is the only screen that can tell the difference.
+- **The measurement id cross-check**, which is why the panel is worth building: expected comes from the client's
+  *own* analytics sources rather than from anything typed on the screen, so a container publishing a different
+  property than the one somebody registered shows up here and nowhere else.
+- **No freshness.** A container reports configuration, not events; labelling every container stale because no
+  event arrived would teach a reader to ignore the word.
+- **A failed read shows the provider's own words.** Reporting "no issues" after a call that never arrived is the
+  worse of the two possible wrong answers.
+- **The permission is published rather than the panel hidden.** Reading a container needs `tracking.manage`, and
+  a reader who cannot see why the panel is empty assumes the containers are not connected.
+- The demo workspace now seeds a sandbox tag container **whose published version refers to a different id than
+  the analytics source beside it** — a demo where the two agreed would demonstrate nothing.
+
 ## Phase 21 addendum — the report as a workbook
 
 The export the reporting phase shipped without.

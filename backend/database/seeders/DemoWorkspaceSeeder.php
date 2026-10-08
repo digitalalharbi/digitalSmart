@@ -403,11 +403,64 @@ final class DemoWorkspaceSeeder extends Seeder
 
         $result = app(SyncMeasurementSource::class)($source->id);
 
+        /*
+         * And a tag container, so the Tracking Center's fourth panel has something to read.
+         *
+         * Registered against the sandbox container in the Tag Manager fixtures, whose published version refers
+         * to `GT-PK92MNQ` while the analytics source above is `properties/123456` — which is the point. The
+         * readiness panel cross-checks what somebody registered as measuring this client against what the
+         * published container actually refers to, and a demo where the two agreed would demonstrate nothing.
+         */
+        $containerConnection = $this->sandboxConnection($workspaceId, Provider::GoogleTagManager);
+
+        $container = app(SaveMeasurementSource::class)(new MeasurementSourceInput(
+            clientId: (string) $client->getKey(),
+            kind: MeasurementSourceKind::TagManager,
+            externalId: 'accounts/6001144/containers/191002277',
+            name: 'SANDBOX — Demo web container',
+            provider: Provider::GoogleTagManager,
+            providerConnectionId: $containerConnection->id->value,
+        ));
+
+        app(SyncMeasurementSource::class)($container->id);
+
         $this->command?->line(sprintf(
-            '  Measurement: %s, %d events observed.',
+            '  Measurement: %s, %d events observed, plus one sandbox tag container.',
             $result->status->value,
             $result->rowsWritten,
         ));
+    }
+
+    /** A sandbox connection for one provider, reusing the workspace's own if it already has one. */
+    private function sandboxConnection(mixed $workspaceId, Provider $provider): ProviderConnection
+    {
+        $connections = app(ProviderConnectionRepository::class);
+        $credentials = [];
+
+        foreach ($provider->requiredCredentialKeys() as $key) {
+            $credentials[$key] = Credentials::SANDBOX_TOKEN;
+        }
+
+        $existing = $connections->findForProvider(new WorkspaceId((string) $workspaceId), $provider);
+
+        if ($existing instanceof ProviderConnection) {
+            $existing->replaceCredentials(new Credentials($credentials));
+            $connections->save($existing);
+
+            return $existing;
+        }
+
+        $connection = ProviderConnection::register(
+            id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
+            workspaceId: new WorkspaceId((string) $workspaceId),
+            provider: $provider,
+            name: 'SANDBOX — '.$provider->label(),
+            credentials: new Credentials($credentials),
+        );
+
+        $connections->save($connection);
+
+        return $connection;
     }
 
     /**

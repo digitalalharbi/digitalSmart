@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PERMISSIONS, useSession } from '@/features/auth';
 import { useClientsQuery } from '@/features/clients';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
@@ -7,6 +8,7 @@ import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { ContainerReadiness } from './ContainerReadiness';
 import { ConversionEditor } from './ConversionEditor';
 import { IssueList } from './IssueList';
 import { ObservedEventsChart } from './ObservedEventsChart';
@@ -50,6 +52,7 @@ function formatDate(value: string | null, locale: string): string {
  */
 export function TrackingCenterPage() {
   const { t, i18n } = useTranslation();
+  const { can } = useSession();
   const [clientId, setClientId] = useState<string | null>(null);
   const [editing, setEditing] = useState<EventDefinition | null | 'new'>(null);
   const [lastSync, setLastSync] = useState<{ name: string; result: SyncResult } | null>(null);
@@ -199,6 +202,25 @@ export function TrackingCenterPage() {
                 </table>
               </Card>
             )}
+          </section>
+
+          {/*
+            Fourth panel, and last of the four deliberately: it is the only one that reaches a provider. The
+            three above are derived from this product's own tables and always answer, so a slow or unauthorised
+            Tag Manager cannot empty the page of facts it already had.
+          */}
+          <section className="flex flex-col gap-3" aria-labelledby="tracking-containers">
+            <div className="flex flex-col gap-1">
+              <h2 id="tracking-containers" className="text-content text-lg font-semibold">
+                {t('tracking.containers.title')}
+              </h2>
+              <p className="text-content-secondary text-sm">{t('tracking.containers.subtitle')}</p>
+            </div>
+
+            <ContainerReadiness
+              sources={health.data.sources}
+              canManage={can(PERMISSIONS.trackingManage)}
+            />
           </section>
 
           <section className="flex flex-col gap-3" aria-labelledby="tracking-conversions">

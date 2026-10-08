@@ -798,6 +798,32 @@
       "emptyTitle": "Nothing defined yet",
       "emptyBody": "Define what counts as success for a client and this chart will show whether any of it is happening.",
       "aria": "Observed counts for each defined event over the last {{days}} days, with conversions and intent signals shown separately and never totalled."
+    },
+    "containers": {
+      "title": "Tag containers",
+      "subtitle": "What the published container actually refers to — read from Tag Manager, not from our own tables.",
+      "pick": "Container",
+      "pickHint": "Choose a container. Each answer is a live call to Tag Manager, so they are read one at a time.",
+      "loading": "Reading the published container…",
+      "emptyTitle": "No tag container is registered for this client",
+      "emptyBody": "Register a Tag Manager source to see what its published container refers to.",
+      "needsManage": "Reading a container's configuration reaches the provider on this workspace's credentials, which needs the tracking setup permission.",
+      "ready": "Ready",
+      "notReady": "Not ready",
+      "published": "Published",
+      "hasLiveVersion": "A live version exists",
+      "neverPublished": "Never published",
+      "changes": "Since publishing",
+      "editedSincePublishing": "Edited since publishing",
+      "nothingUnpublished": "Nothing unpublished",
+      "publishedTags": "Published tags",
+      "criticalIssues": "Critical issues",
+      "measurementIds": "Measurement ids",
+      "measurementIdsHint": "Expected comes from this client's own analytics sources, not from anything typed here. The two drifting apart is invisible everywhere else.",
+      "expected": "Expected",
+      "found": "In the published container",
+      "noneExpected": "No analytics source is registered for this client.",
+      "noneFound": "The published container refers to none."
     }
   },
   "commerce": {
