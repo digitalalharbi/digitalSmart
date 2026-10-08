@@ -17,7 +17,7 @@ server-enforced permissions; clients and projects with assignment-based visibili
 audit trail; six advertising adapters built against published schemas; budgets, pacing
 and forecasting; a measurement layer with a conversion registry; Google Analytics 4 and
 Tag Manager; a normalised commerce domain with Salla and Zid; store analytics; the Lead
-Center; conversion timelines; attribution with coverage on every figure; creative
+Center with a CRM bridge that refuses to read a stage's meaning out of its name; conversion timelines; attribution with coverage on every figure; creative
 operations with recorded platform specifications; an operations board; an approvals engine
 that records whether an authorised change was ever actually made; notifications with optional
 realtime; a client intake queue clients can write to; reports that a client can read
@@ -40,8 +40,8 @@ provider.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 1 611 passed — architecture, unit, feature          |
-| Frontend tests (Vitest)   | 471 passed                                          |
+| Backend tests (Pest)      | 1 634 passed — architecture, unit, feature          |
+| Frontend tests (Vitest)   | 477 passed                                          |
 | End-to-end (Playwright)   | 360 passed — Chromium + mobile Safari, signing in as real roles |
 | Accessibility             | axe-core WCAG 2.2 AA on five surfaces, both browsers, and in Arabic |
 | Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
@@ -102,6 +102,7 @@ make e2e        # Playwright (stack must be running)
 | `docs/PORTAL.md`         | The client portal: three closed lists, and who counts as a client |
 | `docs/INTELLIGENCE.md`   | The assistant: the product computes, the model writes, the guard checks |
 | `docs/PRESENTATIONS.md`  | Decks: the theme tokens first, and why the PDF comes from the browser |
+| `docs/CRM.md`            | The CRM bridge: who owns a stage, and why a label is not evidence |
 | `docs/PROVIDER_WRITES.md` | The one place this product writes: three operations, seven gates, and `unverified` |
 | `docs/DATA_VISUALISATION.md` | The measured chart palette, its gates, and the mark rules |
 | `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |

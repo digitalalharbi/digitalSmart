@@ -70,6 +70,14 @@ final class SandboxAccounts
                 // LinkedIn sync fixtures report against.
                 new DiscoveredAccount('512352200', 'SANDBOX — Najd Fintech (LinkedIn)', 'SAR', 'Asia/Riyadh', ExternalAccountStatus::Active),
             ],
+            /*
+             * A HubSpot "account" is the portal the app was installed into, identified by a hub id — a bare
+             * number. It has no currency of its own that this product should borrow: a deal carries its own, and
+             * a portal-level default would be a currency nothing was actually invoiced in.
+             */
+            Provider::HubSpot => [
+                new DiscoveredAccount('144100001', 'SANDBOX — Alhambra Retail (HubSpot)', null, null, ExternalAccountStatus::Active),
+            ],
             // No fixtures: we do not know what this programme's accounts look
             // like, so inventing a shape would be a guess the UI presents as fact.
             Provider::OpenAI => [],

@@ -48,6 +48,12 @@ enum ProviderEntity: string
     case Customer = 'customer';
     case Cart = 'cart';
     case Coupon = 'coupon';
+
+    // CRM
+    case Pipeline = 'pipeline';
+    case PipelineStage = 'pipeline_stage';
+    case Deal = 'deal';
+    case Contact = 'contact';
     case Refund = 'refund';
     case Shipment = 'shipment';
     case Payment = 'payment';
@@ -86,6 +92,10 @@ enum ProviderEntity: string
             self::Shipment => 'Shipments',
             self::Payment => 'Payments',
             self::WebhookEvent => 'Webhook events',
+            self::Pipeline => 'Pipelines',
+            self::PipelineStage => 'Pipeline stages',
+            self::Deal => 'Deals',
+            self::Contact => 'Contacts',
         };
     }
 

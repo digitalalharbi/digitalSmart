@@ -63,10 +63,18 @@ arch('credentials never reach the interface layer directly')
          * and nothing in Interface or in any response ever sees one.
          */
         'App\Application\Commerce',
+        /*
+         * And to leads, for the fourth time and the same reason: a CRM is read with the workspace's own
+         * credentials, the use case hands them to the adapter without reading them, and nothing in Interface or
+         * in any response ever sees one. The read is the only direction — the CRM owns its own pipeline, so
+         * there is no write path for a credential to reach either.
+         */
+        'App\Application\Leads',
         'App\Infrastructure\Integration',
         'App\Infrastructure\Advertising',
         'App\Infrastructure\Commerce',
         'App\Infrastructure\Measurement',
+        'App\Infrastructure\Leads',
         'App\Infrastructure\Persistence\Eloquent\Repository',
         /*
          * The demo seeder, which connects providers in sandbox mode. The rule this
@@ -115,6 +123,7 @@ arch('no measurement adapter is referenced outside infrastructure and its regist
     ->expect('App\Infrastructure\Measurement\Adapter')
     ->toOnlyBeUsedIn([
         'App\Infrastructure\Measurement',
+        'App\Infrastructure\Leads',
         'App\Providers',
     ]);
 

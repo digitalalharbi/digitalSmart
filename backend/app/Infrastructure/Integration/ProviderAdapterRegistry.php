@@ -10,6 +10,7 @@ use App\Domain\Integration\Provider;
 use App\Infrastructure\Integration\Adapter\GoogleAdsAdapter;
 use App\Infrastructure\Integration\Adapter\GoogleAnalyticsAdapter;
 use App\Infrastructure\Integration\Adapter\GoogleTagManagerAdapter;
+use App\Infrastructure\Integration\Adapter\HubSpotAdapter;
 use App\Infrastructure\Integration\Adapter\LinkedInAdsAdapter;
 use App\Infrastructure\Integration\Adapter\MetaAdsAdapter;
 use App\Infrastructure\Integration\Adapter\OpenAIAdsAdapter;
@@ -42,6 +43,7 @@ final readonly class ProviderAdapterRegistry implements Registry
         Provider::GoogleTagManager->value => GoogleTagManagerAdapter::class,
         Provider::Salla->value => SallaAdapter::class,
         Provider::Zid->value => ZidAdapter::class,
+        Provider::HubSpot->value => HubSpotAdapter::class,
     ];
 
     public function __construct(private Container $container) {}

@@ -34,6 +34,20 @@ enum ProviderCapability: string
     case CustomerSync = 'customer_sync';
     case Webhooks = 'webhooks';
 
+    // CRM
+    /** Reads the pipelines an object type has, and the stages in them, with their published metadata. */
+    case PipelineDiscovery = 'pipeline_discovery';
+    /** Reads deals (opportunities) with their stage and amount. */
+    case DealSync = 'deal_sync';
+    /**
+     * Reads the people a deal is associated with.
+     *
+     * Its own capability rather than `CustomerSync`, which belongs to commerce: a store customer is somebody who
+     * bought, and a CRM contact is somebody a salesperson is talking to. Folding them together would let a
+     * figure cross the boundary this registry exists to keep.
+     */
+    case ContactSync = 'contact_sync';
+
     public function label(): string
     {
         return match ($this) {
@@ -52,6 +66,9 @@ enum ProviderCapability: string
             self::ProductSync => 'Sync products',
             self::CustomerSync => 'Sync customers',
             self::Webhooks => 'Receive webhooks',
+            self::PipelineDiscovery => 'Read pipelines and their stages',
+            self::DealSync => 'Read deals',
+            self::ContactSync => 'Read the contacts on a deal',
         };
     }
 
@@ -78,6 +95,9 @@ enum ProviderCapability: string
             self::OrderSync,
             self::ProductSync,
             self::CustomerSync => ProviderCategory::Commerce,
+            self::PipelineDiscovery,
+            self::DealSync,
+            self::ContactSync => ProviderCategory::Crm,
             /*
              * Shared. `MetricsSync` in particular: an ad platform reports its own
              * performance and an analytics property reports a site's, and both are

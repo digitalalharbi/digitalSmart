@@ -281,6 +281,11 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('leads/{lead}/stage', [LeadController::class, 'stage'])
         ->whereUuid('lead')->name('leads.stage');
     Route::get('leads/centre', [LeadController::class, 'centre'])->name('leads.centre');
+    /*
+     * Read a CRM's deals as leads. A **read**: the CRM owns a deal's stage and nothing here writes one back, which
+     * is why `POST /api/leads/{lead}/stage` refuses a CRM-sourced lead. See docs/CRM.md.
+     */
+    Route::post('leads/crm-sync', [LeadController::class, 'syncCrm'])->name('leads.crm_sync');
 
     /*
      * Attribution. The catalogue first, so a client never hard-codes the model vocabulary and so the

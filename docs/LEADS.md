@@ -162,9 +162,12 @@ client-portal response, and `docs/SECURITY.md` carries the retention question.
 
 ## What this phase does not do
 
-- **No CRM bridge.** `LeadSourceKind::Crm` exists and nothing populates it. A CRM integration needs a named
-  provider, its OAuth, and a decision about which system owns a stage when both have one — that last part is a
-  product question rather than an engineering one.
+- ~~**No CRM bridge.**~~ Built, with HubSpot as the named provider — see `docs/CRM.md`. The product question
+  this note raised turned out to be inferable from this product's own rules rather than a preference: **the CRM
+  owns the stage**, because two systems both writing it means whichever wrote last wins and the figure a client
+  sees depends on the order of two jobs. `ChangeLeadStage` refuses a CRM-sourced lead and says where to move it
+  instead. A stage's *meaning* comes from the metadata the CRM publishes about it and never from its label, which
+  is the same refusal this product applies to a tag name.
 - **No automatic lead from an order.** `store_order_id` exists on the table and the link is not created
   automatically, because "every customer is a lead" is true for some clients and nonsense for others.
 - **No merge of two leads a human knows are one person.** The event type is reserved; the operation needs a UI

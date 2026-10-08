@@ -17,6 +17,7 @@ use App\Application\Creative\DTO\CreativeRequestInput;
 use App\Application\Creative\DTO\VersionInput;
 use App\Application\Leads\Command\ChangeLeadStage;
 use App\Application\Leads\Command\RecordLead;
+use App\Application\Leads\Command\SyncCrmDeals;
 use App\Application\Leads\DTO\LeadInput;
 use App\Application\Measurement\Command\SaveMeasurementSource;
 use App\Application\Measurement\Command\SyncMeasurementSource;
@@ -562,6 +563,30 @@ final class DemoWorkspaceSeeder extends Seeder
                     );
                 }
             }
+        }
+
+        /*
+         * And a CRM, read rather than written.
+         *
+         * Without this the Lead Center's one refusal about ownership is invisible in the only workspace anybody
+         * looks at: a CRM-sourced lead's stage is moved in the CRM, so the pipeline list says where instead of
+         * offering the controls. The fixture's pipeline includes a stage called "Won" that is **not** marked
+         * closed, which is the case the whole bridge exists for — so the demo shows a lead sitting at "new" with
+         * "Won" beside it, which is the honest answer and a confusing one until somebody reads why.
+         */
+        $firstClient = $clients[0] ?? null;
+
+        if ($firstClient !== null) {
+            $this->sandboxConnection($workspaceId, Provider::HubSpot);
+
+            $read = app(SyncCrmDeals::class)((string) $firstClient->getKey());
+
+            $this->command?->line(sprintf(
+                '  CRM: %d deal(s) read from %s, %d left at the stage the CRM owns.',
+                $read['read'],
+                Provider::HubSpot->label(),
+                $read['left_alone'],
+            ));
         }
 
         $this->command?->line(sprintf('  Leads: %d recorded across %d clients.', $recorded, count($clients)));

@@ -72,7 +72,17 @@ final readonly class EloquentLeadRepository implements LeadRepository
                 'email_key' => $contact->email,
                 'phone_key' => $contact->phone,
                 'message' => $input->message,
-                'stage' => LeadStage::New->value,
+                /*
+                 * `New`, unless the system that owns this lead stated a stage. A CRM-sourced lead arrives at the
+                 * stage its CRM says it is in; everything else starts where a person will move it from.
+                 */
+                'stage' => ($input->crmStage ?? LeadStage::New)->value,
+                /*
+                 * The CRM's own closing time, which the schema requires of a closed lead. Not the sync's clock: a
+                 * deal may have closed last week, and stamping "now" on it would make every turnaround figure
+                 * wrong by however long this integration took to arrive.
+                 */
+                'closed_at' => $input->crmStage?->isClosed() === true ? $input->crmClosedAt : null,
                 'value_minor' => $input->valueMinor,
                 'currency' => $input->valueMinor === null ? null : $input->currency,
                 'attribution_evidence' => $input->attribution->evidence->value,
@@ -344,6 +354,35 @@ final readonly class EloquentLeadRepository implements LeadRepository
                 'click_identifier' => $input->attribution->clickIdentifier,
                 'referrer' => $input->attribution->referrer,
             ];
+        }
+
+        /*
+         * The stage, but only where another system owns it.
+         *
+         * This is the one case where a later arrival overwrites rather than fills a gap, and it is the opposite
+         * of the rule above. For a form submission or a phone call a human owns the stage and a re-read must not
+         * touch it; for a CRM-sourced lead the CRM owns it, so a re-read is the authoritative answer and leaving
+         * the old one would show a deal as open after it was won.
+         *
+         * `source_detail` moves with it, because it carries the CRM's own stage label — a lead marked won here
+         * while still saying "Mudawalat" beside it would be two claims about the same thing.
+         */
+        if ($input->crmStage !== null) {
+            /** @var LeadStage $from */
+            $from = $lead->getAttribute('stage');
+
+            if ($from !== $input->crmStage) {
+                $attributes['stage'] = $input->crmStage->value;
+                $attributes['source_detail'] = $input->sourceDetail;
+                /* And its closing time, or its absence — the schema requires the pair to agree. */
+                $attributes['closed_at'] = $input->crmStage->isClosed() ? $input->crmClosedAt : null;
+
+                /*
+                 * Recorded as an event with no actor, which is what makes the trail readable afterwards: "who
+                 * moved this" has the honest answer that nobody here did.
+                 */
+                $this->recordEvent($lead, 'stage_changed', fromStage: $from, toStage: $input->crmStage);
+            }
         }
 
         if ($attributes !== []) {

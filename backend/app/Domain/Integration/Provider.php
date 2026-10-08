@@ -44,6 +44,9 @@ enum Provider: string
     case Salla = 'salla';
     case Zid = 'zid';
 
+    // CRM
+    case HubSpot = 'hubspot';
+
     public function label(): string
     {
         return match ($this) {
@@ -58,6 +61,7 @@ enum Provider: string
             self::GoogleTagManager => 'Google Tag Manager',
             self::Salla => 'Salla',
             self::Zid => 'Zid',
+            self::HubSpot => 'HubSpot',
         };
     }
 
@@ -76,6 +80,7 @@ enum Provider: string
             self::GoogleAnalytics => ProviderCategory::Analytics,
             self::GoogleTagManager => ProviderCategory::TagManagement,
             self::Salla, self::Zid => ProviderCategory::Commerce,
+            self::HubSpot => ProviderCategory::Crm,
         };
     }
 
@@ -98,6 +103,12 @@ enum Provider: string
             self::GoogleAnalytics, self::GoogleTagManager => ProviderApiStatus::GenerallyAvailable,
             // Both publish open partner programmes with self-service app registration.
             self::Salla, self::Zid => ProviderApiStatus::GenerallyAvailable,
+            /*
+             * A HubSpot app is created in a developer account with no review to pass for private use; a public
+             * app needs listing approval only to be distributed. Read access to the CRM objects this product
+             * wants is a matter of the installing account granting the scopes.
+             */
+            self::HubSpot => ProviderApiStatus::GenerallyAvailable,
             // No programme to apply to: see docs/INTEGRATIONS.md.
             self::OpenAI => ProviderApiStatus::Unavailable,
         };
@@ -108,7 +119,8 @@ enum Provider: string
     {
         return match ($this) {
             self::Meta, self::GoogleAds, self::TikTok, self::Snapchat, self::LinkedIn,
-            self::GoogleAnalytics, self::GoogleTagManager, self::Salla, self::Zid => AuthMethod::OAuth2,
+            self::GoogleAnalytics, self::GoogleTagManager, self::Salla, self::Zid,
+            self::HubSpot => AuthMethod::OAuth2,
             // The only one: every X Ads request is signed with OAuth 1.0a.
             self::X => AuthMethod::OAuth1,
             // Unknown until the programme grants access; see docs/INTEGRATIONS.md.
@@ -268,6 +280,17 @@ enum Provider: string
              * contract is unknown, so declaring anything here would be a guess the
              * interface would then present as fact.
              */
+            /*
+             * Read-only, and deliberately so. The CRM owns its own pipeline: this product reads what a deal's
+             * stage *is* and never writes one back, because two systems both claiming to own a stage is how a
+             * sales team loses a day's work to a sync. See `CrmStageMeaning` and docs/CRM.md.
+             */
+            self::HubSpot => [
+                ProviderCapability::PipelineDiscovery,
+                ProviderCapability::DealSync,
+                ProviderCapability::ContactSync,
+            ],
+
             self::OpenAI => [],
         };
     }
@@ -318,6 +341,12 @@ enum Provider: string
                 ProviderEntity::Customer,
                 ProviderEntity::WebhookEvent,
             ],
+            self::HubSpot => [
+                ProviderEntity::Pipeline,
+                ProviderEntity::PipelineStage,
+                ProviderEntity::Deal,
+                ProviderEntity::Contact,
+            ],
             self::OpenAI => [],
         };
     }
@@ -350,6 +379,18 @@ enum Provider: string
                 note: 'Published as 0.25 queries per second on a 100-second sliding window. '
                     .'Per *project*, so every workspace on one deployment shares it. Exceeding it answers 403, not 429.',
             ),
+            self::HubSpot => new ProviderRateLimit(
+                requests: 190,
+                windowSeconds: 10,
+                scope: 'app',
+                dailyRequests: 625_000,
+                note: 'Published per app per 10 seconds, with the daily figure depending on the installing '
+                    .'account\'s tier — 625,000 on Professional and 1,000,000 on Enterprise, so the lower one '
+                    .'is recorded here. Exceeding it answers 429, and every response carries '
+                    .'X-HubSpot-RateLimit-Remaining and X-HubSpot-RateLimit-Interval-Milliseconds; no '
+                    .'Retry-After is documented for a 429. Read 2026-10-08.',
+            ),
+
             // Not published by these providers. Backed off on their own throttling instead.
             self::Meta, self::GoogleAds, self::TikTok, self::Snapchat,
             self::GoogleAnalytics, self::Salla, self::Zid => ProviderRateLimit::undocumented(),
@@ -371,6 +412,7 @@ enum Provider: string
             self::GoogleTagManager => 'https://developers.google.com/tag-platform/tag-manager/api/v2',
             self::Salla => 'https://docs.salla.dev/',
             self::Zid => 'https://docs.zid.sa/',
+            self::HubSpot => 'https://developers.hubspot.com/docs/api-reference/crm-deals-v3/guide',
             // Nothing to link to yet.
             self::OpenAI => null,
         };
@@ -401,6 +443,12 @@ enum Provider: string
              */
             self::GoogleAnalytics, self::GoogleTagManager => ['client_id', 'client_secret'],
             self::Salla, self::Zid => ['client_id', 'client_secret'],
+            /*
+             * A HubSpot app's OAuth pair. A private-app token would be one value instead, and is deliberately not
+             * modelled: a token pasted into a form is a credential nobody can rotate without a person, and this
+             * product's other integrations all authorise through the account that owns the data.
+             */
+            self::HubSpot => ['client_id', 'client_secret'],
             self::OpenAI => ['api_key'],
         };
     }

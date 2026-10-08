@@ -1,0 +1,128 @@
+[
+  {
+    "_newest_days_ago": 1,
+    "results": [
+      {
+        "id": "27451900001",
+        "properties": {
+          "dealname": "Alhambra Retail — Eid retainer",
+          "dealstage": "closedwon",
+          "pipeline": "default",
+          "amount": "48000.00",
+          "deal_currency_code": "SAR",
+          "closedate": "2026-10-06T00:00:00.000Z",
+          "createdate": "2026-09-20T07:12:00.000Z",
+          "hs_lastmodifieddate": "2026-10-07T10:04:00.000Z"
+        },
+        "createdAt": "2026-09-20T07:12:00.000Z",
+        "updatedAt": "2026-10-07T10:04:00.000Z",
+        "archived": false,
+        "_contacts": [
+          {
+            "id": "801100221",
+            "properties": {
+              "firstname": "Reem",
+              "lastname": "Al-Harbi",
+              "email": "reem@alhambra.example",
+              "phone": "+966500000001"
+            }
+          }
+        ]
+      },
+      {
+        "id": "27451900002",
+        "properties": {
+          "dealname": "Najd Fintech — brand sprint",
+          "dealstage": "qualifiedtobuy",
+          "pipeline": "default",
+          "amount": "",
+          "deal_currency_code": "SAR",
+          "closedate": null,
+          "createdate": "2026-10-01T09:30:00.000Z",
+          "hs_lastmodifieddate": "2026-10-07T08:50:00.000Z"
+        },
+        "createdAt": "2026-10-01T09:30:00.000Z",
+        "updatedAt": "2026-10-07T08:50:00.000Z",
+        "archived": false,
+        "_contacts": [
+          {
+            "id": "801100222",
+            "properties": {
+              "firstname": "Omar",
+              "lastname": null,
+              "email": null,
+              "phone": "+966500000002"
+            }
+          }
+        ]
+      },
+      {
+        "id": "27451900003",
+        "properties": {
+          "dealname": "Rawdah Hospitality — launch",
+          "dealstage": "closedlost",
+          "pipeline": "default",
+          "amount": "12500.50",
+          "deal_currency_code": "SAR",
+          "closedate": "2026-10-02T00:00:00.000Z",
+          "createdate": "2026-08-14T11:00:00.000Z",
+          "hs_lastmodifieddate": "2026-10-02T15:20:00.000Z"
+        },
+        "createdAt": "2026-08-14T11:00:00.000Z",
+        "updatedAt": "2026-10-02T15:20:00.000Z",
+        "archived": false,
+        "_contacts": []
+      },
+      {
+        "id": "27451900004",
+        "properties": {
+          "dealname": "Alhambra Retail — second store",
+          "dealstage": "1284920",
+          "pipeline": "default",
+          "amount": "30000.00",
+          "deal_currency_code": "SAR",
+          "closedate": null,
+          "createdate": "2026-10-05T06:45:00.000Z",
+          "hs_lastmodifieddate": "2026-10-07T07:05:00.000Z"
+        },
+        "createdAt": "2026-10-05T06:45:00.000Z",
+        "updatedAt": "2026-10-07T07:05:00.000Z",
+        "archived": false,
+        "_contacts": [
+          {
+            "id": "801100223",
+            "properties": {
+              "firstname": "Sara",
+              "lastname": "Nasser",
+              "email": "sara@alhambra.example",
+              "phone": null
+            }
+          }
+        ]
+      }
+    ],
+    "paging": { "next": { "after": "27451900004" } }
+  },
+  {
+    "_newest_days_ago": 3,
+    "results": [
+      {
+        "id": "27451900005",
+        "properties": {
+          "dealname": "Najd Fintech — renewal",
+          "dealstage": "appointmentscheduled",
+          "pipeline": "default",
+          "amount": "9000.00",
+          "deal_currency_code": "USD",
+          "closedate": null,
+          "createdate": "2026-09-28T10:00:00.000Z",
+          "hs_lastmodifieddate": "2026-10-05T09:00:00.000Z"
+        },
+        "createdAt": "2026-09-28T10:00:00.000Z",
+        "updatedAt": "2026-10-05T09:00:00.000Z",
+        "archived": false,
+        "_contacts": []
+      }
+    ]
+  }
+]

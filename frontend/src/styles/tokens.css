@@ -337,4 +337,10 @@
   --ds-platform-google-tag-manager: oklch(0.6 0.13 45);
   --ds-platform-salla: oklch(0.58 0.14 162);
   --ds-platform-zid: oklch(0.56 0.16 300);
+  /*
+   * CRM. HubSpot's own mark is a lighter orange; this is its hue stepped to the band the other chips sit in —
+   * these are identifier hues rather than logos, and white reads on this one at 4.59:1 where the lightest brand
+   * oranges manage barely 2:1.
+   */
+  --ds-platform-hubspot: oklch(0.58 0.16 40);
 }

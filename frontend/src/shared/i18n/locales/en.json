@@ -1004,7 +1004,8 @@
       "emptyBody": "Nothing has been recorded for this scope.",
       "moveFailed": "Could not move the lead. Try again in a moment.",
       "reason": "Why",
-      "confirm": "Disqualify"
+      "confirm": "Disqualify",
+      "ownedByTheCrm": "Moved in {{source}}, which owns this stage."
     },
     "stages": {
       "new": "New",

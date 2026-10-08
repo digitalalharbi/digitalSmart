@@ -29,7 +29,7 @@ sit.
 | 12    | **Salla** integration — entities, HMAC webhook verification, queued handling, reconciliation sync, two-axis status mapping | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 13    | **Zid** integration — the same normalised domain, which Zid fits natively; Basic Auth webhooks, custom merchant statuses | **Complete**; BLOCKED_EXTERNAL on a Partner app install, sandbox end to end |
 | 14    | **Store analytics and revenue sources** — orders, sales, AOV, refunds, revenue by channel/campaign/product, with a required revenue source on every request | **Complete** |
-| 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome | **Complete**; the CRM bridge is outstanding |
+| 15    | **Lead intelligence** — Lead Center, sources, pipeline, qualification, outcome | **Complete**, including the CRM bridge. The product question that bridge was blocked on — which system owns a stage when both have one — turned out to be inferable from this product's own rules: the CRM owns it, because two systems both writing it means whichever wrote last wins and the figure a client sees depends on the order of two jobs, so a move made here is refused with the place to make it instead. A stage's *meaning* is read from the metadata the CRM publishes about it and never from its label — a stage called "Won" that is not marked closed comes back open, which is the same refusal this product applies to a tag name. An open deal's amount is a quote rather than a value, nothing is attributed because a CRM holds no click identifier, and the live app is BLOCKED_EXTERNAL on a HubSpot developer account — see docs/CRM.md |
 | 16    | **Customer journeys** — identity evidence, identity confidence, conversion timelines | **Complete for what the data supports**; multi-touch journeys need event-level data this product does not have — see docs/JOURNEYS.md. The timeline surface ships with the Lead Center |
 | 17    | **Visualisation layer** — a measured chart palette with executable gates, mark specs in one module, a chart frame carrying source state and a table twin, the Lead Center and the journey timeline | **Complete** |
 | 18    | **Attribution** — models with coverage, data quality, confidence and revenue source on every figure, and a surface that leads with coverage | **Complete for what the data supports**; three models need a touch path this product does not hold, and are declared, explained and refused — see docs/ATTRIBUTION.md |
@@ -727,16 +727,18 @@ Built around one sentence: **a lead is a person who did something, and a click i
 
 ### Not yet done in Phase 15
 
-- **No CRM bridge.** The source kind exists and nothing populates it. A CRM integration needs a named provider,
-  its OAuth, and a decision about which system owns a stage when both have one — the last part is a product
-  question.
+- ~~**No CRM bridge.**~~ Built; see `docs/CRM.md`. The product question turned out to be inferable from this
+  product's own rules: **the CRM owns the stage**, because two systems both writing it means whichever wrote last
+  wins and the figure a client sees depends on the order of two jobs. A stage's meaning comes from the metadata
+  the CRM publishes about it and never from its label — a stage called "Won" that is not marked closed comes back
+  open. The live app is BLOCKED_EXTERNAL on a HubSpot developer account.
 - **No automatic lead from an order.** The column is there and the link is not made, because "every customer is
   a lead" is true for some clients and nonsense for others.
 - **No merge of two leads a human knows are one person.** The event type is reserved; the operation needs a UI
   and a decision about whose history survives.
 - **No lead scoring.** A score is a model, and a model presented as a fact is what this product refuses. It
   belongs with the AI phase, labelled as modelled.
-- **No frontend surface.**
+- ~~**No frontend surface.**~~ The Lead Center shipped with Phase 17, where the chart layer it needed landed.
 
 ### Phase 16 — customer journeys
 

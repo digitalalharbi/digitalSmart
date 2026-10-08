@@ -47,6 +47,7 @@ use App\Application\Intelligence\Service\AnalysisAssembler;
 use App\Application\Intelligence\Service\FigureScanner;
 use App\Application\Intelligence\Service\Narrator;
 use App\Application\Journeys\Contract\JourneyReadModel;
+use App\Application\Leads\Contract\CrmReadAdapter;
 use App\Application\Leads\Contract\LeadReadModel;
 use App\Application\Leads\Contract\LeadRepository;
 use App\Application\Measurement\Contract\EventDefinitionRepository;
@@ -107,6 +108,7 @@ use App\Infrastructure\Integration\ProviderAdapterRegistry;
 use App\Infrastructure\Integration\Writer\CampaignWriterRegistry;
 use App\Infrastructure\Intelligence\AnthropicLanguageModel;
 use App\Infrastructure\Intelligence\NoLanguageModel;
+use App\Infrastructure\Leads\Adapter\HubSpotCrmReadAdapter;
 use App\Infrastructure\Measurement\Adapter\GoogleTagManagerReadAdapter;
 use App\Infrastructure\Measurement\MeasurementSyncAdapterRegistry;
 use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
@@ -210,6 +212,11 @@ final class AppServiceProvider extends ServiceProvider
         WorkLedger::class => DatabaseWorkLedger::class,
         ReportWorkbookWriter::class => XlsxWriter::class,
         BoardSignaller::class => BroadcastBoardSignaller::class,
+        /*
+         * One CRM, and the binding names it. A second would need a registry like the advertising adapters have;
+         * one does not, and a registry with a single entry is a layer that explains nothing.
+         */
+        CrmReadAdapter::class => HubSpotCrmReadAdapter::class,
         AuthorizationGuard::class => PermissionAuthorizationGuard::class,
         IdentityReadModel::class => EloquentIdentityReadModel::class,
         Authenticator::class => SessionAuthenticator::class,

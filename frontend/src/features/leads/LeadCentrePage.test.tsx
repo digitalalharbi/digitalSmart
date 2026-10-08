@@ -393,3 +393,44 @@ describe('the Lead Center', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('a lead the CRM owns', () => {
+  it('says where its stage is moved instead of offering the controls', async () => {
+    state.leads = [
+      lead({
+        id: 'lead-crm',
+        source_kind: 'crm',
+        source_kind_label: 'CRM',
+        /* The CRM's own stage label travels with the lead, so a reader sees where it stands over there. */
+        source_detail: 'HubSpot · Mudawalat',
+        name: 'Omar',
+      }),
+    ];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    const table = await screen.findByRole('table', { name: /Leads, with their route/ });
+
+    /*
+     * The sentence goes where the controls would have been rather than the controls being hidden. A move made
+     * here would be undone by the next sync without anybody being told, and a reader who cannot see why the
+     * buttons are missing concludes the product is broken.
+     */
+    expect(
+      within(table).getByText(/HubSpot · Mudawalat, which owns this stage/),
+    ).toBeInTheDocument();
+    expect(within(table).queryByRole('button', { name: 'Qualify' })).not.toBeInTheDocument();
+    expect(within(table).queryByRole('button', { name: 'Disqualify' })).not.toBeInTheDocument();
+  });
+
+  it('still offers the controls on a lead from anywhere else', async () => {
+    state.leads = [lead({ id: 'lead-form', source_kind: 'form_submission' })];
+
+    await renderWithProviders(<LeadCentrePage />);
+
+    const table = await screen.findByRole('table', { name: /Leads, with their route/ });
+
+    // The refusal is about ownership, not about leads.
+    expect(within(table).getByRole('button', { name: 'Mark contacted' })).toBeInTheDocument();
+  });
+});

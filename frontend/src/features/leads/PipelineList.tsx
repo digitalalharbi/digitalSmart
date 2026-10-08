@@ -202,7 +202,19 @@ export function PipelineList({
                     </td>
 
                     <td className="px-2 py-2">
-                      {!canMove || NEXT_STAGES[lead.stage].length === 0 ? (
+                      {/*
+                        A lead that came from a CRM is a read of that CRM, and the CRM owns its stage. The
+                        sentence goes where the controls would have been rather than the controls being hidden: a
+                        move made here would be undone by the next sync without anybody being told, and a reader
+                        who cannot see why the buttons are missing concludes the product is broken.
+                      */}
+                      {lead.source_kind === 'crm' ? (
+                        <span className="text-content-tertiary text-xs">
+                          {t('leads.list.ownedByTheCrm', {
+                            source: lead.source_detail ?? lead.source_kind_label,
+                          })}
+                        </span>
+                      ) : !canMove || NEXT_STAGES[lead.stage].length === 0 ? (
                         <span className="text-content-tertiary text-xs">—</span>
                       ) : disqualifying === lead.id ? (
                         /*

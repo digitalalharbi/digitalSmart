@@ -1,0 +1,62 @@
+[
+  {
+    "_newest_days_ago": 0,
+    "results": [
+      {
+        "id": "default",
+        "label": "Sales pipeline",
+        "displayOrder": 0,
+        "archived": false,
+        "createdAt": "2026-01-04T08:00:00.000Z",
+        "updatedAt": "2026-09-02T11:30:00.000Z",
+        "stages": [
+          {
+            "id": "appointmentscheduled",
+            "label": "Appointment scheduled",
+            "displayOrder": 0,
+            "archived": false,
+            "metadata": { "isClosed": "false", "probability": "0.2" },
+            "createdAt": "2026-01-04T08:00:00.000Z",
+            "updatedAt": "2026-01-04T08:00:00.000Z"
+          },
+          {
+            "id": "qualifiedtobuy",
+            "label": "Mudawalat",
+            "displayOrder": 1,
+            "archived": false,
+            "metadata": { "isClosed": "false", "probability": "0.4" },
+            "createdAt": "2026-01-04T08:00:00.000Z",
+            "updatedAt": "2026-03-11T09:15:00.000Z"
+          },
+          {
+            "id": "closedwon",
+            "label": "Closed won",
+            "displayOrder": 2,
+            "archived": false,
+            "metadata": { "isClosed": "true", "probability": "1.0" },
+            "createdAt": "2026-01-04T08:00:00.000Z",
+            "updatedAt": "2026-01-04T08:00:00.000Z"
+          },
+          {
+            "id": "closedlost",
+            "label": "Closed lost",
+            "displayOrder": 3,
+            "archived": false,
+            "metadata": { "isClosed": "true", "probability": "0.0" },
+            "createdAt": "2026-01-04T08:00:00.000Z",
+            "updatedAt": "2026-01-04T08:00:00.000Z"
+          },
+          {
+            "id": "1284920",
+            "label": "Won",
+            "displayOrder": 4,
+            "archived": false,
+            "metadata": { "isClosed": "false", "probability": "0.9" },
+            "createdAt": "2026-05-19T13:40:00.000Z",
+            "updatedAt": "2026-05-19T13:40:00.000Z"
+          }
+        ]
+      }
+    ]
+  }
+]

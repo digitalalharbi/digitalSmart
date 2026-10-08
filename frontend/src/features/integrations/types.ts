@@ -16,9 +16,19 @@ export type ProviderSlug =
   | 'google_analytics'
   | 'google_tag_manager'
   | 'salla'
-  | 'zid';
+  | 'zid'
+  | 'hubspot';
 
-export type ProviderCategorySlug = 'advertising' | 'analytics' | 'tag_management' | 'commerce';
+export type ProviderCategorySlug =
+  | 'advertising'
+  | 'analytics'
+  | 'tag_management'
+  | 'commerce'
+  /*
+   * Its own category, and load-bearing rather than cosmetic: figures never total across categories, and a CRM's
+   * deal value is not a store's invoiced revenue nor a platform's claimed one.
+   */
+  | 'crm';
 
 /** How reachable a provider's API is in principle — not whether this workspace connected it. */
 export type ProviderApiStatus = 'generally_available' | 'requires_approval' | 'unavailable';

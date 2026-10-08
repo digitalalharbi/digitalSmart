@@ -7,6 +7,7 @@ namespace App\Interface\Http\Controller\Leads;
 use App\Application\Journeys\Query\GetJourney;
 use App\Application\Leads\Command\ChangeLeadStage;
 use App\Application\Leads\Command\RecordLead;
+use App\Application\Leads\Command\SyncCrmDeals;
 use App\Application\Leads\DTO\LeadView;
 use App\Application\Leads\Query\GetLeadCentre;
 use App\Application\Leads\Query\ListLeads;
@@ -83,6 +84,35 @@ final class LeadController extends Controller
                 $request->string('note')->value() ?: null,
             )),
         ]);
+    }
+
+    /**
+     * Read a CRM's deals as leads.
+     *
+     * The client is a parameter rather than something read from the CRM, and that is a limitation stated rather
+     * than hidden: a HubSpot portal is one company's CRM, so mapping its deals onto an agency's several clients
+     * needs a binding somebody made deliberately. Nothing infers a client from a company name.
+     *
+     * The response is the sync's own figures — read, recorded, and **left at their stage**. The last is not
+     * padding: a bridge that reported only the stages it understood would look like one that read almost nothing.
+     */
+    public function syncCrm(Request $request, SyncCrmDeals $sync): JsonResponse
+    {
+        $clientId = $request->string('client_id')->value();
+
+        if ($clientId === '') {
+            return response()->json([
+                'message' => 'Say which client these deals belong to. A CRM portal is one company\'s and a '
+                    .'workspace has several clients, so nothing here can infer it.',
+                'code' => 'client_required',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $since = $request->string('since')->value();
+
+        $result = $sync($clientId, $since === '' ? null : new DateTimeImmutable($since));
+
+        return response()->json(['data' => $result]);
     }
 
     /**

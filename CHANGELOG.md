@@ -4,6 +4,83 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 15 addendum — the CRM bridge
+
+`LeadSourceKind::Crm` had existed since Phase 15 with nothing populating it.
+
+### The argument
+
+The note in `docs/LEADS.md` said why it was outstanding: a CRM integration needs a named provider, its OAuth, and
+*"a decision about which system owns a stage when both have one — that last part is a product question rather
+than an engineering one."*
+
+That decision turned out to be inferable from this product's own rules rather than from a preference. **The CRM
+owns the stage.** The alternative is to let both systems write it, and that fails in a specific way: whichever
+wrote last wins, nobody can tell which that was, and the figure a client is shown depends on the order of two
+jobs. A sales team loses a day's work to a sync, and the product that lost it reports success.
+
+### Added
+
+- **`CrmStageMeaning` — the rule the whole bridge turns on, and a refusal more than a mapping.** A CRM's stages
+  are named by the people using it: "Proposal sent", "Mudawalat", "Stage 3", "Hot". Reading a meaning out of a
+  label is the mistake this product refuses everywhere else, so the meaning comes from the metadata the CRM
+  publishes about the stage — HubSpot's `probability` and `isClosed`, which are structured statements rather than
+  names. Closed at exactly 1.0 is won, closed at exactly 0.0 is lost, **everything else is open and nothing more
+  is claimed**.
+- **A stage called "Won" that is not marked closed comes back open.** The fixtures carry exactly that — a stage
+  labelled "Won" at `probability: 0.9, isClosed: false`, an ordinary pipeline somebody built by hand — and a test
+  asserts the lead behind it stays open with no value. A product that trusted the word would report a sale that
+  has not happened and put its amount in a revenue figure.
+- **An open stage maps to no stage of this product's own.** `New`, `Contacted` and `Qualified` are its words for
+  its own pipeline, and a CRM's middle stages do not map onto them. The lead keeps whatever stage it had and
+  carries the CRM's own label beside it, attributed to the CRM: two vocabularies, both visible, neither
+  pretending to be the other.
+- **`ChangeLeadStage` refuses a CRM-sourced lead**, with a message naming where to move it instead — somebody
+  working a pipeline needs an instruction rather than a rule — and the pipeline list puts that sentence where the
+  controls would have been rather than hiding them.
+- **A re-read is the CRM answering again**, which is the opposite of the rule for every other source: there a
+  human owns the stage and a later arrival must not touch it. That asymmetry is why the field is called
+  `crmStage` rather than `stage`.
+- **An open deal's amount is not a value.** It is a quote — a hope, often a round number somebody typed — and a
+  pipeline total built from hopes is the figure that makes a forecast indefensible. Only a closed-won amount is
+  recorded.
+- **Nothing is attributed.** A CRM holds no click identifier and no UTM parameters, so every CRM lead arrives
+  with evidence `none` and shows up in the Lead Center's unattributed row, honestly. Reading a campaign out of a
+  deal's name would be the false assignment this product refuses everywhere else.
+- **A closing time is never "now."** The schema requires a closed lead to carry one; a deal may have closed last
+  week, and stamping the sync's own clock on it would make every turnaround figure wrong by however long the
+  integration took to arrive.
+- `Provider::HubSpot` with a new `ProviderCategory::Crm`, its own capabilities (`pipeline_discovery`, `deal_sync`,
+  `contact_sync` — **not** `customer_sync`, which belongs to commerce, because a store customer is somebody who
+  bought and a CRM contact is somebody a salesperson is talking to), published rate limits, and the endpoints read
+  on 2026-10-08 recorded in `HubSpotAdapter` with their dates.
+- `docs/CRM.md`, with the ownership decision, the stage table and what the bridge deliberately does not do.
+
+### The three HubSpot conventions that each have a test
+
+Everything in `properties` is a **string** — `amount` is `"48000.00"`, `isClosed` is `"true"` — so a strict
+comparison against a boolean finds every stage open. An empty string is **not a zero**: a deal with no amount
+publishes `"amount": ""`, and reading that as 0.00 puts a deal worth nothing into a revenue figure. And a
+`dealstage` is an **internal id**, not a label, which is why a deal is never read without its pipeline.
+
+### Fixed — a typed union that lied took a page down
+
+Adding a provider put a slug on the integrations page that `ProviderLogo`'s colour map had no entry for. The
+lookup was `undefined`, reading a property off it threw, and the whole page became an error boundary.
+
+The slug union is typed, which is exactly why it was trusted: **a server string cast into a union is not checked
+by anything at runtime.** The union is now complete *and* the component renders an unknown slug as its own
+initials on a neutral chip, because the server owns the provider list — a new provider missing its colour should
+be a cosmetic gap somebody notices, never an outage. Its own test file records the defect, and this is the second
+time in this session that a frontend union was quietly behind the server; the other was the notification kinds.
+
+### Blocked externally
+
+An app in a HubSpot developer account, and an account that installs it and grants the read scopes. Until both
+exist the adapter serves fixtures shaped like the published responses and **refuses real credentials** rather
+than quietly serving fixtures to a workspace that had configured a real connection — which would put invented
+deals in front of a client. A test asserts that refusal.
+
 ## Phase 20 addendum — the boards are live
 
 Three boards can be open on one screen while somebody else moves something on another.

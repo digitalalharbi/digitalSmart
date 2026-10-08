@@ -18,6 +18,7 @@ enum ProviderCategory: string
     case Analytics = 'analytics';
     case TagManagement = 'tag_management';
     case Commerce = 'commerce';
+    case Crm = 'crm';
 
     public function label(): string
     {
@@ -26,6 +27,7 @@ enum ProviderCategory: string
             self::Analytics => 'Analytics',
             self::TagManagement => 'Tag management',
             self::Commerce => 'Commerce',
+            self::Crm => 'CRM',
         };
     }
 

@@ -68,6 +68,7 @@ recorded revenue and a store's invoiced revenue are three different numbers.
 | Google Tag Manager | The same Google Cloud project with the Tag Manager API enabled, and a user with read access to the container | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
 | Salla | An app registered in the Salla Partners Portal, and a merchant who installs it. Self-service | `SALLA_CLIENT_ID`, `SALLA_CLIENT_SECRET` |
 | Zid | An app registered in Zid's partner dashboard, and a merchant who installs it. Self-service | `ZID_CLIENT_ID`, `ZID_CLIENT_SECRET` |
+| HubSpot | An app in a HubSpot developer account, and a HubSpot account that installs it and grants `crm.objects.deals.read`, `crm.objects.contacts.read` and the deal pipeline read. Self-service for private use — the blocker is an account and a consent | `HUBSPOT_CLIENT_ID`, `HUBSPOT_CLIENT_SECRET` |
 | ChatGPT Ads| Programme availability and API access — **not generally available**; contract and capability set unknown until access is granted | `OPENAI_ADS_API_KEY` |
 
 These are business/account actions, not engineering work: they need the owner's
@@ -493,6 +494,32 @@ OAuth 2.0 at `https://oauth.zid.sa/oauth/authorize` and `/oauth/token`, API at
 the same value in both — the obvious mistake — fails in a way that reads like a permissions
 problem. Both the manager token and the refresh token last a year, so rotation is a
 scheduled concern; Zid recommends refreshing at around ten months.
+
+### HubSpot — registry, mapper and sandbox; read-only by design
+
+OAuth 2.0, with every request carrying `Authorization: Bearer {access_token}` against `https://api.hubapi.com`.
+Contracts read on **2026-10-08**:
+
+- `GET /crm/v3/objects/deals` — cursor paginated with `after`, at most 100 per page, and a `properties` parameter
+  naming what to return. A deal's `dealstage` is an **internal id**, not a label.
+- `GET /crm/v3/pipelines/deals` and `/{pipelineId}/stages` — each stage carries `id`, `label`, `displayOrder` and
+  a `metadata` object holding `probability` (0.0–1.0) and `isClosed`. **That metadata is the only evidence this
+  product reads a stage's meaning from.**
+- `GET /crm/v4/objects/deal/{dealId}/associations/contact` — `toObjectId` with `associationTypes`; the
+  HubSpot-defined deal-to-contact type is `3`.
+- `GET /crm/v3/objects/contacts/{id}` — `email`, `firstname`, `lastname` among the standard properties.
+
+**Everything in `properties` is a string**, including numbers and booleans: `amount` is `"48000.00"`,
+`isClosed` is `"true"`. A strict comparison against a boolean finds every stage open, and an empty `amount` read
+as 0.00 puts a deal worth nothing into a revenue figure.
+
+Rate limits are published: 190 requests per app per 10 seconds, with a daily figure depending on the installing
+account's tier. Responses carry `X-HubSpot-RateLimit-Remaining` and `X-HubSpot-RateLimit-Interval-Milliseconds`;
+a 429 carries **no** documented `Retry-After`, so a retry paces itself from the interval rather than waiting to be
+told.
+
+**The capability list carries no mutation at all**, and that is the design rather than an omission: the CRM owns
+its own pipeline, and a reporting tool that moved somebody's deals would be a hazard. See `docs/CRM.md`.
 
 ### ChatGPT Ads — not implemented
 

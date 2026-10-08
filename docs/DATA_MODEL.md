@@ -274,3 +274,25 @@ Everything upserts, because every sync re-reads a restatement window and an inse
 client's revenue by the number of runs. Order lines, refunds and shipments are **replaced** — the lines
 are the whole truth about what was sold. Variants are **upserted**, because order items reference them
 and deleting one would lose which variant a past sale was for.
+
+### Phases 15 and 20 (implemented) — the tables these notes had not caught up with
+
+This document stopped at Phase 11 while the schema kept going. Two tables added since are worth the same
+treatment as the ones above, because both carry a rule in the database rather than only in PHP.
+
+`client_request_attachments` holds the files on a client request, and its columns are the security argument. The
+**audience** is on the row, not derived, so an internal attachment is excluded from a client's read in the same
+WHERE clause their internal notes are — a competitor's rate card and a note about a client are the same leak with
+different consequences. `sniffed_type` is what the file's **bytes** said rather than what its name or header
+claimed, constrained to the allow-list so a type this product will not serve cannot be stored at all.
+`stored_name` is generated and unique; `original_name` exists only to show a reader what they sent, because a
+path built from an uploader's filename is a path traversal. A CHECK enforces that a file from a client is always
+visible to that client, for the same reason the messages table does: an interface bug that filed their own upload
+as internal would hide it from the person who sent it.
+
+`leads` gained no columns for the CRM bridge and that is the point. A CRM-sourced lead is recognised again by
+`(source_kind, external_id)`, which already existed; the **CRM's own stage label** goes in `source_detail`,
+because it is a fact about the source rather than a second stage column; and `stage` is written by the sync
+rather than by a person, which is the one case where a re-read overwrites instead of filling a gap. The existing
+`leads_closed_has_time` CHECK then does real work: a deal closed in the CRM has to arrive with the CRM's own
+closing time, never the sync's clock, or the row is refused.

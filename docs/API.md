@@ -1084,3 +1084,34 @@ text, in the numeric column — never as a blank, which the next formula adds as
 
 Both are inside the workspace. A shared report link is not a download route: a visitor holds a token rather than
 an account, and a second unauthenticated read is a second thing to get right. See `docs/REPORTING.md`.
+
+## The CRM bridge
+
+### `POST /api/leads/crm-sync`
+
+Reads a CRM's deals and records them as leads. A **read**: the CRM owns a deal's stage and nothing here writes
+one back.
+
+`client_id` is required and is not inferred. A CRM portal is one company's and an agency workspace has several
+clients, so the mapping is a binding somebody made deliberately — a deal's company and a client record are two
+different things with similar text in them. `since` is optional and defaults to thirty days, because a first sync
+that pulled a whole history would import deals closed years ago as fresh leads.
+
+The response is the sync's own figures:
+
+```json
+{ "data": { "read": 5, "recorded": 5, "left_alone": 3 } }
+```
+
+`left_alone` is the count of deals whose stage this product **declined to interpret**, and it is published rather
+than hidden: a bridge reporting only the stages it understood would look like one that read almost nothing. A
+stage's meaning comes from the metadata the CRM publishes about it and never from its label — see `docs/CRM.md`.
+
+### `POST /api/leads/{lead}/stage` on a CRM-sourced lead
+
+**422**, with `code: invalid_lead_transition` and a message naming where to move it instead. Two systems both
+claiming to own a stage means whichever wrote last wins, nobody can tell which that was, and the figure a client
+sees depends on the order of two jobs.
+
+The sync is not an exception to that rule: a re-read is the CRM answering again, which is why it moves the stage
+and an API caller cannot.

@@ -15,6 +15,7 @@ use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Leads\Exception\InvalidLeadTransition;
+use App\Domain\Leads\LeadSourceKind;
 use App\Domain\Leads\LeadStage;
 
 /**
@@ -27,6 +28,12 @@ use App\Domain\Leads\LeadStage;
  *
  * Every transition is audited with both stages. A pipeline review asks "who qualified this, and when", and
  * the answer has to survive the lead being closed afterwards.
+ *
+ * **A lead that came from a CRM is refused**, and that is the CRM bridge's whole position in one place: the
+ * system a lead came from owns its stage, this product reads it, and a move made here would be undone by the
+ * next sync without anybody being told. Two systems both claiming to own a stage is how a sales team loses a
+ * day's work — and whichever wrote last wins, which makes the figure a client sees depend on the order of two
+ * jobs. See `CrmStageMeaning` and docs/CRM.md.
  */
 final readonly class ChangeLeadStage
 {
@@ -51,6 +58,14 @@ final readonly class ChangeLeadStage
 
         if ($existing === null) {
             throw ResourceNotFound::of('Lead');
+        }
+
+        if ($existing->sourceKind === LeadSourceKind::Crm) {
+            /*
+             * Refused rather than overwritten. The reason names where to do it instead, because somebody working
+             * a pipeline needs an instruction and not a rule.
+             */
+            throw InvalidLeadTransition::ownedByTheCrm($existing->sourceDetail ?? '');
         }
 
         if ($stage === LeadStage::Disqualified && ($reason === null || trim($reason) === '')) {

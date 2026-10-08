@@ -59,6 +59,30 @@ test.describe('lead centre', () => {
     await expect(pipeline.getByRole('columnheader', { name: 'As a share of' })).toBeVisible();
   });
 
+  test('says where a CRM-sourced lead\u2019s stage is moved, instead of offering the controls', async ({
+    page,
+  }) => {
+    await openLeads(page);
+
+    const table = page.getByRole('table', { name: /Leads, with their route/ });
+    await expect(table).toBeVisible({ timeout: 30_000 });
+
+    /*
+     * The demo reads a sandbox CRM, so the pipeline carries leads the CRM owns. A move made here would be undone
+     * by the next sync without anybody being told, so the sentence goes where the controls would have been.
+     */
+    const owned = table.getByText(/which owns this stage/).first();
+    await expect(owned).toBeVisible();
+    await expect(owned).toContainText('HubSpot');
+
+    /*
+     * And the case the whole bridge exists for, visible in the demo: the fixture's pipeline has a stage labelled
+     * "Won" that is **not** marked closed, so the lead behind it sits at "new" with "Won" beside it. Confusing
+     * until somebody reads why, and the alternative is reporting a sale that has not happened.
+     */
+    await expect(table.getByText(/HubSpot · Won/).first()).toBeVisible();
+  });
+
   test('keeps the Lead Center away from a role without the permission', async ({ page }) => {
     await openLeads(page, ACCOUNTS.creative);
 
