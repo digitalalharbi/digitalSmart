@@ -200,3 +200,70 @@
     grid-column: span var(--widget-span) / span var(--widget-span);
   }
 }
+
+/* ============================================================
+ * Printing a deck
+ *
+ * This is the product's PDF writer, and that is a deliberate choice rather than a
+ * gap. The alternative is a server-side HTML-to-PDF converter, which would be a
+ * second rendering engine with weaker Arabic shaping than the browser's, no access
+ * to the self-hosted IBM Plex Sans Arabic the rest of the product sets Arabic in,
+ * and its own chart renderer — three ways to disagree with what somebody previewed.
+ *
+ * Printing from the page instead means the PDF *is* the preview: same shaping, same
+ * faces, same charts, and no second thing to keep in step.
+ *
+ * Three rules make it work:
+ *
+ *  - **Landscape, with no page margin.** A slide is 16:9 and carries its own padding.
+ *    A printer margin on top of that would letterbox every slide and crop the notes
+ *    at the foot, which are the part carrying the source state.
+ *  - **One slide per page, and never split.** `break-inside: avoid` on a slide and a
+ *    page break after it. A caveat split across two pages is a caveat half of which
+ *    somebody reads.
+ *  - **Everything that is not the deck is hidden**, including the application shell.
+ *    `ds-no-print` marks the controls; the shell's own chrome is hidden by element.
+ * ============================================================ */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+
+  /* The shell: a sidebar and a topbar on a printed slide are somebody else's furniture. */
+  aside,
+  header.ds-material,
+  .ds-no-print {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .ds-deck {
+    display: block !important;
+    gap: 0 !important;
+  }
+
+  .ds-slide {
+    /* A slide is one page: no border, no shadow, no rounding — those are screen affordances. */
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    width: 100% !important;
+  }
+
+  .ds-slide:not(:last-child) {
+    break-after: page;
+    page-break-after: always;
+  }
+}

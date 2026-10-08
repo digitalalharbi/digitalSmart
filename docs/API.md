@@ -261,6 +261,22 @@ works.
 
 Campaign and metrics endpoints arrive in Phase 3.
 
+## Presentations
+
+`GET /api/presentations/vocabulary`, `GET /api/presentations/{kind}` (the deck as JSON) and
+`GET /api/presentations/{kind}/pptx` (an editable PowerPoint file).
+
+A report deck takes `client_id`; the media plan takes `budget_id`. Supplying the wrong one answers **404** rather
+than composing a deck from whatever was given — a media plan built from a client id would be a performance deck
+wearing the wrong title.
+
+**There is no PDF endpoint**, and that is a decision: a PDF is the JSON preview printed from the browser, where
+the Arabic shaping is the browser's own and the charts are the ones already on screen. A server-side converter
+would be a second rendering engine to disagree with the page. See `docs/PRESENTATIONS.md`.
+
+Nothing is saved by generating a deck, and the render is always client-safe: the agency's internal note is never
+loaded on this path.
+
 ## Assistant
 
 `GET /api/assistant/analyse`, `POST /api/assistant/ask`, `GET /api/assistant/findings/{code}` and

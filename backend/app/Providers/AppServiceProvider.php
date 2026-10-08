@@ -61,6 +61,7 @@ use App\Application\Operations\Contract\ApprovalRepository;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Portal\Contract\PortalRepository;
+use App\Application\Presentation\Contract\DeckWriter;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
 use App\Application\Reporting\Contract\ReportRepository;
@@ -146,6 +147,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTaskRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
+use App\Infrastructure\Presentation\PptxWriter;
 use App\Infrastructure\Reporting\EloquentReportShareStore;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
@@ -262,6 +264,12 @@ final class AppServiceProvider extends ServiceProvider
         // Client portal (Phase 22)
         ClientVisibility::class => EloquentClientVisibility::class,
         PortalRepository::class => EloquentPortalRepository::class,
+
+        /*
+         * The deck writer (Phase 24). PPTX only: PDF is printed from the preview, where the Arabic shaping is the
+         * browser's own — see docs/PRESENTATIONS.md.
+         */
+        DeckWriter::class => PptxWriter::class,
         NotificationStore::class => EloquentNotificationStore::class,
         RecipientResolver::class => PermissionAwareRecipientResolver::class,
         NotificationBroadcaster::class => ReverbNotificationBroadcaster::class,

@@ -22,8 +22,9 @@ operations with recorded platform specifications; an operations board; an approv
 that records whether an authorised change was ever actually made; notifications with optional
 realtime; a client intake queue clients can write to; reports that a client can read
 through an expiring link without an account; a client portal whose every surface is a
-recorded, revocable decision about one client; and an assistant that computes every figure
-itself and refuses a model's prose that states one it did not. In English and
+recorded, revocable decision about one client; an assistant that computes every figure
+itself and refuses a model's prose that states one it did not; and editable PowerPoint decks
+laid out from the same figures every screen reads. In English and
 Arabic, light and dark, desktop and mobile.
 
 **Every provider's live handshake is `BLOCKED_EXTERNAL`** on an authorization this
@@ -35,9 +36,9 @@ provider.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 1 501 passed — architecture, unit, feature          |
-| Frontend tests (Vitest)   | 401 passed                                          |
-| End-to-end (Playwright)   | 318 passed — Chromium + mobile Safari, signing in as real roles |
+| Backend tests (Pest)      | 1 537 passed — architecture, unit, feature          |
+| Frontend tests (Vitest)   | 413 passed                                          |
+| End-to-end (Playwright)   | 336 passed — Chromium + mobile Safari, signing in as real roles |
 | Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
 | Style                     | Pint, ESLint and Prettier, clean                    |
 
@@ -95,6 +96,7 @@ make e2e        # Playwright (stack must be running)
 | `docs/REPORTING.md`      | Reports: computed comparability, snapshots, and a link as a credential |
 | `docs/PORTAL.md`         | The client portal: three closed lists, and who counts as a client |
 | `docs/INTELLIGENCE.md`   | The assistant: the product computes, the model writes, the guard checks |
+| `docs/PRESENTATIONS.md`  | Decks: the theme tokens first, and why the PDF comes from the browser |
 | `docs/DATA_VISUALISATION.md` | The measured chart palette, its gates, and the mark rules |
 | `docs/DESIGN_SYSTEM.md`  | Tokens, theming, typography, motion, RTL, accessibility |
 | `docs/SECURITY.md`       | Controls, threat notes, secret handling                 |

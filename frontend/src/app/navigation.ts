@@ -205,6 +205,11 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: 'Presentation',
     section: 'intelligence',
     phase: 'Phase 24',
+    /*
+     * A deck is a report laid out for a room, so it is gated on the permission a report is. A reader who may not
+     * read a client's report has no business generating one with the agency's name on it.
+     */
+    permission: 'reports.view',
   },
   {
     path: '/integrations',

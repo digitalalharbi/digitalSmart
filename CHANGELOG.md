@@ -4,6 +4,74 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 24 — the presentation generator
+
+A deck is a report, laid out for a room.
+
+### The argument
+
+The brief is explicit: build the theme/token abstraction **first**, and do not hard-code a presentation identity
+before the reference deck arrives. Smart Code's has not been provided to this repository — no deck, no guidelines,
+no palette — and a guess would have been baked into every renderer, every layout and every exported file, making
+its replacement a rewrite rather than a configuration change.
+
+### Added
+
+- `app/Domain/Presentation/` — `PresentationTheme` (tokens, **colours named by role** so a token called "blue"
+  cannot be rebranded), `DeckKind`, `SlideKind`, `DeferredDeck`.
+- **The provisional theme says so**, on the deck, on the page and in the file's own properties. A placeholder
+  presented as an agency's brand is worse than an obvious placeholder, and a test holds every colour to being a
+  role rather than a hue.
+- **Two faces, picked per string.** Arabic set in a Latin font is Arabic that has been let down by whoever made
+  the deck, and a slide legitimately carries an Arabic headline over a Latin platform name — so RTL and the font
+  are decided per paragraph, not per deck.
+- **A deck is composed through `RenderReport`**, the same aggregation the reporting surface and the client portal
+  read. A generator with its own analytics would be a second set of numbers to reconcile, and the reconciliation
+  always happens in front of a client. Nothing is saved: the reporting module gains no row because somebody
+  generated a deck.
+- **The period is part of what a deck means**, not a parameter. A "weekly report" over ninety days is a different
+  document wearing the same name. The closing report compares against **nothing**, because there is nothing after
+  an engagement to compare it with and inviting the comparison would have a reader treat the end of a flight as a
+  trend.
+- **The caveats are a slide.** On screen a comparability refusal is a sentence; in a room, read out loud by
+  somebody who may not have built the deck, a footnote in six-point type is a footnote the projector crops. It
+  sits immediately after the figures it qualifies, and is omitted entirely when there is nothing to qualify — a
+  slide saying "no caveats" teaches a reader to skip the caveat slide.
+- **Every figure is formatted once**, in `MetricText`, because a deck is rendered twice. Formatted independently
+  in each renderer a figure would eventually differ: a different rounding, a different separator, a currency still
+  in halalas on one of them. Deliberately *not* the same formatter as the CSV's, which is read by a spreadsheet
+  and must carry no separators at all.
+- **The commentary slide is the assistant's own narrative**, with its attribution: when a language model wrote it,
+  the slide says so. A deck whose commentary came from elsewhere would be a deck nobody could check against the
+  rest of it.
+- **A real, editable PowerPoint**: text runs, native tables, native charts with embedded data. An agency changes a
+  title, drops a slide, adds one of their own — a deck they cannot open is a deck they re-make by hand.
+- **The media plan draws the allocation whether or not the budget is approved.** The budgets module paces only an
+  approved budget, because a variance from an unapproved figure means nothing; but the allocation *is* the plan,
+  and a deck that showed nothing until approval would be useless for the one occasion it is most needed. The
+  status is on the title slide, in words, and the unallocated remainder is its own figure rather than a
+  subtraction left to the reader.
+- **`campaign_proposal` is published as deferred.** A proposal is a document an agency writes — the objective, the
+  audience, the creative idea — and composing one from last month's delivery would shape it entirely by what was
+  easiest to measure. The slide shapes and the theme are built and waiting; what is missing is the brief.
+- `docs/PRESENTATIONS.md`, and `phpoffice/phppresentation` as the PPTX writer.
+
+### Changed
+
+- **An unauthenticated request that did not ask for JSON now answers 401 rather than 500.** Found by an
+  end-to-end test fetching a file download, which a browser does without an `Accept: application/json` header:
+  the framework's default sends a guest to a route named `login`, this backend is API-only and has none, and the
+  redirect threw. A server error where the honest answer is "you are not signed in".
+- **The deck download reads the file and sends it with an explicit length**, rather than streaming it from disk
+  and deleting it afterwards. The streamed version passed through the test kernel and returned 500 through a real
+  server, because PHP's development server closes a binary file response early and the proxy reports a reset
+  connection. A download that works only under some servers is one somebody will hit on the day they need it.
+- **The end-to-end placeholder test was replaced by an exhaustive one.** It visited whichever nav surface was
+  still a placeholder and asserted the phase on it — Analytics, then Reports, then the assistant, then
+  Presentations. Every navigable surface is now implemented, so `routes.test.tsx` walks **every** nav item and
+  fails if any still falls through to the placeholder. One example became the whole set, and a nav item added
+  without a page now fails at build rather than when somebody clicks it.
+
 ## Phase 23 — the assistant
 
 What the figures say, with the figures.

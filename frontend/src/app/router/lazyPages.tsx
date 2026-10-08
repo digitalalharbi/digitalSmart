@@ -104,3 +104,11 @@ export const MyPortalPage = lazy(async () => ({
 export const AssistantPage = lazy(async () => ({
   default: (await import('@/features/assistant/AssistantPage')).AssistantPage,
 }));
+
+/*
+ * Presentations. Split because a deck carries the chart engine and the slide renderer, and because this is the
+ * one surface somebody opens to print rather than to work.
+ */
+export const PresentationsPage = lazy(async () => ({
+  default: (await import('@/features/presentations/PresentationsPage')).PresentationsPage,
+}));

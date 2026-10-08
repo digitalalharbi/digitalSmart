@@ -1851,5 +1851,42 @@
       "floor": "No rate is quoted from fewer than {{floor}} events. Below that, the answer is that there was not enough delivery to say.",
       "enacts": "Nothing here changes anything. No budget, no campaign, no report is written by the assistant: it proposes, and a person decides in the module that owns the decision."
     }
+  },
+  "presentations": {
+    "title": "Presentations",
+    "subtitle": "A deck is a report, laid out for a room. The figures are the same ones every other screen reads.",
+    "loadFailed": "Could not build the deck. Try again in a moment.",
+    "denied": {
+      "title": "Presentations are not part of your access",
+      "body": "A deck is a report laid out for a room, so it needs the permission a report does."
+    },
+    "deck": "Deck",
+    "client": "Client",
+    "budget": "Budget",
+    "pick": {
+      "title": "Pick a client",
+      "body": "A deck is about one client. Choose one and the slides are built from their own figures."
+    },
+    "pickBudget": {
+      "title": "Pick a budget",
+      "body": "A media plan presents an allocation somebody made. Choose the budget it belongs to."
+    },
+    "noBudgets": "No budgets yet. A media plan presents an allocation somebody made, so there is nothing to present.",
+    "slide": {
+      "number": "Slide {{index}} of {{total}}"
+    },
+    "actions": {
+      "pptx": "Download PowerPoint",
+      "print": "Save as PDF",
+      "printHint": "Printing uses your browser, so the Arabic shaping, the fonts and the charts are exactly what is on screen. A converter on our side would be a second renderer to disagree with this one."
+    },
+    "theme": {
+      "provisional": "Theme: {{name}}. Smart Code's own presentation identity has not been provided yet, so these are the product's own tokens — swapped in one place when the reference deck arrives, not re-drawn."
+    },
+    "deferred": {
+      "title": "Not composed from this data",
+      "body": "Published rather than offered as a template that produces empty slides."
+    },
+    "prepared": "Prepared {{at}}. Figures: {{source}}."
   }
 }

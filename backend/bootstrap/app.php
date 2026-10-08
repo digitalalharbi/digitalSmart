@@ -56,6 +56,20 @@ return Application::configure(basePath: dirname(__DIR__))
             SecurityHeaders::class,
             'throttle:api',
         ]);
+
+        /*
+         * Where a guest is sent, as a path rather than a route name.
+         *
+         * This backend is API-only and has no `login` route, which is what the framework's default points at —
+         * so an unauthenticated request that did **not** ask for JSON produced a 500 ("Route [login] not
+         * defined") instead of a 401. Found by an end-to-end test fetching a file download without an
+         * `Accept: application/json` header, which is exactly how a browser asks for one.
+         *
+         * The path is the SPA's own sign-in screen. For anything under `api/*` the exception renderer below still
+         * answers 401 as JSON; this only decides what a non-JSON caller is told, and "go and sign in" is the
+         * honest answer rather than a server error.
+         */
+        $middleware->redirectGuestsTo('/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Never leak credentials or tokens into logs or flashed input.

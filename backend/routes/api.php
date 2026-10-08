@@ -29,6 +29,7 @@ use App\Interface\Http\Controller\Operations\ClientRequestController;
 use App\Interface\Http\Controller\Operations\TaskController;
 use App\Interface\Http\Controller\Portal\ClientPortalController;
 use App\Interface\Http\Controller\Portal\PortalConfigurationController;
+use App\Interface\Http\Controller\Presentation\PresentationController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
 use App\Interface\Http\Controller\Reporting\ReportController;
@@ -518,6 +519,19 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::get('assistant/report', [AssistantController::class, 'report'])->name('assistant.report');
     Route::get('assistant/findings/{code}', [AssistantController::class, 'investigate'])
         ->where('code', '[a-z0-9_.-]+')->name('assistant.investigate');
+
+    // --------------------------------------------------------- Presentations ---
+    /*
+     * A deck is previewed as JSON and downloaded as PowerPoint. There is no PDF endpoint: a PDF is printed from
+     * the preview, where the Arabic shaping is the browser's own and the charts are the ones already on screen —
+     * see docs/PRESENTATIONS.md.
+     */
+    Route::get('presentations/vocabulary', [PresentationController::class, 'vocabulary'])
+        ->name('presentations.vocabulary');
+    Route::get('presentations/{kind}', [PresentationController::class, 'show'])
+        ->where('kind', '[a-z_]+')->name('presentations.show');
+    Route::get('presentations/{kind}/pptx', [PresentationController::class, 'download'])
+        ->where('kind', '[a-z_]+')->name('presentations.download');
 
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])

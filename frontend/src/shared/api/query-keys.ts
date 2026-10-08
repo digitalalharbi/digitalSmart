@@ -197,6 +197,13 @@ export const queryKeys = {
     proposal: (clientId: string, days: number) =>
       ['assistant', 'proposal', clientId, days] as const,
   },
+  presentations: {
+    all: () => ['presentations'] as const,
+    vocabulary: () => ['presentations', 'vocabulary'] as const,
+    /* Keyed by what composes the deck: a client for a report, a budget for a plan. */
+    deck: (kind: string, clientId: string | null, budgetId: string | null) =>
+      ['presentations', 'deck', kind, clientId, budgetId] as const,
+  },
   savedViews: {
     all: () => ['saved-views'] as const,
     list: () => ['saved-views', 'list'] as const,

@@ -27,24 +27,17 @@ test.describe('application shell', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 
-  test('navigates to a surface that a later phase delivers', async ({ page }) => {
-    /*
-     * The presentation generator is still a placeholder. Analytics used to be the example here and stopped being
-     * one in Phase 4; reports stopped in Phase 21 and the assistant in Phase 23 — exactly the drift this
-     * assertion is meant to catch, so it moves to the next undelivered surface rather than being deleted.
-     *
-     * The phase number is asserted literally, and it is *meant* to break when the roadmap is renumbered: it did
-     * when operations took the number 20, and again when the navigation registry still called AI Phase 22 after
-     * the roadmap had given 22 to the client portal. A placeholder that names the wrong phase is a promise with
-     * the wrong date on it, so the test holds the number rather than reading it from the same registry the page
-     * does, which would agree with itself and prove nothing.
-     */
-    await page.goto('/presentations');
-
-    await expect(page.getByRole('heading', { level: 1, name: 'Presentations' })).toBeVisible();
-    await expect(page.getByText('Planned for Phase 24')).toBeVisible();
-    await expect(page.getByText(/delivered in a later phase/)).toBeVisible();
-  });
+  /*
+   * There was a test here, and its subject is gone.
+   *
+   * It visited whichever nav surface was still a placeholder and asserted the phase number on it — Analytics,
+   * then Reports, then the AI assistant, then Presentations. Every navigable surface is now implemented, so
+   * there is no placeholder left to visit.
+   *
+   * It was replaced by something stronger rather than deleted: `src/app/router/routes.test.tsx` walks **every**
+   * nav item and fails if any of them still falls through to the placeholder. One example became the whole set,
+   * and a nav item added without a page now fails at build rather than when somebody clicks it.
+   */
 });
 
 test.describe('mobile navigation', () => {

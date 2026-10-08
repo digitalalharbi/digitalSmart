@@ -221,3 +221,21 @@ it('keeps the per-account limit even when the per-IP budget is generous', functi
     // A third attempt against the same account is refused, whatever the source.
     $this->postJson('/api/auth/login', $target)->assertStatus(Response::HTTP_TOO_MANY_REQUESTS);
 });
+
+describe('an unauthenticated request that did not ask for JSON', function (): void {
+    it('is told it is unauthenticated rather than given a server error', function (): void {
+        /*
+         * Found by an end-to-end test fetching a file download, which a browser does without an
+         * `Accept: application/json` header. The framework's default sends a guest to a route named `login`;
+         * this backend is API-only and has none, so the redirect threw and the caller got a 500 — a server error
+         * where the honest answer is "you are not signed in".
+         */
+        $response = test()->get('/api/clients', ['Accept' => '*/*']);
+
+        expect($response->getStatusCode())->toBe(401);
+    });
+
+    it('still answers 401 as JSON for an API caller', function (): void {
+        test()->getJson('/api/clients')->assertUnauthorized();
+    });
+});
