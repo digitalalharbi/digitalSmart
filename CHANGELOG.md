@@ -4,6 +4,52 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 20 addendum — the boards are live
+
+Three boards can be open on one screen while somebody else moves something on another.
+
+### The argument
+
+The notification channel already had the right design, and it was being used for one thing. A board is a
+different question — everybody who may read it wants to know it moved, not one named person — so the question was
+whether a workspace-wide channel could be made safe.
+
+It can, on one condition: **the payload carries nothing.** `BoardChanged` sends the board's name and a timestamp,
+so the browser's only possible response is to read the board again over the authenticated endpoint, where project
+visibility already decides which rows that person gets. A payload carrying the row would have to answer that
+question a second time, and the second answer is the one that eventually differs.
+
+### Added
+
+- `OperationsBoard` — three boards, each naming the permission a listener must hold, and that permission is the
+  whole of the access control on the channel. A client viewer holds neither `tasks.view` nor `approvals.view` and
+  cannot subscribe to the agency's boards at all.
+- **The client-request channel is `submit`, not `view`**, so a client's own queue updates on their screen too. It
+  is the permission that let them raise a request, and the board they get back is already narrowed to their own —
+  the channel grants no reading the endpoint would not.
+- `ChannelAuthorizer::mayWatchBoard`, checking the permission **through the subscriber's role in that workspace**
+  rather than through the session's resolved permissions: a member of two workspaces has two roles. Re-checked on
+  every subscription, like membership, because a socket authorised once would keep nudging for as long as the tab
+  stayed open. A board name nobody publishes is refused rather than treated as a board with no permission — the
+  channel name is attacker-supplied text.
+- `BoardSignaller` as a port, so no use case imports a broadcaster and the whole thing is a no-op in a test. Its
+  implementation **catches and reports**, exactly as the audit recorder and `Announce` do: a task that moved and
+  whose signal threw would leave the move recorded, the board un-nudged, and the caller shown a failure for
+  something that did happen.
+- Sixteen use cases signal after their write — every move on the three boards, with a task raised from a request
+  signalling **both**, because the request's own row changed too.
+- `useBoardRealtime`, which invalidates rather than inserts, and **returns whether this page is actually being
+  pushed to** — set when the subscription exists rather than from a configuration value that was present at boot.
+- `LiveBadge` on all three boards, saying either way. Realtime being off is not a failure — every move is written
+  to the database and arrives on the next read — but a reader who believes the page is live and sees nothing move
+  concludes the product is broken, and then stops trusting the figures on it.
+
+### Noted while testing
+
+React's StrictMode mounts, unmounts and mounts again, so a channel's cleanup legitimately runs more than once.
+The test asserts the cleanup is **idempotent** rather than pinning a call count, which would be pinning React's
+development behaviour instead of the property worth having.
+
 ## Phase 20 addendum — files on a client request
 
 "Screenshots attached" was a sentence a client could write and not act on.

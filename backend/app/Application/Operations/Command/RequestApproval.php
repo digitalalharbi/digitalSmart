@@ -8,6 +8,7 @@ use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Notifications\Command\Announce;
 use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Operations\Contract\ApprovalRepository;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\DTO\ApprovalInput;
 use App\Application\Operations\DTO\ApprovalView;
 use App\Application\Shared\Contract\ActorContext;
@@ -20,6 +21,7 @@ use App\Domain\Audit\AuditEntry;
 use App\Domain\Notifications\NotificationKind;
 use App\Domain\Operations\Exception\InvalidApprovalRequest;
 use App\Domain\Operations\Exception\InvalidTaskSubject;
+use App\Domain\Operations\OperationsBoard;
 
 /**
  * Ask for permission to change something.
@@ -45,6 +47,7 @@ final readonly class RequestApproval
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private Announce $announce,
+        private BoardSignaller $boards,
     ) {}
 
     public function __invoke(ApprovalInput $input): ApprovalView
@@ -115,6 +118,9 @@ final readonly class RequestApproval
             aboutClientId: $request->clientId,
             alsoRequires: $request->kind->decidedWith()?->value,
         ));
+
+        /* Whoever has the board open learns it moved. A nudge with no rows in it; see `BoardSignaller`. */
+        $this->boards->changed(OperationsBoard::Approvals);
 
         return $request;
     }

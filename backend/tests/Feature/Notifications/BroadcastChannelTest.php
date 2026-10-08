@@ -141,3 +141,97 @@ it('refuses somebody who is not signed in', function (): void {
         ),
     ])->assertUnauthorized();
 });
+
+/** A board channel, built the way `BoardChanged` builds it. */
+function boardChannelFor(string $workspaceId, string $board): string
+{
+    return sprintf('private-workspace.%s.board.%s', $workspaceId, $board);
+}
+
+it('lets somebody who may read a board watch it', function (): void {
+    $scenario = WorkspaceScenario::create();
+
+    /*
+     * Workspace-wide rather than per person, which is safe only because the payload carries no rows. The question
+     * this rule answers is "may this person read this board at all"; which rows they get is settled by the
+     * authenticated endpoint on every refetch.
+     */
+    test()->actingAs($scenario->owner)
+        ->postJson('/broadcasting/auth', [
+            'socket_id' => '1234.5678',
+            'channel_name' => boardChannelFor((string) $scenario->workspace->getKey(), 'tasks'),
+        ])
+        ->assertOk();
+});
+
+it('refuses a client viewer on the agency\'s boards and allows them their own queue', function (): void {
+    $scenario = WorkspaceScenario::create();
+    $client = $scenario->addMember(SystemRole::ClientViewer);
+
+    /*
+     * The case the permission on the channel exists for. A client viewer holds none of `tasks.view` or
+     * `approvals.view`, so they cannot subscribe to the agency's boards at all — and the nudge they *can* have is
+     * for the one queue they are party to, through the permission that let them raise a request.
+     */
+    foreach (['tasks', 'approvals'] as $board) {
+        test()->actingAs($client)
+            ->postJson('/broadcasting/auth', [
+                'socket_id' => '1234.5678',
+                'channel_name' => boardChannelFor((string) $scenario->workspace->getKey(), $board),
+            ])
+            ->assertForbidden();
+    }
+
+    test()->actingAs($client)
+        ->postJson('/broadcasting/auth', [
+            'socket_id' => '1234.5678',
+            'channel_name' => boardChannelFor((string) $scenario->workspace->getKey(), 'client_requests'),
+        ])
+        ->assertOk();
+});
+
+it('refuses a board nobody publishes', function (): void {
+    $scenario = WorkspaceScenario::create();
+
+    /*
+     * An unknown board name is refused rather than treated as a board with no permission. The channel name is
+     * attacker-supplied text, and a rule that fell through on a value it did not recognise would eventually fall
+     * through on one that mattered.
+     */
+    test()->actingAs($scenario->owner)
+        ->postJson('/broadcasting/auth', [
+            'socket_id' => '1234.5678',
+            'channel_name' => boardChannelFor((string) $scenario->workspace->getKey(), 'everything'),
+        ])
+        ->assertForbidden();
+});
+
+it('refuses a suspended member on a board they could otherwise read', function (): void {
+    $scenario = WorkspaceScenario::create();
+    $member = $scenario->addMember(SystemRole::ProjectManager);
+
+    DB::table('workspace_members')
+        ->where('workspace_id', $scenario->workspace->getKey())
+        ->where('user_id', $member->getKey())
+        ->update(['status' => MembershipStatus::Suspended->value]);
+
+    // Re-checked per subscription, exactly as on the notification channel.
+    test()->actingAs($member)
+        ->postJson('/broadcasting/auth', [
+            'socket_id' => '1234.5678',
+            'channel_name' => boardChannelFor((string) $scenario->workspace->getKey(), 'tasks'),
+        ])
+        ->assertForbidden();
+});
+
+it('refuses a member of one workspace on another workspace\'s board', function (): void {
+    $scenario = WorkspaceScenario::create();
+    $other = WorkspaceScenario::create();
+
+    test()->actingAs($scenario->owner)
+        ->postJson('/broadcasting/auth', [
+            'socket_id' => '1234.5678',
+            'channel_name' => boardChannelFor((string) $other->workspace->getKey(), 'tasks'),
+        ])
+        ->assertForbidden();
+});

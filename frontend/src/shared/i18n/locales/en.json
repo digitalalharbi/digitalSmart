@@ -1954,5 +1954,9 @@
       "body": "Published rather than offered as a template that produces empty slides."
     },
     "prepared": "Prepared {{at}}. Figures: {{source}}."
+  },
+  "realtime": {
+    "live": "Live. Changes from other people appear as they happen.",
+    "off": "Not live. Changes from other people appear when this page is next read."
   }
 }

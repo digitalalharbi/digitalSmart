@@ -443,6 +443,45 @@ And **nobody is ever told what they just did.** `Announce` drops the actor befor
 written. Unassigning tells nobody: there is no new owner, and notifying the person it was taken from
 would be a complaint rather than a task.
 
+## The boards are live, and the nudge carries nothing
+
+Three boards can be open on one screen while somebody else moves something on another: tasks, approvals and the
+client-request queue. Each has a channel, and the design is the notification channel's, applied to a different
+question.
+
+**The payload is a nudge, not a row.** `BoardChanged` carries the board's name and a timestamp — no row, no
+title, no state — so the browser's only possible response is to read the board again over the authenticated
+endpoint, where project visibility already decides which rows that person gets. A payload carrying the row would
+have to answer that question a second time, and the second answer is the one that eventually differs.
+
+**That is what makes a workspace-wide channel safe here**, where a notification needs one per person.
+Everybody who may read a board wants to know it moved; the permission on the channel decides who those people
+are; and the event itself discloses only that something happened in a workspace the subscriber already belongs
+to.
+
+| Channel | Authorised by |
+|---|---|
+| `workspace.{id}.board.tasks` | `tasks.view` |
+| `workspace.{id}.board.approvals` | `approvals.view` |
+| `workspace.{id}.board.client_requests` | `client_requests.submit` |
+
+The last one is `submit` rather than `view` deliberately, so a **client's own queue updates on their screen too**
+— it is the permission that let them raise a request, and the board they get back is already narrowed to their
+own. A client viewer holds neither `tasks.view` nor `approvals.view`, so they cannot subscribe to the agency's
+boards at all, and a board name nobody publishes is refused rather than treated as a board with no permission.
+
+**The permission is re-checked on every subscription**, through the subscriber's role in that workspace rather
+than through the session's resolved permissions: a member of two workspaces has two roles, and a socket
+authorised once would keep nudging for as long as the tab stayed open.
+
+**Signalling must never fail the action it describes.** `BroadcastBoardSignaller` catches and reports, exactly as
+the audit recorder and `Announce` do: a task that moved and whose signal threw would leave the move recorded, the
+board un-nudged, and the caller shown a failure for something that did happen. Nothing is dispatched when no
+actor is bound, which is the ordinary state of a seeder or a console command.
+
+And each board **says whether it is live**, from the subscription rather than from a configuration value. A page
+that implied it was live while it was not is a page where somebody waits for an update that never comes.
+
 ## Files are the same rule, and a worse leak
 
 A client request takes files, and every rule the messages beside them follow applies unchanged — in SQL, on the

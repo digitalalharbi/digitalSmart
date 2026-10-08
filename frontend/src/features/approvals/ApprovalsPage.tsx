@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useClientsQuery } from '@/features/clients';
 import { ApiError } from '@/shared/api/client';
+import { useBoardRealtime } from '@/shared/realtime/useBoardRealtime';
 import { cn } from '@/shared/lib/cn';
 import { formatNumber, formatRate } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
@@ -12,6 +13,7 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
+import { LiveBadge } from '@/shared/ui/live-badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ApprovalDetail } from './ApprovalDetail';
 import { KindBreakdown } from './KindBreakdown';
@@ -43,7 +45,7 @@ import type { ApprovalRow } from './types';
 export function ApprovalsPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
-  const { can } = useSession();
+  const { can, user } = useSession();
 
   const canView = can(PERMISSIONS.approvalsView);
   const canDecide = can(PERMISSIONS.approvalsDecide);
@@ -65,6 +67,12 @@ export function ApprovalsPage() {
   const enact = useEnactmentMutation();
   const carryOut = useCarryOutMutation();
   const ask = useRequestApprovalMutation();
+
+  /*
+   * Live, where the socket is configured. The event is a nudge with no rows in it, so the only response is
+   * to read the board again over the authenticated endpoint — see `useBoardRealtime`.
+   */
+  const isLive = useBoardRealtime('approvals', user?.active_workspace?.id ?? null);
 
   const error = useMemo(() => {
     for (const mutation of [decide, withdraw, enact, ask, carryOut]) {
@@ -134,6 +142,7 @@ export function ApprovalsPage() {
             <p className="text-content-secondary mt-1 max-w-2xl text-sm">
               {t('approvals.subtitle')}
             </p>
+            <LiveBadge isLive={isLive} />
           </div>
 
           {/* Asking is its own permission, and the queue is where somebody asks. */}

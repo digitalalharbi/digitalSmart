@@ -7,6 +7,7 @@ namespace App\Application\Operations\Command;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Notifications\Command\Announce;
 use App\Application\Notifications\DTO\NotificationDraft;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\DTO\ClientRequestView;
 use App\Application\Shared\Contract\ActorContext;
@@ -17,6 +18,7 @@ use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Notifications\NotificationKind;
+use App\Domain\Operations\OperationsBoard;
 
 /**
  * Put somebody's name on a client's request.
@@ -40,6 +42,7 @@ final readonly class AssignRequestOwner
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private Announce $announce,
+        private BoardSignaller $boards,
     ) {}
 
     public function __invoke(string $requestId, ?string $ownerId): ClientRequestView
@@ -89,6 +92,9 @@ final readonly class AssignRequestOwner
                 aboutClientId: $assigned->clientId,
             ));
         }
+
+        /* Whoever has the board open learns it moved. A nudge with no rows in it; see `BoardSignaller`. */
+        $this->boards->changed(OperationsBoard::ClientRequests);
 
         return $assigned;
     }

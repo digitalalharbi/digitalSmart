@@ -25,3 +25,16 @@ Broadcast::channel(
     fn (mixed $actor, string $workspace, string $user): bool => app(ChannelAuthorizer::class)
         ->mayListen((string) $actor->getKey(), $workspace, $user),
 );
+
+/*
+ * One channel per board per workspace, authorised by the permission that board requires.
+ *
+ * Workspace-wide rather than per person, and safe to be: the payload is a nudge with no rows in it, so the
+ * question this rule answers is "may this person read this board at all" — which the permission settles — rather
+ * than "which rows may they see", which the authenticated endpoint settles on every refetch.
+ */
+Broadcast::channel(
+    'workspace.{workspace}.board.{board}',
+    fn (mixed $actor, string $workspace, string $board): bool => app(ChannelAuthorizer::class)
+        ->mayWatchBoard((string) $actor->getKey(), $workspace, $board),
+);

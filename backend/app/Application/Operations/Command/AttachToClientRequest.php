@@ -6,6 +6,7 @@ namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Operations\Contract\AttachmentStore;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\DTO\ClientRequestView;
 use App\Application\Shared\Contract\ActorContext;
@@ -19,6 +20,7 @@ use App\Domain\Audit\AuditEntry;
 use App\Domain\Operations\AttachmentType;
 use App\Domain\Operations\Exception\InvalidAttachment;
 use App\Domain\Operations\MessageAudience;
+use App\Domain\Operations\OperationsBoard;
 
 /**
  * Put a file on a client request.
@@ -61,6 +63,7 @@ final readonly class AttachToClientRequest
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private Clock $clock,
+        private BoardSignaller $boards,
     ) {}
 
     /**
@@ -153,6 +156,9 @@ final readonly class AttachToClientRequest
                 'from_client' => ! $isAgency,
             ],
         ));
+
+        /* Whoever has the board open learns it moved. A nudge with no rows in it; see `BoardSignaller`. */
+        $this->boards->changed(OperationsBoard::ClientRequests);
 
         return $attached;
     }

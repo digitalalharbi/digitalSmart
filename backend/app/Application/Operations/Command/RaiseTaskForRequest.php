@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Operations\DTO\ClientRequestView;
@@ -15,6 +16,7 @@ use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Operations\ClientRequestKind;
 use App\Domain\Operations\Exception\InvalidRequestTransition;
+use App\Domain\Operations\OperationsBoard;
 use App\Domain\Operations\TaskPriority;
 use App\Domain\Operations\TaskSubjectType;
 use DateTimeImmutable;
@@ -46,6 +48,7 @@ final readonly class RaiseTaskForRequest
         private AuthorizationGuard $guard,
         private ActorContext $actor,
         private VisibilityResolver $visibility,
+        private BoardSignaller $boards,
     ) {}
 
     public function __invoke(
@@ -95,6 +98,14 @@ final readonly class RaiseTaskForRequest
          * Only the task list is re-read, not the whole request: opening a task changes nothing about the request
          * row, so a second full read would be a query for data this method already holds.
          */
+
+        /*
+         * Both boards. A task raised from a request changes the request's own row — it now has work attached —
+         * as well as the task board it appeared on.
+         */
+        $this->boards->changed(OperationsBoard::Tasks);
+        $this->boards->changed(OperationsBoard::ClientRequests);
+
         return $request->withTasks(
             $this->tasks->forSubject($workspaceId, $visible, TaskSubjectType::ClientRequest, $request->id, 50),
         );

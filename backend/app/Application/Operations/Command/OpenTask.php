@@ -7,6 +7,7 @@ namespace App\Application\Operations\Command;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Notifications\Command\Announce;
 use App\Application\Notifications\DTO\NotificationDraft;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Operations\DTO\TaskInput;
 use App\Application\Operations\DTO\TaskView;
@@ -19,6 +20,7 @@ use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Notifications\NotificationKind;
 use App\Domain\Operations\Exception\InvalidTaskSubject;
+use App\Domain\Operations\OperationsBoard;
 
 /**
  * Put work on the board.
@@ -41,6 +43,7 @@ final readonly class OpenTask
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private Announce $announce,
+        private BoardSignaller $boards,
     ) {}
 
     public function __invoke(TaskInput $input): TaskView
@@ -106,6 +109,9 @@ final readonly class OpenTask
                 aboutClientId: $task->clientId,
             ));
         }
+
+        /* Whoever has the board open learns it moved. A nudge with no rows in it; see `BoardSignaller`. */
+        $this->boards->changed(OperationsBoard::Tasks);
 
         return $task;
     }

@@ -34,7 +34,7 @@ values are not in this repository and must never be.
 | `APP_URL`, `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS` | Sanctum decides whether a request is first-party from the origin. A mismatch answers 401 to a valid session, which is the single most confusing misconfiguration this stack has |
 | `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE` | A session cookie without `Secure` on an HTTPS origin is a session cookie that travels in clear text on the first plain request |
 | `DB_*`, `REDIS_*` | Managed instances, with their own credentials |
-| `REVERB_*` | The realtime key pair; the socket carries no readable content, but it still authenticates |
+| `REVERB_*` | The realtime key pair. Nothing readable travels over a socket in this product — a notification sends a signal and a board sends a nudge — but a subscription still authenticates, and the channel rules are re-checked on every one |
 | Provider credentials | One per integration, each blocked on a developer-programme approval — `docs/INTEGRATIONS.md` names the exact missing item per provider |
 | `ANTHROPIC_API_KEY` | The assistant works without one and says so; with one it writes prose over the product's own figures |
 

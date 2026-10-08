@@ -60,6 +60,7 @@ use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\Contract\RecipientResolver;
 use App\Application\Operations\Contract\ApprovalRepository;
 use App\Application\Operations\Contract\AttachmentStore;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Portal\Contract\PortalRepository;
@@ -112,6 +113,7 @@ use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
 use App\Infrastructure\Notifications\EloquentNotificationStore;
 use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
+use App\Infrastructure\Operations\BroadcastBoardSignaller;
 use App\Infrastructure\Operations\LocalAttachmentStore;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAttributionReadModel;
@@ -207,6 +209,7 @@ final class AppServiceProvider extends ServiceProvider
         AuditRecorder::class => DatabaseAuditRecorder::class,
         WorkLedger::class => DatabaseWorkLedger::class,
         ReportWorkbookWriter::class => XlsxWriter::class,
+        BoardSignaller::class => BroadcastBoardSignaller::class,
         AuthorizationGuard::class => PermissionAuthorizationGuard::class,
         IdentityReadModel::class => EloquentIdentityReadModel::class,
         Authenticator::class => SessionAuthenticator::class,

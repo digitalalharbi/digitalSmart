@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Operations\DTO\TaskView;
 use App\Application\Shared\Contract\ActorContext;
@@ -16,6 +17,7 @@ use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Operations\Exception\InvalidTaskTransition;
+use App\Domain\Operations\OperationsBoard;
 use App\Domain\Operations\TaskState;
 
 /**
@@ -38,6 +40,7 @@ final readonly class MoveTask
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private Clock $clock,
+        private BoardSignaller $boards,
     ) {}
 
     public function __invoke(string $taskId, TaskState $state, ?string $reason = null): TaskView
@@ -67,6 +70,9 @@ final readonly class MoveTask
             // Both sides, so "who reopened this" is answerable from the record rather than from memory.
             changes: ['from' => $current->state->value, 'to' => $state->value, 'reason' => $reason],
         ));
+
+        /* Whoever has the board open learns it moved. A nudge with no rows in it; see `BoardSignaller`. */
+        $this->boards->changed(OperationsBoard::Tasks);
 
         return $moved;
     }

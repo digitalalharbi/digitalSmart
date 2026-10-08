@@ -6,6 +6,7 @@ namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Operations\Contract\ApprovalRepository;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\DTO\ApprovalView;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
@@ -16,6 +17,7 @@ use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Operations\ApprovalState;
 use App\Domain\Operations\Exception\InvalidApprovalTransition;
+use App\Domain\Operations\OperationsBoard;
 
 /**
  * Take a request back.
@@ -32,6 +34,7 @@ final readonly class WithdrawApproval
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
+        private BoardSignaller $boards,
     ) {}
 
     public function __invoke(string $requestId, ?string $reason): ApprovalView
@@ -60,6 +63,9 @@ final readonly class WithdrawApproval
             summary: sprintf('Withdrew "%s"', $withdrawn->title),
             changes: ['reason' => trim($reason)],
         ));
+
+        /* Whoever has the board open learns it moved. A nudge with no rows in it; see `BoardSignaller`. */
+        $this->boards->changed(OperationsBoard::Approvals);
 
         return $withdrawn;
     }

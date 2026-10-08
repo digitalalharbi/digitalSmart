@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Operations\DTO\TaskChange;
 use App\Application\Operations\DTO\TaskView;
@@ -15,6 +16,7 @@ use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Operations\OperationsBoard;
 
 /**
  * Change a task's title, description, priority, due date or project.
@@ -33,6 +35,7 @@ final readonly class UpdateTask
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
+        private BoardSignaller $boards,
     ) {}
 
     public function __invoke(string $taskId, TaskChange $change): TaskView
@@ -77,6 +80,9 @@ final readonly class UpdateTask
                 'to' => $change->toAuditChanges(),
             ],
         ));
+
+        /* Whoever has the board open learns it moved. A nudge with no rows in it; see `BoardSignaller`. */
+        $this->boards->changed(OperationsBoard::Tasks);
 
         return $updated;
     }

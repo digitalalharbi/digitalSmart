@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useClientsQuery } from '@/features/clients';
 import { ApiError } from '@/shared/api/client';
+import { useBoardRealtime } from '@/shared/realtime/useBoardRealtime';
 import { cn } from '@/shared/lib/cn';
 import { formatNumber, formatRate } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
@@ -10,6 +11,7 @@ import { Badge } from '@/shared/ui/badge';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
+import { LiveBadge } from '@/shared/ui/live-badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { IntakeFlowChart } from './IntakeFlowChart';
 import { RequestComposer } from './RequestComposer';
@@ -43,7 +45,7 @@ import type { ClientRequestCard } from './types';
 export function RequestsPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
-  const { can } = useSession();
+  const { can, user } = useSession();
 
   const canSubmit = can(PERMISSIONS.clientRequestsSubmit);
 
@@ -63,6 +65,12 @@ export function RequestsPage() {
   const attach = useAttachMutation();
   const raiseTask = useRaiseTaskMutation();
   const submit = useSubmitRequestMutation();
+
+  /*
+   * Live, where the socket is configured. The event is a nudge with no rows in it, so the only response is
+   * to read the board again over the authenticated endpoint — see `useBoardRealtime`.
+   */
+  const isLive = useBoardRealtime('client_requests', user?.active_workspace?.id ?? null);
 
   const error = useMemo(() => {
     for (const mutation of [triage, promise, answer, raiseTask, submit]) {
@@ -144,6 +152,7 @@ export function RequestsPage() {
           <p className="text-content-secondary mt-1 max-w-2xl text-sm">
             {t(isAgencyView ? 'requests.subtitle' : 'requests.subtitleClient')}
           </p>
+          <LiveBadge isLive={isLive} />
         </div>
 
         {!isAgencyView ? null : (

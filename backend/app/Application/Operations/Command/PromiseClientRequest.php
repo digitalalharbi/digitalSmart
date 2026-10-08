@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Operations\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\DTO\ClientRequestView;
 use App\Application\Shared\Contract\ActorContext;
@@ -14,6 +15,7 @@ use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Operations\OperationsBoard;
 use DateTimeImmutable;
 
 /**
@@ -34,6 +36,7 @@ final readonly class PromiseClientRequest
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
+        private BoardSignaller $boards,
     ) {}
 
     public function __invoke(string $requestId, ?DateTimeImmutable $promisedAt): ClientRequestView
@@ -76,6 +79,9 @@ final readonly class PromiseClientRequest
                 'wanted_by' => $current->wantedBy?->format('Y-m-d'),
             ],
         ));
+
+        /* Whoever has the board open learns it moved. A nudge with no rows in it; see `BoardSignaller`. */
+        $this->boards->changed(OperationsBoard::ClientRequests);
 
         return $promised;
     }

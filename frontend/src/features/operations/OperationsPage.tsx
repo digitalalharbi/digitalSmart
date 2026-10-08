@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useClientsQuery } from '@/features/clients';
 import { ApiError } from '@/shared/api/client';
+import { useBoardRealtime } from '@/shared/realtime/useBoardRealtime';
 import { formatNumber, formatRate } from '@/shared/lib/format';
 import { cn } from '@/shared/lib/cn';
 import { Alert } from '@/shared/ui/alert';
@@ -10,6 +11,7 @@ import { Badge } from '@/shared/ui/badge';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
+import { LiveBadge } from '@/shared/ui/live-badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { DueProfileChart } from './DueProfileChart';
 import { LoadByPersonChart } from './LoadByPersonChart';
@@ -43,7 +45,7 @@ type Audience = 'everyone' | 'me' | 'unassigned';
 export function OperationsPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
-  const { can } = useSession();
+  const { can, user } = useSession();
 
   const canView = can(PERMISSIONS.tasksView);
   const canManage = can(PERMISSIONS.tasksManage);
@@ -65,6 +67,12 @@ export function OperationsPage() {
   const update = useUpdateTaskMutation();
   const assign = useAssignTaskMutation();
   const open = useOpenTaskMutation();
+
+  /*
+   * Live, where the socket is configured. The event is a nudge with no rows in it, so the only response is
+   * to read the board again over the authenticated endpoint — see `useBoardRealtime`.
+   */
+  const isLive = useBoardRealtime('tasks', user?.active_workspace?.id ?? null);
 
   const error = useMemo(() => {
     for (const mutation of [move, update, assign, open]) {
@@ -92,6 +100,7 @@ export function OperationsPage() {
           <p className="text-content-secondary mt-1 max-w-2xl text-sm">
             {t('operations.subtitle')}
           </p>
+          <LiveBadge isLive={isLive} />
         </div>
 
         <div className="flex flex-wrap gap-6">

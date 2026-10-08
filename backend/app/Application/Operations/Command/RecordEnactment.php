@@ -8,6 +8,7 @@ use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Notifications\Command\Announce;
 use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Operations\Contract\ApprovalRepository;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\DTO\ApprovalView;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
@@ -21,6 +22,7 @@ use App\Domain\Notifications\NotificationKind;
 use App\Domain\Operations\ApprovalState;
 use App\Domain\Operations\EnactmentState;
 use App\Domain\Operations\Exception\InvalidApprovalTransition;
+use App\Domain\Operations\OperationsBoard;
 
 /**
  * Record that somebody made the approved change — or deliberately did not.
@@ -45,6 +47,7 @@ final readonly class RecordEnactment
         private AuditRecorder $audit,
         private Clock $clock,
         private Announce $announce,
+        private BoardSignaller $boards,
     ) {}
 
     public function __invoke(
@@ -124,6 +127,9 @@ final readonly class RecordEnactment
                 aboutClientId: $recorded->clientId,
             ));
         }
+
+        /* Whoever has the board open learns it moved. A nudge with no rows in it; see `BoardSignaller`. */
+        $this->boards->changed(OperationsBoard::Approvals);
 
         return $recorded;
     }

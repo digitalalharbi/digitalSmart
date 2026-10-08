@@ -112,11 +112,16 @@ test.describe('client requests', () => {
       'base64',
     );
 
-    await page
-      .getByLabel('Add a file')
-      .setInputFiles({ name: 'screenshot.png', mimeType: 'image/png', buffer: png });
+    /*
+     * A name unique to the run. Both browser projects share one seeded database and this test really uploads, so
+     * a fixed name leaves two files called the same thing on the same request — which is a strict-mode violation
+     * under the second project rather than a product defect, and exactly what happened before this comment.
+     */
+    const name = `screenshot-${String(Date.now())}.png`;
 
-    const uploaded = files.getByRole('link', { name: 'screenshot.png' });
+    await page.getByLabel('Add a file').setInputFiles({ name, mimeType: 'image/png', buffer: png });
+
+    const uploaded = files.getByRole('link', { name });
     await expect(uploaded).toBeVisible({ timeout: 30_000 });
     await expect(files.getByText('The client sees this').first()).toBeVisible();
 
@@ -135,7 +140,7 @@ test.describe('client requests', () => {
     /* Taken delivery of, so the download really is a download rather than a page. */
     const [download] = await Promise.all([page.waitForEvent('download'), uploaded.click()]);
 
-    expect(download.suggestedFilename()).toBe('screenshot.png');
+    expect(download.suggestedFilename()).toBe(name);
   });
 
   test('raises a task against a request and leaves the request a request', async ({ page }) => {

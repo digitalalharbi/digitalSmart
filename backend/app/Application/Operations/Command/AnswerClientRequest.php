@@ -7,6 +7,7 @@ namespace App\Application\Operations\Command;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Notifications\Command\Announce;
 use App\Application\Notifications\DTO\NotificationDraft;
+use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\DTO\ClientRequestView;
 use App\Application\Shared\Contract\ActorContext;
@@ -19,6 +20,7 @@ use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Notifications\NotificationKind;
 use App\Domain\Operations\MessageAudience;
+use App\Domain\Operations\OperationsBoard;
 
 /**
  * Say something on a client request.
@@ -52,6 +54,7 @@ final readonly class AnswerClientRequest
         private AuditRecorder $audit,
         private Announce $announce,
         private Clock $clock,
+        private BoardSignaller $boards,
     ) {}
 
     public function __invoke(
@@ -112,6 +115,8 @@ final readonly class AnswerClientRequest
         ));
 
         $this->tell($answered, $audienceUsed, $isAgency, $current->submittedById);
+        /* Whoever has the board open learns it moved. A nudge with no rows in it; see `BoardSignaller`. */
+        $this->boards->changed(OperationsBoard::ClientRequests);
 
         return $answered;
     }
