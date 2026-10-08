@@ -1,6 +1,12 @@
 export { LoginPage } from './LoginPage';
+export { PasswordDialog } from './PasswordDialog';
 export { useSession } from './useSession';
 export { PERMISSIONS } from './permissions';
 export type { PermissionSlug } from './permissions';
-export { useLogoutMutation, useSwitchWorkspaceMutation, useSessionQuery } from './api';
+export {
+  useChangePasswordMutation,
+  useLogoutMutation,
+  useSwitchWorkspaceMutation,
+  useSessionQuery,
+} from './api';
 export type { AuthenticatedUser, WorkspaceSummary } from './types';

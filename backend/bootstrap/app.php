@@ -13,6 +13,7 @@ use App\Domain\Shared\Exception\DomainException;
 use App\Interface\Console\SyncAccessCatalogue;
 use App\Interface\Console\SyncAdvertisingData;
 use App\Interface\Http\Middleware\AssignRequestId;
+use App\Interface\Http\Middleware\AuthenticateSessionForSpa;
 use App\Interface\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -55,6 +56,21 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [
             SecurityHeaders::class,
             'throttle:api',
+        ]);
+
+        /*
+         * A session is only as current as the password it was opened with.
+         *
+         * `AuthenticateSession` stores the password hash in the session and compares it on every request, so a
+         * session opened with a password that has since been changed fails its next request instead of carrying
+         * on. Without it, `logoutOtherDevices()` rehashes and nothing happens — the other sessions keep working,
+         * and a password change made *because* somebody else knows the old one would achieve nothing at all.
+         *
+         * Appended to the stateful API group, after Sanctum has resolved the session. Token clients have no
+         * session and the middleware passes them through untouched.
+         */
+        $middleware->api(append: [
+            AuthenticateSessionForSpa::class,
         ]);
 
         /*

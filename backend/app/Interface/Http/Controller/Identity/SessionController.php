@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Http\Controller\Identity;
 
+use App\Application\Identity\Command\ChangePassword;
 use App\Application\Identity\Command\LogIn;
 use App\Application\Identity\Command\LogOut;
 use App\Application\Identity\Query\GetAuthenticatedUser;
@@ -12,6 +13,7 @@ use App\Domain\Identity\UserId;
 use App\Domain\Workspace\WorkspaceId;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Middleware\BindActorContext;
+use App\Interface\Http\Request\Identity\ChangePasswordRequest;
 use App\Interface\Http\Request\Identity\LogInRequest;
 use App\Interface\Http\Resource\AuthenticatedUserResource;
 use Illuminate\Http\JsonResponse;
@@ -56,6 +58,26 @@ final class SessionController extends Controller
         );
 
         return AuthenticatedUserResource::make($user)->response();
+    }
+
+    /**
+     * Change your own password.
+     *
+     * No permission check and no user parameter: a password belongs to the person rather than to a role, and
+     * there is no shape in which this reaches somebody else's account. The current password is required because a
+     * session can be left open on a machine that is not yours.
+     *
+     * Answered with no body. The session survives — signing somebody out of the screen they are looking at reads
+     * as a failure — and every **other** session using the old password is ended.
+     */
+    public function changePassword(ChangePasswordRequest $request, ChangePassword $change): JsonResponse
+    {
+        $change(
+            $request->string('current_password')->value(),
+            $request->string('password')->value(),
+        );
+
+        return response()->json(status: Response::HTTP_NO_CONTENT);
     }
 
     /** Sign out and invalidate the session. */

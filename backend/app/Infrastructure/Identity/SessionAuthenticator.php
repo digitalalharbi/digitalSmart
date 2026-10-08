@@ -10,6 +10,7 @@ use App\Domain\Identity\UserId;
 use App\Infrastructure\Persistence\Eloquent\Model\User;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 final readonly class SessionAuthenticator implements Authenticator
 {
@@ -66,6 +67,42 @@ final readonly class SessionAuthenticator implements Authenticator
         $user = $this->guard->user();
 
         return $user instanceof User ? new UserId((string) $user->getKey()) : null;
+    }
+
+    public function confirmPassword(UserId $userId, string $password): bool
+    {
+        $user = User::query()->whereKey($userId->value)->first();
+
+        if (! $user instanceof User) {
+            return false;
+        }
+
+        /*
+         * `Hash::check` rather than `attempt()`. Signing in again would regenerate the session, write a
+         * `last_login_at` and record a sign-in that did not happen — three side effects for a question that
+         * should have none.
+         */
+        return Hash::check($password, (string) $user->getAttribute('password'));
+    }
+
+    public function replacePassword(UserId $userId, string $password): void
+    {
+        $user = User::query()->whereKey($userId->value)->firstOrFail();
+
+        $user->forceFill(['password' => Hash::make($password)])->saveQuietly();
+
+        /*
+         * Saving the hash is what ends the other sessions, and there is nothing else to call.
+         *
+         * `AuthenticateSessionForSpa` compares each session's stored password hash against the user's current
+         * one, so every session opened with the old password now fails its next request. This one survives:
+         * the middleware re-stores the hash after this response, which is the behaviour that keeps somebody
+         * signed in on the screen they are looking at.
+         *
+         * `logoutOtherDevices()` is deliberately not called. It re-hashes the same password to invalidate
+         * sessions, which is for the case where the password is *not* changing — here the hash has already
+         * changed, and calling it would hash twice for the same effect.
+         */
     }
 
     public function isDeactivated(Email $email): bool

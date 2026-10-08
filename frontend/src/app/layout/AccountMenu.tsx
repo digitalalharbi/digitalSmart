@@ -1,8 +1,14 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { Check, ChevronsUpDown, LogOut } from 'lucide-react';
-import { useLogoutMutation, useSession, useSwitchWorkspaceMutation } from '@/features/auth';
+import { Check, ChevronsUpDown, KeyRound, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import {
+  PasswordDialog,
+  useLogoutMutation,
+  useSession,
+  useSwitchWorkspaceMutation,
+} from '@/features/auth';
 import { Button } from '@/shared/ui/button';
 
 /**
@@ -17,6 +23,7 @@ export function AccountMenu() {
   const navigate = useNavigate();
   const logout = useLogoutMutation();
   const switchWorkspace = useSwitchWorkspaceMutation();
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   if (!user) {
     return null;
@@ -85,6 +92,19 @@ export function AccountMenu() {
 
           <DropdownMenu.Separator className="bg-line-subtle my-1 h-px" />
 
+          {/*
+            Here rather than on a settings page, because a password belongs to the person and not to a workspace:
+            a media buyer must be able to change theirs without holding `workspaces.update`, and a page behind
+            that permission would have put it out of reach of most of the people who need it.
+          */}
+          <DropdownMenu.Item
+            onSelect={() => setIsChangingPassword(true)}
+            className="text-content hover:bg-surface-hover focus:bg-surface-hover flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-none"
+          >
+            <KeyRound className="size-4" aria-hidden="true" />
+            {t('account.password.title')}
+          </DropdownMenu.Item>
+
           <DropdownMenu.Item
             disabled={logout.isPending}
             onSelect={() => {
@@ -99,6 +119,12 @@ export function AccountMenu() {
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
+
+      {/*
+        Outside the menu's portal content on purpose: a dialog rendered inside a dropdown is unmounted the moment
+        the dropdown closes, which is the moment it opens.
+      */}
+      <PasswordDialog open={isChangingPassword} onOpenChange={setIsChangingPassword} />
     </DropdownMenu.Root>
   );
 }

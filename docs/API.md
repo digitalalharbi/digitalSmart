@@ -120,6 +120,7 @@ process booted.
 | `POST /api/auth/login` | Establish a session. Body: `email`, `password`, optional `remember`. |
 | `GET /api/auth/me` | The current user, their workspaces and effective permissions. |
 | `POST /api/auth/logout` | End the session. `204`. |
+| `POST /api/auth/password` | Change **your own** password. Body: `current_password`, `password`, `password_confirmation`. `204`. |
 | `POST /api/workspaces/{id}/activate` | Switch the session's active workspace. |
 
 Rejected credentials return `422` with a message identical for a wrong password
@@ -127,6 +128,20 @@ and an unknown address — the login form is not an account enumeration oracle. 
 deactivated account is the deliberate exception, because the person needs to know
 to contact an administrator. A user who belongs to no workspace is signed back
 out rather than left half-authenticated.
+
+`POST /api/auth/password` needs a session and **no permission**: a password belongs to the person rather than to
+a role, and there is no `user_id` parameter, so there is no shape in which it reaches another account. It is
+throttled on the sign-in bucket rather than the general API one — the current password is required, which makes
+this a place somebody could guess at, and the rate that is right for guessing a password is the same whichever
+endpoint is asked.
+
+Refusals are `422`: `password_rejected` for a wrong current password (recorded as a failed attempt), for a
+password shorter than twelve characters, and for the password the account already has. A mistyped confirmation is
+an ordinary validation error on `password`, because that is a mistake about a form rather than a rule about an
+account.
+
+**Every other session using the old password is ended; the caller's own survives.** Full reasoning, including the
+middleware that makes it true rather than merely claimed, in [SECURITY.md](SECURITY.md#changing-a-password).
 
 `GET /api/auth/me` returns a `permissions` array. The SPA uses it to decide what
 to *offer*; it is never the security boundary.

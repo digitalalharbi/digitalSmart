@@ -110,6 +110,17 @@ Route::get('shared-reports/{token}', SharedReportController::class)
 Route::middleware(['auth:sanctum', BindActorContext::class])->group(function (): void {
     Route::get('auth/me', [SessionController::class, 'show'])->name('auth.me');
     Route::post('auth/logout', [SessionController::class, 'destroy'])->name('auth.logout');
+    /*
+     * Change your own password. No permission and no user parameter: a password belongs to the person rather
+     * than to a role, so there is no shape in which this reaches somebody else's account.
+     *
+     * Throttled on the sign-in bucket rather than the general API one. The current password is required, which
+     * makes this a place somebody could guess at — and the rate that is right for guessing a password is the
+     * rate that is right for guessing a password, whichever endpoint is asked.
+     */
+    Route::post('auth/password', [SessionController::class, 'changePassword'])
+        ->middleware('throttle:auth')
+        ->name('auth.password');
 
     Route::post('workspaces/{workspace}/activate', WorkspaceSwitchController::class)
         ->whereUuid('workspace')

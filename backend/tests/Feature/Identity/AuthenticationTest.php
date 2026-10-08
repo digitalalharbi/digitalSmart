@@ -239,3 +239,184 @@ describe('an unauthenticated request that did not ask for JSON', function (): vo
         test()->getJson('/api/clients')->assertUnauthorized();
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Changing your own password
+|--------------------------------------------------------------------------
+|
+| `AuditAction::UserPasswordChanged` existed from Phase 1 with nothing recording it, and `bootstrap/app.php` has
+| been scrubbing `current_password` out of logs for just as long: the audit vocabulary and the logging policy both
+| described an operation the product could not perform.
+|
+*/
+
+describe('changing your own password', function (): void {
+    /** @return array{user: User, scenario: Tests\Support\WorkspaceScenario} */
+    function passwordScenario(): array
+    {
+        $scenario = workspaceScenario('Smart Code');
+        $user = $scenario->addMember(SystemRole::MediaBuyer);
+        $user->forceFill(['password' => 'the-old-passphrase'])->save();
+
+        return ['user' => $user, 'scenario' => $scenario];
+    }
+
+    it('changes it, and records the fact without recording the password', function (): void {
+        $setup = passwordScenario();
+
+        $this->actingAs($setup['user'])
+            ->postJson('/api/auth/password', [
+                'current_password' => 'the-old-passphrase',
+                'password' => 'a-much-longer-passphrase',
+                'password_confirmation' => 'a-much-longer-passphrase',
+            ])
+            ->assertNoContent();
+
+        /* The new password works, which is the only test of "it changed" that cannot pass by accident. */
+        $this->post('/api/auth/logout');
+        $this->postJson('/api/auth/login', [
+            'email' => $setup['user']->getAttribute('email'),
+            'password' => 'a-much-longer-passphrase',
+        ])->assertOk();
+
+        $entry = AuditLog::query()->where('action', AuditAction::UserPasswordChanged->value)->firstOrFail();
+
+        /* The fact and the time. Never the password, never its hash, never its length. */
+        expect($entry->getAttribute('summary'))->toBe('Changed their own password.')
+            ->and(json_encode($entry->getAttribute('changes')))->not->toContain('passphrase');
+    });
+
+    /*
+     * The current password is asked for because a session can be left open on a machine that is not yours —
+     * without it, whoever found that screen could lock the owner out of their own account.
+     */
+    it('refuses without the current password, and records the attempt', function (): void {
+        $setup = passwordScenario();
+
+        $this->actingAs($setup['user'])
+            ->postJson('/api/auth/password', [
+                'current_password' => 'not-the-old-passphrase',
+                'password' => 'a-much-longer-passphrase',
+                'password_confirmation' => 'a-much-longer-passphrase',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'password_rejected');
+
+        expect(AuditLog::query()->where('action', AuditAction::UserLoginFailed->value)->count())->toBe(1);
+
+        /* And the old one still works, because nothing was changed. */
+        $this->post('/api/auth/logout');
+        $this->postJson('/api/auth/login', [
+            'email' => $setup['user']->getAttribute('email'),
+            'password' => 'the-old-passphrase',
+        ])->assertOk();
+    });
+
+    it('refuses a password shorter than the minimum, naming it', function (): void {
+        $setup = passwordScenario();
+
+        $this->actingAs($setup['user'])
+            ->postJson('/api/auth/password', [
+                'current_password' => 'the-old-passphrase',
+                'password' => 'short',
+                'password_confirmation' => 'short',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['password']);
+    });
+
+    it('refuses a mistyped confirmation as a form mistake rather than a rule', function (): void {
+        $setup = passwordScenario();
+
+        $this->actingAs($setup['user'])
+            ->postJson('/api/auth/password', [
+                'current_password' => 'the-old-passphrase',
+                'password' => 'a-much-longer-passphrase',
+                'password_confirmation' => 'a-much-longer-passphrasse',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['password']);
+    });
+
+    /*
+     * Refused rather than accepted as a no-op. Somebody changing a password they believe is known has to end up
+     * with a different one, and "saved" over the same password would be a false assurance.
+     */
+    it('refuses the password you already have', function (): void {
+        $setup = passwordScenario();
+
+        $this->actingAs($setup['user'])
+            ->postJson('/api/auth/password', [
+                'current_password' => 'the-old-passphrase',
+                'password' => 'the-old-passphrase',
+                'password_confirmation' => 'the-old-passphrase',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'password_rejected');
+    });
+
+    it('is nobody else’s to do, because there is no account to name', function (): void {
+        $setup = passwordScenario();
+
+        /* No `user_id` parameter exists, so the only account reachable is the caller's own. */
+        $this->actingAs($setup['user'])
+            ->postJson('/api/auth/password', [
+                'user_id' => (string) $setup['scenario']->owner->getKey(),
+                'current_password' => 'the-old-passphrase',
+                'password' => 'a-much-longer-passphrase',
+                'password_confirmation' => 'a-much-longer-passphrase',
+            ])
+            ->assertNoContent();
+
+        /* The owner's password is untouched. */
+        $this->post('/api/auth/logout');
+        $this->postJson('/api/auth/login', [
+            'email' => $setup['scenario']->owner->getAttribute('email'),
+            'password' => 'password',
+        ])->assertOk();
+    });
+
+    it('needs a session at all', function (): void {
+        $this->postJson('/api/auth/password', [
+            'current_password' => 'the-old-passphrase',
+            'password' => 'a-much-longer-passphrase',
+            'password_confirmation' => 'a-much-longer-passphrase',
+        ])->assertUnauthorized();
+    });
+});
+
+describe('a session opened with a password that has since changed', function (): void {
+    /*
+     * The claim the whole feature rests on, asserted rather than assumed.
+     *
+     * Somebody changes their password *because* they think it is known — a shared laptop, a phone left on a desk,
+     * a colleague who has gone. If the other sessions kept working, the change would achieve nothing, and that is
+     * exactly what happens without `AuthenticateSessionForSpa`: `logoutOtherDevices()` re-hashes and no session
+     * notices.
+     *
+     * Simulated the way the framework sees it: a session holding the hash of the old password, which is precisely
+     * the state another browser would be in.
+     */
+    it('fails its next request', function (): void {
+        $scenario = workspaceScenario('Smart Code');
+        $user = $scenario->addMember(SystemRole::MediaBuyer);
+        $user->forceFill(['password' => 'the-old-passphrase'])->save();
+
+        $this->actingAs($user)->getJson('/api/auth/me')->assertOk();
+
+        /* Another browser's session: signed in, holding the hash it was given when it signed in. */
+        session(['password_hash_sanctum' => 'the-hash-from-before-the-change']);
+
+        $this->actingAs($user)->getJson('/api/auth/me')->assertUnauthorized();
+    });
+
+    it('keeps a session whose stored hash is current', function (): void {
+        $scenario = workspaceScenario('Smart Code');
+        $user = $scenario->addMember(SystemRole::MediaBuyer);
+
+        session(['password_hash_sanctum' => $user->getAuthPassword()]);
+
+        $this->actingAs($user)->getJson('/api/auth/me')->assertOk();
+    });
+});

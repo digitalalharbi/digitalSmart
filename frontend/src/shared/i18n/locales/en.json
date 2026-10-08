@@ -121,7 +121,22 @@
     "menu": "Account and workspace",
     "workspaces": "Workspaces",
     "signOut": "Sign out",
-    "signingOut": "Signing out…"
+    "signingOut": "Signing out…",
+    "password": {
+      "title": "Change your password",
+      "description": "Yours alone — this does not touch anybody else's account.",
+      "consequence": "Every other place you are signed in will be signed out, which is the point of changing a password somebody may know. This screen stays signed in.",
+      "current": "Your current password",
+      "currentHint": "Asked for because a session can be left open on a machine that is not yours.",
+      "next": "New password",
+      "nextHint": "At least {{minimum}} characters. A long passphrase beats a short word with a symbol in it, which is why nothing here asks for capitals or punctuation.",
+      "tooShort": "Use at least {{minimum}} characters.",
+      "confirm": "New password again",
+      "mismatch": "The two new passwords do not match.",
+      "submit": "Change it",
+      "done": "Changed. Anywhere else you were signed in has been signed out.",
+      "failed": "It was not changed. Nothing about your account has altered."
+    }
   },
   "clients": {
     "subtitle": "Every client in this workspace.",

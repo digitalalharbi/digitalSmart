@@ -29,3 +29,15 @@ export type Credentials = {
   password: string;
   remember?: boolean;
 };
+
+/**
+ * A password change.
+ *
+ * The current password is part of the request rather than assumed from the session: a session can be left open
+ * on a machine that is not yours, and without the check whoever found it could lock the owner out.
+ */
+export type PasswordChange = {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+};

@@ -4,6 +4,58 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Nobody could change their own password
+
+Two traces in the repository had described this operation since Phase 0 while the product could not perform it:
+`AuditAction::UserPasswordChanged`, declared with nothing recording it, and `bootstrap/app.php` scrubbing
+`current_password` out of flashed input. A product with login throttling, failed-attempt auditing and a seeded
+demo password that cannot be changed is not finished.
+
+### Added
+
+- **`POST /api/auth/password`**, needing a session and **no permission at all**. A password belongs to the person
+  rather than to a role — a media buyer must be able to change theirs without `workspaces.update` — and there is
+  no `user_id` parameter, so there is no shape in which the request reaches another account.
+- **The current password is required**, and a wrong one is recorded as a failed attempt. A session can be left
+  open on a shared machine, and without the check whoever found that screen could lock the owner out; repeated
+  attempts against a live session is a signal somebody is sitting at a machine that is not theirs.
+- **Twelve characters, no composition rule.** No "one capital and one symbol": those push people towards
+  `Password1!`, and a long passphrase beats a short mangled word. The minimum lives on the use case so the form
+  rule and the server's refusal cannot disagree.
+- **The password you already have is refused** rather than accepted as a no-op. Somebody changing a password they
+  believe is known has to end up with a different one, and "saved" over the same password is a false assurance.
+- **The dialog is in the account menu**, not on a settings page: a page behind `workspaces.update` would have put
+  this out of reach of most of the people who need it. **Nothing reports strength** — a meter is a model's
+  opinion rendered as a fact, which this product refuses to do with a client's figures and refuses to do with a
+  reader's own password.
+- The audit entry carries **the fact and the time**, never the password, its hash or its length.
+
+### The claim that needed middleware to be true
+
+**Every other session using the old password ends; the caller's own survives.** That is the entire point of
+changing a password somebody may know — and it is not what happens by default. `logoutOtherDevices()` re-hashes
+and no session notices, so the sentence would have been a false claim.
+
+`AuthenticateSessionForSpa` makes it true: the framework's `AuthenticateSession` stores the password hash in the
+session and compares it on every request. It is a subclass for one reason — `auth:sanctum` makes `sanctum` the
+default guard for the rest of the request, so the framework's version asks a `RequestGuard` for `viaRemember()`
+and raises a **500 on every authenticated read**. The existing authentication tests caught that within seconds of
+the middleware being registered, which is the argument for having them.
+
+The behaviour is asserted directly rather than assumed: a session holding a stale password hash — precisely the
+state another browser would be in — fails its next request, and one holding the current hash does not.
+
+### Not built, with the reason
+
+**Resetting a forgotten password.** A reset needs an email and this repository has no sender identity, the same
+block that defers notification digests. Everything else about it would be real work with a fake outcome: a token
+generated, stored and expired, and then not delivered. Recorded in `docs/SECURITY.md` rather than half-built.
+
+### Gates
+
+1 721 backend tests (6 223 assertions), 534 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
+clean, ESLint and Prettier clean, production build.
+
 ## The client portal was rendering a key path
 
 The contract sweep's third direction: every `t('…')` key the code asks for, checked against the translation

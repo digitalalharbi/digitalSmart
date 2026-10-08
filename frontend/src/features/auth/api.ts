@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ensureCsrfCookie } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
-import type { AuthenticatedUser, Credentials } from './types';
+import type { AuthenticatedUser, Credentials, PasswordChange } from './types';
 
 async function fetchSession(): Promise<AuthenticatedUser> {
   const response = await api.get<{ data: AuthenticatedUser }>('/auth/me');
@@ -77,6 +77,24 @@ export function useSwitchWorkspaceMutation() {
       queryClient.setQueryData(queryKeys.auth.session(), user);
       // Everything else was scoped to the previous workspace.
       void queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] !== 'auth' });
+    },
+  });
+}
+
+/**
+ * Change your own password.
+ *
+ * Deliberately **not** retried on a dropped connection, unlike signing in. Signing in twice signs you in once; a
+ * password change retried against a server that already applied it would send the old password a second time and
+ * be refused, and the reader would be told their current password was wrong when in fact it had just worked.
+ *
+ * Every other session using the old password ends server-side. This one survives, so nothing here signs the
+ * reader out of the screen they are looking at.
+ */
+export function useChangePasswordMutation() {
+  return useMutation({
+    mutationFn: async (change: PasswordChange): Promise<void> => {
+      await api.post('/auth/password', change);
     },
   });
 }

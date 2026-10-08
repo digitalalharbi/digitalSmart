@@ -125,6 +125,49 @@ leaves yesterday's spend on a dashboard, a webhook that leaves an order out of a
 abandoned work is how a product comes to show figures it cannot defend, so any failure at all degrades the
 health report rather than waiting for a threshold. See `docs/RUNBOOKS.md`.
 
+## Changing a password
+
+`POST /api/auth/password`, needing a session and **no permission at all**: a password belongs to the person, not
+to a role, and a media buyer must be able to change theirs without holding `workspaces.update`. There is no
+`user_id` parameter, so there is no shape in which this request reaches somebody else's account.
+
+**The current password is required.** A session can be left open on a shared machine, and without the check
+whoever found that screen could lock the owner out of their own account. A wrong one is recorded as a failed
+attempt, like a rejected sign-in: repeated attempts against a live session is a signal somebody is sitting at a
+machine that is not theirs.
+
+**Every other session ends; this one does not.** Somebody changes their password *because* they think it is
+known — a shared laptop, a phone left on a desk, a colleague who has gone — so leaving the other sessions signed
+in would mean the change achieved nothing. The caller's own session survives, because signing somebody out of
+the screen they are looking at reads as a failure.
+
+That property needs middleware to be true, and saying it without the middleware would have been a false claim.
+`AuthenticateSessionForSpa` stores the password hash in the session and compares it on every request, so a
+session opened with a password that has since changed fails its next request. It is a subclass for one reason:
+`auth:sanctum` makes `sanctum` the default guard for the rest of the request, and the framework's version then
+asks a `RequestGuard` for `viaRemember()` and raises a 500 on every authenticated read — caught immediately by
+the existing authentication tests. A test asserts the behaviour directly, by putting a stale hash in a session
+and watching the next request fail.
+
+**Twelve characters, and no composition rule.** No "one capital and one symbol": those push people towards
+`Password1!`, and a long passphrase beats a short mangled word. The minimum lives on the use case so the form
+rule and the server's refusal cannot disagree.
+
+**Nothing reports strength.** A meter is a model's opinion rendered as a fact, which is what this product
+refuses to do with a figure a client sees and refuses to do with a reader's own password.
+
+**The audit entry carries the fact and the time**, and never the password, its hash or its length.
+`bootstrap/app.php` has scrubbed `current_password` from flashed input since Phase 0 — one of two traces that
+this operation was always meant to exist. The other was `AuditAction::UserPasswordChanged`, declared with nothing
+recording it until now.
+
+### Not built: resetting a forgotten password
+
+A reset needs an email, and this repository has no sender identity — the same block that defers notification
+digests. Everything else about it would be real work with a fake outcome: a token this product generates, stores
+and expires, and then cannot deliver. It is recorded here rather than half-built, and the honest interim is that
+an owner or administrator can set a member's password out of band.
+
 ## Secrets
 
 - `.env` is git-ignored; `.env.example` documents every key with an empty value.
