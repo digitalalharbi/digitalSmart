@@ -455,6 +455,13 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::get('reports/{report}/csv', [ReportController::class, 'csv'])
         ->whereUuid('report')->name('reports.csv');
     /*
+     * The same report as a spreadsheet. Not a different document: one `GetReport`, one set of figures, and the
+     * only difference is that a number arrives in Excel as a number rather than as text somebody retypes.
+     * See `docs/REPORTING.md`.
+     */
+    Route::get('reports/{report}/xlsx', [ReportController::class, 'xlsx'])
+        ->whereUuid('report')->name('reports.xlsx');
+    /*
      * A snapshot is stored output, never recomputed. It is the only way this product can answer "the report said
      * 1.2 million" three months later.
      */

@@ -1068,3 +1068,19 @@ read the screen:
 | `kind_not_executable` | The approval kind describes a change no API call expresses — the ordinary answer |
 
 See `docs/PROVIDER_WRITES.md` for the operations, the providers and what each attempt records.
+
+## Report exports
+
+### `GET /api/reports/{report}/csv` · `GET /api/reports/{report}/xlsx`
+
+The same render in two formats, and the choice is about who opens it rather than what is in it: a CSV is what a
+script reads, a workbook is what a person opens. Both carry the period, the source state, the render mode and
+the comparability verdict, because an export that dropped them would be the most dangerous artefact this
+product makes — a file somebody pastes into a deck with every warning the interface showed fallen off.
+
+The workbook adds types: a number is numeric, a date is a date, money carries its currency in the cell's own
+format and a percentage is a true percentage. A figure that is unavailable is written as its **reason**, as
+text, in the numeric column — never as a blank, which the next formula adds as zero.
+
+Both are inside the workspace. A shared report link is not a download route: a visitor holds a token rather than
+an account, and a second unauthenticated read is a second thing to get right. See `docs/REPORTING.md`.

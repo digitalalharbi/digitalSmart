@@ -7,6 +7,7 @@ import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { LoadingRegion } from '@/shared/ui/loading-region';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import {
   useBindAccountMutation,
@@ -84,15 +85,11 @@ export function AccountBindingPanel({ projects, isLoadingProjects }: AccountBind
       ) : null}
 
       {projectId !== '' && (loadingAccounts || loadingBindings) ? (
-        <div
-          className="flex flex-col gap-2"
-          aria-busy="true"
-          aria-label={t('integrations.loading')}
-        >
+        <LoadingRegion label={t('integrations.loading')} className="flex flex-col gap-2">
           {Array.from({ length: 3 }, (_, index) => (
             <Skeleton key={index} className="h-14" />
           ))}
-        </div>
+        </LoadingRegion>
       ) : null}
 
       {projectId !== '' && accounts && accounts.length === 0 ? (

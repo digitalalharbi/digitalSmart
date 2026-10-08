@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 use App\Domain\Access\SystemRole;
 use App\Domain\Audit\AuditAction;
+use App\Domain\Integration\Provider;
 use App\Infrastructure\Persistence\Eloquent\Model\AuditLog;
 use App\Infrastructure\Persistence\Eloquent\Model\Client;
 use App\Infrastructure\Persistence\Eloquent\Model\Project;
 use App\Infrastructure\Persistence\Eloquent\Model\ProjectMember;
 use App\Infrastructure\Persistence\Eloquent\Model\User;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Tests\Support\SyncedWorkspace;
 use Tests\Support\WorkspaceScenario;
 
 /*
@@ -305,6 +308,111 @@ describe('exporting one', function (): void {
 
         // A section with no rows and no sentence reads as an export that failed, and the next person re-runs it.
         expect($csv)->toContain('Nothing was recorded for this section');
+    });
+
+    it('writes a workbook whose numbers are numbers', function (): void {
+        /*
+         * A synced workspace rather than the bare scenario the other export tests use: this is the one
+         * assertion that needs actual figures, because the whole reason XLSX exists beside the CSV is that a
+         * number arrives in Excel as a number instead of as text somebody retypes.
+         */
+        $workspace = SyncedWorkspace::default();
+        $project = $workspace->project(Provider::Meta);
+
+        $report = test()->actingAs($workspace->scenario->owner)
+            ->postJson('/api/reports', [
+                'name' => 'Monthly performance',
+                'client_id' => (string) $project->client_id,
+                'window' => 'last_30_days',
+                'sections' => [
+                    ['kind' => 'scorecard', 'metrics' => ['spend', 'clicks', 'ctr']],
+                    ['kind' => 'breakdown', 'metrics' => ['spend'], 'dimension' => 'provider'],
+                ],
+            ])
+            ->assertCreated()
+            ->json('data');
+
+        $binary = test()->actingAs($workspace->scenario->owner)
+            ->get("/api/reports/{$report['id']}/xlsx")
+            ->assertOk()
+            ->assertHeader(
+                'Content-Type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            ->content();
+
+        $path = tempnam(sys_get_temp_dir(), 'ds-xlsx-test-');
+        file_put_contents($path, $binary);
+
+        try {
+            /* Opened with the same library a spreadsheet application would use, so the assertion is about the
+               file rather than about the code that wrote it. */
+            $workbook = IOFactory::load($path);
+
+            expect($workbook->getSheetByName('Report')?->getCell('A1')->getValue())
+                ->toBe('Monthly performance');
+
+            $numeric = 0;
+            $currencyFormatted = 0;
+
+            foreach ($workbook->getAllSheets() as $sheet) {
+                foreach ($sheet->getRowIterator() as $row) {
+                    foreach ($row->getCellIterator() as $cell) {
+                        if (is_int($cell->getValue()) || is_float($cell->getValue())) {
+                            $numeric++;
+
+                            $format = $cell->getStyle()->getNumberFormat()->getFormatCode() ?? '';
+
+                            if (str_contains($format, 'SAR')) {
+                                $currencyFormatted++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            expect($numeric)->toBeGreaterThan(0);
+
+            /*
+             * And money carries its currency in the cell's own format, not only in the heading. A column of
+             * figures with no currency on it is a column somebody will add to a different currency.
+             */
+            expect($currencyFormatted)->toBeGreaterThan(0);
+        } finally {
+            @unlink($path);
+        }
+    });
+
+    it('writes a missing figure as its reason rather than as an empty cell', function (): void {
+        $setup = reportScenario();
+        $report = saveReport($setup);
+
+        $binary = test()->actingAs($setup['scenario']->owner)
+            ->get("/api/reports/{$report['id']}/xlsx")
+            ->assertOk()
+            ->content();
+
+        $path = tempnam(sys_get_temp_dir(), 'ds-xlsx-test-');
+        file_put_contents($path, $binary);
+
+        try {
+            $workbook = IOFactory::load($path);
+            $text = '';
+
+            foreach ($workbook->getAllSheets() as $sheet) {
+                foreach ($sheet->toArray() as $row) {
+                    $text .= ' '.implode(' ', array_map(static fn (mixed $cell): string => (string) $cell, $row));
+                }
+            }
+
+            /*
+             * An empty cell in a spreadsheet is summed as zero by whoever opens it next, and this product's
+             * whole position is that a missing figure is not a zero. A section with nothing in it says so.
+             */
+            expect($text)->toContain('Nothing was recorded for this section');
+        } finally {
+            @unlink($path);
+        }
     });
 
     it('names the file after the report and its period', function (): void {

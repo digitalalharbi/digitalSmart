@@ -4,6 +4,59 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Phase 21 addendum — the report as a workbook
+
+The export the reporting phase shipped without.
+
+### The argument
+
+CSV was the only export, and a CSV is a file where every cell is text. A column of spend arrives in Excel as
+text, so the first thing anybody does is retype it; a date arrives as a string and sorts alphabetically, which
+is fine until a period crosses a year. That is the whole reason somebody asks for XLSX rather than CSV, and it
+is not a formatting preference — a retyped column is a column that can differ from the report it came from.
+
+Both exports stay. A CSV is what a script reads; a workbook is what a person opens.
+
+### Added
+
+- `XlsxWriter` behind `ReportWorkbookWriter`, and `GET /api/reports/{report}/xlsx`. One `GetReport`, one set of
+  figures: the workbook cannot disagree with the CSV or with the screen, because none of them computes anything.
+- **Types, which is the point.** A number is numeric, a date is a real date with a date format, money carries
+  its currency in the cell's own number format and a percentage is a true percentage that survives being
+  charted rather than a number that happens to be out of a hundred.
+- **The caveats are repeated on every sheet.** A workbook makes this harder than a CSV rather than easier: a
+  reader opens the tab they were sent to and never sees sheet one. The source state, the period and the
+  comparability verdict sit above every section's table. A file whose warnings live on a tab nobody opens is a
+  file with no warnings.
+- **An unavailable figure is written as its reason, as text, in the numeric column**, where it is visibly not a
+  number and refuses to be summed. A blank cell is added as zero by whoever opens the file next, and this
+  product's whole position is that a missing figure is not a zero.
+- **The source state is in the file's own properties** as well as its cells, so the claim is attached to the
+  file rather than to a cell somebody can delete.
+- **Sheet names are made unique rather than truncated into a collision.** Two sections can legitimately share a
+  title over different metrics, and Excel refuses a duplicate sheet name instead of disambiguating it.
+- The export is tested by **opening the file** with the library a spreadsheet application would use — the
+  assertion is about the artefact, not the code that wrote it — and the end-to-end suite takes delivery of the
+  download and checks it is a readable archive.
+
+### Fixed — invalid ARIA on every loading state
+
+Seven skeleton panels carried `aria-label` on a plain `<div>`, where it is **prohibited**: a generic element
+takes no accessible name, so the label was invalid ARIA and the panels were silent to a screen reader. The
+accessibility gate caught it as an *intermittent* failure, which is the whole reason it survived — a loading
+state is on screen for a second, and nobody is auditing during that second.
+
+`LoadingRegion` is the one place it is fixed, with `role="status"`: the role permits the name, and it makes the
+region a polite live region so the announcement happens when the skeleton appears rather than only if somebody
+navigates into it. A unit test now asserts the **role** rather than the label, so the next one fails
+deterministically instead of once in ten runs.
+
+### Still not built
+
+PDF, deliberately. It stays a print stylesheet rather than a headless browser, for the reason the presentation
+module gives on its own page: a second rendering engine is a second thing to disagree with the screen, and its
+Arabic shaping would not be the browser's.
+
 ## Phase 26 — production hardening
 
 What this product needs to run for somebody other than its author.

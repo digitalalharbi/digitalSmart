@@ -1623,7 +1623,8 @@
       "internalNote": "Internal note: {{note}}",
       "renderedAt": "Figures as at {{at}}.",
       "emptyTitle": "Nothing recorded in this period",
-      "emptyBody": "No section of this report has data for these dates. That is not the same as a total of zero."
+      "emptyBody": "No section of this report has data for these dates. That is not the same as a total of zero.",
+      "xlsx": "Download Excel"
     },
     "section": {
       "emptyTitle": "Nothing recorded",

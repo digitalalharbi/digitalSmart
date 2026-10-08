@@ -61,6 +61,41 @@ test.describe('reports', () => {
     await expect(page.getByText(/recalculated every time it is opened/)).toBeVisible();
   });
 
+  test('downloads the same report as a workbook with real cells', async ({ page }) => {
+    await openReports(page);
+
+    await page
+      .getByRole('button', { name: new RegExp(`${CLIENT_SAFE}(?! —)`) })
+      .first()
+      .click();
+
+    const link = page.getByRole('link', { name: 'Download Excel' });
+    await expect(link).toBeVisible({ timeout: 30_000 });
+
+    /*
+     * Clicked and taken delivery of, rather than fetched with the request context — which carries no session
+     * and would only prove that the endpoint refuses a stranger.
+     */
+    const [download] = await Promise.all([page.waitForEvent('download'), link.click()]);
+
+    expect(download.suggestedFilename()).toMatch(/\.xlsx$/);
+
+    const path = await download.path();
+    expect(path).toBeTruthy();
+
+    const { readFileSync } = await import('node:fs');
+    const bytes = readFileSync(path);
+
+    /*
+     * An XLSX is a zip, and a zip starts "PK". A file Excel cannot open is a file somebody asks for again as a
+     * CSV — which is the gap this export was built to close.
+     */
+    expect(bytes.subarray(0, 2).toString()).toBe('PK');
+
+    /* And the CSV is still there beside it: a script reads one, a person opens the other. */
+    await expect(page.getByRole('link', { name: 'Download CSV' })).toBeVisible();
+  });
+
   test('refuses to share an internal report, and says why rather than hiding it', async ({
     page,
   }) => {

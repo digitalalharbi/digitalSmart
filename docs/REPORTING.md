@@ -3,7 +3,7 @@
 A saved question, the figures that answer it today, a frozen copy of the figures that answered it
 last month, and a link that lets a client read either one without an account.
 
-Phase 21 delivers the **report builder**, **saved reports**, **snapshots**, **CSV export**, and
+Phase 21 delivers the **report builder**, **saved reports**, **snapshots**, **CSV and XLSX export**, and
 **shared links** with their own unauthenticated read. What is not built is listed at the end.
 
 ## The question this module is for
@@ -185,6 +185,31 @@ Three details:
 - **Formula injection is blocked.** A cell beginning `=`, `+`, `-` or `@` is prefixed with an
   apostrophe. A campaign name is attacker-controlled text as far as a spreadsheet is concerned.
 
+## The workbook is the same document, typed
+
+`XlsxWriter` writes the same render as a spreadsheet, and the difference is the one thing a CSV cannot do:
+**types**. In a CSV every cell is text, so a column of spend arrives in Excel as text and the first thing
+anybody does is retype it; a date arrives as a string and sorts alphabetically, which is fine until a period
+crosses a year. Here a number is a number, a date is a date, money carries its currency in the cell's own
+format and a percentage is a true percentage that survives being charted.
+
+Both exports stay. A CSV is what a script reads; a workbook is what a person opens.
+
+Three decisions worth naming:
+
+- **The caveats are repeated on every sheet.** A workbook makes this harder than a CSV rather than easier,
+  because a reader opens the tab they were sent to and never sees sheet one. The source state, the period and
+  the comparability verdict are at the top of every section's sheet. A file whose warnings live on a tab nobody
+  opens is a file with no warnings.
+- **An unavailable figure is written as its reason, as text, in a numeric column** — where it is visibly not a
+  number and refuses to be summed. A blank cell would be added as zero by whoever opens the file next.
+- **The source state is in the file's own properties**, not only in its cells. A workbook built from sandbox
+  fixtures and one built from a client's real spend are identical as numbers, and only one may be acted on.
+
+The export is tested by **opening the file** with the same library a spreadsheet application would use — the
+assertion is about the artefact, not about the code that wrote it — and the end-to-end suite takes delivery of
+the download and checks it is a readable archive.
+
 ## What the schema enforces
 
 Ten CHECK constraints across four tables, each with an obvious wrong version that is invisible
@@ -234,9 +259,9 @@ client.
 
 ## What is not built
 
-- **XLSX and PDF export.** CSV is the only export. PDF is intended as a print stylesheet rather
-  than a headless browser — a rendering pipeline that can disagree with the screen is a second
-  source of truth.
+- **PDF export.** CSV and XLSX both ship; PDF is intended as a print stylesheet rather than a headless
+  browser — a rendering pipeline that can disagree with the screen is a second source of truth. The
+  presentation module takes the same position for the same reason, and says so on the page.
 - **Scheduled delivery.** No "email this on the 1st". It needs a sender identity and a bounce
   story, and a report that silently failed to send is worse than one nobody automated.
 - **Annotations.** "Spend dropped because the account was suspended on the 14th" is the single

@@ -12,6 +12,7 @@ use App\Application\Reporting\Command\ShareReport;
 use App\Application\Reporting\Command\TakeSnapshot;
 use App\Application\Reporting\Contract\ReportRepository;
 use App\Application\Reporting\Contract\ReportShareStore;
+use App\Application\Reporting\Contract\ReportWorkbookWriter;
 use App\Application\Reporting\DTO\ReportDefinition;
 use App\Application\Reporting\DTO\SectionDefinition;
 use App\Application\Reporting\DTO\ShareView;
@@ -35,6 +36,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -244,6 +246,41 @@ final class ReportController extends Controller
                  * can tell apart, and the one somebody opens is whichever sorted first.
                  */
                 $this->filename($rendered->name.' '.$rendered->period->start->format('Y-m-d')),
+            ),
+        ]);
+    }
+
+    /**
+     * The report as a spreadsheet, with the caveats on every sheet. See `XlsxWriter`.
+     *
+     * Read into memory and returned with an explicit length rather than streamed from disk: the deck download
+     * taught this stack that `download()` with `deleteFileAfterSend()` passes through the test kernel and
+     * returns 500 through a real server, because PHP's development server closes a binary response early. A
+     * workbook is tens of kilobytes, and a download that works only under some servers is one somebody will
+     * hit on the day they need it.
+     */
+    public function xlsx(string $report, GetReport $get, ReportWorkbookWriter $writer): HttpResponse
+    {
+        $rendered = $get($report);
+        $path = $writer->write($rendered);
+
+        try {
+            $contents = file_get_contents($path);
+        } finally {
+            @unlink($path);
+        }
+
+        if ($contents === false) {
+            throw new RuntimeException('The workbook was written but could not be read back.');
+        }
+
+        return response($contents, Response::HTTP_OK, [
+            'Content-Type' => $writer->contentType(),
+            'Content-Length' => (string) strlen($contents),
+            'Content-Disposition' => sprintf(
+                'attachment; filename="%s.%s"',
+                $this->filename($rendered->name.' '.$rendered->period->start->format('Y-m-d')),
+                $writer->extension(),
             ),
         ]);
     }

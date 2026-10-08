@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { LoadingRegion } from '@/shared/ui/loading-region';
 import { useProjectsQuery } from '@/features/projects';
 import { AccountBindingPanel } from './AccountBindingPanel';
 import { ProviderCard } from './ProviderCard';
@@ -78,15 +79,14 @@ export function IntegrationsPage() {
       ) : null}
 
       {isPending ? (
-        <div
+        <LoadingRegion
+          label={t('integrations.loading')}
           className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
-          aria-busy="true"
-          aria-label={t('integrations.loading')}
         >
           {Array.from({ length: 6 }, (_, index) => (
             <Skeleton key={index} className="h-56" />
           ))}
-        </div>
+        </LoadingRegion>
       ) : null}
 
       {isError && !(error instanceof ApiError && error.status === 403) ? (

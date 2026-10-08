@@ -10,6 +10,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ScrollRegion } from '@/shared/ui/scroll-region';
+import { LoadingRegion } from '@/shared/ui/loading-region';
 import {
   useChangeMemberRoleMutation,
   useChangeMemberStatusMutation,
@@ -71,15 +72,11 @@ export function MembersPanel() {
       </div>
 
       {isPending ? (
-        <div
-          className="flex flex-col gap-2"
-          aria-busy="true"
-          aria-label={t('administration.loadingPeople')}
-        >
+        <LoadingRegion label={t('administration.loadingPeople')} className="flex flex-col gap-2">
           {Array.from({ length: 4 }, (_, index) => (
             <Skeleton key={index} className="h-14" />
           ))}
-        </div>
+        </LoadingRegion>
       ) : null}
 
       {isError ? (

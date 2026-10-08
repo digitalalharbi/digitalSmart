@@ -130,6 +130,10 @@ Between them they found four real defects, which is why they exist:
 - **Dark-mode badges at 3.39–4.11:1**, because a dark tint washes the text's own hue over the surface and moves
   the backdrop *towards* the text. The tint went from 16% to 6%: the tint is decoration, the text is
   information, so the decoration gave way.
+- **Invalid ARIA on seven loading states.** `aria-label` on a plain `<div>` names nothing: a generic element
+  takes no accessible name, so every skeleton panel was silent to a screen reader. Caught *intermittently*,
+  which is why it had survived — a loading state is on screen for a second. `LoadingRegion` fixes it in one
+  place with `role="status"`, and a unit test asserts the role so the next one fails deterministically.
 - **Scrollable regions with no way in from the keyboard.** A wide table or a board column scrolls sideways on a
   phone, and without a tab stop its last columns are invisible to anybody not using a pointer. `ScrollRegion`
   is the shared primitive that fixed all fourteen of them at once.

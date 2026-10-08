@@ -17,6 +17,8 @@ type ReportViewProps = {
    * unauthenticated read to get right. The export stays inside the workspace.
    */
   csvHref?: string | undefined;
+  /** The same figures, typed. Offered beside the CSV rather than instead of it: a CSV is what a script reads. */
+  xlsxHref?: string | undefined;
 };
 
 /**
@@ -36,7 +38,7 @@ type ReportViewProps = {
  * because a reader who sees no comparison and no explanation assumes the feature is broken and does the arithmetic
  * themselves — against whatever period they happen to pick.
  */
-export function ReportView({ report, csvHref }: ReportViewProps) {
+export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
   const { t } = useTranslation();
 
   return (
@@ -72,6 +74,15 @@ export function ReportView({ report, csvHref }: ReportViewProps) {
               >
                 <Download aria-hidden className="size-3.5" />
                 {t('reports.view.csv')}
+              </a>
+            )}
+            {xlsxHref === undefined ? null : (
+              <a
+                href={xlsxHref}
+                className="text-accent inline-flex items-center gap-1.5 text-sm hover:underline"
+              >
+                <Download aria-hidden className="size-3.5" />
+                {t('reports.view.xlsx')}
               </a>
             )}
           </div>

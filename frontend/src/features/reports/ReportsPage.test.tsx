@@ -81,6 +81,7 @@ vi.mock('./api', () => ({
     return Promise.resolve();
   },
   csvUrl: (id: string) => `/api/reports/${id}/csv`,
+  xlsxUrl: (id: string) => `/api/reports/${id}/xlsx`,
 }));
 
 function vocabulary(): ReportVocabulary {
@@ -418,6 +419,22 @@ describe('reading a report', function () {
 
     // Not a footnote on the document nobody reads the bottom of.
     expect(within(frame).getByText(/cannot tell seasonality from performance/)).toBeInTheDocument();
+  });
+
+  it('offers the figures as a spreadsheet as well as a CSV', async () => {
+    /*
+     * Both, not one. A CSV is what a script reads and what a spreadsheet mangles: every cell arrives as text,
+     * so a column of spend is retyped by whoever opens it. The workbook is the same render with types on it.
+     */
+    await renderWithProviders(<ReportsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /Monthly performance/ }));
+
+    const csv = await screen.findByRole('link', { name: 'Download CSV' });
+    const xlsx = screen.getByRole('link', { name: 'Download Excel' });
+
+    expect(csv).toHaveAttribute('href', '/api/reports/report-1/csv');
+    expect(xlsx).toHaveAttribute('href', '/api/reports/report-1/xlsx');
   });
 
   it('offers every section as a table', async () => {

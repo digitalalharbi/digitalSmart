@@ -67,6 +67,7 @@ use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
 use App\Application\Reporting\Contract\ReportRepository;
 use App\Application\Reporting\Contract\ReportShareStore;
+use App\Application\Reporting\Contract\ReportWorkbookWriter;
 use App\Application\Reporting\Contract\SnapshotSerialiser;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\ActorContextBinder;
@@ -152,6 +153,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJourn
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
 use App\Infrastructure\Presentation\PptxWriter;
 use App\Infrastructure\Reporting\EloquentReportShareStore;
+use App\Infrastructure\Reporting\XlsxWriter;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
 use App\Infrastructure\System\CacheHealthProbe;
@@ -201,6 +203,7 @@ final class AppServiceProvider extends ServiceProvider
         IdentifierGenerator::class => Uuid7Generator::class,
         AuditRecorder::class => DatabaseAuditRecorder::class,
         WorkLedger::class => DatabaseWorkLedger::class,
+        ReportWorkbookWriter::class => XlsxWriter::class,
         AuthorizationGuard::class => PermissionAuthorizationGuard::class,
         IdentityReadModel::class => EloquentIdentityReadModel::class,
         Authenticator::class => SessionAuthenticator::class,

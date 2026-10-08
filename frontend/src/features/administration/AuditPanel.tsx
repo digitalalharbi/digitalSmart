@@ -9,6 +9,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useUiStore } from '@/shared/store/ui-store';
+import { LoadingRegion } from '@/shared/ui/loading-region';
 import { useAuditLogQuery } from './api';
 
 function formatTimestamp(value: string | null, locale: string): string {
@@ -71,15 +72,11 @@ export function AuditPanel() {
       </div>
 
       {isPending ? (
-        <div
-          className="flex flex-col gap-2"
-          aria-busy="true"
-          aria-label={t('administration.loadingAudit')}
-        >
+        <LoadingRegion label={t('administration.loadingAudit')} className="flex flex-col gap-2">
           {Array.from({ length: 6 }, (_, index) => (
             <Skeleton key={index} className="h-12" />
           ))}
-        </div>
+        </LoadingRegion>
       ) : null}
 
       {isError && !(error instanceof ApiError && error.status === 403) ? (

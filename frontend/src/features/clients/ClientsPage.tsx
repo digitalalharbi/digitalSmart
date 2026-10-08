@@ -12,6 +12,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { formatNumber } from '@/shared/lib/format';
 import { useUiStore } from '@/shared/store/ui-store';
 import { ScrollRegion } from '@/shared/ui/scroll-region';
+import { LoadingRegion } from '@/shared/ui/loading-region';
 import { useClientsQuery } from './api';
 import { ClientFormDialog } from './ClientFormDialog';
 import { ClientRowActions } from './ClientRowActions';
@@ -125,11 +126,11 @@ export function ClientsPage() {
       </div>
 
       {isPending ? (
-        <div className="flex flex-col gap-2" aria-busy="true" aria-label={t('clients.loading')}>
+        <LoadingRegion label={t('clients.loading')} className="flex flex-col gap-2">
           {Array.from({ length: 5 }, (_, index) => (
             <Skeleton key={index} className="h-14" />
           ))}
-        </div>
+        </LoadingRegion>
       ) : null}
 
       {isError && !(error instanceof ApiError && error.status === 403) ? (

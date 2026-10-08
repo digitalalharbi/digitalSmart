@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useSession } from '@/features/auth';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { LoadingRegion } from '@/shared/ui/loading-region';
 
 /**
  * Gate for authenticated areas.
@@ -17,16 +18,12 @@ export function RequireSession({ children }: { children: ReactNode }) {
 
   if (isLoading) {
     return (
-      <div
-        className="bg-canvas min-h-dvh p-6"
-        aria-busy="true"
-        aria-label={t('auth.checkingSession')}
-      >
+      <LoadingRegion label={t('auth.checkingSession')} className="bg-canvas min-h-dvh p-6">
         <div className="mx-auto flex max-w-5xl flex-col gap-4">
           <Skeleton className="h-10 w-48" />
           <Skeleton className="h-64" />
         </div>
-      </div>
+      </LoadingRegion>
     );
   }
 

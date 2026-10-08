@@ -147,3 +147,13 @@ export async function revokeShare(input: { shareId: string; reason: string }): P
 export function csvUrl(reportId: string): string {
   return `/api/reports/${reportId}/csv`;
 }
+
+/**
+ * The same report as a spreadsheet.
+ *
+ * Not a different document: one render, one set of figures. The difference is types — a number arrives in Excel
+ * as a number rather than as text somebody retypes, and money carries its currency in the cell's own format.
+ */
+export function xlsxUrl(reportId: string): string {
+  return `/api/reports/${reportId}/xlsx`;
+}

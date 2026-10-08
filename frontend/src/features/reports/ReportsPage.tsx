@@ -11,7 +11,7 @@ import { Button } from '@/shared/ui/button';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { csvUrl } from './api';
+import { csvUrl, xlsxUrl } from './api';
 import { ReportBuilder } from './ReportBuilder';
 import { ReportView } from './ReportView';
 import { SharePanel } from './SharePanel';
@@ -247,7 +247,11 @@ export function ReportsPage() {
             )}
           </div>
 
-          <ReportView report={rendered.data} csvHref={csvUrl(selected)} />
+          <ReportView
+            report={rendered.data}
+            csvHref={csvUrl(selected)}
+            xlsxHref={xlsxUrl(selected)}
+          />
 
           {!canManage ? null : (
             <SharePanel

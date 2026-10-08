@@ -4,6 +4,7 @@ import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { LoadingRegion } from '@/shared/ui/loading-region';
 import { useHealthQuery } from './api';
 import type { ServiceStatus } from './types';
 
@@ -44,15 +45,11 @@ export function HealthPanel() {
 
       <CardContent>
         {isPending ? (
-          <div
-            className="flex flex-col gap-2"
-            aria-label={t('overview.health.loading')}
-            aria-busy="true"
-          >
+          <LoadingRegion label={t('overview.health.loading')} className="flex flex-col gap-2">
             <Skeleton className="h-9" />
             <Skeleton className="h-9" />
             <Skeleton className="h-9" />
-          </div>
+          </LoadingRegion>
         ) : null}
 
         {isError ? (

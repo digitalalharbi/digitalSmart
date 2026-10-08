@@ -151,7 +151,13 @@ describe('ClientsPage', () => {
     });
     await renderWithProviders(<ClientsPage />);
 
-    expect(screen.getByLabelText('Loading clients…')).toBeInTheDocument();
+    /*
+     * By role, not only by label. The label used to sit on a plain `<div>`, where `aria-label` is **prohibited**
+     * — invalid ARIA that axe reports as serious, and which it only ever caught intermittently because a
+     * loading state is on screen for a second. `role="status"` both permits the name and makes the region a
+     * polite live region, so the announcement happens when the skeleton appears.
+     */
+    expect(screen.getByRole('status', { name: 'Loading clients…' })).toBeInTheDocument();
   });
 
   it('offers only the status transitions the domain permits', async () => {
