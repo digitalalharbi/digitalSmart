@@ -135,7 +135,10 @@
       "mismatch": "The two new passwords do not match.",
       "submit": "Change it",
       "done": "Changed. Anywhere else you were signed in has been signed out.",
-      "failed": "It was not changed. Nothing about your account has altered."
+      "failed": "It was not changed. Nothing about your account has altered.",
+      "required": "The password you signed in with was given to you by somebody else. Choose your own before going any further — nothing else in the product will answer until you do.",
+      "doneForced": "Done. The product is open to you now, and the password you were given no longer works.",
+      "continue": "Continue"
     }
   },
   "clients": {
@@ -286,6 +289,19 @@
       "status": "Status",
       "projects": "Projects",
       "actions": "Actions"
+    },
+    "addMember": {
+      "title": "Add a colleague",
+      "subtitle": "No email is sent — this deployment has no sender identity. You will be given a one-time password to pass on, and they cannot use the product until they replace it.",
+      "name": "Name",
+      "email": "Email address",
+      "emailHint": "An address that already has an account here joins this workspace instead, keeping the password they chose.",
+      "role": "Role",
+      "submit": "Add them",
+      "adding": "Adding…",
+      "oneTime": "{{name}} can sign in once with: {{password}} — read it out now. It is shown only here, nothing stores it, and it stops working as soon as they choose their own.",
+      "joined": "{{name}} already had an account here and has joined this workspace. They keep the password they chose, so there is nothing to pass on.",
+      "failed": "They were not added. Nothing has changed."
     }
   },
   "integrations": {

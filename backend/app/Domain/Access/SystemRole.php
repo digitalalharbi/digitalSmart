@@ -322,6 +322,19 @@ enum SystemRole: string
         };
     }
 
+    /**
+     * Every role's slug.
+     *
+     * Added when the add-a-colleague form needed to validate against the list: a free-string role would have made
+     * a typo a `404` from the role lookup rather than a message on the field somebody typed it into.
+     *
+     * @return list<string>
+     */
+    public static function values(): array
+    {
+        return array_map(static fn (self $case): string => $case->value, self::cases());
+    }
+
     /** Owner is protected: a workspace must always retain one. */
     public function isProtected(): bool
     {

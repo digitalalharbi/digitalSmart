@@ -14,6 +14,7 @@ use App\Interface\Console\SyncAccessCatalogue;
 use App\Interface\Console\SyncAdvertisingData;
 use App\Interface\Http\Middleware\AssignRequestId;
 use App\Interface\Http\Middleware\AuthenticateSessionForSpa;
+use App\Interface\Http\Middleware\RequireChosenPassword;
 use App\Interface\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -71,6 +72,11 @@ return Application::configure(basePath: dirname(__DIR__))
          */
         $middleware->api(append: [
             AuthenticateSessionForSpa::class,
+            /*
+             * After the session middleware, because it needs an authenticated user to look at — and before
+             * anything can be read or written with a password somebody else chose.
+             */
+            RequireChosenPassword::class,
         ]);
 
         /*

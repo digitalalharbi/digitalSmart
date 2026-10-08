@@ -32,9 +32,18 @@ const MINIMUM_LENGTH = 12;
 export function PasswordDialog({
   open,
   onOpenChange,
+  isForced = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * True when the reader signed in with a password somebody else chose.
+   *
+   * The server refuses everything else until it is replaced, so the dialog cannot be dismissed and the way out
+   * is signing out rather than cancelling. A cancel button here would close a dialog onto a product that
+   * answers nothing.
+   */
+  isForced?: boolean;
 }) {
   const { t } = useTranslation();
   const change = useChangePasswordMutation();
@@ -45,6 +54,11 @@ export function PasswordDialog({
   const [isDone, setIsDone] = useState(false);
 
   const close = (isOpen: boolean) => {
+    if (isForced) {
+      /* Nothing to go back to: every other request is refused until this is done. */
+      return;
+    }
+
     if (!isOpen) {
       /* Nothing typed is kept: a password left in a closed dialog is a password left on a screen. */
       setCurrent('');
@@ -74,19 +88,35 @@ export function PasswordDialog({
                 {t('account.password.description')}
               </Dialog.Description>
             </div>
-            <Dialog.Close asChild>
-              <Button variant="ghost" size="icon" aria-label={t('actions.close')}>
-                <X />
-              </Button>
-            </Dialog.Close>
+            {/* No way out while the password is somebody else's: the product behind this answers nothing. */}
+            {isForced ? null : (
+              <Dialog.Close asChild>
+                <Button variant="ghost" size="icon" aria-label={t('actions.close')}>
+                  <X />
+                </Button>
+              </Dialog.Close>
+            )}
           </div>
 
           {isDone ? (
             <div className="flex flex-col gap-4">
-              <Alert tone="info">{t('account.password.done')}</Alert>
-              <Dialog.Close asChild>
-                <Button>{t('actions.close')}</Button>
-              </Dialog.Close>
+              <Alert tone="info">
+                {isForced ? t('account.password.doneForced') : t('account.password.done')}
+              </Alert>
+              {isForced ? (
+                /*
+                 * A reload rather than a close, because the session's flag is what the router gates on and the
+                 * cached copy of it is now wrong. Re-reading the session is the one thing that opens the
+                 * product.
+                 */
+                <Button onClick={() => window.location.reload()}>
+                  {t('account.password.continue')}
+                </Button>
+              ) : (
+                <Dialog.Close asChild>
+                  <Button>{t('actions.close')}</Button>
+                </Dialog.Close>
+              )}
             </div>
           ) : (
             <form
@@ -119,7 +149,13 @@ export function PasswordDialog({
                 Said before it happens. A reader who is not told will wonder afterwards why their phone signed
                 itself out — and that is the behaviour they are asking for when they change a password.
               */}
-              <Alert tone="info">{t('account.password.consequence')}</Alert>
+              {/*
+                A different sentence when the password was handed over: what matters then is not that other
+                sessions end but that this one cannot do anything else until it is replaced.
+              */}
+              <Alert tone={isForced ? 'warning' : 'info'}>
+                {isForced ? t('account.password.required') : t('account.password.consequence')}
+              </Alert>
 
               {change.error === null ? null : (
                 <Alert tone="danger">
@@ -184,11 +220,13 @@ export function PasswordDialog({
               </Field>
 
               <div className="flex justify-end gap-2">
-                <Dialog.Close asChild>
-                  <Button type="button" variant="secondary">
-                    {t('actions.cancel')}
-                  </Button>
-                </Dialog.Close>
+                {isForced ? null : (
+                  <Dialog.Close asChild>
+                    <Button type="button" variant="secondary">
+                      {t('actions.cancel')}
+                    </Button>
+                  </Dialog.Close>
+                )}
                 <Button type="submit" disabled={change.isPending || mismatch || tooShort}>
                   {change.isPending ? t('actions.saving') : t('account.password.submit')}
                 </Button>

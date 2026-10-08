@@ -2,7 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ensureCsrfCookie } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { Paginated } from '@/shared/api/types';
-import type { AuditEntry, Member, MembershipStatus, WorkspaceRole } from './types';
+import type {
+  AuditEntry,
+  InvitedMember,
+  Member,
+  MemberDraft,
+  MembershipStatus,
+  WorkspaceRole,
+} from './types';
 
 export function useMembersQuery(params: { search?: string; status?: string; page?: number }) {
   return useQuery({
@@ -93,5 +100,26 @@ export function useAuditLogQuery(params: {
       return response.data;
     },
     placeholderData: (previous) => previous,
+  });
+}
+
+/**
+ * Add a colleague.
+ *
+ * The response carries a one-time password to read out, and it is the only time it can be read: nothing stores
+ * it. The member cannot do anything in the product until they replace it, which is what makes a read-out
+ * password tolerable — see `docs/SECURITY.md`.
+ */
+export function useInviteMemberMutation() {
+  const invalidate = useInvalidateMembers();
+
+  return useMutation({
+    mutationFn: async (draft: MemberDraft): Promise<InvitedMember> => {
+      await ensureCsrfCookie();
+      const response = await api.post<{ data: InvitedMember }>('/members', draft);
+
+      return response.data.data;
+    },
+    onSuccess: () => void invalidate(),
   });
 }

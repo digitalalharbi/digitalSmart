@@ -83,6 +83,7 @@ use App\Application\Shared\Contract\HealthProbe;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Application\Shared\Contract\WorkLedger;
 use App\Application\System\Query\GetSystemHealth;
+use App\Application\Workspace\Contract\MemberDirectory;
 use App\Application\Workspace\Contract\MemberReadModel;
 use App\Application\Workspace\Contract\MembershipRepository;
 use App\Domain\Client\Repository\ClientRepository;
@@ -146,6 +147,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRe
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMeasurementSourceRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMemberDirectory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMembershipRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentObservedEventWriter;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentPortalRepository;
@@ -229,6 +231,11 @@ final class AppServiceProvider extends ServiceProvider
         ProjectMemberRepository::class => EloquentProjectMemberRepository::class,
         MemberReadModel::class => EloquentMemberReadModel::class,
         MembershipRepository::class => EloquentMembershipRepository::class,
+        /*
+         * Creating people, as opposed to re-roling them: a different lifetime, a different table, and the only
+         * place in the product that generates a password.
+         */
+        MemberDirectory::class => EloquentMemberDirectory::class,
         AuditReadModel::class => EloquentAuditReadModel::class,
 
         // Integrations

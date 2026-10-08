@@ -44,4 +44,13 @@ interface Authenticator
      * screen they are looking at reads as a failure.
      */
     public function replacePassword(UserId $userId, string $password): void;
+
+    /**
+     * Whether this person is still using a password somebody else chose for them.
+     *
+     * On this port rather than read off a model, because the only caller is middleware in the interface layer —
+     * and the architecture test is right that the interface may not reach into infrastructure for it. The
+     * question is "may this request proceed", which is an application question with an infrastructure answer.
+     */
+    public function mustChoosePassword(UserId $userId): bool;
 }

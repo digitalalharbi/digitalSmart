@@ -134,3 +134,39 @@ describe('changing your own password', () => {
     expect(screen.queryByRole('meter')).not.toBeInTheDocument();
   });
 });
+
+describe('a password somebody else chose', () => {
+  /*
+   * The server refuses every other request until it is replaced, so the dialog cannot be dismissed: a cancel
+   * button here would close a dialog onto a product that answers nothing. Signing out is the way back, which the
+   * account menu still offers.
+   */
+  it('cannot be cancelled or closed', async () => {
+    await renderWithProviders(<PasswordDialog open isForced onOpenChange={() => {}} />);
+
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
+  });
+
+  it('says why it is in the way, rather than talking about other sessions', async () => {
+    await renderWithProviders(<PasswordDialog open isForced onOpenChange={() => {}} />);
+
+    expect(screen.getByText(/given to you by somebody else/)).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Every other place you are signed in will be signed out/),
+    ).not.toBeInTheDocument();
+  });
+
+  it('still asks for the password they were given, and refuses to reuse it', async () => {
+    await renderWithProviders(<PasswordDialog open isForced onOpenChange={() => {}} />);
+
+    await fill('the-one-time-password', 'a-passphrase-of-my-own');
+    await userEvent.click(screen.getByRole('button', { name: 'Change it' }));
+
+    expect(state.sent).toEqual({
+      current_password: 'the-one-time-password',
+      password: 'a-passphrase-of-my-own',
+      password_confirmation: 'a-passphrase-of-my-own',
+    });
+  });
+});

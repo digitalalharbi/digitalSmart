@@ -22,6 +22,14 @@ export type AuthenticatedUser = {
   active_workspace: WorkspaceSummary | null;
   /** Effective permission slugs. The server enforces them; the UI only hides. */
   permissions: string[];
+  /**
+   * True while this person is still using a password somebody else chose for them.
+   *
+   * Acted on rather than displayed: the server refuses every request except reading this session, changing the
+   * password and signing out, so an interface that ignored it would show a wall of refusals instead of the one
+   * thing the reader can do.
+   */
+  must_choose_password: boolean;
 };
 
 export type Credentials = {

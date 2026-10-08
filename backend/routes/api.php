@@ -156,6 +156,14 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('project')->whereUuid('user')->name('projects.members.destroy');
 
     Route::get('members', [MemberController::class, 'index'])->name('members.index');
+    /*
+     * Add a colleague. Needs `users.invite`, which existed and was checked nowhere until this route.
+     *
+     * No email is sent and none is pretended: this repository has no sender identity, so the response carries a
+     * one-time password for the administrator to convey, and the member cannot do anything else until they
+     * replace it — see `RequireChosenPassword`.
+     */
+    Route::post('members', [MemberController::class, 'store'])->name('members.store');
     Route::patch('members/{user}/role', [MemberController::class, 'changeRole'])
         ->whereUuid('user')->name('members.role');
     Route::patch('members/{user}/status', [MemberController::class, 'changeStatus'])

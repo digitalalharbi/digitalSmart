@@ -129,6 +129,28 @@ deactivated account is the deliberate exception, because the person needs to kno
 to contact an administrator. A user who belongs to no workspace is signed back
 out rather than left half-authenticated.
 
+### `POST /api/members`
+
+Add a colleague to the active workspace. Needs `users.invite`. Body: `name`, `email`, `role` (any system role
+except `owner`).
+
+**No email is sent.** The response carries a `one_time_password` for the administrator to convey, readable only
+here — nothing stores it. The member cannot do anything else in the product until they replace it: every request
+except `auth/me`, `auth/password` and `auth/logout` is refused with `403` `password_change_required`, and
+`GET /api/auth/me` reports `must_choose_password: true` so the interface can act on it rather than render a wall
+of refusals.
+
+An address that already has an account on this installation is **joined** to this workspace instead of
+duplicated. `is_existing_account` is then true and `one_time_password` is empty, because none was created: that
+person keeps the password they chose.
+
+Refused with `422` `member_not_added` for an address already in this workspace, and for the `owner` role — which
+is handed out by `PATCH /api/members/{user}/role`, where the last-owner protection lives. A role that is not a
+system role is an ordinary validation error on `role`.
+
+Audited as `workspace.member_invited`, recording the role and whether an existing account joined. **Never the
+password.** Full reasoning in [SECURITY.md](SECURITY.md#adding-a-colleague-without-an-email-to-send).
+
 `POST /api/auth/password` needs a session and **no permission**: a password belongs to the person rather than to
 a role, and there is no `user_id` parameter, so there is no shape in which it reaches another account. It is
 throttled on the sign-in bucket rather than the general API one — the current password is required, which makes

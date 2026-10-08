@@ -161,6 +161,33 @@ refuses to do with a figure a client sees and refuses to do with a reader's own 
 this operation was always meant to exist. The other was `AuditAction::UserPasswordChanged`, declared with nothing
 recording it until now.
 
+### Adding a colleague, without an email to send
+
+`POST /api/members`, needing `users.invite` — a permission that had been granted to owners and administrators
+and **checked nowhere** until this route existed. `AuditAction::WorkspaceMemberInvited` and
+`MembershipStatus::Invited` were the other two traces: three pieces of vocabulary describing an operation the
+product could not perform. Roles could be changed, memberships suspended and people removed, but the workspace
+was closed to anybody new.
+
+**No invitation email, and the product says so rather than implying one is on its way.** The response carries a
+one-time password for the administrator to convey. That is a real weakness and the only thing that makes it
+acceptable is that it expires on use: `must_change_password` makes `RequireChosenPassword` refuse every request
+except reading the session, changing the password and signing out. "An administrator knows your password" is
+therefore true for one sign-in rather than indefinitely.
+
+| Decision | Why |
+| -------- | --- |
+| 32 random characters | Nobody has to remember it — it is read out once and replaced. The only cost of length is the reading |
+| Returned once, stored nowhere | Never in plaintext, never logged, never audited. If the administrator loses it there is nothing to look up, which is the property that makes a read-out password tolerable |
+| `MembershipStatus::Invited` is **not** used | A member in that state cannot sign in at all, so without an email-based activation route it would be an account nobody could ever open. The status stays reserved for the flow that is blocked |
+| An existing address joins rather than duplicates | One account per person on an installation. No password is returned, because none was created: they keep the one they chose, and resetting it would lock them out of the other workspace |
+| The owner role is not offered | An owner can remove other owners, so creating one is a decision for somebody already in that position. `ChangeMemberRole` is where it happens, with the last-owner protection around it |
+| `email:rfc`, not `email:rfc,dns` | A DNS rule makes form validation depend on a lookup, and is wrong about real addresses: a domain that publishes no MX record still receives mail through its A record |
+
+The forced dialog is the one modal in the product with **no cancel**. The server answers nothing else, so a
+cancel button would close it onto a product that refuses every request; the way out is signing out, which the
+copy points at.
+
 ### Not built: resetting a forgotten password
 
 A reset needs an email, and this repository has no sender identity — the same block that defers notification

@@ -38,6 +38,12 @@ final class AuthenticatedUserResource extends JsonResource
                 : $this->workspace($user->activeWorkspace),
             // The SPA uses these to hide controls; the server enforces them.
             'permissions' => $user->permissions,
+            /*
+             * The one flag the interface must act on rather than merely display: until it is false the server
+             * refuses everything else, so a client that ignored it would show a wall of refusals instead of the
+             * single thing this person can do.
+             */
+            'must_choose_password' => $user->mustChoosePassword,
         ];
     }
 

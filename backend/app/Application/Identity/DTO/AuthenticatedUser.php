@@ -22,5 +22,13 @@ final readonly class AuthenticatedUser
         public array $workspaces,
         public ?WorkspaceSummary $activeWorkspace,
         public array $permissions,
+        /**
+         * True while this person is still using a password somebody else chose for them.
+         *
+         * Published because the interface has to act on it: every request except reading this session, changing
+         * the password and signing out is refused until it is false, and a client that did not know would show a
+         * reader a wall of refusals instead of the one thing they can do.
+         */
+        public bool $mustChoosePassword = false,
     ) {}
 }

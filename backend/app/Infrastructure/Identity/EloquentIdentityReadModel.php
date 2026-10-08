@@ -20,7 +20,10 @@ final class EloquentIdentityReadModel implements IdentityReadModel
     public function authenticatedUser(UserId $userId, ?WorkspaceId $activeWorkspaceId): ?AuthenticatedUser
     {
         $user = DB::table('users')
-            ->select(['id', 'name', 'email', 'locale', 'timezone', 'job_title', 'avatar_path'])
+            ->select([
+                'id', 'name', 'email', 'locale', 'timezone', 'job_title', 'avatar_path',
+                'must_change_password',
+            ])
             ->where('id', $userId->value)
             ->whereNull('deleted_at')
             ->where('is_active', true)
@@ -46,6 +49,8 @@ final class EloquentIdentityReadModel implements IdentityReadModel
             permissions: $active === null
                 ? []
                 : $this->permissionsFor($userId, new WorkspaceId($active->id))->slugs(),
+            /* Published so the interface can act on it — see `AuthenticatedUser`. */
+            mustChoosePassword: (bool) $user->must_change_password,
         );
     }
 

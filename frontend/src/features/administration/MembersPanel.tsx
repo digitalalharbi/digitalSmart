@@ -11,6 +11,7 @@ import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ScrollRegion } from '@/shared/ui/scroll-region';
 import { LoadingRegion } from '@/shared/ui/loading-region';
+import { AddMemberPanel } from './AddMemberPanel';
 import {
   useChangeMemberRoleMutation,
   useChangeMemberStatusMutation,
@@ -37,6 +38,7 @@ export function MembersPanel() {
   const removeMember = useRemoveMemberMutation();
 
   const canUpdate = can(PERMISSIONS.usersUpdate);
+  const canInvite = can(PERMISSIONS.usersInvite);
   const canDeactivate = can(PERMISSIONS.usersDeactivate);
   const canRemove = can(PERMISSIONS.workspacesManageMembers);
 
@@ -52,6 +54,13 @@ export function MembersPanel() {
   return (
     <div className="flex flex-col gap-4">
       {lastOwnerError ? <Alert tone="warning">{lastOwnerError.message}</Alert> : null}
+
+      {/*
+        Above the list, because adding somebody is what an administrator opens this page to do and reading the
+        list is what they do afterwards. Absent without `users.invite`: the server refuses it anyway, and showing
+        a form that always fails is worse than not showing one.
+      */}
+      {canInvite ? <AddMemberPanel /> : null}
 
       <div className="relative max-w-xs">
         <Search

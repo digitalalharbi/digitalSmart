@@ -14,6 +14,39 @@ test.describe('administration', () => {
     await expect(page.getByText('Security').first()).toBeVisible();
   });
 
+  /*
+   * Adding a colleague, which nothing could do before: `users.invite` was granted and checked nowhere, and the
+   * workspace was closed to anybody new.
+   *
+   * Run-unique address, because the suite shares one seeded database between two browser projects and this test
+   * creates a real account.
+   */
+  test('adds a colleague and hands over a one-time password', async ({ page }) => {
+    await signIn(page, ACCOUNTS.owner);
+    await page.goto('/administration');
+
+    await expect(page.getByText('Add a colleague')).toBeVisible({ timeout: 30_000 });
+
+    /* No email is sent and the panel says so rather than implying one is on its way. */
+    await expect(page.getByText(/No email is sent/)).toBeVisible();
+
+    const address = `colleague-${Date.now()}@example.com`;
+
+    await page.getByLabel('Name*', { exact: true }).fill('Noura Al-Shehri');
+    await page.getByLabel(/Email address/).fill(address);
+    await page.getByRole('button', { name: 'Add them' }).click();
+
+    /*
+     * The password is shown once and the copy says so. Asserted on the sentence rather than the value, which is
+     * random by design.
+     */
+    await expect(page.getByText(/can sign in once with/)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/It is shown only here/)).toBeVisible();
+
+    /* And they appear in the directory, which is the other half of "added". */
+    await expect(page.getByText(address)).toBeVisible();
+  });
+
   test('refuses to strip the workspace of its last owner', async ({ page }) => {
     await signIn(page, ACCOUNTS.owner);
     await page.goto('/administration');

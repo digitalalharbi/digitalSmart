@@ -40,3 +40,21 @@ export type AuditEntry = {
   request_id: string | null;
   created_at: string | null;
 };
+
+/**
+ * A colleague who has just been added.
+ *
+ * `one_time_password` is empty when an existing account was joined to this workspace rather than created: that
+ * person already has a password they chose, and inventing a string to show the administrator would be a lie
+ * about what happened. It is readable **once**, in this response, and is stored nowhere.
+ */
+export type InvitedMember = {
+  user_id: string;
+  name: string;
+  email: string;
+  role: WorkspaceRole;
+  one_time_password: string;
+  is_existing_account: boolean;
+};
+
+export type MemberDraft = { name: string; email: string; role: WorkspaceRole };

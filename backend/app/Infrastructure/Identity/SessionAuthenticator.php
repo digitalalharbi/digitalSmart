@@ -87,9 +87,32 @@ final readonly class SessionAuthenticator implements Authenticator
 
     public function replacePassword(UserId $userId, string $password): void
     {
-        $user = User::query()->whereKey($userId->value)->firstOrFail();
+        /*
+         * The **signed-in instance** where it is the same person, not a fresh copy of the row.
+         *
+         * This looks like a detail and decides whether the caller stays signed in. `AuthenticateSessionForSpa`
+         * re-stores `$request->user()->getAuthPassword()` in the session after the response, so if the new hash
+         * were written to a different object the session would keep the *old* hash — and the next request would
+         * compare it against the new one and sign this browser out. Which is the behaviour wanted for every
+         * other session and precisely wrong for the one being used.
+         *
+         * Caught by the test asserting the product opens again afterwards: it came back `401`.
+         */
+        $signedIn = $this->guard->user();
 
-        $user->forceFill(['password' => Hash::make($password)])->saveQuietly();
+        $user = $signedIn instanceof User && (string) $signedIn->getKey() === $userId->value
+            ? $signedIn
+            : User::query()->whereKey($userId->value)->firstOrFail();
+
+        /*
+         * The borrowed-password flag goes with it. Somebody added by an administrator signs in with a password
+         * that administrator read out; replacing it is the moment it stops working, and leaving the flag set
+         * would lock them out of the product they had just been given access to.
+         */
+        $user->forceFill([
+            'password' => Hash::make($password),
+            'must_change_password' => false,
+        ])->saveQuietly();
 
         /*
          * Saving the hash is what ends the other sessions, and there is nothing else to call.
@@ -103,6 +126,13 @@ final readonly class SessionAuthenticator implements Authenticator
          * sessions, which is for the case where the password is *not* changing — here the hash has already
          * changed, and calling it would hash twice for the same effect.
          */
+    }
+
+    public function mustChoosePassword(UserId $userId): bool
+    {
+        $user = User::query()->whereKey($userId->value)->first();
+
+        return $user instanceof User && $user->mustChoosePassword();
     }
 
     public function isDeactivated(Email $email): bool

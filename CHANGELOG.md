@@ -4,6 +4,69 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The workspace was closed to anybody new
+
+Three pieces of vocabulary described this operation and nothing performed it: `Permission::UsersInvite`, granted
+to owners and administrators and checked nowhere; `AuditAction::WorkspaceMemberInvited`, declared with nothing
+recording it; and `MembershipStatus::Invited`, which nothing ever set. Roles could be changed, memberships
+suspended and people removed — but nobody could be added. Every member of every workspace existed because a
+seeder created them.
+
+### The argument
+
+An invitation wants an email and this repository has no sender identity, the same block that defers notification
+digests. Half-building it — a token generated, stored, expired and never delivered — would have been real work
+with a fake outcome.
+
+What is built instead is honest about its own weakness. The administrator gets a one-time password to read out,
+and the only thing that makes that acceptable is that it expires on use: `must_change_password` makes
+`RequireChosenPassword` refuse every request except reading the session, changing the password and signing out.
+"An administrator knows your password" is true for one sign-in rather than indefinitely.
+
+### Added
+
+- **`POST /api/members`**, needing `users.invite` — which now has a caller. 32 random characters, returned once,
+  stored nowhere: never in plaintext, never logged, never audited. If the administrator loses it there is nothing
+  to look up, and that is the property that makes a read-out password tolerable at all.
+- **`RequireChosenPassword`**, refusing everything else with `403` `password_change_required`, and
+  `must_choose_password` on the session so the interface can act on it rather than render a wall of refusals. The
+  forced dialog is the one modal in the product with **no cancel**: the server answers nothing else, so a cancel
+  button would close it onto a product that refuses every request. The way out is signing out, which the copy
+  points at.
+- **An existing address joins rather than duplicates.** One account per person on an installation, and no
+  password is returned because none was created — they keep the one they chose, and resetting it would lock them
+  out of the other workspace.
+- **`MembershipStatus::Invited` is deliberately still unused**, and the reason is now written down: a member in
+  that state cannot sign in at all, so without an activation route it would be an account nobody could ever
+  open.
+- **The owner role is not offered on the add form.** An owner can remove other owners, so creating one is a
+  decision for somebody already in that position — `ChangeMemberRole` is where it happens, with the last-owner
+  protection around it.
+
+### Found by the gates
+
+- **The caller's own session was signed out by its own password change.** `AuthenticateSessionForSpa` re-stores
+  the request user's hash after the response, and the first implementation wrote the new hash to a freshly loaded
+  copy of the row — so the session kept the *old* hash and the next request signed this browser out. Exactly the
+  behaviour wanted for every other session and precisely wrong for the one being used. The test asserting the
+  product opens again came back `401`.
+- **The architecture test caught the middleware reaching into infrastructure** for the flag. It was right: the
+  question moved onto the `Authenticator` port, where "may this request proceed" is an application question with
+  an infrastructure answer.
+- **`email:rfc,dns` refused a real address.** A DNS rule makes form validation depend on a lookup and is wrong
+  about domains that receive mail through an A record. Dropped to `email:rfc`.
+- **A test passing for the wrong reason.** The enforcement test asserted on `/api/clients`, which a media buyer
+  may not read anyway — an ordinary permission denial is also a `403`. Moved to a surface the role can reach and
+  asserted on the `code`.
+- Two test-harness facts worth writing down: `actingAs()` installs a user resolver for the whole test, so a
+  session opened afterwards over HTTP is still answered as the first user; and the auth guard caches the model it
+  resolved, so a test must forget its guards to behave like a second request.
+
+### Gates
+
+1 730 backend tests (6 258 assertions), 537 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
+clean, ESLint and Prettier clean, production build, 376 Playwright tests.
+
 ## Nobody could change their own password
 
 Two traces in the repository had described this operation since Phase 0 while the product could not perform it:

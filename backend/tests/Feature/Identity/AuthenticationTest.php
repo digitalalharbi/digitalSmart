@@ -386,6 +386,42 @@ describe('changing your own password', function (): void {
     });
 });
 
+describe('the session that changed the password', function (): void {
+    /*
+     * The other half of the claim, and the half that was broken when it was first written.
+     *
+     * `AuthenticateSessionForSpa` re-stores the request user's password hash after the response. The first
+     * implementation wrote the new hash to a freshly loaded copy of the row, so the session kept the *old* hash
+     * and the next request signed this browser out — the behaviour wanted for every other session and precisely
+     * wrong for the one being used. The test came back `401`, which is how the bug was found rather than
+     * shipped.
+     */
+    it('keeps working afterwards', function (): void {
+        $scenario = workspaceScenario('Smart Code');
+        $user = $scenario->addMember(SystemRole::MediaBuyer);
+        $user->forceFill(['password' => 'the-old-passphrase'])->save();
+
+        $this->postJson('/api/auth/login', [
+            'email' => $user->getAttribute('email'),
+            'password' => 'the-old-passphrase',
+        ])->assertOk();
+
+        $this->postJson('/api/auth/password', [
+            'current_password' => 'the-old-passphrase',
+            'password' => 'a-passphrase-of-my-own',
+            'password_confirmation' => 'a-passphrase-of-my-own',
+        ])->assertNoContent();
+
+        /*
+         * A fresh resolution of the user, because the test harness keeps one application instance and the auth
+         * guard caches the model it resolved. Every real request resolves it again.
+         */
+        app('auth')->forgetGuards();
+
+        $this->getJson('/api/auth/me')->assertOk();
+    });
+});
+
 describe('a session opened with a password that has since changed', function (): void {
     /*
      * The claim the whole feature rests on, asserted rather than assumed.

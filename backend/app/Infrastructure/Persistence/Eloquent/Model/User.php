@@ -41,6 +41,22 @@ final class User extends Authenticatable
     ];
 
     /**
+     * Whether this person is still using a password somebody else chose for them.
+     *
+     * Read from the loaded attributes rather than through the accessor, because this model class has strict
+     * attribute access on: a model built in memory — a factory, a test — has not got the column, and asking for
+     * it would throw rather than answer. The authenticated user always comes from a full row, so in a real
+     * request the value is there.
+     *
+     * Absent reads as false, which is the right default for exactly one reason: the only models without the
+     * column are ones nothing has signed in with.
+     */
+    public function mustChoosePassword(): bool
+    {
+        return (bool) ($this->getAttributes()['must_change_password'] ?? false);
+    }
+
+    /**
      * Factories cannot be guessed from the namespace once models live in the
      * persistence layer, so the binding is declared explicitly.
      */
@@ -55,6 +71,7 @@ final class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
         ];
     }
 }
