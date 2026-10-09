@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { RequestsPage } from './RequestsPage';
@@ -47,12 +47,20 @@ const state = vi.hoisted(() => ({
   promised: null as Record<string, unknown> | null,
   raised: null as Record<string, unknown> | null,
   submitted: null as Record<string, unknown> | null,
+  assigned: null as Record<string, unknown> | null,
+  owners: [] as { id: string; name: string }[],
 }));
 
 vi.mock('./api', () => ({
   fetchRequestVocabulary: () => Promise.resolve(state.vocabulary),
   fetchIntakeQueue: () => Promise.resolve(state.queue),
   fetchClientRequest: () => Promise.resolve(state.request),
+  fetchRequestOwners: () => Promise.resolve(state.owners),
+  assignRequestOwner: (input: Record<string, unknown>) => {
+    state.assigned = input;
+
+    return Promise.resolve(state.request);
+  },
   triageClientRequest: (input: Record<string, unknown>) => {
     state.triaged = input;
 
@@ -76,7 +84,6 @@ vi.mock('./api', () => ({
 
     return Promise.resolve(state.request);
   },
-  assignRequestOwner: () => Promise.resolve(state.request),
   raiseTaskForRequest: (input: Record<string, unknown>) => {
     state.raised = input;
 
@@ -234,6 +241,7 @@ function request(overrides: Partial<ClientRequest> = {}): ClientRequest {
     declined_reason: null,
     needed_information: null,
     submitted_by_name: 'Reem',
+    owner_id: 'user-9',
     owner_name: 'Mohammed',
     first_answered_at: null,
     delivered_at: null,
@@ -316,6 +324,11 @@ beforeEach(() => {
   state.promised = null;
   state.raised = null;
   state.submitted = null;
+  state.assigned = null;
+  state.owners = [
+    { id: 'user-9', name: 'Mohammed' },
+    { id: 'user-4', name: 'Noura Al-Shehri' },
+  ];
 });
 
 describe('the intake queue', function () {
@@ -676,6 +689,7 @@ describe('files on a request', function () {
     state.queue = queue({ is_agency_view: false, can_triage: false });
     state.request = request({
       submitted_by_name: null,
+      owner_id: null,
       owner_name: null,
       tasks: [],
       messages: [],
@@ -708,6 +722,7 @@ describe("a client's own view", function () {
     state.request = request({
       // What the server actually returns to a client: no internal note, no owner, no tasks.
       submitted_by_name: null,
+      owner_id: null,
       owner_name: null,
       tasks: [],
       messages: [
@@ -786,5 +801,67 @@ describe("a client's own view", function () {
     await renderWithProviders(<RequestsPage />);
 
     expect(await screen.findByText('Requests are not part of your access')).toBeInTheDocument();
+  });
+});
+
+describe('who a client’s question is given to', () => {
+  async function openRequest() {
+    await renderWithProviders(<RequestsPage />);
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Pause the retargeting over Eid/ }),
+    );
+  }
+
+  /*
+   * The queue displayed an owner and offered no way to set one, so every request belonged to nobody — and the
+   * figure this module leads with is how long a client has been waiting for somebody to pick theirs up.
+   */
+  it('offers the people the server says can open the request', async () => {
+    await openRequest();
+
+    const control = await screen.findByRole('combobox', { name: 'Owner' });
+
+    expect(within(control).getByRole('option', { name: 'Noura Al-Shehri' })).toBeInTheDocument();
+
+    await userEvent.selectOptions(control, 'user-4');
+
+    /*
+     * `waitFor`, because a `change` event flushes fewer microtasks than a click and the mutation runs in one.
+     * Asserting straight after the selection reads the state before TanStack has called the request at all.
+     */
+    /*
+     * `waitFor`, because a `change` event flushes fewer microtasks than a click does and the mutation runs in
+     * one. Asserting straight after the selection reads the state before the request has been made.
+     */
+    await waitFor(() =>
+      expect(state.assigned).toEqual({ requestId: 'request-1', ownerId: 'user-4' }),
+    );
+  });
+
+  it('shows the current owner as the selected option', async () => {
+    await openRequest();
+
+    expect(await screen.findByRole('combobox', { name: 'Owner' })).toHaveValue('user-9');
+  });
+
+  /* Taking it back off somebody is a choice rather than an absence. */
+  it('offers nobody as an option', async () => {
+    await openRequest();
+
+    await userEvent.selectOptions(await screen.findByRole('combobox', { name: 'Owner' }), '');
+
+    await waitFor(() => expect(state.assigned).toEqual({ requestId: 'request-1', ownerId: null }));
+  });
+
+  /*
+   * A client reading their own thread gets no staff control at all — not a disabled one. Who inside the agency
+   * is handling a question is internal, and the portal's own resources exclude it in SQL.
+   */
+  it('gives a client no assignment control and asks the server for no candidates', async () => {
+    state.queue = queue({ is_agency_view: false, can_triage: false });
+
+    await openRequest();
+
+    expect(screen.queryByRole('combobox', { name: 'Owner' })).not.toBeInTheDocument();
   });
 });

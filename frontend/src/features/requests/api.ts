@@ -5,6 +5,7 @@ import type {
   ClientRequestStateValue,
   IntakeQueue,
   MessageAudienceValue,
+  RequestOwner,
   RequestVocabulary,
   StatedUrgencyValue,
 } from './types';
@@ -170,6 +171,19 @@ export async function raiseTaskForRequest(input: {
       ...(input.priority === undefined ? {} : { priority: input.priority }),
     },
   );
+
+  return data.data;
+}
+
+/**
+ * Who this request can be given to.
+ *
+ * Served rather than assembled from the member directory: a client request carries a client's own words, and an
+ * owner whose projects do not reach that client could never open it — so every name offered is one the server
+ * will accept.
+ */
+export async function fetchRequestOwners(requestId: string): Promise<RequestOwner[]> {
+  const { data } = await api.get<{ data: RequestOwner[] }>(`/client-requests/${requestId}/owners`);
 
   return data.data;
 }

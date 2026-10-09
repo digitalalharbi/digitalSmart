@@ -159,6 +159,16 @@ test.describe('budgets', () => {
     await openPlanner(page);
     await draftBudget(page, named('buyer view'), '30000');
 
+    /*
+     * Leave the page before clearing its cookies, which is what made this test flaky.
+     *
+     * The planner is still open and still polling when the cookies go, so its queries start coming back `401`
+     * and the client's interceptor sends the browser to the sign-in screen. That redirect can land *after* the
+     * buyer's own sign-in navigation and bounce them straight back out — and the symptom is this test waiting
+     * thirty seconds for a heading on a page it was redirected away from. Every other account switch in the
+     * suite clears cookies before anything is open, which is why none of them flaked.
+     */
+    await page.goto('about:blank');
     await context.clearCookies();
     await signIn(page, ACCOUNTS.buyer);
     await page.goto('/media-planner');

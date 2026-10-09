@@ -12,7 +12,7 @@ import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Textarea } from '@/shared/ui/textarea';
-import type { Task, TaskStateValue, TaskVocabulary } from './types';
+import type { Assignee, Task, TaskStateValue, TaskVocabulary } from './types';
 
 type TaskDetailProps = {
   task: Task | undefined;
@@ -21,6 +21,14 @@ type TaskDetailProps = {
   canManage: boolean;
   onMove: (state: TaskStateValue, reason?: string) => void;
   onReschedule: (dueOn: string) => void;
+  /**
+   * Who this task can be given to, from the server.
+   *
+   * The list is served rather than assembled here: a task carries a client's work, and somebody whose projects
+   * do not reach that client could never open it — so every name offered is one the server will accept.
+   */
+  assignees: Assignee[] | undefined;
+  onAssign: (assigneeId: string | null) => void;
   error: string | null;
 };
 
@@ -49,6 +57,8 @@ export function TaskDetail({
   canManage,
   onMove,
   onReschedule,
+  assignees,
+  onAssign,
   error,
 }: TaskDetailProps) {
   const { t, i18n } = useTranslation();
@@ -294,6 +304,38 @@ export function TaskDetail({
                 </div>
               </form>
             )}
+
+            {/*
+              Who is doing it. The board had a column for this and no way to fill it, so every task belonged to
+              whoever opened it — and the workload chart beside the board described a team that was not working
+              that way.
+            */}
+            <Field
+              label={t('operations.detail.assignee')}
+              hint={t('operations.detail.assigneeHint')}
+            >
+              {(props) => (
+                <select
+                  {...props}
+                  className="border-line bg-surface text-content rounded-lg border px-3 py-2 text-sm"
+                  value={task.assignee_id ?? ''}
+                  onChange={(event) =>
+                    onAssign(event.target.value === '' ? null : event.target.value)
+                  }
+                >
+                  {/*
+                    Unassigning is a choice, not an absence: a board that can only ever add an owner
+                    accumulates work assigned to whoever touched it first.
+                  */}
+                  <option value="">{t('operations.detail.unassigned')}</option>
+                  {(assignees ?? []).map((person) => (
+                    <option key={person.id} value={person.id}>
+                      {person.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
 
             <form
               className="flex flex-wrap items-end gap-2"

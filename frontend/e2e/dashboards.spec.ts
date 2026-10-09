@@ -235,6 +235,12 @@ test.describe('dashboard builder', () => {
     await page.getByRole('button', { name: 'Everyone in the workspace' }).click();
     await save(page);
 
+    /*
+     * Off the page first. A live page whose cookies vanish starts getting `401`s, and the client's interceptor
+     * sends the browser to the sign-in screen — a redirect that can land after the next account's own sign-in
+     * and bounce them back out. The same race made a budgets test flake for weeks.
+     */
+    await page.goto('about:blank');
     await context.clearCookies();
     await signIn(page, ACCOUNTS.manager);
     await openDashboards(page);
@@ -255,6 +261,12 @@ test.describe('dashboard builder', () => {
     await page.getByLabel('Name').fill(named('mine alone'));
     await save(page);
 
+    /*
+     * Off the page first. A live page whose cookies vanish starts getting `401`s, and the client's interceptor
+     * sends the browser to the sign-in screen — a redirect that can land after the next account's own sign-in
+     * and bounce them back out. The same race made a budgets test flake for weeks.
+     */
+    await page.goto('about:blank');
     await context.clearCookies();
     await signIn(page, ACCOUNTS.manager);
     await openDashboards(page);
@@ -269,6 +281,12 @@ test.describe('dashboard builder', () => {
     await page.getByRole('button', { name: 'Everyone in the workspace' }).click();
     await save(page);
 
+    /*
+     * Off the page first. A live page whose cookies vanish starts getting `401`s, and the client's interceptor
+     * sends the browser to the sign-in screen — a redirect that can land after the next account's own sign-in
+     * and bounce them back out. The same race made a budgets test flake for weeks.
+     */
+    await page.goto('about:blank');
     await context.clearCookies();
     await signIn(page, ACCOUNTS.client);
     await openDashboards(page);

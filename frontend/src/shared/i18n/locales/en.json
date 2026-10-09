@@ -1392,7 +1392,9 @@
       "confirmMove": "Save and move",
       "reschedule": "Due date",
       "setDate": "Set date",
-      "clearDate": "Clear the date"
+      "clearDate": "Clear the date",
+      "assignee": "Who is doing it",
+      "assigneeHint": "Only colleagues who can open this client’s work are listed. Somebody who cannot see a task cannot do it."
     },
     "composer": {
       "open": "Put work on the board",

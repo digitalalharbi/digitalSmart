@@ -129,6 +129,23 @@ deactivated account is the deliberate exception, because the person needs to kno
 to contact an administrator. A user who belongs to no workspace is signed back
 out rather than left half-authenticated.
 
+### Who work can be given to
+
+| Endpoint | Permission to read it | Who is in it |
+| -------- | --------------------- | ------------ |
+| `GET /api/tasks/{task}/assignees` | `tasks.manage` | Active members holding `tasks.view` who can see the task's client |
+| `GET /api/client-requests/{id}/owners` | `client_requests.triage` | Active members holding `client_requests.view` who can see the request's client |
+| `GET /api/leads/{lead}/owners` | `leads.manage` | Active members holding `leads.view` who can see the lead's client |
+
+Each returns `id` and `name` only. The assignment endpoints refuse anybody not in the corresponding list with
+`422` `cannot_be_assigned` (`lead_cannot_be_owned` for a lead), whose message names the fix: adding the
+colleague to one of the client's projects. Opening a task already assigned to such a person is refused the same
+way.
+
+Work that belongs to **no client** — a task about the agency itself — is reachable by anybody holding the
+permission, which is the rule the notification resolver applies to a draft naming neither a project nor a
+client. Full reasoning in [OPERATIONS.md](OPERATIONS.md#who-work-can-be-given-to).
+
 ### `POST /api/members`
 
 Add a colleague to the active workspace. Needs `users.invite`. Body: `name`, `email`, `role` (any system role

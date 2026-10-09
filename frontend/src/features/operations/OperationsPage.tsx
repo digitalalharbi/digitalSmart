@@ -18,6 +18,7 @@ import { LoadByPersonChart } from './LoadByPersonChart';
 import { TaskComposer } from './TaskComposer';
 import { TaskDetail } from './TaskDetail';
 import {
+  useAssigneesQuery,
   useAssignTaskMutation,
   useMoveTaskMutation,
   useOpenTaskMutation,
@@ -66,6 +67,8 @@ export function OperationsPage() {
   const move = useMoveTaskMutation();
   const update = useUpdateTaskMutation();
   const assign = useAssignTaskMutation();
+  /* Who the selected task can be given to, from the server — see `OwnerDirectory`. */
+  const assignees = useAssigneesQuery(selected, canManage);
   const open = useOpenTaskMutation();
 
   /*
@@ -293,6 +296,12 @@ export function OperationsPage() {
         onReschedule={(dueOn) => {
           if (selected !== null) {
             update.mutate({ taskId: selected, dueOn });
+          }
+        }}
+        assignees={selected === null ? undefined : assignees.data}
+        onAssign={(assigneeId) => {
+          if (selected !== null) {
+            assign.mutate({ taskId: selected, assigneeId });
           }
         }}
         error={error}

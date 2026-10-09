@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Application\Leads\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
-use App\Application\Leads\Contract\LeadOwnerDirectory;
 use App\Application\Leads\Contract\LeadRepository;
-use App\Application\Leads\DTO\LeadOwnerCandidate;
 use App\Application\Leads\DTO\LeadView;
 use App\Application\Notifications\Command\Announce;
 use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
+use App\Application\Shared\Contract\OwnerDirectory;
+use App\Application\Shared\DTO\OwnerCandidate;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
@@ -41,7 +41,7 @@ final readonly class AssignLead
 {
     public function __construct(
         private LeadRepository $leads,
-        private LeadOwnerDirectory $owners,
+        private OwnerDirectory $owners,
         private AuthorizationGuard $guard,
         private ActorContext $actor,
         private VisibilityResolver $visibility,
@@ -59,11 +59,15 @@ final readonly class AssignLead
             ?? throw ResourceNotFound::of('Lead');
 
         if ($ownerId !== null) {
-            $candidates = $this->owners->peopleWhoCanSee($workspaceId, $existing->clientId);
+            $candidates = $this->owners->peopleWhoCanSee(
+                $workspaceId,
+                $existing->clientId,
+                Permission::LeadsView,
+            );
 
             $isEligible = array_any(
                 $candidates,
-                static fn (LeadOwnerCandidate $candidate): bool => $candidate->id === $ownerId,
+                static fn (OwnerCandidate $candidate): bool => $candidate->id === $ownerId,
             );
 
             if (! $isEligible) {

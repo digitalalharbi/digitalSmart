@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Application\Leads\Query;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
-use App\Application\Leads\Contract\LeadOwnerDirectory;
 use App\Application\Leads\Contract\LeadRepository;
-use App\Application\Leads\DTO\LeadOwnerCandidate;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
+use App\Application\Shared\Contract\OwnerDirectory;
+use App\Application\Shared\DTO\OwnerCandidate;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 
@@ -27,13 +27,13 @@ final readonly class ListLeadOwners
 {
     public function __construct(
         private LeadRepository $leads,
-        private LeadOwnerDirectory $owners,
+        private OwnerDirectory $owners,
         private AuthorizationGuard $guard,
         private ActorContext $actor,
         private VisibilityResolver $visibility,
     ) {}
 
-    /** @return list<LeadOwnerCandidate> */
+    /** @return list<OwnerCandidate> */
     public function __invoke(string $leadId): array
     {
         $this->guard->ensure(Permission::LeadsManage);
@@ -43,6 +43,6 @@ final readonly class ListLeadOwners
         $lead = $this->leads->find($workspaceId, $this->visibility->visibleProjectIds(), $leadId)
             ?? throw ResourceNotFound::of('Lead');
 
-        return $this->owners->peopleWhoCanSee($workspaceId, $lead->clientId);
+        return $this->owners->peopleWhoCanSee($workspaceId, $lead->clientId, Permission::LeadsView);
     }
 }

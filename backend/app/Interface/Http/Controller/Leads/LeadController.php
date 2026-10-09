@@ -14,13 +14,13 @@ use App\Application\Leads\Command\SetLeadValue;
 use App\Application\Leads\Command\SyncCrmDeals;
 use App\Application\Leads\DTO\LeadDuplicateRow;
 use App\Application\Leads\DTO\LeadHistoryEntry;
-use App\Application\Leads\DTO\LeadOwnerCandidate;
 use App\Application\Leads\DTO\LeadView;
 use App\Application\Leads\Query\FindLeadDuplicates;
 use App\Application\Leads\Query\GetLeadCentre;
 use App\Application\Leads\Query\GetLeadHistory;
 use App\Application\Leads\Query\ListLeadOwners;
 use App\Application\Leads\Query\ListLeads;
+use App\Application\Shared\DTO\OwnerCandidate;
 use App\Domain\Leads\LeadStage;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Request\Leads\RecordLeadRequest;
@@ -116,7 +116,7 @@ final class LeadController extends Controller
     {
         return response()->json([
             'data' => array_map(
-                static fn (LeadOwnerCandidate $candidate): array => [
+                static fn (OwnerCandidate $candidate): array => [
                     'id' => $candidate->id,
                     'name' => $candidate->name,
                 ],

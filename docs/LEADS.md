@@ -197,8 +197,12 @@ they can never open — **and the notification telling them would be correctly s
 rule, so nobody would ever find out.** The column would name a person who does not know.
 
 The three conditions are the ones `PermissionAwareRecipientResolver` already applies to notifications: active
-membership, `leads.view`, and visibility of the client. `EloquentLeadOwnerDirectory` mirrors it, and a test pins
-the two together — somebody the directory offers must be somebody the assignment notification reaches.
+membership, `leads.view`, and visibility of the client. `EloquentOwnerDirectory` mirrors it, and a test pins the
+two together — somebody the directory offers must be somebody the assignment notification reaches.
+
+The directory is **shared with the task board and the intake queue**, taking the permission as a parameter:
+three copies of a visibility rule is a rule that disagrees with itself in the one place nobody has looked. See
+[OPERATIONS.md](OPERATIONS.md#who-work-can-be-given-to).
 
 The list carries **ids and names only**. A picker needs no email addresses, and the people in it did not agree
 to have theirs listed to whoever is working a pipeline.

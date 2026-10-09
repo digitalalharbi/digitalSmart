@@ -13,11 +13,14 @@ use App\Application\Operations\DTO\TaskView;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
+use App\Application\Shared\Contract\OwnerDirectory;
+use App\Application\Shared\DTO\OwnerCandidate;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Notifications\NotificationKind;
+use App\Domain\Operations\Exception\CannotBeAssigned;
 use App\Domain\Operations\OperationsBoard;
 
 /**
@@ -28,6 +31,11 @@ use App\Domain\Operations\OperationsBoard;
  *
  * Unassigning is a first-class outcome. A board that can only ever add an owner accumulates work assigned to
  * whoever touched it first, and then the workload chart describes a team that does not exist.
+ *
+ * **The assignee has to be somebody who can see the task.** Added when the board finally got a control for this:
+ * without the check, a task could be put in the name of somebody whose projects do not reach its client — and
+ * the notification telling them would be suppressed by the same visibility rule, so nobody would ever find out.
+ * The workload chart would then describe work nobody is doing. `OwnerDirectory` is the list that cannot be wrong.
  */
 final readonly class AssignTask
 {
@@ -37,6 +45,7 @@ final readonly class AssignTask
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
+        private OwnerDirectory $owners,
         private Announce $announce,
         private BoardSignaller $boards,
     ) {}
@@ -49,6 +58,19 @@ final readonly class AssignTask
 
         $current = $this->tasks->find($workspaceId, $this->visibility->visibleProjectIds(), $taskId)
             ?? throw ResourceNotFound::of('Task');
+
+        if ($assigneeId !== null) {
+            $eligible = $this->owners->peopleWhoCanSee($workspaceId, $current->clientId, Permission::TasksView);
+
+            $isEligible = array_any(
+                $eligible,
+                static fn (OwnerCandidate $candidate): bool => $candidate->id === $assigneeId,
+            );
+
+            if (! $isEligible) {
+                throw CannotBeAssigned::toThatPerson($current->clientName ?? '');
+            }
+        }
 
         $assigned = $this->tasks->assign($workspaceId, $taskId, $assigneeId);
 

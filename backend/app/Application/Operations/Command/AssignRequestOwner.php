@@ -13,11 +13,14 @@ use App\Application\Operations\DTO\ClientRequestView;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
+use App\Application\Shared\Contract\OwnerDirectory;
+use App\Application\Shared\DTO\OwnerCandidate;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Notifications\NotificationKind;
+use App\Domain\Operations\Exception\CannotBeAssigned;
 use App\Domain\Operations\OperationsBoard;
 
 /**
@@ -42,6 +45,7 @@ final readonly class AssignRequestOwner
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private Announce $announce,
+        private OwnerDirectory $owners,
         private BoardSignaller $boards,
     ) {}
 
@@ -57,6 +61,28 @@ final readonly class AssignRequestOwner
             $requestId,
             false,
         ) ?? throw ResourceNotFound::of('Client request');
+
+        if ($ownerId !== null) {
+            /*
+             * The owner has to be somebody who can open the request. A client request carries a client's own
+             * words, and an owner whose projects do not reach that client would be a name in a column attached
+             * to a person who was never told — the notification below would be suppressed by the same rule.
+             */
+            $eligible = $this->owners->peopleWhoCanSee(
+                $workspaceId,
+                $current->clientId,
+                Permission::ClientRequestsView,
+            );
+
+            $isEligible = array_any(
+                $eligible,
+                static fn (OwnerCandidate $candidate): bool => $candidate->id === $ownerId,
+            );
+
+            if (! $isEligible) {
+                throw CannotBeAssigned::toThatPerson($current->clientName);
+            }
+        }
 
         $assigned = $this->requests->assignOwner($workspaceId, $requestId, $ownerId);
 

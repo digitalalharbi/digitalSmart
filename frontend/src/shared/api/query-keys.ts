@@ -122,6 +122,8 @@ export const queryKeys = {
   tasks: {
     all: () => ['tasks'] as const,
     vocabulary: () => ['tasks', 'vocabulary'] as const,
+    /** Who one task can be given to. Per task, because it depends on the task's client. */
+    assignees: (taskId: string) => ['tasks', 'assignees', taskId] as const,
     /*
      * Keyed by the whole scope. Narrowing the board does not refine the answer, it asks a different
      * question — the figures beside the cards are computed over the same filter, so two scopes cached
@@ -155,6 +157,8 @@ export const queryKeys = {
     vocabulary: () => ['client-requests', 'vocabulary'] as const,
     queue: (scope: Record<string, unknown>) => ['client-requests', 'queue', scope] as const,
     detail: (requestId: string) => ['client-requests', 'detail', requestId] as const,
+    /** Who one request can be given to. Per request, because it depends on the request's client. */
+    owners: (requestId: string) => ['client-requests', 'owners', requestId] as const,
   },
   reports: {
     all: () => ['reports'] as const,

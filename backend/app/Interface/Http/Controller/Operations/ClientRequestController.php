@@ -15,8 +15,10 @@ use App\Application\Operations\Contract\ClientRequestFilter;
 use App\Application\Operations\DTO\ClientRequestInput;
 use App\Application\Operations\Query\GetClientRequest;
 use App\Application\Operations\Query\GetIntakeQueue;
+use App\Application\Operations\Query\ListRequestOwners;
 use App\Application\Operations\Query\ReadAttachment;
 use App\Application\Shared\Contract\Clock;
+use App\Application\Shared\DTO\OwnerCandidate;
 use App\Domain\Operations\ClientRequestKind;
 use App\Domain\Operations\ClientRequestState;
 use App\Domain\Operations\Exception\InvalidRequestTransition;
@@ -168,6 +170,20 @@ final class ClientRequestController extends Controller
      * An absent `owner_id` removes the owner, which is deliberate rather than a missing field: a queue that can
      * only ever add one accumulates requests owned by whoever opened them first.
      */
+    /** Who this request can be put in the name of. */
+    public function owners(string $clientRequest, ListRequestOwners $list): JsonResponse
+    {
+        return response()->json([
+            'data' => array_map(
+                static fn (OwnerCandidate $candidate): array => [
+                    'id' => $candidate->id,
+                    'name' => $candidate->name,
+                ],
+                $list($clientRequest),
+            ),
+        ]);
+    }
+
     public function assign(
         string $clientRequest,
         Request $request,

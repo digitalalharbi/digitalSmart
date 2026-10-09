@@ -122,6 +122,45 @@ subject can be deleted underneath a task, so the read model resolves every subje
 and reports a missing one as missing. The interface then says *"This creative request has been
 deleted"* rather than rendering a link that looks live and goes nowhere.
 
+## Who work can be given to
+
+Three boards hand work to people — tasks, client requests and leads — and until this slice none of them had a
+control for it. The columns were there: the task board showed an assignee, the intake queue showed an owner, the
+pipeline showed both. Every record belonged to whoever created it, and the workload chart beside the board
+described a team that was not working that way.
+
+**The list is served, not assembled.** `GET /api/tasks/{task}/assignees`, `GET
+/api/client-requests/{id}/owners` and `GET /api/leads/{lead}/owners` all answer from one place —
+`OwnerDirectory` — and the reason it is served rather than built from the member list is twofold. The member
+list needs `users.view`, which somebody working a board has no reason to hold; and it would offer colleagues the
+assignment then refuses.
+
+**The three conditions are the notification resolver's.** Active membership, the permission to *read* the kind
+of thing, and visibility of the client it belongs to. `PermissionAwareRecipientResolver` explains them at
+length, `EloquentOwnerDirectory` mirrors them, and a test pins the two together: somebody the directory offers
+must be somebody the assignment notification would actually reach.
+
+That last condition is the one worth stating plainly. A lead carries a prospect's phone number; a client request
+carries a client's own words. Assigning one to somebody whose projects do not reach that client would put their
+name in the owner column of a record they can never open — **and the notification telling them would be
+suppressed by the same visibility rule, so nobody would ever find out.** The column would name a person who does
+not know.
+
+| Decision | Why |
+| -------- | --- |
+| One directory, taking the permission as a parameter | Three copies of a visibility rule is a rule that disagrees with itself in the one place nobody has looked |
+| The server refuses an ineligible assignee | Frontend filtering is a courtesy. `cannot_be_assigned` names the fix — adding them to one of the client's projects — because whoever is assigning cannot grant access themselves |
+| `OpenTask` checks too, not only `AssignTask` | Opening work already in somebody's name has the same consequence as handing it over afterwards |
+| A null client means the permission alone decides | Work that belongs to no client — a task about the agency itself — is reachable by anybody holding the permission, which is what the notification resolver does for a draft naming neither a project nor a client |
+| Ids and names only | A picker needs no email addresses, and the people in it did not consent to their addresses being listed to whoever is working a queue |
+| Unassigning is a first-class option | A board that can only ever add an owner accumulates work belonging to whoever touched it first |
+| A client sees no control at all | Who inside the agency is handling a question is internal. The portal's own resources exclude it in SQL, and the queue offers no control rather than a disabled one |
+
+**It found a defect in the demo data.** The seeder assigned three tasks to the media buyer, who was on no
+project — so the demo had been describing work owned by somebody who could not see it, and that account could
+reach none of the client's data either. The role's own description is "executes the projects they are assigned
+to", which only means anything if they are assigned to one.
+
 ## Who can see what
 
 | Task | Visible to |

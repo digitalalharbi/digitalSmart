@@ -59,6 +59,28 @@ test.describe('client requests', () => {
     await expect(thread.getByText(/Reuse the Ramadan masters/)).toBeVisible();
   });
 
+  /*
+   * Who inside the agency has the client's question. The queue displayed an owner and offered no way to set one,
+   * so every request belonged to nobody — and the figure this module leads with is how long a client has been
+   * waiting for somebody to pick theirs up.
+   *
+   * Read-only up to the change: the suite shares one seeded database between two browser projects.
+   */
+  test('offers an owner from the people who can open the request', async ({ page }) => {
+    await openIntake(page);
+
+    await page.getByRole('button', { name: /Three new story creatives for the Eid push/ }).click();
+
+    const control = page.getByRole('combobox', { name: 'Owner' });
+    await expect(control).toBeVisible({ timeout: 30_000 });
+
+    /* Taking it back off somebody is an option rather than the absence of one. */
+    await expect(control.getByRole('option', { name: 'Nobody yet' })).toHaveCount(1);
+
+    /* A project manager sees every client, so they are offered. */
+    await expect(control.getByRole('option', { name: 'Demo Manager' })).toHaveCount(1);
+  });
+
   test('asks for the reason the client will read before declining', async ({ page }) => {
     await openIntake(page);
 

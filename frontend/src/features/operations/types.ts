@@ -152,3 +152,6 @@ export type TaskBoard = {
   is_truncated: boolean;
   as_of: string;
 };
+
+/** Somebody a task can be put in the name of: an id and a name, and deliberately nothing else. */
+export type Assignee = { id: string; name: string };

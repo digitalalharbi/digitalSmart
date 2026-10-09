@@ -6,6 +6,7 @@ import {
   assignRequestOwner,
   fetchClientRequest,
   fetchIntakeQueue,
+  fetchRequestOwners,
   fetchRequestVocabulary,
   promiseClientRequest,
   raiseTaskForRequest,
@@ -92,4 +93,14 @@ export function useAnswerMutation() {
 
 export function useRaiseTaskMutation() {
   return useRequestMutation(raiseTaskForRequest);
+}
+
+/** Who this request can be given to. Held for a minute: it changes only when somebody joins a project. */
+export function useRequestOwnersQuery(requestId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.clientRequests.owners(requestId ?? ''),
+    queryFn: () => fetchRequestOwners(requestId ?? ''),
+    enabled: enabled && requestId !== null,
+    staleTime: 60_000,
+  });
 }

@@ -14,11 +14,14 @@ use App\Application\Operations\DTO\TaskView;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
+use App\Application\Shared\Contract\OwnerDirectory;
+use App\Application\Shared\DTO\OwnerCandidate;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Notifications\NotificationKind;
+use App\Domain\Operations\Exception\CannotBeAssigned;
 use App\Domain\Operations\Exception\InvalidTaskSubject;
 use App\Domain\Operations\OperationsBoard;
 
@@ -44,6 +47,7 @@ final readonly class OpenTask
         private AuditRecorder $audit,
         private Announce $announce,
         private BoardSignaller $boards,
+        private OwnerDirectory $owners,
     ) {}
 
     public function __invoke(TaskInput $input): TaskView
@@ -58,6 +62,29 @@ final readonly class OpenTask
 
         if ($input->projectId !== null && $visible !== null && ! in_array($input->projectId, $visible, true)) {
             throw ResourceNotFound::of('Project');
+        }
+
+        if ($input->assigneeId !== null) {
+            /*
+             * The same check `AssignTask` makes, because opening a task already in somebody's name has the same
+             * consequence as putting it there afterwards: a name in a column attached to a person who cannot
+             * open the record and whose notification is correctly suppressed. Without this the rule would hold
+             * for the board's control and not for the form that creates the work.
+             */
+            $eligible = $this->owners->peopleWhoCanSee(
+                $this->actor->workspaceId()->value,
+                $input->clientId,
+                Permission::TasksView,
+            );
+
+            $isEligible = array_any(
+                $eligible,
+                static fn (OwnerCandidate $candidate): bool => $candidate->id === $input->assigneeId,
+            );
+
+            if (! $isEligible) {
+                throw CannotBeAssigned::toThatPerson('');
+            }
         }
 
         $task = $this->tasks->open(

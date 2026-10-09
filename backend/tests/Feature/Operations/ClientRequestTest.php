@@ -964,3 +964,45 @@ describe('telling the client', function (): void {
         expect($feed)->toBe([]);
     });
 });
+
+describe('who a client’s question can be given to', function (): void {
+    /*
+     * A client request carries a client's own words, so an owner whose projects do not reach that client would
+     * be a name in a column attached to a person who was never told — the notification would be suppressed by
+     * the same visibility rule that hid the request.
+     */
+    it('offers colleagues who can open the request, and refuses the rest', function (): void {
+        $setup = intakeScenario();
+        $id = (string) raiseRequest($setup)['id'];
+
+        $inside = $setup['scenario']->addMember(SystemRole::ProjectManager);
+        $outside = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+
+        $people = test()->actingAs($setup['scenario']->owner)
+            ->getJson("/api/client-requests/{$id}/owners")
+            ->assertOk()
+            ->json('data');
+
+        /* A project manager holds `projects.view_all`, so every client's requests are theirs to open. */
+        expect(array_column($people, 'id'))->toContain((string) $inside->getKey())
+            ->and(array_column($people, 'id'))->not->toContain((string) $outside->getKey());
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/client-requests/{$id}/owner", ['owner_id' => (string) $outside->getKey()])
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'cannot_be_assigned');
+    });
+
+    it('gives it to somebody who can open it, and tells them', function (): void {
+        $setup = intakeScenario();
+        $id = (string) raiseRequest($setup)['id'];
+        $manager = $setup['scenario']->addMember(SystemRole::ProjectManager);
+
+        $data = test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/client-requests/{$id}/owner", ['owner_id' => (string) $manager->getKey()])
+            ->assertOk()
+            ->json('data');
+
+        expect($data['owner_id'])->toBe((string) $manager->getKey());
+    });
+});

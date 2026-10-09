@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/query-keys';
 import {
   assignTask,
+  fetchAssignees,
   fetchTask,
   fetchTaskBoard,
   fetchTaskVocabulary,
@@ -85,4 +86,19 @@ export function useAssignTaskMutation() {
 
 export function useUpdateTaskMutation() {
   return useTaskMutation(updateTask);
+}
+
+/**
+ * Who this task can be given to.
+ *
+ * Held for a minute: the answer changes when somebody is added to a project, which is rare, and a picker that
+ * refetched on every selection would ask the server a question it already knows the answer to.
+ */
+export function useAssigneesQuery(taskId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.tasks.assignees(taskId ?? ''),
+    queryFn: () => fetchAssignees(taskId ?? ''),
+    enabled: enabled && taskId !== null,
+    staleTime: 60_000,
+  });
 }

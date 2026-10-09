@@ -18,6 +18,7 @@ import type {
   ClientRequest,
   ClientRequestStateValue,
   MessageAudienceValue,
+  RequestOwner,
   RequestVocabulary,
 } from './types';
 
@@ -37,6 +38,14 @@ type RequestDetailProps = {
   attachError?: string | null;
   isAttaching?: boolean;
   onRaiseTask: (title: string) => void;
+  /**
+   * Who this request can be given to, from the server.
+   *
+   * A client request carries a client's own words, so the list holds only colleagues whose projects reach that
+   * client — every name offered is one the server will accept.
+   */
+  owners?: RequestOwner[] | undefined;
+  onAssign?: ((ownerId: string | null) => void) | undefined;
   error: string | null;
 };
 
@@ -72,6 +81,8 @@ export function RequestDetail({
   attachError = null,
   isAttaching = false,
   onRaiseTask,
+  owners,
+  onAssign,
   error,
 }: RequestDetailProps) {
   const { t, i18n } = useTranslation();
@@ -221,7 +232,31 @@ export function RequestDetail({
                   {t('requests.detail.owner')}
                 </dt>
                 <dd className="text-content mt-1 text-sm">
-                  {request.owner_name ?? t('requests.detail.noOwner')}
+                  {/*
+                    A control rather than a line of text where the reader may triage. The queue displayed an
+                    owner and offered no way to set one, so every request belonged to nobody — and the figure
+                    the module leads with is how long a client has been waiting for somebody to pick it up.
+                  */}
+                  {onAssign === undefined ? (
+                    (request.owner_name ?? t('requests.detail.noOwner'))
+                  ) : (
+                    <select
+                      aria-label={t('requests.detail.owner')}
+                      className="border-line bg-surface text-content w-full rounded-lg border px-3 py-2 text-sm"
+                      value={request.owner_id ?? ''}
+                      onChange={(event) =>
+                        onAssign(event.target.value === '' ? null : event.target.value)
+                      }
+                    >
+                      {/* Taking it back off somebody is a choice, not an absence. */}
+                      <option value="">{t('requests.detail.noOwner')}</option>
+                      {(owners ?? []).map((person) => (
+                        <option key={person.id} value={person.id}>
+                          {person.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </dd>
               </div>
               <div>

@@ -13,8 +13,10 @@ use App\Application\Operations\DTO\TaskChange;
 use App\Application\Operations\DTO\TaskInput;
 use App\Application\Operations\Query\GetTask;
 use App\Application\Operations\Query\GetTaskBoard;
+use App\Application\Operations\Query\ListTaskAssignees;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
+use App\Application\Shared\DTO\OwnerCandidate;
 use App\Domain\Operations\Exception\InvalidTaskSubject;
 use App\Domain\Operations\Exception\InvalidTaskTransition;
 use App\Domain\Operations\TaskPriority;
@@ -157,6 +159,25 @@ final class TaskController extends Controller
      * An absent `assignee_id` unassigns, which is a deliberate outcome rather than a missing field: a board
      * that can only ever add an owner accumulates work assigned to whoever touched it first.
      */
+    /**
+     * Who this task can be put in the name of.
+     *
+     * Served rather than assembled from the member list, which needs `users.view` — a permission somebody
+     * working a board has no reason to hold — and would offer colleagues the assignment then refuses.
+     */
+    public function assignees(string $task, ListTaskAssignees $list): JsonResponse
+    {
+        return response()->json([
+            'data' => array_map(
+                static fn (OwnerCandidate $candidate): array => [
+                    'id' => $candidate->id,
+                    'name' => $candidate->name,
+                ],
+                $list($task),
+            ),
+        ]);
+    }
+
     public function assign(string $task, Request $request, AssignTask $assign, Clock $clock): JsonResponse
     {
         return response()->json([

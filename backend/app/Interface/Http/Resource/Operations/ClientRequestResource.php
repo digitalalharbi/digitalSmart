@@ -121,6 +121,12 @@ final readonly class ClientRequestResource
             'declined_reason' => $view->declinedReason,
             'needed_information' => $view->neededInformation,
             'submitted_by_name' => $view->submittedByName,
+            /*
+             * The id as well as the name, because a picker has to know which option is selected. Added when the
+             * queue finally got a control for the owner: the name alone made "who has this" readable and
+             * "give it to somebody else" unbuildable.
+             */
+            'owner_id' => $view->ownerId,
             'owner_name' => $view->ownerName,
             'first_answered_at' => $view->firstAnsweredAt?->format(DateTimeImmutable::ATOM),
             'delivered_at' => $view->deliveredAt?->format(DateTimeImmutable::ATOM),

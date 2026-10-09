@@ -388,6 +388,12 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      * Its own route rather than a field on the patch, matching its own use case and its own audit action.
      * "Who was asked to do this" is the entry people go looking for, and a generic update buries it.
      */
+    /*
+     * Who may be given this. Served rather than assembled from the member list, so a board cannot offer a
+     * colleague the assignment then refuses — see `OwnerDirectory`.
+     */
+    Route::get('tasks/{task}/assignees', [TaskController::class, 'assignees'])
+        ->whereUuid('task')->name('tasks.assignees');
     Route::post('tasks/{task}/assignee', [TaskController::class, 'assign'])
         ->whereUuid('task')->name('tasks.assign');
 
@@ -414,6 +420,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('clientRequest')->name('client_requests.promise');
     Route::post('client-requests/{clientRequest}/messages', [ClientRequestController::class, 'answer'])
         ->whereUuid('clientRequest')->name('client_requests.answer');
+    Route::get('client-requests/{clientRequest}/owners', [ClientRequestController::class, 'owners'])
+        ->whereUuid('clientRequest')->name('client_requests.owners');
     Route::post('client-requests/{clientRequest}/owner', [ClientRequestController::class, 'assign'])
         ->whereUuid('clientRequest')->name('client_requests.assign');
     /*

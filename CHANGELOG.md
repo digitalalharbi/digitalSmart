@@ -4,6 +4,74 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Three boards could not give work to anybody
+
+The task board showed an assignee, the intake queue showed an owner, the lead pipeline showed both — and none of
+the three had a control for it. `useAssignOwnerMutation` and `useAssignTaskMutation` existed with no caller;
+`POST /api/tasks/{task}/assignee` and `POST /api/client-requests/{id}/owner` had endpoints nothing reached. Every
+record belonged to whoever created it, and the workload chart beside the board described a team that was not
+working that way.
+
+### One directory, not three
+
+`OwnerDirectory` replaces the lead-specific one written a slice earlier and takes the permission as a parameter.
+Three copies of a visibility rule is a rule that disagrees with itself in the one place nobody has looked.
+
+The three conditions are `PermissionAwareRecipientResolver`'s: active membership, the permission to read that
+kind of thing, and visibility of the client. The third is the one worth stating plainly — a lead carries a
+prospect's phone number and a client request carries a client's own words, so assigning one to somebody whose
+projects do not reach that client would put their name in the owner column of a record they can never open, **and
+the notification telling them would be suppressed by the same rule, so nobody would ever find out.**
+
+### Added
+
+- **`GET /api/tasks/{task}/assignees` and `GET /api/client-requests/{id}/owners`**, served rather than assembled
+  from the member list — which needs `users.view`, a permission somebody working a board has no reason to hold,
+  and would offer colleagues the server then refuses.
+- **The server refuses an ineligible assignee**, with a message that names the fix rather than lecturing about
+  permissions: whoever is assigning cannot grant access themselves. `AssignTask`, `AssignRequestOwner` and
+  **`OpenTask`** all check, because opening work already in somebody's name has the same consequence as handing
+  it over afterwards.
+- **Controls on both panels**, with the hint wired as a *description* rather than folded into the control's
+  accessible name — the defect this product fixed once already on the lead owner picker.
+- **A client sees no control at all**, not a disabled one, and the query that feeds it is never made: who inside
+  the agency is handling a question is internal.
+- **`owner_id` on the client-request resource.** The name alone made "who has this" readable and "give it to
+  somebody else" unbuildable, because a picker has to know which option is selected.
+
+### Found by the gates
+
+- **The demo seeder was assigning work to somebody who could not see it.** Three tasks went to the media buyer,
+  who is on no project — so the demo described work owned by a person who could not open it.
+- **And the first fix was the wrong half.** Putting the buyer on a project made the assignments legal and broke
+  five end-to-end tests at once: the demo leaves that account assigned to nothing *deliberately*, to
+  demonstrate that visibility comes from assignment — an empty campaign list with its reason, a portal narrowed
+  to no clients, a notification feed with nothing in it. The demonstration is worth more than the convenience,
+  so the **tasks** moved instead, to the manager, who reaches every client by permission. Two assignees, so the
+  load-by-person chart still has more than one row.
+- **A flake that was a real race.** `budgets` and `dashboards` cleared cookies while a page was still open and
+  polling, so its queries came back `401`, the client's interceptor sent the browser to the sign-in screen, and
+  that redirect could land *after* the next account's own sign-in and bounce them back out — thirty seconds of
+  waiting for a heading on a page the test had been redirected away from. Four sites now leave the page before
+  clearing its cookies. Every other account switch in the suite already cleared cookies before anything was
+  open, which is why none of them flaked.
+- **A test passing for the wrong reason, again.** One task test asserted an assignment that the product should
+  refuse; the premise was stale rather than the behaviour wrong. Another expected `403` where the product
+  correctly answers `404` — a creative does hold `tasks.manage`, and a task on a project they are not on is *not
+  found*, which is the answer that does not confirm it exists.
+- **A duplicate key in a test mock.** `assignRequestOwner` was already stubbed later in the same object literal,
+  so the recorder added at the top was silently overridden and the mutation "never ran". Last key wins, and
+  nothing warns.
+- **A React hook placed after an early return**, caught by `react-hooks/rules-of-hooks`: the owner query had
+  been written next to the `canTriage` it depends on, which sits below the permission guard.
+- **An assertion that raced its own mutation.** A `change` event flushes fewer microtasks than a click, so the
+  state was read before TanStack had made the request.
+
+### Gates
+
+1 737 backend tests (6 281 assertions), 544 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
+clean, ESLint and Prettier clean, production build, 380 Playwright tests with no flakes.
+
 ## The workspace was closed to anybody new
 
 Three pieces of vocabulary described this operation and nothing performed it: `Permission::UsersInvite`, granted

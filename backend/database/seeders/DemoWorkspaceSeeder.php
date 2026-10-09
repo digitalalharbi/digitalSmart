@@ -882,8 +882,19 @@ final class DemoWorkspaceSeeder extends Seeder
         /** @var Project|null $project */
         $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->first();
 
-        /** @var User|null $buyer */
-        $buyer = User::query()->where('email', self::PEOPLE[2]['email'])->first();
+        /*
+         * The manager and the creative, and **not the buyer** — which is the whole point of this line.
+         *
+         * The boards now refuse to put work in the name of somebody who cannot open it, and the demo's buyer is
+         * deliberately on no project: five end-to-end tests sign in as them to demonstrate that visibility comes
+         * from assignment. Three of these tasks used to be theirs, which meant the demo described work owned by
+         * a person who could not see it — a defect nothing caught until the rule existed.
+         *
+         * The manager holds `projects.view_all`, so every client's work is legitimately theirs; the creative is
+         * on the project. Two names, so the load-by-person chart still has more than one row.
+         */
+        /** @var User|null $manager */
+        $manager = User::query()->where('email', self::PEOPLE[1]['email'])->first();
         /** @var User|null $creative */
         $creative = User::query()->where('email', self::PEOPLE[3]['email'])->first();
 
@@ -908,16 +919,16 @@ final class DemoWorkspaceSeeder extends Seeder
         );
 
         // Overdue and urgent: the card the board exists to put in front of somebody.
-        $late = $open($brief('Rebuild the Ramadan audience lists', TaskPriority::Urgent, -3, $buyer));
+        $late = $open($brief('Rebuild the Ramadan audience lists', TaskPriority::Urgent, -3, $manager));
         $move($late->id, TaskState::InProgress);
 
         // Blocked, with the reason that makes it actionable by somebody else.
-        $blocked = $open($brief('Get the pixel onto the checkout page', TaskPriority::High, 2, $buyer));
+        $blocked = $open($brief('Get the pixel onto the checkout page', TaskPriority::High, 2, $manager));
         $move($blocked->id, TaskState::InProgress);
         $move($blocked->id, TaskState::Blocked, "Waiting on the client's developer for template access.");
 
         // Finished, so the board has a completion rate with a denominator that exists.
-        $done = $open($brief('Draft the Eid media plan', TaskPriority::Normal, -8, $buyer));
+        $done = $open($brief('Draft the Eid media plan', TaskPriority::Normal, -8, $manager));
         $move($done->id, TaskState::InProgress);
         $move($done->id, TaskState::Done);
 
@@ -934,7 +945,7 @@ final class DemoWorkspaceSeeder extends Seeder
         $open($brief('Audit the UTM naming on last quarter\'s campaigns', TaskPriority::Low, null, null));
 
         // Cancelled, with its reason, so the completion rate has something to be a share of.
-        $dropped = $open($brief('Set up the TikTok Spark Ads handoff', TaskPriority::Low, 5, $buyer));
+        $dropped = $open($brief('Set up the TikTok Spark Ads handoff', TaskPriority::Low, 5, $manager));
         $move($dropped->id, TaskState::Cancelled, 'The client postponed the TikTok activity to next quarter.');
 
         $this->command?->line('  Operations: 7 tasks, one overdue, one blocked with a reason, two undated.');
@@ -1090,6 +1101,15 @@ final class DemoWorkspaceSeeder extends Seeder
             return;
         }
 
+        /*
+         * The creative, and **deliberately not the buyer**.
+         *
+         * A media buyer assigned to nothing is one of the demo's load-bearing demonstrations: five end-to-end
+         * tests sign in as them to show that visibility comes from project assignment and nothing else — an
+         * empty campaign list with its reason, a portal narrowed to no clients, a notification feed with
+         * nothing in it. Putting them on a project to make an assignment legal would delete that demonstration,
+         * which is why the tasks moved instead. See `demoTasks`.
+         */
         $creative = $this->user(self::PEOPLE[3]);
         $role = $roles[SystemRole::Creative->value] ?? null;
 

@@ -23,7 +23,9 @@ import {
   useClientRequestQuery,
   useIntakeQueueQuery,
   usePromiseMutation,
+  useAssignOwnerMutation,
   useRaiseTaskMutation,
+  useRequestOwnersQuery,
   useRequestVocabularyQuery,
   useSubmitRequestMutation,
   useTriageMutation,
@@ -64,7 +66,17 @@ export function RequestsPage() {
   const answer = useAnswerMutation();
   const attach = useAttachMutation();
   const raiseTask = useRaiseTaskMutation();
+  const assignOwner = useAssignOwnerMutation();
   const submit = useSubmitRequestMutation();
+
+  /*
+   * Who the open request can be given to, from the server — see `OwnerDirectory`.
+   *
+   * Above the early return and gated by the server's own answer rather than by a permission read here: hooks
+   * run in the same order on every render, and the queue is what says whether this reader may triage at all.
+   * The query is disabled until both are true, so a client reading their own thread asks for nothing.
+   */
+  const owners = useRequestOwnersQuery(selected, queue.data?.can_triage ?? false);
 
   /*
    * Live, where the socket is configured. The event is a nudge with no rows in it, so the only response is
@@ -73,14 +85,14 @@ export function RequestsPage() {
   const isLive = useBoardRealtime('client_requests', user?.active_workspace?.id ?? null);
 
   const error = useMemo(() => {
-    for (const mutation of [triage, promise, answer, raiseTask, submit]) {
+    for (const mutation of [triage, promise, answer, raiseTask, assignOwner, submit]) {
       if (mutation.error instanceof ApiError && mutation.error.message !== '') {
         return mutation.error.message;
       }
     }
 
     return null;
-  }, [triage, promise, answer, raiseTask, submit]);
+  }, [triage, promise, answer, raiseTask, assignOwner, submit]);
 
   if (!canSubmit) {
     return (
@@ -297,6 +309,16 @@ export function RequestsPage() {
             promise.mutate({ requestId: selected, promisedAt });
           }
         }}
+        {...(canTriage
+          ? {
+              owners: selected === null ? undefined : owners.data,
+              onAssign: (ownerId: string | null) => {
+                if (selected !== null) {
+                  assignOwner.mutate({ requestId: selected, ownerId });
+                }
+              },
+            }
+          : {})}
         onAnswer={(audience, body) => {
           if (selected !== null) {
             answer.mutate({ requestId: selected, audience, body });

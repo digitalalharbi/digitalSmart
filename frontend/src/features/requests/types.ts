@@ -139,6 +139,8 @@ export type ClientRequest = ClientRequestCard & {
   needed_information: string | null;
   /** Null on the client's side: who inside an agency is handling something is the agency's business. */
   submitted_by_name: string | null;
+  /** The id as well as the name, because a picker has to know which option is selected. */
+  owner_id: string | null;
   owner_name: string | null;
   first_answered_at: string | null;
   delivered_at: string | null;
@@ -193,3 +195,6 @@ export type IntakeQueue = {
   can_triage: boolean;
   as_of: string;
 };
+
+/** Somebody a client's question can be given to: an id and a name, and deliberately nothing else. */
+export type RequestOwner = { id: string; name: string };

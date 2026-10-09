@@ -38,6 +38,8 @@ const state = vi.hoisted(() => ({
   lastScope: null as Record<string, unknown> | null,
   moved: null as Record<string, unknown> | null,
   updated: null as Record<string, unknown> | null,
+  assigned: null as Record<string, unknown> | null,
+  assignees: [] as { id: string; name: string }[],
 }));
 
 vi.mock('./api', () => ({
@@ -58,7 +60,12 @@ vi.mock('./api', () => ({
 
     return Promise.resolve(state.task);
   },
-  assignTask: () => Promise.resolve(state.task),
+  assignTask: (input: Record<string, unknown>) => {
+    state.assigned = input;
+
+    return Promise.resolve(state.task);
+  },
+  fetchAssignees: () => Promise.resolve(state.assignees),
   openTask: () => Promise.resolve(state.task),
 }));
 
@@ -243,6 +250,11 @@ beforeEach(() => {
   state.lastScope = null;
   state.moved = null;
   state.updated = null;
+  state.assigned = null;
+  state.assignees = [
+    { id: 'user-2', name: 'Noura Al-Shehri' },
+    { id: 'user-3', name: 'Omar Al-Qahtani' },
+  ];
 });
 
 describe('the operations board', function () {
@@ -486,5 +498,54 @@ describe('narrowing the board', function () {
     expect(
       await screen.findByText('The operations board is not part of your access'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('who work is given to', () => {
+  async function openCard() {
+    await renderWithProviders(<OperationsPage />);
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Rebuild the audience lists/ }),
+    );
+  }
+
+  /*
+   * The board had a column for the assignee and no way to fill it, so every task belonged to whoever opened it
+   * — and the workload chart beside the board described a team that was not working that way.
+   */
+  it('offers the people the server says can open the task', async () => {
+    await openCard();
+
+    const control = await screen.findByRole('combobox', { name: 'Who is doing it' });
+
+    expect(within(control).getByRole('option', { name: 'Noura Al-Shehri' })).toBeInTheDocument();
+
+    await userEvent.selectOptions(control, 'user-3');
+
+    expect(state.assigned).toEqual({ taskId: 'task-1', assigneeId: 'user-3' });
+  });
+
+  /* Unassigning is a choice, not an absence: a board that can only add owners accumulates them. */
+  it('offers taking the work back off somebody', async () => {
+    await openCard();
+
+    await userEvent.selectOptions(
+      await screen.findByRole('combobox', { name: 'Who is doing it' }),
+      '',
+    );
+
+    expect(state.assigned).toEqual({ taskId: 'task-1', assigneeId: null });
+  });
+
+  /*
+   * The hint is a description rather than part of the control's name. A screen reader that read the whole
+   * sentence back on every focus would be the accessibility defect this product fixed once already.
+   */
+  it('keeps the explanation out of the control’s accessible name', async () => {
+    await openCard();
+
+    const control = await screen.findByRole('combobox', { name: 'Who is doing it' });
+
+    expect(control).toHaveAccessibleDescription(/Only colleagues who can open/);
   });
 });

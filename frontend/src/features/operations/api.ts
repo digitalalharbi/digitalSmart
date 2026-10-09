@@ -1,5 +1,6 @@
 import { api } from '@/shared/api/client';
 import type {
+  Assignee,
   Task,
   TaskBoard,
   TaskPriorityValue,
@@ -121,6 +122,19 @@ export async function updateTask(input: {
     ...(input.priority === undefined ? {} : { priority: input.priority }),
     ...(input.dueOn === undefined ? {} : { due_on: input.dueOn }),
   });
+
+  return data.data;
+}
+
+/**
+ * Who this task can be put in the name of.
+ *
+ * Served rather than assembled from the member directory, which needs `users.view` — a permission somebody
+ * working a board has no reason to hold — and would offer colleagues the assignment then refuses: a task carries
+ * a client's work, and an assignee whose projects do not reach that client could never open it.
+ */
+export async function fetchAssignees(taskId: string): Promise<Assignee[]> {
+  const { data } = await api.get<{ data: Assignee[] }>(`/tasks/${taskId}/assignees`);
 
   return data.data;
 }

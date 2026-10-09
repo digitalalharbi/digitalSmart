@@ -322,6 +322,7 @@ describe('the figures beside the board', function (): void {
     it('counts the unassigned pile as a row of the workload', function (): void {
         $setup = taskScenario();
         $buyer = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+        putOnProject($setup, $buyer, SystemRole::MediaBuyer);
 
         openTask($setup, ['assignee_id' => (string) $buyer->getKey()]);
         openTask($setup, ['title' => 'Nobody has this']);
@@ -346,6 +347,7 @@ describe('the figures beside the board', function (): void {
     it('puts the unassigned pile last however big it is', function (): void {
         $setup = taskScenario();
         $buyer = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+        putOnProject($setup, $buyer, SystemRole::MediaBuyer);
 
         openTask($setup, ['assignee_id' => (string) $buyer->getKey()]);
 
@@ -450,6 +452,7 @@ describe('changing a task', function (): void {
         $setup = taskScenario();
         $id = openTask($setup);
         $buyer = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+        putOnProject($setup, $buyer, SystemRole::MediaBuyer);
 
         test()->actingAs($setup['scenario']->owner)
             ->postJson("/api/tasks/{$id}/assignee", ['assignee_id' => (string) $buyer->getKey()])
@@ -465,6 +468,7 @@ describe('changing a task', function (): void {
     it('unassigns when no assignee is sent', function (): void {
         $setup = taskScenario();
         $buyer = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+        putOnProject($setup, $buyer, SystemRole::MediaBuyer);
         $id = openTask($setup, ['assignee_id' => (string) $buyer->getKey()]);
 
         $data = test()->actingAs($setup['scenario']->owner)
@@ -561,6 +565,7 @@ describe('who may see the board', function (): void {
     it('narrows to the unassigned pile on request', function (): void {
         $setup = taskScenario();
         $buyer = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+        putOnProject($setup, $buyer, SystemRole::MediaBuyer);
 
         openTask($setup, ['assignee_id' => (string) $buyer->getKey()]);
         openTask($setup, ['title' => 'Orphan']);
@@ -595,5 +600,86 @@ describe('the vocabulary', function (): void {
         expect(array_column($data['priorities'], 'priority'))->toBe(['low', 'normal', 'high', 'urgent']);
         expect(array_column($data['horizons'], 'horizon'))
             ->toBe(['overdue', 'today', 'this_week', 'later', 'undated']);
+    });
+});
+
+describe('who work can be given to', function (): void {
+    /*
+     * The list is served rather than assembled from the member directory, which needs `users.view` — a
+     * permission somebody working a board has no reason to hold — and would offer colleagues the assignment then
+     * refuses.
+     */
+    it('offers colleagues who can actually open the task', function (): void {
+        $setup = taskScenario();
+        $id = openTask($setup);
+        $buyer = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+        putOnProject($setup, $buyer, SystemRole::MediaBuyer);
+
+        $people = test()->actingAs($setup['scenario']->owner)
+            ->getJson("/api/tasks/{$id}/assignees")
+            ->assertOk()
+            ->json('data');
+
+        expect(array_column($people, 'id'))->toContain((string) $buyer->getKey())
+            /* Ids and names. A picker needs no email addresses, and nobody agreed to have theirs listed. */
+            ->and(array_keys($people[0]))->toEqualCanonicalizing(['id', 'name']);
+    });
+
+    it('leaves out a colleague whose projects do not reach the client', function (): void {
+        $setup = taskScenario();
+        $id = openTask($setup);
+        $elsewhere = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+
+        $people = test()->actingAs($setup['scenario']->owner)
+            ->getJson("/api/tasks/{$id}/assignees")
+            ->assertOk()
+            ->json('data');
+
+        expect(array_column($people, 'id'))->not->toContain((string) $elsewhere->getKey());
+    });
+
+    /*
+     * The refusal this check exists for: without it the workload chart would describe work nobody is doing, and
+     * the notification telling them would be suppressed by the same visibility rule — so nobody would find out.
+     */
+    it('refuses an assignee who could not open the task', function (): void {
+        $setup = taskScenario();
+        $id = openTask($setup);
+        $elsewhere = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/tasks/{$id}/assignee", ['assignee_id' => (string) $elsewhere->getKey()])
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'cannot_be_assigned');
+    });
+
+    /* The same rule at the moment work is created, not only when it is handed over afterwards. */
+    it('refuses to open a task already in such a person’s name', function (): void {
+        $setup = taskScenario();
+        $elsewhere = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson('/api/tasks', [
+                'title' => 'Work for somebody who cannot see it',
+                'client_id' => (string) $setup['client']->getKey(),
+                'project_id' => (string) $setup['project']->getKey(),
+                'assignee_id' => (string) $elsewhere->getKey(),
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'cannot_be_assigned');
+    });
+
+    /*
+     * A `404` rather than a `403`, and that is the product's rule rather than an accident: a creative does hold
+     * `tasks.manage` — they run their own work — but a task on a project they are not on is **not found**, the
+     * same answer as a task that does not exist. Confirming it exists would itself be across the boundary.
+     */
+    it('does not exist for somebody whose projects do not reach the task', function (): void {
+        $setup = taskScenario();
+        $id = openTask($setup);
+
+        test()->actingAs($setup['scenario']->addMember(SystemRole::Creative))
+            ->getJson("/api/tasks/{$id}/assignees")
+            ->assertNotFound();
     });
 });

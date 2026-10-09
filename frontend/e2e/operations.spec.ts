@@ -109,6 +109,37 @@ test.describe('the operations board', () => {
     await expect(page.getByRole('button', { name: 'Save and move' })).toBeDisabled();
   });
 
+  /*
+   * Who is doing it. The board had a column for the assignee and no control to fill it, so every task belonged
+   * to whoever opened it — and the workload chart beside the board described a team that was not working that
+   * way.
+   *
+   * Read-only up to the change itself: the suite shares one seeded database between two browser projects, and
+   * reassigning a demo task would move a card the other project's tests are counting.
+   */
+  test('offers only colleagues who can open the work', async ({ page }) => {
+    await openBoard(page);
+
+    await page.getByRole('button', { name: /Rebuild the Ramadan audience lists/ }).click();
+
+    const control = page.getByRole('combobox', { name: 'Who is doing it' });
+    await expect(control).toBeVisible({ timeout: 20_000 });
+
+    /* Unassigning is an option rather than the absence of one. */
+    await expect(control.getByRole('option', { name: 'Unassigned' })).toHaveCount(1);
+
+    /*
+     * The manager is offered because `projects.view_all` reaches every client, and the creative because they
+     * are on this project. **The buyer is absent**, deliberately: the demo leaves them assigned to nothing to
+     * demonstrate that visibility comes from assignment, and that is exactly who this list exists to exclude.
+     */
+    await expect(control.getByRole('option', { name: 'Demo Manager' })).toHaveCount(1);
+    await expect(control.getByRole('option', { name: 'Demo Buyer' })).toHaveCount(0);
+
+    /* And the hint is a description, not part of the control's name. */
+    await expect(control).toHaveAccessibleDescription(/Only colleagues who can open/);
+  });
+
   test('refuses the board to a client viewer', async ({ page }) => {
     await openBoard(page, ACCOUNTS.client);
 
