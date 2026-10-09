@@ -335,7 +335,14 @@
         "client_requests": "Client requests",
         "creative_requests": "Creative briefs"
       }
-    }
+    },
+    "filters": {
+      "status": "Status",
+      "anyStatus": "Any status",
+      "role": "Role",
+      "anyRole": "Any role"
+    },
+    "noPeopleFiltered": "Nobody matches this search and these filters. Clearing them shows everyone in the workspace."
   },
   "integrations": {
     "subtitle": "Ad platforms this workspace can read from, and which projects may read what.",
@@ -1641,7 +1648,6 @@
     "subjectGone": "This {{subject}} has been deleted",
     "live": "Live. New notifications arrive as they happen.",
     "polling": "Live updates are off for this session, so this page checks for new notifications every minute. Nothing is lost — they are recorded either way.",
-    "whatArrives": "Something appears here when a task is assigned to you, when a change needs your decision, when a request of yours is answered, or when a change you approved is carried out.",
     "scope": {
       "show": "Show",
       "everything": "Everything",
@@ -1665,6 +1671,11 @@
       "waiting_other": "Notifications. {{count}} things waiting on you.",
       "unread": "Notifications. {{count}} unread.",
       "unread_other": "Notifications. {{count}} unread."
+    },
+    "vocabulary": {
+      "title": "What puts something here",
+      "rule": "A notification reaches only the people whose role already lets them see the thing it is about — so two people on the same workspace are told different things, by design.",
+      "needsAction": "Waits on you"
     }
   },
   "requests": {

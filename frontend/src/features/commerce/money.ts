@@ -39,7 +39,7 @@ function isoDate(date: Date): string {
  * value renders as absent rather than as zero, and every figure shows where it came from. Reimplementing
  * either here would be reimplementing them differently.
  */
-export function summaryMetric(options: {
+function summaryMetric(options: {
   metric: string;
   label: string;
   value: number | null;

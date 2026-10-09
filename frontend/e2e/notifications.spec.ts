@@ -22,7 +22,16 @@ test.describe('notifications', () => {
       timeout: 30_000,
     });
     await expect(page.getByText('Nothing yet')).toBeVisible();
-    await expect(page.getByText(/when a task is assigned to you/)).toBeVisible();
+
+    /*
+     * The list of what can arrive is the server's vocabulary, not a sentence kept in step by hand — the page
+     * used to name four things while the server announced ten, lead assignments among them. Open by default
+     * when the feed is empty, which is exactly when a reader needs it.
+     */
+    await expect(page.getByText('A lead is waiting for you')).toBeVisible();
+    await expect(page.getByText(/role already lets them see the thing it is about/)).toBeVisible();
+    /* And never the permission slug behind a kind: that is operator detail, and a client reaches this page. */
+    await expect(page.getByText(/leads\.view/)).toHaveCount(0);
   });
 
   test('says live updates are off rather than implying it is live', async ({ page }) => {

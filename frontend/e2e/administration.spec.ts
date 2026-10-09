@@ -176,6 +176,27 @@ test.describe('administration', () => {
     await expect(page.getByText(address)).toBeHidden();
   });
 
+  /*
+   * `ListMembers` has taken a role and a status since the module was built and nothing sent either, so the
+   * directory beside a suspend control could not answer "who is suspended".
+   */
+  test('narrows the directory by status and by role', async ({ page }) => {
+    await signIn(page, ACCOUNTS.owner);
+    await page.goto('/administration');
+    await expect(page.getByRole('row', { name: /Demo Buyer/ })).toBeVisible({ timeout: 30_000 });
+
+    await page.getByLabel('Role', { exact: true }).selectOption('media-buyer');
+
+    await expect(page.getByRole('row', { name: /Demo Buyer/ })).toBeVisible();
+    await expect(page.getByRole('row', { name: /Demo Owner/ })).toBeHidden();
+
+    /* Nobody is suspended in the demo, and the empty state says the filters did it rather than leaving a blank. */
+    await page.getByLabel('Role', { exact: true }).selectOption('');
+    await page.getByLabel('Status', { exact: true }).selectOption('suspended');
+
+    await expect(page.getByText(/Clearing them shows everyone/)).toBeVisible();
+  });
+
   test('a media buyer gets a read-only directory and no audit log', async ({ page }) => {
     await signIn(page, ACCOUNTS.buyer);
 
@@ -188,7 +209,12 @@ test.describe('administration', () => {
     await page.goto('/administration');
     await expect(page.getByRole('row', { name: /Demo Owner/ })).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Audit log' })).toBeHidden();
-    await expect(page.getByRole('combobox')).toHaveCount(0);
+    /*
+     * No control over anybody's role. The two **filters** above the table are not privileged — narrowing a
+     * directory you may read is reading — so this asks about the per-person control by name rather than
+     * counting every select on the page.
+     */
+    await expect(page.getByLabel(/^Role for /)).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Suspend' })).toHaveCount(0);
   });
 

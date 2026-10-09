@@ -1,6 +1,25 @@
-export const MEMBERSHIP_STATUSES = ['invited', 'active', 'suspended'] as const;
+/**
+ * Every status the server can report, which is not the same list as the one worth filtering by.
+ *
+ * `invited` is here because a `Member.status` could carry it and the type has to admit that; it is absent from
+ * `FILTERABLE_STATUSES` below because this installation never writes one.
+ */
+const MEMBERSHIP_STATUSES = ['invited', 'active', 'suspended'] as const;
 
 export type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
+
+/**
+ * The statuses worth filtering the directory by.
+ *
+ * `invited` is deliberately absent: a member in that state cannot sign in at all, so this installation never
+ * creates one — `InviteMember` writes `active` and a one-time password instead. Offering it would be a filter
+ * that is always empty, and a reader would take that for a bug in the filter rather than a fact about the
+ * product. See `docs/SECURITY.md`.
+ */
+export const FILTERABLE_STATUSES = [
+  'active',
+  'suspended',
+] as const satisfies readonly MembershipStatus[];
 
 export const WORKSPACE_ROLES = [
   'owner',

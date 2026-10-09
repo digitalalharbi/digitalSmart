@@ -3,7 +3,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { NotificationsPage } from './NotificationsPage';
-import type { NotificationFeed, NotificationItem } from './types';
+import type { NotificationFeed, NotificationItem, NotificationKindInfo } from './types';
 
 vi.mock('@/features/auth', () => ({
   useSession: () => ({
@@ -29,6 +29,7 @@ vi.mock('@/shared/realtime/echo', () => ({
 
 const state = vi.hoisted(() => ({
   feed: null as NotificationFeed | null,
+  kinds: [] as NotificationKindInfo[],
   marked: null as string | null,
   clearedAll: false,
   lastUnreadOnly: null as boolean | null,
@@ -40,7 +41,7 @@ vi.mock('./api', () => ({
 
     return Promise.resolve(state.feed);
   },
-  fetchNotificationVocabulary: () => Promise.resolve({ kinds: [] }),
+  fetchNotificationVocabulary: () => Promise.resolve({ kinds: state.kinds }),
   markNotificationRead: (id: string) => {
     state.marked = id;
 
@@ -98,6 +99,26 @@ beforeEach(() => {
   state.marked = null;
   state.clearedAll = false;
   state.lastUnreadOnly = null;
+  /*
+   * Two of the server's ten, including the one the page's old hand-written sentence never named and this
+   * feature's type union had never heard of.
+   */
+  state.kinds = [
+    {
+      kind: 'task_assigned',
+      label: 'A task was assigned to you',
+      needs_action: true,
+      requires: 'tasks.view',
+      subject: 'task',
+    },
+    {
+      kind: 'lead_assigned',
+      label: 'A lead is waiting for you',
+      needs_action: true,
+      requires: 'leads.view',
+      subject: 'task',
+    },
+  ];
 });
 
 describe('the notification centre', function () {
@@ -245,7 +266,13 @@ describe('the notification centre', function () {
     expect(screen.queryByRole('button', { name: 'Mark everything read' })).not.toBeInTheDocument();
   });
 
-  it('says what would put something here when there is nothing', async () => {
+  /*
+   * The list is the server's, not a sentence kept in step by hand. The page used to name "four things" while
+   * the server announced ten — including lead assignments, which this feature's own type union had never heard
+   * of. A hand-written explanation is exactly where that drift hides, because it reads as prose rather than as
+   * data nobody checked.
+   */
+  it('says what would put something here, from the server’s own vocabulary', async () => {
     state.feed = feed({
       notifications: [],
       digest: { total: 0, unread: 0, waiting: 0, unread_by_kind: {} },
@@ -253,11 +280,35 @@ describe('the notification centre', function () {
 
     await renderWithProviders(<NotificationsPage />);
 
-    /*
-     * An empty notification centre is usually a quiet week, not a broken feature, so the page names the four
-     * things that would put something in it.
-     */
     expect(await screen.findByText('Nothing yet')).toBeInTheDocument();
-    expect(screen.getByText(/when a task is assigned to you/)).toBeInTheDocument();
+    /* Found rather than queried: the vocabulary is its own read, deliberately separate from the feed. */
+    expect(await screen.findByText('A lead is waiting for you')).toBeInTheDocument();
+    expect(screen.getByText('A task was assigned to you')).toBeInTheDocument();
+    /* And the rule that decides who gets told, which is the part a reader cannot infer from the list. */
+    expect(
+      screen.getByText(/role already lets them see the thing it is about/),
+    ).toBeInTheDocument();
+  });
+
+  /*
+   * The vocabulary carries the permission each kind requires, and it stays out of the page: a reader needs to
+   * know that a kind reaches only people who can already see what it is about, not that the gate is spelled
+   * `leads.view`. A client viewer reaches this page too.
+   */
+  it('never prints the permission slug behind a kind', async () => {
+    await renderWithProviders(<NotificationsPage />);
+
+    await screen.findByRole('region', { name: 'Notification summary' });
+    expect(screen.queryByText(/leads\.view|tasks\.view/)).not.toBeInTheDocument();
+  });
+
+  /* No invented list: the panel is an explanation of the feed, and an explanation it cannot read is absent. */
+  it('says nothing about kinds when the vocabulary cannot be read', async () => {
+    state.kinds = [];
+
+    await renderWithProviders(<NotificationsPage />);
+
+    await screen.findByRole('region', { name: 'Notification summary' });
+    expect(screen.queryByText('What puts something here')).not.toBeInTheDocument();
   });
 });

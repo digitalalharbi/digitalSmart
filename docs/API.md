@@ -275,6 +275,12 @@ project on update rather than accepted from the request.
 | `PATCH /api/members/{user}/status` | `users.deactivate` |
 | `DELETE /api/members/{user}` | `workspaces.manage_members` |
 
+`GET /api/members` takes `search`, `role`, `status`, `page` and `per_page`. The role and status filters existed
+from the first version of the module and nothing sent either, so a directory sitting beside a suspend control
+could not answer "who is suspended". The interface offers `active` and `suspended` only: a member in `invited`
+cannot sign in at all, so this installation never writes one, and a filter that is always empty reads as a
+broken filter rather than as a fact about the product.
+
 A workspace must always retain at least one **active owner**. Demoting,
 suspending or removing the last one returns `422` with
 `"code": "last_owner_protected"` — otherwise an administrator could lock

@@ -7,6 +7,7 @@ import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/ui/empty-state';
+import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ScrollRegion } from '@/shared/ui/scroll-region';
@@ -14,7 +15,13 @@ import { LoadingRegion } from '@/shared/ui/loading-region';
 import { AddMemberPanel } from './AddMemberPanel';
 import { RemoveMemberDialog } from './RemoveMemberDialog';
 import { useChangeMemberRoleMutation, useChangeMemberStatusMutation, useMembersQuery } from './api';
-import { WORKSPACE_ROLES, type Member, type WorkspaceRole } from './types';
+import {
+  FILTERABLE_STATUSES,
+  WORKSPACE_ROLES,
+  type Member,
+  type MembershipStatus,
+  type WorkspaceRole,
+} from './types';
 
 const STATUS_TONE = {
   active: 'success',
@@ -27,8 +34,15 @@ export function MembersPanel() {
   const { user, can } = useSession();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  /*
+   * Both filters are the server's — `ListMembers` has taken a role and a status since the module was built,
+   * and nothing sent either. A directory that can only be searched by name cannot answer "who is suspended",
+   * which is the question the removal and suspension controls beside it create.
+   */
+  const [status, setStatus] = useState<MembershipStatus | ''>('');
+  const [role, setRole] = useState<WorkspaceRole | ''>('');
 
-  const { data, isPending, isError, error } = useMembersQuery({ search, page });
+  const { data, isPending, isError, error } = useMembersQuery({ search, status, role, page });
   const changeRole = useChangeMemberRoleMutation();
   const changeStatus = useChangeMemberStatusMutation();
   /*
@@ -72,22 +86,71 @@ export function MembersPanel() {
       */}
       {canInvite ? <AddMemberPanel /> : null}
 
-      <div className="relative max-w-xs">
-        <Search
-          className="text-content-tertiary pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2"
-          aria-hidden="true"
-        />
-        <Input
-          value={search}
-          onChange={(event) => {
-            setPage(1);
-            setSearch(event.target.value);
-          }}
-          placeholder={t('administration.searchPeople')}
-          aria-label={t('administration.searchPeople')}
-          className="ps-9"
-          type="search"
-        />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="relative max-w-xs flex-1">
+          <Search
+            className="text-content-tertiary pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2"
+            aria-hidden="true"
+          />
+          <Input
+            value={search}
+            onChange={(event) => {
+              setPage(1);
+              setSearch(event.target.value);
+            }}
+            placeholder={t('administration.searchPeople')}
+            aria-label={t('administration.searchPeople')}
+            className="ps-9"
+            type="search"
+          />
+        </div>
+
+        {/*
+          `Field` rather than a hand-written label wrapping the select. A wrapping `<label>` puts the control
+          inside its own text, so the accessible name becomes "Status Any status" — which is both wrong to hear
+          and untestable by name.
+        */}
+        <Field label={t('administration.filters.status')}>
+          {(props) => (
+            <select
+              {...props}
+              className="border-line bg-surface text-content h-9 rounded-lg border px-2 text-sm"
+              value={status}
+              onChange={(event) => {
+                setPage(1);
+                setStatus(event.target.value as MembershipStatus | '');
+              }}
+            >
+              <option value="">{t('administration.filters.anyStatus')}</option>
+              {FILTERABLE_STATUSES.map((value) => (
+                <option key={value} value={value}>
+                  {t(`administration.status.${value}`)}
+                </option>
+              ))}
+            </select>
+          )}
+        </Field>
+
+        <Field label={t('administration.filters.role')}>
+          {(props) => (
+            <select
+              {...props}
+              className="border-line bg-surface text-content h-9 rounded-lg border px-2 text-sm"
+              value={role}
+              onChange={(event) => {
+                setPage(1);
+                setRole(event.target.value as WorkspaceRole | '');
+              }}
+            >
+              <option value="">{t('administration.filters.anyRole')}</option>
+              {WORKSPACE_ROLES.map((value) => (
+                <option key={value} value={value}>
+                  {t(`administration.roles.${value}`)}
+                </option>
+              ))}
+            </select>
+          )}
+        </Field>
       </div>
 
       {isPending ? (
@@ -104,7 +167,17 @@ export function MembersPanel() {
         </Alert>
       ) : null}
 
-      {data && data.data.length === 0 ? <EmptyState title={t('administration.noPeople')} /> : null}
+      {data && data.data.length === 0 ? (
+        /* Which of the three narrowed it to nothing is the part a reader cannot see from an empty table. */
+        search === '' && status === '' && role === '' ? (
+          <EmptyState title={t('administration.noPeople')} />
+        ) : (
+          <EmptyState
+            title={t('administration.noPeople')}
+            description={t('administration.noPeopleFiltered')}
+          />
+        )
+      ) : null}
 
       {data && data.data.length > 0 ? (
         <ScrollRegion

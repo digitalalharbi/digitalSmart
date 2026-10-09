@@ -12,7 +12,12 @@ import type {
   WorkspaceRole,
 } from './types';
 
-export function useMembersQuery(params: { search?: string; status?: string; page?: number }) {
+export function useMembersQuery(params: {
+  search?: string;
+  status?: string;
+  role?: string;
+  page?: number;
+}) {
   return useQuery({
     queryKey: queryKeys.members.list(params),
     queryFn: async (): Promise<Paginated<Member>> => {
@@ -20,6 +25,7 @@ export function useMembersQuery(params: { search?: string; status?: string; page
         params: {
           search: params.search || undefined,
           status: params.status || undefined,
+          role: params.role || undefined,
           page: params.page,
         },
       });

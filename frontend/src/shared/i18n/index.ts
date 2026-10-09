@@ -3,10 +3,10 @@ import { initReactI18next } from 'react-i18next';
 import en from './locales/en.json';
 import ar from './locales/ar.json';
 
-export const SUPPORTED_LOCALES = ['en', 'ar'] as const;
+const SUPPORTED_LOCALES = ['en', 'ar'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
-export const LOCALE_DIRECTION: Record<Locale, 'ltr' | 'rtl'> = {
+const LOCALE_DIRECTION: Record<Locale, 'ltr' | 'rtl'> = {
   en: 'ltr',
   ar: 'rtl',
 };

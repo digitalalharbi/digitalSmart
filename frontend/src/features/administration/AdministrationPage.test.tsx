@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { AdministrationPage } from './AdministrationPage';
 import type { AuditEntry, Member } from './types';
 
 const membersQuery = vi.hoisted(() => vi.fn());
+const membersParams = vi.hoisted(() => ({ last: null as Record<string, unknown> | null }));
 const auditQuery = vi.hoisted(() => vi.fn());
 const changeRole = vi.hoisted(() => vi.fn());
 const heldWorkQuery = vi.hoisted(() => vi.fn());
@@ -18,7 +19,11 @@ const removeState = vi.hoisted<{ current: RemoveState }>(() => ({
 const permissions = vi.hoisted(() => ({ current: [] as string[] }));
 
 vi.mock('./api', () => ({
-  useMembersQuery: () => membersQuery(),
+  useMembersQuery: (params: Record<string, unknown>) => {
+    membersParams.last = params;
+
+    return membersQuery();
+  },
   useAuditLogQuery: () => auditQuery(),
   useChangeMemberRoleMutation: () => ({ mutate: changeRole, isPending: false, error: null }),
   useChangeMemberStatusMutation: () => ({ mutate: vi.fn(), isPending: false, error: null }),
@@ -127,7 +132,9 @@ describe('AdministrationPage', () => {
     await renderWithProviders(<AdministrationPage />);
 
     expect(screen.queryByLabelText('Role for Sara Idris')).not.toBeInTheDocument();
-    expect(screen.getByText('Media buyer')).toBeInTheDocument();
+    /* Scoped to the row: the role filter beside the search carries the same role names as options. */
+    const row = screen.getByRole('row', { name: /Sara Idris/ });
+    expect(within(row).getByText('Media buyer')).toBeInTheDocument();
   });
 
   it('changes a role through the server when permitted', async () => {
@@ -205,6 +212,53 @@ describe('AdministrationPage', () => {
     expect(dialog).toHaveTextContent('Released from their name and now unassigned:');
     expect(within(dialog).getByText('Creative briefs')).toBeInTheDocument();
     expect(within(dialog).queryByRole('button', { name: 'Remove them' })).not.toBeInTheDocument();
+  });
+
+  /*
+   * `ListMembers` has taken a role and a status since the module was built and nothing sent either, so a
+   * directory beside a suspend control could not answer "who is suspended".
+   */
+  it('narrows the directory by status and by role, through the server', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<AdministrationPage />);
+
+    await user.selectOptions(screen.getByLabelText('Status'), 'suspended');
+    await waitFor(() => expect(membersParams.last?.status).toBe('suspended'));
+
+    await user.selectOptions(screen.getByLabelText('Role'), 'media-buyer');
+    await waitFor(() => expect(membersParams.last?.role).toBe('media-buyer'));
+
+    /* And back to the first page, because page four of the old result is not page four of the new one. */
+    expect(membersParams.last?.page).toBe(1);
+  });
+
+  /*
+   * `invited` is a status this installation never writes — a member in it cannot sign in at all, so
+   * `InviteMember` writes `active` with a one-time password instead. Offering it would be a filter that is
+   * always empty, which reads as a broken filter rather than as a fact about the product.
+   */
+  it('does not offer a status the product never writes', async () => {
+    await renderWithProviders(<AdministrationPage />);
+
+    const statuses = within(screen.getByLabelText('Status')).getAllByRole('option');
+
+    expect(statuses.map((option) => option.textContent)).toEqual([
+      'Any status',
+      'Active',
+      'Suspended',
+    ]);
+  });
+
+  it('says an empty directory is the filters’ doing, when it is', async () => {
+    membersQuery.mockReturnValue(page([]));
+    const user = userEvent.setup();
+    await renderWithProviders(<AdministrationPage />);
+
+    expect(screen.queryByText(/Clearing them shows everyone/)).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('Status'), 'suspended');
+
+    expect(await screen.findByText(/Clearing them shows everyone/)).toBeInTheDocument();
   });
 
   it('shows the audit trail with its actor and marks security events', async () => {

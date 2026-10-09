@@ -708,6 +708,15 @@ Echo and Pusher are **dynamic imports**: 73 kB that a build which never connects
 | ------ | ---- | ----- |
 | `GET` | `/api/notifications` | `unread`, `limit` |
 | `GET` | `/api/notifications/vocabulary` | The kinds and the permission each requires |
+
+**The notification centre reads that vocabulary rather than explaining itself.** It used to carry a sentence
+naming four things that would put something in the feed, while the server announced ten — and `lead_assigned`
+was missing from the frontend's own type union for two phases. A hand-kept list of what a product can tell you
+drifts, and the drift is invisible because it reads as prose rather than as data nobody checked.
+
+The permission each kind requires stays **out** of the interface: a reader needs to know that a kind reaches
+only the people who can already see what it is about, which the page says in a sentence. The slug itself is
+operator detail, and a client viewer reaches that page.
 | `POST` | `/api/notifications/{notification}/read` | Returns the whole feed |
 | `POST` | `/api/notifications/read-all` | Returns the feed, and how many were cleared |
 

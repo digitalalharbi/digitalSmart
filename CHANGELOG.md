@@ -4,6 +4,49 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Two lists kept by hand, and four exports nothing imported
+
+A sweep for exported symbols nothing calls, closing what it found rather than listing it.
+
+### Added
+
+- **The notification centre reads what can arrive from the server.** It had a hand-written sentence naming
+  *four* things that put something in the feed; the server announces **ten**, and one of those —
+  `lead_assigned` — had been missing from this feature's own type union for two phases. A hand-kept list of
+  what a product can tell you is exactly where that drift hides, because it reads as prose rather than as data
+  nobody checked. The panel is open by default when the feed is empty, which is when a reader needs it.
+- **The rule, not the slugs.** The vocabulary carries the permission each kind requires, and the page does not
+  print it: a reader needs to know that a kind reaches only people who can already see what it is about, not
+  that the gate is spelled `leads.view`. A client viewer reaches this page.
+- **The member directory filters by status and by role.** `ListMembers` has taken both since the module was
+  built and nothing sent either, so the directory beside a suspend control could not answer "who is
+  suspended". `invited` is deliberately not offered: this installation never writes one, and an always-empty
+  filter reads as a broken filter. An empty result says the filters did it rather than leaving a blank table.
+
+### Removed
+
+- The `export` from `SUPPORTED_LOCALES`, `LOCALE_DIRECTION`, `summaryMetric`, `oklabFromLinear` and
+  `MEMBERSHIP_STATUSES` — each used only inside its own module. A smaller public surface is a smaller set of
+  things that can drift; the sweep now returns nothing.
+
+### Found by the gates
+
+- **Two label-wrapping faults, one of them a real accessibility defect.** A `<label>` that wraps its own
+  `<select>` puts the control inside the label's text, so the accessible name of the new status filter would
+  have been "Status Any status" — wrong to hear, and untestable by name. Both filters use the `Field`
+  primitive, which labels by `htmlFor`.
+- A premise that counted every `combobox` on the page to mean "no role control". The two filters are not
+  privileged — narrowing a directory you may read is reading — so the test now asks for the per-person control
+  by name.
+- One flake under full-suite load, in a test this slice does not touch: the sign-out back-route check on
+  Chromium. It passes in isolation with retries off, and the configured retry absorbed it. Recorded rather
+  than papered over.
+
+### Gates
+
+1 775 backend tests (6 396 assertions), 576 frontend tests, 397 Playwright tests (1 flaky, retried green),
+PHPStan level 8 clean, Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
 ## Nothing ran the three commands that keep the product current
 
 `advertising:sync`, `commerce:sync` and `access:sync` were each written, tested and registered — and no

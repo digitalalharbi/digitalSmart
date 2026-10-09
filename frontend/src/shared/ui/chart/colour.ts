@@ -48,7 +48,7 @@ function hexFromLinear([r, g, b]: Rgb): string {
 }
 
 /** OKLab for a linear-light sRGB triple. */
-export function oklabFromLinear([r, g, b]: Rgb): Rgb {
+function oklabFromLinear([r, g, b]: Rgb): Rgb {
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
   const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);

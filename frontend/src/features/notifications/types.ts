@@ -13,13 +13,18 @@
 /**
  * Every kind the server can announce.
  *
- * Nine, and the labels are the server's: this union exists so a `kind` that stops being announced fails the
+ * Ten, and the labels are the server's: this union exists so a `kind` that stops being announced fails the
  * build rather than becoming a branch nobody takes. Four of them are about a client request, because the
  * recipient and the action differ — a client told their request moved has nothing to do, a client asked for
  * information has, an agency told a client replied has, and "the agency answered you" goes the other way.
+ *
+ * `lead_assigned` was missing from this union while the server had been announcing it for two phases, which
+ * is the drift the vocabulary panel on the notification centre now makes visible: the list a reader sees is
+ * the server's, not a sentence somebody kept in step by hand.
  */
 export type NotificationKindValue =
   | 'task_assigned'
+  | 'lead_assigned'
   | 'approval_requested'
   | 'approval_decided'
   | 'approval_enacted'

@@ -18,6 +18,7 @@ import {
   useMarkAllReadMutation,
   useMarkReadMutation,
   useNotificationRealtime,
+  useNotificationVocabularyQuery,
   useNotificationsQuery,
 } from './useNotifications';
 
@@ -235,18 +236,64 @@ export function NotificationsPage() {
             </ul>
           )}
 
-          {digest.total === 0 ? (
-            <p className="text-content-tertiary flex items-center gap-1.5 text-sm">
-              <BellOff aria-hidden className="size-3.5" />
-              {/*
-                Worth saying. An empty notification centre is usually a quiet week, not a broken feature, and
-                the sentence names the four things that would put something here.
-              */}
-              {t('notifications.whatArrives')}
-            </p>
-          ) : null}
+          {/*
+            What can arrive, read from the server rather than written here.
+
+            This replaced a sentence naming "four things", while the server announced ten — including lead
+            assignments, which this feature's own type union had never heard of. A hand-kept list of what a
+            product can tell you is a list that drifts, and the drift is invisible precisely because it reads
+            as an explanation rather than as data.
+          */}
+          <KindDisclosure isEmpty={digest.total === 0} />
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * What puts something here, and who gets told.
+ *
+ * Shown always, and expanded by default when the feed is empty: an empty notification centre is usually a
+ * quiet week rather than a broken feature, and that is exactly when a reader needs the list.
+ *
+ * **No permission slugs.** The vocabulary carries the permission each kind requires, and it is operator
+ * detail: a reader needs to know that a kind reaches only the people who can already see what it is about,
+ * not that the gate is spelled `client_requests.triage`. Saying the rule in a sentence is honest; printing
+ * the slug to a client viewer is a diagnostic leak.
+ */
+function KindDisclosure({ isEmpty }: { isEmpty: boolean }) {
+  const { t } = useTranslation();
+  const vocabulary = useNotificationVocabularyQuery();
+
+  const kinds = vocabulary.data?.kinds ?? [];
+
+  if (kinds.length === 0) {
+    /* No invented list. The feed above is the product; this panel is an explanation of it. */
+    return null;
+  }
+
+  return (
+    <details open={isEmpty} className="border-line-subtle rounded-xl border p-4">
+      <summary className="text-content cursor-pointer text-sm font-medium">
+        <span className="inline-flex items-center gap-1.5">
+          <BellOff aria-hidden className="size-3.5" />
+          {t('notifications.vocabulary.title')}
+        </span>
+      </summary>
+
+      <p className="text-content-secondary mt-3 text-sm">{t('notifications.vocabulary.rule')}</p>
+
+      <ul className="mt-3 flex flex-col gap-1.5">
+        {kinds.map((kind) => (
+          <li key={kind.kind} className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-content">{kind.label}</span>
+            {kind.needs_action ? (
+              <Badge tone="warning">{t('notifications.vocabulary.needsAction')}</Badge>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
