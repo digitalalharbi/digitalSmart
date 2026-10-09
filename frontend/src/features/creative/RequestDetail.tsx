@@ -13,7 +13,13 @@ import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Textarea } from '@/shared/ui/textarea';
 import { SpecPanel } from './SpecPanel';
-import type { CommentVisibilityValue, CreativeRequest, CreativeVocabulary } from './types';
+import type {
+  CommentVisibilityValue,
+  CreativeOwner,
+  CreativeRequest,
+  CreativeStateValue,
+  CreativeVocabulary,
+} from './types';
 
 type RequestDetailProps = {
   request: CreativeRequest | undefined;
@@ -22,6 +28,18 @@ type RequestDetailProps = {
   canApprove: boolean;
   onDecide: (versionId: string, outcome: 'approved' | 'changes_requested', reason?: string) => void;
   onComment: (body: string, visibility: CommentVisibilityValue) => void;
+  /** True for a role that may move work and hand it over. The server refuses either way. */
+  canManage: boolean;
+  /**
+   * The legal moves, from the server's own vocabulary.
+   *
+   * `allowed_next` comes from the API so a target the board would refuse is never on screen. Offering every
+   * state and showing an error afterwards teaches people to distrust the interface.
+   */
+  onMove: (state: CreativeStateValue, reason?: string) => void;
+  /** Who this brief can be put in the name of, from the server. */
+  owners: CreativeOwner[] | undefined;
+  onAssign: (ownerId: string | null) => void;
   error: string | null;
 };
 
@@ -40,6 +58,10 @@ export function RequestDetail({
   canApprove,
   onDecide,
   onComment,
+  canManage,
+  onMove,
+  owners,
+  onAssign,
   error,
 }: RequestDetailProps) {
   const { t, i18n } = useTranslation();
@@ -47,6 +69,8 @@ export function RequestDetail({
   const [rejecting, setRejecting] = useState<string | null>(null);
   const [reason, setReason] = useState('');
   const [comment, setComment] = useState('');
+  const [moving, setMoving] = useState<CreativeStateValue | null>(null);
+  const [moveReason, setMoveReason] = useState('');
   const [visibility, setVisibility] = useState<CommentVisibilityValue>('internal');
 
   if (isLoading) {
@@ -109,6 +133,111 @@ export function RequestDetail({
 
         {request.brief === null ? null : (
           <p className="text-content-secondary text-sm leading-relaxed">{request.brief}</p>
+        )}
+
+        {!canManage ? null : (
+          <section className="border-line-subtle flex flex-col gap-3 border-t pt-4">
+            {/*
+              Who is making it. The board could show an owner from the moment a brief was written and nothing
+              could ever change it, so work could not be handed over at all.
+            */}
+            <Field label={t('creative.detail.owner')} hint={t('creative.detail.ownerHint')}>
+              {(props) => (
+                <select
+                  {...props}
+                  className="border-line bg-surface text-content rounded-lg border px-3 py-2 text-sm"
+                  value={request.owner_id ?? ''}
+                  onChange={(event) =>
+                    onAssign(event.target.value === '' ? null : event.target.value)
+                  }
+                >
+                  <option value="">{t('creative.detail.noOwner')}</option>
+                  {(owners ?? []).map((person) => (
+                    <option key={person.id} value={person.id}>
+                      {person.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
+
+            {/*
+              Where it can go next, from the server's own vocabulary rather than a list held here: a target the
+              board would refuse is never on screen. Cancelling asks for its reason first, because the server
+              requires one and because that reason is the only record of why the work stopped.
+            */}
+            {moving === null ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-content-tertiary text-xs font-medium tracking-wide uppercase">
+                  {t('creative.detail.moveTo')}
+                </span>
+                {(
+                  vocabulary?.states.find((state) => state.state === request.state)?.allowed_next ??
+                  []
+                ).map((next) => (
+                  <Button
+                    key={next}
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      if (next === 'cancelled') {
+                        setMoving(next);
+
+                        return;
+                      }
+
+                      onMove(next);
+                    }}
+                  >
+                    {vocabulary?.states.find((state) => state.state === next)?.label ?? next}
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              <form
+                className="flex flex-col gap-2"
+                onSubmit={(event) => {
+                  event.preventDefault();
+
+                  if (moveReason.trim() === '') {
+                    return;
+                  }
+
+                  onMove(moving, moveReason.trim());
+                  setMoving(null);
+                  setMoveReason('');
+                }}
+              >
+                <Field label={t('creative.detail.cancelReason')} required>
+                  {(props) => (
+                    <Input
+                      {...props}
+                      value={moveReason}
+                      onChange={(event) => setMoveReason(event.target.value)}
+                      required
+                    />
+                  )}
+                </Field>
+                <div className="flex gap-2">
+                  <Button type="submit" size="sm" disabled={moveReason.trim() === ''}>
+                    {t('creative.detail.confirmCancel')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setMoving(null);
+                      setMoveReason('');
+                    }}
+                  >
+                    {t('actions.cancel')}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </section>
         )}
 
         <section className="flex flex-col gap-3" aria-label={t('creative.detail.versions')}>

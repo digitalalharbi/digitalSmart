@@ -136,6 +136,11 @@ out rather than left half-authenticated.
 | `GET /api/tasks/{task}/assignees` | `tasks.manage` | Active members holding `tasks.view` who can see the task's client |
 | `GET /api/client-requests/{id}/owners` | `client_requests.triage` | Active members holding `client_requests.view` who can see the request's client |
 | `GET /api/leads/{lead}/owners` | `leads.manage` | Active members holding `leads.view` who can see the lead's client |
+| `GET /api/creative/{creative}/owners` | `creative.manage` | Active members holding `creative.view` who can see the brief's client |
+
+The matching writes are `POST /api/tasks/{task}/assignee`, `POST /api/client-requests/{id}/owner`, `POST
+/api/leads/{lead}/owner` and `POST /api/creative/{creative}/owner`. All four accept an empty value to take the
+work back out of somebody's name.
 
 Each returns `id` and `name` only. The assignment endpoints refuse anybody not in the corresponding list with
 `422` `cannot_be_assigned` (`lead_cannot_be_owned` for a lead), whose message names the fix: adding the

@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/query-keys';
 import {
+  assignCreativeOwner,
   commentOnRequest,
   decideOnVersion,
   fetchBoard,
+  fetchCreativeOwners,
   fetchRecordedSpecs,
   fetchRequest,
   fetchVocabulary,
@@ -87,4 +89,18 @@ export function useDecideMutation() {
 
 export function useCommentMutation() {
   return useCreativeMutation(commentOnRequest);
+}
+
+/** Who this brief can be put in the name of. Held for a minute: it changes only when somebody joins a project. */
+export function useCreativeOwnersQuery(requestId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.creative.owners(requestId ?? ''),
+    queryFn: () => fetchCreativeOwners(requestId ?? ''),
+    enabled: enabled && requestId !== null,
+    staleTime: 60_000,
+  });
+}
+
+export function useAssignCreativeOwnerMutation() {
+  return useCreativeMutation(assignCreativeOwner);
 }

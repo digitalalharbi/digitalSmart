@@ -28,6 +28,11 @@ final readonly class CreativeRequestView
         public ?string $provider = null,
         public ?string $placement = null,
         public ?DateTimeImmutable $dueAt = null,
+        /*
+         * The id as well as the name, because a picker has to know which option is selected. The board showed an
+         * owner that could only ever be set when the request was opened and never afterwards.
+         */
+        public ?string $ownerId = null,
         public ?string $ownerName = null,
         public ?string $cancelledReason = null,
         public ?DateTimeImmutable $stateChangedAt = null,

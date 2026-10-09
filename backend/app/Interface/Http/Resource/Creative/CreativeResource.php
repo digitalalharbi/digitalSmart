@@ -154,6 +154,7 @@ final readonly class CreativeResource
             'kind_label' => $request->kind->label(),
             'provider' => $request->provider,
             'placement' => $request->placement,
+            'owner_id' => $request->ownerId,
             'owner_name' => $request->ownerName,
             'due_at' => $request->dueAt?->format(DATE_ATOM),
             'days_until_due' => $request->daysUntilDue($now),

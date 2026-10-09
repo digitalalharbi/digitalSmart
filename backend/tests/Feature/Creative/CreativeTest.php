@@ -588,3 +588,94 @@ describe('access', function (): void {
         $this->actingAs($mine['scenario']->owner)->getJson("/api/creative/{$id}")->assertNotFound();
     });
 });
+
+describe('who is making the work', function (): void {
+    /*
+     * `creative_requests.owner_id` could be set when a request was opened and **never afterwards**: written once
+     * by the composer, read for ever by the board. A creative hub where work cannot change hands is a list.
+     */
+    it('hands a brief to somebody who can open it', function (): void {
+        $setup = creativeScenario();
+        $id = briefWork($setup);
+        $creative = $setup['scenario']->addMember(SystemRole::Creative);
+        assignToProject($setup, $creative, SystemRole::Creative);
+
+        $people = test()->actingAs($setup['scenario']->owner)
+            ->getJson("/api/creative/{$id}/owners")
+            ->assertOk()
+            ->json('data');
+
+        expect(array_column($people, 'id'))->toContain((string) $creative->getKey())
+            /* Ids and names. A picker needs no email addresses. */
+            ->and(array_keys($people[0]))->toEqualCanonicalizing(['id', 'name']);
+
+        $data = test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/creative/{$id}/owner", ['owner_id' => (string) $creative->getKey()])
+            ->assertOk()
+            ->json('data');
+
+        expect($data['owner_id'])->toBe((string) $creative->getKey())
+            ->and(AuditLog::query()->where('action', AuditAction::CreativeOwnerChanged->value)->count())
+            ->toBe(1);
+    });
+
+    /* Taking it back out of somebody's name is a first-class outcome. */
+    it('takes a brief back out of somebody’s name', function (): void {
+        $setup = creativeScenario();
+        $id = briefWork($setup);
+        $creative = $setup['scenario']->addMember(SystemRole::Creative);
+        assignToProject($setup, $creative, SystemRole::Creative);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/creative/{$id}/owner", ['owner_id' => (string) $creative->getKey()])
+            ->assertOk();
+
+        expect(test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/creative/{$id}/owner", ['owner_id' => ''])
+            ->assertOk()
+            ->json('data.owner_id'))->toBeNull();
+    });
+
+    /*
+     * A brief carries a client's campaign and often their unreleased plans, so an owner whose projects do not
+     * reach that client would be a name on work they can never see — and the same rule hides it from them.
+     */
+    it('refuses an owner who could not open the brief', function (): void {
+        $setup = creativeScenario();
+        $id = briefWork($setup);
+        $elsewhere = $setup['scenario']->addMember(SystemRole::Creative);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/creative/{$id}/owner", ['owner_id' => (string) $elsewhere->getKey()])
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'cannot_be_assigned');
+    });
+
+    /* And at brief time, not only when work changes hands afterwards. */
+    it('refuses to brief work already in such a person’s name', function (): void {
+        $setup = creativeScenario();
+        $elsewhere = $setup['scenario']->addMember(SystemRole::Creative);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson('/api/creative', [
+                'client_id' => (string) $setup['client']->getKey(),
+                'project_id' => (string) $setup['project']->getKey(),
+                'title' => 'Work for somebody who cannot see it',
+                'kind' => 'image',
+                'owner_id' => (string) $elsewhere->getKey(),
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'cannot_be_assigned');
+    });
+
+    it('is not a media buyer’s to hand out', function (): void {
+        $setup = creativeScenario();
+        $id = briefWork($setup);
+        $buyer = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+        assignToProject($setup, $buyer, SystemRole::MediaBuyer);
+
+        test()->actingAs($buyer)
+            ->postJson("/api/creative/{$id}/owner", ['owner_id' => (string) $buyer->getKey()])
+            ->assertForbidden();
+    });
+});

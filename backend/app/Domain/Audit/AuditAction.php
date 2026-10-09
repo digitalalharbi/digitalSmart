@@ -76,6 +76,11 @@ enum AuditAction: string
 
     case CreativeRequested = 'creative.requested';
     case CreativeMoved = 'creative.moved';
+    /*
+     * Who is making the work, which the board could show and nothing could change: the column was written once
+     * by the composer and read for ever afterwards.
+     */
+    case CreativeOwnerChanged = 'creative.owner_changed';
     case CreativeVersionAdded = 'creative.version_added';
     /*
      * The entry an approval trail is for. It names the version, not the request: "approved" without a

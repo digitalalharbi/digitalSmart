@@ -18,6 +18,14 @@ interface CreativeRepository
     /** @param list<string>|null $visibleProjectIds */
     public function find(string $workspaceId, ?array $visibleProjectIds, string $requestId): ?CreativeRequestView;
 
+    /**
+     * Put a request in somebody's name, or in nobody's.
+     *
+     * Its own method rather than a field on a move, because "who is making this" and "where has it got to" are
+     * different questions and the trail for each is read by different people.
+     */
+    public function assignOwner(string $workspaceId, string $requestId, ?string $ownerId): CreativeRequestView;
+
     public function move(
         string $workspaceId,
         string $requestId,

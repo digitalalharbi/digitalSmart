@@ -64,6 +64,37 @@ test.describe('creative hub', () => {
     await expect(page.getByText(/not a problem with the file/)).toBeVisible({ timeout: 30_000 });
   });
 
+  /*
+   * Two controls that had an endpoint and no caller: the board could not be moved and a brief could not be
+   * handed to anybody — `creative_requests.owner_id` was written when a request was opened and never again.
+   *
+   * Read-only up to the change itself: the suite shares one seeded database between two browser projects, and
+   * moving a demo brief would move a card the other project's tests are reading.
+   */
+  test('offers the legal moves and an owner who can open the work', async ({ page }) => {
+    await openCreative(page);
+
+    await page.getByRole('button', { name: /App end card/ }).click();
+
+    /* Who is making it, from the server's own list of people who can open this client's work. */
+    const owner = page.getByRole('combobox', { name: 'Who is making it' });
+    await expect(owner).toBeVisible({ timeout: 30_000 });
+    await expect(owner.getByRole('option', { name: 'Nobody yet' })).toHaveCount(1);
+    await expect(owner.getByRole('option', { name: 'Demo Creative' })).toHaveCount(1);
+
+    /* And the hint is a description rather than part of the control's name. */
+    await expect(owner).toHaveAccessibleDescription(/Only colleagues who can open/);
+
+    /*
+     * The moves are the server's own `allowed_next`. "Cancelled" is reachable from every open state, and
+     * clicking it asks for the reason before sending anything — the reason being the only record of why the
+     * work stopped.
+     */
+    await page.getByRole('button', { name: 'Cancelled' }).click();
+    await expect(page.getByLabel(/Why it is being cancelled/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cancel this work' })).toBeDisabled();
+  });
+
   test('offers no approval to a creative', async ({ page }) => {
     await openCreative(page, ACCOUNTS.creative);
 

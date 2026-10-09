@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Interface\Http\Controller\Creative;
 
 use App\Application\Creative\Command\AddCreativeVersion;
+use App\Application\Creative\Command\AssignCreativeOwner;
 use App\Application\Creative\Command\CommentOnRequest;
 use App\Application\Creative\Command\DecideOnVersion;
 use App\Application\Creative\Command\MoveCreativeRequest;
@@ -15,7 +16,9 @@ use App\Application\Creative\DTO\VersionInput;
 use App\Application\Creative\Query\GetCreativeBoard;
 use App\Application\Creative\Query\GetCreativeRequest;
 use App\Application\Creative\Query\GetRecordedSpecs;
+use App\Application\Creative\Query\ListCreativeOwners;
 use App\Application\Shared\Contract\Clock;
+use App\Application\Shared\DTO\OwnerCandidate;
 use App\Domain\Creative\ApprovalOutcome;
 use App\Domain\Creative\AssetKind;
 use App\Domain\Creative\AssetMeasurements;
@@ -101,6 +104,42 @@ final class CreativeController extends Controller
         ));
 
         return $this->reread($view->id, $query, $clock)->setStatusCode(Response::HTTP_CREATED);
+    }
+
+    /** Who this request can be put in the name of. */
+    public function owners(string $creative, ListCreativeOwners $list): JsonResponse
+    {
+        return response()->json([
+            'data' => array_map(
+                static fn (OwnerCandidate $candidate): array => [
+                    'id' => $candidate->id,
+                    'name' => $candidate->name,
+                ],
+                $list($creative),
+            ),
+        ]);
+    }
+
+    /**
+     * Put a request in somebody's name, or in nobody's.
+     *
+     * The owner has to be somebody who can open it — a brief carries a client's campaign and often their
+     * unreleased plans. `GET /api/creative/{creative}/owners` is the list that cannot be wrong.
+     */
+    public function assign(
+        string $creative,
+        Request $request,
+        AssignCreativeOwner $assign,
+        Clock $clock,
+    ): JsonResponse {
+        $ownerId = $request->string('owner_id')->value();
+
+        return response()->json([
+            'data' => CreativeResource::request(
+                $assign($creative, $ownerId === '' ? null : $ownerId),
+                $clock->now(),
+            ),
+        ]);
     }
 
     public function move(

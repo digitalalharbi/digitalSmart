@@ -1308,7 +1308,13 @@
       "addComment": "Add a comment",
       "audience": "Who is this for",
       "audienceHint": "Chosen every time, never remembered. An internal note reaching the client is not a mistake worth risking.",
-      "postComment": "Post"
+      "postComment": "Post",
+      "owner": "Who is making it",
+      "ownerHint": "Only colleagues who can open this client's work are listed. A brief carries a client's campaign and often their unreleased plans.",
+      "noOwner": "Nobody yet",
+      "moveTo": "Move to",
+      "cancelReason": "Why it is being cancelled",
+      "confirmCancel": "Cancel this work"
     }
   },
   "operations": {

@@ -145,6 +145,8 @@ export type CreativeCard = {
   kind_label: string;
   provider: string | null;
   placement: string | null;
+  /** The id as well as the name: a picker has to know which option is selected. */
+  owner_id: string | null;
   owner_name: string | null;
   due_at: string | null;
   days_until_due: number | null;
@@ -180,3 +182,6 @@ export type RecordedSpec = {
   is_stale: boolean;
   age_days: number;
 };
+
+/** Somebody a brief can be put in the name of: an id and a name, and deliberately nothing else. */
+export type CreativeOwner = { id: string; name: string };

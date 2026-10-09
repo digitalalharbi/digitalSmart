@@ -79,6 +79,22 @@ final readonly class EloquentCreativeRepository implements CreativeRepository
         return $this->view($values, $workspaceId);
     }
 
+    public function assignOwner(string $workspaceId, string $requestId, ?string $ownerId): CreativeRequestView
+    {
+        DB::table('creative_requests')
+            ->where('workspace_id', $workspaceId)
+            ->where('id', $requestId)
+            ->update(['owner_id' => $ownerId, 'updated_at' => now()]);
+
+        /*
+         * `find` with no visibility narrowing, like every other write here: the use case has already resolved
+         * the request through the actor's own scope, and narrowing twice would answer null for a record it has
+         * just confirmed.
+         */
+        return $this->find($workspaceId, null, $requestId)
+            ?? throw new Exception('The request disappeared while being assigned.');
+    }
+
     public function move(
         string $workspaceId,
         string $requestId,
@@ -324,6 +340,7 @@ final readonly class EloquentCreativeRepository implements CreativeRepository
             provider: $this->text($values['provider'] ?? null),
             placement: $this->text($values['placement'] ?? null),
             dueAt: $this->date($values['due_at'] ?? null),
+            ownerId: $this->text($values['owner_id'] ?? null),
             ownerName: $this->text($values['owner_name'] ?? null),
             cancelledReason: $this->text($values['cancelled_reason'] ?? null),
             stateChangedAt: $this->date($values['state_changed_at'] ?? null),

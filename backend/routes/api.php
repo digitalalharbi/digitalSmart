@@ -358,6 +358,14 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('creative', [CreativeController::class, 'store'])->name('creative.store');
     Route::get('creative/{creative}', [CreativeController::class, 'show'])
         ->whereUuid('creative')->name('creative.show');
+    /*
+     * Who is making it. The column existed from the composer onwards and nothing could change it, so a brief
+     * could never be handed to anybody — see `OwnerDirectory` for who is eligible and why.
+     */
+    Route::get('creative/{creative}/owners', [CreativeController::class, 'owners'])
+        ->whereUuid('creative')->name('creative.owners');
+    Route::post('creative/{creative}/owner', [CreativeController::class, 'assign'])
+        ->whereUuid('creative')->name('creative.assign');
     Route::post('creative/{creative}/state', [CreativeController::class, 'move'])
         ->whereUuid('creative')->name('creative.move');
     Route::post('creative/{creative}/versions', [CreativeController::class, 'addVersion'])

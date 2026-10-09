@@ -4,6 +4,44 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The creative hub could not move work or hand it over
+
+A schema sweep for every ownership column — `assignee_id`, `owner_id`, `responsible_user_id`, `reviewer_id`,
+`approver_id` — returned four assignable entities. Three had just been wired. The fourth,
+`creative_requests.owner_id`, could be written **once** by the composer and never again: the board showed an
+owner and nothing could change it. And `MoveCreativeRequest` had an endpoint, a contract, tests and
+`useMoveRequestMutation` — with no caller anywhere, so the board could not be moved from the interface at all.
+
+### Added
+
+- **`POST /api/creative/{creative}/owner` and `GET /api/creative/{creative}/owners`**, through the same
+  `OwnerDirectory` as the other three boards. A brief carries a client's campaign and often their unreleased
+  plans, so an owner whose projects do not reach that client would be a name on work they can never see.
+  `OpenCreativeRequest` applies the same check, because briefing work already in somebody's name has the same
+  consequence as handing it to them later.
+- **Move controls from the server's own `allowed_next`**, so a target the board would refuse is never on screen.
+  Cancelling asks for its reason *before* sending anything: the server requires one, and that reason is the only
+  record of why the work stopped.
+- Both hidden without `creative.manage` rather than disabled. The server refuses them either way, and a control
+  that never works is worse than no control.
+- `owner_id` on the creative resource — the name alone made "who is making this" readable and "give it to
+  somebody else" unbuildable.
+
+### Found by the gates
+
+- **A duplicate key in a test mock. Again.** `moveRequest` was already stubbed later in the same object
+  literal, so the recorder added at the top was silently overridden and the mutation "never ran" — the same trap
+  as the client-request mock an hour earlier. **The typechecker catches it** (`TS1117`), and it had caught both:
+  running the test before `npm run typecheck` is what turned a one-line error into two debugging detours.
+- **A fixture naming two of six states.** The move buttons take their labels from the vocabulary the server
+  publishes, so a partial fixture left them reading `briefed` and `cancelled` in raw snake case. The fixture was
+  wrong rather than the fallback.
+
+### Gates
+
+1 742 backend tests (6 299 assertions), 548 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
+clean, ESLint and Prettier clean, production build, 382 Playwright tests.
+
 ## Three boards could not give work to anybody
 
 The task board showed an assignee, the intake queue showed an owner, the lead pipeline showed both — and none of

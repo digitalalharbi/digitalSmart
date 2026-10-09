@@ -111,6 +111,28 @@ Two moves the board cannot make:
 - **Cancelling without a reason.** "We decided not to make this" is a decision somebody will be asked about in
   three months.
 
+## Who is making it, and moving it along
+
+Two capabilities had an endpoint, a contract and no caller.
+
+**`creative_requests.owner_id` was written once and never again.** The composer could set it when a brief was
+created; nothing could change it afterwards, so work could not be handed to anybody. `POST
+/api/creative/{creative}/owner` and the control on the detail panel close that, through the same
+`OwnerDirectory` the task board, the intake queue and the lead pipeline use — a brief carries a client's
+campaign and often their unreleased plans, so an owner whose projects do not reach that client would be a name
+on work they can never see. `OpenCreativeRequest` applies the same check, because briefing work already in
+somebody's name has the same consequence as handing it to them later. See
+[OPERATIONS.md](OPERATIONS.md#who-work-can-be-given-to).
+
+**The board could not be moved from the interface.** `MoveCreativeRequest` and its route existed and were
+tested; `useMoveRequestMutation` existed with no caller. The controls now come from the server's own
+`allowed_next`, so a target the board would refuse is never on screen — offering every state and reporting an
+error afterwards teaches people to distrust the interface. Cancelling asks for its reason **before** sending
+anything, because the server requires one and because that reason is the only record of why the work stopped.
+
+Both are hidden without `creative.manage` rather than disabled: the server refuses them either way, and a
+control that never works is worse than no control.
+
 ## A comment states its audience
 
 `CommentVisibility` has no default, in the DTO or in the column. An agency's internal note on a client's

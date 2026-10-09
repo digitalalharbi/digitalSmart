@@ -14,11 +14,14 @@ import { RequestDetail } from './RequestDetail';
 import { SpecCoverage } from './SpecCoverage';
 import { WorkloadChart } from './WorkloadChart';
 import {
+  useAssignCreativeOwnerMutation,
   useCommentMutation,
   useCreativeBoardQuery,
   useCreativeRequestQuery,
   useCreativeVocabularyQuery,
+  useCreativeOwnersQuery,
   useDecideMutation,
+  useMoveRequestMutation,
   useRecordedSpecsQuery,
 } from './useCreative';
 import type { CommentVisibilityValue } from './types';
@@ -37,6 +40,7 @@ export function CreativeHubPage() {
 
   const canView = can(PERMISSIONS.creativeView);
   const canApprove = can(PERMISSIONS.creativeApprove);
+  const canManage = can(PERMISSIONS.creativeManage);
 
   const [clientId, setClientId] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -49,16 +53,20 @@ export function CreativeHubPage() {
 
   const decide = useDecideMutation();
   const comment = useCommentMutation();
+  const move = useMoveRequestMutation();
+  const assign = useAssignCreativeOwnerMutation();
+  /* Who the open brief can be handed to, from the server — see `OwnerDirectory`. */
+  const owners = useCreativeOwnersQuery(selected, canManage);
 
   const error = useMemo(() => {
-    for (const mutation of [decide, comment]) {
+    for (const mutation of [decide, comment, move, assign]) {
       if (mutation.error instanceof ApiError && mutation.error.message !== '') {
         return mutation.error.message;
       }
     }
 
     return null;
-  }, [decide, comment]);
+  }, [decide, comment, move, assign]);
 
   if (!canView) {
     return (
@@ -198,6 +206,22 @@ export function CreativeHubPage() {
         onComment={(body, visibility: CommentVisibilityValue) => {
           if (selected !== null) {
             comment.mutate({ requestId: selected, body, visibility });
+          }
+        }}
+        canManage={canManage}
+        onMove={(state, reason) => {
+          if (selected !== null) {
+            move.mutate({
+              requestId: selected,
+              state,
+              ...(reason === undefined ? {} : { reason }),
+            });
+          }
+        }}
+        owners={selected === null ? undefined : owners.data}
+        onAssign={(ownerId) => {
+          if (selected !== null) {
+            assign.mutate({ requestId: selected, ownerId });
           }
         }}
         error={error}

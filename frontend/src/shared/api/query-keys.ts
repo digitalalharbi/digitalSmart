@@ -79,6 +79,8 @@ export const queryKeys = {
     all: () => ['creative'] as const,
     vocabulary: () => ['creative', 'vocabulary'] as const,
     specs: () => ['creative', 'specs'] as const,
+    /** Who one brief can be put in the name of. Per request, because it depends on its client. */
+    owners: (requestId: string) => ['creative', 'owners', requestId] as const,
     board: (scope: Record<string, unknown>) => ['creative', 'board', scope] as const,
     /*
      * One key per request. A request carries its versions' spec verdicts, which are composed against the

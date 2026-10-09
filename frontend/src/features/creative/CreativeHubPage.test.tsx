@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { CreativeHubPage } from './CreativeHubPage';
@@ -43,6 +43,9 @@ const state = vi.hoisted(() => ({
   specs: [] as RecordedSpec[],
   decided: null as Record<string, unknown> | null,
   commented: null as Record<string, unknown> | null,
+  moved: null as Record<string, unknown> | null,
+  assigned: null as Record<string, unknown> | null,
+  owners: [] as { id: string; name: string }[],
 }));
 
 vi.mock('./api', () => ({
@@ -50,6 +53,17 @@ vi.mock('./api', () => ({
   fetchBoard: () => Promise.resolve(state.board),
   fetchRequest: () => Promise.resolve(state.request),
   fetchRecordedSpecs: () => Promise.resolve(state.specs),
+  fetchCreativeOwners: () => Promise.resolve(state.owners),
+  moveRequest: (input: Record<string, unknown>) => {
+    state.moved = input;
+
+    return Promise.resolve(state.request);
+  },
+  assignCreativeOwner: (input: Record<string, unknown>) => {
+    state.assigned = input;
+
+    return Promise.resolve(state.request);
+  },
   decideOnVersion: (input: Record<string, unknown>) => {
     state.decided = input;
 
@@ -60,7 +74,6 @@ vi.mock('./api', () => ({
 
     return Promise.resolve(state.request);
   },
-  moveRequest: () => Promise.resolve(state.request),
 }));
 
 function vocabulary(): CreativeVocabulary {
@@ -75,6 +88,19 @@ function vocabulary(): CreativeVocabulary {
         allowed_next: ['briefed', 'cancelled'],
         requires_re_review: false,
       },
+      /*
+       * Every state a move control can offer, because the label comes from this list: the server publishes all
+       * of them, and a fixture that named only two left the buttons falling back to raw values like `briefed`.
+       */
+      {
+        state: 'briefed',
+        label: 'Briefed',
+        position: 1,
+        is_open: true,
+        is_waiting_on_review: false,
+        allowed_next: ['in_production', 'cancelled'],
+        requires_re_review: false,
+      },
       {
         state: 'approved',
         label: 'Approved',
@@ -83,6 +109,15 @@ function vocabulary(): CreativeVocabulary {
         is_waiting_on_review: false,
         allowed_next: ['in_production', 'cancelled'],
         requires_re_review: true,
+      },
+      {
+        state: 'cancelled',
+        label: 'Cancelled',
+        position: 6,
+        is_open: false,
+        is_waiting_on_review: false,
+        allowed_next: ['draft'],
+        requires_re_review: false,
       },
     ],
     kinds: [{ kind: 'image', label: 'Image', measurable: ['width', 'height'] }],
@@ -113,6 +148,7 @@ function board(overrides: Partial<CreativeBoard> = {}): CreativeBoard {
             kind_label: 'Image',
             provider: null,
             placement: null,
+            owner_id: null,
             owner_name: null,
             due_at: '2026-10-20T00:00:00+00:00',
             days_until_due: 13,
@@ -233,6 +269,9 @@ beforeEach(() => {
   ];
   state.decided = null;
   state.commented = null;
+  state.moved = null;
+  state.assigned = null;
+  state.owners = [{ id: 'user-5', name: 'Demo Creative' }];
 });
 
 describe('the creative hub', () => {
@@ -418,5 +457,83 @@ describe('the creative hub', () => {
     expect(
       await screen.findByText('The Creative Hub is not part of your access'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('moving work and handing it over', () => {
+  async function openBrief() {
+    await renderWithProviders(<CreativeHubPage />);
+    await userEvent.click(await screen.findByRole('button', { name: /Ramadan hero image/ }));
+  }
+
+  /*
+   * The moves offered are the server's. `allowed_next` comes from the API, so a target the board would refuse
+   * is never on screen — the alternative, offering every state and showing an error, teaches people to distrust
+   * the interface.
+   */
+  it('offers only the moves the server allows from here', async () => {
+    await openBrief();
+
+    expect(await screen.findByRole('button', { name: 'Briefed' })).toBeInTheDocument();
+
+    /* "Approved" is not reachable from a draft, so it is absent rather than disabled. */
+    expect(screen.queryByRole('button', { name: 'Approved' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Briefed' }));
+
+    await waitFor(() => expect(state.moved).toEqual({ requestId: 'request-1', state: 'briefed' }));
+  });
+
+  /*
+   * Cancelling asks for its reason before the request rather than after a refusal, and that reason is the only
+   * record of why the work stopped.
+   */
+  it('asks why before cancelling', async () => {
+    await openBrief();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Cancelled' }));
+
+    expect(state.moved).toBeNull();
+
+    await userEvent.type(
+      screen.getByLabelText(/Why it is being cancelled/),
+      'The client pulled the campaign.',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel this work' }));
+
+    await waitFor(() =>
+      expect(state.moved).toEqual({
+        requestId: 'request-1',
+        state: 'cancelled',
+        reason: 'The client pulled the campaign.',
+      }),
+    );
+  });
+
+  /*
+   * `creative_requests.owner_id` could be written when a brief was created and never afterwards, so work could
+   * not be handed to anybody.
+   */
+  it('hands the brief to somebody the server says can open it', async () => {
+    await openBrief();
+
+    const control = await screen.findByRole('combobox', { name: 'Who is making it' });
+
+    expect(within(control).getByRole('option', { name: 'Demo Creative' })).toBeInTheDocument();
+
+    await userEvent.selectOptions(control, 'user-5');
+
+    await waitFor(() =>
+      expect(state.assigned).toEqual({ requestId: 'request-1', ownerId: 'user-5' }),
+    );
+  });
+
+  it('offers neither control to somebody who may only read the board', async () => {
+    permissions.current = ['creative.view'];
+
+    await openBrief();
+
+    expect(screen.queryByRole('combobox', { name: 'Who is making it' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Briefed' })).not.toBeInTheDocument();
   });
 });
