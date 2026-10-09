@@ -129,6 +129,18 @@ deactivated account is the deliberate exception, because the person needs to kno
 to contact an administrator. A user who belongs to no workspace is signed back
 out rather than left half-authenticated.
 
+### `GET /api/projects/{project}/assignable`
+
+Who could be given access to a project. Needs `projects.manage_members` and visibility of the project.
+
+Returns **active** workspace members who are **not already on the project**, with `user_id`, `name` and their
+workspace `role_slug` / `role_name` — no email addresses. Both filters matter: a suspended member would be a
+choice that grants nothing, and somebody already assigned would be a silent no-op.
+
+The matching writes are `POST /api/projects/{project}/members` (`user_id`, `role`) and `DELETE
+/api/projects/{project}/members/{user}`. **Assignment is what grants sight of a client's data** — see
+[SECURITY.md](SECURITY.md#granting-access-to-a-clients-work).
+
 ### Who work can be given to
 
 | Endpoint | Permission to read it | Who is in it |

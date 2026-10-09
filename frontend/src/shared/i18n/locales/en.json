@@ -247,6 +247,21 @@
       "createTitle": "New project",
       "editTitle": "Edit project",
       "description": "A new project starts in planning. Campaigns can only spend once it is active."
+    },
+    "people": {
+      "title": "Who can see this project",
+      "description": "People on {{project}}. Being on a project is what grants sight of the client's work — nothing else does.",
+      "emptyTitle": "Nobody is on this project",
+      "emptyBody": "Until somebody is, this client's work is visible only to people who can see every project.",
+      "add": "Add somebody",
+      "addHint": "Active members of this workspace who are not on it yet. They join in the role they hold in the agency.",
+      "choose": "Choose a colleague",
+      "grant": "Grant access",
+      "remove": "Remove",
+      "note": "Removing somebody takes away their sight of this client's work, including anything already in their name.",
+      "failed": "That did not save. Nothing has changed.",
+      "open": "Manage access",
+      "listLabel": "People on this project"
     }
   },
   "administration": {

@@ -4,6 +4,51 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Nobody could be given access to a client's work
+
+The single largest hole found by the closure sweep, and it had been there since Phase 1.
+
+**Project membership is the only thing in this product that grants sight of a client's data** — a lead, a
+store's revenue, a campaign's spend, a client's own portal. `ActorVisibilityResolver` says so in four lines and
+every read narrows by it. And there was **no way to grant it**: `GET`, `POST` and `DELETE
+/api/projects/{project}/members` existed, were tested, and nothing in the application reached them. The projects
+page showed a member count and no control.
+
+So the onboarding flow built an hour earlier ended with somebody who could sign in, choose their password, and
+then see an empty product — and the only way to fix that was a database write.
+
+### Added
+
+- **`GET /api/projects/{project}/assignable`** — active workspace members who are **not already on the
+  project**, with ids, names and their workspace role. No email addresses. Both filters matter: a suspended
+  member would be a choice that grants nothing, and somebody already assigned would be a silent no-op.
+- **The member count is now the control.** It was the whole of that column and was read-only, so the figure that
+  decides who can see a client was a number you could look at.
+- **They join in the role they hold in the agency.** People are almost always on a project in their own role,
+  and the member directory is where a role changes; asking twice would be asking a question nobody has a
+  different answer to.
+- **An empty project says what that means** — nobody can reach the client's work through it — rather than
+  leaving a blank list to be interpreted. **Removing somebody states the consequence**: they lose sight of that
+  client's work, including anything already in their name.
+- **A reader without `projects.manage_members` sees the list and no controls.** Who can see a client is worth
+  knowing for anybody who can see the project; changing it is a separate permission.
+- The candidate list is the project module's own query rather than `OwnerDirectory`'s. That one answers "who can
+  already see this thing", for deciding who may own work; this is almost its inverse — the people worth offering
+  are the ones who cannot see the project yet.
+
+### Found by the gates
+
+- **A strict-mode violation that was a real ambiguity.** `getByText('Demo Creative')` matched two elements: the
+  person on the project and the picker option offering them. The list of people is now named, so a screen reader
+  — and a test — can tell the two apart.
+- **A `beforeEach` scoped to the wrong block.** The new tests inherited state from the previous describe, which
+  is how the empty-project test first read a populated dialog.
+
+### Gates
+
+1 744 backend tests (6 308 assertions), 552 frontend tests, PHPStan level 8 clean, Pint clean, TypeScript strict
+clean, ESLint and Prettier clean, production build, 386 Playwright tests.
+
 ## The creative hub could not move work or hand it over
 
 A schema sweep for every ownership column — `assignee_id`, `owner_id`, `responsible_user_id`, `reviewer_id`,

@@ -15,6 +15,7 @@ import { ScrollRegion } from '@/shared/ui/scroll-region';
 import { LoadingRegion } from '@/shared/ui/loading-region';
 import { useProjectsQuery } from './api';
 import { ProjectFormDialog } from './ProjectFormDialog';
+import { ProjectPeopleDialog } from './ProjectPeopleDialog';
 import { ProjectRowActions } from './ProjectRowActions';
 import { ProjectStatusBadge } from './ProjectStatusBadge';
 import { PROJECT_STATUSES, type Project, type ProjectStatus } from './types';
@@ -30,6 +31,7 @@ export function ProjectsPage() {
   const [statuses, setStatuses] = useState<ProjectStatus[]>([]);
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<Project | undefined>(undefined);
+  const [managingPeople, setManagingPeople] = useState<Project | null>(null);
   const [isFormOpen, setFormOpen] = useState(false);
 
   const params = useMemo(
@@ -220,7 +222,19 @@ export function ProjectsPage() {
                       {project.starts_on ?? '—'} → {project.ends_on ?? '—'}
                     </td>
                     <td className="text-content ds-numeric px-4 py-3 text-end">
-                      {formatNumber(project.member_count, locale)}
+                      {/*
+                        The count was the whole of this column and there was no way to change it — so the number
+                        that decides who can see a client's work was read-only. It is a button now, because the
+                        answer to "who can see this" is the thing somebody came to this page to change.
+                      */}
+                      <button
+                        type="button"
+                        onClick={() => setManagingPeople(project)}
+                        className="text-content-brand hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ds-focus-ring)] focus-visible:outline-none"
+                        aria-label={t('projects.people.open')}
+                      >
+                        {formatNumber(project.member_count, locale)}
+                      </button>
                     </td>
                     <td className="px-4 py-3 text-end">
                       <ProjectRowActions
@@ -269,6 +283,22 @@ export function ProjectsPage() {
       ) : null}
 
       <ProjectFormDialog open={isFormOpen} onOpenChange={setFormOpen} project={editing} />
+
+      {/*
+        Keyed by the project, so opening a second one does not inherit the first's half-made choice. The dialog
+        asks for nothing until it is open, which is why the queries behind it are gated on that.
+      */}
+      <ProjectPeopleDialog
+        key={managingPeople?.id ?? 'none'}
+        project={managingPeople}
+        open={managingPeople !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setManagingPeople(null);
+          }
+        }}
+        canManage={can(PERMISSIONS.projectsManageMembers)}
+      />
     </div>
   );
 }

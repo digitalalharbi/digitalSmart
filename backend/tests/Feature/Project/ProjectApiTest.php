@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Access\SystemRole;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Project\ProjectStatus;
+use App\Domain\Workspace\MembershipStatus;
 use App\Infrastructure\Persistence\Eloquent\Model\AuditLog;
 use App\Infrastructure\Persistence\Eloquent\Model\Client;
 use App\Infrastructure\Persistence\Eloquent\Model\Project;
@@ -227,6 +228,58 @@ describe('members', function (): void {
             ->assertNoContent();
 
         $this->actingAs($creative)->getJson('/api/projects')->assertJsonCount(1, 'data');
+    });
+
+    /*
+     * The list the picker is built from. Project membership is the only thing that grants sight of a client's
+     * data, so until this surface existed an administrator could not grant anybody access to anything — the
+     * endpoints were there and nothing reached them.
+     */
+    it('offers active members who are not on the project yet', function (): void {
+        $scenario = workspaceScenario();
+        $manager = $scenario->addMember(SystemRole::ProjectManager);
+        $creative = $scenario->addMember(SystemRole::Creative);
+        $suspended = $scenario->addMember(SystemRole::MediaBuyer, MembershipStatus::Suspended);
+        $client = Client::factory()->create(['workspace_id' => $scenario->workspace->getKey()]);
+        $project = Project::factory()->forClient($client)->create();
+
+        $candidates = $this->actingAs($manager)
+            ->getJson("/api/projects/{$project->getKey()}/assignable")
+            ->assertOk()
+            ->json('data');
+
+        $ids = array_column($candidates, 'user_id');
+
+        expect($ids)->toContain((string) $creative->getKey())
+            /* A suspended member keeps their row and loses everything else. */
+            ->and($ids)->not->toContain((string) $suspended->getKey())
+            /* Ids, names and their workspace role as the default. No email addresses. */
+            ->and(array_keys($candidates[0]))
+            ->toEqualCanonicalizing(['user_id', 'name', 'role_slug', 'role_name']);
+
+        $this->actingAs($manager)
+            ->postJson("/api/projects/{$project->getKey()}/members", [
+                'user_id' => $creative->getKey(),
+                'role' => SystemRole::Creative->value,
+            ])
+            ->assertNoContent();
+
+        /* And once they are on it they are no longer a candidate: a picker offering them would be a no-op. */
+        expect(array_column($this->actingAs($manager)
+            ->getJson("/api/projects/{$project->getKey()}/assignable")
+            ->assertOk()
+            ->json('data'), 'user_id'))->not->toContain((string) $creative->getKey());
+    });
+
+    it('does not offer the list to somebody who cannot manage members', function (): void {
+        $scenario = workspaceScenario();
+        $creative = $scenario->addMember(SystemRole::Creative);
+        $client = Client::factory()->create(['workspace_id' => $scenario->workspace->getKey()]);
+        $project = Project::factory()->forClient($client)->create();
+
+        $this->actingAs($creative)
+            ->getJson("/api/projects/{$project->getKey()}/assignable")
+            ->assertForbidden();
     });
 
     it('removing someone revokes it again', function (): void {

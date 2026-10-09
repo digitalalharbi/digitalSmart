@@ -8,6 +8,19 @@ import type { Project } from './types';
 const projectsQuery = vi.hoisted(() => vi.fn());
 const permissions = vi.hoisted(() => ({ current: [] as string[] }));
 
+const state = vi.hoisted(() => ({
+  members: [] as {
+    user_id: string;
+    name: string;
+    email: string;
+    role_slug: string;
+    role_name: string;
+  }[],
+  assignable: [] as { user_id: string; name: string; role_slug: string; role_name: string }[],
+  assigned: null as Record<string, unknown> | null,
+  removed: null as Record<string, unknown> | null,
+}));
+
 vi.mock('./api', () => ({
   useProjectsQuery: () => projectsQuery(),
   useCreateProjectMutation: () => ({
@@ -24,6 +37,22 @@ vi.mock('./api', () => ({
   }),
   useChangeProjectStatusMutation: () => ({ mutate: vi.fn(), isPending: false }),
   useDeleteProjectMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useProjectMembersQuery: () => ({ data: state.members, isPending: false }),
+  useAssignableMembersQuery: () => ({ data: state.assignable, isPending: false }),
+  useAssignMemberMutation: () => ({
+    mutate: (input: Record<string, unknown>) => {
+      state.assigned = input;
+    },
+    isPending: false,
+    error: null,
+  }),
+  useRemoveMemberMutation: () => ({
+    mutate: (input: Record<string, unknown>) => {
+      state.removed = input;
+    },
+    isPending: false,
+    error: null,
+  }),
 }));
 
 vi.mock('@/features/clients', () => ({
@@ -147,5 +176,131 @@ describe('ProjectsPage', () => {
     await renderWithProviders(<ProjectsPage />);
 
     expect(screen.queryByRole('button', { name: 'New project' })).not.toBeInTheDocument();
+  });
+  state.members = [];
+  state.assignable = [];
+  state.assigned = null;
+  state.removed = null;
+});
+
+describe('who can see a project', () => {
+  /*
+   * Its own reset. The first describe's `beforeEach` is scoped to that block, so without this the access lists
+   * carry over between tests here — which is how the empty-project test first read a populated dialog.
+   */
+  beforeEach(() => {
+    projectsQuery.mockReset();
+    projectsQuery.mockReturnValue(page([project()]));
+    state.members = [];
+    state.assignable = [];
+    state.assigned = null;
+    state.removed = null;
+  });
+
+  /*
+   * Project membership is the only thing in this product that grants sight of a client's work, and the page
+   * showed the number of people on a project with no way to change it: the figure that decides access was
+   * read-only.
+   */
+  it('opens the access list from the member count', async () => {
+    permissions.current = ['projects.view_all', 'projects.manage_members'];
+    state.members = [
+      {
+        user_id: 'user-2',
+        name: 'Noura Al-Shehri',
+        email: 'noura@example.com',
+        role_slug: 'creative',
+        role_name: 'Creative',
+      },
+    ];
+    state.assignable = [
+      {
+        user_id: 'user-3',
+        name: 'Omar Al-Qahtani',
+        role_slug: 'media-buyer',
+        role_name: 'Media buyer',
+      },
+    ];
+
+    await renderWithProviders(<ProjectsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Manage access' }));
+
+    const dialog = screen.getByRole('dialog');
+
+    expect(
+      within(within(dialog).getByRole('list', { name: 'People on this project' })).getByText(
+        'Noura Al-Shehri',
+      ),
+    ).toBeInTheDocument();
+    /* And it says what being on a project means, rather than leaving a reader to infer it from a list. */
+    expect(within(dialog).getByText(/grants sight of the client/)).toBeInTheDocument();
+  });
+
+  it('grants access in the role the colleague already holds', async () => {
+    permissions.current = ['projects.view_all', 'projects.manage_members'];
+    state.assignable = [
+      {
+        user_id: 'user-3',
+        name: 'Omar Al-Qahtani',
+        role_slug: 'media-buyer',
+        role_name: 'Media buyer',
+      },
+    ];
+
+    await renderWithProviders(<ProjectsPage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Manage access' }));
+
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Add somebody' }), 'user-3');
+    await userEvent.click(screen.getByRole('button', { name: 'Grant access' }));
+
+    expect(state.assigned).toEqual({
+      projectId: 'p1',
+      userId: 'user-3',
+      /*
+       * Their workspace role, not a second choice on the form: people are almost always on a project in the
+       * role they hold in the agency.
+       */
+      role: 'media-buyer',
+    });
+  });
+
+  /*
+   * An empty project is not a neutral state — nobody can reach this client's work through it — so it is said
+   * rather than left as a blank list.
+   */
+  it('says what an empty project means', async () => {
+    permissions.current = ['projects.view_all', 'projects.manage_members'];
+
+    await renderWithProviders(<ProjectsPage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Manage access' }));
+
+    expect(screen.getByText('Nobody is on this project')).toBeInTheDocument();
+  });
+
+  it('shows the list read-only to somebody who may not manage members', async () => {
+    permissions.current = ['projects.view_all'];
+    state.members = [
+      {
+        user_id: 'user-2',
+        name: 'Noura Al-Shehri',
+        email: 'noura@example.com',
+        role_slug: 'creative',
+        role_name: 'Creative',
+      },
+    ];
+
+    await renderWithProviders(<ProjectsPage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Manage access' }));
+
+    const dialog = screen.getByRole('dialog');
+
+    expect(
+      within(within(dialog).getByRole('list', { name: 'People on this project' })).getByText(
+        'Noura Al-Shehri',
+      ),
+    ).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('combobox')).not.toBeInTheDocument();
   });
 });

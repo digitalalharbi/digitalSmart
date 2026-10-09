@@ -234,5 +234,7 @@ export const queryKeys = {
     list: (params: Record<string, unknown>) => ['projects', 'list', params] as const,
     detail: (id: string) => ['projects', 'detail', id] as const,
     members: (id: string) => ['projects', 'members', id] as const,
+    /** Who could be given access to one project: active members not on it yet. */
+    assignable: (id: string) => ['projects', 'assignable', id] as const,
   },
 } as const;

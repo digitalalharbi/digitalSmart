@@ -161,6 +161,31 @@ refuses to do with a figure a client sees and refuses to do with a reader's own 
 this operation was always meant to exist. The other was `AuditAction::UserPasswordChanged`, declared with nothing
 recording it until now.
 
+### Granting access to a client's work
+
+**Project membership is the only thing that grants sight of a client's data.** A lead, a store's revenue, a
+campaign's spend, a client's own portal — each is reachable by the people on the project it belongs to, plus
+whoever holds `projects.view_all`. `ActorVisibilityResolver` says it in four lines and every read in the product
+narrows by it.
+
+Until this slice there was **no way to grant it.** `GET`, `POST` and `DELETE /api/projects/{project}/members`
+existed, were tested, and nothing in the application reached them: the projects page showed a member count and
+no control. So an administrator could add a colleague — and then not give them access to anything. The
+onboarding flow ended with somebody who could sign in and see an empty product.
+
+`GET /api/projects/{project}/assignable` serves the candidates: **active** workspace members who are **not
+already on the project**, with ids, names and their workspace role — no email addresses. Both conditions matter.
+A suspended member would be a choice that grants nothing, and somebody already assigned would be a no-op the
+reader has to work out for themselves.
+
+| Decision | Why |
+| -------- | --- |
+| The candidate list is the project module's own, not `OwnerDirectory`'s | That one answers "who can already see this thing", for deciding who may own a piece of work. This is almost its inverse: the people worth offering are the ones who cannot see the project yet |
+| They join in the role they hold in the agency | People are almost always on a project in their own role, and the member directory is where a role changes. Asking twice would be asking a question nobody has a different answer to |
+| An empty project says what that means | "Nobody is on this project" and, underneath, that the client's work is then visible only to people who can see every project. A blank list leaves a reader to infer it |
+| Removing somebody states the consequence | They lose sight of that client's work, **including anything already in their name**. It is the one control in the dialog whose effect reaches outside it |
+| A reader without `projects.manage_members` sees the list and no controls | Who can see a client is worth knowing for anybody who can see the project; changing it is a separate permission |
+
 ### Adding a colleague, without an email to send
 
 `POST /api/members`, needing `users.invite` — a permission that had been granted to owners and administrators

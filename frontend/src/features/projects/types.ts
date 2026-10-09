@@ -48,3 +48,26 @@ export const ALLOWED_TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
 
 /** Statuses during which campaigns may spend. Shown so pacing is never a surprise. */
 export const SPENDING_STATUSES: ProjectStatus[] = ['active'];
+
+/** Somebody on a project, in the role they hold on it. */
+export type ProjectMember = {
+  user_id: string;
+  name: string;
+  email: string;
+  role_slug: string;
+  role_name: string;
+};
+
+/**
+ * Somebody who could be given access to a project.
+ *
+ * `role_slug` is their **workspace** role, offered as the default for the assignment: people are almost always
+ * on a project in the role they hold in the agency, and asking twice would be asking a question nobody has a
+ * different answer to. No email address — a picker does not need one.
+ */
+export type AssignableMember = {
+  user_id: string;
+  name: string;
+  role_slug: string;
+  role_name: string;
+};

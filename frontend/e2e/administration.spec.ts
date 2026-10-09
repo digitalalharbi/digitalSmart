@@ -57,6 +57,88 @@ test.describe('administration', () => {
     await expect(page.getByRole('alert')).toContainText('last owner');
   });
 
+  /*
+   * The whole onboarding journey, because the parts were each tested and the join was not: an administrator
+   * creates a colleague, that colleague signs in with the password they were given, the product refuses to show
+   * them anything until they replace it, and the one they were given stops working.
+   *
+   * It creates a real account with a run-unique address, which is safe in the shared seeded database: a new
+   * member is on no project, so they appear in no owner picker and no other test's figures.
+   */
+  test('onboards a colleague: given a password, forced to replace it, then let in', async ({
+    page,
+    context,
+  }) => {
+    const address = `onboarded-${Date.now()}@example.com`;
+    const chosen = 'a-passphrase-of-my-own';
+
+    await signIn(page, ACCOUNTS.owner);
+    await page.goto('/administration');
+    await expect(page.getByText('Add a colleague')).toBeVisible({ timeout: 30_000 });
+
+    await page.getByLabel('Name*', { exact: true }).fill('Onboarded Colleague');
+    await page.getByLabel(/Email address/).fill(address);
+    await page.getByRole('button', { name: 'Add them' }).click();
+
+    /* The password is shown once, here, and nothing stores it — so the test reads it the way a person would. */
+    const announcement = page.getByText(/can sign in once with/);
+    await expect(announcement).toBeVisible({ timeout: 20_000 });
+
+    const given = (await announcement.textContent())?.match(/with: (\S+)/)?.[1];
+    expect(given).toBeTruthy();
+
+    /* Off the page before clearing its cookies — see the note in `budgets.spec.ts`. */
+    await page.goto('about:blank');
+    await context.clearCookies();
+
+    await page.goto('/login');
+    await page.getByLabel('Email').fill(address);
+    await page.getByLabel('Password').fill(given ?? '');
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    /*
+     * The product refuses everything else until the password is theirs, so what they get is the dialog and no
+     * way out of it but signing out. A cancel button here would close onto a product that answers nothing.
+     */
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible({ timeout: 30_000 });
+    await expect(dialog.getByText(/given to you by somebody else/)).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Cancel' })).toHaveCount(0);
+
+    await dialog.getByLabel('Your current password*', { exact: true }).fill(given ?? '');
+    await dialog.getByLabel('New password*', { exact: true }).fill(chosen);
+    await dialog.getByLabel('New password again*', { exact: true }).fill(chosen);
+    await dialog.getByRole('button', { name: 'Change it' }).click();
+
+    await expect(page.getByText(/The product is open to you now/)).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: 'Continue' }).click();
+
+    /*
+     * And now they are in — on a surface their role allows. A media buyer on no project sees the campaigns
+     * page and is told why it is empty, which is the demo's own demonstration of where visibility comes from.
+     */
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
+
+    /* The password they were given no longer works. */
+    await page.goto('about:blank');
+    await context.clearCookies();
+    await page.goto('/login');
+    await page.getByLabel('Email').fill(address);
+    await page.getByLabel('Password').fill(given ?? '');
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    /* The server's own sentence, which says nothing about whether the account exists. */
+    await expect(page.getByText('These credentials do not match our records.')).toBeVisible({
+      timeout: 20_000,
+    });
+
+    /* The one they chose does. */
+    await page.getByLabel('Password').fill(chosen);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    await expect(page).toHaveURL(/^(?!.*\/login).*$/, { timeout: 30_000 });
+  });
+
   test('a media buyer gets a read-only directory and no audit log', async ({ page }) => {
     await signIn(page, ACCOUNTS.buyer);
 

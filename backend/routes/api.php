@@ -150,6 +150,12 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
 
     Route::get('projects/{project}/members', [ProjectMemberController::class, 'index'])
         ->whereUuid('project')->name('projects.members.index');
+    /*
+     * Who could be given access. Project membership is the only thing that grants sight of a client's data, so
+     * this list is active workspace members who are not on the project yet — see `ListAssignableToProject`.
+     */
+    Route::get('projects/{project}/assignable', [ProjectMemberController::class, 'assignable'])
+        ->whereUuid('project')->name('projects.members.assignable');
     Route::post('projects/{project}/members', [ProjectMemberController::class, 'store'])
         ->whereUuid('project')->name('projects.members.store');
     Route::delete('projects/{project}/members/{user}', [ProjectMemberController::class, 'destroy'])
