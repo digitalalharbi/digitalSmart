@@ -769,7 +769,8 @@
       "connect": "Add a property",
       "revenueAuthority": "Can report revenue",
       "emptyTitle": "Nothing is measuring this work yet",
-      "emptyBody": "Connect an analytics property, a store or an ad account, then bind it to this client."
+      "emptyBody": "Connect an analytics property, a store or an ad account, then bind it to this client.",
+      "remove": "Remove"
     },
     "conversions": {
       "title": "What counts as success",
@@ -791,7 +792,17 @@
       "rollUp": "Roll-up",
       "none": "The connected account can read no properties.",
       "unavailable": "Google Analytics is not connected yet, or its authorisation is not complete. Fix that on the integrations page.",
-      "failed": "Could not register that property. It may already be registered for this client."
+      "failed": "Could not register that property. It may already be registered for this client.",
+      "whatKind": "What are you connecting?",
+      "kinds": {
+        "property": "Analytics property",
+        "container": "Tag container"
+      },
+      "containerSubtitle": "Every tag container this workspace’s Tag Manager connection can read. A container is not a source of figures — registering one is what lets this page tell a published change from a saved one.",
+      "containerUnavailable": "Google Tag Manager is not connected yet, or its authorisation is not complete. Fix that on the integrations page.",
+      "containerNone": "The connected account can read no tag containers.",
+      "notWeb": "Not a web container",
+      "noDomains": "No domain recorded on the container"
     },
     "sync": {
       "done": "Read {{name}}: {{rows}} rows across {{days}} days.",
@@ -892,6 +903,15 @@
       "found": "In the published container",
       "noneExpected": "No analytics source is registered for this client.",
       "noneFound": "The published container refers to none."
+    },
+    "remove": {
+      "title": "Stop measuring through “{{name}}”?",
+      "body": "This cannot be undone, and it takes more with it than the row:",
+      "counts": "The day-by-day event counts read through this source are deleted. They only ever meant anything as read through here.",
+      "mappings": "Conversion definitions survive, but lose the event mapping that named this source.",
+      "leads": "Leads it reported keep their record and stop naming it.",
+      "confirm": "Remove it",
+      "failed": "Could not remove that source."
     }
   },
   "commerce": {

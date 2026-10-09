@@ -741,6 +741,12 @@ Every response carries three derived fields rather than stored ones:
   a browser said a sale was worth; an ad platform reports what it believes it caused. Neither
   is an invoice.
 
+**`DELETE` cascades, and the interface says so before it happens.** The day-by-day counts read through the
+source go with it — those figures only ever meant anything *as read through there*, and orphans would leave a
+client's history including events from a property nobody can look up any more. Conversion definitions survive
+and lose the mapping that named the source; leads it reported keep their record and stop naming it. Audited as
+`measurement.source_deleted`. The Tracking Center's removal dialog names all three before confirming.
+
 ### `GET|POST /api/measurement/conversions`, `PUT|DELETE /api/measurement/conversions/{definition}`
 
 What counts as success, and which raw event names mean it.
@@ -870,7 +876,14 @@ it is what somebody will find in their client's page source, and the only way to
 container is the right one. `is_web` distinguishes a web container from a server-side or app one, so
 nobody expects web page events from something measuring elsewhere.
 
-Empty when Tag Manager is not connected.
+Empty when Tag Manager is not connected — not an error: nothing connected is the ordinary case, and the
+integrations page is where it is fixed.
+
+This is the discovery list the Tracking Center registers a container from, as a source of kind `tag_manager`
+with the container's `path` as its `external_id`. The `path` rather than the `GTM-` id: it is what Tag Manager's
+own API addresses a container by, and `/readiness` matches on either, so the stable one survives a rename.
+Registering a container buys the readiness check rather than a source of figures — a container delivers tags, it
+does not report events — and the picker says so.
 
 ### `GET /api/measurement/sources/{source}/readiness`
 

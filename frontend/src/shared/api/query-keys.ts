@@ -70,8 +70,6 @@ export const queryKeys = {
      * would show a diagnosis of a state that no longer exists.
      */
     health: (scope: Record<string, unknown>) => ['measurement', 'health', scope] as const,
-    sources: (scope: Record<string, unknown>) => ['measurement', 'sources', scope] as const,
-    conversions: (scope: Record<string, unknown>) => ['measurement', 'conversions', scope] as const,
     properties: (provider: string) => ['measurement', 'properties', provider] as const,
     suggestions: (sourceId: string) => ['measurement', 'suggestions', sourceId] as const,
     containers: () => ['measurement', 'containers'] as const,

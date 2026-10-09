@@ -171,6 +171,82 @@ test.describe('tracking centre', () => {
     await expect(containers.getByText(/^(A live version exists|Never published)$/)).toBeVisible();
   });
 
+  /*
+   * Registering a tag container and unregistering a source: the two dead ends in this module. The readiness
+   * panel could read a container registered for a client and nothing could register one, and a source once
+   * registered could never be removed.
+   *
+   * It creates its own client first. A source is unique per client, provider and external id, and both browser
+   * projects run at once against one database — registering the same fixture container for a demo client
+   * twice is a collision the server is right to refuse. A fresh client per project avoids it and leaves the
+   * demo's own sources untouched.
+   */
+  test('registers a tag container for a client, then removes it again', async ({ page }) => {
+    const client = named('Tracking client');
+
+    await signIn(page, ACCOUNTS.owner);
+    await page.goto('/clients');
+    await page.getByRole('button', { name: 'New client' }).click();
+    await page.getByLabel('Client name').fill(client);
+    await page.getByLabel('Industry').fill('Healthcare');
+    await page.getByRole('button', { name: 'Save' }).click();
+    /*
+     * Filtered by text rather than matched by a name pattern: the project suffix is in square brackets, and
+     * `new RegExp(client)` reads those as a character class and matches nothing.
+     */
+    await expect(page.getByRole('row').filter({ hasText: client })).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await page.goto('/tracking');
+    await expect(page.getByRole('heading', { level: 1, name: 'Tracking Center' })).toBeVisible({
+      timeout: 30_000,
+    });
+
+    /*
+     * Scoped to the new client, so the sources table shows this test's work and nothing else. By role rather
+     * than by label: the picker's `<label>` wraps the `<select>`, so its text content carries every option
+     * with it and an exact label match finds nothing.
+     */
+    await page.getByRole('combobox', { name: 'Client' }).selectOption({ label: client });
+
+    /*
+     * Scoped to the panel. The issue list raises the same sentence as a critical finding — correctly: a client
+     * nothing measures is the first thing that page should say — so the unscoped text matches twice.
+     */
+    const measuring = page.getByRole('region', { name: 'What is measuring' });
+    await expect(measuring.getByText('Nothing is measuring this work yet')).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await page.getByRole('button', { name: 'Add a property' }).click();
+    await page.getByRole('button', { name: 'Tag container' }).click();
+
+    /*
+     * A server-side container cannot deliver these tags at all, and the fixtures include one: the badge is
+     * the difference between a reader picking the right container and picking the one with the right name.
+     */
+    await expect(page.getByText('Not a web container')).toBeVisible({ timeout: 30_000 });
+
+    const container = page.getByRole('listitem').filter({ hasText: 'GTM-AW3TTQ2' });
+    await container.getByRole('button', { name: 'Use this' }).click();
+
+    /* And it is measuring: the row carries the container's name, from the provider rather than from a form. */
+    const row = page.getByRole('row', { name: /Al Waha Clinics/ });
+    await expect(row).toBeVisible({ timeout: 20_000 });
+
+    await row.getByRole('button', { name: 'Remove' }).click();
+
+    /* What removal takes with it, stated before it happens. */
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('day-by-day event counts');
+    await dialog.getByRole('button', { name: 'Remove it' }).click();
+
+    await expect(measuring.getByText('Nothing is measuring this work yet')).toBeVisible({
+      timeout: 20_000,
+    });
+  });
+
   test('does not offer the tracking centre to a client viewer', async ({ page }) => {
     await signIn(page, ACCOUNTS.client);
 

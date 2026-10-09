@@ -29,14 +29,6 @@ export async function fetchTrackingHealth(scope: TrackingScope): Promise<Trackin
   return data.data;
 }
 
-export async function fetchSources(scope: TrackingScope): Promise<MeasurementSource[]> {
-  const { data } = await api.get<{ data: MeasurementSource[] }>('/measurement/sources', {
-    params: scopeParams(scope),
-  });
-
-  return data.data;
-}
-
 export async function createSource(draft: SourceDraft): Promise<MeasurementSource> {
   const { data } = await api.post<{ data: MeasurementSource }>('/measurement/sources', draft);
 
@@ -45,14 +37,6 @@ export async function createSource(draft: SourceDraft): Promise<MeasurementSourc
 
 export async function deleteSource(id: string): Promise<void> {
   await api.delete(`/measurement/sources/${id}`);
-}
-
-export async function fetchConversions(scope: TrackingScope): Promise<EventDefinition[]> {
-  const { data } = await api.get<{ data: EventDefinition[] }>('/measurement/conversions', {
-    params: scopeParams(scope),
-  });
-
-  return data.data;
 }
 
 export async function createConversion(draft: ConversionDraft): Promise<EventDefinition> {

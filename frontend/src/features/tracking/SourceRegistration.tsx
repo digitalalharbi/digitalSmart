@@ -6,11 +6,24 @@ import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { useCreateSourceMutation, usePropertiesQuery } from './useTracking';
-import type { DiscoveredProperty } from './types';
+import { Choice, ChoiceGroup } from '@/shared/ui/choice';
+import { useContainersQuery, useCreateSourceMutation, usePropertiesQuery } from './useTracking';
+import type { DiscoveredProperty, TagContainer } from './types';
 
 /**
- * Register an analytics property as measuring a client.
+ * The two things discovery can register.
+ *
+ * Both are Google, both come from the same connection, and they are not the same kind of thing: a property is
+ * what reports events, a container is how the tags that send them get delivered. The product keeps them apart
+ * everywhere else — `MeasurementSourceKind`, the readiness panel, the revenue-authority rule — so the picker
+ * does too, rather than offering one list of "things" and guessing from the shape of an id.
+ */
+const KINDS = ['property', 'container'] as const;
+
+type DiscoveryKind = (typeof KINDS)[number];
+
+/**
+ * Register what measures a client's work: an analytics property, or a tag container.
  *
  * Discovery-driven rather than a text field, and that is the point: nobody can be expected to type
  * `properties/412006881` correctly, and a mistyped property id produces a source that syncs
@@ -19,6 +32,15 @@ import type { DiscoveredProperty } from './types';
  * The list is deliberately unfiltered — an agency's Google account holds properties for clients it
  * no longer works with — so the site and the `G-` measurement id are shown beside every one. A list
  * of numeric ids would be unusable for the single decision this exists to support.
+ *
+ * **Containers were the dead end.** The readiness panel — the only screen in the product that can tell a change
+ * saved in Tag Manager from a change actually published — reads containers *registered as sources for this
+ * client*, and nothing could register one. `GET /api/measurement/containers` existed with a hook and no caller,
+ * so the panel's empty state told an agency to connect a container and offered no way to do it. The container
+ * list is fetched only when that tab is open: it spends the workspace's credentials on Google's API.
+ *
+ * A container is **not** measurement, and the copy says so: registering one buys the readiness check, not a
+ * source of figures. Calling it "what is measuring" would invite somebody to expect events from it.
  */
 export function SourceRegistration({
   clientId,
@@ -29,8 +51,10 @@ export function SourceRegistration({
 }) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [kind, setKind] = useState<DiscoveryKind>('property');
   const [chosenClient, setChosenClient] = useState<string | null>(clientId);
-  const properties = usePropertiesQuery(isOpen ? 'google_analytics' : null);
+  const properties = usePropertiesQuery(isOpen && kind === 'property' ? 'google_analytics' : null);
+  const containers = useContainersQuery(isOpen && kind === 'container');
   const create = useCreateSourceMutation();
 
   const targetClient = chosenClient ?? clientId;
@@ -53,6 +77,29 @@ export function SourceRegistration({
     );
   }
 
+  function registerContainer(container: TagContainer) {
+    if (targetClient === null) {
+      return;
+    }
+
+    create.mutate(
+      {
+        client_id: targetClient,
+        project_id: null,
+        kind: 'tag_manager',
+        provider: 'google_tag_manager',
+        /*
+         * The path, not the `GTM-` id. It is the identifier Tag Manager's own API addresses a container by, and
+         * the readiness check matches on either — so storing the stable one costs nothing and survives a
+         * container being renamed.
+         */
+        external_id: container.path,
+        name: container.name,
+      },
+      { onSuccess: () => setIsOpen(false) },
+    );
+  }
+
   if (!isOpen) {
     return (
       <Button variant="secondary" size="sm" onClick={() => setIsOpen(true)}>
@@ -66,12 +113,26 @@ export function SourceRegistration({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-content text-sm font-medium">{t('tracking.register.title')}</p>
-          <p className="text-content-secondary mt-1 text-sm">{t('tracking.register.subtitle')}</p>
+          <p className="text-content-secondary mt-1 text-sm">
+            {kind === 'property'
+              ? t('tracking.register.subtitle')
+              : t('tracking.register.containerSubtitle')}
+          </p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
           {t('common.cancel')}
         </Button>
       </div>
+
+      <ChoiceGroup label={t('tracking.register.whatKind')} className="mt-4">
+        <div className="flex flex-wrap gap-2">
+          {KINDS.map((option) => (
+            <Choice key={option} isSelected={kind === option} onSelect={() => setKind(option)}>
+              {t(`tracking.register.kinds.${option}`)}
+            </Choice>
+          ))}
+        </div>
+      </ChoiceGroup>
 
       {clientId === null ? (
         <label className="mt-4 flex flex-col gap-1.5">
@@ -100,7 +161,50 @@ export function SourceRegistration({
       ) : null}
 
       <div className="mt-4">
-        {properties.isLoading ? (
+        {kind === 'container' ? (
+          containers.isLoading ? (
+            <Skeleton className="h-24 w-full" />
+          ) : containers.isError ? (
+            <Alert tone="warning">{t('tracking.register.containerUnavailable')}</Alert>
+          ) : (containers.data ?? []).length === 0 ? (
+            <Alert tone="info">{t('tracking.register.containerNone')}</Alert>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {(containers.data ?? []).map((container) => (
+                <li
+                  key={container.path}
+                  className="border-line-subtle flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <p className="text-content truncate text-sm font-medium">{container.name}</p>
+                      {/*
+                       * The `GTM-` id, beside the name, because an agency's account holds containers named
+                       * "Website" for four different clients and the public id is the only thing that tells
+                       * them apart. A container that is not a web container cannot deliver these tags at all.
+                       */}
+                      <Badge>{container.public_id}</Badge>
+                      {container.is_web ? null : (
+                        <Badge tone="warning">{t('tracking.register.notWeb')}</Badge>
+                      )}
+                    </div>
+                    <p className="text-content-tertiary truncate text-xs">
+                      {container.domain_names.join(' · ') || t('tracking.register.noDomains')}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={targetClient === null || create.isPending}
+                    onClick={() => registerContainer(container)}
+                  >
+                    {t('tracking.register.use')}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )
+        ) : properties.isLoading ? (
           <Skeleton className="h-24 w-full" />
         ) : properties.isError ? (
           /*

@@ -4,6 +4,67 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The Tracking Center could not register a container or remove a source
+
+Two dead ends, found by sweeping the frontend for exported hooks nothing calls.
+
+**A tag container could not be registered.** The readiness panel is the only screen in this product that can
+tell a change *saved* in Tag Manager from a change actually *published* — the single most common reason a tag
+that looks correct is not firing. It reads containers registered as sources for the client, and nothing could
+register one: `GET /api/measurement/containers` had a route, a use case, tests and `useContainersQuery`, with no
+caller. The panel's empty state told an agency to connect a container and offered no way to do it.
+
+**A source could never be removed.** `DELETE /api/measurement/sources/{source}` had the same shape of hole. A
+mistyped property, a container belonging to a client the agency no longer works with, or a GA4 roll-up
+registered beside the properties it aggregates — each was permanent, and the last of those doubles every figure
+it touches.
+
+### Added
+
+- **Discovery registers either kind.** The registration panel asks what is being connected — an analytics
+  property or a tag container — and keeps the two apart, as the rest of the product does: a property reports
+  events, a container delivers the tags that send them. The copy says a container buys the readiness check
+  rather than a source of figures, because calling it "what is measuring" would invite somebody to expect
+  events from it.
+- **The `GTM-` id beside every container name**, because an agency's account holds four containers called
+  "Website" and the public id is the only thing that tells them apart. A container that cannot deliver web tags
+  is labelled as such rather than silently offered.
+- **Registered by `path`, not by the `GTM-` id.** It is what Tag Manager's own API addresses a container by, and
+  the readiness check matches on either — so the stable one costs nothing and survives a rename.
+- **The container list is fetched only when that tab is open.** It spends the workspace's credentials on
+  Google's API, which is not something to do on the chance somebody wants it.
+- **Removing a source names what it takes with it**, in a dialog rather than a row click: the day-by-day counts
+  read through it are deleted, conversion definitions survive but lose the mapping that named it, and leads it
+  reported keep their record and stop naming it. It sits beside "Read now" in the same row and it is the
+  irreversible one.
+- Removal is `tracking.manage`, like registration. A reader who can only look at the tracking picture is
+  offered neither control rather than a disabled one that would always be refused.
+
+### Removed
+
+- `useMeasurementSourcesQuery` and `useConversionsQuery`, both unreachable. The health read already returns the
+  sources and the definitions, judged against each other; a second copy fetched beside it is a second answer to
+  the same question that can disagree with the first while one page shows both. Their `api.ts` functions and
+  query keys went with them.
+
+### Found by the gates
+
+- The registration control is disabled until a client is chosen, which is correct — a source is bound to one
+  client — and is what the first version of the container test tripped over.
+- Three selector faults in the new end-to-end journey, each a real statement about the product: a client name
+  carrying `[chromium]` is not a regular expression; the scope picker's `<label>` wraps its `<select>`, so the
+  label's text carries every option and an exact match finds nothing; and "Nothing is measuring this work yet"
+  appears **twice** on a client nothing measures — once as the panel's empty state and once as the issue list's
+  critical finding, which is the page working as designed.
+- One pre-existing flake observed under full-suite load: the conversion test's saved name not appearing within
+  twenty seconds on mobile Safari. It passes in isolation on both browsers, with retries off, and the
+  configured retry absorbed it. Recorded rather than papered over.
+
+### Gates
+
+1 752 backend tests (6 328 assertions), 560 frontend tests, 389 Playwright tests (1 flaky, retried green),
+PHPStan level 8 clean, Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
 ## Removing somebody left their work in their name
 
 The last of the four assignment columns, approached from the other side. `DELETE /api/members/{user}` removed a

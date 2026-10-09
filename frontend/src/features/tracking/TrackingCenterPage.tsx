@@ -12,6 +12,7 @@ import { ContainerReadiness } from './ContainerReadiness';
 import { ConversionEditor } from './ConversionEditor';
 import { IssueList } from './IssueList';
 import { ObservedEventsChart } from './ObservedEventsChart';
+import { RemoveSourceDialog } from './RemoveSourceDialog';
 import { SourceRegistration } from './SourceRegistration';
 import { useSyncSourceMutation, useTrackingHealthQuery } from './useTracking';
 import type { EventDefinition, Freshness, MeasurementSource, SyncResult } from './types';
@@ -65,6 +66,12 @@ export function TrackingCenterPage() {
   const scope = useMemo(() => ({ client_id: clientId }), [clientId]);
   const health = useTrackingHealthQuery(scope);
   const sync = useSyncSourceMutation();
+  /*
+   * Removal goes through a dialog: it sits beside "Read now" in the same row and it is the irreversible one.
+   * What it takes with it is named there — see `RemoveSourceDialog`.
+   */
+  const [removing, setRemoving] = useState<MeasurementSource | null>(null);
+  const canManage = can(PERMISSIONS.trackingManage);
 
   const clientOptions = clients.data?.data ?? [];
 
@@ -98,6 +105,15 @@ export function TrackingCenterPage() {
           </select>
         </label>
       </header>
+
+      <RemoveSourceDialog
+        source={removing}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRemoving(null);
+          }
+        }}
+      />
 
       {lastSync === null ? null : <SyncReport name={lastSync.name} result={lastSync.result} />}
 
@@ -187,14 +203,31 @@ export function TrackingCenterPage() {
                           {formatDate(source.last_event_at, i18n.language)}
                         </td>
                         <td className="px-4 py-3 text-end">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => runSync(source)}
-                            disabled={sync.isPending}
-                          >
-                            {t('tracking.sources.sync')}
-                          </Button>
+                          <div className="flex justify-end gap-1.5">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => runSync(source)}
+                              disabled={sync.isPending}
+                            >
+                              {t('tracking.sources.sync')}
+                            </Button>
+                            {/*
+                              Registering a source is `tracking.manage`, and so is unregistering one. A reader
+                              who can only look at the tracking picture is offered neither rather than a
+                              disabled control that would always be refused.
+                            */}
+                            {canManage ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-danger"
+                                onClick={() => setRemoving(source)}
+                              >
+                                {t('tracking.sources.remove')}
+                              </Button>
+                            ) : null}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -217,10 +250,7 @@ export function TrackingCenterPage() {
               <p className="text-content-secondary text-sm">{t('tracking.containers.subtitle')}</p>
             </div>
 
-            <ContainerReadiness
-              sources={health.data.sources}
-              canManage={can(PERMISSIONS.trackingManage)}
-            />
+            <ContainerReadiness sources={health.data.sources} canManage={canManage} />
           </section>
 
           <section className="flex flex-col gap-3" aria-labelledby="tracking-conversions">

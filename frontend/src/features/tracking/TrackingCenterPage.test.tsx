@@ -7,6 +7,7 @@ import type {
   EventDefinition,
   MeasurementSource,
   SyncResult,
+  TagContainer,
   TrackingHealth,
   TrackingIssue,
 } from './types';
@@ -31,21 +32,43 @@ const state = vi.hoisted(() => ({
   health: null as TrackingHealth | null,
   // Shaped per test, so a sync can return a succeeded, partial, failed or skipped run.
   syncResult: null as SyncResult | null,
+  containers: [] as TagContainer[],
 }));
+
+const removed = vi.hoisted(() => vi.fn());
+const created = vi.hoisted(() => vi.fn());
+const permissions = vi.hoisted(() => ({ current: [] as string[] }));
+
+vi.mock('@/features/auth', async () => {
+  const actual = await vi.importActual<Record<string, unknown>>('@/features/auth');
+  return {
+    ...actual,
+    useSession: () => ({
+      user: { id: 'me' },
+      isLoading: false,
+      isAuthenticated: true,
+      can: (permission: string) => permissions.current.includes(permission),
+    }),
+  };
+});
 
 vi.mock('./api', () => ({
   fetchTrackingHealth: () => Promise.resolve(state.health),
-  fetchSources: () => Promise.resolve(state.health?.sources ?? []),
-  fetchConversions: () => Promise.resolve(state.health?.definitions ?? []),
   fetchProperties: () => Promise.resolve([]),
   fetchSuggestions: () => Promise.resolve([]),
   syncSource: () => Promise.resolve(state.syncResult),
-  createSource: () => Promise.resolve({}),
-  deleteSource: () => Promise.resolve(),
+  createSource: (draft: unknown) => {
+    created(draft);
+    return Promise.resolve({});
+  },
+  deleteSource: (id: string) => {
+    removed(id);
+    return Promise.resolve();
+  },
   createConversion: () => Promise.resolve({}),
   updateConversion: () => Promise.resolve({}),
   deleteConversion: () => Promise.resolve(),
-  fetchContainers: () => Promise.resolve([]),
+  fetchContainers: () => Promise.resolve(state.containers),
   fetchReadiness: () => Promise.resolve({}),
 }));
 
@@ -125,9 +148,29 @@ function health(overrides: Partial<TrackingHealth> = {}): TrackingHealth {
   };
 }
 
+function container(overrides: Partial<TagContainer> = {}): TagContainer {
+  return {
+    container_id: '6001234',
+    path: 'accounts/1234/containers/6001234',
+    name: 'Noon Retail — Web',
+    public_id: 'GTM-ABC123',
+    account_id: 'accounts/1234',
+    usage_contexts: ['web'],
+    is_web: true,
+    domain_names: ['noon-retail.example'],
+    tag_ids: [],
+    tag_manager_url: null,
+    ...overrides,
+  };
+}
+
 beforeEach(() => {
   state.health = health();
   state.syncResult = null;
+  state.containers = [container()];
+  removed.mockReset();
+  created.mockReset();
+  permissions.current = [];
 });
 
 describe('the tracking centre', function () {
@@ -348,5 +391,101 @@ describe('the tracking centre', function () {
      */
     expect(within(editor).getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(within(editor).getByRole('combobox', { name: 'Client' })).toHaveValue('');
+  });
+});
+
+/*
+ * Registering a source and unregistering one. `DELETE /api/measurement/sources/{id}` and
+ * `GET /api/measurement/containers` both existed with hooks and no callers: a source could never be removed, and
+ * a tag container could never be registered — which left the readiness panel telling an agency to connect one
+ * and offering no way to do it.
+ */
+describe('what the tracking centre can set up', () => {
+  it('offers no removal to somebody who can only read the page', async () => {
+    await renderWithProviders(<TrackingCenterPage />);
+
+    expect(await screen.findByRole('button', { name: 'Read now' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
+  });
+
+  it('names what removing a source takes with it, and removes nothing until confirmed', async () => {
+    permissions.current = ['tracking.manage'];
+    const user = userEvent.setup();
+    await renderWithProviders(<TrackingCenterPage />);
+
+    await user.click(await screen.findByRole('button', { name: 'Remove' }));
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveTextContent('Stop measuring through “Noon Retail — Web”?');
+    /* The cascade, which is neither obvious nor small. */
+    expect(dialog).toHaveTextContent('day-by-day event counts');
+    expect(dialog).toHaveTextContent('Conversion definitions survive');
+    expect(removed).not.toHaveBeenCalled();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Remove it' }));
+
+    await waitFor(() => expect(removed).toHaveBeenCalledWith('source-1'));
+  });
+
+  it('registers a tag container from discovery, as a container rather than a property', async () => {
+    permissions.current = ['tracking.manage'];
+    const user = userEvent.setup();
+    await renderWithProviders(<TrackingCenterPage />);
+
+    /*
+     * The client first, in the page's own scope picker. Registration binds a source to one client, so with the
+     * page showing every client the panel has to ask — and the control that would register nothing is disabled
+     * until it has an answer.
+     */
+    await user.selectOptions(await screen.findByLabelText('Client'), 'client-1');
+
+    await user.click(screen.getByRole('button', { name: 'Add a property' }));
+    await user.click(screen.getByRole('button', { name: 'Tag container' }));
+
+    /* The `GTM-` id beside the name: an agency's account holds four containers called "Website". */
+    expect(await screen.findByText('GTM-ABC123')).toBeInTheDocument();
+    /* And it says what a container is for, because it is not a source of figures. */
+    expect(screen.getByText(/published change from a saved one/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Use this' }));
+
+    await waitFor(() =>
+      expect(created).toHaveBeenCalledWith({
+        client_id: 'client-1',
+        project_id: null,
+        kind: 'tag_manager',
+        provider: 'google_tag_manager',
+        /* The path, which Tag Manager's own API addresses a container by. */
+        external_id: 'accounts/1234/containers/6001234',
+        name: 'Noon Retail — Web',
+      }),
+    );
+  });
+
+  it('says a container that cannot deliver web tags cannot', async () => {
+    permissions.current = ['tracking.manage'];
+    state.containers = [container({ is_web: false, usage_contexts: ['ios'] })];
+    const user = userEvent.setup();
+    await renderWithProviders(<TrackingCenterPage />);
+
+    await user.click(await screen.findByRole('button', { name: 'Add a property' }));
+    await user.click(screen.getByRole('button', { name: 'Tag container' }));
+
+    expect(await screen.findByText('Not a web container')).toBeInTheDocument();
+  });
+
+  it('points at the integrations page when Tag Manager is not connected', async () => {
+    permissions.current = ['tracking.manage'];
+    state.containers = [];
+    const user = userEvent.setup();
+    await renderWithProviders(<TrackingCenterPage />);
+
+    await user.click(await screen.findByRole('button', { name: 'Add a property' }));
+    await user.click(screen.getByRole('button', { name: 'Tag container' }));
+
+    /* Empty, not an error: nothing connected is the ordinary case, and it is fixed elsewhere. */
+    expect(
+      await screen.findByText('The connected account can read no tag containers.'),
+    ).toBeInTheDocument();
   });
 });

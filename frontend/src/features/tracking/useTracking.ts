@@ -6,10 +6,8 @@ import {
   deleteConversion,
   deleteSource,
   fetchContainers,
-  fetchConversions,
   fetchProperties,
   fetchReadiness,
-  fetchSources,
   fetchSuggestions,
   fetchTrackingHealth,
   syncSource,
@@ -33,23 +31,12 @@ export function useTrackingHealthQuery(scope: TrackingScope, enabled = true) {
   });
 }
 
-export function useMeasurementSourcesQuery(scope: TrackingScope, enabled = true) {
-  return useQuery({
-    queryKey: queryKeys.measurement.sources(scope),
-    queryFn: () => fetchSources(scope),
-    enabled,
-    staleTime: 30_000,
-  });
-}
-
-export function useConversionsQuery(scope: TrackingScope, enabled = true) {
-  return useQuery({
-    queryKey: queryKeys.measurement.conversions(scope),
-    queryFn: () => fetchConversions(scope),
-    enabled,
-    staleTime: 30_000,
-  });
-}
+/*
+ * There is deliberately no `useMeasurementSourcesQuery` or `useConversionsQuery`. Both existed, wrapping
+ * `GET /measurement/sources` and `GET /measurement/conversions`, and both were unreachable: the health read
+ * already returns the sources and the definitions, judged against each other, and a second copy fetched beside
+ * it is a second answer to the same question that can disagree with the first while a page shows both.
+ */
 
 /**
  * Properties a connection can read.
