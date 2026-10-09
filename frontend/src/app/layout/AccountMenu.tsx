@@ -61,6 +61,17 @@ export function AccountMenu() {
             <p className="text-content-tertiary truncate text-xs">{user.email}</p>
           </div>
 
+          {/*
+            A sign-out that failed, said in the menu it was clicked in. The session is still live, so the
+            honest thing is to leave the person where they are and let them try again — not to show them a
+            sign-in screen while the back route still serves their work.
+          */}
+          {logout.isError ? (
+            <p role="alert" className="text-danger px-2.5 pb-2 text-xs">
+              {t('account.signOutFailed')}
+            </p>
+          ) : null}
+
           <DropdownMenu.Separator className="bg-line-subtle my-1 h-px" />
 
           <DropdownMenu.Label className="text-content-tertiary px-2.5 py-1 text-xs">
@@ -108,8 +119,16 @@ export function AccountMenu() {
           <DropdownMenu.Item
             disabled={logout.isPending}
             onSelect={() => {
+              /*
+               * On success, not on settle. A sign-out whose request never reached the server leaves the session
+               * alive, and navigating to the sign-in screen anyway told somebody they were signed out while
+               * the back route still served their client list — which an end-to-end run under load caught.
+               *
+               * The failure stays on screen beside the menu, because the only useful thing to do about it is
+               * try again on a connection that works.
+               */
               logout.mutate(undefined, {
-                onSettled: () => void navigate('/login', { replace: true }),
+                onSuccess: () => void navigate('/login', { replace: true }),
               });
             }}
             className="text-content hover:bg-surface-hover focus:bg-surface-hover flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-none"

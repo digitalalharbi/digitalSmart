@@ -7,6 +7,7 @@ use App\Domain\Audit\AuditAction;
 use App\Domain\Workspace\MembershipStatus;
 use App\Infrastructure\Persistence\Eloquent\Model\AuditLog;
 use App\Infrastructure\Persistence\Eloquent\Model\User;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 it('signs a member in and returns their workspaces and permissions', function (): void {
@@ -195,6 +196,42 @@ it('signs out and records it', function (): void {
         ->assertNoContent();
 
     expect(AuditLog::query()->where('action', AuditAction::UserLoggedOut->value)->exists())->toBeTrue();
+});
+
+/*
+ * The half of signing out that matters, and the half no test covered: that the *next* read is refused.
+ *
+ * An end-to-end run caught this: after signing out, the back route to a client list rendered three clients,
+ * names and industries included. The audit entry was there and the interface had navigated to the sign-in
+ * screen, so every assertion anybody had written still passed.
+ *
+ * Driven through the real sign-in rather than `actingAs`, because the thing under test is the session: a test
+ * that acts as a user and then logs out is testing a guard, not a cookie.
+ */
+it('refuses the next read after signing out', function (): void {
+    $scenario = workspaceScenario();
+    $scenario->owner->forceFill(['password' => 'a-known-passphrase'])->save();
+
+    $this->postJson('/api/auth/login', [
+        'email' => $scenario->owner->getAttribute('email'),
+        'password' => 'a-known-passphrase',
+    ])->assertOk();
+
+    /* Signed in, and the data is there. The point of comparison for the assertion after it. */
+    $this->getJson('/api/clients')->assertOk();
+
+    $this->postJson('/api/auth/logout')->assertNoContent();
+
+    /*
+     * The guards are resolved once per application instance and `RequestGuard` caches the user it resolved, so
+     * a second request inside one test process is answered from that memory rather than from the session.
+     * Without this line the assertions below pass against a guard's recollection of somebody who has gone — a
+     * browser gets a fresh process per request and no such memory.
+     */
+    Auth::forgetGuards();
+
+    $this->getJson('/api/auth/me')->assertUnauthorized();
+    $this->getJson('/api/clients')->assertUnauthorized();
 });
 
 it('rate limits repeated sign-in attempts against one account', function (): void {

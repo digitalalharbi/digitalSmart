@@ -47,16 +47,31 @@ export function useLoginMutation() {
   });
 }
 
+/**
+ * Sign out.
+ *
+ * **Retried on a dropped connection, and the cache is cleared only once the server has answered.** Both halves
+ * were wrong, and an end-to-end run under load showed what that costs: the sign-out POST failed with no
+ * response, the interface navigated to the sign-in screen regardless, and the back route to a client list
+ * rendered three clients — because the session was never ended. A sign-out that did not happen must not look
+ * like one that did.
+ *
+ * Safe to send again, which is why the retry belongs here and not on a password change: signing out twice signs
+ * you out once.
+ */
 export function useLogoutMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (): Promise<void> => {
-      await api.post('/auth/logout');
+      await api.post('/auth/logout', undefined, { retryOnNetworkError: true });
     },
-    onSettled: () => {
-      // Clear every cached query: the next session may be a different person
-      // in a different workspace, and stale client data must not leak across.
+    onSuccess: () => {
+      /*
+       * Cleared on success rather than on settle. The next session may be a different person in a different
+       * workspace, so nothing cached may survive — but clearing it after a *failed* sign-out empties the screen
+       * of somebody who is still signed in, which reads as "signed out" and is not.
+       */
       queryClient.clear();
     },
   });

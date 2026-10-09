@@ -125,6 +125,23 @@ leaves yesterday's spend on a dashboard, a webhook that leaves an order out of a
 abandoned work is how a product comes to show figures it cannot defend, so any failure at all degrades the
 health report rather than waiting for a threshold. See `docs/RUNBOOKS.md`.
 
+## Signing out, including when it fails
+
+`POST /api/auth/logout` invalidates the session and regenerates the CSRF token, and the next read is refused —
+which a test proves by signing in for real, reading a client list, signing out, and reading it again.
+
+**The failure path is the part worth writing down.** A sign-out whose request never reaches the server leaves
+the session live, so the interface must not say otherwise. Three rules follow:
+
+| Rule | Why |
+| ---- | --- |
+| The request is retried once on a dropped connection | Signing out twice signs you out once. This is the same test the sign-in mutation applies, and the reason a password change deliberately fails instead |
+| The sign-in screen is shown on **success**, never on settle | Navigating after a failure told somebody they were signed out while the back route still served their client list. An end-to-end run under load caught exactly that |
+| The cached data is cleared on **success** too | Clearing it after a failed sign-out empties the screen of somebody who is still signed in, which is what made the failure look like a success |
+
+The failed attempt is reported in the account menu it was clicked in, because the only useful response is to
+try again on a connection that works.
+
 ## Changing a password
 
 `POST /api/auth/password`, needing a session and **no permission at all**: a password belongs to the person, not

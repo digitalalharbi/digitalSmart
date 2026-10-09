@@ -40,9 +40,9 @@ provider.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 1 775 passed (6 396 assertions) — architecture, unit, feature |
-| Frontend tests (Vitest)   | 576 passed                                          |
-| End-to-end (Playwright)   | 397 passed — Chromium + mobile Safari, signing in as real roles |
+| Backend tests (Pest)      | 1 776 passed (6 402 assertions) — architecture, unit, feature |
+| Frontend tests (Vitest)   | 579 passed                                          |
+| End-to-end (Playwright)   | 398 passed — Chromium + mobile Safari, signing in as real roles |
 | Accessibility             | axe-core WCAG 2.2 AA on five surfaces, both browsers, and in Arabic |
 | Static analysis           | PHPStan level 8, clean; TypeScript strict, clean    |
 | Style                     | Pint, ESLint and Prettier, clean                    |

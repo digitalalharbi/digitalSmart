@@ -139,7 +139,8 @@
       "required": "The password you signed in with was given to you by somebody else. Choose your own before going any further — nothing else in the product will answer until you do.",
       "doneForced": "Done. The product is open to you now, and the password you were given no longer works.",
       "continue": "Continue"
-    }
+    },
+    "signOutFailed": "Signing out did not go through — you are still signed in. Check your connection and try again."
   },
   "clients": {
     "subtitle": "Every client in this workspace.",

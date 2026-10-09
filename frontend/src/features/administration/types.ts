@@ -1,12 +1,13 @@
 /**
  * Every status the server can report, which is not the same list as the one worth filtering by.
  *
- * `invited` is here because a `Member.status` could carry it and the type has to admit that; it is absent from
- * `FILTERABLE_STATUSES` below because this installation never writes one.
+ * `invited` is in the type because a `Member.status` could carry it and the type has to admit that; it is
+ * absent from `FILTERABLE_STATUSES` below because this installation never writes one.
+ *
+ * A union rather than an array to derive from: nothing needs these three at runtime, and a const array kept
+ * only to produce a type is a value that ships for nobody — which is exactly what ESLint said about it.
  */
-const MEMBERSHIP_STATUSES = ['invited', 'active', 'suspended'] as const;
-
-export type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
+export type MembershipStatus = 'invited' | 'active' | 'suspended';
 
 /**
  * The statuses worth filtering the directory by.

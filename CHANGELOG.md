@@ -4,6 +4,60 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## A sign-out that failed looked exactly like one that worked
+
+The end-to-end suite caught this under load, and it is the most serious thing found in this pass: after
+clicking *Sign out*, the back route to the client list rendered **three clients, with names and industries**.
+
+The mechanism, in order:
+
+1. The sign-out `POST` failed with **no response** — the suite's own configuration documents this happening on
+   a loaded machine, and the application reports it correctly.
+2. The mutation navigated to the sign-in screen from `onSettled`, which fires for a failure as readily as for a
+   success. The URL said `/login`, so the first assertion passed.
+3. The server had never been told, so the session was still live. The back route was served, and
+   `RequireSession` was right to render it: the session read answered `200`.
+4. The cache had already been cleared on `onSettled`, so the screen emptied — which is what makes the failure
+   *look* like a sign-out instead of an error.
+
+### Fixed
+
+- **The request is retried on a dropped connection.** Signing out twice signs you out once, which is exactly
+  the test the client's retry rule applies — the same reasoning the sign-in mutation documents, and the reason
+  a password change deliberately does not.
+- **The navigation and the cache clear moved to `onSuccess`.** A sign-out that did not reach the server leaves
+  the person where they were, with their session and their screen intact.
+- **The failure is shown in the menu it was clicked in**, because the only useful response is to try again on
+  a connection that works.
+- **A backend test now proves the next read is refused**, driven through a real sign-in rather than `actingAs`:
+  the thing under test is the session, and a test that acts as a user and then logs out is testing a guard. It
+  calls `Auth::forgetGuards()` between the two, and says why — `RequestGuard` caches the user it resolved, so
+  without it the assertion passes against a guard's recollection of somebody who has gone.
+
+Nothing was weakened to make the suite green: the end-to-end test asserts exactly what it always did, and the
+product now behaves the way it claimed to.
+
+### Gates
+
+1 776 backend tests (6 402 assertions), 579 frontend tests, 398 Playwright tests — no failures and no flakes
+— PHPStan level 8 clean, Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
+## A const kept only to make a type, and a gate claim that was wrong
+
+`MEMBERSHIP_STATUSES` lost its `export` in the sweep above, and that turned it into a value nothing reads:
+ESLint's `no-unused-vars` says so precisely — *assigned a value but only used as a type*. It is now a union,
+and nothing ships to a browser to produce one.
+
+**The honest part of this entry**: the commit before it claimed ESLint clean, and it was not. The run that
+would have caught it was launched and its output was not read before the commit. The lesson is the same one
+the `vi.mock` duplicate-key episode taught — a gate is only a gate if its result is read — and the figure in a
+commit message is a measurement, not a hope.
+
+### Gates
+
+1 775 backend tests (6 396 assertions), 576 frontend tests, 397 Playwright tests, PHPStan level 8 clean, Pint
+clean, TypeScript strict clean, ESLint and Prettier clean, production build. Each one read this time.
+
 ## A closure ledger, and two absences recorded as decisions
 
 ### Added
