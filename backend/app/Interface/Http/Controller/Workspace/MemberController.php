@@ -10,6 +10,7 @@ use App\Application\Workspace\Command\ChangeMemberStatus;
 use App\Application\Workspace\Command\InviteMember;
 use App\Application\Workspace\Command\RemoveMember;
 use App\Application\Workspace\DTO\MemberView;
+use App\Application\Workspace\Query\CountHeldWork;
 use App\Application\Workspace\Query\ListMembers;
 use App\Domain\Identity\Email;
 use App\Domain\Identity\UserId;
@@ -87,6 +88,17 @@ final class MemberController extends Controller
         ]);
     }
 
+    /**
+     * What this person still holds, read before deciding to remove them.
+     *
+     * Removal releases their open work. "Remove" over a name holding eleven open items and "remove" over a name
+     * holding none are different decisions, and this is what lets the page say which one it is about to make.
+     */
+    public function heldWork(string $user, CountHeldWork $countHeldWork): JsonResponse
+    {
+        return new JsonResponse(['data' => $countHeldWork(new UserId($user))->toArray()]);
+    }
+
     /** Change a member's workspace role. */
     public function changeRole(
         string $user,
@@ -109,11 +121,15 @@ final class MemberController extends Controller
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
-    /** Remove a member from the workspace. Their account and audit trail remain. */
+    /**
+     * Remove somebody from the workspace. Their account and audit trail remain.
+     *
+     * Answers with **what was released from their name** rather than an empty `204`. Four tables carry an
+     * assignment, and work left in a removed person's name is a board showing items owned by somebody who
+     * cannot open them; releasing it makes the boards true, and the counts are what somebody has to act on.
+     */
     public function destroy(string $user, RemoveMember $removeMember): JsonResponse
     {
-        $removeMember(new UserId($user));
-
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(['data' => ['released' => $removeMember(new UserId($user))->toArray()]]);
     }
 }

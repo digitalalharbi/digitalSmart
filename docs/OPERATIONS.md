@@ -161,6 +161,15 @@ project — so the demo had been describing work owned by somebody who could not
 reach none of the client's data either. The role's own description is "executes the projects they are assigned
 to", which only means anything if they are assigned to one.
 
+### And what happens when that person leaves
+
+The same four columns are what removal has to deal with. Removing somebody from the workspace **releases every
+open item in their name** and reports how many of each: a board showing work owned by somebody who cannot open
+it is the same defect as the demo's, arrived at from the other direction. Finished work keeps their name,
+suspension releases nothing, and the dialog says what it is about to release before it does it. The counts, the
+audit action and the reasoning are in
+[SECURITY.md](SECURITY.md#removing-somebody-and-the-work-in-their-name).
+
 ## Who can see what
 
 | Task | Visible to |

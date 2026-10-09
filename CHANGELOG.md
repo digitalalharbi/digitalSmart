@@ -4,6 +4,57 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Removing somebody left their work in their name
+
+The last of the four assignment columns, approached from the other side. `DELETE /api/members/{user}` removed a
+membership and nothing else, so a departed colleague's name stayed on every task, lead, client request and
+creative brief they had been holding — and the boards went on showing work owned by somebody who could not open
+it, the workload chart went on counting a person who had gone, and a client request went on waiting for a reply
+from nobody. The interface made it worse: one unconfirmed click, on a row, for an irreversible operation.
+
+### Added
+
+- **Removal releases their open work and reports what it released.** `DELETE /api/members/{user}` now answers
+  `200` with `{"data":{"released":{"tasks":…,"leads":…,"client_requests":…,"creative_requests":…,"total":…}}}`.
+  The items come back as **unassigned**, which is both the fact and the thing somebody has to act on.
+- **Released, not reassigned.** Handing eleven items to one colleague from a dialog nobody can see the work
+  from would be a worse outcome than publishing the truth. Every board filters for unassigned already.
+- **Finished work keeps their name.** Open is each module's own predicate — `TaskState::isOpen`,
+  `ClientRequestState::isOpen`, `CreativeState::isOpen`, a lead neither closed nor merged away — so a task
+  somebody completed stays the record of who completed it. Rewriting that to say nobody did would be falsifying
+  history to tidy a column.
+- **`AuditAction::WorkspaceMemberRemoved`**, with the per-kind counts in `changes.released`. Removal had been
+  recorded as a *suspension*: one is somebody expected back whose work waits for them, the other is somebody
+  gone whose work was handed back, and a trail that calls the second the first answers "what happened to Noura's
+  twelve tasks" wrongly.
+- **Suspension still releases nothing**, deliberately, and still answers `204`. A suspended member is expected
+  back; the directory shows the status beside their name.
+- **`GET /api/members/{user}/held-work`** — the same four counts for somebody still here, so the consequence is
+  shown **before** the decision. "Remove" over a name holding eleven open items and "remove" over a name holding
+  none are different decisions, and a single row-level button rendered them identically. `404` for somebody who
+  is not a member of this workspace, rather than a confident zero about a stranger.
+- **A confirmation dialog that says what it is about to do, then what it did.** Same four counts either way, so
+  the figure read before deciding is the figure checkable afterwards; kinds holding nothing are left out rather
+  than listed as zeroes. If the count cannot be read the dialog says so and still offers the removal — refusing
+  it because a figure is unavailable would be the wrong trade.
+- `AssignedWorkRepository`, `HeldWork` and `EloquentAssignedWorkRepository`: one place that knows which four
+  columns carry an assignment, with each module's own open-state predicate rather than a second list of states
+  for this repository to keep in step.
+
+### Found by the gates
+
+- **The release has to happen after the membership row goes**, so a concurrent assignment cannot land between
+  the two and leave one item behind.
+- Two stale premises corrected rather than worked around: `assertNoContent()` where removal now reports a body,
+  and `assertOk()` where suspension correctly still has nothing to report.
+- ESLint's `no-unnecessary-type-assertion` on a `vi.hoisted` mock state object — typed with an explicit alias
+  instead of an inline assertion.
+
+### Gates
+
+1 752 backend tests (6 328 assertions), 555 frontend tests, 388 Playwright tests, PHPStan level 8 clean, Pint
+clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
 ## Nobody could be given access to a client's work
 
 The single largest hole found by the closure sweep, and it had been there since Phase 1.

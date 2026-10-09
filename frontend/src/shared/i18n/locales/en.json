@@ -317,6 +317,24 @@
       "oneTime": "{{name}} can sign in once with: {{password}} — read it out now. It is shown only here, nothing stores it, and it stops working as soon as they choose their own.",
       "joined": "{{name}} already had an account here and has joined this workspace. They keep the password they chose, so there is nothing to pass on.",
       "failed": "They were not added. Nothing has changed."
+    },
+    "remove": {
+      "title": "Remove {{name}} from this workspace?",
+      "body": "They lose access to this workspace immediately. Their account and the audit trail of what they did remain.",
+      "heldLegend": "Open work in their name, which will be released and appear as unassigned:",
+      "holdsNothing": "They are not holding any open work.",
+      "unknownHeld": "What they are holding could not be read, so this cannot say what will be released.",
+      "confirm": "Remove them",
+      "doneTitle": "Removed",
+      "doneBody": "{{name}} no longer has access to this workspace.",
+      "releasedLegend": "Released from their name and now unassigned:",
+      "nothingReleased": "There was no open work to release.",
+      "kinds": {
+        "tasks": "Tasks",
+        "leads": "Leads",
+        "client_requests": "Client requests",
+        "creative_requests": "Creative briefs"
+      }
     }
   },
   "integrations": {

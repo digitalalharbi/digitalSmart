@@ -270,6 +270,7 @@ project on update rather than accepted from the request.
 | Endpoint | Permission |
 | -------- | ---------- |
 | `GET /api/members` | `users.view` |
+| `GET /api/members/{user}/held-work` | `workspaces.manage_members` |
 | `PATCH /api/members/{user}/role` | `users.update` |
 | `PATCH /api/members/{user}/status` | `users.deactivate` |
 | `DELETE /api/members/{user}` | `workspaces.manage_members` |
@@ -284,6 +285,36 @@ holds no permissions at all, whatever their role says. A member removed from the
 workspace receives `403` with a message explaining they hold no active
 membership; their user account and audit trail survive, because an audit entry
 that cannot be attributed is not evidence.
+
+#### Removal releases their open work, and says how much
+
+`DELETE /api/members/{user}` answers **`200` with a body**, not `204`:
+
+```json
+{ "data": { "released": { "tasks": 3, "leads": 1, "client_requests": 0, "creative_requests": 2, "total": 6 } } }
+```
+
+Four tables carry an assignment — `tasks.assignee_id`, `leads.owner_id`, `client_requests.owner_id`,
+`creative_requests.owner_id` — and removal takes the departing person's name off every **open** one. Work left in
+a removed person's name is a board showing items owned by somebody who cannot open them, a workload chart
+counting a person who has gone, and a client request waiting on a reply from nobody. The items come back as
+**unassigned**, which is both the fact and the thing somebody has to act on; the counts are what says how much.
+
+**Finished work keeps their name.** Open is each module's own definition — `TaskState::isOpen`,
+`ClientRequestState::isOpen`, `CreativeState::isOpen`, and a lead that is not closed and not merged away — so a
+task somebody completed stays attributed to the person who completed it.
+
+**Suspension releases nothing**, deliberately: `PATCH /api/members/{user}/status` still answers `204`. A
+suspended member is expected back and their work waits for them. Removal is the irreversible one, which is why it
+is the one that hands the work back.
+
+Audited as `workspace.member_removed` — its own action, not a suspension — carrying the per-kind counts in
+`changes.released`.
+
+`GET /api/members/{user}/held-work` returns the same shape for somebody still in the workspace, so the
+consequence can be shown **before** the decision: "remove" over a name holding eleven open items and "remove"
+over a name holding none are different decisions. `404` for somebody who is not a member of the active
+workspace, rather than a confident zero about a stranger.
 
 ### Audit log
 

@@ -6,13 +6,28 @@ use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Workspace\Command\InviteMember;
 use App\Domain\Access\SystemRole;
 use App\Domain\Audit\AuditAction;
+use App\Domain\Commerce\AttributionEvidence;
+use App\Domain\Creative\AssetKind;
+use App\Domain\Creative\CreativeState;
 use App\Domain\Identity\Email;
 use App\Domain\Identity\UserId;
+use App\Domain\Leads\LeadSourceKind;
+use App\Domain\Leads\LeadStage;
+use App\Domain\Operations\ClientRequestKind;
+use App\Domain\Operations\ClientRequestState;
+use App\Domain\Operations\StatedUrgency;
+use App\Domain\Operations\TaskPriority;
+use App\Domain\Operations\TaskState;
 use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceId;
 use App\Infrastructure\Persistence\Eloquent\Model\AuditLog;
+use App\Infrastructure\Persistence\Eloquent\Model\Client;
+use App\Infrastructure\Persistence\Eloquent\Model\User;
 use App\Infrastructure\Persistence\Eloquent\Model\WorkspaceMember;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\Support\WorkspaceScenario;
 
 it('requires authentication', function (): void {
     $this->getJson('/api/members')->assertUnauthorized();
@@ -109,9 +124,15 @@ it('removes a member but keeps their account and audit trail', function (): void
     $scenario = workspaceScenario();
     $buyer = $scenario->addMember(SystemRole::MediaBuyer);
 
+    /*
+     * `200` with a body rather than `204`: the response says what was released from their name. Four tables
+     * carry an assignment, and work left in a removed person's name is a board showing items owned by somebody
+     * who cannot open them.
+     */
     $this->actingAs($scenario->owner)
         ->deleteJson("/api/members/{$buyer->getKey()}")
-        ->assertNoContent();
+        ->assertOk()
+        ->assertJsonPath('data.released.total', 0);
 
     expect(WorkspaceMember::query()->where('user_id', $buyer->getKey())->exists())->toBeFalse()
         ->and($buyer->fresh())->not->toBeNull();
@@ -140,7 +161,7 @@ it('denies a user whose workspace membership has been removed entirely', functio
     $scenario = workspaceScenario();
     $buyer = $scenario->addMember(SystemRole::MediaBuyer);
 
-    $this->actingAs($scenario->owner)->deleteJson("/api/members/{$buyer->getKey()}")->assertNoContent();
+    $this->actingAs($scenario->owner)->deleteJson("/api/members/{$buyer->getKey()}")->assertOk();
 
     // Their session may still exist, but it now carries no workspace at all.
     $response = $this->actingAs($buyer)->getJson('/api/clients');
@@ -362,6 +383,218 @@ describe('adding a colleague', function (): void {
                 'email' => 'noura@example.com',
                 'role' => SystemRole::MediaBuyer->value,
             ])
+            ->assertForbidden();
+    });
+});
+
+/**
+ * Give somebody one open item of each assignable kind, written straight to the tables.
+ *
+ * Four tables carry an assignment and a schema sweep is what found the fourth. The rows are written without
+ * going through the use cases on purpose: this is a test about what *removal* does to rows that already
+ * exist, and the rules those use cases enforce about who may be assigned are tested where they live.
+ *
+ * @return array{task: string, lead: string, request: string, brief: string}
+ */
+function openWorkFor(WorkspaceScenario $scenario, User $person): array
+{
+    $client = Client::factory()->create(['workspace_id' => $scenario->workspace->getKey()]);
+    $ids = [
+        'task' => (string) Str::uuid7(),
+        'lead' => (string) Str::uuid7(),
+        'request' => (string) Str::uuid7(),
+        'brief' => (string) Str::uuid7(),
+    ];
+    $common = [
+        'workspace_id' => $scenario->workspace->getKey(),
+        'client_id' => $client->getKey(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ];
+
+    DB::table('tasks')->insert([...$common,
+        'id' => $ids['task'],
+        'title' => 'Open work in their name',
+        'state' => TaskState::Todo->value,
+        'priority' => TaskPriority::Normal->value,
+        'assignee_id' => $person->getKey(),
+        'created_by' => $scenario->owner->getKey(),
+        'state_changed_at' => now(),
+    ]);
+
+    DB::table('leads')->insert([...$common,
+        'id' => $ids['lead'],
+        'source_kind' => LeadSourceKind::FormSubmission->value,
+        'stage' => LeadStage::New->value,
+        'attribution_evidence' => AttributionEvidence::None->value,
+        'owner_id' => $person->getKey(),
+        'received_at' => now(),
+    ]);
+
+    DB::table('client_requests')->insert([...$common,
+        'id' => $ids['request'],
+        'kind' => ClientRequestKind::Question->value,
+        'title' => 'A client waiting on somebody',
+        'detail' => 'Their question.',
+        'state' => ClientRequestState::Submitted->value,
+        'stated_urgency' => StatedUrgency::WheneverYouCan->value,
+        'submitted_by' => $scenario->owner->getKey(),
+        'owner_id' => $person->getKey(),
+        'state_changed_at' => now(),
+    ]);
+
+    DB::table('creative_requests')->insert([...$common,
+        'id' => $ids['brief'],
+        'title' => 'A brief in their name',
+        'state' => CreativeState::Draft->value,
+        'kind' => AssetKind::Image->value,
+        'owner_id' => $person->getKey(),
+        'created_by' => $scenario->owner->getKey(),
+        'state_changed_at' => now(),
+    ]);
+
+    return $ids;
+}
+
+describe('removal and the work they were holding', function (): void {
+    /*
+     * The point of the slice. Work left in a removed person's name is a board showing items owned by
+     * somebody who cannot open them, a workload chart counting a person who has gone, and a client request
+     * waiting on a reply from nobody.
+     */
+    it('releases their open work and says how much', function (): void {
+        $scenario = workspaceScenario();
+        $buyer = $scenario->addMember(SystemRole::MediaBuyer);
+        $work = openWorkFor($scenario, $buyer);
+
+        $released = $this->actingAs($scenario->owner)
+            ->deleteJson("/api/members/{$buyer->getKey()}")
+            ->assertOk()
+            ->json('data.released');
+
+        expect($released)->toBe([
+            'tasks' => 1,
+            'leads' => 1,
+            'client_requests' => 1,
+            'creative_requests' => 1,
+            'total' => 4,
+        ]);
+
+        /* And the rows say so, which is what makes the boards true rather than merely quieter. */
+        expect(DB::table('tasks')->where('id', $work['task'])->value('assignee_id'))->toBeNull()
+            ->and(DB::table('leads')->where('id', $work['lead'])->value('owner_id'))->toBeNull()
+            ->and(DB::table('client_requests')->where('id', $work['request'])->value('owner_id'))->toBeNull()
+            ->and(DB::table('creative_requests')->where('id', $work['brief'])->value('owner_id'))->toBeNull();
+    });
+
+    /*
+     * Finished work keeps their name. A task somebody completed is the record of who completed it, and
+     * rewriting that to say nobody did would be falsifying history to tidy a column.
+     */
+    it('leaves finished work attributed to them', function (): void {
+        $scenario = workspaceScenario();
+        $buyer = $scenario->addMember(SystemRole::MediaBuyer);
+        $work = openWorkFor($scenario, $buyer);
+
+        DB::table('tasks')->where('id', $work['task'])
+            ->update(['state' => TaskState::Done->value, 'completed_at' => now()]);
+
+        $released = $this->actingAs($scenario->owner)
+            ->deleteJson("/api/members/{$buyer->getKey()}")
+            ->assertOk()
+            ->json('data.released');
+
+        expect($released['tasks'])->toBe(0)
+            ->and($released['total'])->toBe(3)
+            ->and(DB::table('tasks')->where('id', $work['task'])->value('assignee_id'))
+            ->toBe((string) $buyer->getKey());
+    });
+
+    /*
+     * Its own audit action. A removal used to be recorded as a suspension, which answers "what happened to
+     * their twelve tasks" wrongly: one is somebody expected back whose work waits, the other is somebody
+     * gone whose work was handed back.
+     */
+    it('records the released counts under its own audit action', function (): void {
+        $scenario = workspaceScenario();
+        $buyer = $scenario->addMember(SystemRole::MediaBuyer);
+        openWorkFor($scenario, $buyer);
+
+        $this->actingAs($scenario->owner)->deleteJson("/api/members/{$buyer->getKey()}")->assertOk();
+
+        $entry = AuditLog::query()
+            ->where('action', AuditAction::WorkspaceMemberRemoved->value)
+            ->sole();
+
+        expect($entry->getAttribute('changes')['released']['total'])->toBe(4);
+    });
+
+    /*
+     * Suspension releases nothing, deliberately: a suspended member is expected back, their work waits for
+     * them, and the status beside their name in the directory is what says they are away.
+     */
+    it('leaves the work alone when somebody is only suspended', function (): void {
+        $scenario = workspaceScenario();
+        $buyer = $scenario->addMember(SystemRole::MediaBuyer);
+        $work = openWorkFor($scenario, $buyer);
+
+        $this->actingAs($scenario->owner)
+            ->patchJson("/api/members/{$buyer->getKey()}/status", ['status' => MembershipStatus::Suspended->value])
+            /* `204`, where removal answers `200` with a body: there is nothing to report because nothing moved. */
+            ->assertNoContent();
+
+        expect(DB::table('tasks')->where('id', $work['task'])->value('assignee_id'))
+            ->toBe((string) $buyer->getKey());
+    });
+});
+
+describe('what they are holding, before the decision', function (): void {
+    it('reports what somebody still holds, per kind', function (): void {
+        $scenario = workspaceScenario();
+        $buyer = $scenario->addMember(SystemRole::MediaBuyer);
+        openWorkFor($scenario, $buyer);
+
+        $this->actingAs($scenario->owner)
+            ->getJson("/api/members/{$buyer->getKey()}/held-work")
+            ->assertOk()
+            ->assertExactJson(['data' => [
+                'tasks' => 1,
+                'leads' => 1,
+                'client_requests' => 1,
+                'creative_requests' => 1,
+                'total' => 4,
+            ]]);
+    });
+
+    it('reports an honest zero for somebody holding nothing', function (): void {
+        $scenario = workspaceScenario();
+        $buyer = $scenario->addMember(SystemRole::MediaBuyer);
+
+        $this->actingAs($scenario->owner)
+            ->getJson("/api/members/{$buyer->getKey()}/held-work")
+            ->assertOk()
+            ->assertJsonPath('data.total', 0);
+    });
+
+    /* Not a confident zero about a stranger: a question about somebody who is not here has no answer. */
+    it('reports somebody in another workspace as not found', function (): void {
+        $mine = workspaceScenario('Mine');
+        $theirs = workspaceScenario('Theirs');
+        $stranger = $theirs->addMember(SystemRole::MediaBuyer);
+
+        $this->actingAs($mine->owner)
+            ->getJson("/api/members/{$stranger->getKey()}/held-work")
+            ->assertNotFound();
+    });
+
+    /* The figure says how loaded a named colleague is. Same permission as the removal it informs. */
+    it('is not a project manager’s to read', function (): void {
+        $scenario = workspaceScenario();
+        $manager = $scenario->addMember(SystemRole::ProjectManager);
+        $buyer = $scenario->addMember(SystemRole::MediaBuyer);
+
+        $this->actingAs($manager)
+            ->getJson("/api/members/{$buyer->getKey()}/held-work")
             ->assertForbidden();
     });
 });

@@ -174,6 +174,12 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('user')->name('members.role');
     Route::patch('members/{user}/status', [MemberController::class, 'changeStatus'])
         ->whereUuid('user')->name('members.status');
+    /*
+     * What somebody still holds, read before the removal that releases it. Behind the same permission as the
+     * removal itself: how loaded a named colleague is is a manager's business.
+     */
+    Route::get('members/{user}/held-work', [MemberController::class, 'heldWork'])
+        ->whereUuid('user')->name('members.held-work');
     Route::delete('members/{user}', [MemberController::class, 'destroy'])
         ->whereUuid('user')->name('members.destroy');
 

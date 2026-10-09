@@ -160,6 +160,12 @@ enum AuditAction: string
     case WorkspaceMemberInvited = 'workspace.member_invited';
     case WorkspaceMemberRoleChanged = 'workspace.member_role_changed';
     case WorkspaceMemberSuspended = 'workspace.member_suspended';
+    /*
+     * Its own action. A removal was being recorded as a suspension, which is a different thing: one is somebody
+     * expected back whose work waits for them, the other is somebody gone whose open work is released. An audit
+     * trail that calls the second the first answers "what happened to Noura's twelve tasks" wrongly.
+     */
+    case WorkspaceMemberRemoved = 'workspace.member_removed';
 
     public function group(): string
     {

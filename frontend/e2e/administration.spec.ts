@@ -139,6 +139,43 @@ test.describe('administration', () => {
     await expect(page).toHaveURL(/^(?!.*\/login).*$/, { timeout: 30_000 });
   });
 
+  /*
+   * Removing somebody, which used to happen on one unconfirmed click. Removal is irreversible and it releases
+   * everything still open in that person's name, so the dialog says what it is about to do and then what it did.
+   *
+   * The colleague it removes is one it creates, with a run-unique address: the suite shares one seeded database
+   * between two browser projects, and removing a demo account would take the other tests' people with it.
+   */
+  test('removes a colleague and reports what was released', async ({ page }) => {
+    await signIn(page, ACCOUNTS.owner);
+    await page.goto('/administration');
+    await expect(page.getByText('Add a colleague')).toBeVisible({ timeout: 30_000 });
+
+    const address = `removed-${Date.now()}@example.com`;
+
+    await page.getByLabel('Name*', { exact: true }).fill('Leaving Colleague');
+    await page.getByLabel(/Email address/).fill(address);
+    await page.getByRole('button', { name: 'Add them' }).click();
+    await expect(page.getByText(address)).toBeVisible({ timeout: 20_000 });
+
+    const row = page.getByRole('row', { name: /Leaving Colleague/ });
+    await row.getByRole('button', { name: 'Remove' }).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Remove Leaving Colleague from this workspace?');
+    /* Somebody added a minute ago is on no project, so they can hold nothing — and the dialog says that. */
+    await expect(dialog).toContainText('not holding any open work');
+
+    await dialog.getByRole('button', { name: 'Remove them' }).click();
+
+    await expect(dialog).toContainText('Removed', { timeout: 20_000 });
+    await expect(dialog).toContainText('no open work to release');
+    await dialog.getByRole('button', { name: 'Close' }).click();
+
+    /* And they are out of the directory, which is the other half of "removed". */
+    await expect(page.getByText(address)).toBeHidden();
+  });
+
   test('a media buyer gets a read-only directory and no audit log', async ({ page }) => {
     await signIn(page, ACCOUNTS.buyer);
 

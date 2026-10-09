@@ -58,3 +58,17 @@ export type InvitedMember = {
 };
 
 export type MemberDraft = { name: string; email: string; role: WorkspaceRole };
+
+/**
+ * What somebody still has in their name.
+ *
+ * Four tables carry an assignment, so four counts. Removal releases the open ones and reports the same shape
+ * back, which is why the dialog can say what it is about to do and then what it did.
+ */
+export type HeldWork = {
+  tasks: number;
+  leads: number;
+  client_requests: number;
+  creative_requests: number;
+  total: number;
+};

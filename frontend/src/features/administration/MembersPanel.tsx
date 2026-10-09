@@ -12,12 +12,8 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { ScrollRegion } from '@/shared/ui/scroll-region';
 import { LoadingRegion } from '@/shared/ui/loading-region';
 import { AddMemberPanel } from './AddMemberPanel';
-import {
-  useChangeMemberRoleMutation,
-  useChangeMemberStatusMutation,
-  useMembersQuery,
-  useRemoveMemberMutation,
-} from './api';
+import { RemoveMemberDialog } from './RemoveMemberDialog';
+import { useChangeMemberRoleMutation, useChangeMemberStatusMutation, useMembersQuery } from './api';
 import { WORKSPACE_ROLES, type Member, type WorkspaceRole } from './types';
 
 const STATUS_TONE = {
@@ -35,7 +31,12 @@ export function MembersPanel() {
   const { data, isPending, isError, error } = useMembersQuery({ search, page });
   const changeRole = useChangeMemberRoleMutation();
   const changeStatus = useChangeMemberStatusMutation();
-  const removeMember = useRemoveMemberMutation();
+  /*
+   * Removal goes through a dialog rather than a click, because it is irreversible and it releases everything
+   * still open in that person's name. The dialog reads what they hold and says so first — see
+   * `RemoveMemberDialog`.
+   */
+  const [removing, setRemoving] = useState<Member | null>(null);
 
   const canUpdate = can(PERMISSIONS.usersUpdate);
   const canInvite = can(PERMISSIONS.usersInvite);
@@ -45,7 +46,7 @@ export function MembersPanel() {
   // The server refuses to strip the last owner; surfacing that reason here
   // avoids an action that always fails.
   const lastOwnerError =
-    [changeRole.error, changeStatus.error, removeMember.error].find(
+    [changeRole.error, changeStatus.error].find(
       (candidate): candidate is ApiError => candidate instanceof ApiError,
     ) ?? null;
 
@@ -54,6 +55,15 @@ export function MembersPanel() {
   return (
     <div className="flex flex-col gap-4">
       {lastOwnerError ? <Alert tone="warning">{lastOwnerError.message}</Alert> : null}
+
+      <RemoveMemberDialog
+        member={removing}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRemoving(null);
+          }
+        }}
+      />
 
       {/*
         Above the list, because adding somebody is what an administrator opens this page to do and reading the
@@ -188,8 +198,7 @@ export function MembersPanel() {
                           variant="ghost"
                           size="sm"
                           className="text-danger"
-                          disabled={removeMember.isPending}
-                          onClick={() => removeMember.mutate(member.user_id)}
+                          onClick={() => setRemoving(member)}
                         >
                           {t('actions.remove')}
                         </Button>

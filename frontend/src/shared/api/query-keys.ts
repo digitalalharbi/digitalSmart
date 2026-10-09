@@ -17,6 +17,8 @@ export const queryKeys = {
   members: {
     all: () => ['members'] as const,
     list: (params: Record<string, unknown>) => ['members', 'list', params] as const,
+    /** What one person still holds open, read before the removal that releases it. */
+    heldWork: (userId: string) => ['members', 'held-work', userId] as const,
   },
   audit: {
     all: () => ['audit'] as const,

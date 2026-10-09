@@ -83,6 +83,7 @@ use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Application\Shared\Contract\OwnerDirectory;
 use App\Application\Shared\Contract\WorkLedger;
 use App\Application\System\Query\GetSystemHealth;
+use App\Application\Workspace\Contract\AssignedWorkRepository;
 use App\Application\Workspace\Contract\MemberDirectory;
 use App\Application\Workspace\Contract\MemberReadModel;
 use App\Application\Workspace\Contract\MembershipRepository;
@@ -136,6 +137,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentStoreAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentApprovalRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAssignedWorkRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRequestRepository;
@@ -236,6 +238,8 @@ final class AppServiceProvider extends ServiceProvider
          * place in the product that generates a password.
          */
         MemberDirectory::class => EloquentMemberDirectory::class,
+        /* The four assignment columns, so removing somebody does not leave orphans in any of them. */
+        AssignedWorkRepository::class => EloquentAssignedWorkRepository::class,
         AuditReadModel::class => EloquentAuditReadModel::class,
 
         // Integrations

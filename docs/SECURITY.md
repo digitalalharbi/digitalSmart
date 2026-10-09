@@ -213,6 +213,32 @@ The forced dialog is the one modal in the product with **no cancel**. The server
 cancel button would close it onto a product that refuses every request; the way out is signing out, which the
 copy points at.
 
+### Removing somebody, and the work in their name
+
+`DELETE /api/members/{user}`, needing `workspaces.manage_members`. Three things make this safe rather than
+merely possible.
+
+**Their identity survives.** The user account and every audit entry stay; only the membership goes. An audit
+entry that cannot be attributed is not evidence, so removal never touches the trail of what somebody did.
+
+**Their open work is released, and the counts are returned.** A schema sweep found four tables carrying an
+assignment — `tasks.assignee_id`, `leads.owner_id`, `client_requests.owner_id`, `creative_requests.owner_id` —
+and before this, removal left a departed person's name on all four. That is not a cosmetic problem: it is a board
+showing items owned by somebody who cannot open them, a workload chart counting a person who has gone, and a
+client request waiting on a reply from nobody. The work comes back as **unassigned**, which is the fact, and
+every board filters for exactly that.
+
+| Decision | Why |
+| -------- | --- |
+| Released, not reassigned | Handing eleven items to one colleague from a dialog nobody can see the work from would be a worse outcome than publishing the truth. Unassigned is honest and actionable; a guessed owner is neither |
+| **Open** work only | A task somebody completed is the record of who completed it. Open is each module's own predicate — `TaskState::isOpen`, `ClientRequestState::isOpen`, `CreativeState::isOpen`, a lead neither closed nor merged away — rather than a list this repository keeps in a second place |
+| Released **after** the membership row goes | So a concurrent assignment cannot land between the two and leave one item in a removed person's name |
+| The counts are returned and audited | "What happened to Noura's twelve tasks" is asked months later, and the answer has to be in the record rather than inferred from a board that has since moved on. `workspace.member_removed` carries them in `changes.released` |
+| Its own audit action | Removal used to be recorded as `workspace.member_suspended`. One is somebody expected back whose work waits for them; the other is somebody gone whose work was handed back. A trail that calls the second the first answers the question wrongly |
+| **Suspension releases nothing** | A suspended member is expected back and their work waits for them; the directory shows the status beside their name. Removal is the irreversible one, which is why it is the one that hands the work back |
+| The consequence is shown before the click | `GET /api/members/{user}/held-work` returns the same four counts for somebody still here, so the dialog says what it is about to release. "Remove" over a name holding eleven open items and "remove" over a name holding none are different decisions, and a single unconfirmed button rendered them identically |
+| The count is behind the same permission | How loaded a named colleague is is a manager's business. `404` for somebody who is not a member of this workspace, rather than a confident zero about a stranger |
+
 ### Not built: resetting a forgotten password
 
 A reset needs an email, and this repository has no sender identity — the same block that defers notification

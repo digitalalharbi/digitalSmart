@@ -4,6 +4,7 @@ import { queryKeys } from '@/shared/api/query-keys';
 import type { Paginated } from '@/shared/api/types';
 import type {
   AuditEntry,
+  HeldWork,
   InvitedMember,
   Member,
   MemberDraft,
@@ -70,13 +71,38 @@ export function useChangeMemberStatusMutation() {
   });
 }
 
+/**
+ * What this person still holds open, read before deciding to remove them.
+ *
+ * Only while the question is being asked: `userId` is null unless the confirmation is open, so the member
+ * directory does not fetch a figure per row for a decision almost nobody is making.
+ */
+export function useHeldWorkQuery(userId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.members.heldWork(userId ?? ''),
+    enabled: userId !== null,
+    queryFn: async (): Promise<HeldWork> => {
+      const response = await api.get<{ data: HeldWork }>(`/members/${userId}/held-work`);
+      return response.data.data;
+    },
+  });
+}
+
+/**
+ * Remove somebody from the workspace, and report what was released from their name.
+ *
+ * The response is not empty: removal takes their name off everything still open — tasks, leads, client
+ * requests, creative briefs — and says how much of each, because that is the part somebody has to act on.
+ * Finished work keeps their name.
+ */
 export function useRemoveMemberMutation() {
   const invalidate = useInvalidateMembers();
 
   return useMutation({
-    mutationFn: async (userId: string): Promise<void> => {
+    mutationFn: async (userId: string): Promise<HeldWork> => {
       await ensureCsrfCookie();
-      await api.delete(`/members/${userId}`);
+      const response = await api.delete<{ data: { released: HeldWork } }>(`/members/${userId}`);
+      return response.data.data.released;
     },
     onSuccess: () => void invalidate(),
   });
