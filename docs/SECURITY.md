@@ -239,6 +239,13 @@ every board filters for exactly that.
 | The consequence is shown before the click | `GET /api/members/{user}/held-work` returns the same four counts for somebody still here, so the dialog says what it is about to release. "Remove" over a name holding eleven open items and "remove" over a name holding none are different decisions, and a single unconfirmed button rendered them identically |
 | The count is behind the same permission | How loaded a named colleague is is a manager's business. `404` for somebody who is not a member of this workspace, rather than a confident zero about a stranger |
 
+### Not built: a teams entity
+
+People are workspace members with a role, and the grouping that decides access is **project membership** —
+which is the thing that actually governs who can see a client's data. A teams layer on top would be a second
+grouping with no permission of its own, and the first question asked of it would be which of the two wins when
+they disagree. Recorded here because its absence is a decision, not an oversight.
+
 ### Not built: resetting a forgotten password
 
 A reset needs an email, and this repository has no sender identity — the same block that defers notification

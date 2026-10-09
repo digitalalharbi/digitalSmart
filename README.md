@@ -9,8 +9,8 @@ analysis and presentation generation.
 
 ## Status
 
-**Phases 0–26 complete.** See `docs/ROADMAP.md` for the per-phase
-detail and for the external authorizations that are blocked.
+**Phases 0–26 complete.** `docs/CLOSURE.md` is the ledger: one row per product area, what proves it, and the
+exact external thing any unfinished row waits for. `docs/ROADMAP.md` has the per-phase detail.
 
 Working today: sign-in, sessions and workspace switching; six system roles with
 server-enforced permissions; clients and projects with assignment-based visibility; an
@@ -81,6 +81,7 @@ make e2e        # Playwright (stack must be running)
 
 | Document                 | Contents                                               |
 | ------------------------ | ------------------------------------------------------ |
+| `docs/CLOSURE.md`        | The closure ledger: one row per area, its evidence, its exact blocker |
 | `docs/PRODUCT.md`        | What digitalSmart is, who it serves, product principles |
 | `docs/ARCHITECTURE.md`   | Layering, dependency rules, request flow                |
 | `docs/DATA_MODEL.md`     | Database principles, current tables, planned shape      |

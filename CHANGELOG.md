@@ -4,6 +4,32 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## A closure ledger, and two absences recorded as decisions
+
+### Added
+
+- **`docs/CLOSURE.md`** — one row per product area: what is implemented, the tests that fail if it stops
+  being true, the production evidence, the exact external thing it waits for, and a status. Three blocker
+  codes and nothing else allowed to stand in for them, because "integration pending" is not a status anybody
+  can act on. Linked from the README's status line, which pointed only at the per-phase roadmap.
+- **`docs/SECURITY.md`: there is no teams entity**, and that is a decision. People are workspace members with
+  a role, and the grouping that decides access is project membership — the thing that actually governs who can
+  see a client's data. A teams layer would be a second grouping with no permission of its own, and the first
+  question asked of it would be which of the two wins when they disagree.
+
+### Verified for the ledger
+
+- The CRM ownership rule, end to end: a lead whose stage a CRM owns cannot be moved here, a stage merely
+  *called* "Won" is not a win, and an open deal's quoted amount is never recorded as revenue.
+- The client portal's resources name no owner, assignee, actor or internal field at all — the disclosure rule
+  is enforced by what the queries select, not by what a template happens to render.
+- All thirteen product areas carry both backend feature tests and end-to-end coverage.
+
+### Gates
+
+1 775 backend tests (6 396 assertions), 576 frontend tests, 397 Playwright tests, PHPStan level 8 clean, Pint
+clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
 ## Three dead port methods, and a document that described an unbuilt flow
 
 ### Removed
