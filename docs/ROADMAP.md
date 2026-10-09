@@ -167,7 +167,9 @@ built around them.
   onto the fact table so the common filters join nothing.
 - `advertising:sync` and a queued, per-account-unique job with provider-aware
   backoff; a journal that records every run, its counts and its failures by
-  category, so "why is yesterday missing?" is answerable from the product.
+  category, so "why is yesterday missing?" is answerable from the product. The
+  schedule that actually runs it came later — see
+  [PRODUCTION.md](PRODUCTION.md#the-schedule-and-the-one-cron-it-needs).
 
 ### Not yet done in Phase 3
 

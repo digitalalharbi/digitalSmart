@@ -4,6 +4,30 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Nothing ran the three commands that keep the product current
+
+`advertising:sync`, `commerce:sync` and `access:sync` were each written, tested and registered — and no
+schedule existed. The kind of gap no test can see from inside a command: each command's own tests pass while
+the product quietly ages.
+
+### Added
+
+- **A schedule**, with a test that pins it. `advertising:sync` hourly, because a dashboard is otherwise as old
+  as the last person who pressed a button. `commerce:sync` at 03:30, catching what webhooks dropped — nightly
+  rather than hourly because each adapter's restatement window is measured in days, so an hourly pass would
+  spend a platform's rate limit re-reading the same window to find the same nothing. `access:sync` at 03:00, so
+  a deploy that adds a permission reaches workspaces that existed before it rather than only new ones.
+- **`withoutOverlapping` on all three.** Each queues work rather than doing it, so a run starting while the
+  previous one is still dispatching would double every job in flight — and the per-account and per-store jobs
+  are unique, so the duplicates would be dropped silently and nobody would learn the schedule was too tight.
+- `docs/PRODUCTION.md` states the one line a host owes this: `schedule:run` every minute, and
+  `php artisan schedule:list` to check it is doing what the table says.
+
+### Gates
+
+1 775 backend tests (6 396 assertions), 570 frontend tests, 396 Playwright tests, PHPStan level 8 clean, Pint
+clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
 ## The demo was intermittently self-contradictory
 
 Found by a full backend run: `DemoBoardTest` failed with the product's own error — *that person cannot open

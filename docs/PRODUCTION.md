@@ -143,6 +143,36 @@ labels, landmarks and order, and they cannot tell whether a label *describes* it
 can be completed by keyboard alone. A green run means no machine-detectable violation, which is a smaller
 claim than "accessible".
 
+## The schedule, and the one cron it needs
+
+Three commands keep the product from going stale, and until this release **nothing ran any of them** — the kind
+of gap no test can see from inside a command, because each command's own tests pass while the product quietly
+ages.
+
+| Command | Cadence | What goes wrong without it |
+| ------- | ------- | -------------------------- |
+| `advertising:sync` | hourly | A dashboard is as old as the last person who pressed a button. Each run re-reads the adapter's own attribution lookback, because conversions keep landing against past dates |
+| `commerce:sync` | 03:30 daily | Webhooks carry the day's orders in seconds; this catches what they dropped. One dropped delivery, one deploy during a busy hour, one platform incident, and a client's revenue is quietly short for that window with nothing on any screen to say so |
+| `access:sync` | 03:00 daily | A deploy that adds a permission reaches new workspaces immediately and existing ones not at all — the feature is live and every current workspace is refused it |
+
+All three are `withoutOverlapping` and `runInBackground`. Each **queues** work rather than doing it, so a run
+starting while the previous one is still dispatching would double every job in flight; the per-account and
+per-store jobs are unique, so the duplicates would be dropped silently and nobody would learn the schedule was
+too tight.
+
+Nightly rather than hourly for the two daily passes: each commerce adapter's restatement window is measured in
+days, so an hourly pass would spend a platform's rate limit re-reading the same window twenty-four times to
+find the same nothing.
+
+**The one thing a host must do** is run Laravel's scheduler every minute:
+
+```
+* * * * * cd /path/to/backend && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Nothing in this repository installs that line — there is no host to install it on yet (see *What is still
+missing*) — and `php artisan schedule:list` is how to check it is doing what this table says.
+
 ## Backup and restore
 
 `make backup` writes a `pg_dump` custom-format archive **and a manifest beside it** listing every table's row
@@ -194,4 +224,4 @@ trusts by mistake:
   issue.
 - **No uptime monitor.** `GET /api/health` is built for one and nothing is polling it.
 - **No automated backup schedule.** The scripts are real and verified; running them hourly is a cron on a host
-  that does not exist yet.
+  that does not exist yet — the same host that owes `schedule:run` its minute.

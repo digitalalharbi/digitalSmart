@@ -4,7 +4,57 @@ declare(strict_types=1);
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function (): void {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+/*
+|--------------------------------------------------------------------------
+| The schedule
+|--------------------------------------------------------------------------
+|
+| Three commands existed and nothing ran any of them. Each is written to be re-runnable and each answers a
+| question the product otherwise answers wrongly over time:
+|
+|  - **`advertising:sync`** keeps performance figures current, and re-reads a lookback window because
+|    conversions keep landing against past dates. Without it a dashboard is as old as the last person who
+|    pressed a button.
+|  - **`commerce:sync`** is the reconciliation read webhooks need. One dropped delivery, one deploy during a
+|    busy hour, one platform incident, and a client's revenue is quietly short for that window with nothing on
+|    any screen to indicate it.
+|  - **`access:sync`** brings every workspace's system roles in line with the code. A deploy that adds a
+|    permission otherwise reaches new workspaces immediately and existing ones not at all.
+|
+| `withoutOverlapping` on all three: each queues work rather than doing it, but a run that starts while the
+| previous one is still dispatching would double every job in flight — and the per-account and per-store jobs
+| are unique, so the duplicates would be dropped silently and the operator would never learn the schedule was
+| too tight. `runInBackground` keeps one slow dispatch from delaying the others.
+|
+| Times are the host's, which `APP_TIMEZONE` sets. The two provider passes run in the small hours of the
+| agency's day, when a rate limit spent on a backfill costs nobody their morning.
+*/
+Schedule::command('advertising:sync')
+    ->hourly()
+    ->withoutOverlapping()
+    ->runInBackground();
+
+/*
+ * Nightly rather than hourly. Webhooks carry the day's orders within seconds; this exists to catch what they
+ * dropped, and the restatement window each adapter publishes is measured in days — so an hourly pass would
+ * spend a platform's rate limit re-reading the same window twenty-four times to find the same nothing.
+ */
+Schedule::command('commerce:sync')
+    ->dailyAt('03:30')
+    ->withoutOverlapping()
+    ->runInBackground();
+
+/*
+ * Daily, and deliberately not only on deploy: a workspace created between deploys gets its roles at
+ * provision time, and one that existed before a permission was added needs this pass to see it.
+ */
+Schedule::command('access:sync')
+    ->dailyAt('03:00')
+    ->withoutOverlapping()
+    ->runInBackground();
