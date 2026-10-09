@@ -61,6 +61,10 @@ export const queryKeys = {
      * the other's label.
      */
     analytics: (query: Record<string, unknown>) => ['commerce', 'analytics', query] as const,
+    /** Which stores this workspace reads. Scoped, because the page's client filter narrows it. */
+    stores: (clientId: string | null) => ['commerce', 'stores', clientId ?? 'all'] as const,
+    /** What the connections can read. Not scoped: it is a question about the platform, not a client. */
+    connectableStores: () => ['commerce', 'stores', 'connectable'] as const,
   },
   measurement: {
     all: () => ['measurement'] as const,

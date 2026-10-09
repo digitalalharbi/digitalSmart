@@ -38,6 +38,16 @@ enum AuditAction: string
     case IntegrationSyncToggled = 'integration.sync_toggled';
 
     /*
+     * Connecting a store to a client is a data-access decision as much as a setup one: from then on, every
+     * order that merchant reports counts towards that client's revenue, and the people on that client's
+     * projects can read its customers. Its own action, with the merchant id, because "who decided these orders
+     * belong to Alhambra Retail" has to be answerable after the person who decided it has left.
+     */
+    case StoreConnected = 'store.connected';
+    /* A read of somebody else's platform on the workspace's credentials, with what it brought back. */
+    case StoreRead = 'store.read';
+
+    /*
      * Budgets. The spec calls for an immutable change log on them, and this is it:
      * every amount, period and allocation change lands here, append-only, with the
      * before and after. A separate budget-history table would be a second audit trail
@@ -189,6 +199,11 @@ enum AuditAction: string
             self::IntegrationDisconnected,
             self::IntegrationAccountBound,
             self::IntegrationAccountUnbound,
+            /*
+             * Beside them for the same reason: it decides whose revenue a merchant's orders become, and it
+             * grants the people on one client's projects sight of that store's customers.
+             */
+            self::StoreConnected,
             /*
              * Approving a budget commits a client's money. Not a credential event, but
              * the one budget action that has to be as findable as one.

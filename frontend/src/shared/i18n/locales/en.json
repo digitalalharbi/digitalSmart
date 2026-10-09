@@ -997,7 +997,36 @@
       "customers": "Customers",
       "revenue": "Revenue",
       "newShare": "{{share}} of revenue from new customers"
-    }
+    },
+    "stores": {
+      "title": "Stores we read",
+      "subtitle": "Which merchant each client’s revenue comes from, and when it was last read.",
+      "connect": "Connect a store",
+      "pickTitle": "Connect a merchant to a client",
+      "pickSubtitle": "Every store this workspace’s commerce connections can read. The name, currency and domain come from the platform — nothing here is typed.",
+      "client": "Client",
+      "clientHint": "Whose revenue this merchant’s orders become. One store belongs to one client.",
+      "chooseClient": "Choose a client",
+      "use": "Connect it",
+      "alreadyConnected": "Already read for {{client}}",
+      "nothingDiscoverable": "No commerce platform is connected to this workspace yet, or its authorisation is not complete. Fix that on the integrations page.",
+      "discoveryFailed": "The connected platform could not be asked which stores it has. Try again in a moment.",
+      "loadFailed": "Could not load the stores. Try again in a moment.",
+      "listLabel": "Connected stores",
+      "emptyTitle": "No store is connected",
+      "emptyBody": "Until one is, the figures below have nothing to read — orders arriving by webhook are refused, because nothing says which client the merchant belongs to.",
+      "forClient": "For {{client}}",
+      "read": "Read now",
+      "cannotRead": "Cannot be read",
+      "neverRead": "never read",
+      "lastRead": "last read {{when}}",
+      "readWithoutOrders": "asked {{when}}, no orders came back",
+      "readDone": "Read {{name}}: {{orders}} orders, {{products}} products, {{customers}} customers.",
+      "readPartial": "Read {{name}} in part: {{orders}} orders, {{products}} products, {{customers}} customers landed, then it stopped — {{reason}}",
+      "readFailed": "Could not read {{name}}: {{reason}}",
+      "readSkipped": "{{name}} is on a platform this product cannot read. Its webhooks still arrive."
+    },
+    "forbidden": "Your role does not include access to store revenue."
   },
   "chart": {
     "view": {

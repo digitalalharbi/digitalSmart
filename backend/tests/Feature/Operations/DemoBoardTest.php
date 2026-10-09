@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Application\Shared\Contract\OwnerDirectory;
+use App\Application\Shared\DTO\OwnerCandidate;
+use App\Domain\Access\Permission;
 use Database\Seeders\DemoWorkspaceSeeder;
 use Illuminate\Support\Facades\DB;
 
@@ -142,4 +145,40 @@ it('seeds an intake queue whose shape shows both halves of why a queue is slow',
 
     expect($told)->toContain('client_request_moved');
     expect($told)->toContain('client_request_answered');
+});
+
+/*
+ * The demo has to be coherent, not merely populated.
+ *
+ * Every "the first one" in the seeder orders by `created_at` *and* `id`, because the timestamp columns are
+ * `timestamp(0)` and the clients and projects are all written within one second: between ties Postgres returns
+ * whichever row it likes. That made the demo intermittently self-contradictory — the creative on one project
+ * and their task on another, which the board then refused for a person who could not see it, correctly — and
+ * it failed roughly one run in ten with an error about the product's own rule.
+ */
+it('puts every assigned task in the name of somebody who can open it', function (): void {
+    test()->seed(DemoWorkspaceSeeder::class);
+
+    $tasks = DB::table('tasks')
+        ->join('projects', 'projects.id', '=', 'tasks.project_id')
+        ->whereNotNull('tasks.assignee_id')
+        ->get(['tasks.id', 'tasks.assignee_id', 'tasks.project_id', 'projects.client_id']);
+
+    expect($tasks)->not->toBeEmpty();
+
+    foreach ($tasks as $task) {
+        /*
+         * Eligible means what the board means by it: on the project, or holding `projects.view_all`. Asked
+         * through the same directory the assignment itself consults, so this test cannot drift from the rule.
+         */
+        $candidates = app(OwnerDirectory::class)->peopleWhoCanSee(
+            (string) DB::table('projects')->where('id', $task->project_id)->value('workspace_id'),
+            (string) $task->client_id,
+            Permission::TasksView,
+        );
+
+        $ids = array_map(static fn (OwnerCandidate $candidate): string => $candidate->id, $candidates);
+
+        expect($ids)->toContain((string) $task->assignee_id);
+    }
 });

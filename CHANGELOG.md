@@ -4,6 +4,96 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The demo was intermittently self-contradictory
+
+Found by a full backend run: `DemoBoardTest` failed with the product's own error — *that person cannot open
+this, so putting it in their name would leave them owning work they never see*. The rule was right; the demo
+was wrong, about one run in ten.
+
+Every "the first one" in the demo seeder read `orderBy('created_at')->first()`, and the timestamp columns are
+`timestamp(0)`. The three clients and four projects are written inside one second, so between ties Postgres
+returns whichever row it likes — and two sections could disagree: the creative put on the *Seasonal campaign*
+project while their task was opened on *Always-on performance*. The board then refused the assignment,
+correctly, and the seeder died.
+
+### Fixed
+
+- **A deterministic tiebreaker at all seventeen sites**: `orderBy('created_at')->orderBy('id')`. The ids are
+  UUIDv7, so ordering by id is both stable and creation-ordered — no second source of truth about which record
+  came first.
+- **A test that pins the demo's coherence rather than its contents**: every assigned task's owner is checked
+  against `OwnerDirectory` — the same directory the assignment itself consults — so the test cannot drift from
+  the rule it is protecting. Five consecutive runs, green.
+
+### Gates
+
+1 775 backend tests (6 396 assertions), 570 frontend tests, 396 Playwright tests, PHPStan level 8 clean, Pint
+clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
+## A store could be connected to the agency and never to a client
+
+The largest hole the sweep has found since project membership. `SyncStore` was written, tested and reachable
+from **nothing** — no route, no job, no command — and `CommerceSyncAdapter::discoverStores` was implemented by
+both Salla and Zid and called by nobody. Underneath both: a `stores` row could only be written by a seeder.
+
+So a real installation could connect Salla on the integrations page, have its webhook deliveries
+cryptographically verified, and then reject every one of them as `unknown_store` — because nothing in the
+product could say *which client that merchant belongs to*. The store revenue page would show an empty total
+with no explanation available anywhere on it.
+
+### Added
+
+- **`ConnectStore`** and `POST /api/commerce/stores`: say that this merchant's orders are this client's
+  revenue. Takes only the provider, the merchant id and the client — the name, currency, domain and timezone
+  are read back from the platform by merchant id, because a typed currency is the most expensive field in this
+  product to get wrong and nothing downstream could detect it.
+- **`GET /api/commerce/stores/connectable`**: every merchant the workspace's commerce connections can read,
+  with the ones already registered **shown** rather than filtered out, naming the client that has them. A
+  merchant missing from a list reads as "the connection cannot see it", and somebody then goes looking at the
+  platform for a problem that is not there.
+- **`GET /api/commerce/stores`**: which stores this workspace reads, with **both** `last_synced_at` and
+  `orders_synced_through`. They are different facts — when somebody last asked, and how far through the orders
+  the answer got — and the second moves only when orders landed, so a failing store has the first and not the
+  second. That is the state a single "last updated" column hides.
+- **`POST /api/commerce/stores/{store}/read`** and **`commerce:sync`**: the reconciliation read, by hand and on
+  a schedule, queued per store through `ReadStoreJob` (unique per store, because both platforms page
+  sequentially and a second walk interleaved with the first reads from a cache it poisoned). Webhooks are
+  faster and not sufficient: one dropped delivery, one deploy during a busy hour, one platform incident, and a
+  client's revenue is quietly short for that window with nothing on any screen to indicate it.
+- **The outcome is reported, not reduced to a tick.** Succeeded, partial, failed and skipped are four facts: a
+  partial read wrote real orders and keeps them, and a skipped one means the platform has no adapter to read
+  with. Sandbox reads say sandbox.
+- **`AuditAction::StoreConnected`** — a security-relevant action, beside the integration bindings: from then on
+  every order that merchant reports counts towards that client's revenue, and the people on that client's
+  projects can read its customers. **`StoreRead`** records each read with its honesty label; a scheduled read
+  is recorded with **no actor**, which the trail shows as the system rather than attributing a nightly job to
+  whoever last signed in.
+- **One store belongs to one client**, and the refusal names the client that has it. Two registrations would
+  count every order twice; a unique index sits behind the check for the race.
+- **A client the caller cannot see is a `404`.** Deciding whose revenue a merchant's orders become is not a
+  decision to make about a client the decider cannot otherwise reach.
+
+### Changed
+
+- **The demo seeder connects its store through `ConnectStore`** instead of writing the row, so the demo
+  demonstrates a state a real owner can reach — and the store now carries the platform's own name.
+- **The store revenue page says once that a role cannot read revenue**, rather than reporting a `403` as a load
+  failure a retry might fix. The stores panel stays silent on the same `403`: a reader refused access was
+  being told twice that something had gone wrong.
+
+### Found by the gates
+
+- **The architecture test caught the console command reaching into Infrastructure** to enumerate workspaces.
+  The question moved onto the port as `StoreDirectory::readTargets()`, which returns each target with its
+  workspace attached — the same shape the advertising scheduler's targets have, and for the same reason.
+- A test premise named "not found" where the product correctly answers `403`: the name was wrong, and a real
+  cross-tenant `404` case was added beside it.
+
+### Gates
+
+1 775 backend tests (6 396 assertions), 570 frontend tests, 396 Playwright tests, PHPStan level 8 clean, Pint
+clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
 ## The Tracking Center could not register a container or remove a source
 
 Two dead ends, found by sweeping the frontend for exported hooks nothing calls.

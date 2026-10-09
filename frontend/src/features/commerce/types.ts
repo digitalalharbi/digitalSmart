@@ -111,3 +111,59 @@ export type CommerceQuery = {
   client_id?: string | null;
   limit?: number;
 };
+
+/**
+ * One store this workspace reads.
+ *
+ * `last_synced_at` and `orders_synced_through` are different facts and both travel: the first says when
+ * somebody last asked the platform, the second how far through its orders the answer got — and it moves only
+ * when orders landed. A store that is failing has the first and not the second, which is the state a single
+ * "last updated" column hides.
+ */
+export type Store = {
+  id: string;
+  client_id: string;
+  client_name: string;
+  provider: string;
+  provider_label: string;
+  external_id: string;
+  name: string;
+  domain: string | null;
+  /** Every amount read from this store is in it. */
+  currency: string;
+  timezone: string | null;
+  is_active: boolean;
+  last_synced_at: string | null;
+  orders_synced_through: string | null;
+  /** Whether anything can go and read it: a provider with no sync adapter cannot be. */
+  is_readable: boolean;
+};
+
+/** One merchant a connection can read, and whether this workspace already reads it. */
+export type ConnectableStore = {
+  provider: string;
+  provider_label: string;
+  external_id: string;
+  name: string;
+  currency: string;
+  domain: string | null;
+  timezone: string | null;
+  is_registered: boolean;
+  registered_to_client_name: string | null;
+};
+
+/** What is sent to connect one. Everything else is read back from the platform. */
+export type StoreDraft = { provider: string; external_id: string; client_id: string };
+
+export type StoreReadStatus = 'succeeded' | 'partial' | 'failed' | 'skipped';
+
+/** What a read brought back. Four statuses, because they are four different facts. */
+export type StoreReadResult = {
+  status: StoreReadStatus;
+  orders_written: number;
+  products_written: number;
+  customers_written: number;
+  api_calls: number;
+  source: MetricSourceValue;
+  failure_message: string | null;
+};

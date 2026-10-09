@@ -552,11 +552,18 @@ agency reporting on one client per platform would otherwise be comparing two dif
   inside.
 - 32 tests.
 
+### Closed later: a store could not be connected
+
+Phase 11 built the schema, the write port and the webhook journal, Phase 12 and 13 built the adapters, and
+Phase 14 built the analytics — and for all four phases **nothing could register a store**. A `stores` row could
+only be written by a seeder, so a real installation's webhook deliveries were all rejected as `unknown_store`
+and every figure was empty. `ConnectStore`, `GET /api/commerce/stores/connectable`, the on-demand read and
+`commerce:sync` close it; see [ECOMMERCE.md](ECOMMERCE.md#connecting-a-store-to-a-client).
+
 ### Not yet done in Phase 11
 
-- **No provider reads anything.** `CommerceSyncAdapter` is the contract Salla and Zid implement.
-- **No HTTP surface.** Store analytics arrive with Phase 14, where the revenue-source selection they
-  need is designed.
+- **No live provider credentials.** `CommerceSyncAdapter` is the contract Salla and Zid implement, and both
+  read fixtures under the literal credential `sandbox`. The live handshake is `BLOCKED_EXTERNAL_CREDENTIALS`.
 - **No cursors or run journalling.** Deliberately deferred to Phase 12, where a real provider's
   pagination determines their shape — bookkeeping built before the thing that needs it fits nothing.
 - **Payments are folded onto the order** as `payment_method` and `gateway` rather than given their own

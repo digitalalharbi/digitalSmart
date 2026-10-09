@@ -20,6 +20,7 @@ use App\Application\Client\Contract\ClientVisibility;
 use App\Application\Commerce\Contract\CommerceStore;
 use App\Application\Commerce\Contract\CommerceSyncAdapterRegistry as CommerceSyncAdapterRegistryContract;
 use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
+use App\Application\Commerce\Contract\StoreDirectory;
 use App\Application\Commerce\Contract\StoreLocator;
 use App\Application\Commerce\Contract\StoreOrderMapperRegistry as StoreOrderMapperRegistryContract;
 use App\Application\Commerce\Contract\WebhookEventJournal;
@@ -158,6 +159,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentReportRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentStoreDirectory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentStoreLocator;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTaskRepository;
@@ -282,6 +284,11 @@ final class AppServiceProvider extends ServiceProvider
         WebhookEventJournal::class => EloquentWebhookEventJournal::class,
         WebhookEventReader::class => EloquentWebhookEventReader::class,
         StoreLocator::class => EloquentStoreLocator::class,
+        /*
+         * The stores a workspace reads, and the one way a new one is written. Until this existed a `stores` row
+         * could only come from a seeder, so a connected platform could never produce a figure.
+         */
+        StoreDirectory::class => EloquentStoreDirectory::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
         AttributionReadModel::class => EloquentAttributionReadModel::class,
         CreativeSpecRegistry::class => EloquentCreativeSpecRegistry::class,

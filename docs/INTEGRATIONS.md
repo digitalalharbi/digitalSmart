@@ -226,6 +226,20 @@ is partial by design: if ads sync and performance does not, the ads are kept and
 the run is recorded as `partial`. What is never acceptable is a run that reports
 success while missing days.
 
+### Running a store read
+
+`commerce:sync` is the commerce equivalent, and the two differ in one way that matters: an advertising account
+is bound to a **project**, while a store is connected to a **client**, so there is no sync flag to respect —
+every active store whose platform has a sync adapter is queued, one `ReadStoreJob` each.
+
+The job is unique per store, because Salla and Zid both document that **pages must be requested in order** and
+that sequential requests are cached: a second walk interleaved with the first reads from a cache it poisoned.
+It backs off on the same curve (60s, 5m, 15m).
+
+A store is connected through `POST /api/commerce/stores` — see
+[ECOMMERCE.md](ECOMMERCE.md#connecting-a-store-to-a-client) — and `POST /api/commerce/stores/{store}/read` is
+the same read on demand, for the morning somebody notices a figure looks low.
+
 ### Isolation model (mandatory)
 
 ```

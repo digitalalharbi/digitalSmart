@@ -85,6 +85,64 @@ test.describe('store revenue', () => {
     }
   });
 
+  /*
+   * The half of this module that did not exist. A workspace could connect Salla on the integrations page and
+   * nothing could say which client a merchant belonged to, so every webhook delivery was refused as an unknown
+   * store and every figure on this page was empty.
+   *
+   * The demo seeds its store through the same use case, so what this asserts is the state a real owner reaches.
+   */
+  test('says which stores it reads, and reads one on request', async ({ page }) => {
+    await openCommerce(page);
+
+    const stores = page.getByRole('list', { name: 'Connected stores' });
+    await expect(stores).toBeVisible({ timeout: 30_000 });
+
+    const row = stores.getByRole('listitem').filter({ hasText: 'SANDBOX — Noon Retail' });
+    /* The currency travels with the store, because every amount read from it is stored in that currency. */
+    await expect(row.getByText('SAR')).toBeVisible();
+    await expect(row.getByText(/last read|no orders came back/)).toBeVisible();
+
+    await row.getByRole('button', { name: 'Read now' }).click();
+
+    /*
+     * What the read brought back, including that it is sandbox. The fixtures are re-read over the restatement
+     * window, so the figures are stable and the upsert is what keeps them from multiplying.
+     */
+    await expect(page.getByText(/Read SANDBOX — Noon Retail/)).toBeVisible({
+      timeout: 30_000,
+    });
+  });
+
+  /* Every merchant the connection can see, with the ones already taken named rather than hidden. */
+  test('offers the merchants the connection can read, and names the ones taken', async ({
+    page,
+  }) => {
+    await openCommerce(page);
+
+    await page.getByRole('button', { name: 'Connect a store' }).click();
+
+    await expect(page.getByText(/Already read for/)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('button', { name: 'Connect it' })).toHaveCount(0);
+  });
+
+  test('offers a reader of the figures no setup controls', async ({ page }) => {
+    await openCommerce(page, ACCOUNTS.buyer);
+
+    /*
+     * The panel is there — "which store is this figure from" is part of reading the figure — and the controls
+     * are not: connecting a store and spending the workspace's credentials on a platform are workspace setup.
+     *
+     * The demo's buyer is on no project, which is that account's own demonstration of where visibility comes
+     * from, so what they see here is the empty state rather than the store the owner sees.
+     */
+    await expect(page.getByRole('heading', { level: 2, name: 'Stores we read' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(page.getByRole('button', { name: 'Connect a store' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Read now' })).toHaveCount(0);
+  });
+
   test('does not offer store revenue to a creative', async ({ page }) => {
     await signIn(page, ACCOUNTS.creative);
 
@@ -93,10 +151,16 @@ test.describe('store revenue', () => {
     await expect(page.getByRole('link', { name: 'Store revenue' })).toBeHidden();
 
     /*
-     * Reaching the route directly renders the shell and then nothing: the server refuses the request, so
-     * no figure arrives. Hiding the nav item is a courtesy; this is the part that matters.
+     * Reaching the route directly renders the shell and then the reason: the server refuses the request, and
+     * the page says the role does not reach store revenue rather than reporting a load failure a retry might
+     * fix. Hiding the nav item is a courtesy; this is the part that matters.
      */
     await page.goto('/commerce');
-    await expect(page.getByRole('alert')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('alert')).toContainText(
+      'does not include access to store revenue',
+      {
+        timeout: 20_000,
+      },
+    );
   });
 });

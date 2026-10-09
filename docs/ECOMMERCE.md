@@ -239,11 +239,47 @@ customers** — not to the agency. It is held because matching an order to a lea
 It is never serialised into a client-portal response, and `docs/SECURITY.md` records the retention
 question it raises.
 
+## Connecting a store to a client
+
+The decision the whole module rests on, and for three phases nothing could make it. A store belongs to exactly
+one client — that is what makes a merchant's orders somebody's revenue — and the `stores` row could only be
+written by a seeder. A real installation that connected Salla had a connection, no store, and a webhook journal
+full of `unknown_store`.
+
+`ConnectStore` is that decision, and four things about it are deliberate:
+
+| Decision | Why |
+| -------- | --- |
+| The platform's details are read back, not typed | Name, currency, domain and timezone come from discovery by merchant id. Every amount from this store is stored in its currency, and nothing downstream could detect a wrong one |
+| The merchant must still be visible to the connection | Registering an id the connection cannot see creates a row whose every read fails for a reason the row cannot explain |
+| One merchant, one client — and the refusal names the client | Two registrations would count every order twice. A unique index sits behind the check for the race |
+| The client is checked for **visibility**, not existence | Deciding whose revenue a merchant's orders become is not a decision to make about a client the decider cannot otherwise reach. A client they cannot see is a `404` |
+
+It is audited as `store.connected`, a security-relevant action: from then on every order that merchant reports
+counts towards that client's revenue, and the people on that client's projects can read its customers.
+
+## Reading a store, by hand and on a schedule
+
+`SyncStore` — the reconciliation read this module was built around — was reachable from nothing: no route, no
+job, no command. Webhooks were the only way an order could arrive, which is exactly the arrangement the
+restatement window exists to compensate for.
+
+- **`POST /api/commerce/stores/{store}/read`** is the button for the morning somebody notices a figure looks
+  low. It returns the outcome whole: succeeded, partial, failed or skipped, with the honesty label.
+- **`commerce:sync`** is the nightly pass, queueing `ReadStoreJob` per store. Unique per store, because both
+  Salla and Zid page sequentially and a second walk interleaved with the first reads from a cache it poisoned.
+- A scheduled read is recorded with **no actor**, which the trail shows as the system rather than attributing a
+  nightly job to whoever last signed in.
+
+The demo seeder now connects its store through `ConnectStore` rather than writing the row, so the demo
+demonstrates a state a real owner can reach.
+
 ## What this phase does not do
 
-- **No provider reads anything yet.** `CommerceSyncAdapter` is the contract Salla (Phase 12) and Zid
-  (Phase 13) implement. The schema, the write port, the webhook journal and the rules above are
-  complete and tested.
+- **No live provider credentials.** Salla (Phase 12) and Zid (Phase 13) implement `CommerceSyncAdapter`, and
+  with the literal credential `sandbox` both read response-shaped fixtures. The live handshake needs a partner
+  app and a merchant who installs it — `BLOCKED_EXTERNAL_CREDENTIALS`, recorded in
+  [SALLA.md](SALLA.md) and [ZID.md](ZID.md). There is no path that invents an order.
 - **The analytics surface is `GET /api/commerce/analytics`** (Phase 14), which requires a named revenue
   source on every request — see [API.md](API.md#commerce). It counts only orders whose payment state
   recognises revenue, reports net of refunds, keeps pending orders beside the total rather than inside

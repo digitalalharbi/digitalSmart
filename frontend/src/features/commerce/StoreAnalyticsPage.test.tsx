@@ -32,6 +32,15 @@ vi.mock('./api', () => ({
 
     return Promise.resolve(state.analytics);
   },
+  /*
+   * The page carries the stores panel, whose own behaviour is tested in `StoresPanel.test.tsx`. Stubbed here
+   * rather than left out: a missing export makes the panel render its load failure in every test on this page,
+   * which is a red herring sitting beside every assertion.
+   */
+  fetchStores: () => Promise.resolve([]),
+  fetchConnectableStores: () => Promise.resolve([]),
+  connectStore: () => Promise.resolve({}),
+  readStore: () => Promise.resolve({}),
 }));
 
 function summary(overrides: Partial<StoreRevenueSummary> = {}): StoreRevenueSummary {

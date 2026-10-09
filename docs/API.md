@@ -913,6 +913,55 @@ fabrications, and either would be acted on.
 
 ## Commerce
 
+### Connecting a store, and reading one
+
+| Endpoint | Permission |
+| -------- | ---------- |
+| `GET /api/commerce/stores` | `analytics.view` |
+| `GET /api/commerce/stores/connectable` | `workspaces.update` |
+| `POST /api/commerce/stores` | `workspaces.update` |
+| `POST /api/commerce/stores/{store}/read` | `workspaces.update` |
+
+**The half of this module that did not exist.** A workspace could connect Salla, the webhook endpoint could
+authenticate its deliveries, the reconciliation read could walk its orders and the analytics could report them
+— and nothing could say *which client a merchant belongs to*. A `stores` row could only be written by a seeder,
+so a real installation's deliveries were all rejected as `unknown_store` and every figure was empty.
+
+Reading the list is `analytics.view`, the same permission as the figures: "which store is this number from, and
+how old is it" is part of reading the number, and the list is narrowed by the same visibility rule as the
+totals — a store belongs to a client, and a person reaches a client through a project. Discovering, connecting
+and reading are `workspaces.update`, because each spends the workspace's credentials on somebody else's API.
+
+`POST /api/commerce/stores` takes **only** `provider`, `external_id` and `client_id`. The name, currency,
+domain and timezone are read back from the platform by merchant id: a typed currency would be the most
+expensive field in this product to get wrong, because every amount from that store is stored in it and nothing
+downstream could detect the mistake. Refusals are `422` `store_not_connected` — a provider that is not a
+commerce platform, one that is not connected yet (the message names the integrations page), a merchant the
+connection can no longer see, and a merchant another client already reads (the message names that client, since
+one store belongs to one client or every order counts twice). A client the caller cannot see is a `404`.
+
+Every store carries **both** `last_synced_at` and `orders_synced_through`, which are different facts: when
+somebody last asked the platform, and how far through its orders the answer got. The second moves only when
+orders landed, so a failing store has the first and not the second — the state a single "last updated" column
+hides. `is_readable` says whether anything can go and read it at all: a store whose platform has no sync
+adapter still receives webhooks and cannot be asked.
+
+`POST /api/commerce/stores/{store}/read` answers with the outcome rather than `204`:
+
+```json
+{ "data": { "status": "partial", "orders_written": 3, "products_written": 0, "customers_written": 0,
+            "api_calls": 2, "source": "sandbox", "failure_message": "…" } }
+```
+
+Four statuses, because they are four different facts: `succeeded`, `partial` (orders landed and are kept),
+`failed`, and `skipped` (the platform has no adapter to read with). `source` is the honesty label — a sandbox
+read is never presented as a live one. Audited as `store.connected` and `store.read`.
+
+**`commerce:sync` is the same read on a schedule**, queued per store through `ReadStoreJob` (unique per store,
+backed off), with `--workspace` and `--since`. It is the reconciliation pass webhooks need: one dropped
+delivery, one deploy during a busy hour, one platform incident, and a client's revenue is quietly short for
+that window with nothing on any screen to indicate it.
+
 ### `GET /api/commerce/analytics`
 
 What a client's stores sold. Needs `analytics.view` — a client's revenue is reporting, and a role that

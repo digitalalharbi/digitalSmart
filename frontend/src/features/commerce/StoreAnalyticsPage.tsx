@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useClientsQuery } from '@/features/clients';
+import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
@@ -12,6 +13,7 @@ import { ChartFrame } from '@/shared/ui/chart';
 import { BreakdownTable } from './BreakdownTable';
 import { CustomerMixPanel } from './CustomerMixPanel';
 import { RevenueChart } from './RevenueChart';
+import { StoresPanel } from './StoresPanel';
 import { useStoreAnalyticsQuery } from './useCommerce';
 import { formatMinor, summaryMetrics, windowFor } from './money';
 import type { RevenueSourceValue } from './types';
@@ -65,6 +67,20 @@ export function StoreAnalyticsPage() {
   const summary = analytics.data?.summary;
   const locale = i18n.language;
 
+  /*
+   * A `403` means the role cannot read revenue at all — a different message from a transport failure, and not
+   * something a retry will fix. Said once, here, rather than left to every panel on the page to report as its
+   * own load failure: a reader refused access was being told twice that something had gone wrong.
+   */
+  if (analytics.isError && analytics.error instanceof ApiError && analytics.error.status === 403) {
+    return (
+      <div className="flex flex-col gap-6">
+        <h1 className="text-content text-2xl font-semibold">{t('commerce.title')}</h1>
+        <Alert tone="warning">{t('commerce.forbidden')}</Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4">
@@ -113,6 +129,14 @@ export function StoreAnalyticsPage() {
           </label>
         </div>
       </header>
+
+      {/*
+        Before the figures, deliberately. "Which stores are we reading, and when did we last read them" is the
+        question a low total raises, and a page that led with the total left it unanswerable: until this panel
+        existed there was no way to connect a store at all, so every figure above could be empty with nothing
+        on screen to say why.
+      */}
+      <StoresPanel clientId={clientId} clients={clients.data?.data ?? []} />
 
       {analytics.isLoading ? (
         <Skeleton className="h-64 w-full" />

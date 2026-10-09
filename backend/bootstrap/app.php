@@ -10,6 +10,7 @@ use App\Application\Shared\Exception\AuthorizationDenied;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Application\Workspace\Exception\LastOwnerProtected;
 use App\Domain\Shared\Exception\DomainException;
+use App\Interface\Console\ReadStores;
 use App\Interface\Console\SyncAccessCatalogue;
 use App\Interface\Console\SyncAdvertisingData;
 use App\Interface\Http\Middleware\AssignRequestId;
@@ -43,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
         attributes: ['middleware' => ['web', 'auth']],
     )
     ->withCommands([
+        ReadStores::class,
         SyncAccessCatalogue::class,
         SyncAdvertisingData::class,
     ])

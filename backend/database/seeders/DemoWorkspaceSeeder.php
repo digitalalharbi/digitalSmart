@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Application\Advertising\Command\SyncBoundAccount;
 use App\Application\Analytics\DTO\AnalyticsFilters;
+use App\Application\Commerce\Command\ConnectStore;
 use App\Application\Commerce\Command\SyncStore;
 use App\Application\Creative\Command\AddCreativeVersion;
 use App\Application\Creative\Command\CommentOnRequest;
@@ -109,6 +110,14 @@ use Illuminate\Support\Str;
  * input, and the interface marks the whole surface. The figures cannot be mistaken
  * for a client's because the product says what they are on every screen that shows
  * them. See docs/INTEGRATIONS.md.
+ *
+ * **Every "the first one" in this file orders by `created_at` *and* `id`.** The timestamp columns are
+ * `timestamp(0)`, so the three clients and four projects this seeder writes in one pass all share a second —
+ * and `orderBy('created_at')->first()` between ties returns whichever row Postgres feels like. That made the
+ * demo intermittently incoherent rather than wrong-looking: one section would put the creative on the
+ * *Seasonal campaign* project while another assigned them a task on *Always-on performance*, and the board
+ * then refused the assignment, correctly, for a person who could not see it. The ids are UUIDv7, so ordering
+ * by id is both deterministic and creation-ordered.
  */
 final class DemoWorkspaceSeeder extends Seeder
 {
@@ -210,6 +219,7 @@ final class DemoWorkspaceSeeder extends Seeder
             ->where('workspace_id', $workspaceId)
             ->where('status', ProjectStatus::Active->value)
             ->orderBy('created_at')
+            ->orderBy('id')
             ->first();
 
         if ($project === null) {
@@ -361,6 +371,7 @@ final class DemoWorkspaceSeeder extends Seeder
             ->where('workspace_id', $workspaceId)
             ->where('status', ClientStatus::Active->value)
             ->orderBy('created_at')
+            ->orderBy('id')
             ->first();
 
         if ($client === null) {
@@ -482,6 +493,7 @@ final class DemoWorkspaceSeeder extends Seeder
             ->where('workspace_id', $workspaceId)
             ->where('status', ClientStatus::Active->value)
             ->orderBy('created_at')
+            ->orderBy('id')
             ->get()
             ->all();
 
@@ -519,6 +531,7 @@ final class DemoWorkspaceSeeder extends Seeder
             $project = Project::query()
                 ->where('client_id', $client->getKey())
                 ->orderBy('created_at')
+                ->orderBy('id')
                 ->first();
 
             // The second client gets the shorter half, so the two do not look identical.
@@ -583,6 +596,7 @@ final class DemoWorkspaceSeeder extends Seeder
             $project = Project::query()
                 ->where('client_id', $firstForDuplicates->getKey())
                 ->orderBy('created_at')
+                ->orderBy('id')
                 ->first();
 
             foreach ([
@@ -674,6 +688,7 @@ final class DemoWorkspaceSeeder extends Seeder
             ->where('workspace_id', $workspaceId)
             ->where('status', ClientStatus::Active->value)
             ->orderBy('created_at')
+            ->orderBy('id')
             ->first();
 
         if ($client === null) {
@@ -707,17 +722,28 @@ final class DemoWorkspaceSeeder extends Seeder
 
         $externalId = '1183363243';
 
-        /** @var Store $store */
-        $store = Store::query()->updateOrCreate(
-            ['workspace_id' => $workspaceId, 'provider' => $provider->value, 'external_id' => $externalId],
-            [
-                'client_id' => $client->getKey(),
-                'provider_connection_id' => $connection->id->value,
-                'name' => 'SANDBOX — Noon Retail storefront',
-                'currency' => 'SAR',
-                'timezone' => 'Asia/Riyadh',
-            ],
-        );
+        /*
+         * Connected through the real use case, which is new: until `ConnectStore` existed this seeder wrote the
+         * `stores` row itself, so the demo demonstrated a state a real installation could not reach. Now it
+         * takes the same path an owner does — discovery, the client decision, the audit entry — and a
+         * re-seed finds the store already connected and leaves it alone.
+         */
+        $store = Store::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('provider', $provider->value)
+            ->where('external_id', $externalId)
+            ->first();
+
+        if (! $store instanceof Store) {
+            app(ConnectStore::class)($provider, $externalId, (string) $client->getKey());
+
+            /** @var Store $store */
+            $store = Store::query()
+                ->where('workspace_id', $workspaceId)
+                ->where('provider', $provider->value)
+                ->where('external_id', $externalId)
+                ->sole();
+        }
 
         $result = app(SyncStore::class)(
             (string) $workspaceId,
@@ -749,6 +775,7 @@ final class DemoWorkspaceSeeder extends Seeder
             ->where('workspace_id', $workspaceId)
             ->where('status', ClientStatus::Active->value)
             ->orderBy('created_at')
+            ->orderBy('id')
             ->get()
             ->all();
 
@@ -759,7 +786,7 @@ final class DemoWorkspaceSeeder extends Seeder
         }
 
         /** @var Project|null $project */
-        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->first();
+        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->orderBy('id')->first();
 
         $open = app(OpenCreativeRequest::class);
         $move = app(MoveCreativeRequest::class);
@@ -873,6 +900,7 @@ final class DemoWorkspaceSeeder extends Seeder
             ->where('workspace_id', $workspaceId)
             ->where('status', ClientStatus::Active->value)
             ->orderBy('created_at')
+            ->orderBy('id')
             ->first();
 
         if ($client === null) {
@@ -880,7 +908,7 @@ final class DemoWorkspaceSeeder extends Seeder
         }
 
         /** @var Project|null $project */
-        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->first();
+        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->orderBy('id')->first();
 
         /*
          * The manager and the creative, and **not the buyer** — which is the whole point of this line.
@@ -967,6 +995,7 @@ final class DemoWorkspaceSeeder extends Seeder
             ->where('workspace_id', $workspaceId)
             ->where('status', ClientStatus::Active->value)
             ->orderBy('created_at')
+            ->orderBy('id')
             ->first();
 
         if ($client === null) {
@@ -974,7 +1003,7 @@ final class DemoWorkspaceSeeder extends Seeder
         }
 
         /** @var Project|null $project */
-        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->first();
+        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->orderBy('id')->first();
 
         $ask = app(RequestApproval::class);
         $decide = app(DecideApproval::class);
@@ -1095,6 +1124,7 @@ final class DemoWorkspaceSeeder extends Seeder
         $project = Project::query()
             ->whereIn('client_id', Client::query()->where('workspace_id', $workspaceId)->select('id'))
             ->orderBy('created_at')
+            ->orderBy('id')
             ->first();
 
         if ($project === null) {
@@ -1146,6 +1176,7 @@ final class DemoWorkspaceSeeder extends Seeder
             ->where('workspace_id', $workspaceId)
             ->where('status', ClientStatus::Active->value)
             ->orderBy('created_at')
+            ->orderBy('id')
             ->first();
 
         if ($client === null) {
@@ -1153,7 +1184,7 @@ final class DemoWorkspaceSeeder extends Seeder
         }
 
         /** @var Project|null $project */
-        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->first();
+        $project = Project::query()->where('client_id', $client->getKey())->orderBy('created_at')->orderBy('id')->first();
 
         if ($project === null) {
             return;
@@ -1360,6 +1391,7 @@ final class DemoWorkspaceSeeder extends Seeder
             ->where('workspace_id', $workspaceId)
             ->where('status', ClientStatus::Active->value)
             ->orderBy('created_at')
+            ->orderBy('id')
             ->first();
 
         if ($client === null) {
@@ -1437,6 +1469,7 @@ final class DemoWorkspaceSeeder extends Seeder
             ->where('workspace_id', $workspaceId)
             ->where('status', ClientStatus::Active->value)
             ->orderBy('created_at')
+            ->orderBy('id')
             ->first();
 
         if ($client === null) {

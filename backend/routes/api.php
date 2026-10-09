@@ -11,6 +11,7 @@ use App\Interface\Http\Controller\Budget\ForecastController;
 use App\Interface\Http\Controller\Budget\PacingController;
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Commerce\StoreAnalyticsController;
+use App\Interface\Http\Controller\Commerce\StoreController;
 use App\Interface\Http\Controller\Commerce\StoreWebhookController;
 use App\Interface\Http\Controller\Creative\CreativeController;
 use App\Interface\Http\Controller\Dashboard\DashboardController;
@@ -525,6 +526,22 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      */
     Route::get('commerce/analytics', StoreAnalyticsController::class)
         ->name('commerce.analytics');
+
+    /*
+     * The stores a workspace reads. Reading the list needs `analytics.view` — "where does this figure come from
+     * and how old is it" is part of reading the figure — while discovering, connecting and reading a store need
+     * `workspaces.update`, because each spends the workspace's credentials on somebody else's API.
+     */
+    Route::get('commerce/stores', [StoreController::class, 'index'])->name('commerce.stores.index');
+    Route::get('commerce/stores/connectable', [StoreController::class, 'connectable'])
+        ->name('commerce.stores.connectable');
+    Route::post('commerce/stores', [StoreController::class, 'store'])->name('commerce.stores.store');
+    /*
+     * The reconciliation read, by hand. Webhooks are faster and are not sufficient — one dropped delivery and a
+     * client's revenue is quietly short for that window — and `commerce:sync` is the same read on a schedule.
+     */
+    Route::post('commerce/stores/{store}/read', [StoreController::class, 'read'])
+        ->whereUuid('store')->name('commerce.stores.read');
 
     Route::get('measurement/containers', [MeasurementController::class, 'containers'])
         ->name('measurement.containers');
