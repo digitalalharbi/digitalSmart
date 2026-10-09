@@ -57,22 +57,6 @@ final class EloquentExternalAccountRepository implements ExternalAccountReposito
         ])->save();
     }
 
-    /** @return list<ExternalAccount> */
-    public function forConnection(WorkspaceId $workspaceId, ProviderConnectionId $connectionId): array
-    {
-        /** @var list<ExternalAccount> $accounts */
-        $accounts = AccountModel::query()
-            ->where('workspace_id', $workspaceId->value)
-            ->where('provider_connection_id', $connectionId->value)
-            ->orderBy('name')
-            ->get()
-            ->map(fn (AccountModel $model): ExternalAccount => $this->toDomain($model))
-            ->values()
-            ->all();
-
-        return $accounts;
-    }
-
     private function toDomain(AccountModel $model): ExternalAccount
     {
         return ExternalAccount::reconstitute(

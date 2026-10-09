@@ -208,3 +208,35 @@ precisely so this conversation can be had with evidence instead of apologies.
 **Do.** Answer with the source state and the evidence. Never adjust a figure to match a platform's dashboard:
 the two disagree for documented reasons, and a number edited to agree with a screenshot is a number nobody can
 defend afterwards.
+
+---
+
+## 8. The nightly passes have not run
+
+**Symptom.** Figures are a day or more old everywhere at once; a store's *last read* is yesterday or earlier on
+every store; a workspace that existed before the last deploy is refused a feature its role should allow.
+
+All three are the same fault with different faces: `advertising:sync`, `commerce:sync` and `access:sync` are
+scheduled, and Laravel's scheduler only runs when something runs it every minute.
+
+**Check, in this order.**
+
+1. **Is the cron there?** `crontab -l` on the application host should contain
+   `* * * * * cd <app> && php artisan schedule:run >> /dev/null 2>&1`. Nothing in this repository installs it —
+   see [PRODUCTION.md](PRODUCTION.md#the-schedule-and-the-one-cron-it-needs).
+2. **Does the application agree about what is scheduled?** `php artisan schedule:list` prints the three with
+   their next due times. A command missing here is a code or deploy problem, not a cron one.
+3. **Did a pass start and stall?** Each is `withoutOverlapping`, so a previous run that died while holding the
+   lock blocks the next ones for the lock's lifetime. `php artisan schedule:clear-cache` releases them.
+4. **Did it queue and nothing consumed it?** All three dispatch jobs rather than doing the work, so a stopped
+   queue looks exactly like a stopped schedule from the figures. `/api/health` tells the two apart — runbook 1.
+
+**Do.** Install the cron, or release the lock, and then run the affected pass by hand:
+`php artisan commerce:sync --workspace=<id>` reads one workspace's stores,
+`php artisan advertising:sync --since=YYYY-MM-DD` re-reads a window somebody noticed was missing. Both are
+re-runnable: every write is keyed on the provider's own identifier, and the restatement window is re-read by
+design.
+
+**Do not** widen a window to "catch up" without checking the provider's own range limit — `DateWindow::split`
+already breaks a request into the largest span each provider documents, and a hand-rolled wider one is how a
+sync comes back empty and reports success.

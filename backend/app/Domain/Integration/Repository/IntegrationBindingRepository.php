@@ -26,9 +26,6 @@ interface IntegrationBindingRepository
 
     public function remove(ProjectIntegrationBinding $binding): void;
 
-    /** Whether any project is still bound to this account. */
-    public function countForAccount(WorkspaceId $workspaceId, ExternalAccountId $externalAccountId): int;
-
     /**
      * How many of those bindings actually want syncing.
      *

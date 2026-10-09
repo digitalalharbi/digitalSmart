@@ -4,6 +4,43 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Three dead port methods, and a document that described an unbuilt flow
+
+### Removed
+
+- **`ExternalAccountRepository::forConnection`** and **`IntegrationBindingRepository::countForAccount`**, both
+  implemented and called by nothing — and both second answers to questions the integration read model already
+  answers, `accountsForWorkspace` and `ExternalAccountView::bindingCount`. Two implementations of one figure is
+  one that can disagree with the other in the place nobody has looked.
+
+### Changed
+
+- **`docs/INTEGRATIONS.md` described a guided access flow that does not exist.** It promised "OAuth where
+  possible" and a per-provider wizard; what the product has is an operator pasting credentials, which is enough
+  for every read in it. The section now says that, and names `ProviderAdapter::authorisationUrl()` for what it
+  is: implemented prep with no caller, because a URL is half a handshake — the other half needs a redirect URI
+  allow-listed in somebody's developer console, a callback route, a signed `state` and a token exchange against
+  a live endpoint. `BLOCKED_EXTERNAL_CREDENTIALS`, named rather than left looking like a loose end.
+- **Runbook 8: the nightly passes have not run.** Stale figures everywhere at once, a store never read, and a
+  workspace refused a feature its role allows are the same fault with three faces, and the first check is
+  whether anything runs `schedule:run`. It also separates a stalled `withoutOverlapping` lock from a stopped
+  queue, which look identical from the figures.
+
+### Verified, not changed
+
+- **Every column that carries an assignment**: `tasks.assignee_id`, `leads.owner_id`,
+  `client_requests.owner_id`, `creative_requests.owner_id` — a migration-wide sweep for every
+  user-referencing column returns exactly these four, all behind `OwnerDirectory` for assignment and
+  `AssignedWorkRepository` for release.
+- **Every navigation item reaches a real page.** The placeholder route remains as the guard its own test
+  describes, and nothing uses it.
+- **No exported frontend symbol is unreferenced**, and no port method outside those two was uncalled.
+
+### Gates
+
+1 775 backend tests (6 396 assertions), 576 frontend tests, 397 Playwright tests, PHPStan level 8 clean, Pint
+clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
 ## Two lists kept by hand, and four exports nothing imported
 
 A sweep for exported symbols nothing calls, closing what it found rather than listing it.

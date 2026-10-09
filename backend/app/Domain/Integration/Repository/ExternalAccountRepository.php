@@ -20,7 +20,4 @@ interface ExternalAccountRepository
     ): ?ExternalAccount;
 
     public function save(ExternalAccount $account): void;
-
-    /** @return list<ExternalAccount> */
-    public function forConnection(WorkspaceId $workspaceId, ProviderConnectionId $connectionId): array;
 }

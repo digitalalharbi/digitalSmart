@@ -263,12 +263,27 @@ write path a provider does not support, and never simulate one.
   actionable connection-health alert rather than silently degrading.
 - **Client platform passwords are never requested or stored** — see `docs/SECURITY.md`.
 
-## Client onboarding
+## How a connection is actually made, and what is not built
 
-Rather than asking for passwords, each provider gets a guided access flow:
-OAuth where possible, otherwise Business Manager / Business Center asset sharing,
-partner access, account IDs, pixels/datasets, pages and conversion assets — with a
-per-provider checklist showing what is still missing.
+**An operator enters credentials.** `PUT /api/integrations/providers/{provider}` takes the keys each provider declares
+and stores them encrypted; the interface lists exactly which keys are missing per provider and nothing else is
+required. That is the whole connect flow today, and it is enough for every read in this product.
+
+**There is no OAuth round trip.** `ProviderAdapter::authorisationUrl()` is implemented — each adapter can build
+its provider's authorisation URL from the stored client id — and **nothing calls it**, deliberately: a URL is
+half a handshake. The other half needs a redirect URI the provider has allow-listed, a callback route, a signed
+`state` to verify on return, and a token exchange against the live endpoint. Each of those is
+`BLOCKED_EXTERNAL_CREDENTIALS`: the redirect URI has to be registered in somebody's developer console, and the
+exchange cannot be exercised without a real client secret and a consenting account.
+
+So the method stays as the prep it is, named here rather than left looking like a loose end. What this
+installation asks of an agency instead is the same thing the provider's own console would: generate the
+credentials, paste them once.
+
+**Client access is arranged outside this product** — Business Manager or Business Center asset sharing, partner
+access, account ids, pixels and datasets, pages and conversion assets. The product's part is the per-provider
+checklist of what is still missing, which `GET /api/integrations/providers` publishes from each provider's
+declared credential keys. There is no guided wizard, and this document does not claim one.
 
 ## Provider field mappings
 

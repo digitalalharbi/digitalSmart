@@ -62,14 +62,6 @@ final class EloquentIntegrationBindingRepository implements IntegrationBindingRe
         BindingModel::query()->whereKey($binding->id->value)->delete();
     }
 
-    public function countForAccount(WorkspaceId $workspaceId, ExternalAccountId $externalAccountId): int
-    {
-        return BindingModel::query()
-            ->where('workspace_id', $workspaceId->value)
-            ->where('external_account_id', $externalAccountId->value)
-            ->count();
-    }
-
     public function syncEnabledCountForAccount(WorkspaceId $workspaceId, ExternalAccountId $externalAccountId): int
     {
         return BindingModel::query()
