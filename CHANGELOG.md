@@ -75,6 +75,27 @@ is empty, and every stored connection holds the literal `sandbox`.
 under full-suite load, both retried green and neither in a file this pass touched — PHPStan level 8 clean,
 Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
 
+## The home screen now asks the server what needs doing
+
+### Added
+
+- **`AttentionPanel` on the overview**, reading `GET /api/attention`. One request, not six: the union
+  happens server-side, which is what keeps the count on this panel equal to the count on the page each
+  item opens, and what keeps it honest at a hundred projects.
+- **The scope line is the server's, printed.** The panel does not decide which streams a reader can see
+  and does not phrase a single item's sentence — both come from the modules that own them. Joining the
+  stream names goes through `Intl.ListFormat`, because English wants "budgets, tracking and approvals"
+  and Arabic wants its own conjunction and its own comma.
+- **A failed stream is shown as a warning above the list**, so a broken request and a quiet week never
+  render the same way.
+- **The count is of the whole queue**, not of the six rows on screen.
+
+### Changed
+
+- The client-side attention vocabulary shrank to what the client actually owns — the panel's own chrome.
+  Item sentences, entity kinds, stream labels and action labels are published by the server with every
+  row, and a second copy in the locale files could only drift from them.
+
 ## One queue, six modules, and no seventh opinion
 
 ### Added

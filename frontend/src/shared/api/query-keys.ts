@@ -30,6 +30,10 @@ export const queryKeys = {
     accounts: (provider: string) => ['integrations', 'accounts', provider] as const,
     bindings: (projectId: string) => ['integrations', 'bindings', projectId] as const,
   },
+  attention: {
+    all: () => ['attention'] as const,
+    queue: (params: Record<string, unknown>) => ['attention', 'queue', params] as const,
+  },
   analytics: {
     all: () => ['analytics'] as const,
     query: (params: Record<string, unknown>) => ['analytics', 'query', params] as const,

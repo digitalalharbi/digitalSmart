@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Plug } from 'lucide-react';
+import { AttentionPanel } from '@/features/attention';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useAnalytics } from '@/features/analytics';
 import { ApiError } from '@/shared/api/client';
@@ -47,6 +48,15 @@ export function OverviewPage() {
   return (
     <div className="ds-page">
       <PageHeader title={t('overview.title')} description={t('overview.subtitle')} />
+
+      {/*
+        What is waiting on you, before what the money did.
+
+        The figures below answer "how did we do"; this answers "what do I do now", and only one of those
+        is a reason to open a product on a Tuesday morning. One request, assembled server-side from the
+        modules that already know — and it renders nothing at all for a role that can see none of them.
+      */}
+      <AttentionPanel />
 
       {canSeeAnalytics && !isForbidden && (
         <section className="flex flex-col gap-4" aria-label={t('overview.performance')}>

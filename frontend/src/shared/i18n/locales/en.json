@@ -2186,9 +2186,14 @@
     "loading": "Loading what needs attention…",
     "unassigned": "Unassigned",
     "seeAll": "See all",
+    "scope": "Across {{streams}}.",
+    "count": "{{count}} item",
+    "count_other": "{{count}} items",
+    "partial": "This list is incomplete: {{streams}} could not be read just now.",
+    "loadFailed": "What needs attention could not be loaded.",
     "empty": {
       "title": "Nothing needs attention",
-      "body": "Budgets, tracking and approvals are all within range."
+      "body": "Everything in view is within range."
     }
   },
   "activity": {

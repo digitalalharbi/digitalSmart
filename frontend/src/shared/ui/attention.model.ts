@@ -11,8 +11,15 @@ export interface AttentionItem {
   message: string;
   /** What it is about, named the way the product names it elsewhere. */
   entity: { kind: string; label: string };
-  /** Who holds it. `null` is shown as "unassigned" — an item nobody owns is the most likely to rot. */
-  owner: string | null;
+  /**
+   * Who holds it.
+   *
+   * Three states, and they are three different facts. A name. `null` for "nobody holds this", which is
+   * printed rather than left blank, because an unowned item is the one most likely to rot. And absent for a
+   * kind that has no owner at all — a budget is not assigned to a person, and printing *Unassigned* against
+   * one would invent a gap that does not exist.
+   */
+  owner?: string | null;
   /** When it started being true, for age. `null` when the source cannot say. */
   since: string | null;
   /** Exactly one thing to do about it. */

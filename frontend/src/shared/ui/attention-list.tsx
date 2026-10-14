@@ -74,10 +74,12 @@ export function AttentionList({
               <p className="text-content text-sm font-medium">{item.message}</p>
 
               <p className="text-content-tertiary flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                <span className="inline-flex items-center gap-1">
-                  <UserRound aria-hidden className="size-3" />
-                  {item.owner ?? t('attention.unassigned')}
-                </span>
+                {'owner' in item ? (
+                  <span className="inline-flex items-center gap-1">
+                    <UserRound aria-hidden className="size-3" />
+                    {item.owner ?? t('attention.unassigned')}
+                  </span>
+                ) : null}
                 {item.since === null ? null : (
                   /* The exact moment stays in the tooltip: the list needs an age, an investigation needs a time. */
                   <time
