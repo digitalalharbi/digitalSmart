@@ -183,7 +183,7 @@ export function ClientsPage() {
             <TableBody>
               {data.data.map((client) => (
                 <TableRow key={client.id} isInteractive>
-                  <TableCell>
+                  <TableCell label={t('clients.columns.name')}>
                     <div className="flex items-center gap-2">
                       <span className="text-content font-medium">{client.name}</span>
                       {client.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
@@ -194,11 +194,16 @@ export function ClientsPage() {
                       </span>
                     ) : null}
                   </TableCell>
-                  <TableCell>
+                  <TableCell label={t('clients.columns.status')}>
                     <StatusBadge status={client.status} />
                   </TableCell>
-                  <TableCell className="text-content-secondary">{client.industry ?? '—'}</TableCell>
-                  <TableCell align="end" isNumeric>
+                  <TableCell
+                    label={t('clients.columns.industry')}
+                    className="text-content-secondary"
+                  >
+                    {client.industry ?? '—'}
+                  </TableCell>
+                  <TableCell label={t('clients.columns.projects')} align="end" isNumeric>
                     {formatNumber(client.project_count, locale)}
                   </TableCell>
                   <TableCell align="end">

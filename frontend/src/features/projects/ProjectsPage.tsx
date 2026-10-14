@@ -194,7 +194,7 @@ export function ProjectsPage() {
             <TableBody>
               {data.data.map((project) => (
                 <TableRow key={project.id} isInteractive>
-                  <TableCell>
+                  <TableCell label={t('projects.columns.name')}>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-content font-medium">{project.name}</span>
                       {project.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
@@ -206,14 +206,23 @@ export function ProjectsPage() {
                       {project.currency}
                     </span>
                   </TableCell>
-                  <TableCell className="text-content-secondary">{project.client.name}</TableCell>
-                  <TableCell>
+                  <TableCell
+                    label={t('projects.columns.client')}
+                    className="text-content-secondary"
+                  >
+                    {project.client.name}
+                  </TableCell>
+                  <TableCell label={t('projects.columns.status')}>
                     <ProjectStatusBadge status={project.status} />
                   </TableCell>
-                  <TableCell className="text-content-secondary text-xs" isNumeric>
+                  <TableCell
+                    label={t('projects.columns.schedule')}
+                    className="text-content-secondary text-xs"
+                    isNumeric
+                  >
                     {project.starts_on ?? '—'} → {project.ends_on ?? '—'}
                   </TableCell>
-                  <TableCell align="end" isNumeric>
+                  <TableCell label={t('projects.columns.members')} align="end" isNumeric>
                     {/*
                       The count was the whole of this column and there was no way to change it — so the number
                       that decides who can see a client's work was read-only. It is a button now, because the

@@ -137,6 +137,16 @@ own markup (its colspan logic is doing real work) and wears the same surface.
 Four tables are deliberately untouched: they belong to another session's in-flight money-formatting work, and
 taking them would have meant resolving someone else's change as part of a redesign.
 
+### On a phone, a row is a card
+
+A desktop table squeezed onto 375 pixels is a horizontal scroll that hides most of its columns behind a
+gesture — which is what the clients table did, and what the brief for this redesign names explicitly. Below
+`sm` the header row is hidden, each row becomes a card, and every cell carries its own column label.
+
+It is still a real `<table>`: the row and column relationships a screen reader depends on are unchanged, and
+the minimum width that forces the desktop layout now applies from `sm` up only, because on a phone it would
+reintroduce exactly the scroll the card layout removes.
+
 ### Gates
 
 596 frontend tests, **400 Playwright tests with no failures and no flakes** — the whole suite against the
