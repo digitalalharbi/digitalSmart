@@ -147,6 +147,28 @@ it('issues the same number of statements over a bigger agency: the campaign cont
     expect($large)->toBe($small);
 });
 
+/*
+ * The attention queue consults six modules, so its statement count is the sum of six. What must not
+ * change is that the sum does not grow with the agency — each module answers in a fixed number of
+ * queries however much work it finds.
+ */
+it('issues the same number of statements over a bigger agency: the attention queue', function (): void {
+    seedAgency(clients: 6, accounts: 10, campaigns: 20);
+    $owner = scaleOwner();
+
+    $small = statementsFor(function () use ($owner): void {
+        $this->actingAs($owner)->getJson('/api/attention')->assertOk();
+    });
+
+    seedAgency(clients: 18, accounts: 30, campaigns: 120);
+
+    $large = statementsFor(function () use ($owner): void {
+        $this->actingAs($owner)->getJson('/api/attention')->assertOk();
+    });
+
+    expect($large)->toBe($small);
+});
+
 it('issues the same number of statements over a bigger agency: the analytics breakdown', function (): void {
     seedAgency(clients: 6, accounts: 10, campaigns: 20);
     $owner = scaleOwner();
@@ -172,8 +194,8 @@ it('issues the same number of statements over a bigger agency: the analytics bre
  *
  * The budgets are the measured cost plus two: enough slack that an extra authorisation read does not
  * fail the suite, tight enough that a join replaced by a loop does. Measured at the time of writing:
- * ownership 5, control 6, analytics 6, clients 5, projects 5 — each returning real rows, which the
- * assertions below check, because a 200 over an empty result set would pass any budget.
+ * ownership 5, control 5, analytics 6, clients 5, projects 5, attention 29 — each returning real rows,
+ * which the assertions below check, because a 200 over an empty result set would pass any budget.
  */
 it('keeps the agency views within their stated query budget', function (): void {
     seedAgency(clients: 12, accounts: 24, campaigns: 60);
@@ -182,10 +204,30 @@ it('keeps the agency views within their stated query budget', function (): void 
     $budgets = [
         '/api/campaigns/ownership?limit=50' => 7,
         '/api/campaigns/control?limit=50' => 8,
+        /*
+         * Much larger than the rest, and deliberately so: the attention queue consults six modules and
+         * pays each one's existing read rather than duplicating their rules into a seventh query. The
+         * count is flat with agency size — the test above proves that — and the number is written here so
+         * that narrowing a source to the queue's own question shows up as a change somebody made.
+         */
+        '/api/attention' => 32,
         '/api/analytics?preset=28d&metrics[]=spend&dimension=provider&limit=10' => 8,
         '/api/clients?per_page=25' => 7,
         '/api/projects?per_page=25' => 7,
     ];
+
+    /* The attention queue is honest about an empty workspace, so it needs something to find. */
+    DB::table('tasks')->insert([
+        'id' => (string) Illuminate\Support\Str::uuid7(),
+        'workspace_id' => DB::table('workspaces')->where('slug', AgencyScaleSeeder::WORKSPACE_SLUG)->value('id'),
+        'title' => 'Overdue by construction',
+        'state' => 'todo',
+        'priority' => 'normal',
+        'due_on' => now()->subDays(5)->toDateString(),
+        'created_by' => scaleOwner()->getKey(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 
     foreach ($budgets as $url => $budget) {
         $rows = 0;

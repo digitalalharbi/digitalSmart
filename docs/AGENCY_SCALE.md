@@ -54,7 +54,7 @@ additive.
 |---|---|---|---|
 | 10 | Campaign Control Center | **PARTIAL** — was GAP | `GET /api/campaigns/control` returns every campaign the reader may see with client, project, account, status, health, objective-aware result, cost per result, ROAS where valid, budget and last sync; filters on client, project, provider, account, status, objective and health, plus search. **No frontend yet** — `CampaignsPage` is still the metric drill-down. |
 | 11 | Normalized business campaign health, separate from provider status | **MET** — was GAP | `CampaignHealth` with the product's six words, computed by `CampaignHealthPolicy` from platform state, reporting freshness, result availability, cost change and delivery change. The platform's own status ships beside it as `provider_status` and neither replaces the other. Every verdict carries a one-sentence reason in business language. |
-| 12 | Agency-wide attention queue | **GAP** | Per-module attention exists — budget alerts, tracking issues, approval ages, request overdue, task overdue — and no surface unions them. |
+| 12 | Agency-wide attention queue | **PARTIAL** — was GAP | `GET /api/attention` unions six streams — campaigns, budgets, tracking, approvals, client requests, tasks — with membership decided per stream by permission, severity counts, worst-first-then-oldest ordering, and the consulted scope published so an empty list is never a claim about more than the reader can see. A stream that fails is named rather than silently dropped. **No frontend yet**, and no "my clients / my projects" narrowing. |
 
 ## 13–15 · Portfolio and workspace
 
@@ -199,7 +199,7 @@ additive.
 | # | Rule | Verdict | Evidence |
 |---|---|---|---|
 | 81 | Agency-wide alerting routed to owners | **PARTIAL** | Notifications are permission-routed and the vocabulary is published by the server. There is no alert engine that evaluates conditions across projects. |
-| 82 | No notification fatigue | **PARTIAL** | A digest with waiting/unread/total exists. Nothing aggregates "8 campaigns need attention" into one notification. |
+| 82 | No notification fatigue | **PARTIAL** | A digest with waiting/unread/total exists, and the attention queue is the aggregated view rule 82 describes — "8 campaigns need attention" in one place rather than eight notifications. Notifications themselves are still one per event. |
 | 83 | Digests | **GAP** | No scheduled digest. |
 
 ## 84–87 · Context and navigation at scale
@@ -278,6 +278,7 @@ The fixture builds in about 20 seconds.
 | Analytics breakdown by campaign, 25 rows | 454 ms | 7 |
 | Clients, 25 per page | 10 ms | 5 |
 | Projects, 25 per page | 9 ms | 5 |
+| Attention queue, all six streams | 98 ms | 29 |
 
 Read these as a baseline, not as a pass mark. Three things they do and do not say:
 
@@ -292,6 +293,12 @@ Read these as a baseline, not as a pass mark. Three things they do and do not sa
   one place instead of duplicating them into SQL so the database could sort by them. It holds to a stated
   cap of 2,000 assessments, and the response publishes `assessed` beside `total` so a larger agency is
   told its counts describe the highest-spending slice rather than everything.
+- **The attention queue costs 29 statements**, far more than anything else here, and that is a deliberate
+  trade rather than an oversight. It consults six modules and pays each one's existing read, instead of
+  duplicating six sets of rules into a seventh query that could disagree with the six screens a reader
+  opens to check. The count is flat with agency size, which is the property that matters; the named next
+  step is to narrow each source to the queue's own question — the task source currently reads a whole
+  board to find the overdue cards.
 - **The Portfolio is not in this table** because it is not built. The fixture is here first on purpose: an
   agency view without a dataset that can show it failing is one nobody discovers is slow until the agency
   grows into it.
@@ -314,7 +321,8 @@ In the constitution's own priority order, with the audit's finding attached:
 3. ~~**Campaign Control Center** (§10) with normalized campaign health (§11) and objective-aware primary
    results (§33).~~ **Backend done and measured.** The frontend surface remains.
 4. **Portfolio** (§13, §14) and the project workspace (§15).
-5. **Attention Center** (§12) — server-side, because at agency scale it is an aggregate, not a fan-out.
+5. ~~**Attention Center** (§12) — server-side, because at agency scale it is an aggregate, not a
+   fan-out.~~ **Backend done and measured.** The frontend surface remains.
 6. **Budget Control Center** (§37).
 7. **Sync scalability** — queue categories (§21), adaptive cadence (§22), per-provider throttle (§26), fair scheduling (§27), backfill priority (§80).
 8. **Role dashboards** (§88).

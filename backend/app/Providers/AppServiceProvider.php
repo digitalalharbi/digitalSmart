@@ -12,6 +12,14 @@ use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegis
 use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Analytics\Contract\AnalyticsReadModel;
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Attention\Contract\AttentionSource;
+use App\Application\Attention\Query\GetAttentionQueue;
+use App\Application\Attention\Source\ApprovalAttentionSource;
+use App\Application\Attention\Source\BudgetAttentionSource;
+use App\Application\Attention\Source\CampaignAttentionSource;
+use App\Application\Attention\Source\RequestAttentionSource;
+use App\Application\Attention\Source\TaskAttentionSource;
+use App\Application\Attention\Source\TrackingAttentionSource;
 use App\Application\Attribution\Contract\AttributionReadModel;
 use App\Application\Audit\Contract\AuditReadModel;
 use App\Application\Budget\Contract\BenchmarkReadModel;
@@ -199,6 +207,22 @@ use Illuminate\Validation\Rules\Password;
  */
 final class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * The modules that contribute to the attention queue, in the order they are consulted.
+     *
+     * A list here rather than a registry inside the Application layer, because this is the one place
+     * allowed to know which modules exist. Adding a seventh is adding a line to this array; nothing in
+     * the queue itself knows the set.
+     */
+    private const ATTENTION_SOURCES = [
+        CampaignAttentionSource::class,
+        BudgetAttentionSource::class,
+        TrackingAttentionSource::class,
+        ApprovalAttentionSource::class,
+        RequestAttentionSource::class,
+        TaskAttentionSource::class,
+    ];
+
     /** Probes composing the system health report, in display order. */
     private const HEALTH_PROBES = [
         DatabaseHealthProbe::class,
@@ -367,6 +391,16 @@ final class AppServiceProvider extends ServiceProvider
         foreach (self::HEALTH_PROBES as $probe) {
             $this->app->tag($probe, HealthProbe::class);
         }
+
+        foreach (self::ATTENTION_SOURCES as $source) {
+            $this->app->tag($source, AttentionSource::class);
+        }
+
+        $this->app->bind(GetAttentionQueue::class, static fn ($app): GetAttentionQueue => new GetAttentionQueue(
+            $app->tagged(AttentionSource::class),
+            $app->make(ActorContext::class),
+            $app->make(Clock::class),
+        ));
 
         /*
          * Attachments, on whichever disk is configured. The local private disk in development; a bucket in

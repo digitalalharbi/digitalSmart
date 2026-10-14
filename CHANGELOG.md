@@ -75,6 +75,40 @@ is empty, and every stored connection holds the literal `sandbox`.
 under full-suite load, both retried green and neither in a file this pass touched — PHPStan level 8 clean,
 Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
 
+## One queue, six modules, and no seventh opinion
+
+### Added
+
+- **`GET /api/attention`** — everything waiting on a person, unioned from the modules that already know:
+  campaign health, budget pacing, tracking issues, approval ages, promises to clients, overdue work.
+- **No new table and no alert engine.** Each of those six already computes its own findings, and a seventh
+  place computing them again would be free to disagree with the six screens a reader can open to check —
+  and the version on the home screen is the one nobody checks. The campaign source literally calls the
+  Campaign Control Center, so a campaign's verdict here and on its own row are the same verdict.
+- **Permission decides membership, not presentation.** Each stream names what it takes to read it and is
+  skipped entirely when the reader lacks it. A finance manager and a creative lead open the same endpoint
+  and the server assembles different lists. Client requests require two permissions, not one, because the
+  query behind them serves a client's own view as well.
+- **The scope is published.** "Nothing needs attention" means something different to each role, and an
+  empty list without the streams behind it is a reassurance the product has not earned.
+- **A stream that fails is named.** Otherwise a broken query and a quiet week render identically, and the
+  broken one renders as the reassuring one.
+- **Worst first, then oldest**, with an undated item sorting last rather than first: unknown age is not
+  old age, and the thing ignored longest is the one most likely to have been forgotten rather than
+  deferred.
+- **Three owner states, kept distinct on the wire.** A name; `null` for "nobody holds this", which the
+  interface prints; and the key absent entirely for a kind that has no owner — a budget belongs to a
+  client, not to a person, and printing *Unassigned* against one would invent a gap.
+
+### Fixed
+
+- **Every card on the task board came back with three nulls where names belong.** `TaskView` has carried
+  `clientName`, `projectName` and `assigneeName` since the board was built and the API publishes all
+  three — but the board query built on `visible()`, which returns a bare `tasks` builder with no joins.
+  The detail view joined correctly, which is why opening a card showed what the card itself could not.
+  Found because the attention queue asked a board card who was holding it and got nothing back. Nothing
+  had caught it in the board's own tests, which asserted on titles and states and never on a name.
+
 ## A campaign can be ACTIVE on Meta and critical here
 
 That sentence is the whole argument for the Campaign Control Center. A surface

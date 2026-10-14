@@ -190,7 +190,7 @@ final readonly class EloquentTaskRepository implements TaskRepository
              * queries beat a window function that cannot use the `(workspace, state)` index, and the shape
              * is the one a reader can follow.
              */
-            $rows = $this->filtered($workspaceId, $visibleProjectIds, $filter)
+            $rows = $this->cards($workspaceId, $visibleProjectIds, $filter)
                 ->where('t.state', $state->value)
                 /*
                  * Elevated priority first, then the soonest date. Nulls last, deliberately: undated work
@@ -402,10 +402,36 @@ final readonly class EloquentTaskRepository implements TaskRepository
      *
      * @param  list<string>|null  $visibleProjectIds
      */
+    /**
+     * The filtered set, **without** the name joins.
+     *
+     * For counting and grouping only. `load()` adds its own join on `users` and a second one here would
+     * collide on the alias, which is why the joins live in `cards()` rather than being pushed down into
+     * this.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     */
     private function filtered(string $workspaceId, ?array $visibleProjectIds, TaskFilter $filter): Builder
     {
-        $builder = $this->visible($workspaceId, $visibleProjectIds);
+        return $this->applyFilters($this->visible($workspaceId, $visibleProjectIds), $filter);
+    }
 
+    /**
+     * The filtered set with the client, project and assignee names attached.
+     *
+     * Anything returning cards has to use this. `filtered()` alone selects from `tasks` with no joins, so
+     * a card built on it carries three nulls where names belong — which is exactly what the board did
+     * until a test finally asserted on one.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     */
+    private function cards(string $workspaceId, ?array $visibleProjectIds, TaskFilter $filter): Builder
+    {
+        return $this->applyFilters($this->scope($workspaceId, $visibleProjectIds), $filter);
+    }
+
+    private function applyFilters(Builder $builder, TaskFilter $filter): Builder
+    {
         if ($filter->clientId !== null) {
             $builder->where('t.client_id', $filter->clientId);
         }
