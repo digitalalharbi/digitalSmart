@@ -1,9 +1,10 @@
-import { ArrowDownRight, ArrowUpRight, Info, Minus } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatChange, formatMetric, MISSING } from '@/shared/metrics';
 import type { MetricValue } from '@/shared/metrics';
 import { cn } from '@/shared/lib/cn';
 import { SourceBadge } from '@/shared/ui/source-badge';
+import { TrendBadge } from '@/shared/ui/trend-badge';
 
 type MetricCardProps = {
   value: MetricValue;
@@ -46,18 +47,20 @@ export function MetricCard({
         ? { type: 'button' as const, onClick: onSelect, 'aria-pressed': isSelected }
         : {})}
       className={cn(
-        'bg-surface border-line-subtle flex flex-col gap-1.5 rounded-xl border px-4 py-3.5 text-start',
-        'ease-standard transition-[border-color,box-shadow] duration-[var(--ds-duration-fast)]',
+        /*
+         * Generous padding and a large radius: a scorecard is the first thing read on every analytical page,
+         * and the references' confidence comes from giving the figure room rather than from decoration.
+         */
+        'bg-surface border-line-subtle flex flex-col gap-2 rounded-2xl border p-5 text-start shadow-xs',
+        'ease-standard transition-[border-color,box-shadow,transform] duration-[var(--ds-duration-fast)]',
         isInteractive &&
-          'hover:border-line-strong focus-visible:ring-accent/40 focus-visible:ring-2 focus-visible:outline-none',
+          'hover:border-line focus-visible:ring-accent/40 hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none',
         isSelected && 'border-accent ring-accent/25 ring-1',
         className,
       )}
     >
       <div className="flex items-center gap-1.5">
-        <span className="text-content-secondary text-xs font-medium tracking-wide uppercase">
-          {value.label}
-        </span>
+        <span className="text-content-tertiary ds-overline">{value.label}</span>
         {value.unavailable_reason !== null && (
           <span
             className="text-content-tertiary inline-flex"
@@ -69,11 +72,15 @@ export function MetricCard({
         )}
       </div>
 
+      {/*
+        The figure dominates. A KPI card whose value is the same size as its label is a card nobody can scan,
+        and scanning is the entire job of a scorecard row.
+      */}
       <span
         className={cn(
-          'ds-numeric text-content font-semibold',
-          emphasis === 'primary' ? 'text-2xl' : 'text-xl',
-          value.value === null && 'text-content-tertiary font-normal',
+          'ds-figure text-content',
+          emphasis === 'primary' ? 'text-3xl' : 'text-2xl',
+          value.value === null && 'text-content-tertiary text-2xl font-normal',
         )}
       >
         {formatMetric(value, i18n.language)}
@@ -89,25 +96,9 @@ export function MetricCard({
           {value.unavailable_reason}
         </span>
       ) : (
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           {change !== null ? (
-            <span
-              className={cn(
-                'ds-numeric inline-flex items-center gap-0.5 font-medium',
-                value.change_is_good === true && 'text-success',
-                value.change_is_good === false && 'text-danger',
-                value.change_is_good === null && 'text-content-tertiary',
-              )}
-            >
-              {value.change_ratio !== null && value.change_ratio > 0 ? (
-                <ArrowUpRight aria-hidden className="size-3.5" />
-              ) : value.change_ratio !== null && value.change_ratio < 0 ? (
-                <ArrowDownRight aria-hidden className="size-3.5" />
-              ) : (
-                <Minus aria-hidden className="size-3.5" />
-              )}
-              {change}
-            </span>
+            <TrendBadge change={change} ratio={value.change_ratio} isGood={value.change_is_good} />
           ) : (
             <span className="text-content-tertiary">{t('analytics.noComparison')}</span>
           )}
@@ -121,10 +112,10 @@ export function MetricCard({
 /** A scorecard placeholder that holds its own shape while loading. */
 export function MetricCardSkeleton() {
   return (
-    <div className="bg-surface border-line-subtle flex flex-col gap-2 rounded-xl border px-4 py-3.5">
-      <div className="bg-surface-sunken h-3 w-20 animate-pulse rounded" />
-      <div className="bg-surface-sunken h-7 w-28 animate-pulse rounded" />
-      <div className="bg-surface-sunken h-3 w-16 animate-pulse rounded" />
+    <div className="bg-surface border-line-subtle flex flex-col gap-2.5 rounded-2xl border p-5 shadow-xs">
+      <div className="bg-surface-sunken h-3 w-20 animate-pulse rounded-full" />
+      <div className="bg-surface-sunken h-8 w-32 animate-pulse rounded-lg" />
+      <div className="bg-surface-sunken h-5 w-20 animate-pulse rounded-full" />
     </div>
   );
 }

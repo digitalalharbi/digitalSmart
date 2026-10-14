@@ -30,6 +30,13 @@ export const MARK = {
   surfaceGap: 2,
   /** A wash, never a saturated block. */
   areaOpacity: 0.1,
+  /**
+   * The radius on a bar's data end.
+   *
+   * Four pixels: enough to read as a deliberate shape at the sizes these charts use, small enough that a
+   * short bar is still a bar rather than a lozenge. The baseline end stays square — see `barSeries`.
+   */
+  barRadius: 4,
 } as const;
 
 export type ChartContext = {
@@ -51,11 +58,16 @@ export function baseOption(
   return {
     color: palette.series,
     textStyle: { fontFamily: palette.fontFamily, color: palette.textSecondary },
+    /*
+     * Room above the plot for the legend, and room below for a date axis. Charts in this product sit inside a
+     * card with its own padding, so the grid's job is only to keep the marks off the axis labels — not to add
+     * a second margin, which is what made earlier charts look cramped inside generous cards.
+     */
     grid: {
-      top: 28,
-      bottom: 28,
-      left: context.isRtl ? 16 : 56,
-      right: context.isRtl ? 56 : 16,
+      top: 32,
+      bottom: 24,
+      left: context.isRtl ? 8 : 48,
+      right: context.isRtl ? 48 : 8,
       containLabel: true,
     },
     tooltip: {
@@ -63,7 +75,10 @@ export function baseOption(
       backgroundColor: palette.tooltipSurface,
       borderColor: palette.tooltipBorder,
       borderWidth: 1,
-      padding: [8, 12],
+      /* A card, not a label: the tooltip is the one chart surface a reader looks *at* rather than through. */
+      borderRadius: 12,
+      padding: [10, 14],
+      extraCssText: 'box-shadow: var(--ds-shadow-md); backdrop-filter: blur(8px);',
       textStyle: { color: palette.textPrimary, fontSize: 12, fontFamily: palette.fontFamily },
       /*
        * Solid, not dashed. A dashed rule reads as a projection or a threshold; this is
@@ -96,6 +111,12 @@ export function valueAxis(
     ...(options.name === undefined ? {} : { name: options.name }),
     nameTextStyle: { color: palette.axisLabel, fontSize: 11, padding: [0, 0, 6, 0] },
     position: options.side === 'far' ? far : near,
+    /*
+     * Solid, and lighter than it was. Dashing was tried here and reverted by a test that was right: a dashed
+     * rule reads as a projection or a threshold, and these charts carry real threshold lines — a pacing
+     * target drawn dashed is invisible against a dashed grid. The ink came out of the colour instead; see
+     * `--ds-chart-grid`.
+     */
     splitLine: { lineStyle: { color: palette.grid, width: 1, type: 'solid' as const } },
     axisLine: { show: false },
     axisTick: { show: false },
@@ -133,7 +154,8 @@ export function categoryAxis(
     inverse: context.isRtl,
     ...(options.gridIndex === undefined ? {} : { gridIndex: options.gridIndex }),
     boundaryGap: options.boundaryGap ?? false,
-    axisLine: { lineStyle: { color: palette.grid, type: 'solid' as const } },
+    /* No baseline rule: the bottom-most grid line already marks the floor of the plot. */
+    axisLine: { show: false },
     axisTick: { show: false },
     axisLabel: {
       show: options.showLabels ?? true,
@@ -221,7 +243,7 @@ type BarSeriesOptions = {
  * colour instead of a border: a stroke adds ink that is not data.
  */
 export function barSeries(palette: ChartPalette, options: BarSeriesOptions) {
-  const radius = MARK.surfaceGap * 2;
+  const radius = MARK.barRadius;
   const borderRadius =
     options.orientation === 'horizontal'
       ? options.isRtl

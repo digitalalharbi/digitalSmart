@@ -102,6 +102,7 @@
   --radius-lg: var(--ds-radius-lg);
   --radius-xl: var(--ds-radius-xl);
   --radius-2xl: var(--ds-radius-2xl);
+  --radius-3xl: var(--ds-radius-3xl);
 
   --shadow-xs: var(--ds-shadow-xs);
   --shadow-sm: var(--ds-shadow-sm);
@@ -175,6 +176,16 @@
   background-color: var(--ds-material);
   backdrop-filter: blur(var(--ds-material-blur)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--ds-material-blur)) saturate(180%);
+}
+
+/*
+ * One page rhythm, used by the shell and by `PageHeader`'s section wrapper, so every surface in the product
+ * breathes at the same cadence instead of each page choosing its own padding.
+ */
+@utility ds-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-section-gap);
 }
 
 @utility ds-canvas-grid {

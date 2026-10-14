@@ -75,6 +75,67 @@ is empty, and every stored connection holds the literal `sandbox`.
 under full-suite load, both retried green and neither in a file this pass touched — PHPStan level 8 clean,
 Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
 
+## A design system, and the shell rebuilt on it
+
+The product worked and did not look like it. This is the first slice of a system-wide redesign: the tokens,
+the shell, the primitives every page shares, and one page migrated end to end to prove the system holds.
+
+### The foundation
+
+- **The canvas is a measurable step darker than a card.** That one change is what lets borders drop to a
+  hairline and shadows to almost nothing: a card now separates by its own surface rather than by being drawn
+  around. Every later decision — soft borders, faint shadows, large radii — depends on it.
+- **Dark mode is designed, not inverted.** The canvas is the darkest layer and each card sits a measured step
+  above it, because in dark mode a shadow is a grey smear and the *surface* step is what carries elevation.
+  Lifting the raised surface put tertiary ink at 4.45:1 against it, which the contrast test caught; the ink
+  moved rather than the surface, because tertiary carries table headers and source labels.
+- **One page rhythm**: `--ds-page-gutter` and `--ds-section-gap`, so the whole application breathes at one
+  cadence instead of each page choosing its own padding.
+- Shadows rebuilt as wide and faint with a one-pixel contact edge — a card resting a millimetre off the
+  canvas rather than cut out and dropped on it.
+
+### The shell
+
+- **The rail is a panel on the canvas**, inset with its own surface, radius and hairline, so chrome and
+  content read as one system rather than a strip glued to the window edge.
+- **The active item is a filled pill.** A reader should find where they are without reading a label, and a
+  tint across a 17rem row is too diffuse to do that. Collapsed is a real mode: labels go, the pill becomes
+  square, and section headings become a rule rather than three truncated letters.
+- **The topbar is chrome, not a bar**: translucent material, no border, the same gutter as the page beneath it
+  so the search field lines up with the first card. Its controls sit on one surface as a single cluster.
+
+### The primitives
+
+- **`PageHeader` and `PageSection`.** Every page wrote its own header; the gap between title and content
+  ranged from 12 to 32 pixels and filters landed wherever there was room. One `h1`, actions that wrap rather
+  than squeeze, filters on their own row.
+- **`DataTable`.** Thirteen tables each styled their own header row — three fills, two divider weights, four
+  padding scales. The surface is now one decision: no header fill, no vertical rules, small-caps tertiary
+  headings, hairline row dividers, and the keyboard-reachable scroll region built in.
+- **`TrendBadge`**, and a `MetricCard` rebuilt around it: the figure dominates, the label is an overline, the
+  change is a pill coloured by whether it is *good* rather than whether it is up.
+- Buttons became pills, a step taller; cards took the larger radius and roomier padding.
+
+### Charts
+
+- Tooltips are cards — radius, shadow, padding — because the tooltip is the one chart surface a reader looks
+  *at* rather than through. The category baseline rule is gone, the grid is lighter, and the chart chrome
+  tokens are authored in the token file rather than left to the chart module's fallbacks.
+- **Two changes were reverted by tests that were right.** Dashing the gridlines: a dashed rule reads as a
+  projection, and these charts carry real threshold lines — a dashed target against a dashed grid is
+  invisible. Widening bars past 24px: the leftover space in a band is what makes a row of bars readable.
+
+### Migrated
+
+- Clients, end to end: header, filters, table, pagination.
+
+### Gates
+
+596 frontend tests, 36 Playwright tests across the shell, clients and the accessibility sweep — axe WCAG 2.2
+AA on five surfaces in both browsers and in Arabic, against the new surfaces — TypeScript strict clean, ESLint
+and Prettier clean, production build. The token contrast suite (30 pairs, both themes) is green, which is what
+caught the one real regression above.
+
 ## A sign-out that failed looked exactly like one that worked
 
 The end-to-end suite caught this under load, and it is the most serious thing found in this pass: after

@@ -11,16 +11,21 @@ export const buttonVariants = cva(
         primary:
           'bg-accent text-accent-contrast shadow-xs hover:bg-accent-hover active:translate-y-px',
         secondary:
-          'border border-line bg-surface text-content shadow-xs hover:bg-surface-hover active:bg-surface-active',
+          'border border-line-subtle bg-surface text-content shadow-xs hover:bg-surface-hover hover:border-line active:bg-surface-active',
         ghost: 'text-content-secondary hover:bg-surface-hover hover:text-content',
         subtle: 'bg-accent-subtle text-content-brand hover:brightness-[0.98]',
         danger: 'bg-danger text-white shadow-xs hover:brightness-110',
       },
+      /*
+       * Pills rather than rounded rectangles, and one step taller at every size. Two changes, one reason: a
+       * control that reads as a distinct object needs a shape the eye can separate from the card behind it,
+       * and the references all do this. `icon` stays square-ish so a row of them reads as one cluster.
+       */
       size: {
-        sm: 'h-8 rounded-md px-3 text-[0.8125rem]',
-        md: 'h-9 rounded-md px-4 text-sm',
-        lg: 'h-11 rounded-lg px-6 text-base',
-        icon: 'size-9 rounded-md',
+        sm: 'h-8 rounded-full px-3.5 text-[0.8125rem]',
+        md: 'h-10 rounded-full px-4.5 text-sm',
+        lg: 'h-12 rounded-full px-6 text-base',
+        icon: 'size-9 rounded-xl',
       },
     },
     defaultVariants: { variant: 'primary', size: 'md' },

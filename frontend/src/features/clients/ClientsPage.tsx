@@ -11,7 +11,15 @@ import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { formatNumber } from '@/shared/lib/format';
 import { useUiStore } from '@/shared/store/ui-store';
-import { ScrollRegion } from '@/shared/ui/scroll-region';
+import { PageHeader } from '@/shared/ui/page-header';
+import {
+  DataTable,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/ui/table';
 import { LoadingRegion } from '@/shared/ui/loading-region';
 import { useClientsQuery } from './api';
 import { ClientFormDialog } from './ClientFormDialog';
@@ -67,63 +75,61 @@ export function ClientsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-content text-2xl font-semibold">{t('nav.clients')}</h1>
-          <p className="text-content-secondary text-sm">
-            {data ? t('clients.count', { count: data.meta.total }) : t('clients.subtitle')}
-          </p>
-        </div>
+    <div className="ds-page">
+      <PageHeader
+        title={t('nav.clients')}
+        description={data ? t('clients.count', { count: data.meta.total }) : t('clients.subtitle')}
+        primaryAction={
+          can(PERMISSIONS.clientsCreate) ? (
+            <Button onClick={openCreate}>
+              <Plus />
+              {t('clients.create')}
+            </Button>
+          ) : undefined
+        }
+        filters={
+          <>
+            <div className="relative min-w-0 flex-1 sm:max-w-xs">
+              <Search
+                className="text-content-tertiary pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2"
+                aria-hidden="true"
+              />
+              <Input
+                value={search}
+                onChange={(event) => {
+                  setPage(1);
+                  setSearch(event.target.value);
+                }}
+                placeholder={t('clients.searchPlaceholder')}
+                aria-label={t('clients.searchPlaceholder')}
+                className="ps-9"
+                type="search"
+              />
+            </div>
 
-        {can(PERMISSIONS.clientsCreate) ? (
-          <Button onClick={openCreate}>
-            <Plus />
-            {t('clients.create')}
-          </Button>
-        ) : null}
-      </header>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-0 flex-1 sm:max-w-xs">
-          <Search
-            className="text-content-tertiary pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2"
-            aria-hidden="true"
-          />
-          <Input
-            value={search}
-            onChange={(event) => {
-              setPage(1);
-              setSearch(event.target.value);
-            }}
-            placeholder={t('clients.searchPlaceholder')}
-            aria-label={t('clients.searchPlaceholder')}
-            className="ps-9"
-            type="search"
-          />
-        </div>
-
-        <div
-          className="flex flex-wrap gap-1.5"
-          role="group"
-          aria-label={t('clients.filterByStatus')}
-        >
-          {CLIENT_STATUSES.map((status) => {
-            const active = statuses.includes(status);
-            return (
-              <Button
-                key={status}
-                size="sm"
-                variant={active ? 'subtle' : 'ghost'}
-                aria-pressed={active}
-                onClick={() => toggleStatus(status)}
-              >
-                {t(`clients.status.${status}`)}
-              </Button>
-            );
-          })}
-        </div>
-      </div>
+            <div
+              className="flex flex-wrap gap-1.5"
+              role="group"
+              aria-label={t('clients.filterByStatus')}
+            >
+              {CLIENT_STATUSES.map((status) => {
+                const active = statuses.includes(status);
+                return (
+                  <Button
+                    key={status}
+                    size="sm"
+                    variant={active ? 'subtle' : 'ghost'}
+                    aria-pressed={active}
+                    onClick={() => toggleStatus(status)}
+                  >
+                    {t(`clients.status.${status}`)}
+                  </Button>
+                );
+              })}
+            </div>
+          </>
+        }
+      />
 
       {isPending ? (
         <LoadingRegion label={t('clients.loading')} className="flex flex-col gap-2">
@@ -158,64 +164,50 @@ export function ClientsPage() {
 
       {data && data.data.length > 0 ? (
         <>
-          <ScrollRegion
+          <DataTable
             label={t('nav.clients')}
-            className="border-line-subtle rounded-xl border"
+            minWidth="46rem"
             data-fetching={isFetching ? 'true' : undefined}
           >
-            <table className="w-full min-w-[46rem] text-sm">
-              <caption className="sr-only">{t('nav.clients')}</caption>
-              <thead>
-                <tr className="text-content-tertiary border-line-subtle bg-surface-sunken border-b text-xs tracking-wide uppercase">
-                  <th scope="col" className="px-4 py-2.5 text-start font-medium">
-                    {t('clients.columns.name')}
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-start font-medium">
-                    {t('clients.columns.status')}
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-start font-medium">
-                    {t('clients.columns.industry')}
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-end font-medium">
-                    {t('clients.columns.projects')}
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-end font-medium">
-                    <span className="sr-only">{t('clients.columns.actions')}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.data.map((client) => (
-                  <tr
-                    key={client.id}
-                    className="border-line-subtle hover:bg-surface-hover border-b transition-colors last:border-0"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-content font-medium">{client.name}</span>
-                        {client.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
-                      </div>
-                      {client.primary_contact_email ? (
-                        <span className="text-content-tertiary text-xs">
-                          {client.primary_contact_email}
-                        </span>
-                      ) : null}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={client.status} />
-                    </td>
-                    <td className="text-content-secondary px-4 py-3">{client.industry ?? '—'}</td>
-                    <td className="text-content ds-numeric px-4 py-3 text-end">
-                      {formatNumber(client.project_count, locale)}
-                    </td>
-                    <td className="px-4 py-3 text-end">
-                      <ClientRowActions client={client} onEdit={openEdit} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </ScrollRegion>
+            <TableHead>
+              <TableRow>
+                <TableHeader>{t('clients.columns.name')}</TableHeader>
+                <TableHeader>{t('clients.columns.status')}</TableHeader>
+                <TableHeader>{t('clients.columns.industry')}</TableHeader>
+                <TableHeader align="end">{t('clients.columns.projects')}</TableHeader>
+                <TableHeader align="end">
+                  <span className="sr-only">{t('clients.columns.actions')}</span>
+                </TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.data.map((client) => (
+                <TableRow key={client.id} isInteractive>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="text-content font-medium">{client.name}</span>
+                      {client.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
+                    </div>
+                    {client.primary_contact_email ? (
+                      <span className="text-content-tertiary text-xs">
+                        {client.primary_contact_email}
+                      </span>
+                    ) : null}
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={client.status} />
+                  </TableCell>
+                  <TableCell className="text-content-secondary">{client.industry ?? '—'}</TableCell>
+                  <TableCell align="end" isNumeric>
+                    {formatNumber(client.project_count, locale)}
+                  </TableCell>
+                  <TableCell align="end">
+                    <ClientRowActions client={client} onEdit={openEdit} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </DataTable>
 
           {data.meta.last_page > 1 ? (
             <nav

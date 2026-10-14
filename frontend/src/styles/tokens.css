@@ -79,6 +79,12 @@
   --ds-radius-lg: 0.75rem;
   --ds-radius-xl: 1rem;
   --ds-radius-2xl: 1.25rem;
+  /*
+   * Added for the redesign. The shell's panels and hero analytics cards carry this; ordinary cards stay at
+   * `xl`. Two large steps rather than one is what keeps "large radius" from flattening into "everything is a
+   * pill" — the hero reads as the dominant surface because nothing else is this round.
+   */
+  --ds-radius-3xl: 1.5rem;
   --ds-radius-full: 9999px;
 
   /* ---- Motion: 150–300ms, purposeful ---- */
@@ -89,6 +95,17 @@
   --ds-ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
   --ds-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ds-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /*
+   * ---- Page rhythm ----
+   *
+   * Two numbers the whole application lays out against: the gutter between the content and the shell, and the
+   * gap between sections of a page. Before these, every page chose its own padding and the product read as a
+   * set of screens rather than one canvas.
+   */
+  --ds-page-gutter: 1.25rem;
+  --ds-page-gutter-lg: 2rem;
+  --ds-section-gap: 1.5rem;
 
   /* ---- Analytical canvas grid ---- */
   --ds-grid-columns: 12;
@@ -102,7 +119,13 @@
 [data-theme='light'] {
   color-scheme: light;
 
-  --ds-canvas: var(--ds-neutral-50);
+  /*
+   * The canvas is deliberately a step darker than it was. A white card on a 0.981 canvas has to be drawn with
+   * a border to be seen at all; on this one it separates by its own surface, which is what lets the borders
+   * drop to a hairline and the shadows to near-nothing. The references all do this, and it is the single
+   * change that most makes a page read as cards floating on a canvas rather than panels drawn on a page.
+   */
+  --ds-canvas: oklch(0.968 0.003 264);
   --ds-surface: var(--ds-neutral-0);
   --ds-surface-raised: var(--ds-neutral-0);
   --ds-surface-sunken: var(--ds-neutral-100);
@@ -120,9 +143,10 @@
   --ds-text-inverse: var(--ds-neutral-0);
   --ds-text-brand: var(--ds-brand-600);
 
-  --ds-border-subtle: oklch(0.197 0.01 264 / 0.07);
-  --ds-border: oklch(0.197 0.01 264 / 0.12);
-  --ds-border-strong: oklch(0.197 0.01 264 / 0.22);
+  /* Hairlines. The canvas now does the separating, so a border is a definition of an edge, not a container. */
+  --ds-border-subtle: oklch(0.197 0.01 264 / 0.055);
+  --ds-border: oklch(0.197 0.01 264 / 0.1);
+  --ds-border-strong: oklch(0.197 0.01 264 / 0.2);
   --ds-focus-ring: var(--ds-brand-500);
 
   --ds-accent: var(--ds-brand-600);
@@ -201,11 +225,17 @@
   --ds-chart-pole-high-weak: oklch(0.72 0.09 25);
   --ds-chart-pole-high: oklch(0.51 0.14 25);
 
-  /* Shadows: subtle, physically plausible, single light source above */
-  --ds-shadow-xs: 0 1px 2px oklch(0.197 0.01 264 / 0.06);
-  --ds-shadow-sm: 0 1px 2px oklch(0.197 0.01 264 / 0.05), 0 2px 6px oklch(0.197 0.01 264 / 0.05);
-  --ds-shadow-md: 0 2px 4px oklch(0.197 0.01 264 / 0.05), 0 8px 20px oklch(0.197 0.01 264 / 0.07);
-  --ds-shadow-lg: 0 4px 8px oklch(0.197 0.01 264 / 0.05), 0 16px 40px oklch(0.197 0.01 264 / 0.1);
+  /*
+   * Shadows: subtle, physically plausible, single light source above.
+   *
+   * Wider and fainter than they were. A card should look like it is resting a millimetre off the canvas, not
+   * like it is cut out and dropped on it — so the blur is large, the opacity small, and there is a one-pixel
+   * contact shadow underneath to keep the edge from dissolving.
+   */
+  --ds-shadow-xs: 0 1px 2px oklch(0.197 0.01 264 / 0.04);
+  --ds-shadow-sm: 0 1px 2px oklch(0.197 0.01 264 / 0.04), 0 4px 12px oklch(0.197 0.01 264 / 0.04);
+  --ds-shadow-md: 0 1px 2px oklch(0.197 0.01 264 / 0.04), 0 10px 28px oklch(0.197 0.01 264 / 0.06);
+  --ds-shadow-lg: 0 2px 4px oklch(0.197 0.01 264 / 0.04), 0 22px 56px oklch(0.197 0.01 264 / 0.09);
 }
 
 /* ============================================================
@@ -214,9 +244,14 @@
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --ds-canvas: var(--ds-neutral-1000);
-  --ds-surface: var(--ds-neutral-950);
-  --ds-surface-raised: var(--ds-neutral-900);
+  /*
+   * Designed, not inverted. The canvas is the darkest layer and every card sits a measurable step above it,
+   * so the same "floating card" reading works here — in dark mode that separation is the *surface* step,
+   * because a shadow on near-black is a grey smear rather than depth.
+   */
+  --ds-canvas: oklch(0.142 0.008 264);
+  --ds-surface: oklch(0.178 0.009 264);
+  --ds-surface-raised: oklch(0.205 0.01 264);
   --ds-surface-sunken: oklch(0.098 0.007 264);
   --ds-surface-hover: var(--ds-neutral-900);
   --ds-surface-active: var(--ds-neutral-850);
@@ -227,7 +262,12 @@
 
   --ds-text-primary: oklch(0.975 0.003 264);
   --ds-text-secondary: var(--ds-neutral-400);
-  --ds-text-tertiary: var(--ds-neutral-500);
+  /*
+   * A step lighter than the neutral ramp's 500, because the raised surface was lifted for this redesign and
+   * 500 then measured 4.45:1 on it — under AA by five hundredths. Tertiary ink carries table headers and the
+   * source labels this product's honesty rests on, so the ink moved rather than the surface.
+   */
+  --ds-text-tertiary: oklch(0.625 0.013 264);
   --ds-text-inverse: var(--ds-neutral-950);
   --ds-text-brand: var(--ds-brand-300);
 
@@ -309,10 +349,15 @@
   --ds-info: oklch(0.736 0.118 232);
   --ds-info-surface: oklch(0.736 0.118 232 / 0.06);
 
-  --ds-shadow-xs: 0 1px 2px oklch(0 0 0 / 0.4);
-  --ds-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4), 0 2px 6px oklch(0 0 0 / 0.35);
-  --ds-shadow-md: 0 2px 4px oklch(0 0 0 / 0.4), 0 8px 20px oklch(0 0 0 / 0.45);
-  --ds-shadow-lg: 0 4px 8px oklch(0 0 0 / 0.4), 0 16px 40px oklch(0 0 0 / 0.55);
+  /*
+   * Dark elevation is carried by the surface step, not by the shadow: a shadow on a near-black canvas is
+   * invisible, and raising its opacity only produces a grey halo. These stay for depth under overlays and
+   * dropdowns, where there is something to cast onto.
+   */
+  --ds-shadow-xs: 0 1px 2px oklch(0 0 0 / 0.35);
+  --ds-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.35), 0 4px 12px oklch(0 0 0 / 0.3);
+  --ds-shadow-md: 0 2px 4px oklch(0 0 0 / 0.4), 0 10px 28px oklch(0 0 0 / 0.4);
+  --ds-shadow-lg: 0 4px 8px oklch(0 0 0 / 0.4), 0 22px 56px oklch(0 0 0 / 0.5);
 }
 
 /*

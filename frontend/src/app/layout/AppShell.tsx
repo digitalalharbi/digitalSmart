@@ -6,6 +6,16 @@ import { MobileNavDrawer } from './MobileNavDrawer';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 
+/**
+ * The application canvas.
+ *
+ * One product surface rather than a set of screens: the rail and the topbar are chrome on the canvas, and the
+ * page content floats on it as cards. Two things carry that reading — the canvas is a measurable step darker
+ * than a card, and the outer gutter is generous and the same everywhere (`--ds-page-gutter`).
+ *
+ * The rail is **inset** rather than full-bleed: it sits inside the gutter with the content beside it, which is
+ * what keeps a 1 440px screen from reading as a strip of chrome glued to the window edge.
+ */
 export function AppShell() {
   const { t } = useTranslation();
   const isCollapsed = useUiStore((state) => state.isSidebarCollapsed);
@@ -24,16 +34,19 @@ export function AppShell() {
       <div
         className={cn(
           'ease-standard grid min-h-dvh transition-[grid-template-columns] duration-[var(--ds-duration-base)]',
-          isCollapsed ? 'lg:grid-cols-[4rem_1fr]' : 'lg:grid-cols-[16rem_1fr]',
+          isCollapsed ? 'lg:grid-cols-[5rem_1fr]' : 'lg:grid-cols-[17rem_1fr]',
         )}
       >
-        <aside className="sticky top-0 hidden h-dvh lg:block">
+        <aside className="sticky top-0 hidden h-dvh p-3 lg:block">
           <Sidebar />
         </aside>
 
         <div className="flex min-w-0 flex-col">
           <Topbar />
-          <main id="main" className="mx-auto w-full max-w-[90rem] flex-1 px-4 py-6 md:px-6 lg:py-8">
+          <main
+            id="main"
+            className="mx-auto w-full max-w-[96rem] flex-1 px-[var(--ds-page-gutter)] pt-2 pb-10 lg:px-[var(--ds-page-gutter-lg)] lg:pb-14"
+          >
             <Outlet />
           </main>
         </div>

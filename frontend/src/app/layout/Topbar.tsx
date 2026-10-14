@@ -13,7 +13,12 @@ export function Topbar() {
   const nextLocale: Locale = locale === 'en' ? 'ar' : 'en';
 
   return (
-    <header className="ds-material border-line-subtle sticky top-0 z-20 flex h-14 items-center gap-3 border-b px-4">
+    /*
+     * Chrome on the canvas, not a bar across the window: no border, a translucent material so content scrolling
+     * under it stays legible, and the same gutter as the page below so the search field lines up with the first
+     * card rather than floating four pixels off it.
+     */
+    <header className="ds-material sticky top-0 z-20 flex h-16 items-center gap-2 px-[var(--ds-page-gutter)] lg:px-[var(--ds-page-gutter-lg)]">
       {/* Below lg the rail is hidden, so this opens the drawer instead. */}
       <Button
         variant="ghost"
@@ -38,16 +43,17 @@ export function Topbar() {
       {/* Command palette lands in Phase 4; the affordance and its shortcut hint exist now. */}
       <button
         type="button"
-        className="border-line bg-surface-sunken text-content-tertiary hover:border-line-strong flex h-9 min-w-0 flex-1 items-center gap-2 rounded-md border px-3 text-sm transition-colors duration-[var(--ds-duration-fast)] md:max-w-sm"
+        className="border-line-subtle bg-surface text-content-tertiary hover:border-line flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border px-4 text-sm shadow-xs transition-colors duration-[var(--ds-duration-fast)] md:max-w-md"
       >
         <Search className="size-4 shrink-0" aria-hidden="true" />
         <span className="truncate">{t('actions.search')}</span>
-        <kbd className="border-line bg-surface text-content-tertiary ms-auto hidden rounded border px-1.5 py-0.5 font-mono text-[0.6875rem] md:inline-block">
+        <kbd className="border-line-subtle bg-surface-sunken text-content-tertiary ms-auto hidden rounded-md border px-1.5 py-0.5 font-mono text-[0.6875rem] md:inline-block">
           ⌘K
         </kbd>
       </button>
 
-      <div className="ms-auto flex items-center gap-1">
+      {/* The action cluster sits on its own surface so it reads as one control group rather than four icons. */}
+      <div className="border-line-subtle bg-surface ms-auto flex items-center gap-0.5 rounded-full border p-1 shadow-xs">
         {/*
           The bell lives here because it is the one control present on every screen, which is also why it owns
           the realtime subscription: a notification arriving while somebody reads a chart still moves the number.
