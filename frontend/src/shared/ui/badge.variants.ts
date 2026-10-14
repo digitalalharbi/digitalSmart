@@ -1,7 +1,14 @@
 import { cva } from 'class-variance-authority';
 
+/**
+ * The product's status pill.
+ *
+ * Soft tinted background, readable text, no saturated fills — a badge is a label, not a button, and a row of
+ * loud ones turns a table into a traffic light. Every status in the product goes through this: client and
+ * project status, creative state, sync freshness, honesty labels.
+ */
 export const badgeVariants = cva(
-  'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium',
+  'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium leading-none',
   {
     variants: {
       tone: {

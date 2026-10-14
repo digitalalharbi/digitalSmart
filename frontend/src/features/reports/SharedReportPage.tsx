@@ -105,7 +105,7 @@ export function SharedReportPage() {
         ) : result === undefined ? null : result.state !== 'active' || result.report === null ? (
           <section
             aria-label={t('sharedReport.unavailable')}
-            className="bg-surface border-line-subtle mx-auto flex max-w-md flex-col items-center gap-3 rounded-xl border p-8 text-center"
+            className="bg-surface border-line-subtle mx-auto flex max-w-md flex-col items-center gap-3 rounded-2xl border p-8 text-center"
           >
             <h1 className="text-content text-lg font-semibold">{t('sharedReport.unavailable')}</h1>
             <p className="text-content-secondary text-sm">

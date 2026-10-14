@@ -133,7 +133,7 @@ export function MyPortalPage() {
                */
               <section
                 aria-label={t('myPortal.unavailable')}
-                className="bg-surface border-line-subtle mx-auto flex max-w-md flex-col items-center gap-3 rounded-xl border p-8 text-center"
+                className="bg-surface border-line-subtle mx-auto flex max-w-md flex-col items-center gap-3 rounded-2xl border p-8 text-center"
               >
                 <h1 className="text-content text-lg font-semibold">{t('myPortal.unavailable')}</h1>
                 <p className="text-content-secondary text-sm">{entry.message}</p>

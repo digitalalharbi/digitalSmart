@@ -60,7 +60,7 @@ export function LoginPage() {
         <form
           onSubmit={(event) => void onSubmit(event)}
           noValidate
-          className="bg-surface border-line-subtle flex flex-col gap-4 rounded-xl border p-6 shadow-sm"
+          className="bg-surface border-line-subtle flex flex-col gap-4 rounded-2xl border p-6 shadow-sm"
         >
           {serverError ? <Alert tone="danger">{serverError}</Alert> : null}
 

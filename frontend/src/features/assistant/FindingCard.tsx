@@ -37,7 +37,7 @@ export function FindingCard({
     new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value);
 
   return (
-    <article className="bg-surface border-line-subtle flex flex-col gap-3 rounded-xl border p-4">
+    <article className="bg-surface border-line-subtle flex flex-col gap-3 rounded-2xl border p-4">
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <span className="flex flex-wrap items-center gap-1.5">

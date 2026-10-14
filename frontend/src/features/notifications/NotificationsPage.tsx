@@ -165,7 +165,7 @@ export function NotificationsPage() {
                 <li key={item.id}>
                   <article
                     className={cn(
-                      'bg-surface border-line-subtle flex flex-col gap-2 rounded-xl border p-4 shadow-xs',
+                      'bg-surface border-line-subtle flex flex-col gap-2 rounded-2xl border p-4 shadow-xs',
                       item.is_unread && 'border-accent/40',
                     )}
                   >
@@ -272,7 +272,7 @@ function KindDisclosure({ isEmpty }: { isEmpty: boolean }) {
   }
 
   return (
-    <details open={isEmpty} className="border-line-subtle rounded-xl border p-4">
+    <details open={isEmpty} className="border-line-subtle rounded-2xl border p-4">
       <summary className="text-content cursor-pointer text-sm font-medium">
         <span className="inline-flex items-center gap-1.5">
           <BellOff aria-hidden className="size-3.5" />

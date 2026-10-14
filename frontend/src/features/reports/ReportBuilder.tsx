@@ -298,7 +298,7 @@ export function ReportBuilder({
               return (
                 <div
                   key={index}
-                  className="border-line-subtle flex flex-col gap-3 rounded-xl border p-4"
+                  className="border-line-subtle flex flex-col gap-3 rounded-2xl border p-4"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <ChoiceGroup label={t('reports.builder.shape')}>

@@ -52,7 +52,7 @@ export function DashboardCanvas({
         <section
           key={widget.key}
           className={cn(
-            'bg-surface border-line-subtle flex flex-col rounded-xl border',
+            'bg-surface border-line-subtle flex flex-col rounded-2xl border',
             // Full width below md; the arranged placement from md upward.
             'col-span-full',
           )}

@@ -38,7 +38,7 @@ export function AddMemberPanel() {
   const offered = WORKSPACE_ROLES.filter((candidate) => candidate !== 'owner');
 
   return (
-    <section className="border-line-subtle flex flex-col gap-4 rounded-xl border p-5">
+    <section className="border-line-subtle flex flex-col gap-4 rounded-2xl border p-5">
       <div className="flex flex-col gap-1">
         <h3 className="text-content flex items-center gap-2 text-sm font-semibold">
           <UserPlus aria-hidden className="size-4" />

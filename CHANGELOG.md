@@ -147,6 +147,16 @@ It is still a real `<table>`: the row and column relationships a screen reader d
 the minimum width that forces the desktop layout now applies from `sm` up only, because on a phone it would
 reintroduce exactly the scroll the card layout removes.
 
+### The consistency sweep
+
+- **Nineteen files still drew cards at the old radius.** A panel carrying a hairline and `rounded-xl` is a
+  card; they are all `rounded-2xl` now, so no surface in the product is a different shape from its neighbour.
+- The one remaining hand-written table head — the overview's health panel — wears `ds-overline` like every
+  other.
+- Status pills took their final geometry: soft tint, no saturated fill, one line height. A badge is a label,
+  and a row of loud ones turns a table into a traffic light.
+- The sweep found **no hard-coded colours** anywhere in the feature code. Every surface is already a token.
+
 ### Gates
 
 596 frontend tests, **400 Playwright tests with no failures and no flakes** — the whole suite against the

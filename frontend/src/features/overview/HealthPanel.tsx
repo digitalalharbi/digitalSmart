@@ -78,7 +78,7 @@ export function HealthPanel() {
           <table className="w-full text-sm">
             <caption className="sr-only">{t('overview.health.title')}</caption>
             <thead>
-              <tr className="text-content-tertiary border-line-subtle border-b text-start text-xs tracking-wide uppercase">
+              <tr className="text-content-tertiary ds-overline border-line-subtle border-b text-start">
                 <th scope="col" className="py-2 pe-3 text-start font-medium">
                   {t('overview.health.service')}
                 </th>

@@ -58,7 +58,7 @@ export function PortalReportsPanel({ clientId }: { clientId: string }) {
       {list.map((summary) => (
         <li
           key={summary.id}
-          className="bg-surface border-line-subtle flex flex-col gap-2 rounded-xl border p-4"
+          className="bg-surface border-line-subtle flex flex-col gap-2 rounded-2xl border p-4"
         >
           <span className="text-content text-sm font-medium">{summary.name}</span>
           <span className="text-content-tertiary text-xs">{summary.window_label}</span>

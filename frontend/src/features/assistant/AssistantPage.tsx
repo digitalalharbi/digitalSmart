@@ -232,7 +232,7 @@ export function AssistantPage() {
               <Skeleton className="h-64 w-full" />
             ) : proposal.data === undefined ? null : (
               <section aria-label={t('assistant.report.title')} className="flex flex-col gap-4">
-                <div className="bg-surface border-line-subtle flex flex-col gap-2 rounded-xl border p-4">
+                <div className="bg-surface border-line-subtle flex flex-col gap-2 rounded-2xl border p-4">
                   <h2 className="text-content text-sm font-semibold">
                     {t('assistant.report.title')}
                   </h2>

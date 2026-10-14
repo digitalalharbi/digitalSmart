@@ -253,7 +253,7 @@ export function RequestDetail({
               {request.versions.map((version) => (
                 <li
                   key={version.id}
-                  className="border-line-subtle flex flex-col gap-3 rounded-xl border p-3"
+                  className="border-line-subtle flex flex-col gap-3 rounded-2xl border p-3"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="flex flex-wrap items-center gap-2">

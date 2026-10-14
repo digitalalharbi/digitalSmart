@@ -146,7 +146,7 @@ export function ReportsPage() {
               }}
               aria-pressed={selected === entry.id}
               className={cn(
-                'bg-surface border-line-subtle rounded-xl border p-4 text-start shadow-xs',
+                'bg-surface border-line-subtle rounded-2xl border p-4 text-start shadow-xs',
                 'ease-standard transition-[border-color,box-shadow] duration-[var(--ds-duration-fast)]',
                 'hover:border-line-strong focus-visible:ring-accent/40 focus-visible:ring-2 focus-visible:outline-none',
                 selected === entry.id && 'border-accent ring-accent/25 ring-1',

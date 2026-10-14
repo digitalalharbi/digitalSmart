@@ -56,7 +56,7 @@ export function FilterBar({
   return (
     <div
       className={cn(
-        'bg-surface border-line-subtle flex flex-wrap items-center gap-x-5 gap-y-3 rounded-xl border px-4 py-3',
+        'bg-surface border-line-subtle flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border px-4 py-3',
         // Dimmed, not hidden: a reader comparing two filters should keep their place.
         isRefreshing && 'opacity-70',
       )}

@@ -106,7 +106,7 @@ export function PortalPage() {
               onClick={() => setSelected(entry.client_id)}
               aria-pressed={selected === entry.client_id}
               className={cn(
-                'bg-surface border-line-subtle rounded-xl border p-4 text-start shadow-xs',
+                'bg-surface border-line-subtle rounded-2xl border p-4 text-start shadow-xs',
                 'ease-standard transition-[border-color,box-shadow] duration-[var(--ds-duration-fast)]',
                 'hover:border-line-strong focus-visible:ring-accent/40 focus-visible:ring-2 focus-visible:outline-none',
                 selected === entry.client_id && 'border-accent ring-accent/25 ring-1',
@@ -152,7 +152,7 @@ export function PortalPage() {
       ) : detail === undefined ? null : (
         <section
           aria-label={detail.client_name}
-          className="bg-surface border-line-subtle flex flex-col gap-5 rounded-xl border p-5"
+          className="bg-surface border-line-subtle flex flex-col gap-5 rounded-2xl border p-5"
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>

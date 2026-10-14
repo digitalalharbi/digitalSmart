@@ -228,7 +228,7 @@ export function OperationsPage() {
                         onClick={() => setSelected(card.id)}
                         aria-pressed={selected === card.id}
                         className={cn(
-                          'bg-surface border-line-subtle w-full rounded-xl border p-3 text-start shadow-xs',
+                          'bg-surface border-line-subtle w-full rounded-2xl border p-3 text-start shadow-xs',
                           'ease-standard transition-[border-color,box-shadow] duration-[var(--ds-duration-fast)]',
                           'hover:border-line-strong focus-visible:ring-accent/40 focus-visible:ring-2 focus-visible:outline-none',
                           selected === card.id && 'border-accent ring-accent/25 ring-1',

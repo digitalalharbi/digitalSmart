@@ -311,7 +311,7 @@ export function DashboardsPage() {
 
       {/* Editing chrome */}
       {isEditing && draft !== null && (
-        <div className="bg-surface border-line-subtle flex flex-col gap-3 rounded-xl border px-4 py-3">
+        <div className="bg-surface border-line-subtle flex flex-col gap-3 rounded-2xl border px-4 py-3">
           <div className="flex flex-wrap items-end gap-3">
             <label className="flex min-w-48 flex-1 flex-col gap-1">
               <span className="text-content text-xs font-medium">{t('dashboards.nameLabel')}</span>
@@ -450,7 +450,7 @@ export function DashboardsPage() {
               {t('dashboards.addWidget')}
             </Button>
           ) : (
-            <div className="bg-surface border-line-subtle rounded-xl border px-4 py-4">
+            <div className="bg-surface border-line-subtle rounded-2xl border px-4 py-4">
               <h2 className="text-content mb-3 text-sm font-semibold">
                 {editingWidget === 'new' ? t('dashboards.addWidget') : t('dashboards.editWidget')}
               </h2>
