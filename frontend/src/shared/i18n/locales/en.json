@@ -2171,5 +2171,36 @@
   "realtime": {
     "live": "Live. Changes from other people appear as they happen.",
     "off": "Not live. Changes from other people appear when this page is next read."
+  },
+  "health": {
+    "healthy": "Healthy",
+    "watch": "Watch",
+    "attention": "Needs attention",
+    "critical": "Critical",
+    "inactive": "Inactive",
+    "unknown": "Not enough data"
+  },
+  "attention": {
+    "title": "Needs attention",
+    "subtitle": "Everything waiting on someone, worst first.",
+    "loading": "Loading what needs attention…",
+    "unassigned": "Unassigned",
+    "seeAll": "See all",
+    "empty": {
+      "title": "Nothing needs attention",
+      "body": "Budgets, tracking and approvals are all within range."
+    }
+  },
+  "activity": {
+    "title": "Recent activity",
+    "loading": "Loading recent activity…",
+    "system": "System",
+    "empty": {
+      "title": "Nothing yet",
+      "body": "Changes made here will appear in this list."
+    }
+  },
+  "insight": {
+    "label": "Insight"
   }
 }

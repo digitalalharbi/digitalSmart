@@ -75,6 +75,50 @@ is empty, and every stored connection holds the literal `sandbox`.
 under full-suite load, both retried green and neither in a file this pass touched — PHPStan level 8 clean,
 Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
 
+## One word for "is this all right?", and four primitives the product kept rebuilding
+
+Before this, a reader moving from Tracking to Budgets to Integrations met three different vocabularies for
+the same question. Tracking said `stale`; budgets said *at risk*; a connection was *degraded*. Each was
+reasonable on its own page and none of them helped somebody holding all three.
+
+### Added
+
+- **One health vocabulary** — Healthy / Watch / Needs attention / Critical / Inactive / **Not enough data** —
+  in `shared/ui/health.model.ts`, with `HealthPill` and `HealthDot` to render it. It is business-facing by
+  design: the technical state underneath does not go away, it moves to the detail view where somebody is
+  actually diagnosing.
+- **"Not enough data" is a state, not a gap.** A campaign with four days of history has no trend, and
+  collapsing that into *healthy* is how a product comes to look confident about something it never measured.
+  A test pins the two apart.
+- **Nothing is carried by colour alone.** Every state ships its own glyph and its own word; the dot form
+  carries an accessible name. A reader who cannot separate amber from red, or who is reading a printed
+  report, loses nothing.
+- **`AttentionList`** — the one shape for "waiting on a person". Worst first, then oldest, because the thing
+  ignored longest is the thing most likely forgotten rather than deferred. One action per item; no
+  diagnostics in the card. An unowned item prints *Unassigned* rather than a blank — it is the item most
+  likely to rot.
+- **`ActivityFeed`** — who did what, when. `null` actor renders as *System*: a scheduled sync is not
+  something a person did, and attributing it to the last human who touched the record is a quiet lie about
+  who did what.
+- **`ContextDrawer`** — detail without losing the list behind it. Opens from the inline *end*, so in Arabic
+  it lands opposite the list rather than on top of it, and becomes a full sheet below `sm`.
+- **`InsightCard`** — one or two sentences, an observation and never a recommendation. "Google Ads is 62% of
+  spend and 41% of conversions" is a reading of what is on screen; "move budget to Meta" is advice this
+  product is not positioned to give to a client being billed on these numbers.
+- **`formatRelativeTime` / `ageInDays`** — via `Intl.RelativeTimeFormat`, because Arabic inflects the noun by
+  count and three days is not `3 يوم`. A hand-rolled pluraliser gets this wrong silently, and a test asserts
+  the Arabic form.
+
+### Fixed
+
+- **A drawer opened without a Radix `Trigger` dropped focus onto `<body>` when it closed.** Radix restores
+  focus to its own trigger, and this drawer deliberately has none — it opens from a row, a card, a menu item.
+  A keyboard user who opened the fourth row had to tab from the top of the page to reach the fifth.
+  `ContextDrawer` now records where focus was and returns it, with a test.
+- **An absent drawer description no longer claims one.** The usual workaround — an empty
+  `Dialog.Description` — satisfies the warning by pointing `aria-describedby` at a blank element, which
+  promises a screen-reader user a sentence and then reads them nothing.
+
 ## Clients as cards, and what a card refuses to show
 
 The clients page was a five-column table, which reads like an inventory of a thing that is actually a list of
