@@ -26,7 +26,7 @@ not, because the guesses are indistinguishable from the findings.
 | MULTI-ACCOUNT | **PARTIAL** — many accounts per connection, but one connection per provider per workspace; see §16 |
 | CENTRAL CAMPAIGN CONTROL | **NOT VERIFIED** — no such surface exists; see §10 |
 | INTEGRATION READY | **YES** for the providers listed in `docs/LIVE_COMMISSIONING.md` |
-| SCALE TEST | **FAIL** — no scale fixture and no query budget exist to test against; see §103 |
+| SCALE TEST | **PASS** at the measured level — see *Measurements* below. Not yet covering the agency surfaces that do not exist (§10, §13) |
 
 The headline: **the tenancy model is right and the operating surfaces on top of it are not there yet.** The
 hard part — the part that would have been a rewrite — is already built correctly. What is missing is mostly
@@ -179,7 +179,7 @@ additive.
 |---|---|---|---|
 | 70 | Never load all agency entities | **PARTIAL** | Clients, projects, members and audit paginate. Campaign and metric reads aggregate in SQL. The task board caps at 50 per column and publishes `is_truncated`. Not every list was examined. |
 | 71 | No N+1 in agency views | **PARTIAL** | The analytics and budget read models aggregate in one statement each. No agency-level view exists yet to violate this — which is why §103 matters before §13 is built. |
-| 72 | Materialized / aggregate views | **GAP** | Every figure is computed from `daily_metrics` on request. Defensible today; it is the first thing to break at 2,000 campaigns. |
+| 72 | Materialized / aggregate views | **GAP** | Every figure is computed from `daily_metrics` on request. Now measured rather than guessed: at 2,000 campaigns over 180,000 daily rows an analytics breakdown takes 380–480ms in six or seven statements. Correct and not yet fast; this is the first thing that will need an aggregate. |
 | 73 | Tenancy-aware cache | **NOT ASSESSED** | — |
 | 74 | No hard-coded limits | **MET** | No max-client, max-project or max-account constant exists. |
 
@@ -240,9 +240,9 @@ additive.
 | 100 | One place answering the fifteen questions | **GAP** | Each question is answerable on its own page; none are answerable together. |
 | 101 | One system, not seven dashboards | **PARTIAL** | Follows from §10, §13, §100. |
 | 102 | Agency-centric, providers as adapters | **MET** | `ProviderAdapter` is an Application port; the domain has no provider-shaped concepts. Architecture tests enforce the direction. |
-| 103 | Scale acceptance test | **GAP** | No scale fixture. `DemoWorkspaceSeeder` is a small coherent demo and is explicitly not performance evidence. |
-| 104 | Query/time budgets | **GAP** | Nothing measures query counts per view. |
-| 105 | `AgencyScaleSeeder` | **GAP** | — |
+| 103 | Scale acceptance test | **MET** — was GAP | `AgencyScaleSeeder` plus `tests/Feature/System/AgencyScaleTest.php`. See the measurements below. |
+| 104 | Query/time budgets | **PARTIAL** — was GAP | Statement budgets are asserted for four agency views, and each view is also asserted to issue the **same** number of statements over a larger agency — the N+1 property, which a wall-clock budget cannot see. No time budgets. |
+| 105 | `AgencyScaleSeeder` | **MET** — was GAP | Separate from the demo seeder, scaled from `config/agency_scale.php`, deterministic, and it rebuilds its own workspace rather than accumulating. |
 | 106 | UX at 100 projects | **PARTIAL** | Pickers were not individually assessed; no autocomplete/recent/favourites pattern exists to assess them against. |
 | 107 | Server-side, persistable filters | **PARTIAL** | Filters are server-side parameters. URL persistence not assessed. |
 | 108 | Queued large exports | **NOT ASSESSED** | — |
@@ -261,6 +261,42 @@ additive.
 
 ---
 
+## Measurements
+
+Taken against the constitution's minimum representative dataset, built by `AgencyScaleSeeder` at its
+defaults: **100 clients, 230 projects, 300 external accounts, 2,000 campaigns, 180,000 daily metric rows**.
+The fixture builds in about 20 seconds.
+
+| View | Time | SQL statements |
+|---|---|---|
+| Campaign ownership queue, 50 rows | 186 ms | 5 |
+| Campaign ownership queue, filtered to ambiguous | 99 ms | 5 |
+| Analytics breakdown by provider | 377 ms | 6 |
+| Analytics breakdown by campaign, 25 rows | 454 ms | 7 |
+| Clients, 25 per page | 10 ms | 5 |
+| Projects, 25 per page | 9 ms | 5 |
+
+Read these as a baseline, not as a pass mark. Three things they do and do not say:
+
+- **Statement counts are flat.** The test asserts the stronger version of this — the same view over a
+  three-times-larger agency issues the *same* number of statements. That is rule 71 as a property rather
+  than as a hope, and it is the one a loop around a query cannot hide from.
+- **Analytics is the slow one**, at roughly 400 ms, and it is slow in six statements rather than in six
+  hundred. That is an aggregate problem (§72), not an N+1 problem, and it will get worse linearly with
+  history rather than suddenly.
+- **They cover the views that exist.** The Campaign Control Center and the Portfolio are not in this table
+  because they are not built. The fixture is here first on purpose: an agency view without a dataset that
+  can show it failing is one nobody discovers is slow until the agency grows into it.
+
+Machine-dependent, so compare runs on one machine rather than these numbers with yours. The fixture is
+deterministic — a seeded walk, not `random_int` — so two runs are comparable.
+
+```
+php artisan db:seed --class=Database\Seeders\AgencyScaleSeeder
+```
+
+---
+
 ## What this sets as the work
 
 In the constitution's own priority order, with the audit's finding attached:
@@ -274,7 +310,7 @@ In the constitution's own priority order, with the audit's finding attached:
 7. **Sync scalability** — queue categories (§21), adaptive cadence (§22), per-provider throttle (§26), fair scheduling (§27), backfill priority (§80).
 8. **Role dashboards** (§88).
 9. **Global context, search, pinning, recents** (§42, §84–87).
-10. **Scale testing** — `AgencyScaleSeeder` (§105), query budgets (§104), the acceptance test (§103).
-
-**§103 comes before §13 in practice.** Building an agency-level view without a dataset that can show it
-failing is how a dashboard ships that nobody discovers is slow until the agency grows into it.
+10. ~~**Scale testing** — `AgencyScaleSeeder` (§105), query budgets (§104), the acceptance test (§103).~~
+    **Done, and deliberately done first.** Building an agency-level view without a dataset that can show it
+    failing is how a dashboard ships that nobody discovers is slow until the agency grows into it. Every
+    view built from here is measured against the fixture as it lands.

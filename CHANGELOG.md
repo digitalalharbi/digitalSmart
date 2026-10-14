@@ -75,6 +75,41 @@ is empty, and every stored connection holds the literal `sandbox`.
 under full-suite load, both retried green and neither in a file this pass touched — PHPStan level 8 clean,
 Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
 
+## A hundred clients, and the first honest measurement of what that costs
+
+### Added
+
+- **`AgencyScaleSeeder`** — a synthetic agency at the size the constitution names: 100 clients, 230
+  projects, 300 external accounts, 2,000 campaigns, 180,000 daily metric rows, built in about twenty
+  seconds. Separate from the demo seeder on purpose. The demo is small, coherent and hand-checked, which
+  is what makes it good for reading screens and useless as performance evidence: a dashboard that is
+  instant over three clients says nothing about a dashboard over a hundred.
+- **Nothing in it is realistic in content** — generated names, a seeded pseudo-random walk for spend — and
+  it is flagged `is_demo` throughout, because a figure from this workspace must never be mistaken for a
+  figure about a client being billed. What is realistic is the shape: a long tail of small clients beside
+  a few large ones, accounts bound to several projects, and one account in twenty bound to nothing, so
+  the ambiguous and unbound ownership states both have a population.
+- **Deterministic**, by a seeded linear congruential walk rather than `random_int`. A fixture that changes
+  between runs makes every regression arguable.
+- **It rebuilds its own workspace rather than accumulating.** A fixture that is a function of how many
+  times it has been run is not a fixture.
+- **`tests/Feature/System/AgencyScaleTest.php`** — the acceptance test, written as an **invariance**
+  assertion rather than a wall-clock one. Each agency view must issue the *same number of SQL statements*
+  over a three-times-larger agency. Wall-clock budgets fail on a loaded laptop and pass on a fast one
+  while the actual defect — a query inside a loop — is invisible to both.
+- **Statement budgets** beside it, set at the measured cost plus two and named in the test, each asserted
+  against a response that actually returned rows: a 200 over an empty result set passes any budget.
+- **`config/agency_scale.php`** so a test can build a smaller but identically *shaped* agency, and build
+  two sizes in one process — which is what the invariance assertions need.
+
+### Measured
+
+At full scale: the campaign ownership queue 186 ms in 5 statements, an analytics breakdown by provider
+377 ms in 6, by campaign 454 ms in 7, clients and projects under 10 ms in 5. Recorded in
+`docs/AGENCY_SCALE.md` with what they do and do not say. The honest reading: statement counts are flat and
+analytics is slow in *six* statements rather than six hundred — an aggregate problem, not an N+1 one, and
+the first thing that will need a summary table.
+
 ## Whose credentials, and whose campaign
 
 Two findings from the constitution audit, both in the tenancy model, both small in code and large in what
