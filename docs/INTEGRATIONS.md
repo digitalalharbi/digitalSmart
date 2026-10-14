@@ -263,6 +263,18 @@ write path a provider does not support, and never simulate one.
   actionable connection-health alert rather than silently degrading.
 - **Client platform passwords are never requested or stored** — see `docs/SECURITY.md`.
 
+## Commissioning a live connection
+
+[`docs/LIVE_COMMISSIONING.md`](LIVE_COMMISSIONING.md) is the ledger of what each provider has actually been
+made to do in this installation, and `php artisan commission:readout {provider}` is the instrument that fills
+it: it asks a provider what it can be made to do and prints only what came back — credential state, discovery,
+which metrics an account actually exposes, currency, timezone, pagination, and the provider's own words when
+it refuses.
+
+It writes nothing, so a readout against a client's live account cannot leave a figure in this product's
+tables. It never prints a credential value. And **a run against this repository's fixtures can never report a
+live verdict**, whatever it reads.
+
 ## How a connection is actually made, and what is not built
 
 **An operator enters credentials.** `PUT /api/integrations/providers/{provider}` takes the keys each provider declares

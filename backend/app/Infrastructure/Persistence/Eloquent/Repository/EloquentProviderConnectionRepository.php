@@ -40,6 +40,21 @@ final readonly class EloquentProviderConnectionRepository implements ProviderCon
         return $model instanceof ConnectionModel ? $this->toDomain($model) : null;
     }
 
+    /** @return list<WorkspaceId> */
+    public function workspacesWith(Provider $provider): array
+    {
+        /** @var list<WorkspaceId> $ids */
+        $ids = ConnectionModel::query()
+            ->where('provider', $provider->value)
+            ->orderBy('created_at')
+            ->pluck('workspace_id')
+            ->map(static fn (mixed $id): WorkspaceId => new WorkspaceId((string) $id))
+            ->values()
+            ->all();
+
+        return $ids;
+    }
+
     public function save(ProviderConnection $connection): void
     {
         $model = ConnectionModel::query()->whereKey($connection->id->value)->first() ?? new ConnectionModel;

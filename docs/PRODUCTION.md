@@ -219,9 +219,14 @@ trusts by mistake:
 - **No container images and no pipeline.** `docker-compose.yml` runs the datastores for development only, and
   ADR 0004 records why the applications run on the host here.
 - **No staging environment**, which is why no figure in this document is a production figure.
-- **No error tracker and no metrics backend.** Logs are structured and carry the request id; nothing ships them
-  anywhere. Sentry or an OpenTelemetry collector is a key and an endpoint away, and both are the company's to
-  issue.
-- **No uptime monitor.** `GET /api/health` is built for one and nothing is polling it.
+- **No error tracker and no metrics backend.** Logs are structured and carry the request id; nothing ships
+  them anywhere, and the wiring is **not** already in place — the earlier version of this line implied it was.
+  What it actually takes: install the tracker's Laravel package, set its DSN in the environment, and add its
+  channel to `LOG_STACK` (which is `single` today and is a comma-separated list). The `stderr` channel is
+  already defined, so a container platform that collects stdout needs only `LOG_STACK=stderr`. The account and
+  the DSN are the company's to issue; the three steps above are an afternoon once they exist.
+- **No uptime monitor.** `GET /api/health` is built for one and nothing is polling it. It answers `503` when a
+  dependency is down, names which, and distinguishes *degraded* from *down* — so a monitor needs the URL and
+  nothing else from this side.
 - **No automated backup schedule.** The scripts are real and verified; running them hourly is a cron on a host
   that does not exist yet — the same host that owes `schedule:run` its minute.

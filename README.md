@@ -40,7 +40,7 @@ provider.
 
 | Gate                      | Result                                              |
 | ------------------------- | --------------------------------------------------- |
-| Backend tests (Pest)      | 1 776 passed (6 402 assertions) — architecture, unit, feature |
+| Backend tests (Pest)      | 1 783 passed (6 426 assertions) — architecture, unit, feature |
 | Frontend tests (Vitest)   | 579 passed                                          |
 | End-to-end (Playwright)   | 398 passed — Chromium + mobile Safari, signing in as real roles |
 | Accessibility             | axe-core WCAG 2.2 AA on five surfaces, both browsers, and in Arabic |
@@ -82,6 +82,7 @@ make e2e        # Playwright (stack must be running)
 | Document                 | Contents                                               |
 | ------------------------ | ------------------------------------------------------ |
 | `docs/CLOSURE.md`        | The closure ledger: one row per area, its evidence, its exact blocker |
+| `docs/LIVE_COMMISSIONING.md` | What each provider has actually been made to do, and the readout that proves it |
 | `docs/PRODUCT.md`        | What digitalSmart is, who it serves, product principles |
 | `docs/ARCHITECTURE.md`   | Layering, dependency rules, request flow                |
 | `docs/DATA_MODEL.md`     | Database principles, current tables, planned shape      |

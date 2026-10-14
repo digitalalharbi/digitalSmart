@@ -10,6 +10,7 @@ use App\Application\Shared\Exception\AuthorizationDenied;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Application\Workspace\Exception\LastOwnerProtected;
 use App\Domain\Shared\Exception\DomainException;
+use App\Interface\Console\CommissionProvider;
 use App\Interface\Console\ReadStores;
 use App\Interface\Console\SyncAccessCatalogue;
 use App\Interface\Console\SyncAdvertisingData;
@@ -44,6 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
         attributes: ['middleware' => ['web', 'auth']],
     )
     ->withCommands([
+        CommissionProvider::class,
         ReadStores::class,
         SyncAccessCatalogue::class,
         SyncAdvertisingData::class,

@@ -4,6 +4,56 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Live commissioning: the instrument, and an honest ledger of what has never been reached
+
+The product's own work is closed. This begins the other half — making real accounts answer — and the first
+true statement about it is that **no live credential exists in this installation**: every `.env` provider key
+is empty, and every stored connection holds the literal `sandbox`.
+
+### Added
+
+- **`php artisan commission:readout {provider}`** — the instrument commissioning is done with. It asks a
+  provider what it can be made to do and prints only what came back: credential state, health, discovery,
+  which metrics an account actually exposes, currency, timezone, pagination, API calls spent, declared write
+  capabilities, and the provider's own words when it refuses.
+- **It writes nothing**, which a test pins by counting rows before and after. A readout against a client's
+  live account cannot leave a figure in this product's tables for somebody to mistake later for a sync.
+- **A sandbox run can never report a live verdict**, whatever it reads, because the fixtures are in this
+  repository. The rule is in `CommissioningReadout::level()` rather than in an operator's judgement, and a
+  test asserts the absence of `LIVE_READ_VERIFIED` from a sandbox run.
+- **A provider refusal is a finding, not a crash.** "Google refused this developer token" is the most useful
+  sentence a commissioning run can produce; swallowing it into a stack trace would lose it.
+- **It refuses to guess which workspace's credentials to spend** when a provider is configured in more than
+  one.
+- **`docs/LIVE_COMMISSIONING.md`** — the ledger: one row per provider with connection, auth, discovery, read,
+  metrics, currency, timezone, webhook, write, evidence level and the exact blocker. Four evidence levels,
+  and a status table that distinguishes *awaiting credentials* from *awaiting external approval* from
+  *failed external*.
+
+### What the first readout already established, with no credential at all
+
+- **TikTok reports `clicks 0/21`, `revenue 0/21`, `videoViews 0/21`** — deliberately unmapped fields, now
+  visible as gaps rather than inferable from zeroes. They stay unmapped until a real response or the current
+  official schema says otherwise.
+- **Google Ads reports `linkClicks 0/21`**, which is correct: Google has no link-click concept. The readout
+  publishes the coverage count so nobody reads the zero as "nobody clicked".
+- **Meta reports no account timezone at campaign level** — recorded as *not reported* rather than filled in
+  from the workspace.
+- **Snapchat's spend unit remains the one unverified assumption** in the advertising layer, and the ledger
+  says what changes if it proves wrong: mapper, fixtures, tests and any rows already synced.
+
+### Corrected
+
+- `docs/PRODUCTION.md` claimed an error tracker was "a key and an endpoint away". Nothing in the code or
+  config reads a DSN, so the line now says what it actually takes: install the package, set the DSN, add the
+  channel to `LOG_STACK`. The `stderr` channel is already defined, so a platform collecting stdout needs only
+  `LOG_STACK=stderr`.
+
+### Gates
+
+1 783 backend tests (6 426 assertions), 579 frontend tests, 398 Playwright tests, PHPStan level 8 clean, Pint
+clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
 ## A sign-out that failed looked exactly like one that worked
 
 The end-to-end suite caught this under load, and it is the most serious thing found in this pass: after
