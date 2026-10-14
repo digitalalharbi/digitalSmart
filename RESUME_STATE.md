@@ -29,15 +29,35 @@ commit and return nothing: exported frontend symbols nothing imports, uncalled p
 no caller (209 routes, the store webhook the only one — and its caller is Salla), navigation items with no
 page, and `TODO`/`FIXME` markers.
 
+## The phase after closure: live commissioning
+
+Internal closure is done. The live phase is blocked at step zero, and the ledger says so per provider:
+[`docs/LIVE_COMMISSIONING.md`](docs/LIVE_COMMISSIONING.md).
+
+**No live credential exists in this installation.** Every provider key in `backend/.env` is empty and every
+stored connection holds the literal `sandbox`. What exists instead is the instrument that commissions a
+provider the moment a credential arrives:
+
+```
+php artisan commission:readout {provider} --workspace={id}
+```
+
+It reads and reports — credential state, health, discovery, the metrics an account actually exposes,
+currency, timezone, pagination, API calls spent, declared writes, and the provider's own words when it
+refuses. It writes nothing, never prints a credential, and cannot report a live verdict from this
+repository's fixtures.
+
 ## First next command
 
 ```
-cd backend && php artisan test
+cd backend && php artisan commission:readout
 ```
 
-Confirm the gates still hold, then pick up from `docs/CLOSURE.md`'s last section — *What is not closed* — which
-lists only items blocked on a host, an account or a credential. Each needs a decision from the company rather
-than code:
+It prints the true state of all twelve providers in one pass, and today every row is `NOT_CONFIGURED` or
+`SANDBOX_VERIFIED`. Supply one credential and the same command is the first step of commissioning it.
+
+After that, the remaining work is the list below — each item needs a decision from the company rather than
+code, and `docs/CLOSURE.md`'s last section says the same:
 
 1. A staging environment, so no figure in `docs/PRODUCTION.md` has to be labelled as a developer's machine.
 2. An error tracker and a metrics backend (a key and an endpoint).
