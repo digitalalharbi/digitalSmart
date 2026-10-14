@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Application\Access\Contract\AccessSynchroniser;
 use App\Application\Advertising\Contract\AdvertisingStore;
 use App\Application\Advertising\Contract\CampaignAssignmentRepository;
+use App\Application\Advertising\Contract\CampaignControlReadModel;
 use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegistryContract;
 use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Analytics\Contract\AnalyticsReadModel;
@@ -128,6 +129,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAttributionReadMod
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBenchmarkReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentCampaignControlReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientVisibility;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
@@ -293,6 +295,7 @@ final class AppServiceProvider extends ServiceProvider
         StoreDirectory::class => EloquentStoreDirectory::class,
         /* Which project owns a campaign, and the review queue for the ones nobody has placed. */
         CampaignAssignmentRepository::class => EloquentCampaignAssignmentRepository::class,
+        CampaignControlReadModel::class => EloquentCampaignControlReadModel::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
         AttributionReadModel::class => EloquentAttributionReadModel::class,
         CreativeSpecRegistry::class => EloquentCreativeSpecRegistry::class,

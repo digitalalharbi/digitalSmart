@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Advertising\DTO;
+
+use App\Domain\Advertising\CampaignHealth;
+use App\Domain\Advertising\CampaignObjective;
+use App\Domain\Advertising\EntityStatus;
+
+/**
+ * What the Campaign Control Center is narrowed to.
+ *
+ * All of it applied server-side. Rule 107 is explicit that filters must not be a React array operation,
+ * and at two thousand campaigns the difference is between a page and a download.
+ */
+final readonly class CampaignControlFilter
+{
+    /**
+     * @param  list<string>  $clientIds
+     * @param  list<string>  $projectIds
+     * @param  list<string>  $providers
+     * @param  list<string>  $externalAccountIds
+     * @param  list<EntityStatus>  $statuses
+     * @param  list<CampaignObjective>  $objectives
+     * @param  list<CampaignHealth>  $health
+     */
+    public function __construct(
+        public array $clientIds = [],
+        public array $projectIds = [],
+        public array $providers = [],
+        public array $externalAccountIds = [],
+        public array $statuses = [],
+        public array $objectives = [],
+        public array $health = [],
+        /** Matches a campaign, client, project or account name. */
+        public ?string $search = null,
+    ) {}
+
+    /**
+     * Whether anything narrows the population *before* health is computed.
+     *
+     * Health is the one filter that cannot be pushed into SQL without a second copy of the rules, so the
+     * read model needs to know whether the cheap filters have already cut the set down.
+     */
+    public function narrowsInSql(): bool
+    {
+        return $this->clientIds !== []
+            || $this->projectIds !== []
+            || $this->providers !== []
+            || $this->externalAccountIds !== []
+            || $this->statuses !== []
+            || $this->objectives !== []
+            || ($this->search !== null && $this->search !== '');
+    }
+}

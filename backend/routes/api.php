@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Interface\Http\Controller\Advertising\CampaignControlController;
 use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
 use App\Interface\Http\Controller\Analytics\AnalyticsController;
 use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
@@ -682,6 +683,13 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      * Not under a project, unlike bindings: the question this answers is "which campaigns has nobody
      * placed", and that is an agency-level review queue rather than one project's business.
      */
+    /*
+     * The Campaign Control Center: every campaign the reader may see, with a business health verdict
+     * beside the platform's own status.
+     */
+    Route::get('campaigns/control', [CampaignControlController::class, 'index'])
+        ->name('campaigns.control.index');
+
     Route::get('campaigns/ownership', [CampaignOwnershipController::class, 'index'])
         ->name('campaigns.ownership.index');
     Route::put('campaigns/{campaign}/project', [CampaignOwnershipController::class, 'assign'])

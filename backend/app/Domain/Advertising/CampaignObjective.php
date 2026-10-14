@@ -62,4 +62,52 @@ enum CampaignObjective: string
             self::Other => 'impressions',
         };
     }
+
+    /**
+     * The measured column that stands for this objective's result.
+     *
+     * Distinct from `primaryMetric()`, which is the *name* a reader expects — "purchases", "installs" —
+     * and is not a column anywhere. This is what the fact table actually holds, and the pair exists
+     * because collapsing them would mean either labelling a lead campaign's figure "conversions" or
+     * inventing an `installs` column that no provider fills.
+     *
+     * Everything that counts an action lands on `conversions`, which is the honest position: the product
+     * knows a conversion happened and takes the *kind* from the event definition, not from the campaign's
+     * objective.
+     */
+    public function resultColumn(): string
+    {
+        return match ($this) {
+            self::Awareness, self::Reach => 'reach',
+            self::Traffic => 'link_clicks',
+            self::Engagement, self::Messages => 'engagements',
+            self::VideoViews => 'video_views',
+            self::Leads, self::AppPromotion, self::Sales, self::StoreTraffic => 'conversions',
+            self::Other => 'impressions',
+        };
+    }
+
+    /**
+     * Whether a cost-per-result figure means anything for this objective.
+     *
+     * Cost per thousand impressions is a real figure; "cost per reach" is not one anybody uses, and
+     * dividing spend by impressions and calling it a result would be inventing a metric.
+     */
+    public function hasCostPerResult(): bool
+    {
+        return $this !== self::Other && $this !== self::Awareness && $this !== self::Reach;
+    }
+
+    /**
+     * Whether revenue — and therefore ROAS — can be read against this objective.
+     *
+     * **False for everything but sales.** Rule 33 says it plainly: do not show ROAS as the primary metric
+     * for campaigns that do not measure revenue. A lead campaign has no revenue of its own; whatever those
+     * leads eventually became is an attribution question answered elsewhere, and putting a return figure
+     * on the campaign row would hand a client a number the campaign cannot support.
+     */
+    public function measuresRevenue(): bool
+    {
+        return $this === self::Sales || $this === self::StoreTraffic;
+    }
 }

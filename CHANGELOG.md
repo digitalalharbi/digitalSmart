@@ -75,6 +75,55 @@ is empty, and every stored connection holds the literal `sandbox`.
 under full-suite load, both retried green and neither in a file this pass touched — PHPStan level 8 clean,
 Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
 
+## A campaign can be ACTIVE on Meta and critical here
+
+That sentence is the whole argument for the Campaign Control Center. A surface
+showing only the platform's own status hides the row somebody is looking for, and a
+media buyer with a hundred campaigns and twenty minutes needs the hundred narrowed
+to the six.
+
+### Added
+
+- **`CampaignHealth`** — the product's six words, the same ones a client, a project, a budget, a tracking
+  source and a creative already use. **Not** the provider's status: both are published, side by side, and
+  neither replaces the other.
+- **`CampaignHealthPolicy`** — the rules, as a policy object rather than as a `CASE` expression. A
+  judgement belongs where it can be read, argued with and tested exhaustively, and there has to be exactly
+  one copy of it. Twenty-two unit tests cover every branch.
+- **Every verdict carries a sentence.** *Needs attention* and nothing else sends somebody to the platform
+  to work out why, which is the trip this product exists to remove. No column names, no thresholds, no
+  provider codes in it.
+- **Staleness outranks performance.** A live campaign with no figures for two days is critical even when
+  every number on its row looks healthy, because performance computed from figures that stopped arriving
+  is a statement about the past wearing the clothes of a statement about now.
+- **Objective-aware results** — `CampaignObjective::resultColumn()`. A reach campaign is read on reach, a
+  traffic campaign on link clicks, a sales campaign on conversions. Zero conversions is a critical finding
+  for a lead campaign and no finding at all for a reach one, which never had results to be missing.
+- **`GET /api/campaigns/control`** — client, project, account, status, health, result, cost per result,
+  ROAS where valid, budget, last sync; filters on all of them plus search, every one applied in SQL.
+
+### Honesty
+
+- **No ROAS for an objective that does not measure revenue.** Null for leads, traffic, awareness and the
+  rest, whatever the revenue column happens to hold. A lead campaign carrying revenue from a mis-mapped
+  conversion must not be handed a return it cannot support.
+- **No cost per result where the figure would be invented.** "Cost per reach" is not a metric anybody uses.
+- **No verdict on four days of data.** Seven reported days minimum, because advertising has a weekly
+  rhythm and a Tuesday-to-Thursday sample against a Saturday-to-Monday one produces a change that is a
+  calendar artefact. "Not enough data" is a state, never folded into healthy.
+- **A null result is not a zero.** `sum()` over all-null returns null, and the policy reads that as a
+  measurement gap rather than as a performance verdict — the difference between a tracking problem and an
+  accusation.
+- **A capped assessment says so.** Health cannot be filtered in SQL without a second copy of the rules, so
+  verdicts are computed over a bounded read ordered by spend. `assessed` and `total` both ship, so an
+  interface can say "the 2,000 largest of 2,140" instead of implying it looked at everything.
+
+### Measured
+
+211 ms and five statements over 2,000 campaigns and 180,000 daily rows, with all 2,000 assessed. The
+window aggregates arrive as lateral subqueries; the scale test asserts the statement count does not move
+when the agency triples.
+
 ## A hundred clients, and the first honest measurement of what that costs
 
 ### Added

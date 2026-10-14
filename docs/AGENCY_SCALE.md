@@ -24,7 +24,7 @@ not, because the guesses are indistinguishable from the findings.
 | AGENCY SCALE READY | **NO** — see §21, §22, §27, §103 |
 | MULTI-CLIENT ISOLATION | **VERIFIED** — enforced in schema and in the query layer; see §5 |
 | MULTI-ACCOUNT | **PARTIAL** — many accounts per connection, but one connection per provider per workspace; see §16 |
-| CENTRAL CAMPAIGN CONTROL | **NOT VERIFIED** — no such surface exists; see §10 |
+| CENTRAL CAMPAIGN CONTROL | **PARTIAL** — the read model exists, is measured at full scale, and has no frontend yet; see §10 |
 | INTEGRATION READY | **YES** for the providers listed in `docs/LIVE_COMMISSIONING.md` |
 | SCALE TEST | **PASS** at the measured level — see *Measurements* below. Not yet covering the agency surfaces that do not exist (§10, §13) |
 
@@ -52,8 +52,8 @@ additive.
 
 | # | Rule | Verdict | Evidence |
 |---|---|---|---|
-| 10 | Campaign Control Center | **GAP** | `CampaignsPage` is a metric drill-down (provider → campaign → ad group → ad). It has no client, project, account, owner, health, pacing or last-sync column, and no filters on any of them. It answers "what is dragging CTR down", not "which of our 2,000 campaigns needs me". |
-| 11 | Normalized business campaign health, separate from provider status | **GAP** | Provider status and `raw_effective_status` are both stored and shown. No business health state is computed for a campaign. The vocabulary now exists (`shared/ui/health.model.ts`) and nothing produces it. |
+| 10 | Campaign Control Center | **PARTIAL** — was GAP | `GET /api/campaigns/control` returns every campaign the reader may see with client, project, account, status, health, objective-aware result, cost per result, ROAS where valid, budget and last sync; filters on client, project, provider, account, status, objective and health, plus search. **No frontend yet** — `CampaignsPage` is still the metric drill-down. |
+| 11 | Normalized business campaign health, separate from provider status | **MET** — was GAP | `CampaignHealth` with the product's six words, computed by `CampaignHealthPolicy` from platform state, reporting freshness, result availability, cost change and delivery change. The platform's own status ships beside it as `provider_status` and neither replaces the other. Every verdict carries a one-sentence reason in business language. |
 | 12 | Agency-wide attention queue | **GAP** | Per-module attention exists — budget alerts, tracking issues, approval ages, request overdue, task overdue — and no surface unions them. |
 
 ## 13–15 · Portfolio and workspace
@@ -95,7 +95,7 @@ additive.
 |---|---|---|---|
 | 31 | Freshness on every major metric | **MET** | `MetricSourceValue` carries LIVE / SYNCED / STALE / PARTIAL / SANDBOX / MANUAL / ESTIMATED / ATTRIBUTED through to the UI, and `SourceNotice` renders it. |
 | 32 | Metric normalization without forcing zeros | **MET** | `MetricValue::of(..., null, ...)` is the unavailable case and is rendered as `—`. Nothing coerces missing to zero. |
-| 33 | Objective-aware primary result | **GAP** | Campaigns store a normalised `objective`, and no surface selects a primary metric from it. ROAS is shown for campaigns that measure no revenue. |
+| 33 | Objective-aware primary result | **PARTIAL** — was GAP | `CampaignObjective::resultColumn()` picks the measured column per objective and the control center reads each campaign on its own result. ROAS and revenue are `null` for every objective that does not measure revenue, whatever the column holds. Still to do: the analytics surfaces and reports use a fixed metric set. |
 | 34 | Currency | **MET** | `EloquentAnalyticsReadModel` aggregates `string_agg(distinct currency)` and **refuses to total** when more than one currency is present, with the reason in the payload. No FX conversion exists — the constitution calls that optional. |
 | 35 | Timezone | **PARTIAL** | `external_accounts.timezone` is stored. No read path yet refuses to combine daily metrics across incompatible timezones the way the currency path refuses to sum. |
 
@@ -269,6 +269,9 @@ The fixture builds in about 20 seconds.
 
 | View | Time | SQL statements |
 |---|---|---|
+| Campaign Control Center, 50 rows, 2,000 campaigns assessed | 211 ms | 5 |
+| Campaign Control Center, filtered by health | 197 ms | 5 |
+| Campaign Control Center, search | 123 ms | 5 |
 | Campaign ownership queue, 50 rows | 186 ms | 5 |
 | Campaign ownership queue, filtered to ambiguous | 99 ms | 5 |
 | Analytics breakdown by provider | 377 ms | 6 |
@@ -284,9 +287,14 @@ Read these as a baseline, not as a pass mark. Three things they do and do not sa
 - **Analytics is the slow one**, at roughly 400 ms, and it is slow in six statements rather than in six
   hundred. That is an aggregate problem (§72), not an N+1 problem, and it will get worse linearly with
   history rather than suddenly.
-- **They cover the views that exist.** The Campaign Control Center and the Portfolio are not in this table
-  because they are not built. The fixture is here first on purpose: an agency view without a dataset that
-  can show it failing is one nobody discovers is slow until the agency grows into it.
+- **The Campaign Control Center assesses every campaign on each request**, 2,000 of them over 180,000
+  daily rows, in five statements and a fifth of a second. That is the cost of keeping the health rules in
+  one place instead of duplicating them into SQL so the database could sort by them. It holds to a stated
+  cap of 2,000 assessments, and the response publishes `assessed` beside `total` so a larger agency is
+  told its counts describe the highest-spending slice rather than everything.
+- **The Portfolio is not in this table** because it is not built. The fixture is here first on purpose: an
+  agency view without a dataset that can show it failing is one nobody discovers is slow until the agency
+  grows into it.
 
 Machine-dependent, so compare runs on one machine rather than these numbers with yours. The fixture is
 deterministic — a seeded walk, not `random_int` — so two runs are comparable.
@@ -303,7 +311,8 @@ In the constitution's own priority order, with the audit's finding attached:
 
 1. **Tenancy** — ~~connection ownership (§16)~~ **done**; ~~explicit campaign→project mapping (§8)~~ **done**. Remaining: the API that creates a client-owned connection.
 2. **Discovery and binding** — a surface for unassigned **accounts** (§9; campaigns now have one), and the four levels presented as levels (§66).
-3. **Campaign Control Center** (§10) with normalized campaign health (§11) and objective-aware primary results (§33).
+3. ~~**Campaign Control Center** (§10) with normalized campaign health (§11) and objective-aware primary
+   results (§33).~~ **Backend done and measured.** The frontend surface remains.
 4. **Portfolio** (§13, §14) and the project workspace (§15).
 5. **Attention Center** (§12) — server-side, because at agency scale it is an aggregate, not a fan-out.
 6. **Budget Control Center** (§37).

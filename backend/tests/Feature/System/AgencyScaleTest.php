@@ -125,6 +125,28 @@ it('issues the same number of statements over a bigger agency: the campaign owne
     expect($large)->toBe($small);
 });
 
+/*
+ * The surface most at risk of this, because every row carries two window aggregates. They arrive as
+ * lateral subqueries rather than as a pass per campaign; if that ever becomes a loop, this is the test
+ * that says so.
+ */
+it('issues the same number of statements over a bigger agency: the campaign control center', function (): void {
+    seedAgency(clients: 6, accounts: 10, campaigns: 20);
+    $owner = scaleOwner();
+
+    $small = statementsFor(function () use ($owner): void {
+        $this->actingAs($owner)->getJson('/api/campaigns/control?limit=50')->assertOk();
+    });
+
+    seedAgency(clients: 18, accounts: 30, campaigns: 120);
+
+    $large = statementsFor(function () use ($owner): void {
+        $this->actingAs($owner)->getJson('/api/campaigns/control?limit=50')->assertOk();
+    });
+
+    expect($large)->toBe($small);
+});
+
 it('issues the same number of statements over a bigger agency: the analytics breakdown', function (): void {
     seedAgency(clients: 6, accounts: 10, campaigns: 20);
     $owner = scaleOwner();
@@ -150,8 +172,8 @@ it('issues the same number of statements over a bigger agency: the analytics bre
  *
  * The budgets are the measured cost plus two: enough slack that an extra authorisation read does not
  * fail the suite, tight enough that a join replaced by a loop does. Measured at the time of writing:
- * ownership 5, analytics 6, clients 5, projects 5 — each returning real rows, which the assertions below
- * check, because a 200 over an empty result set would pass any budget.
+ * ownership 5, control 6, analytics 6, clients 5, projects 5 — each returning real rows, which the
+ * assertions below check, because a 200 over an empty result set would pass any budget.
  */
 it('keeps the agency views within their stated query budget', function (): void {
     seedAgency(clients: 12, accounts: 24, campaigns: 60);
@@ -159,6 +181,7 @@ it('keeps the agency views within their stated query budget', function (): void 
 
     $budgets = [
         '/api/campaigns/ownership?limit=50' => 7,
+        '/api/campaigns/control?limit=50' => 8,
         '/api/analytics?preset=28d&metrics[]=spend&dimension=provider&limit=10' => 8,
         '/api/clients?per_page=25' => 7,
         '/api/projects?per_page=25' => 7,
