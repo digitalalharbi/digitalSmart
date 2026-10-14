@@ -11,6 +11,7 @@ import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { SourceBadge } from '@/shared/ui/source-badge';
+import { PageHeader } from '@/shared/ui/page-header';
 import type { MetricSourceValue } from '@/shared/metrics';
 import { pptxUrl } from './api';
 import { SlideView } from './SlideView';
@@ -75,10 +76,11 @@ export function PresentationsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="ds-no-print flex flex-col gap-2">
-        <h1 className="text-content text-2xl font-semibold">{t('presentations.title')}</h1>
-        <p className="text-content-secondary max-w-2xl text-sm">{t('presentations.subtitle')}</p>
-      </header>
+      <PageHeader
+        className="ds-no-print"
+        title={t('presentations.title')}
+        description={t('presentations.subtitle')}
+      />
 
       <div className="ds-no-print flex flex-col gap-4">
         <ChoiceGroup label={t('presentations.deck')}>

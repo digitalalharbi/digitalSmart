@@ -7,6 +7,7 @@ import { Chart, ChartFrame } from '@/shared/ui/chart';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { MetricCard, MetricCardSkeleton } from '@/shared/ui/metric-card';
 import { SourceNotice } from '@/shared/ui/source-badge';
+import { PageHeader } from '@/shared/ui/page-header';
 import { useUiStore } from '@/shared/store/ui-store';
 import { BreakdownTable } from './BreakdownTable';
 import { breakdownOption, efficiencyOption, trendOption } from '@/shared/metrics';
@@ -323,10 +324,5 @@ export function AnalyticsPage() {
 function PageHeading() {
   const { t } = useTranslation();
 
-  return (
-    <header className="flex flex-col gap-1">
-      <h1 className="text-content text-2xl font-semibold">{t('nav.analytics')}</h1>
-      <p className="text-content-secondary text-sm">{t('analytics.subtitle')}</p>
-    </header>
-  );
+  return <PageHeader title={t('nav.analytics')} description={t('analytics.subtitle')} />;
 }

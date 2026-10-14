@@ -15,6 +15,7 @@ import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { LiveBadge } from '@/shared/ui/live-badge';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageHeader } from '@/shared/ui/page-header';
 import { ApprovalDetail } from './ApprovalDetail';
 import { KindBreakdown } from './KindBreakdown';
 import { RequestApprovalForm } from './RequestApprovalForm';
@@ -134,56 +135,52 @@ export function ApprovalsPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-content text-2xl font-semibold">{t('approvals.title')}</h1>
-            <p className="text-content-secondary mt-1 max-w-2xl text-sm">
-              {t('approvals.subtitle')}
-            </p>
-            <LiveBadge isLive={isLive} />
-          </div>
-
-          {/* Asking is its own permission, and the queue is where somebody asks. */}
-          {canRequest ? (
+    <div className="ds-page">
+      <PageHeader
+        title={t('approvals.title')}
+        description={t('approvals.subtitle')}
+        primaryAction={
+          /* Asking is its own permission, and the queue is where somebody asks. */
+          canRequest ? (
             <Button onClick={() => setAsking(true)}>
               <Plus aria-hidden className="me-1 size-4" />
               {t('approvals.raise')}
             </Button>
-          ) : null}
-        </div>
-
-        <div className="flex flex-wrap gap-6">
-          <ChoiceGroup label={t('approvals.scope.client')}>
-            <div className="flex flex-wrap gap-2">
-              <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
-                {t('approvals.scope.allClients')}
-              </Choice>
-              {(clients.data?.data ?? []).map((client) => (
-                <Choice
-                  key={client.id}
-                  isSelected={clientId === client.id}
-                  onSelect={() => setClientId(client.id)}
-                >
-                  {client.name}
+          ) : undefined
+        }
+        actions={<LiveBadge isLive={isLive} />}
+        filters={
+          <div className="flex flex-wrap gap-6">
+            <ChoiceGroup label={t('approvals.scope.client')}>
+              <div className="flex flex-wrap gap-2">
+                <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
+                  {t('approvals.scope.allClients')}
                 </Choice>
-              ))}
-            </div>
-          </ChoiceGroup>
+                {(clients.data?.data ?? []).map((client) => (
+                  <Choice
+                    key={client.id}
+                    isSelected={clientId === client.id}
+                    onSelect={() => setClientId(client.id)}
+                  >
+                    {client.name}
+                  </Choice>
+                ))}
+              </div>
+            </ChoiceGroup>
 
-          <ChoiceGroup label={t('approvals.scope.what')}>
-            <div className="flex flex-wrap gap-2">
-              <Choice isSelected={!spendOnly} onSelect={() => setSpendOnly(false)}>
-                {t('approvals.scope.everything')}
-              </Choice>
-              <Choice isSelected={spendOnly} onSelect={() => setSpendOnly(true)}>
-                {t('approvals.scope.spendOnly')}
-              </Choice>
-            </div>
-          </ChoiceGroup>
-        </div>
-      </header>
+            <ChoiceGroup label={t('approvals.scope.what')}>
+              <div className="flex flex-wrap gap-2">
+                <Choice isSelected={!spendOnly} onSelect={() => setSpendOnly(false)}>
+                  {t('approvals.scope.everything')}
+                </Choice>
+                <Choice isSelected={spendOnly} onSelect={() => setSpendOnly(true)}>
+                  {t('approvals.scope.spendOnly')}
+                </Choice>
+              </div>
+            </ChoiceGroup>
+          </div>
+        }
+      />
 
       {queue.isError ? <Alert tone="danger">{t('approvals.loadFailed')}</Alert> : null}
 

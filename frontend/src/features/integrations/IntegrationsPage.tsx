@@ -4,6 +4,7 @@ import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { LoadingRegion } from '@/shared/ui/loading-region';
+import { PageHeader } from '@/shared/ui/page-header';
 import { useProjectsQuery } from '@/features/projects';
 import { AccountBindingPanel } from './AccountBindingPanel';
 import { ProviderCard } from './ProviderCard';
@@ -59,11 +60,8 @@ export function IntegrationsPage() {
   const blockedCount = (providers ?? []).filter((provider) => provider.blocked_external).length;
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-content text-2xl font-semibold">{t('nav.integrations')}</h1>
-        <p className="text-content-secondary text-sm">{t('integrations.subtitle')}</p>
-      </header>
+    <div className="ds-page">
+      <PageHeader title={t('nav.integrations')} description={t('integrations.subtitle')} />
 
       {/*
         Said once, plainly, at the top: nothing here is connected yet, and the

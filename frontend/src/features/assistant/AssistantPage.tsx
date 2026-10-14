@@ -11,6 +11,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageHeader } from '@/shared/ui/page-header';
 import { AnswerView } from './AnswerView';
 import {
   useAnalysisQuery,
@@ -77,11 +78,8 @@ export function AssistantPage() {
     : ['analyse', 'ask', 'investigate'];
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-content text-2xl font-semibold">{t('assistant.title')}</h1>
-        <p className="text-content-secondary max-w-2xl text-sm">{t('assistant.subtitle')}</p>
-      </header>
+    <div className="ds-page">
+      <PageHeader title={t('assistant.title')} description={t('assistant.subtitle')} />
 
       {/*
         Before the answer, not after it. This is the one surface where a reader's default assumption — that a

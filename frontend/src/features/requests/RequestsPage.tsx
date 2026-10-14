@@ -13,6 +13,7 @@ import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { LiveBadge } from '@/shared/ui/live-badge';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageHeader } from '@/shared/ui/page-header';
 import { IntakeFlowChart } from './IntakeFlowChart';
 import { RequestComposer } from './RequestComposer';
 import { RequestDetail } from './RequestDetail';
@@ -155,50 +156,45 @@ export function RequestsPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-content text-2xl font-semibold">
-            {t(isAgencyView ? 'requests.title' : 'requests.titleClient')}
-          </h1>
-          <p className="text-content-secondary mt-1 max-w-2xl text-sm">
-            {t(isAgencyView ? 'requests.subtitle' : 'requests.subtitleClient')}
-          </p>
-          <LiveBadge isLive={isLive} />
-        </div>
-
-        {!isAgencyView ? null : (
-          <div className="flex flex-wrap gap-6">
-            <ChoiceGroup label={t('requests.scope.client')}>
-              <div className="flex flex-wrap gap-2">
-                <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
-                  {t('requests.scope.allClients')}
-                </Choice>
-                {(clients.data?.data ?? []).map((client) => (
-                  <Choice
-                    key={client.id}
-                    isSelected={clientId === client.id}
-                    onSelect={() => setClientId(client.id)}
-                  >
-                    {client.name}
+    <div className="ds-page">
+      <PageHeader
+        title={t(isAgencyView ? 'requests.title' : 'requests.titleClient')}
+        description={t(isAgencyView ? 'requests.subtitle' : 'requests.subtitleClient')}
+        actions={<LiveBadge isLive={isLive} />}
+        filters={
+          !isAgencyView ? undefined : (
+            <div className="flex flex-wrap gap-6">
+              <ChoiceGroup label={t('requests.scope.client')}>
+                <div className="flex flex-wrap gap-2">
+                  <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
+                    {t('requests.scope.allClients')}
                   </Choice>
-                ))}
-              </div>
-            </ChoiceGroup>
+                  {(clients.data?.data ?? []).map((client) => (
+                    <Choice
+                      key={client.id}
+                      isSelected={clientId === client.id}
+                      onSelect={() => setClientId(client.id)}
+                    >
+                      {client.name}
+                    </Choice>
+                  ))}
+                </div>
+              </ChoiceGroup>
 
-            <ChoiceGroup label={t('requests.scope.waitingOn')}>
-              <div className="flex flex-wrap gap-2">
-                <Choice isSelected={!onTheAgencyOnly} onSelect={() => setOnTheAgencyOnly(false)}>
-                  {t('requests.scope.everything')}
-                </Choice>
-                <Choice isSelected={onTheAgencyOnly} onSelect={() => setOnTheAgencyOnly(true)}>
-                  {t('requests.scope.onUs')}
-                </Choice>
-              </div>
-            </ChoiceGroup>
-          </div>
-        )}
-      </header>
+              <ChoiceGroup label={t('requests.scope.waitingOn')}>
+                <div className="flex flex-wrap gap-2">
+                  <Choice isSelected={!onTheAgencyOnly} onSelect={() => setOnTheAgencyOnly(false)}>
+                    {t('requests.scope.everything')}
+                  </Choice>
+                  <Choice isSelected={onTheAgencyOnly} onSelect={() => setOnTheAgencyOnly(true)}>
+                    {t('requests.scope.onUs')}
+                  </Choice>
+                </div>
+              </ChoiceGroup>
+            </div>
+          )
+        }
+      />
 
       {queue.isError ? <Alert tone="danger">{t('requests.loadFailed')}</Alert> : null}
 

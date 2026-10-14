@@ -11,6 +11,7 @@ import { Button } from '@/shared/ui/button';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageHeader } from '@/shared/ui/page-header';
 import { csvUrl, xlsxUrl } from './api';
 import { ReportBuilder } from './ReportBuilder';
 import { ReportView } from './ReportView';
@@ -86,24 +87,23 @@ export function ReportsPage() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-content text-2xl font-semibold">{t('reports.title')}</h1>
-            <p className="text-content-secondary mt-1 max-w-2xl text-sm">{t('reports.subtitle')}</p>
-          </div>
-
-          {!canManage ? null : (
-            <Button
-              onClick={() => {
-                setSelected(null);
-                setEditing('new');
-                setFreshToken(null);
-              }}
-            >
-              {t('reports.new')}
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          title={t('reports.title')}
+          description={t('reports.subtitle')}
+          primaryAction={
+            !canManage ? undefined : (
+              <Button
+                onClick={() => {
+                  setSelected(null);
+                  setEditing('new');
+                  setFreshToken(null);
+                }}
+              >
+                {t('reports.new')}
+              </Button>
+            )
+          }
+        />
 
         <ChoiceGroup label={t('reports.scope.client')}>
           <div className="flex flex-wrap gap-2">

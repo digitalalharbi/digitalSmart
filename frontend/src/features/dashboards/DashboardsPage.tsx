@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageHeader } from '@/shared/ui/page-header';
 import { cn } from '@/shared/lib/cn';
 import { DashboardCanvas } from './DashboardCanvas';
 import { WidgetEditor } from './WidgetEditor';
@@ -540,10 +541,5 @@ export function DashboardsPage() {
 function Heading() {
   const { t } = useTranslation();
 
-  return (
-    <div className="flex flex-col gap-1">
-      <h1 className="text-content text-2xl font-semibold">{t('dashboards.title')}</h1>
-      <p className="text-content-secondary text-sm">{t('dashboards.subtitle')}</p>
-    </div>
-  );
+  return <PageHeader title={t('dashboards.title')} description={t('dashboards.subtitle')} />;
 }

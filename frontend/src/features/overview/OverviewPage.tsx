@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { MetricCard, MetricCardSkeleton } from '@/shared/ui/metric-card';
 import { SourceNotice } from '@/shared/ui/source-badge';
+import { PageHeader } from '@/shared/ui/page-header';
 import { formatMetric } from '@/shared/metrics';
 import { HealthPanel } from './HealthPanel';
 import { SpendTrend } from './SpendTrend';
@@ -44,11 +45,8 @@ export function OverviewPage() {
   const isForbidden = isError && error instanceof ApiError && error.status === 403;
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-content text-2xl font-semibold">{t('overview.title')}</h1>
-        <p className="text-content-secondary text-sm">{t('overview.subtitle')}</p>
-      </header>
+    <div className="ds-page">
+      <PageHeader title={t('overview.title')} description={t('overview.subtitle')} />
 
       {canSeeAnalytics && !isForbidden && (
         <section className="flex flex-col gap-4" aria-label={t('overview.performance')}>

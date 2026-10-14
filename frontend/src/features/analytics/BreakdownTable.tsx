@@ -37,13 +37,17 @@ export function BreakdownTable({
   const isInteractive = onRowSelect !== undefined;
 
   return (
-    <ScrollRegion label={dimensionLabel} className="border-line-subtle rounded-xl border">
+    <ScrollRegion
+      label={dimensionLabel}
+      className="bg-surface border-line-subtle rounded-2xl border shadow-xs"
+    >
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="border-line-subtle bg-surface-sunken border-b">
+          {/* No header fill: the small-caps tertiary ink carries the weight, as everywhere else in the product. */}
+          <tr className="border-line-subtle border-b">
             <th
               scope="col"
-              className="text-content-secondary px-4 py-2.5 text-start text-xs font-semibold tracking-wide uppercase"
+              className="text-content-tertiary ds-overline px-5 py-3 text-start font-semibold"
             >
               {dimensionLabel}
             </th>
@@ -51,7 +55,7 @@ export function BreakdownTable({
               <th
                 key={metric}
                 scope="col"
-                className="text-content-secondary px-4 py-2.5 text-end text-xs font-semibold tracking-wide whitespace-nowrap uppercase"
+                className="text-content-tertiary ds-overline px-5 py-3 text-end font-semibold whitespace-nowrap"
               >
                 {definitions.get(metric)?.label ?? metric}
               </th>

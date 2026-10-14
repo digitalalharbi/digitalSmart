@@ -7,7 +7,9 @@ import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/empty-state';
+import { Field } from '@/shared/ui/field';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageHeader } from '@/shared/ui/page-header';
 import { ContainerReadiness } from './ContainerReadiness';
 import { ConversionEditor } from './ConversionEditor';
 import { IssueList } from './IssueList';
@@ -82,29 +84,32 @@ export function TrackingCenterPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-content text-2xl font-semibold">{t('tracking.title')}</h1>
-          <p className="text-content-secondary mt-1 max-w-2xl text-sm">{t('tracking.subtitle')}</p>
-        </div>
-
-        <label className="flex flex-col gap-1.5">
-          <span className="text-content text-sm font-medium">{t('tracking.scope.client')}</span>
-          <select
-            className="border-line bg-surface text-content rounded-lg border px-3 py-2 text-sm"
-            value={clientId ?? ''}
-            onChange={(event) => setClientId(event.target.value === '' ? null : event.target.value)}
-          >
-            <option value="">{t('tracking.scope.allClients')}</option>
-            {clientOptions.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </header>
+    <div className="ds-page">
+      <PageHeader
+        title={t('tracking.title')}
+        description={t('tracking.subtitle')}
+        filters={
+          <Field label={t('tracking.scope.client')}>
+            {(props) => (
+              <select
+                {...props}
+                className="border-line-subtle bg-surface text-content h-10 rounded-full border px-4 text-sm shadow-xs"
+                value={clientId ?? ''}
+                onChange={(event) =>
+                  setClientId(event.target.value === '' ? null : event.target.value)
+                }
+              >
+                <option value="">{t('tracking.scope.allClients')}</option>
+                {clientOptions.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </Field>
+        }
+      />
 
       <RemoveSourceDialog
         source={removing}

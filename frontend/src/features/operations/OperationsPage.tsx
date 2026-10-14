@@ -13,6 +13,7 @@ import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { LiveBadge } from '@/shared/ui/live-badge';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageHeader } from '@/shared/ui/page-header';
 import { DueProfileChart } from './DueProfileChart';
 import { LoadByPersonChart } from './LoadByPersonChart';
 import { TaskComposer } from './TaskComposer';
@@ -96,49 +97,46 @@ export function OperationsPage() {
   const workload = board.data?.workload;
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-content text-2xl font-semibold">{t('operations.title')}</h1>
-          <p className="text-content-secondary mt-1 max-w-2xl text-sm">
-            {t('operations.subtitle')}
-          </p>
-          <LiveBadge isLive={isLive} />
-        </div>
-
-        <div className="flex flex-wrap gap-6">
-          <ChoiceGroup label={t('operations.scope.client')}>
-            <div className="flex flex-wrap gap-2">
-              <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
-                {t('operations.scope.allClients')}
-              </Choice>
-              {(clients.data?.data ?? []).map((client) => (
-                <Choice
-                  key={client.id}
-                  isSelected={clientId === client.id}
-                  onSelect={() => setClientId(client.id)}
-                >
-                  {client.name}
+    <div className="ds-page">
+      <PageHeader
+        title={t('operations.title')}
+        description={t('operations.subtitle')}
+        actions={<LiveBadge isLive={isLive} />}
+        filters={
+          <div className="flex flex-wrap gap-6">
+            <ChoiceGroup label={t('operations.scope.client')}>
+              <div className="flex flex-wrap gap-2">
+                <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
+                  {t('operations.scope.allClients')}
                 </Choice>
-              ))}
-            </div>
-          </ChoiceGroup>
+                {(clients.data?.data ?? []).map((client) => (
+                  <Choice
+                    key={client.id}
+                    isSelected={clientId === client.id}
+                    onSelect={() => setClientId(client.id)}
+                  >
+                    {client.name}
+                  </Choice>
+                ))}
+              </div>
+            </ChoiceGroup>
 
-          <ChoiceGroup label={t('operations.scope.audience')}>
-            <div className="flex flex-wrap gap-2">
-              {(['everyone', 'me', 'unassigned'] as const).map((option) => (
-                <Choice
-                  key={option}
-                  isSelected={audience === option}
-                  onSelect={() => setAudience(option)}
-                >
-                  {t(`operations.scope.${option}`)}
-                </Choice>
-              ))}
-            </div>
-          </ChoiceGroup>
-        </div>
-      </header>
+            <ChoiceGroup label={t('operations.scope.audience')}>
+              <div className="flex flex-wrap gap-2">
+                {(['everyone', 'me', 'unassigned'] as const).map((option) => (
+                  <Choice
+                    key={option}
+                    isSelected={audience === option}
+                    onSelect={() => setAudience(option)}
+                  >
+                    {t(`operations.scope.${option}`)}
+                  </Choice>
+                ))}
+              </div>
+            </ChoiceGroup>
+          </div>
+        }
+      />
 
       {board.isError ? <Alert tone="danger">{t('operations.loadFailed')}</Alert> : null}
 

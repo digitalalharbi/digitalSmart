@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { Alert } from '@/shared/ui/alert';
+import { PageHeader } from '@/shared/ui/page-header';
 import { cn } from '@/shared/lib/cn';
 import { AuditPanel } from './AuditPanel';
 import { MembersPanel } from './MembersPanel';
@@ -35,11 +36,8 @@ export function AdministrationPage() {
     : (visibleTabs[0]?.id ?? 'people');
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-content text-2xl font-semibold">{t('nav.administration')}</h1>
-        <p className="text-content-secondary text-sm">{t('administration.subtitle')}</p>
-      </header>
+    <div className="ds-page">
+      <PageHeader title={t('nav.administration')} description={t('administration.subtitle')} />
 
       <div className="border-line-subtle flex gap-1 border-b" role="tablist">
         {visibleTabs.map((candidate) => (

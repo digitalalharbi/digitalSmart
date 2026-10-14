@@ -13,6 +13,7 @@ import { Card, CardContent } from '@/shared/ui/card';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageHeader } from '@/shared/ui/page-header';
 import { isRealtimeConfigured } from '@/shared/realtime/echo';
 import {
   useMarkAllReadMutation,
@@ -66,39 +67,36 @@ export function NotificationsPage() {
   const isLive = (feed.data?.is_live ?? false) && isRealtimeConfigured();
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-content text-2xl font-semibold">{t('notifications.title')}</h1>
-          <p className="text-content-secondary mt-1 max-w-2xl text-sm">
-            {t('notifications.subtitle')}
-          </p>
-        </div>
+    <div className="ds-page">
+      <PageHeader
+        title={t('notifications.title')}
+        description={t('notifications.subtitle')}
+        filters={
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <ChoiceGroup label={t('notifications.scope.show')}>
+              <div className="flex flex-wrap gap-2">
+                <Choice isSelected={!unreadOnly} onSelect={() => setUnreadOnly(false)}>
+                  {t('notifications.scope.everything')}
+                </Choice>
+                <Choice isSelected={unreadOnly} onSelect={() => setUnreadOnly(true)}>
+                  {t('notifications.scope.unread')}
+                </Choice>
+              </div>
+            </ChoiceGroup>
 
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <ChoiceGroup label={t('notifications.scope.show')}>
-            <div className="flex flex-wrap gap-2">
-              <Choice isSelected={!unreadOnly} onSelect={() => setUnreadOnly(false)}>
-                {t('notifications.scope.everything')}
-              </Choice>
-              <Choice isSelected={unreadOnly} onSelect={() => setUnreadOnly(true)}>
-                {t('notifications.scope.unread')}
-              </Choice>
-            </div>
-          </ChoiceGroup>
-
-          {digest === undefined || digest.unread === 0 ? null : (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => markAll.mutate(undefined)}
-              disabled={markAll.isPending}
-            >
-              {t('notifications.markAll')}
-            </Button>
-          )}
-        </div>
-      </header>
+            {digest === undefined || digest.unread === 0 ? null : (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => markAll.mutate(undefined)}
+                disabled={markAll.isPending}
+              >
+                {t('notifications.markAll')}
+              </Button>
+            )}
+          </div>
+        }
+      />
 
       {error === null ? null : <Alert tone="danger">{error}</Alert>}
       {feed.isError ? <Alert tone="danger">{t('notifications.loadFailed')}</Alert> : null}

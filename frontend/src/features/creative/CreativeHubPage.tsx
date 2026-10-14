@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/shared/ui/card';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageHeader } from '@/shared/ui/page-header';
 import { cn } from '@/shared/lib/cn';
 import { RequestDetail } from './RequestDetail';
 import { SpecCoverage } from './SpecCoverage';
@@ -75,30 +76,29 @@ export function CreativeHubPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-content text-2xl font-semibold">{t('creative.title')}</h1>
-          <p className="text-content-secondary mt-1 max-w-2xl text-sm">{t('creative.subtitle')}</p>
-        </div>
-
-        <ChoiceGroup label={t('creative.scope.client')}>
-          <div className="flex flex-wrap gap-2">
-            <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
-              {t('creative.scope.allClients')}
-            </Choice>
-            {(clients.data?.data ?? []).map((client) => (
-              <Choice
-                key={client.id}
-                isSelected={clientId === client.id}
-                onSelect={() => setClientId(client.id)}
-              >
-                {client.name}
+    <div className="ds-page">
+      <PageHeader
+        title={t('creative.title')}
+        description={t('creative.subtitle')}
+        filters={
+          <ChoiceGroup label={t('creative.scope.client')}>
+            <div className="flex flex-wrap gap-2">
+              <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
+                {t('creative.scope.allClients')}
               </Choice>
-            ))}
-          </div>
-        </ChoiceGroup>
-      </header>
+              {(clients.data?.data ?? []).map((client) => (
+                <Choice
+                  key={client.id}
+                  isSelected={clientId === client.id}
+                  onSelect={() => setClientId(client.id)}
+                >
+                  {client.name}
+                </Choice>
+              ))}
+            </div>
+          </ChoiceGroup>
+        }
+      />
 
       {board.isError ? <Alert tone="danger">{t('creative.loadFailed')}</Alert> : null}
 

@@ -10,7 +10,14 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { ScrollRegion } from '@/shared/ui/scroll-region';
+import {
+  DataTable,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/ui/table';
 import { LoadingRegion } from '@/shared/ui/loading-region';
 import { AddMemberPanel } from './AddMemberPanel';
 import { RemoveMemberDialog } from './RemoveMemberDialog';
@@ -180,109 +187,95 @@ export function MembersPanel() {
       ) : null}
 
       {data && data.data.length > 0 ? (
-        <ScrollRegion
-          label={t('administration.people')}
-          className="border-line-subtle rounded-xl border"
-        >
-          <table className="w-full min-w-[48rem] text-sm">
-            <caption className="sr-only">{t('administration.people')}</caption>
-            <thead>
-              <tr className="text-content-tertiary border-line-subtle bg-surface-sunken border-b text-xs tracking-wide uppercase">
-                <th scope="col" className="px-4 py-2.5 text-start font-medium">
-                  {t('administration.columns.person')}
-                </th>
-                <th scope="col" className="px-4 py-2.5 text-start font-medium">
-                  {t('administration.columns.role')}
-                </th>
-                <th scope="col" className="px-4 py-2.5 text-start font-medium">
-                  {t('administration.columns.status')}
-                </th>
-                <th scope="col" className="px-4 py-2.5 text-end font-medium">
-                  {t('administration.columns.projects')}
-                </th>
-                <th scope="col" className="px-4 py-2.5 text-end font-medium">
-                  <span className="sr-only">{t('administration.columns.actions')}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.data.map((member) => (
-                <tr key={member.user_id} className="border-line-subtle border-b last:border-0">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-content font-medium">{member.name}</span>
-                      {isSelf(member) ? <Badge>{t('administration.you')}</Badge> : null}
-                    </div>
-                    <span className="text-content-tertiary text-xs">{member.email}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {canUpdate ? (
-                      <select
-                        value={member.role}
-                        aria-label={t('administration.roleFor', { name: member.name })}
-                        disabled={changeRole.isPending}
-                        onChange={(event) =>
-                          changeRole.mutate({
+        <DataTable label={t('administration.people')} minWidth="48rem">
+          <TableHead>
+            <TableRow>
+              <TableHeader>{t('administration.columns.person')}</TableHeader>
+              <TableHeader>{t('administration.columns.role')}</TableHeader>
+              <TableHeader>{t('administration.columns.status')}</TableHeader>
+              <TableHeader align="end">{t('administration.columns.projects')}</TableHeader>
+              <TableHeader align="end">
+                <span className="sr-only">{t('administration.columns.actions')}</span>
+              </TableHeader>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.data.map((member) => (
+              <TableRow key={member.user_id} isInteractive>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <span className="text-content font-medium">{member.name}</span>
+                    {isSelf(member) ? <Badge>{t('administration.you')}</Badge> : null}
+                  </div>
+                  <span className="text-content-tertiary text-xs">{member.email}</span>
+                </TableCell>
+                <TableCell>
+                  {canUpdate ? (
+                    <select
+                      value={member.role}
+                      aria-label={t('administration.roleFor', { name: member.name })}
+                      disabled={changeRole.isPending}
+                      onChange={(event) =>
+                        changeRole.mutate({
+                          userId: member.user_id,
+                          role: event.target.value as WorkspaceRole,
+                        })
+                      }
+                      className="border-line bg-surface text-content h-8 rounded-md border px-2 text-sm"
+                    >
+                      {WORKSPACE_ROLES.map((role) => (
+                        <option key={role} value={role}>
+                          {t(`administration.roles.${role}`)}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="text-content-secondary">{member.role_name}</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Badge tone={STATUS_TONE[member.status]}>
+                    {t(`administration.status.${member.status}`)}
+                  </Badge>
+                </TableCell>
+                <TableCell align="end" isNumeric>
+                  {member.project_count}
+                </TableCell>
+                <TableCell>
+                  <div className="flex justify-end gap-1.5">
+                    {canDeactivate ? (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={changeStatus.isPending}
+                        onClick={() =>
+                          changeStatus.mutate({
                             userId: member.user_id,
-                            role: event.target.value as WorkspaceRole,
+                            status: member.status === 'suspended' ? 'active' : 'suspended',
                           })
                         }
-                        className="border-line bg-surface text-content h-8 rounded-md border px-2 text-sm"
                       >
-                        {WORKSPACE_ROLES.map((role) => (
-                          <option key={role} value={role}>
-                            {t(`administration.roles.${role}`)}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span className="text-content-secondary">{member.role_name}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge tone={STATUS_TONE[member.status]}>
-                      {t(`administration.status.${member.status}`)}
-                    </Badge>
-                  </td>
-                  <td className="text-content ds-numeric px-4 py-3 text-end">
-                    {member.project_count}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end gap-1.5">
-                      {canDeactivate ? (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          disabled={changeStatus.isPending}
-                          onClick={() =>
-                            changeStatus.mutate({
-                              userId: member.user_id,
-                              status: member.status === 'suspended' ? 'active' : 'suspended',
-                            })
-                          }
-                        >
-                          {member.status === 'suspended'
-                            ? t('administration.reinstate')
-                            : t('administration.suspend')}
-                        </Button>
-                      ) : null}
-                      {canRemove && !isSelf(member) ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-danger"
-                          onClick={() => setRemoving(member)}
-                        >
-                          {t('actions.remove')}
-                        </Button>
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </ScrollRegion>
+                        {member.status === 'suspended'
+                          ? t('administration.reinstate')
+                          : t('administration.suspend')}
+                      </Button>
+                    ) : null}
+                    {canRemove && !isSelf(member) ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-danger"
+                        onClick={() => setRemoving(member)}
+                      >
+                        {t('actions.remove')}
+                      </Button>
+                    ) : null}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </DataTable>
       ) : null}
 
       {data && data.meta.last_page > 1 ? (

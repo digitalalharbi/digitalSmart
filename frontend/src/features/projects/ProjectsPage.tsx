@@ -11,8 +11,16 @@ import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { formatNumber } from '@/shared/lib/format';
 import { useUiStore } from '@/shared/store/ui-store';
-import { ScrollRegion } from '@/shared/ui/scroll-region';
+import {
+  DataTable,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/ui/table';
 import { LoadingRegion } from '@/shared/ui/loading-region';
+import { PageHeader } from '@/shared/ui/page-header';
 import { useProjectsQuery } from './api';
 import { ProjectFormDialog } from './ProjectFormDialog';
 import { ProjectPeopleDialog } from './ProjectPeopleDialog';
@@ -66,26 +74,25 @@ export function ProjectsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-content text-2xl font-semibold">{t('nav.projects')}</h1>
-          <p className="text-content-secondary text-sm">
-            {isAssignedOnly
-              ? t('projects.assignedOnly')
-              : data
-                ? t('projects.count', { count: data.meta.total })
-                : t('projects.subtitle')}
-          </p>
-        </div>
-
-        {can(PERMISSIONS.projectsCreate) ? (
-          <Button onClick={openCreate}>
-            <Plus />
-            {t('projects.create')}
-          </Button>
-        ) : null}
-      </header>
+    <div className="ds-page">
+      <PageHeader
+        title={t('nav.projects')}
+        description={
+          isAssignedOnly
+            ? t('projects.assignedOnly')
+            : data
+              ? t('projects.count', { count: data.meta.total })
+              : t('projects.subtitle')
+        }
+        primaryAction={
+          can(PERMISSIONS.projectsCreate) ? (
+            <Button onClick={openCreate}>
+              <Plus />
+              {t('projects.create')}
+            </Button>
+          ) : undefined
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-0 flex-1 sm:max-w-xs">
@@ -171,85 +178,69 @@ export function ProjectsPage() {
 
       {data && data.data.length > 0 ? (
         <>
-          <ScrollRegion label={t('nav.projects')} className="border-line-subtle rounded-xl border">
-            <table className="w-full min-w-[52rem] text-sm">
-              <caption className="sr-only">{t('nav.projects')}</caption>
-              <thead>
-                <tr className="text-content-tertiary border-line-subtle bg-surface-sunken border-b text-xs tracking-wide uppercase">
-                  <th scope="col" className="px-4 py-2.5 text-start font-medium">
-                    {t('projects.columns.name')}
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-start font-medium">
-                    {t('projects.columns.client')}
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-start font-medium">
-                    {t('projects.columns.status')}
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-start font-medium">
-                    {t('projects.columns.schedule')}
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-end font-medium">
-                    {t('projects.columns.members')}
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-end font-medium">
-                    <span className="sr-only">{t('projects.columns.actions')}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.data.map((project) => (
-                  <tr
-                    key={project.id}
-                    className="border-line-subtle hover:bg-surface-hover border-b transition-colors last:border-0"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-content font-medium">{project.name}</span>
-                        {project.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
-                        {project.is_assigned ? (
-                          <Badge tone="accent">{t('projects.assigned')}</Badge>
-                        ) : null}
-                      </div>
-                      <span className="text-content-tertiary ds-numeric text-xs">
-                        {project.currency}
-                      </span>
-                    </td>
-                    <td className="text-content-secondary px-4 py-3">{project.client.name}</td>
-                    <td className="px-4 py-3">
-                      <ProjectStatusBadge status={project.status} />
-                    </td>
-                    <td className="text-content-secondary ds-numeric px-4 py-3 text-xs">
-                      {project.starts_on ?? '—'} → {project.ends_on ?? '—'}
-                    </td>
-                    <td className="text-content ds-numeric px-4 py-3 text-end">
-                      {/*
-                        The count was the whole of this column and there was no way to change it — so the number
-                        that decides who can see a client's work was read-only. It is a button now, because the
-                        answer to "who can see this" is the thing somebody came to this page to change.
-                      */}
-                      <button
-                        type="button"
-                        onClick={() => setManagingPeople(project)}
-                        className="text-content-brand hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ds-focus-ring)] focus-visible:outline-none"
-                        aria-label={t('projects.people.open')}
-                      >
-                        {formatNumber(project.member_count, locale)}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 text-end">
-                      <ProjectRowActions
-                        project={project}
-                        onEdit={(value) => {
-                          setEditing(value);
-                          setFormOpen(true);
-                        }}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </ScrollRegion>
+          <DataTable label={t('nav.projects')} minWidth="52rem">
+            <TableHead>
+              <TableRow>
+                <TableHeader>{t('projects.columns.name')}</TableHeader>
+                <TableHeader>{t('projects.columns.client')}</TableHeader>
+                <TableHeader>{t('projects.columns.status')}</TableHeader>
+                <TableHeader>{t('projects.columns.schedule')}</TableHeader>
+                <TableHeader align="end">{t('projects.columns.members')}</TableHeader>
+                <TableHeader align="end">
+                  <span className="sr-only">{t('projects.columns.actions')}</span>
+                </TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.data.map((project) => (
+                <TableRow key={project.id} isInteractive>
+                  <TableCell>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-content font-medium">{project.name}</span>
+                      {project.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
+                      {project.is_assigned ? (
+                        <Badge tone="accent">{t('projects.assigned')}</Badge>
+                      ) : null}
+                    </div>
+                    <span className="text-content-tertiary ds-numeric text-xs">
+                      {project.currency}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-content-secondary">{project.client.name}</TableCell>
+                  <TableCell>
+                    <ProjectStatusBadge status={project.status} />
+                  </TableCell>
+                  <TableCell className="text-content-secondary text-xs" isNumeric>
+                    {project.starts_on ?? '—'} → {project.ends_on ?? '—'}
+                  </TableCell>
+                  <TableCell align="end" isNumeric>
+                    {/*
+                      The count was the whole of this column and there was no way to change it — so the number
+                      that decides who can see a client's work was read-only. It is a button now, because the
+                      answer to "who can see this" is the thing somebody came to this page to change.
+                    */}
+                    <button
+                      type="button"
+                      onClick={() => setManagingPeople(project)}
+                      className="text-content-brand hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ds-focus-ring)] focus-visible:outline-none"
+                      aria-label={t('projects.people.open')}
+                    >
+                      {formatNumber(project.member_count, locale)}
+                    </button>
+                  </TableCell>
+                  <TableCell align="end">
+                    <ProjectRowActions
+                      project={project}
+                      onEdit={(value) => {
+                        setEditing(value);
+                        setFormOpen(true);
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </DataTable>
 
           {data.meta.last_page > 1 ? (
             <nav

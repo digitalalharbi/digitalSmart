@@ -127,14 +127,22 @@ the shell, the primitives every page shares, and one page migrated end to end to
 
 ### Migrated
 
-- Clients, end to end: header, filters, table, pagination.
+Fourteen surfaces now share the system rather than each inventing it: **Overview, Clients, Projects,
+Campaigns, Analytics, Operations, Approvals, Requests, Creative Hub, Tracking, Reports, Dashboards,
+Presentations, Notifications, Integrations, Administration and the AI assistant.** Each one's bespoke
+`<header>` became `PageHeader` — one `h1`, actions that wrap rather than squeeze, filters on their own row —
+and the Clients, Projects and Administration tables moved onto `DataTable`. The analytics breakdown keeps its
+own markup (its colspan logic is doing real work) and wears the same surface.
+
+Four tables are deliberately untouched: they belong to another session's in-flight money-formatting work, and
+taking them would have meant resolving someone else's change as part of a redesign.
 
 ### Gates
 
-596 frontend tests, 36 Playwright tests across the shell, clients and the accessibility sweep — axe WCAG 2.2
-AA on five surfaces in both browsers and in Arabic, against the new surfaces — TypeScript strict clean, ESLint
-and Prettier clean, production build. The token contrast suite (30 pairs, both themes) is green, which is what
-caught the one real regression above.
+596 frontend tests, **400 Playwright tests with no failures and no flakes** — the whole suite against the
+redesigned surfaces, axe WCAG 2.2 AA among them, in both browsers and in Arabic — TypeScript strict clean,
+ESLint and Prettier clean, production build. The token contrast suite (30 pairs, both themes) is green, which
+is what caught the one real regression above.
 
 ## A sign-out that failed looked exactly like one that worked
 

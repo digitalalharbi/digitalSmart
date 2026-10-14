@@ -7,6 +7,7 @@ import { Chart, ChartFrame } from '@/shared/ui/chart';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { MetricCard, MetricCardSkeleton } from '@/shared/ui/metric-card';
 import { SourceNotice } from '@/shared/ui/source-badge';
+import { PageHeader } from '@/shared/ui/page-header';
 import { useUiStore } from '@/shared/store/ui-store';
 import { BreakdownTable, FilterBar, useAnalytics, useMetricCatalogue } from '@/features/analytics';
 import {
@@ -144,11 +145,12 @@ export function CampaignsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-content text-2xl font-semibold">{t('nav.campaigns')}</h1>
-        <Breadcrumbs trail={trail} onTruncate={truncateTo} />
-      </header>
+    <div className="ds-page">
+      {/* The breadcrumb is the campaign explorer's whole navigation, so it sits in the header's filter row. */}
+      <PageHeader
+        title={t('nav.campaigns')}
+        filters={<Breadcrumbs trail={trail} onTruncate={truncateTo} />}
+      />
 
       {data !== undefined && <SourceNotice source={data.source} />}
 
