@@ -45,8 +45,8 @@ additive.
 | 5 | Project isolation on every read | **MET** | `VisibilityResolver::visibleProjectIds()` is taken in the Application layer and passed into every repository call; see `GetTaskBoard`. Isolation is covered by tests across portal, leads, measurement, commerce, project and operations. |
 | 6 | One client, many accounts on one platform | **MET** | No uniqueness ties an account to a client; `external_accounts` is unique per `(connection, external_id)` only. |
 | 7 | One account, many projects, by explicit binding | **MET** | `project_integration_bindings` is unique on `(project_id, external_account_id)`, so the same account binds to several projects. |
-| 8 | Campaign ownership by provider-native id, with explicit project mapping where needed | **PARTIAL** | Campaigns key on `(external_account_id, external_id)` — native ids, never names. **But there is no campaign→project mapping.** A campaign's project is derived from its account's bindings, so an account bound to three projects (which §7 requires) leaves every one of its campaigns ambiguous. |
-| 9 | Unassigned data is kept and reviewable | **PARTIAL** | Discovered accounts persist unbound, and nothing is discarded. There is no *surface* that lists unassigned accounts or campaigns for review, so in practice they are invisible rather than reviewable. |
+| 8 | Campaign ownership by provider-native id, with explicit project mapping where needed | **MET** — was PARTIAL | Campaigns key on `(external_account_id, external_id)` — native ids, never names. `campaigns.project_id` is the explicit override, and `CampaignOwnership` names all four states: assigned, implied, ambiguous, unbound. Assignment is refused unless the account is already bound to the target project, so it cannot become a second route to access. |
+| 9 | Unassigned data is kept and reviewable | **PARTIAL** | Unassigned *campaigns* are now reviewable: `GET /api/campaigns/ownership` is the queue, with counts over the whole population rather than the page. Unassigned **accounts** still have no review surface, and no frontend reads either. |
 
 ## 10–12 · Campaign control
 
@@ -265,8 +265,8 @@ additive.
 
 In the constitution's own priority order, with the audit's finding attached:
 
-1. **Tenancy** — ~~connections need an owner and must stop being unique per provider (§16)~~ **done**; campaigns still need an explicit project mapping for the multi-project case §7 already allows (§8).
-2. **Discovery and binding** — a surface for unassigned accounts and campaigns (§9), and the four levels presented as levels (§66).
+1. **Tenancy** — ~~connection ownership (§16)~~ **done**; ~~explicit campaign→project mapping (§8)~~ **done**. Remaining: the API that creates a client-owned connection.
+2. **Discovery and binding** — a surface for unassigned **accounts** (§9; campaigns now have one), and the four levels presented as levels (§66).
 3. **Campaign Control Center** (§10) with normalized campaign health (§11) and objective-aware primary results (§33).
 4. **Portfolio** (§13, §14) and the project workspace (§15).
 5. **Attention Center** (§12) — server-side, because at agency scale it is an aggregate, not a fan-out.

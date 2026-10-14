@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Client\ClientId;
 use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\ConnectionOwnerType;
@@ -10,7 +11,6 @@ use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
 use App\Domain\Integration\ProviderConnectionId;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
-use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Workspace\WorkspaceId;
 use App\Infrastructure\Persistence\Eloquent\Model\Client as ClientModel;
 use Illuminate\Database\QueryException;

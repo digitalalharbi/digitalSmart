@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
 use App\Interface\Http\Controller\Analytics\AnalyticsController;
 use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
 use App\Interface\Http\Controller\Attribution\AttributionController;
@@ -674,6 +675,17 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
 
     Route::get('integrations/accounts', [ExternalAccountController::class, 'index'])
         ->name('integrations.accounts.index');
+
+    /*
+     * Which project owns a campaign.
+     *
+     * Not under a project, unlike bindings: the question this answers is "which campaigns has nobody
+     * placed", and that is an agency-level review queue rather than one project's business.
+     */
+    Route::get('campaigns/ownership', [CampaignOwnershipController::class, 'index'])
+        ->name('campaigns.ownership.index');
+    Route::put('campaigns/{campaign}/project', [CampaignOwnershipController::class, 'assign'])
+        ->whereUuid('campaign')->name('campaigns.project.assign');
 
     /*
      * Bindings live under the project, because that is what they are about:

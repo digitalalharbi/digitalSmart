@@ -269,6 +269,39 @@ by provider alone is only correct for the agency's own, and the repository metho
 precise: with both an agency and a client connection present, a provider-level lookup can read one client's
 data on the agency's token, or the reverse.
 
+### Which project owns a campaign
+
+The derivation is `campaign → external account → bindings → project`, and it is exact only while an account
+serves one project. Bindings are unique on `(project_id, external_account_id)` precisely so an account
+*can* serve several — Brand Awareness, Lead Generation and a seasonal push out of one Google Ads account is
+the normal agency shape. `campaigns.project_id` is the override for that case, and four states describe
+where any campaign stands:
+
+| State | Meaning | Who fixes it |
+|---|---|---|
+| `assigned` | Somebody chose. Survives re-sync and new bindings. | — |
+| `implied` | The account serves exactly one project, so there is nothing to choose. | — |
+| `ambiguous` | The account serves several and nobody has chosen. | Assign the campaign. |
+| `unbound` | The account serves no project at all. | Bind the account. |
+
+`ambiguous` and `unbound` both mean "no project" and are deliberately distinct: they send an operator to
+different screens.
+
+**A campaign may only be assigned to a project its account is already bound to.** Otherwise assignment
+would be a second, quieter route to the access bindings exist to control. The API publishes the legal set
+as `candidate_projects` on every row, and the command re-checks it server-side.
+
+Nothing sets `project_id` during sync. Defaulting it would be the silent binding rule 9 forbids, and the
+only other signal available — the campaign's name — is the one inference rule 8 rules out.
+
+```
+GET  /api/campaigns/ownership?ownership[]=ambiguous&limit=50&offset=0
+PUT  /api/campaigns/{campaign}/project   { "project_id": "…" | null }
+```
+
+The list requires `analytics.view`; assigning requires `projects.update` and writes a security-class audit
+entry, because it decides whose figures a campaign's spend joins.
+
 ### Capability flags
 
 Adapters declare what they can actually do. The UI reads those flags: a provider that

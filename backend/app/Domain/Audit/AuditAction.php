@@ -38,6 +38,12 @@ enum AuditAction: string
     case IntegrationSyncToggled = 'integration.sync_toggled';
 
     /*
+     * Which project owns a campaign. A data-access grant in everything but name: the campaign's spend joins
+     * that project's figures, and the people on it gain sight of a campaign they could not see before.
+     */
+    case CampaignProjectAssigned = 'campaign.project_assigned';
+
+    /*
      * Connecting a store to a client is a data-access decision as much as a setup one: from then on, every
      * order that merchant reports counts towards that client's revenue, and the people on that client's
      * projects can read its customers. Its own action, with the merchant id, because "who decided these orders
@@ -199,6 +205,7 @@ enum AuditAction: string
             self::IntegrationDisconnected,
             self::IntegrationAccountBound,
             self::IntegrationAccountUnbound,
+            self::CampaignProjectAssigned,
             /*
              * Beside them for the same reason: it decides whose revenue a merchant's orders become, and it
              * grants the people on one client's projects sight of that store's customers.

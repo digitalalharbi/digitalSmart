@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Application\Access\Contract\AccessSynchroniser;
 use App\Application\Advertising\Contract\AdvertisingStore;
+use App\Application\Advertising\Contract\CampaignAssignmentRepository;
 use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegistryContract;
 use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Analytics\Contract\AnalyticsReadModel;
@@ -140,6 +141,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentApprovalRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAssignedWorkRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCampaignAssignmentRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRequestRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCommerceStore;
@@ -289,6 +291,8 @@ final class AppServiceProvider extends ServiceProvider
          * could only come from a seeder, so a connected platform could never produce a figure.
          */
         StoreDirectory::class => EloquentStoreDirectory::class,
+        /* Which project owns a campaign, and the review queue for the ones nobody has placed. */
+        CampaignAssignmentRepository::class => EloquentCampaignAssignmentRepository::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
         AttributionReadModel::class => EloquentAttributionReadModel::class,
         CreativeSpecRegistry::class => EloquentCreativeSpecRegistry::class,

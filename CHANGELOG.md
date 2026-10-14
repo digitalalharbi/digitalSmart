@@ -75,6 +75,49 @@ is empty, and every stored connection holds the literal `sandbox`.
 under full-suite load, both retried green and neither in a file this pass touched — PHPStan level 8 clean,
 Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
 
+## Whose credentials, and whose campaign
+
+Two findings from the constitution audit, both in the tenancy model, both small in code and large in what
+they allow.
+
+### Added
+
+- **`ConnectionOwner`** — a connection says whether it carries the agency's own credentials or ones a
+  client granted directly. The old table was `unique(workspace_id, provider)` and its comment argued that
+  two live connections to one platform would make "which credentials synced this?" unanswerable. The
+  argument was right; the conclusion was too strong. The agency runs its own Business Manager *and* holds
+  credentials from clients who will not move their ad account under it. Provenance never came from there
+  being one candidate — every account, store and measurement source already carries
+  `provider_connection_id`.
+- **Two partial unique indexes** replace the one total index: at most one agency connection per platform,
+  at most one per client per platform. A plain composite unique would not do it — Postgres treats NULLs as
+  distinct, so every agency-owned row would pass.
+- **`campaigns.project_id`** and **`CampaignOwnership`** — assigned, implied, ambiguous, unbound. Bindings
+  are unique on `(project_id, external_account_id)` precisely so one ad account can serve several projects,
+  which is the normal agency shape; every campaign on such an account previously had an owner nothing could
+  name. `ambiguous` and `unbound` both mean "no project" and stay distinct, because one is fixed by
+  assigning the campaign and the other by binding the account.
+- **`GET /api/campaigns/ownership`** — the review queue. Counts are computed over the whole population
+  rather than the page, because "eleven need assigning" is a figure somebody acts on and "eleven on this
+  page" is one that changes when they scroll.
+- **`PUT /api/campaigns/{campaign}/project`** — assign or clear. A security-class audit entry, because it
+  decides whose figures a campaign's spend joins and who can see it.
+
+### Changed
+
+- **`findForProvider` is gone**, replaced by `agencyConnection` plus `forClient` and `listForProvider`.
+  The rename is the point: with both kinds of connection present, a lookup by provider alone can read one
+  client's data on the agency's token. Seventeen call sites now say which they mean.
+- Nothing sets a campaign's project during sync. Defaulting it would be the silent binding the constitution
+  forbids, and the only other available signal — the campaign's name — is the one inference it rules out.
+
+### Fixed
+
+- **A campaign cannot be assigned to a project its account is not bound to.** Without that rule,
+  assignment would have been a second and quieter way to grant a project sight of an ad account, in an
+  installation that runs competing clients side by side. The legal set is published as `candidate_projects`
+  and re-checked server-side.
+
 ## One word for "is this all right?", and four primitives the product kept rebuilding
 
 Before this, a reader moving from Tracking to Budgets to Integrations met three different vocabularies for
