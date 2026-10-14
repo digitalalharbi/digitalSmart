@@ -187,7 +187,7 @@ it('refuses outright when the LinkedIn credentials are real', function (): void 
     $workspace = linkedInWorkspace();
     $repository = app(ProviderConnectionRepository::class);
 
-    $connection = $repository->findForProvider(new WorkspaceId($workspace->workspaceId()), Provider::LinkedIn);
+    $connection = $repository->agencyConnection(new WorkspaceId($workspace->workspaceId()), Provider::LinkedIn);
     expect($connection)->not->toBeNull();
 
     /** @var ProviderConnection $connection */

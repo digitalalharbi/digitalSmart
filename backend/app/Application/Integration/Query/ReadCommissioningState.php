@@ -58,7 +58,7 @@ final readonly class ReadCommissioningState
     public function __invoke(Provider $provider, WorkspaceId $workspaceId): CommissioningReadout
     {
         $required = $provider->requiredCredentialKeys();
-        $connection = $this->connections->findForProvider($workspaceId, $provider);
+        $connection = $this->connections->agencyConnection($workspaceId, $provider);
 
         if ($connection === null) {
             return new CommissioningReadout(

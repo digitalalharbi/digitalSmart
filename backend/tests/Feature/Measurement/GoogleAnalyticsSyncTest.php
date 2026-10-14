@@ -7,6 +7,7 @@ use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\SystemRole;
 use App\Domain\Identity\UserId;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -72,6 +73,7 @@ function connectAnalytics(WorkspaceScenario $scenario, bool $sandbox): ProviderC
         id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
         workspaceId: new WorkspaceId((string) $scenario->workspace->getKey()),
         provider: Provider::GoogleAnalytics,
+        owner: ConnectionOwner::agency(),
         name: 'Google Analytics 4',
         credentials: new Credentials($values),
     );

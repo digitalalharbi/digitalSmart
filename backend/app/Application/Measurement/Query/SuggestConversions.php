@@ -79,7 +79,7 @@ final readonly class SuggestConversions
             return [];
         }
 
-        $connection = $this->connections->findForProvider($this->actor->workspaceId(), $source->provider);
+        $connection = $this->connections->agencyConnection($this->actor->workspaceId(), $source->provider);
 
         if ($connection === null) {
             return [];

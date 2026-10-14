@@ -69,7 +69,7 @@ final readonly class ConnectStore
             throw ResourceNotFound::of('Client');
         }
 
-        $connection = $this->connections->findForProvider($workspaceId, $provider);
+        $connection = $this->connections->agencyConnection($workspaceId, $provider);
 
         if ($connection === null) {
             throw StoreNotConnected::providerIsNotConnected($provider->label());

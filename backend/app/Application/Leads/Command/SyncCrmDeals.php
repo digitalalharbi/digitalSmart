@@ -80,7 +80,7 @@ final readonly class SyncCrmDeals
 
         $workspaceId = $this->actor->workspaceId()->value;
 
-        $connection = $this->connections->findForProvider(new WorkspaceId($workspaceId), Provider::HubSpot)
+        $connection = $this->connections->agencyConnection(new WorkspaceId($workspaceId), Provider::HubSpot)
             ?? throw ResourceNotFound::of('CRM connection');
 
         $credentials = $connection->credentials();

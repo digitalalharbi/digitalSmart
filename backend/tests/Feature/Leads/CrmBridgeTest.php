@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Shared\Contract\IdentifierGenerator;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -45,6 +46,7 @@ function crmScenario(): array
         id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
         workspaceId: new WorkspaceId((string) $scenario->workspace->getKey()),
         provider: Provider::HubSpot,
+        owner: ConnectionOwner::agency(),
         name: 'SANDBOX — HubSpot',
         credentials: new Credentials($credentials),
     ));
@@ -244,7 +246,7 @@ describe('the blocked external boundary', function (): void {
     it('refuses to read a CRM with real credentials, rather than serving fixtures', function (): void {
         $setup = crmScenario();
 
-        $connection = app(ProviderConnectionRepository::class)->findForProvider(
+        $connection = app(ProviderConnectionRepository::class)->agencyConnection(
             new WorkspaceId((string) $setup['scenario']->workspace->getKey()),
             Provider::HubSpot,
         );

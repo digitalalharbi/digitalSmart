@@ -56,7 +56,7 @@ final readonly class SyncStore
         }
 
         $adapter = $this->adapters->for($provider);
-        $connection = $this->connections->findForProvider(new WorkspaceId($workspaceId), $provider);
+        $connection = $this->connections->agencyConnection(new WorkspaceId($workspaceId), $provider);
 
         if ($connection === null) {
             throw ProviderNotConfigured::for($provider, $provider->requiredCredentialKeys());

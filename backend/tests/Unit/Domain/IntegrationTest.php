@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\ConnectionStatus;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\ExternalAccountStatus;
@@ -22,6 +23,7 @@ function connectionWith(Provider $provider, array $values = []): ProviderConnect
         new ProviderConnectionId(CONN),
         new WorkspaceId(WS),
         $provider,
+        ConnectionOwner::agency(),
         '',
         new Credentials($values),
     );

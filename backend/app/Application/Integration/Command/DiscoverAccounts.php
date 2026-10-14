@@ -47,7 +47,7 @@ final readonly class DiscoverAccounts
         $this->guard->ensure(Permission::WorkspacesUpdate);
 
         $workspaceId = $this->actor->workspaceId();
-        $connection = $this->connections->findForProvider($workspaceId, $provider)
+        $connection = $this->connections->agencyConnection($workspaceId, $provider)
             ?? throw ResourceNotFound::of('Provider connection');
 
         $adapter = $this->adapters->for($provider);

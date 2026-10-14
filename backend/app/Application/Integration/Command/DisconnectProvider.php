@@ -39,7 +39,7 @@ final readonly class DisconnectProvider
         $this->guard->ensure(Permission::WorkspacesUpdate);
 
         $workspaceId = $this->actor->workspaceId();
-        $connection = $this->connections->findForProvider($workspaceId, $provider)
+        $connection = $this->connections->agencyConnection($workspaceId, $provider)
             ?? throw ResourceNotFound::of('Provider connection');
 
         $connection->revoke($this->clock->now());

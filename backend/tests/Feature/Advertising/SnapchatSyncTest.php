@@ -152,7 +152,7 @@ it('refuses outright when the Snapchat credentials are real', function (): void 
     $repository = app(ProviderConnectionRepository::class);
     $workspaceId = new WorkspaceId($workspace->workspaceId());
 
-    $connection = $repository->findForProvider($workspaceId, Provider::Snapchat);
+    $connection = $repository->agencyConnection($workspaceId, Provider::Snapchat);
     expect($connection)->not->toBeNull();
 
     /** @var ProviderConnection $connection */

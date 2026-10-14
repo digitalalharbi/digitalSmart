@@ -8,6 +8,7 @@ use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Advertising\EntityStatus;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Advertising\SyncStatus;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -48,6 +49,7 @@ function googleScenario(): array
         id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
         workspaceId: new WorkspaceId((string) $scenario->workspace->getKey()),
         provider: Provider::GoogleAds,
+        owner: ConnectionOwner::agency(),
         name: 'Google Ads',
         credentials: new Credentials([
             'client_id' => Credentials::SANDBOX_TOKEN,
@@ -176,7 +178,7 @@ it('refuses a Google sync when the developer token is real', function (): void {
     $repository = app(ProviderConnectionRepository::class);
     $workspaceId = new WorkspaceId((string) $setup['scenario']->workspace->getKey());
 
-    $connection = $repository->findForProvider($workspaceId, Provider::GoogleAds);
+    $connection = $repository->agencyConnection($workspaceId, Provider::GoogleAds);
     expect($connection)->not->toBeNull();
 
     /** @var ProviderConnection $connection */
@@ -231,6 +233,7 @@ function tiktokScenario(): array
         id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
         workspaceId: new WorkspaceId((string) $scenario->workspace->getKey()),
         provider: Provider::TikTok,
+        owner: ConnectionOwner::agency(),
         name: 'TikTok Ads',
         credentials: new Credentials([
             'app_id' => Credentials::SANDBOX_TOKEN,

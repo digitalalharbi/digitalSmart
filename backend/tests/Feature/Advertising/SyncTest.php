@@ -10,6 +10,7 @@ use App\Domain\Advertising\MetricSource;
 use App\Domain\Advertising\ProviderErrorCategory;
 use App\Domain\Advertising\SyncKind;
 use App\Domain\Advertising\SyncStatus;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -56,7 +57,7 @@ function storeCredentials(WorkspaceScenario $scenario, array $values): ProviderC
     $repository = app(ProviderConnectionRepository::class);
     $workspaceId = new WorkspaceId((string) $scenario->workspace->getKey());
 
-    $existing = $repository->findForProvider($workspaceId, Provider::Meta);
+    $existing = $repository->agencyConnection($workspaceId, Provider::Meta);
 
     if ($existing instanceof ProviderConnection) {
         $existing->replaceCredentials(new Credentials($values));
@@ -69,6 +70,7 @@ function storeCredentials(WorkspaceScenario $scenario, array $values): ProviderC
         id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
         workspaceId: $workspaceId,
         provider: Provider::Meta,
+        owner: ConnectionOwner::agency(),
         name: 'Meta Ads',
         credentials: new Credentials($values),
     );

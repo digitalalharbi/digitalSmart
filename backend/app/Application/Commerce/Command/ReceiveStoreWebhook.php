@@ -95,7 +95,7 @@ final readonly class ReceiveStoreWebhook
         $verified = false;
 
         foreach ($candidates as $candidate) {
-            $connection = $this->connections->findForProvider(new WorkspaceId($candidate->workspaceId), $provider);
+            $connection = $this->connections->agencyConnection(new WorkspaceId($candidate->workspaceId), $provider);
 
             if ($this->verifier->verify($provider, $rawBody, $headers, $connection?->credentials()->get('webhook_secret'))) {
                 $store = $candidate;

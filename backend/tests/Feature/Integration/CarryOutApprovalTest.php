@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\SystemRole;
 use App\Domain\Audit\AuditAction;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -60,6 +61,7 @@ function connectForWrite(array $setup, Provider $provider = Provider::Meta, bool
         id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
         workspaceId: new WorkspaceId((string) $setup['scenario']->workspace->getKey()),
         provider: $provider,
+        owner: ConnectionOwner::agency(),
         name: $provider->label(),
         credentials: new Credentials($credentials),
     ));

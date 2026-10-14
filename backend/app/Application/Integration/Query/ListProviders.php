@@ -46,7 +46,7 @@ final readonly class ListProviders
 
         foreach (Provider::cases() as $provider) {
             $adapter = $this->adapters->for($provider);
-            $connection = $this->connections->findForProvider($workspaceId, $provider);
+            $connection = $this->connections->agencyConnection($workspaceId, $provider);
             $credentials = $connection?->credentials();
 
             $missing = $credentials === null

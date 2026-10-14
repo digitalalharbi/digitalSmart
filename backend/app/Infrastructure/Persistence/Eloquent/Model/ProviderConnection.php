@@ -17,7 +17,7 @@ final class ProviderConnection extends Model
 
     /** @var list<string> */
     protected $fillable = [
-        'workspace_id', 'provider', 'name', 'status', 'credentials',
+        'workspace_id', 'provider', 'owner_type', 'owner_client_id', 'name', 'status', 'credentials',
         'external_owner_id', 'expires_at', 'last_checked_at', 'status_message', 'created_by',
     ];
 
@@ -32,6 +32,12 @@ final class ProviderConnection extends Model
     public function workspace(): BelongsTo
     {
         return $this->belongsTo(Workspace::class);
+    }
+
+    /** @return BelongsTo<Client, $this> */
+    public function ownerClient(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, 'owner_client_id');
     }
 
     /** @return HasMany<ExternalAccount, $this> */

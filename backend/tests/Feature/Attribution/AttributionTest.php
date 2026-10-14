@@ -12,6 +12,7 @@ use App\Domain\Commerce\FulfilmentState;
 use App\Domain\Commerce\OrderAttribution;
 use App\Domain\Commerce\PaymentState;
 use App\Domain\Commerce\RevenueSource;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -132,7 +133,7 @@ function spendOnCampaign(
      * authorised is an account nothing can read.
      */
     $connections = app(ProviderConnectionRepository::class);
-    $connection = $connections->findForProvider(new WorkspaceId((string) $workspaceId), Provider::Meta);
+    $connection = $connections->agencyConnection(new WorkspaceId((string) $workspaceId), Provider::Meta);
 
     if (! $connection instanceof ProviderConnection) {
         $credentials = [];
@@ -145,6 +146,7 @@ function spendOnCampaign(
             id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
             workspaceId: new WorkspaceId((string) $workspaceId),
             provider: Provider::Meta,
+            owner: ConnectionOwner::agency(),
             name: 'SANDBOX — attribution test',
             credentials: new Credentials($credentials),
         );

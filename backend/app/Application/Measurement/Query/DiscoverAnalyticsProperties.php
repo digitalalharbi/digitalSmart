@@ -45,7 +45,7 @@ final readonly class DiscoverAnalyticsProperties
             return [];
         }
 
-        $connection = $this->connections->findForProvider($this->actor->workspaceId(), $provider);
+        $connection = $this->connections->agencyConnection($this->actor->workspaceId(), $provider);
 
         if ($connection === null) {
             // Nothing connected. An empty list, not an error: the integrations page is where a

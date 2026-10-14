@@ -54,7 +54,7 @@ final readonly class ListConnectableStores
                 continue;
             }
 
-            $connection = $this->connections->findForProvider($workspaceId, $provider);
+            $connection = $this->connections->agencyConnection($workspaceId, $provider);
 
             if ($connection === null) {
                 continue;

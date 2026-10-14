@@ -249,6 +249,26 @@ ProviderConnection ──▶ ExternalAccount ──▶ ProjectIntegrationBinding
 A project syncs **only** the external accounts explicitly bound to it. There is no
 implicit inheritance from workspace or client level.
 
+### Connection ownership
+
+A workspace holds more than one connection per platform, and each one says whose credentials it is
+carrying:
+
+| Owner | What it is | Lifecycle |
+|---|---|---|
+| `agency` | The agency's own manager account, Business Manager or developer token. | Survives any one client leaving. At most one per platform per workspace. |
+| `client` | Credentials a client granted the agency directly, usually because they will not move their ad account under the agency's manager. | Leaves with the client. At most one per platform per client. |
+
+Two partial unique indexes state exactly that. A plain composite unique would not: Postgres treats NULLs as
+distinct, so every agency-owned row — which has no client — would pass it.
+
+**Resolving which connection to spend.** Anything that needs credentials for a *particular* account, store
+or measurement source resolves them through that row's own `provider_connection_id`. Looking a connection up
+by provider alone is only correct for the agency's own, and the repository method that does it is named
+`agencyConnection` so the narrower meaning is visible at the call site. The hazard this guards against is
+precise: with both an agency and a client connection present, a provider-level lookup can read one client's
+data on the agency's token, or the reverse.
+
 ### Capability flags
 
 Adapters declare what they can actually do. The UI reads those flags: a provider that

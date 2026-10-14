@@ -8,11 +8,16 @@ use App\Domain\Workspace\WorkspaceId;
 use DateTimeImmutable;
 
 /**
- * A workspace's link to one ad platform.
+ * A workspace's link to one ad platform, under one owner.
  *
  * Owns the credentials and the authorisation state. It does **not** own what a
  * project can see — that is the binding's job — so connecting a platform never
  * by itself exposes an ad account to anyone's project.
+ *
+ * A workspace holds several of these per platform: the agency's own manager
+ * account, and whatever individual clients granted directly. `ConnectionOwner`
+ * is what tells them apart, and it decides who re-authorises an expired token
+ * and whose connection leaves when a client does.
  */
 final class ProviderConnection
 {
@@ -20,6 +25,7 @@ final class ProviderConnection
         public readonly ProviderConnectionId $id,
         public readonly WorkspaceId $workspaceId,
         public readonly Provider $provider,
+        public readonly ConnectionOwner $owner,
         private string $name,
         private ConnectionStatus $status,
         private Credentials $credentials,
@@ -33,6 +39,7 @@ final class ProviderConnection
         ProviderConnectionId $id,
         WorkspaceId $workspaceId,
         Provider $provider,
+        ConnectionOwner $owner,
         string $name,
         Credentials $credentials,
     ): self {
@@ -40,6 +47,7 @@ final class ProviderConnection
             id: $id,
             workspaceId: $workspaceId,
             provider: $provider,
+            owner: $owner,
             name: trim($name) !== '' ? trim($name) : $provider->label(),
             // Credentials alone are not a connection. Authorisation still has
             // to happen, and the status says so plainly.
@@ -59,6 +67,7 @@ final class ProviderConnection
         ProviderConnectionId $id,
         WorkspaceId $workspaceId,
         Provider $provider,
+        ConnectionOwner $owner,
         string $name,
         ConnectionStatus $status,
         Credentials $credentials,
@@ -68,7 +77,7 @@ final class ProviderConnection
         ?string $statusMessage,
     ): self {
         return new self(
-            $id, $workspaceId, $provider, $name, $status, $credentials,
+            $id, $workspaceId, $provider, $owner, $name, $status, $credentials,
             $externalAccountOwnerId, $expiresAt, $lastCheckedAt, $statusMessage,
         );
     }

@@ -192,7 +192,7 @@ final readonly class SyncMeasurementSource
      */
     private function credentialsFor(Provider $provider): Credentials
     {
-        $connection = $this->connections->findForProvider($this->actor->workspaceId(), $provider);
+        $connection = $this->connections->agencyConnection($this->actor->workspaceId(), $provider);
 
         if ($connection === null) {
             /*

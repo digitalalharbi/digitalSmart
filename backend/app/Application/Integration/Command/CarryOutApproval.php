@@ -105,7 +105,7 @@ final readonly class CarryOutApproval
             throw WriteRefused::providerNotDocumented($target->provider, $support);
         }
 
-        $connection = $this->connections->findForProvider(
+        $connection = $this->connections->agencyConnection(
             new WorkspaceId($workspaceId),
             $target->provider,
         ) ?? throw WriteRefused::notConnected($target->provider);

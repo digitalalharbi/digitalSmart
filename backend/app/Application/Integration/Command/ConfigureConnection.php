@@ -11,6 +11,7 @@ use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -45,7 +46,7 @@ final readonly class ConfigureConnection
 
         $workspaceId = $this->actor->workspaceId();
         $credentials = new Credentials($credentialValues);
-        $existing = $this->connections->findForProvider($workspaceId, $provider);
+        $existing = $this->connections->agencyConnection($workspaceId, $provider);
 
         if ($existing instanceof ProviderConnection) {
             $existing->replaceCredentials($credentials);
@@ -61,6 +62,12 @@ final readonly class ConfigureConnection
                 id: new ProviderConnectionId($this->ids->generate()),
                 workspaceId: $workspaceId,
                 provider: $provider,
+                /*
+                 * The agency's own credentials. Client-granted connections are created through the
+                 * connection endpoints, which name their owner; this path is the provider catalogue, and
+                 * what it configures is the agency's.
+                 */
+                owner: ConnectionOwner::agency(),
                 name: $name ?? $provider->label(),
                 credentials: $credentials,
             );

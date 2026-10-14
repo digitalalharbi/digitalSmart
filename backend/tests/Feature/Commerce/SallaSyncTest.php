@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Commerce\Command\SyncStore;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Advertising\SyncStatus;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -37,6 +38,7 @@ function sallaSyncScenario(bool $sandbox = true): array
         id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
         workspaceId: new WorkspaceId((string) $scenario->workspace->getKey()),
         provider: Provider::Salla,
+        owner: ConnectionOwner::agency(),
         name: 'Salla',
         credentials: new Credentials([
             'client_id' => $sandbox ? Credentials::SANDBOX_TOKEN : 'a-real-looking-id',

@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use App\Application\Advertising\Command\SyncBoundAccount;
 use App\Application\Shared\Contract\IdentifierGenerator;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -93,6 +94,7 @@ final class SyncedWorkspace
             id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
             workspaceId: new WorkspaceId($this->workspaceId()),
             provider: $provider,
+            owner: ConnectionOwner::agency(),
             name: $provider->label(),
             credentials: new Credentials($credentials),
         );

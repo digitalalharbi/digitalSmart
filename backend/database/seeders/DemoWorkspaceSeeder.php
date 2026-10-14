@@ -54,6 +54,7 @@ use App\Domain\Creative\AssetMeasurements;
 use App\Domain\Creative\CommentVisibility;
 use App\Domain\Creative\CreativeState;
 use App\Domain\Identity\UserId;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -244,7 +245,7 @@ final class DemoWorkspaceSeeder extends Seeder
                 $credentials[$key] = Credentials::SANDBOX_TOKEN;
             }
 
-            $existing = $connections->findForProvider(new WorkspaceId((string) $workspaceId), $provider);
+            $existing = $connections->agencyConnection(new WorkspaceId((string) $workspaceId), $provider);
 
             if ($existing instanceof ProviderConnection) {
                 $existing->replaceCredentials(new Credentials($credentials));
@@ -254,6 +255,7 @@ final class DemoWorkspaceSeeder extends Seeder
                     id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
                     workspaceId: new WorkspaceId((string) $workspaceId),
                     provider: $provider,
+                    owner: ConnectionOwner::agency(),
                     name: 'SANDBOX — '.$provider->label(),
                     credentials: new Credentials($credentials),
                 );
@@ -387,7 +389,7 @@ final class DemoWorkspaceSeeder extends Seeder
             $credentials[$key] = Credentials::SANDBOX_TOKEN;
         }
 
-        $existing = $connections->findForProvider(new WorkspaceId((string) $workspaceId), $provider);
+        $existing = $connections->agencyConnection(new WorkspaceId((string) $workspaceId), $provider);
 
         if ($existing instanceof ProviderConnection) {
             $existing->replaceCredentials(new Credentials($credentials));
@@ -397,6 +399,7 @@ final class DemoWorkspaceSeeder extends Seeder
                 id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
                 workspaceId: new WorkspaceId((string) $workspaceId),
                 provider: $provider,
+                owner: ConnectionOwner::agency(),
                 name: 'SANDBOX — '.$provider->label(),
                 credentials: new Credentials($credentials),
             );
@@ -453,7 +456,7 @@ final class DemoWorkspaceSeeder extends Seeder
             $credentials[$key] = Credentials::SANDBOX_TOKEN;
         }
 
-        $existing = $connections->findForProvider(new WorkspaceId((string) $workspaceId), $provider);
+        $existing = $connections->agencyConnection(new WorkspaceId((string) $workspaceId), $provider);
 
         if ($existing instanceof ProviderConnection) {
             $existing->replaceCredentials(new Credentials($credentials));
@@ -466,6 +469,7 @@ final class DemoWorkspaceSeeder extends Seeder
             id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
             workspaceId: new WorkspaceId((string) $workspaceId),
             provider: $provider,
+            owner: ConnectionOwner::agency(),
             name: 'SANDBOX — '.$provider->label(),
             credentials: new Credentials($credentials),
         );
@@ -703,7 +707,7 @@ final class DemoWorkspaceSeeder extends Seeder
             $credentials[$key] = Credentials::SANDBOX_TOKEN;
         }
 
-        $existing = $connections->findForProvider(new WorkspaceId((string) $workspaceId), $provider);
+        $existing = $connections->agencyConnection(new WorkspaceId((string) $workspaceId), $provider);
 
         if ($existing instanceof ProviderConnection) {
             $existing->replaceCredentials(new Credentials($credentials));
@@ -713,6 +717,7 @@ final class DemoWorkspaceSeeder extends Seeder
                 id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
                 workspaceId: new WorkspaceId((string) $workspaceId),
                 provider: $provider,
+                owner: ConnectionOwner::agency(),
                 name: 'SANDBOX — '.$provider->label(),
                 credentials: new Credentials($credentials),
             );

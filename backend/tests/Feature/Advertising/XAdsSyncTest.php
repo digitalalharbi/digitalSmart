@@ -247,7 +247,7 @@ it('refuses outright when the X credentials are real', function (): void {
     $repository = app(ProviderConnectionRepository::class);
     $workspaceId = new WorkspaceId($workspace->workspaceId());
 
-    $connection = $repository->findForProvider($workspaceId, Provider::X);
+    $connection = $repository->agencyConnection($workspaceId, Provider::X);
     expect($connection)->not->toBeNull();
 
     /** @var ProviderConnection $connection */

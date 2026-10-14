@@ -68,7 +68,7 @@ additive.
 
 | # | Rule | Verdict | Evidence |
 |---|---|---|---|
-| 16 | Connection ownership (agency vs client) | **GAP** | No `connection_owner_type` / `connection_owner_id`. **And the schema forbids the case:** `provider_connections` is `unique(workspace_id, provider)`, so one workspace cannot hold both the agency MCC and a client's own Google connection. This is the single largest schema finding in the audit. |
+| 16 | Connection ownership (agency vs client) | **PARTIAL** — was GAP | `ConnectionOwner` (agency \| client) is on the aggregate and the table, and two partial unique indexes replace the old `unique(workspace_id, provider)`: one agency connection per platform, one per client per platform. A workspace can now hold the agency MCC and a client's own Google connection at once. **Not yet exposed:** nothing in the API creates a client-owned connection, so none can exist until the connection-level endpoints land. |
 | 17 | One connection serving many accounts | **MET** | `external_accounts.provider_connection_id` is many-to-one; one MCC connection can carry 80 accounts. |
 | 18 | Connection health, business-facing, technical under Advanced | **PARTIAL** | `status`, `expires_at`, `last_checked_at`, `status_message` are stored, and `provider_errors` normalises failures by category. Counts of accounts discovered vs bound are not published on the connection, and there is no business-facing Healthy / Needs Reconnect / Sync Issue / Awaiting Access vocabulary. |
 | 19 | Account health distinct from connection health | **MET** | `external_accounts.status` is its own column with its own check constraint (`active`, `disabled`, `closed`, `unsettled`, `unknown`), and provider-native status is preserved alongside. |
@@ -169,7 +169,7 @@ additive.
 | # | Rule | Verdict | Evidence |
 |---|---|---|---|
 | 66 | Four levels: catalog → connections → accounts → bindings | **PARTIAL** | Catalog and connections are one page (`IntegrationsPage` + `ProviderCard`); accounts and bindings are `AccountBindingPanel` under the project. The levels exist but are not presented as levels. |
-| 67 | Human-readable connection labels | **PARTIAL** | `provider_connections.name` exists. With one connection per provider per workspace there is nothing to disambiguate yet — the label becomes load-bearing only once §16 is fixed. |
+| 67 | Human-readable connection labels | **PARTIAL** | `provider_connections.name` exists and is now load-bearing, since §16 allows several per platform. No surface yet presents the owner beside the label. |
 | 68 | Audit of every meaningful action | **MET** | `audit_logs` with a dedicated controller and tests. |
 | 69 | Simplified activity for business users | **GAP** | Audit is the only activity surface; there is no business-facing feed. |
 
@@ -265,7 +265,7 @@ additive.
 
 In the constitution's own priority order, with the audit's finding attached:
 
-1. **Tenancy** — one schema change: connections need an owner and must stop being unique per provider (§16), and campaigns need an explicit project mapping for the multi-project case §7 already allows (§8).
+1. **Tenancy** — ~~connections need an owner and must stop being unique per provider (§16)~~ **done**; campaigns still need an explicit project mapping for the multi-project case §7 already allows (§8).
 2. **Discovery and binding** — a surface for unassigned accounts and campaigns (§9), and the four levels presented as levels (§66).
 3. **Campaign Control Center** (§10) with normalized campaign health (§11) and objective-aware primary results (§33).
 4. **Portfolio** (§13, §14) and the project workspace (§15).

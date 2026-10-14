@@ -35,7 +35,7 @@ final readonly class CheckConnectionHealth
         $this->guard->ensure(Permission::WorkspacesView);
 
         $workspaceId = $this->actor->workspaceId();
-        $connection = $this->connections->findForProvider($workspaceId, $provider)
+        $connection = $this->connections->agencyConnection($workspaceId, $provider)
             ?? throw ResourceNotFound::of('Provider connection');
 
         $health = $this->adapters->for($provider)->checkHealth($connection->credentials());

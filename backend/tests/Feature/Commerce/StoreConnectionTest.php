@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\SystemRole;
 use App\Domain\Audit\AuditAction;
+use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
@@ -40,6 +41,7 @@ function storeConnectionScenario(bool $connected = true): array
             id: new ProviderConnectionId(app(IdentifierGenerator::class)->generate()),
             workspaceId: new WorkspaceId((string) $scenario->workspace->getKey()),
             provider: Provider::Salla,
+            owner: ConnectionOwner::agency(),
             name: 'Salla',
             credentials: new Credentials([
                 'client_id' => Credentials::SANDBOX_TOKEN,

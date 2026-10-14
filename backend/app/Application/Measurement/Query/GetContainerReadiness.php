@@ -59,7 +59,7 @@ final readonly class GetContainerReadiness
             throw ResourceNotFound::of('Tag container');
         }
 
-        $connection = $this->connections->findForProvider($this->actor->workspaceId(), $source->provider);
+        $connection = $this->connections->agencyConnection($this->actor->workspaceId(), $source->provider);
 
         if ($connection === null) {
             throw ResourceNotFound::of('Tag Manager connection');

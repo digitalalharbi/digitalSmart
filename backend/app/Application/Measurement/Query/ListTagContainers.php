@@ -37,7 +37,7 @@ final readonly class ListTagContainers
     {
         $this->guard->ensure(Permission::TrackingManage);
 
-        $connection = $this->connections->findForProvider(
+        $connection = $this->connections->agencyConnection(
             $this->actor->workspaceId(),
             Provider::GoogleTagManager,
         );
