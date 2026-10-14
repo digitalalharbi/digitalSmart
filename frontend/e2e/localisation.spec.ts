@@ -41,7 +41,11 @@ test.describe('an Arabic browser', () => {
     await page.waitForURL((url) => !url.pathname.startsWith('/login'));
     await page.goto('/clients');
 
-    // Wait for real rows before reading the table.
+    /*
+     * The table view, which is where the project counts are read as a column. The page opens on cards now,
+     * and both layouts carry the same figures — the digits are the point of this test, not the layout.
+     */
+    await page.getByRole('button', { name: 'جدول', exact: true }).click();
     await expect(page.getByRole('row', { name: /Alhambra/ })).toBeVisible();
 
     const table = await page.locator('table').innerText();

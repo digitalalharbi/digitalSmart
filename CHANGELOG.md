@@ -75,6 +75,34 @@ is empty, and every stored connection holds the literal `sandbox`.
 under full-suite load, both retried green and neither in a file this pass touched — PHPStan level 8 clean,
 Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
 
+## Clients as cards, and what a card refuses to show
+
+The clients page was a five-column table, which reads like an inventory of a thing that is actually a list of
+relationships. It opens on cards now, with the table one click away and carrying every fact it carried before.
+
+**What the card does not show is the deliberate part.** The obvious content for a card this size is spend,
+revenue and ROAS — and the clients endpoint returns none of them, because those figures are scoped to a
+period, a platform and a revenue authority this screen has not chosen. Showing them would mean inventing a
+number or quietly picking a window on the reader's behalf. The card carries the name, the industry, the
+status, the number of projects and the contact, which is what the list actually knows.
+
+The avatar is initials rather than a generated mark: nothing in this product stores a client's logo, and
+something that looked like a brand asset would be a claim about a file nobody uploaded.
+
+### Found by the gates
+
+- **Three end-to-end specs addressed a layout rather than a fact** — the clients list, the Arabic digits check
+  and the tracking commissioning journey all reached for `getByRole('row')`. Each now addresses what it is
+  actually asserting: the clients spec checks both views carry the same facts, the digits check switches to
+  the table because the digits are its subject, and the tracking journey names the client's card.
+- Each client card is a named `article`, which is both the accessible shape for a self-contained record and
+  the handle those tests needed.
+
+### Gates
+
+1 785 backend tests, 597 frontend tests, **402 Playwright tests with no failures and no flakes**, PHPStan
+level 8 clean, Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+
 ## A design system, and the shell rebuilt on it
 
 The product worked and did not look like it. This is the first slice of a system-wide redesign: the tokens,

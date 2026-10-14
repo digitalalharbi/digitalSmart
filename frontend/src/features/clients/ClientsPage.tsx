@@ -23,6 +23,7 @@ import {
 import { LoadingRegion } from '@/shared/ui/loading-region';
 import { useClientsQuery } from './api';
 import { ClientFormDialog } from './ClientFormDialog';
+import { ClientCard } from './ClientCard';
 import { ClientRowActions } from './ClientRowActions';
 import { StatusBadge } from './StatusBadge';
 import { CLIENT_STATUSES, type Client, type ClientStatus } from './types';
@@ -34,6 +35,7 @@ export function ClientsPage() {
   const locale = useUiStore((state) => state.locale);
   const { can } = useSession();
 
+  const [view, setView] = useState<'grid' | 'table'>('grid');
   const [search, setSearch] = useState('');
   const [statuses, setStatuses] = useState<ClientStatus[]>([]);
   const [page, setPage] = useState(1);
@@ -107,6 +109,28 @@ export function ClientsPage() {
               />
             </div>
 
+            {/*
+              Cards first, deliberately. A client list is a list of relationships; the table is there for the
+              moment somebody wants to compare twenty of them, which is a different question.
+            */}
+            <div
+              className="flex flex-wrap gap-1.5"
+              role="group"
+              aria-label={t('clients.card.view')}
+            >
+              {(['grid', 'table'] as const).map((option) => (
+                <Button
+                  key={option}
+                  size="sm"
+                  variant={view === option ? 'subtle' : 'ghost'}
+                  aria-pressed={view === option}
+                  onClick={() => setView(option)}
+                >
+                  {t(`clients.card.${option}`)}
+                </Button>
+              ))}
+            </div>
+
             <div
               className="flex flex-wrap gap-1.5"
               role="group"
@@ -164,55 +188,63 @@ export function ClientsPage() {
 
       {data && data.data.length > 0 ? (
         <>
-          <DataTable
-            label={t('nav.clients')}
-            minWidth="46rem"
-            data-fetching={isFetching ? 'true' : undefined}
-          >
-            <TableHead>
-              <TableRow>
-                <TableHeader>{t('clients.columns.name')}</TableHeader>
-                <TableHeader>{t('clients.columns.status')}</TableHeader>
-                <TableHeader>{t('clients.columns.industry')}</TableHeader>
-                <TableHeader align="end">{t('clients.columns.projects')}</TableHeader>
-                <TableHeader align="end">
-                  <span className="sr-only">{t('clients.columns.actions')}</span>
-                </TableHeader>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+          {view === 'grid' ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {data.data.map((client) => (
-                <TableRow key={client.id} isInteractive>
-                  <TableCell label={t('clients.columns.name')}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-content font-medium">{client.name}</span>
-                      {client.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
-                    </div>
-                    {client.primary_contact_email ? (
-                      <span className="text-content-tertiary text-xs">
-                        {client.primary_contact_email}
-                      </span>
-                    ) : null}
-                  </TableCell>
-                  <TableCell label={t('clients.columns.status')}>
-                    <StatusBadge status={client.status} />
-                  </TableCell>
-                  <TableCell
-                    label={t('clients.columns.industry')}
-                    className="text-content-secondary"
-                  >
-                    {client.industry ?? '—'}
-                  </TableCell>
-                  <TableCell label={t('clients.columns.projects')} align="end" isNumeric>
-                    {formatNumber(client.project_count, locale)}
-                  </TableCell>
-                  <TableCell align="end">
-                    <ClientRowActions client={client} onEdit={openEdit} />
-                  </TableCell>
-                </TableRow>
+                <ClientCard key={client.id} client={client} onEdit={openEdit} />
               ))}
-            </TableBody>
-          </DataTable>
+            </div>
+          ) : (
+            <DataTable
+              label={t('nav.clients')}
+              minWidth="46rem"
+              data-fetching={isFetching ? 'true' : undefined}
+            >
+              <TableHead>
+                <TableRow>
+                  <TableHeader>{t('clients.columns.name')}</TableHeader>
+                  <TableHeader>{t('clients.columns.status')}</TableHeader>
+                  <TableHeader>{t('clients.columns.industry')}</TableHeader>
+                  <TableHeader align="end">{t('clients.columns.projects')}</TableHeader>
+                  <TableHeader align="end">
+                    <span className="sr-only">{t('clients.columns.actions')}</span>
+                  </TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.data.map((client) => (
+                  <TableRow key={client.id} isInteractive>
+                    <TableCell label={t('clients.columns.name')}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-content font-medium">{client.name}</span>
+                        {client.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
+                      </div>
+                      {client.primary_contact_email ? (
+                        <span className="text-content-tertiary text-xs">
+                          {client.primary_contact_email}
+                        </span>
+                      ) : null}
+                    </TableCell>
+                    <TableCell label={t('clients.columns.status')}>
+                      <StatusBadge status={client.status} />
+                    </TableCell>
+                    <TableCell
+                      label={t('clients.columns.industry')}
+                      className="text-content-secondary"
+                    >
+                      {client.industry ?? '—'}
+                    </TableCell>
+                    <TableCell label={t('clients.columns.projects')} align="end" isNumeric>
+                      {formatNumber(client.project_count, locale)}
+                    </TableCell>
+                    <TableCell align="end">
+                      <ClientRowActions client={client} onEdit={openEdit} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </DataTable>
+          )}
 
           {data.meta.last_page > 1 ? (
             <nav

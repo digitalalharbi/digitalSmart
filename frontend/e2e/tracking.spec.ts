@@ -191,12 +191,11 @@ test.describe('tracking centre', () => {
     await page.getByLabel('Industry').fill('Healthcare');
     await page.getByRole('button', { name: 'Save' }).click();
     /*
-     * Filtered by text rather than matched by a name pattern: the project suffix is in square brackets, and
-     * `new RegExp(client)` reads those as a character class and matches nothing.
+     * The clients page opens on cards, and each card is an article named after its client — which is a
+     * steadier handle than a row anyway, since the project suffix is in square brackets and `new RegExp`
+     * would read those as a character class.
      */
-    await expect(page.getByRole('row').filter({ hasText: client })).toBeVisible({
-      timeout: 20_000,
-    });
+    await expect(page.getByRole('article', { name: client })).toBeVisible({ timeout: 20_000 });
 
     await page.goto('/tracking');
     await expect(page.getByRole('heading', { level: 1, name: 'Tracking Center' })).toBeVisible({

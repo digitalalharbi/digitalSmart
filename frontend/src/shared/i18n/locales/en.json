@@ -191,6 +191,13 @@
       "createTitle": "New client",
       "editTitle": "Edit client",
       "description": "A new client starts as a prospect. You can activate it once work is agreed."
+    },
+    "card": {
+      "noIndustry": "No industry recorded",
+      "contact": "Contact",
+      "view": "View",
+      "grid": "Cards",
+      "table": "Table"
     }
   },
   "projects": {

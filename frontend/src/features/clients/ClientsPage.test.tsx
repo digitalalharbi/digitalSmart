@@ -81,9 +81,28 @@ describe('ClientsPage', () => {
     permissions.current = ['clients.view'];
   });
 
+  /*
+   * The page opens on cards: a client list is a list of relationships, and a five-column table reads like an
+   * inventory. Both views carry the same facts, which is what these two tests are really asserting — the
+   * status, the industry and the number of projects survive the choice of layout.
+   */
   it('renders each client with its status and project count', async () => {
     clientsQuery.mockReturnValue(page([client()]));
     await renderWithProviders(<ClientsPage />);
+
+    const card = screen.getByText('Alhambra Retail').closest('div[class*="rounded-2xl"]');
+    expect(card).not.toBeNull();
+    expect(within(card as HTMLElement).getByText('Active')).toBeInTheDocument();
+    expect(within(card as HTMLElement).getByText('Retail')).toBeInTheDocument();
+    expect(within(card as HTMLElement).getByText('3')).toBeInTheDocument();
+  });
+
+  it('shows the same facts in the table view', async () => {
+    clientsQuery.mockReturnValue(page([client()]));
+    const user = userEvent.setup();
+    await renderWithProviders(<ClientsPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Table' }));
 
     const row = screen.getByRole('row', { name: /Alhambra Retail/ });
     expect(within(row).getByText('Active')).toBeInTheDocument();
