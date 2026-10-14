@@ -73,6 +73,7 @@ function provider(overrides: Partial<ProviderRow> = {}): ProviderRow {
     needs_attention: false,
     status_message: null,
     missing_credentials: ['client_id', 'client_secret'],
+    is_sandbox: false,
     blocked_external: true,
     account_count: 0,
     last_checked_at: null,
@@ -114,6 +115,32 @@ describe('IntegrationsPage', () => {
 
     expect(screen.getByText('Waiting on provider access')).toBeInTheDocument();
     expect(screen.getByText(/account-owner action, not a setting here/)).toBeInTheDocument();
+  });
+
+  /*
+   * "Connected" read identically for a connection holding this repository's fixtures and one holding a
+   * client's keys. Every figure already carries `SANDBOX`, so no report was dishonest — but this is the page
+   * where somebody decides a provider is ready, and it said nothing.
+   */
+  it('says when a connection is holding sandbox credentials', async () => {
+    providersQuery.mockReturnValue(
+      ok([provider({ status: 'connected', status_label: 'Connected', is_sandbox: true })]),
+    );
+    await renderWithProviders(<IntegrationsPage />);
+
+    expect(await screen.findByText('Sandbox credentials')).toBeInTheDocument();
+    /* Beside the status, not instead of it: the connection is real, the account behind it is not. */
+    expect(screen.getByText('Connected')).toBeInTheDocument();
+  });
+
+  it('says nothing of the sort when the credentials are real', async () => {
+    providersQuery.mockReturnValue(
+      ok([provider({ status: 'connected', status_label: 'Connected', is_sandbox: false })]),
+    );
+    await renderWithProviders(<IntegrationsPage />);
+
+    expect(await screen.findByText('Connected')).toBeInTheDocument();
+    expect(screen.queryByText('Sandbox credentials')).not.toBeInTheDocument();
   });
 
   it('names the exact credentials a provider still needs', async () => {

@@ -405,7 +405,8 @@
       "unknown": "Unknown"
     },
     "accountsList": "Discovered ad accounts",
-    "capabilitiesFor": "What {{provider}} can do"
+    "capabilitiesFor": "What {{provider}} can do",
+    "sandboxCredentials": "Sandbox credentials"
   },
   "analytics": {
     "subtitle": "Performance across every platform a project is bound to.",

@@ -45,6 +45,15 @@ final readonly class ProviderView
         public ?string $statusMessage,
         public array $missingCredentials,
         public bool $isBlockedExternal,
+        /**
+         * Whether the stored credential is this repository's own `sandbox` token.
+         *
+         * Published because the integrations page could not tell a fixture-backed connection from a live one:
+         * both read "Connected". Every *figure* this product shows carries `SANDBOX`, so no report was ever
+         * dishonest — but the page where somebody decides a provider is ready said nothing, and live
+         * commissioning is exactly the moment that distinction matters.
+         */
+        public bool $isSandbox,
         public int $accountCount,
         public ?string $lastCheckedAt,
         public ?string $expiresAt,

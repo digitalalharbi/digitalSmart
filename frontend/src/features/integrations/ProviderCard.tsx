@@ -52,7 +52,18 @@ export function ProviderCard({ provider }: { provider: ProviderRow }) {
               </p>
             </div>
           </div>
-          <Badge tone={STATUS_TONE[provider.status]}>{provider.status_label}</Badge>
+          <div className="flex flex-wrap items-center justify-end gap-1.5">
+            {/*
+              Said on the card, not only on the figures. Every number this product shows already carries
+              `SANDBOX`, so no report was ever dishonest — but "Connected" read identically for a connection
+              holding this repository's fixtures and one holding a client's keys, and this is the page where
+              somebody decides a provider is ready.
+            */}
+            {provider.is_sandbox ? (
+              <Badge tone="warning">{t('integrations.sandboxCredentials')}</Badge>
+            ) : null}
+            <Badge tone={STATUS_TONE[provider.status]}>{provider.status_label}</Badge>
+          </div>
         </div>
       </CardHeader>
 

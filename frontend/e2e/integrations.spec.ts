@@ -14,6 +14,20 @@ test.describe('integrations', () => {
     await expect(page.getByText('ChatGPT Ads').first()).toBeVisible();
   });
 
+  /*
+   * The demo connects five platforms with the literal `sandbox` credential, and until this badge existed the
+   * page showed them as plainly "Connected" — the same word a client's real keys would earn. Every figure in
+   * the product already carries `SANDBOX`; what was missing was the page where somebody decides a provider is
+   * ready to be reported from.
+   */
+  test('marks a sandbox connection as one, beside its status', async ({ page }) => {
+    await signIn(page, ACCOUNTS.owner);
+    await page.goto('/integrations');
+
+    await expect(page.getByText('Sandbox credentials').first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('Connected').first()).toBeVisible();
+  });
+
   test('says a platform with no published API has nothing to offer', async ({ page }) => {
     await signIn(page, ACCOUNTS.owner);
     await page.goto('/integrations');

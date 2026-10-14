@@ -8,6 +8,7 @@ use App\Domain\Integration\Provider;
 use App\Infrastructure\Integration\Adapter\AbstractProviderAdapter;
 use App\Infrastructure\Persistence\Eloquent\Model\AuditLog;
 use App\Infrastructure\Persistence\Eloquent\Model\ProviderConnection;
+use Illuminate\Support\Arr;
 use Symfony\Component\HttpFoundation\Response;
 
 const SANDBOX = AbstractProviderAdapter::SANDBOX_TOKEN;
@@ -77,6 +78,45 @@ describe('listing providers', function (): void {
 });
 
 describe('configuring a connection', function (): void {
+    /*
+     * The integrations page is where somebody decides a provider is ready, and it could not tell a connection
+     * holding this repository's fixtures from one holding a client's keys: both read "Connected". Every figure
+     * carries `SANDBOX`, so no report was ever dishonest — but the decision was being made on a page that said
+     * nothing, which is precisely the mistake live commissioning exists to prevent.
+     */
+    it('says when a connection is holding this repository’s fixtures', function (): void {
+        $scenario = workspaceScenario();
+
+        $this->actingAs($scenario->owner)
+            ->putJson('/api/integrations/providers/meta', [
+                'credentials' => ['client_id' => 'sandbox', 'client_secret' => 'sandbox'],
+            ])
+            ->assertCreated();
+
+        /** @var list<array<string, mixed>> $rows */
+        $rows = $this->actingAs($scenario->owner)->getJson('/api/integrations/providers')->json('data');
+        $meta = Arr::first($rows, static fn (array $row): bool => $row['provider'] === 'meta');
+
+        expect($meta['is_sandbox'] ?? null)->toBeTrue();
+    });
+
+    it('says when a connection is holding real credentials', function (): void {
+        $scenario = workspaceScenario();
+
+        $this->actingAs($scenario->owner)
+            ->putJson('/api/integrations/providers/meta', [
+                'credentials' => ['client_id' => 'a-real-looking-id', 'client_secret' => 'a-real-looking-secret'],
+            ])
+            ->assertCreated();
+
+        /** @var list<array<string, mixed>> $rows */
+        $rows = $this->actingAs($scenario->owner)->getJson('/api/integrations/providers')->json('data');
+        $meta = Arr::first($rows, static fn (array $row): bool => $row['provider'] === 'meta');
+
+        /* True of the credential, not of the data: nothing has been read yet, and the figures say so. */
+        expect($meta['is_sandbox'] ?? null)->toBeFalse();
+    });
+
     it('stores credentials and never returns their values', function (): void {
         $scenario = workspaceScenario();
 

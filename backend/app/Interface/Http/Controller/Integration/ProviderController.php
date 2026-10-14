@@ -125,6 +125,11 @@ final class ProviderController extends Controller
             'status_message' => $view->statusMessage,
             'missing_credentials' => $view->missingCredentials,
             'blocked_external' => $view->isBlockedExternal,
+            /*
+             * Whether the stored credential is the literal `sandbox`. The page that decides a provider is
+             * ready could not tell a fixture-backed connection from a live one before this.
+             */
+            'is_sandbox' => $view->isSandbox,
             'account_count' => $view->accountCount,
             'last_checked_at' => $view->lastCheckedAt,
             'expires_at' => $view->expiresAt,

@@ -46,7 +46,19 @@ test.describe('authentication', () => {
     await expect(page).toHaveURL(/\/login$/);
 
     await page.goto('/clients');
-    await expect(page).toHaveURL(/\/login$/);
+
+    /*
+     * The security property first, and it is the stronger assertion: a signed-out person is shown no client
+     * data, whatever the URL says. `RequireSession` renders a skeleton until the session read answers, so a
+     * starved server delays the redirect without ever exposing a row — and the version of this test that
+     * asserted only the URL could not tell those two apart. One run under load caught the real defect behind
+     * it: a failed sign-out that navigated anyway, leaving the session alive and this table served.
+     */
+    await expect(page.getByRole('table', { name: 'Clients' })).toHaveCount(0);
+    await expect(page.getByRole('row', { name: /DEMO — / })).toHaveCount(0);
+
+    /* Then the redirect, with the harness's own budget: two browser projects share one development server. */
+    await expect(page).toHaveURL(/\/login$/, { timeout: 30_000 });
   });
 
   /*

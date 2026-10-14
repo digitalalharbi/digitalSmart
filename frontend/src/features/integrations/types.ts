@@ -88,6 +88,13 @@ export type ProviderRow = {
   missing_credentials: string[];
   /** Waiting on something only the account owner can obtain. */
   blocked_external: boolean;
+  /**
+   * The stored credential is this repository's literal `sandbox` token.
+   *
+   * Published because "Connected" read the same for a fixture-backed connection and a client's real one, and
+   * this is the page where somebody decides a provider is ready.
+   */
+  is_sandbox: boolean;
   account_count: number;
   last_checked_at: string | null;
   expires_at: string | null;

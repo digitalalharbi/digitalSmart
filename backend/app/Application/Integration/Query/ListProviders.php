@@ -93,6 +93,9 @@ final readonly class ListProviders
                 needsAttention: $status->needsAttention(),
                 statusMessage: $connection?->statusMessage(),
                 missingCredentials: $missing,
+                /* A connection holding this repository's fixtures is not a connection to anything. */
+                isSandbox: $credentials !== null
+                    && $credentials->isSandbox($provider->requiredCredentialKeys()),
                 // Surfaced so the interface can say *why* a provider is not
                 // connected, rather than implying someone forgot to click.
                 isBlockedExternal: $missing !== [] || $adapter->capabilities() === [],

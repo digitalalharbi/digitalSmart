@@ -42,6 +42,26 @@ is empty, and every stored connection holds the literal `sandbox`.
 - **Snapchat's spend unit remains the one unverified assumption** in the advertising layer, and the ledger
   says what changes if it proves wrong: mapper, fixtures, tests and any rows already synced.
 
+### Found by commissioning, and fixed
+
+- **The Integrations page could not tell a fixture-backed connection from a live one.** Both read
+  *Connected*. Every figure in the product already carries `SANDBOX`, so no report was dishonest — but this
+  is the page where somebody decides a provider is ready to be reported from, and it said nothing. It now
+  carries *Sandbox credentials* beside the status, with `is_sandbox` published by `GET
+  /api/integrations/providers`.
+
+### Strengthened
+
+- **The sign-out back-route test now asserts the security property, not the URL.** A signed-out person must
+  be shown no client data, whatever the address bar says — and `RequireSession` renders a skeleton until the
+  session read answers, so a starved harness delays the redirect without ever exposing a row. The old
+  assertion could not tell those two apart; the new one fails if a single client row renders, which is the
+  defect that was actually found. The redirect is still asserted, on the budget the rest of this suite uses
+  for a server shared by two browser projects.
+- Traced in a browser on an idle machine, the real sequence is `POST /auth/logout → 204`, then
+  `GET /auth/me → 401`, then `/login`. That trace is why the remaining failures under load are read as a
+  starved server rather than a live session.
+
 ### Corrected
 
 - `docs/PRODUCTION.md` claimed an error tracker was "a key and an endpoint away". Nothing in the code or
@@ -51,8 +71,9 @@ is empty, and every stored connection holds the literal `sandbox`.
 
 ### Gates
 
-1 783 backend tests (6 426 assertions), 579 frontend tests, 398 Playwright tests, PHPStan level 8 clean, Pint
-clean, TypeScript strict clean, ESLint and Prettier clean, production build.
+1 785 backend tests (6 430 assertions), 581 frontend tests, 398 Playwright tests — 2 flaky on mobile Safari
+under full-suite load, both retried green and neither in a file this pass touched — PHPStan level 8 clean,
+Pint clean, TypeScript strict clean, ESLint and Prettier clean, production build.
 
 ## A sign-out that failed looked exactly like one that worked
 

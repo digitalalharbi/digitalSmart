@@ -58,6 +58,16 @@ in this installation holds the literal `sandbox` credential; no live credential 
 | **Zid** | NOT_CONFIGURED | — | — | — | — | — | endpoint live, Basic Auth verified against fixtures | none declared | CODE_VERIFIED | Zid partner app and a merchant who installs it (`BLOCKED_EXTERNAL_CREDENTIALS`) |
 | **HubSpot** | AWAITING_CREDENTIALS | sandbox only | pipelines read by the lead module | deals read by the CRM bridge | stage metadata, not stage names | n/a | n/a | none — the CRM owns the stage | SANDBOX_VERIFIED | HubSpot developer app and an account that installs it (`BLOCKED_EXTERNAL_CREDENTIALS`) |
 
+## The product itself now says which connections are fixtures
+
+A readout in a shell is for an operator. The **Integrations page** is where somebody decides a provider is
+ready to be reported from, and until this pass it showed a connection holding the literal `sandbox` as plainly
+**Connected** — the same word a client's real keys earn.
+
+Every figure in the product already carried `SANDBOX`, so no report was ever dishonest. What was missing was
+the page the decision is made on. It now carries *Sandbox credentials* beside the status: the connection is
+real, the account behind it is not.
+
 ## What the readout already tells us, before any credential arrives
 
 **TikTok's three empty columns are a decision, not a gap.** `clicks`, `revenue` and `videoViews` come back
