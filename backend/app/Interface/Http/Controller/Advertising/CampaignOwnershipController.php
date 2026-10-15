@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Http\Controller\Advertising;
 
+use App\Application\Advertising\Command\AssignCampaignsToProject;
 use App\Application\Advertising\Command\AssignCampaignToProject;
 use App\Application\Advertising\DTO\CampaignOwnershipView;
 use App\Application\Advertising\Query\ListCampaignOwnership;
@@ -82,6 +83,22 @@ final class CampaignOwnershipController extends Controller
         }
 
         return response()->json(['data' => CampaignOwnershipResource::one($assigned)]);
+    }
+
+    /** Many campaigns into one project. Partial by design: the response says which were refused and why. */
+    public function assignMany(Request $request, AssignCampaignsToProject $assign): JsonResponse
+    {
+        $validated = $request->validate([
+            'campaign_ids' => ['required', 'array', 'min:1', 'max:'.AssignCampaignsToProject::MAX],
+            'campaign_ids.*' => ['uuid'],
+            'project_id' => ['required', 'uuid'],
+        ]);
+
+        /** @var list<string> $ids */
+        $ids = array_values(array_filter((array) $validated['campaign_ids'], 'is_string'));
+        $projectId = is_string($validated['project_id']) ? $validated['project_id'] : '';
+
+        return response()->json(['data' => $assign($ids, $projectId)]);
     }
 
     /** @param list<string> $allowed */

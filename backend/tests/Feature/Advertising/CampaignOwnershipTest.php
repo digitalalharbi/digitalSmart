@@ -232,3 +232,50 @@ it('shows a project manager the agency-wide queue', function (): void {
         ->assertOk()
         ->assertJsonCount(1, 'data');
 });
+
+it('assigns many campaigns at once and says which it refused', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = discoveredAccounts($scenario);
+    $brand = projectNamed($scenario, 'Brand Awareness');
+    bind($scenario, $brand, $accounts[0]['id']);
+    bind($scenario, projectNamed($scenario, 'Lead Generation'), $accounts[0]['id']);
+    $one = campaignOn($scenario, $accounts[0]['id'], 'Ramadan Push');
+    $two = campaignOn($scenario, $accounts[0]['id'], 'Eid Push');
+    // A campaign on an account the project is not bound to: refused, the others still land.
+    $stranger = projectNamed($scenario, 'Someone Else');
+    $three = campaignOn($scenario, $accounts[0]['id'], 'Summer');
+
+    $response = $this->actingAs($scenario->owner)
+        ->postJson('/api/campaigns/project', [
+            'campaign_ids' => [(string) $one->getKey(), (string) $two->getKey(), (string) Illuminate\Support\Str::uuid()],
+            'project_id' => (string) $brand->getKey(),
+        ])->assertOk();
+
+    expect($response->json('data.assigned'))->toHaveCount(2)
+        ->and($response->json('data.refused'))->toHaveCount(1)
+        ->and(Campaign::query()->whereKey($one->getKey())->value('project_id'))->toBe((string) $brand->getKey())
+        ->and(Campaign::query()->whereKey($three->getKey())->value('project_id'))->toBeNull();
+
+    $this->actingAs($scenario->owner)
+        ->postJson('/api/campaigns/project', ['campaign_ids' => [(string) $three->getKey()], 'project_id' => (string) $stranger->getKey()])
+        ->assertOk()
+        ->assertJsonCount(1, 'data.refused')
+        ->assertJsonCount(0, 'data.assigned');
+
+    expect(AuditLog::query()->where('action', AuditAction::CampaignProjectAssigned->value)->count())->toBe(2);
+});
+
+it('refuses a bulk assignment from somebody who may not change projects', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = discoveredAccounts($scenario);
+    $brand = projectNamed($scenario, 'Brand Awareness');
+    bind($scenario, $brand, $accounts[0]['id']);
+    $campaign = campaignOn($scenario, $accounts[0]['id'], 'Ramadan Push');
+    $viewer = $scenario->addMember(SystemRole::Creative);
+
+    $this->actingAs($viewer)
+        ->postJson('/api/campaigns/project', ['campaign_ids' => [(string) $campaign->getKey()], 'project_id' => (string) $brand->getKey()])
+        ->assertForbidden();
+
+    expect(Campaign::query()->whereKey($campaign->getKey())->value('project_id'))->toBeNull();
+});

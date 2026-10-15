@@ -791,6 +791,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::get('campaigns/control', [CampaignControlController::class, 'index'])
         ->name('campaigns.control.index');
 
+    Route::post('campaigns/project', [CampaignOwnershipController::class, 'assignMany'])
+        ->name('campaigns.ownership.assign_many');
     Route::get('campaigns/ownership', [CampaignOwnershipController::class, 'index'])
         ->name('campaigns.ownership.index');
     Route::put('campaigns/{campaign}/project', [CampaignOwnershipController::class, 'assign'])
