@@ -2354,6 +2354,10 @@
       "assign": "Place {{count}} campaigns",
       "noCommon": "These campaigns share no project their accounts are bound to.",
       "result": "{{assigned}} placed, {{refused}} refused."
+    },
+    "spend": {
+      "title": "Spend",
+      "trend": "Daily spend in {{currency}}"
     }
   },
   "palette": {

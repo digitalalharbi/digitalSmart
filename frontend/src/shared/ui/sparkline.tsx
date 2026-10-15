@@ -13,10 +13,13 @@ export function Sparkline({
   values,
   label,
   className,
+  stretch = false,
 }: {
   values: Array<number | null>;
   label?: string | undefined;
   className?: string | undefined;
+  /** Fill the box it is given instead of keeping its own proportions — for a hero line rather than a card's. */
+  stretch?: boolean;
 }) {
   const width = 80;
   const height = 24;
@@ -60,6 +63,7 @@ export function Sparkline({
   return (
     <svg
       viewBox={`0 0 ${String(width)} ${String(height)}`}
+      preserveAspectRatio={stretch ? 'none' : undefined}
       className={cn('h-6 w-20 shrink-0', className)}
       role={label === undefined ? undefined : 'img'}
       aria-label={label}
@@ -74,6 +78,7 @@ export function Sparkline({
           strokeWidth={1.5}
           strokeLinecap="round"
           strokeLinejoin="round"
+          vectorEffect={stretch ? 'non-scaling-stroke' : undefined}
         />
       ))}
     </svg>

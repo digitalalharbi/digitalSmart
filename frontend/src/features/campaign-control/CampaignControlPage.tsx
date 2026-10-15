@@ -31,6 +31,7 @@ import { HealthDistribution } from '@/shared/ui/health-distribution';
 import { money, resultText } from './text';
 import { SavedViewsMenu } from '@/features/surface-views';
 import { OwnershipQueue } from './OwnershipQueue';
+import { SpendHero } from './SpendHero';
 import { DEFAULT_FILTERS, fromParams, toParams } from './filters';
 import { useCampaignControl } from './useCampaignControl';
 import type { ControlFilters, HealthValue, SortKey } from './types';
@@ -174,6 +175,8 @@ export function CampaignControlPage() {
           </>
         )}
       </section>
+
+      {data === undefined ? null : <SpendHero meta={data.meta} locale={locale} />}
 
       <Card>
         <CardHeader>

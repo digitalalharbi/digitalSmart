@@ -2385,6 +2385,10 @@
       "assign": "ضع {{count}} حملات",
       "noCommon": "لا يشترك أيّ مشروع مرتبط بحسابات هذه الحملات.",
       "result": "تم وضع {{assigned}}، ورُفض {{refused}}."
+    },
+    "spend": {
+      "title": "الإنفاق",
+      "trend": "الإنفاق اليومي بـ {{currency}}"
     }
   },
   "palette": {

@@ -57,6 +57,9 @@ export type CampaignControlPage = {
     total: number;
     matched: number;
     active_count: number;
+    /** Over everything that matched, not the page — per currency, never added across them. */
+    spend_by_currency: Array<{ currency: string; spend_minor: number }>;
+    spend_trend: Array<{ currency: string; points: Array<number | null> }>;
     assessed: number;
     is_truncated: boolean;
     window: { from: string; to: string };

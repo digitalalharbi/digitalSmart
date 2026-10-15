@@ -73,6 +73,8 @@ function page(
     data: {
       data: rows,
       meta: {
+        spend_by_currency: [{ currency: 'SAR', spend_minor: 1_250_000 }],
+        spend_trend: [{ currency: 'SAR', points: [1, 2, 3, null, 5] }],
         health_counts: {
           healthy: 3,
           watch: 2,
@@ -187,5 +189,15 @@ describe('CampaignControlPage', () => {
     await renderWithProviders(<CampaignControlPage />);
 
     expect(screen.getByRole('button', { name: 'Pin Ramadan Push' })).toBeInTheDocument();
+  });
+
+  it('leads with what has been spent across everything matched, per currency', async () => {
+    query.mockReturnValue(page([row()]));
+    await renderWithProviders(<CampaignControlPage />);
+
+    const spend = screen.getByRole('region', { name: 'Spend' });
+
+    expect(within(spend).getByText(/12,500/)).toBeInTheDocument();
+    expect(within(spend).getByRole('img', { name: 'Daily spend in SAR' })).toBeInTheDocument();
   });
 });
