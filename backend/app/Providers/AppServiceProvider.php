@@ -83,6 +83,7 @@ use App\Application\Reporting\Contract\ReportRepository;
 use App\Application\Reporting\Contract\ReportShareStore;
 use App\Application\Reporting\Contract\ReportWorkbookWriter;
 use App\Application\Reporting\Contract\SnapshotSerialiser;
+use App\Application\Search\Contract\SearchReadModel;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\ApplicationInfo;
@@ -146,6 +147,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentLeadReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentObservedEventReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSearchReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentStoreAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentApprovalRepository;
@@ -320,6 +322,7 @@ final class AppServiceProvider extends ServiceProvider
         /* Which project owns a campaign, and the review queue for the ones nobody has placed. */
         CampaignAssignmentRepository::class => EloquentCampaignAssignmentRepository::class,
         CampaignControlReadModel::class => EloquentCampaignControlReadModel::class,
+        SearchReadModel::class => EloquentSearchReadModel::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
         AttributionReadModel::class => EloquentAttributionReadModel::class,
         CreativeSpecRegistry::class => EloquentCreativeSpecRegistry::class,

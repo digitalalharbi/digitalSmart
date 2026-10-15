@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use App\Interface\Http\Controller\Advertising\CampaignControlController;
-use App\Interface\Http\Controller\Attention\AttentionController;
 use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
 use App\Interface\Http\Controller\Analytics\AnalyticsController;
 use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
+use App\Interface\Http\Controller\Attention\AttentionController;
 use App\Interface\Http\Controller\Attribution\AttributionController;
 use App\Interface\Http\Controller\Audit\AuditLogController;
 use App\Interface\Http\Controller\Budget\BudgetController;
@@ -38,6 +38,7 @@ use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
 use App\Interface\Http\Controller\Reporting\ReportController;
 use App\Interface\Http\Controller\Reporting\SharedReportController;
+use App\Interface\Http\Controller\Search\SearchController;
 use App\Interface\Http\Controller\System\HealthController;
 use App\Interface\Http\Controller\Workspace\MemberController;
 use App\Interface\Http\Middleware\BindActorContext;
@@ -689,6 +690,9 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      * own: each stream carries one, and a reader with none of them gets an empty queue that says so.
      */
     Route::get('attention', [AttentionController::class, 'index'])->name('attention.index');
+
+    /* One box for the agency: six entity types in one statement, each narrowed to what the reader may open. */
+    Route::get('search', [SearchController::class, 'index'])->name('search.index');
 
     /*
      * The Campaign Control Center: every campaign the reader may see, with a business health verdict
