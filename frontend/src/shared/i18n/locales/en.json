@@ -2499,7 +2499,15 @@
       "pacing": "Pacing",
       "risks": "Risks"
     },
-    "used": "Share of approved budget spent, {{currency}}"
+    "used": "Share of approved budget spent, {{currency}}",
+    "hero": {
+      "title": "Plan, pace and forecast",
+      "planned": "Approved",
+      "expected": "Expected by today",
+      "actual": "Spent",
+      "forecast": "Projected at the end",
+      "variance": "vs expected"
+    }
   },
   "connections": {
     "title": "Connections",

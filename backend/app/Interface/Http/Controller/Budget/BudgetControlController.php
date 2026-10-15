@@ -87,6 +87,7 @@ final class BudgetControlController extends Controller
                     'status' => $r->pacing->status->value,
                     'status_label' => $r->pacing->status->label(),
                     'variance_percent' => $r->pacing->variancePercent,
+                    'expected_minor' => $r->pacing->expectedMinor,
                     'projected_minor' => $r->pacing->projectedMinor,
                     'utilisation' => $r->pacing->utilisation(),
                     'remaining_days' => $r->pacing->remainingDays,

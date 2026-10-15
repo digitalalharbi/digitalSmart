@@ -1,3 +1,4 @@
+import { PacingHero } from './PacingHero';
 import { useUiStore } from '@/shared/store/ui-store';
 import { SavedViewsMenu } from '@/features/surface-views';
 import { useQuery } from '@tanstack/react-query';
@@ -36,6 +37,8 @@ type Row = {
   remaining_minor: number | null;
   spend_unavailable_reason: string | null;
   pacing: {
+    expected_minor?: number;
+    projected_minor: number | null;
     status: string;
     status_label: string;
     variance_percent: number | null;
@@ -110,6 +113,8 @@ export function BudgetControlPage() {
       />
 
       {isError ? <Alert tone="danger">{t('budgetControl.loadFailed')}</Alert> : null}
+
+      <PacingHero rows={data?.data ?? []} locale={locale} />
 
       <section
         aria-label={t('budgetControl.totals')}
