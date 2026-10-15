@@ -12,6 +12,7 @@ use App\Application\Workspace\Exception\LastOwnerProtected;
 use App\Domain\Shared\Exception\DomainException;
 use App\Interface\Console\BuildDigestsCommand;
 use App\Interface\Console\CommissionProvider;
+use App\Interface\Console\DemoAgencyCommand;
 use App\Interface\Console\PruneExportsCommand;
 use App\Interface\Console\ReadStores;
 use App\Interface\Console\RunReportSchedulesCommand;
@@ -50,6 +51,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         BuildDigestsCommand::class,
         CommissionProvider::class,
+        DemoAgencyCommand::class,
         PruneExportsCommand::class,
         RunReportSchedulesCommand::class,
         ReadStores::class,
