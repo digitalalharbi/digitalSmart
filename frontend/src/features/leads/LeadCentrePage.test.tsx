@@ -34,6 +34,10 @@ vi.mock('@/features/clients', () => ({
   }),
 }));
 
+vi.mock('@/features/projects', () => ({
+  useProjectsQuery: () => ({ isPending: false, isFetching: false, data: { data: [] } }),
+}));
+
 const permissions = vi.hoisted(() => ({ current: ['leads.view', 'leads.manage'] as string[] }));
 
 vi.mock('@/features/auth', () => ({
@@ -224,6 +228,12 @@ function centre(overrides: Partial<LeadCentre> = {}): LeadCentre {
     signals_note: 'Counted taps and form starts. Not leads, and not comparable as a ratio.',
     ...overrides,
   };
+}
+
+/** The client picker is a search box over the server's top few, not a row of every client. */
+async function chooseClient(term: string): Promise<void> {
+  await userEvent.type(await screen.findByRole('combobox', { name: 'Client' }), term);
+  await userEvent.click(await screen.findByRole('option', { name: 'Noon Retail' }));
 }
 
 function lead(overrides: Partial<Lead> = {}): Lead {
@@ -842,7 +852,7 @@ describe('reading a CRM', () => {
 
     await renderWithProviders(<LeadCentrePage />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Noon Retail' }));
+    await chooseClient('Noon');
     await userEvent.click(screen.getByRole('button', { name: 'Read the deals' }));
 
     expect(state.crmRead).toBe('client-1');
@@ -863,7 +873,7 @@ describe('reading a CRM', () => {
 
     await renderWithProviders(<LeadCentrePage />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Noon Retail' }));
+    await chooseClient('Noon');
     await userEvent.click(screen.getByRole('button', { name: 'Read the deals' }));
 
     expect(await screen.findByText(/came from sandbox fixtures/)).toBeInTheDocument();

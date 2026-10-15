@@ -1096,7 +1096,9 @@
     },
     "scope": {
       "client": "Client",
-      "allClients": "All clients"
+      "allClients": "All clients",
+      "project": "Project",
+      "clear": "Clear"
     },
     "metric": {
       "total": "Leads",
@@ -1257,6 +1259,13 @@
       "reading": "Reading…",
       "result": "{{read}} read, {{recorded}} recorded, {{leftAlone}} left at the stage the CRM owns.",
       "failed": "The read did not happen. Nothing was changed."
+    },
+    "audience": {
+      "label": "Whose leads",
+      "all": "All",
+      "my_clients": "My clients",
+      "my_projects": "My projects",
+      "mine": "My leads"
     }
   },
   "attribution": {
@@ -2521,5 +2530,25 @@
       "code": "Code",
       "message": "Message"
     }
+  },
+  "surfaceViews": {
+    "open": "Saved views",
+    "title": "Saved views",
+    "body": "A view is a set of filters. Opening one sets them here; what you see is still decided by what you may see.",
+    "loading": "Loading…",
+    "empty": "No saved views yet.",
+    "saveCurrent": "Save the current filters as",
+    "namePlaceholder": "e.g. Critical campaigns, this week",
+    "shareWith": "Who can open it",
+    "visibility": {
+      "private": "Only me",
+      "project": "The project team",
+      "projectNamed": "Team of {{name}}",
+      "workspace": "Everyone"
+    },
+    "nothingToSave": "Set at least one filter to save a view.",
+    "save": "Save view",
+    "delete": "Delete {{name}}",
+    "failed": "The view could not be saved."
   }
 }

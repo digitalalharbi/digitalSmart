@@ -3,11 +3,14 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useClientsQuery } from '@/features/clients';
+import { useProjectsQuery } from '@/features/projects';
+import { SavedViewsMenu } from '@/features/surface-views';
 import { useProvidersQuery } from '@/features/integrations';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import { MetricCard } from '@/shared/ui/metric-card';
 import { Skeleton } from '@/shared/ui/skeleton';
 import type { MetricValue } from '@/shared/metrics';
@@ -34,9 +37,10 @@ import {
   useSetLeadValueMutation,
   useSyncCrmDealsMutation,
 } from './useLeads';
-import type { LeadFunnel, LeadStage } from './types';
+import type { LeadAudience, LeadFunnel, LeadStage } from './types';
 
 const PERIODS = [7, 30, 90] as const;
+const AUDIENCES: LeadAudience[] = ['all', 'my_clients', 'my_projects', 'mine'];
 
 /**
  * The Lead Center.
@@ -56,17 +60,31 @@ export function LeadCentrePage() {
   const { can } = useSession();
 
   const [days, setDays] = useState<(typeof PERIODS)[number]>(30);
-  const [clientId, setClientId] = useState<string | null>(null);
+  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
+  const [project, setProject] = useState<{ id: string; label: string } | null>(null);
+  const [audience, setAudience] = useState<LeadAudience>('all');
+  const [clientTerm, setClientTerm] = useState('');
+  const [projectTerm, setProjectTerm] = useState('');
+  const clientId = client?.id ?? null;
+  const projectId = project?.id ?? null;
   const [selectedLead, setSelectedLead] = useState<string | null>(null);
 
   const canView = can(PERMISSIONS.leadsView);
   const canManage = can(PERMISSIONS.leadsManage);
 
-  const clients = useClientsQuery({ page: 1, per_page: 100, sort: 'name', direction: 'asc' });
-  const scope = useMemo(() => ({ client_id: clientId, days }), [clientId, days]);
+  /* A search box over the server's top few, never a list of every client the agency has. */
+  const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
+  const projects = useProjectsQuery({ search: projectTerm, per_page: 8 });
+  const scope = useMemo(
+    () => ({ client_id: clientId, project_id: projectId, days, scope: audience }),
+    [clientId, projectId, days, audience],
+  );
 
   const centre = useLeadCentreQuery(scope, canView);
-  const leads = useLeadsQuery({ client_id: clientId, limit: 100 }, canView);
+  const leads = useLeadsQuery(
+    { client_id: clientId, project_id: projectId, scope: audience, limit: 100 },
+    canView,
+  );
   const journey = useJourneyQuery(selectedLead);
   const duplicates = useLeadDuplicatesQuery(selectedLead, canManage);
   const owners = useLeadOwnersQuery(selectedLead, canManage);
@@ -160,22 +178,73 @@ export function LeadCentrePage() {
             </div>
           </ChoiceGroup>
 
-          <ChoiceGroup label={t('leads.scope.client')}>
+          <ChoiceGroup label={t('leads.audience.label')}>
             <div className="flex flex-wrap gap-2">
-              <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
-                {t('leads.scope.allClients')}
-              </Choice>
-              {(clients.data?.data ?? []).map((client) => (
+              {AUDIENCES.map((value) => (
                 <Choice
-                  key={client.id}
-                  isSelected={clientId === client.id}
-                  onSelect={() => setClientId(client.id)}
+                  key={value}
+                  isSelected={audience === value}
+                  onSelect={() => setAudience(value)}
                 >
-                  {client.name}
+                  {t(`leads.audience.${value}`)}
                 </Choice>
               ))}
             </div>
           </ChoiceGroup>
+
+          <EntityPicker
+            label={t('leads.scope.client')}
+            clearLabel={t('leads.scope.clear')}
+            value={client}
+            onChange={(option) =>
+              setClient(option === null ? null : { id: option.id, label: option.label })
+            }
+            onSearch={setClientTerm}
+            options={(clients.data?.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
+            isLoading={clients.isFetching}
+          />
+
+          <EntityPicker
+            label={t('leads.scope.project')}
+            clearLabel={t('leads.scope.clear')}
+            value={project}
+            onChange={(option) =>
+              setProject(option === null ? null : { id: option.id, label: option.label })
+            }
+            onSearch={setProjectTerm}
+            options={(projects.data?.data ?? []).map((p) => ({ id: p.id, label: p.name }))}
+            isLoading={projects.isFetching}
+          />
+
+          <SavedViewsMenu
+            surface="leads"
+            current={{
+              ...(audience === 'all' ? {} : { scope: audience }),
+              ...(client === null ? {} : { client_id: client.id, client_label: client.label }),
+              ...(project === null ? {} : { project_id: project.id, project_label: project.label }),
+              days: String(days),
+            }}
+            project={project}
+            onApply={(saved) => {
+              const a = saved['scope'];
+              setAudience(AUDIENCES.find((v) => v === a) ?? 'all');
+              setClient(
+                saved['client_id'] === undefined
+                  ? null
+                  : { id: saved['client_id'], label: saved['client_label'] ?? saved['client_id'] },
+              );
+              setProject(
+                saved['project_id'] === undefined
+                  ? null
+                  : {
+                      id: saved['project_id'],
+                      label: saved['project_label'] ?? saved['project_id'],
+                    },
+              );
+              const d = Number(saved['days']);
+              setDays(PERIODS.find((p) => p === d) ?? 30);
+            }}
+          />
         </div>
       </header>
 

@@ -1,3 +1,4 @@
+import { SavedViewsMenu } from '@/features/surface-views';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -87,7 +88,17 @@ export function BudgetControlPage() {
 
   return (
     <div className="ds-page">
-      <PageHeader title={t('budgetControl.title')} description={t('budgetControl.subtitle')} />
+      <PageHeader
+        title={t('budgetControl.title')}
+        description={t('budgetControl.subtitle')}
+        actions={
+          <SavedViewsMenu
+            surface="budget_control"
+            current={risk === null ? {} : { risk }}
+            onApply={(saved) => setRisk(saved['risk'] ?? null)}
+          />
+        }
+      />
 
       {isError ? <Alert tone="danger">{t('budgetControl.loadFailed')}</Alert> : null}
 

@@ -50,6 +50,9 @@ export const queryKeys = {
   shortcuts: {
     all: () => ['shortcuts'] as const,
   },
+  surfaceViews: {
+    list: (surface: string) => ['surface-views', surface] as const,
+  },
   search: {
     query: (params: Record<string, unknown>) => ['search', params] as const,
   },

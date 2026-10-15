@@ -29,6 +29,7 @@ import { PAGE_SIZE } from './api';
 import { CampaignCard, CampaignIdentity, StatusPair, BudgetBar } from './CampaignParts';
 import { HealthDistribution } from '@/shared/ui/health-distribution';
 import { money, resultText } from './text';
+import { SavedViewsMenu } from '@/features/surface-views';
 import { DEFAULT_FILTERS, fromParams, toParams } from './filters';
 import { useCampaignControl } from './useCampaignControl';
 import type { ControlFilters, HealthValue, SortKey } from './types';
@@ -120,9 +121,21 @@ export function CampaignControlPage() {
         title={t('campaignControl.title')}
         description={t('campaignControl.subtitle')}
         actions={
-          <Link to="/campaigns/explore" className={buttonVariants({ variant: 'secondary' })}>
-            {t('campaignControl.explore')}
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <SavedViewsMenu
+              surface="campaign_control"
+              current={Object.fromEntries(toParams({ ...filters, offset: 0 }))}
+              project={
+                filters.project === null
+                  ? null
+                  : { id: filters.project.id, label: filters.project.label }
+              }
+              onApply={(saved) => setParams(new URLSearchParams(saved), { replace: true })}
+            />
+            <Link to="/campaigns/explore" className={buttonVariants({ variant: 'secondary' })}>
+              {t('campaignControl.explore')}
+            </Link>
+          </div>
         }
       />
 

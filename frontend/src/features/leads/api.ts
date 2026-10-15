@@ -20,6 +20,8 @@ export async function fetchLeadCentre(scope: LeadScope): Promise<LeadCentre> {
   const { data } = await api.get<{ data: LeadCentre }>('/leads/centre', {
     params: {
       ...(scope.client_id == null ? {} : { client_id: scope.client_id }),
+      ...(scope.project_id == null ? {} : { project_id: scope.project_id }),
+      ...(scope.scope === undefined || scope.scope === 'all' ? {} : { scope: scope.scope }),
       ...(scope.days == null ? {} : { days: scope.days }),
     },
   });
@@ -31,6 +33,8 @@ export async function fetchLeads(filter: LeadListFilter): Promise<Lead[]> {
   const { data } = await api.get<{ data: Lead[] }>('/leads', {
     params: {
       ...(filter.client_id == null ? {} : { client_id: filter.client_id }),
+      ...(filter.project_id == null ? {} : { project_id: filter.project_id }),
+      ...(filter.scope === undefined || filter.scope === 'all' ? {} : { scope: filter.scope }),
       ...(filter.stage === undefined || filter.stage.length === 0 ? {} : { stage: filter.stage }),
       ...(filter.limit === undefined ? {} : { limit: filter.limit }),
     },

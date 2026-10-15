@@ -210,13 +210,20 @@ export type Journey = {
   limitations: string[];
 };
 
+/** Whose leads, from the reader's point of view. A narrowing only: the server still applies what they may see. */
+export type LeadAudience = 'all' | 'my_clients' | 'my_projects' | 'mine';
+
 export type LeadScope = {
   client_id?: string | null;
+  project_id?: string | null;
   days?: number | null;
+  scope?: LeadAudience;
 };
 
 export type LeadListFilter = {
   client_id?: string | null;
+  project_id?: string | null;
+  scope?: LeadAudience;
   stage?: LeadStage[];
   limit?: number;
 };
