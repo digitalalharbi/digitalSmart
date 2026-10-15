@@ -44,6 +44,9 @@ use App\Application\Creative\Contract\CreativeSpecRegistry;
 use App\Application\Dashboard\Contract\DashboardRepository;
 use App\Application\Dashboard\Contract\SavedViewRepository;
 use App\Application\Digest\Contract\DigestStore;
+use App\Application\Export\Contract\ExportFileStorage;
+use App\Application\Export\Contract\ExportJobStore;
+use App\Application\Export\Contract\ExportRenderer;
 use App\Application\Identity\Contract\Authenticator;
 use App\Application\Identity\Contract\IdentityReadModel;
 use App\Application\Integration\Contract\ConnectionDirectory;
@@ -128,6 +131,8 @@ use App\Infrastructure\Commerce\Sandbox\CommerceFixtures;
 use App\Infrastructure\Commerce\StoreOrderMapperRegistry;
 use App\Infrastructure\Commerce\Webhook\StoreWebhookVerifiers;
 use App\Infrastructure\Creative\EloquentCreativeSpecRegistry;
+use App\Infrastructure\Export\EloquentExportJobStore;
+use App\Infrastructure\Export\LocalExportFileStorage;
 use App\Infrastructure\Identity\EloquentIdentityReadModel;
 use App\Infrastructure\Identity\SessionAuthenticator;
 use App\Infrastructure\Integration\LaravelCredentialCipher;
@@ -212,6 +217,7 @@ use App\Infrastructure\System\DatabaseWorkLedger;
 use App\Infrastructure\System\FailedWorkHealthProbe;
 use App\Infrastructure\System\LaravelApplicationInfo;
 use App\Infrastructure\System\QueueHealthProbe;
+use App\Interface\Export\ReportExportRenderer;
 use App\Interface\Http\Resource\Reporting\ReportResource;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
@@ -353,6 +359,9 @@ final class AppServiceProvider extends ServiceProvider
         PortfolioReadModel::class => EloquentPortfolioReadModel::class,
         OperationsReadModel::class => EloquentOperationsReadModel::class,
         ClientIndustryDirectory::class => EloquentClientIndustryDirectory::class,
+        ExportJobStore::class => EloquentExportJobStore::class,
+        ExportFileStorage::class => LocalExportFileStorage::class,
+        ExportRenderer::class => ReportExportRenderer::class,
         ReadinessFacts::class => EloquentReadinessFacts::class,
         BudgetControlReadModel::class => EloquentBudgetControlReadModel::class,
         SyncCandidateSource::class => EloquentSyncCandidateSource::class,

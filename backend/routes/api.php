@@ -17,13 +17,14 @@ use App\Interface\Http\Controller\Budget\PacingController;
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Client\OffboardingController;
 use App\Interface\Http\Controller\Commerce\StoreAnalyticsController;
-use App\Interface\Http\Controller\Commerce\StoreRollupController;
 use App\Interface\Http\Controller\Commerce\StoreController;
+use App\Interface\Http\Controller\Commerce\StoreRollupController;
 use App\Interface\Http\Controller\Commerce\StoreWebhookController;
 use App\Interface\Http\Controller\Creative\CreativeController;
 use App\Interface\Http\Controller\Dashboard\DashboardController;
 use App\Interface\Http\Controller\Dashboard\SavedViewController;
 use App\Interface\Http\Controller\Digest\DigestController;
+use App\Interface\Http\Controller\Export\ExportController;
 use App\Interface\Http\Controller\Home\HomeController;
 use App\Interface\Http\Controller\Identity\SessionController;
 use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
@@ -584,6 +585,15 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('source')->name('measurement.sources.readiness');
 
     // -------------------------------------------------------------- Reporting ---
+    /*
+     * Heavy files, made on the `reports` queue and fetched when ready. Always the requester's own: someone
+     * else's export is a 404, not a 403.
+     */
+    Route::get('exports', [ExportController::class, 'index'])->name('exports.index');
+    Route::post('exports', [ExportController::class, 'store'])->name('exports.store');
+    Route::get('exports/{export}/download', [ExportController::class, 'download'])
+        ->whereUuid('export')->name('exports.download');
+
     Route::get('reports/vocabulary', [ReportController::class, 'vocabulary'])
         ->name('reports.vocabulary');
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');

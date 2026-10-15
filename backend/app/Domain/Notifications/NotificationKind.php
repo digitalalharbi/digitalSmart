@@ -108,6 +108,9 @@ enum NotificationKind: string
      */
     case DigestReady = 'digest_ready';
 
+    /** A background export finished and is waiting to be downloaded. Goes only to the person who asked. */
+    case ExportReady = 'export_ready';
+
     public function label(): string
     {
         return match ($this) {
@@ -122,6 +125,7 @@ enum NotificationKind: string
             self::ClientRequestAnswered => 'Your request was answered',
             self::ClientRequestReplied => 'A client replied on a request',
             self::DigestReady => 'Your digest is ready',
+            self::ExportReady => 'Your export is ready',
         };
     }
 
@@ -158,6 +162,7 @@ enum NotificationKind: string
             self::ClientRequestAnswered => Permission::ClientRequestsSubmit,
             /* Digests are built from streams the recipient's permissions already admit; this only has to be a floor. */
             self::DigestReady => Permission::AnalyticsView,
+            self::ExportReady => Permission::ReportsView,
         };
     }
 
@@ -195,6 +200,7 @@ enum NotificationKind: string
             self::ClientRequestAnswered,
             self::ClientRequestReplied => NotificationSubject::ClientRequest,
             self::DigestReady => NotificationSubject::Digest,
+            self::ExportReady => NotificationSubject::Export,
         };
     }
 
