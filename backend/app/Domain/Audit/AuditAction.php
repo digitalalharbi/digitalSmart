@@ -36,6 +36,9 @@ enum AuditAction: string
     case IntegrationAccountBound = 'integration.account_bound';
     case IntegrationAccountUnbound = 'integration.account_unbound';
     case IntegrationSyncToggled = 'integration.sync_toggled';
+    case IntegrationConnectionReconnected = 'integration.connection_reconnected';
+    case IntegrationAccountIgnored = 'integration.account_ignored';
+    case IntegrationAccountRestored = 'integration.account_restored';
 
     /*
      * Which project owns a campaign. A data-access grant in everything but name: the campaign's spend joins
@@ -205,6 +208,8 @@ enum AuditAction: string
             self::IntegrationDisconnected,
             self::IntegrationAccountBound,
             self::IntegrationAccountUnbound,
+            self::IntegrationConnectionReconnected,
+            self::IntegrationAccountIgnored,
             self::CampaignProjectAssigned,
             /*
              * Beside them for the same reason: it decides whose revenue a merchant's orders become, and it

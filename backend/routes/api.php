@@ -21,6 +21,7 @@ use App\Interface\Http\Controller\Dashboard\DashboardController;
 use App\Interface\Http\Controller\Dashboard\SavedViewController;
 use App\Interface\Http\Controller\Identity\SessionController;
 use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
+use App\Interface\Http\Controller\Integration\ConnectionController;
 use App\Interface\Http\Controller\Integration\ExternalAccountController;
 use App\Interface\Http\Controller\Integration\ProjectBindingController;
 use App\Interface\Http\Controller\Integration\ProviderController;
@@ -678,6 +679,24 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
 
     Route::get('integrations/accounts', [ExternalAccountController::class, 'index'])
         ->name('integrations.accounts.index');
+
+    /*
+     * Connections as things in their own right — the agency's and each client's — and the review queue of
+     * what they discovered. Provider-keyed routes above remain the agency's own connection.
+     */
+    Route::get('integrations/connections', [ConnectionController::class, 'index'])->name('integrations.connections.index');
+    Route::post('integrations/connections', [ConnectionController::class, 'store'])->name('integrations.connections.store');
+    Route::post('integrations/connections/{connection}/discover', [ConnectionController::class, 'discover'])
+        ->whereUuid('connection')->name('integrations.connections.discover');
+    Route::put('integrations/connections/{connection}/credentials', [ConnectionController::class, 'reconnect'])
+        ->whereUuid('connection')->name('integrations.connections.reconnect');
+    Route::delete('integrations/connections/{connection}', [ConnectionController::class, 'destroy'])
+        ->whereUuid('connection')->name('integrations.connections.destroy');
+    Route::get('integrations/account-queue', [ConnectionController::class, 'accounts'])->name('integrations.account-queue');
+    Route::post('integrations/accounts/{account}/ignore', [ConnectionController::class, 'ignore'])
+        ->whereUuid('account')->name('integrations.accounts.ignore');
+    Route::delete('integrations/accounts/{account}/ignore', [ConnectionController::class, 'restore'])
+        ->whereUuid('account')->name('integrations.accounts.restore');
 
     /*
      * Which project owns a campaign.

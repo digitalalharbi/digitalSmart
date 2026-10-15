@@ -16,8 +16,10 @@ use App\Domain\Audit\AuditEntry;
 use App\Domain\Integration\ExternalAccountId;
 use App\Domain\Integration\IntegrationBindingId;
 use App\Domain\Integration\ProjectIntegrationBinding;
+use App\Domain\Integration\ProviderConnection;
 use App\Domain\Integration\Repository\ExternalAccountRepository;
 use App\Domain\Integration\Repository\IntegrationBindingRepository;
+use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use App\Domain\Project\ProjectId;
 use App\Domain\Project\Repository\ProjectRepository;
 use App\Domain\Shared\Exception\AccountNotBindable;
@@ -41,6 +43,7 @@ final readonly class BindAccountToProject
     public function __construct(
         private IntegrationBindingRepository $bindings,
         private ExternalAccountRepository $accounts,
+        private ProviderConnectionRepository $connections,
         private ProjectRepository $projects,
         private AuthorizationGuard $guard,
         private ActorContext $actor,
@@ -63,6 +66,13 @@ final readonly class BindAccountToProject
 
         if (! $account->isBindable()) {
             throw AccountNotBindable::because($account->name(), $account->status()->label());
+        }
+
+        $connection = $this->connections->findInWorkspace($workspaceId, $account->connectionId);
+
+        if ($connection instanceof ProviderConnection && ! $connection->owner->isAgency()
+            && ! $connection->owner->belongsTo($project->clientId)) {
+            throw AccountNotBindable::ownedByAnotherClient($account->name());
         }
 
         $existing = $this->bindings->findForPair($workspaceId, $projectId, $accountId);

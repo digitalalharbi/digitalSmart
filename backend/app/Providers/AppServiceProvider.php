@@ -42,6 +42,7 @@ use App\Application\Dashboard\Contract\DashboardRepository;
 use App\Application\Dashboard\Contract\SavedViewRepository;
 use App\Application\Identity\Contract\Authenticator;
 use App\Application\Identity\Contract\IdentityReadModel;
+use App\Application\Integration\Contract\ConnectionDirectory;
 use App\Application\Integration\Contract\CredentialCipher;
 use App\Application\Integration\Contract\IntegrationReadModel;
 use App\Application\Integration\Contract\ProviderAdapterRegistry as ProviderAdapterRegistryContract;
@@ -141,6 +142,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadMod
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentCampaignControlReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientVisibility;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentConnectionDirectory;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentJourneyReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentLeadReadModel;
@@ -323,6 +325,7 @@ final class AppServiceProvider extends ServiceProvider
         CampaignAssignmentRepository::class => EloquentCampaignAssignmentRepository::class,
         CampaignControlReadModel::class => EloquentCampaignControlReadModel::class,
         SearchReadModel::class => EloquentSearchReadModel::class,
+        ConnectionDirectory::class => EloquentConnectionDirectory::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
         AttributionReadModel::class => EloquentAttributionReadModel::class,
         CreativeSpecRegistry::class => EloquentCreativeSpecRegistry::class,
