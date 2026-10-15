@@ -122,22 +122,30 @@ export function IntegrationsPage() {
       {/*
         Four levels, kept as four: the catalogue above, then connections, then the accounts they discovered,
         then what each account is bound to. Merged into one page of cards they were one confusing list.
+
+        Only once the catalogue has answered: it is the read that proves the reader may look at integrations at
+        all. Mounted earlier, a person who may not would see two panels each announce a failure before the page
+        told them why.
       */}
-      <section className="border-line-subtle border-t pt-8">
-        <ConnectionsPanel />
-      </section>
+      {providers ? (
+        <>
+          <section className="border-line-subtle border-t pt-8">
+            <ConnectionsPanel />
+          </section>
 
-      <section className="border-line-subtle border-t pt-8">
-        <AccountQueuePanel />
-      </section>
+          <section className="border-line-subtle border-t pt-8">
+            <AccountQueuePanel />
+          </section>
 
-      <section className="border-line-subtle border-t pt-8">
-        <AccountBindingPanel
-          projects={projects}
-          isLoadingProjects={loadingProjects}
-          onSearchProjects={setProjectTerm}
-        />
-      </section>
+          <section className="border-line-subtle border-t pt-8">
+            <AccountBindingPanel
+              projects={projects}
+              isLoadingProjects={loadingProjects}
+              onSearchProjects={setProjectTerm}
+            />
+          </section>
+        </>
+      ) : null}
     </div>
   );
 }
