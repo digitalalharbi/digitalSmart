@@ -1,4 +1,11 @@
-export const CLIENT_STATUSES = ['prospect', 'active', 'paused', 'archived'] as const;
+export const CLIENT_STATUSES = [
+  'prospect',
+  'onboarding',
+  'active',
+  'paused',
+  'offboarded',
+  'archived',
+] as const;
 
 export type ClientStatus = (typeof CLIENT_STATUSES)[number];
 
@@ -49,8 +56,10 @@ export type ClientPayload = {
  * the authority and rejects anything else with invalid_status_transition.
  */
 export const ALLOWED_TRANSITIONS: Record<ClientStatus, ClientStatus[]> = {
-  prospect: ['active', 'archived'],
-  active: ['paused', 'archived'],
-  paused: ['active', 'archived'],
+  prospect: ['onboarding', 'active', 'archived'],
+  onboarding: ['active', 'archived'],
+  active: ['paused', 'offboarded', 'archived'],
+  paused: ['active', 'offboarded', 'archived'],
+  offboarded: ['active', 'archived'],
   archived: [],
 };

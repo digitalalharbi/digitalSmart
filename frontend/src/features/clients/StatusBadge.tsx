@@ -5,7 +5,9 @@ import type { ClientStatus } from './types';
 const TONE: Record<ClientStatus, 'success' | 'accent' | 'warning' | 'neutral'> = {
   active: 'success',
   prospect: 'accent',
+  onboarding: 'accent',
   paused: 'warning',
+  offboarded: 'warning',
   archived: 'neutral',
 };
 

@@ -168,7 +168,9 @@
       "prospect": "Prospect",
       "active": "Active",
       "paused": "Paused",
-      "archived": "Archived"
+      "archived": "Archived",
+      "onboarding": "Onboarding",
+      "offboarded": "Offboarded"
     },
     "columns": {
       "name": "Client",
@@ -228,11 +230,13 @@
     "deleteTitle": "Delete {{name}}?",
     "deleteDescription": "The project is archived rather than erased: its campaigns, spend history and reports are kept. This cannot be undone from the interface.",
     "status": {
-      "planning": "Planning",
+      "planning": "Draft",
       "active": "Active",
       "paused": "Paused",
       "completed": "Completed",
-      "archived": "Archived"
+      "archived": "Archived",
+      "onboarding": "Onboarding",
+      "closing": "Closing"
     },
     "columns": {
       "name": "Project",
@@ -2357,5 +2361,21 @@
       "finance": "Budgets",
       "creative": "Creative"
     }
+  },
+  "offboard": {
+    "title": "{{name}} is leaving",
+    "body": "Recurring work for this client stops. Review what will happen, and say why.",
+    "willStop": "What will stop",
+    "line": {
+      "projects": "Open projects closed",
+      "bindings": "Accounts that stop syncing",
+      "connections": "Client-granted connections disconnected",
+      "shares": "Report share links revoked",
+      "portal": "Client portal suspended"
+    },
+    "kept": "Kept: every figure, campaign, report, lead, order and audit entry. Nothing is deleted.",
+    "reason": "Reason",
+    "confirm": "Offboard client",
+    "failed": "Offboarding did not complete."
   }
 }

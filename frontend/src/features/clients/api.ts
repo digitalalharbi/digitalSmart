@@ -89,3 +89,50 @@ export function useDeleteClientMutation() {
     onSuccess: () => void invalidate(),
   });
 }
+
+export type OffboardingSummary = {
+  projects_closing: number;
+  bindings_paused: number;
+  connections_disconnected: number;
+  portal_suspended: boolean;
+  share_links_revoked: number;
+  open_tasks: number;
+  open_requests: number;
+};
+
+/** What leaving will stop, before anything is done. The act returns the same shape. */
+export function useOffboardingPreview(clientId: string | null) {
+  return useQuery({
+    queryKey: ['clients', 'offboarding', clientId] as const,
+    queryFn: async (): Promise<OffboardingSummary> => {
+      const response = await api.get<{ data: OffboardingSummary }>(
+        `/clients/${clientId ?? ''}/offboarding`,
+      );
+
+      return response.data.data;
+    },
+    enabled: clientId !== null,
+  });
+}
+
+export function useOffboardClientMutation() {
+  const invalidate = useInvalidateClients();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      reason,
+    }: {
+      id: string;
+      reason: string;
+    }): Promise<OffboardingSummary> => {
+      await ensureCsrfCookie();
+      const response = await api.post<{ data: OffboardingSummary }>(`/clients/${id}/offboard`, {
+        reason,
+      });
+
+      return response.data.data;
+    },
+    onSuccess: () => void invalidate(),
+  });
+}

@@ -7,6 +7,7 @@ import { PERMISSIONS, useSession } from '@/features/auth';
 import { Button } from '@/shared/ui/button';
 import { buttonVariants } from '@/shared/ui/button.variants';
 import { useChangeClientStatusMutation, useDeleteClientMutation } from './api';
+import { OffboardClientDialog } from './OffboardClientDialog';
 import { ALLOWED_TRANSITIONS, type Client } from './types';
 
 type ClientRowActionsProps = {
@@ -26,6 +27,7 @@ export function ClientRowActions({ client, onEdit }: ClientRowActionsProps) {
   const changeStatus = useChangeClientStatusMutation();
   const deleteClient = useDeleteClientMutation();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [offboarding, setOffboarding] = useState(false);
 
   const canUpdate = can(PERMISSIONS.clientsUpdate);
   const canDelete = can(PERMISSIONS.clientsDelete);
@@ -72,7 +74,16 @@ export function ClientRowActions({ client, onEdit }: ClientRowActionsProps) {
                   <DropdownMenu.Item
                     key={status}
                     disabled={changeStatus.isPending}
-                    onSelect={() => changeStatus.mutate({ id: client.id, status })}
+                    onSelect={() => {
+                      /* Leaving is not a status toggle: it stops things, so it shows what and asks why. */
+                      if (status === 'offboarded') {
+                        setOffboarding(true);
+
+                        return;
+                      }
+
+                      changeStatus.mutate({ id: client.id, status });
+                    }}
                     className="text-content hover:bg-surface-hover focus:bg-surface-hover cursor-pointer rounded-md px-2.5 py-1.5 text-sm outline-none"
                   >
                     {t(`clients.status.${status}`)}
@@ -98,6 +109,11 @@ export function ClientRowActions({ client, onEdit }: ClientRowActionsProps) {
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
+
+      <OffboardClientDialog
+        client={offboarding ? client : null}
+        onClose={() => setOffboarding(false)}
+      />
 
       <AlertDialog.Root open={confirmingDelete} onOpenChange={setConfirmingDelete}>
         <AlertDialog.Portal>

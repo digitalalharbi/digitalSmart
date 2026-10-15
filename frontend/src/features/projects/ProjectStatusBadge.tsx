@@ -5,7 +5,9 @@ import { SPENDING_STATUSES, type ProjectStatus } from './types';
 const TONE: Record<ProjectStatus, 'success' | 'accent' | 'warning' | 'info' | 'neutral'> = {
   active: 'success',
   planning: 'accent',
+  onboarding: 'accent',
   paused: 'warning',
+  closing: 'warning',
   completed: 'info',
   archived: 'neutral',
 };

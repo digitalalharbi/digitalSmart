@@ -1,4 +1,12 @@
-export const PROJECT_STATUSES = ['planning', 'active', 'paused', 'completed', 'archived'] as const;
+export const PROJECT_STATUSES = [
+  'planning',
+  'onboarding',
+  'active',
+  'paused',
+  'closing',
+  'completed',
+  'archived',
+] as const;
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
@@ -39,15 +47,17 @@ export type ProjectPayload = {
 
 /** Mirrors the domain's transitions; the server remains the authority. */
 export const ALLOWED_TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
-  planning: ['active', 'archived'],
-  active: ['paused', 'completed', 'archived'],
-  paused: ['active', 'completed', 'archived'],
+  planning: ['onboarding', 'active', 'archived'],
+  onboarding: ['planning', 'active', 'archived'],
+  active: ['paused', 'closing', 'completed', 'archived'],
+  paused: ['active', 'closing', 'completed', 'archived'],
+  closing: ['active', 'completed', 'archived'],
   completed: ['active', 'archived'],
   archived: [],
 };
 
 /** Statuses during which campaigns may spend. Shown so pacing is never a surprise. */
-export const SPENDING_STATUSES: ProjectStatus[] = ['active'];
+export const SPENDING_STATUSES: ProjectStatus[] = ['active', 'closing'];
 
 /** Somebody on a project, in the role they hold on it. */
 export type ProjectMember = {
