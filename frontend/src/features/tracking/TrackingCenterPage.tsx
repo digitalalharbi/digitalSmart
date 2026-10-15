@@ -16,6 +16,7 @@ import { IssueList } from './IssueList';
 import { ObservedEventsChart } from './ObservedEventsChart';
 import { RemoveSourceDialog } from './RemoveSourceDialog';
 import { SourceRegistration } from './SourceRegistration';
+import { TrackingScorecards } from './TrackingScorecards';
 import { useSyncSourceMutation, useTrackingHealthQuery } from './useTracking';
 import type { EventDefinition, Freshness, MeasurementSource, SyncResult } from './types';
 
@@ -120,6 +121,12 @@ export function TrackingCenterPage() {
         <Alert tone="danger">{t('tracking.loadFailed')}</Alert>
       ) : health.data === undefined ? null : (
         <>
+          <TrackingScorecards
+            sources={health.data.sources}
+            issues={health.data.issues}
+            locale={i18n.language}
+          />
+
           <section className="flex flex-col gap-3" aria-labelledby="tracking-issues">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 id="tracking-issues" className="text-content text-lg font-semibold">

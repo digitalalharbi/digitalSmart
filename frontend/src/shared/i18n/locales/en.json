@@ -944,6 +944,15 @@
       "leads": "Leads it reported keep their record and stop naming it.",
       "confirm": "Remove it",
       "failed": "Could not remove that source."
+    },
+    "cards": {
+      "title": "Tracking health",
+      "score": "Tracking health",
+      "summary": "{{healthy}} of {{total}} sources reporting",
+      "lastEvent": "Last event",
+      "lastSync": "Last sync",
+      "issues": "Issues",
+      "none": "None"
     }
   },
   "commerce": {
