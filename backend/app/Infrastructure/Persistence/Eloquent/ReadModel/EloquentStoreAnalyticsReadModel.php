@@ -10,10 +10,12 @@ use App\Application\Commerce\DTO\DailyRevenuePoint;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Commerce\DTO\StoreRevenueSummary;
+use App\Application\Commerce\DTO\StoreRollupRow;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Commerce\AttributionEvidence;
 use App\Domain\Commerce\CustomerRecency;
 use App\Domain\Commerce\PaymentState;
+use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -97,6 +99,74 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
             attributedOrders: (int) ($totals->attributed_orders ?? 0),
             attributedRevenueMinor: (int) ($totals->attributed_revenue ?? 0),
         );
+    }
+
+    /** @return list<StoreRollupRow> */
+    public function byStore(StoreQuery $query): array
+    {
+        $stores = DB::table('stores as s')
+            ->join('clients as c', 'c.id', '=', 's.client_id')
+            ->where('s.workspace_id', $query->workspaceId);
+
+        if ($query->clientId !== null) {
+            $stores->where('s.client_id', $query->clientId);
+        }
+
+        if ($query->visibleProjectIds !== null) {
+            if ($query->visibleProjectIds === []) {
+                return [];
+            }
+
+            $stores->whereIn('s.client_id', static function (Builder $sub) use ($query): void {
+                $sub->select('client_id')->from('projects')
+                    ->where('workspace_id', $query->workspaceId)->whereIn('id', $query->visibleProjectIds ?? []);
+            });
+        }
+
+        $sales = DB::table('store_orders as o')
+            ->where('o.workspace_id', $query->workspaceId)
+            ->where('o.revenue_source', $query->revenueSource->value)
+            ->where('o.placed_at', '>=', $query->from)
+            ->where('o.placed_at', '<=', $query->until)
+            ->whereIn('o.payment_state', self::REVENUE_STATES)
+            ->groupBy('o.store_id')
+            ->selectRaw(
+                'o.store_id, count(*) as orders, coalesce(sum(o.total_minor), 0) as revenue, '
+                .'coalesce(sum(o.refunded_minor), 0) as refunded, '
+                ."coalesce(sum(o.total_minor - o.refunded_minor) filter (where o.attribution_evidence <> 'none'), 0) as attributed",
+            );
+
+        $rows = $stores->leftJoinSub($sales, 't', 't.store_id', '=', 's.id')
+            ->orderByRaw('coalesce(t.revenue, 0) desc')->orderBy('s.name')
+            ->limit($query->limit)
+            ->get(['s.id', 's.name', 's.provider', 's.client_id', 'c.name as client_name', 's.currency', 's.is_active', 's.last_synced_at',
+                't.orders', 't.revenue', 't.refunded', 't.attributed']);
+
+        $out = [];
+
+        foreach ($rows as $r) {
+            $orders = (int) $r->orders;
+            $revenue = (int) $r->revenue;
+            $refunded = (int) $r->refunded;
+            $out[] = new StoreRollupRow(
+                storeId: (string) $r->id,
+                storeName: (string) $r->name,
+                provider: (string) $r->provider,
+                clientId: (string) $r->client_id,
+                clientName: (string) $r->client_name,
+                currency: (string) $r->currency,
+                isActive: (bool) $r->is_active,
+                orders: $orders,
+                revenueMinor: $revenue,
+                refundedMinor: $refunded,
+                netRevenueMinor: $revenue - $refunded,
+                averageOrderMinor: $orders > 0 ? intdiv($revenue, $orders) : null,
+                attributedRevenueMinor: (int) $r->attributed,
+                lastSyncedAt: is_string($r->last_synced_at) ? new DateTimeImmutable($r->last_synced_at) : null,
+            );
+        }
+
+        return $out;
     }
 
     /** @return list<RevenueBreakdownRow> */

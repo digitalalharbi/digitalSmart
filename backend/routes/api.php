@@ -17,6 +17,7 @@ use App\Interface\Http\Controller\Budget\PacingController;
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Client\OffboardingController;
 use App\Interface\Http\Controller\Commerce\StoreAnalyticsController;
+use App\Interface\Http\Controller\Commerce\StoreRollupController;
 use App\Interface\Http\Controller\Commerce\StoreController;
 use App\Interface\Http\Controller\Commerce\StoreWebhookController;
 use App\Interface\Http\Controller\Creative\CreativeController;
@@ -559,6 +560,7 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      */
     Route::get('commerce/analytics', StoreAnalyticsController::class)
         ->name('commerce.analytics');
+    Route::get('commerce/rollup', StoreRollupController::class)->name('commerce.rollup');
 
     /*
      * The stores a workspace reads. Reading the list needs `analytics.view` — "where does this figure come from

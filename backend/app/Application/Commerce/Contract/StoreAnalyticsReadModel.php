@@ -9,6 +9,7 @@ use App\Application\Commerce\DTO\DailyRevenuePoint;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Commerce\DTO\StoreRevenueSummary;
+use App\Application\Commerce\DTO\StoreRollupRow;
 
 /**
  * Reading what a client's stores sold.
@@ -79,4 +80,12 @@ interface StoreAnalyticsReadModel
      * @return list<DailyRevenuePoint>
      */
     public function daily(StoreQuery $query): array;
+
+    /**
+     * One row per store in scope, busiest first. Stores with no orders in the window still appear — a store
+     * that sold nothing is something an agency needs to see, not a row that was never there.
+     *
+     * @return list<StoreRollupRow>
+     */
+    public function byStore(StoreQuery $query): array;
 }
