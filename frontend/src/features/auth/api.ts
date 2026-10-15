@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, ensureCsrfCookie } from '@/shared/api/client';
+import { api, ensureCsrfCookie, abortInFlightRequests } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { AuthenticatedUser, Credentials, PasswordChange } from './types';
 
@@ -64,6 +64,8 @@ export function useLogoutMutation() {
 
   return useMutation({
     mutationFn: async (): Promise<void> => {
+      /* First, so no answer to something asked while signed in can arrive after, and put the session back. */
+      abortInFlightRequests();
       await api.post('/auth/logout', undefined, { retryOnNetworkError: true });
     },
     onSuccess: () => {

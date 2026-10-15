@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios';
-import { api, ApiError } from './client';
+import { abortInFlightRequests, api, ApiError } from './client';
 
 /*
 |--------------------------------------------------------------------------
@@ -174,5 +174,49 @@ describe('a request that gets an answer', () => {
     // The server decides what is wrong with a field; the interface only places the message.
     expect(error.status).toBe(422);
     expect(error.fieldError('name')).toBe('A client with that name already exists.');
+  });
+});
+
+describe('withdrawing what is in flight', () => {
+  it('cancels a pending request without retrying it, and leaves later ones alone', async () => {
+    let attempts = 0;
+
+    api.defaults.adapter = (config) =>
+      new Promise((resolve, reject) => {
+        attempts += 1;
+        const signal = config.signal;
+
+        if (signal === undefined) {
+          reject(new Error('A request left the client without a signal.'));
+
+          return;
+        }
+
+        signal.addEventListener?.('abort', () => {
+          reject(new DOMException('aborted', 'AbortError'));
+        });
+
+        if (attempts > 1) {
+          resolve({
+            data: { ok: true },
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config,
+          } as AxiosResponse);
+        }
+      });
+
+    const pending = api.get('/slow');
+    // Past the request interceptors, which is where "in flight" begins.
+    await vi.waitFor(() => expect(attempts).toBe(1));
+    abortInFlightRequests();
+
+    await expect(pending).rejects.toBeInstanceOf(ApiError);
+    // Not repeated: a withdrawn request is not a dropped connection.
+    expect(attempts).toBe(1);
+
+    // And the group is fresh: a request made afterwards is not born cancelled.
+    await expect(api.get('/later')).resolves.toMatchObject({ status: 200 });
   });
 });

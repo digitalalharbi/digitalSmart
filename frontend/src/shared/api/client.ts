@@ -120,7 +120,28 @@ export const api: AxiosInstance = axios.create({
  * Request interceptor: attach the locale and the CSRF token Sanctum expects for
  * stateful SPA requests.
  */
+/**
+ * Everything in flight, as one abortable group.
+ *
+ * Signing out has to be able to say "nothing that started before this may land after it". A response to a request
+ * that began while the person was signed in carries a `Set-Cookie` for the session it read; arriving after the
+ * sign-out has replaced that cookie, it puts the old, authenticated session back — and the reader is signed in
+ * again behind a login screen. It happened one run in four under load, and the cause is not the server being
+ * slow: it is a late answer overwriting a newer cookie.
+ *
+ * Aborting the group before the sign-out is sent means the browser discards those responses instead of applying
+ * them. Requests made afterwards get a fresh controller.
+ */
+let inFlight = new AbortController();
+
+export function abortInFlightRequests(): void {
+  inFlight.abort();
+  inFlight = new AbortController();
+}
+
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  config.signal ??= inFlight.signal;
+
   const locale = document.documentElement.lang;
   if (locale) {
     config.headers.set('Accept-Language', locale);
@@ -141,6 +162,14 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 api.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
+    /*
+     * A request this client withdrew is not a failure to report and not one to repeat: it was cancelled on
+     * purpose, usually because the person is leaving.
+     */
+    if (axios.isCancel(error)) {
+      return Promise.reject(new ApiError('The request was cancelled.', null));
+    }
+
     if (!axios.isAxiosError(error)) {
       return Promise.reject(
         error instanceof Error
