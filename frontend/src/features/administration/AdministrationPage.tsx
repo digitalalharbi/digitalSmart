@@ -6,8 +6,9 @@ import { PageHeader } from '@/shared/ui/page-header';
 import { cn } from '@/shared/lib/cn';
 import { AuditPanel } from './AuditPanel';
 import { MembersPanel } from './MembersPanel';
+import { OperationsPanel } from './OperationsPanel';
 
-type Tab = 'people' | 'audit';
+type Tab = 'people' | 'audit' | 'operations';
 
 export function AdministrationPage() {
   const { t } = useTranslation();
@@ -16,8 +17,9 @@ export function AdministrationPage() {
 
   const canSeePeople = can(PERMISSIONS.usersView);
   const canSeeAudit = can(PERMISSIONS.auditView);
+  const canSeeOperations = can(PERMISSIONS.workspacesView);
 
-  if (!canSeePeople && !canSeeAudit) {
+  if (!canSeePeople && !canSeeAudit && !canSeeOperations) {
     return (
       <div className="flex flex-col gap-6">
         <h1 className="text-content text-2xl font-semibold">{t('nav.administration')}</h1>
@@ -29,6 +31,7 @@ export function AdministrationPage() {
   const tabs: { id: Tab; label: string; visible: boolean }[] = [
     { id: 'people', label: t('administration.people'), visible: canSeePeople },
     { id: 'audit', label: t('administration.auditLog'), visible: canSeeAudit },
+    { id: 'operations', label: t('administration.operations'), visible: canSeeOperations },
   ];
   const visibleTabs = tabs.filter((candidate) => candidate.visible);
   const active = visibleTabs.some((candidate) => candidate.id === tab)
@@ -59,7 +62,15 @@ export function AdministrationPage() {
         ))}
       </div>
 
-      <div role="tabpanel">{active === 'people' ? <MembersPanel /> : <AuditPanel />}</div>
+      <div role="tabpanel">
+        {active === 'people' ? (
+          <MembersPanel />
+        ) : active === 'audit' ? (
+          <AuditPanel />
+        ) : (
+          <OperationsPanel />
+        )}
+      </div>
     </div>
   );
 }

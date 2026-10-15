@@ -27,6 +27,9 @@ export const queryKeys = {
   integrations: {
     all: () => ['integrations'] as const,
     providers: () => ['integrations', 'providers'] as const,
+    connections: () => ['integrations', 'connections'] as const,
+    queue: (states: string[]) => ['integrations', 'queue', states] as const,
+    operations: () => ['integrations', 'operations'] as const,
     accounts: (provider: string) => ['integrations', 'accounts', provider] as const,
     bindings: (projectId: string) => ['integrations', 'bindings', projectId] as const,
   },

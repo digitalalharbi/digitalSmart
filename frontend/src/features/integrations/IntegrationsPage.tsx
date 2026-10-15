@@ -7,6 +7,8 @@ import { LoadingRegion } from '@/shared/ui/loading-region';
 import { PageHeader } from '@/shared/ui/page-header';
 import { useProjectsQuery } from '@/features/projects';
 import { AccountBindingPanel } from './AccountBindingPanel';
+import { AccountQueuePanel } from './AccountQueuePanel';
+import { ConnectionsPanel } from './ConnectionsPanel';
 import { ProviderCard } from './ProviderCard';
 import type { ProviderRow } from './types';
 import { useProvidersQuery } from './api';
@@ -111,6 +113,18 @@ export function IntegrationsPage() {
             </section>
           ))
         : null}
+
+      {/*
+        Four levels, kept as four: the catalogue above, then connections, then the accounts they discovered,
+        then what each account is bound to. Merged into one page of cards they were one confusing list.
+      */}
+      <section className="border-line-subtle border-t pt-8">
+        <ConnectionsPanel />
+      </section>
+
+      <section className="border-line-subtle border-t pt-8">
+        <AccountQueuePanel />
+      </section>
 
       <section className="border-line-subtle border-t pt-8">
         <AccountBindingPanel projects={projects} isLoadingProjects={loadingProjects} />
