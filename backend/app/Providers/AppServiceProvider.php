@@ -79,6 +79,7 @@ use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\Contract\TaskRepository;
 use App\Application\Portal\Contract\PortalRepository;
+use App\Application\Portfolio\Contract\PortfolioReadModel;
 use App\Application\Presentation\Contract\DeckWriter;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
@@ -151,6 +152,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentJourneyReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentLeadReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentObservedEventReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentPortfolioReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSearchReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentStoreAnalyticsReadModel;
@@ -330,6 +332,7 @@ final class AppServiceProvider extends ServiceProvider
         CampaignControlReadModel::class => EloquentCampaignControlReadModel::class,
         SearchReadModel::class => EloquentSearchReadModel::class,
         ConnectionDirectory::class => EloquentConnectionDirectory::class,
+        PortfolioReadModel::class => EloquentPortfolioReadModel::class,
         BudgetControlReadModel::class => EloquentBudgetControlReadModel::class,
         SyncCandidateSource::class => EloquentSyncCandidateSource::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,

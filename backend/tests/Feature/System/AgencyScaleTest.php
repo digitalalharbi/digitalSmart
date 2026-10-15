@@ -172,7 +172,7 @@ it('issues the same number of statements over a bigger agency: the attention que
 it('issues the same number of statements over a bigger agency: the budget control center and search', function (): void {
     seedAgency(clients: 6, accounts: 10, campaigns: 20);
     $owner = scaleOwner();
-    $urls = ['/api/budgets/control', '/api/search?q=Scale', '/api/integrations/account-queue'];
+    $urls = ['/api/budgets/control', '/api/search?q=Scale', '/api/integrations/account-queue', '/api/portfolio'];
 
     $small = [];
 
@@ -236,6 +236,7 @@ it('keeps the agency views within their stated query budget', function (): void 
          */
         '/api/attention' => 17,
         '/api/budgets/control' => 9,
+        '/api/portfolio' => 18,
         '/api/search?q=Scale' => 8,
         '/api/integrations/connections' => 8,
         '/api/integrations/account-queue' => 9,

@@ -35,6 +35,7 @@ use App\Interface\Http\Controller\Operations\ClientRequestController;
 use App\Interface\Http\Controller\Operations\TaskController;
 use App\Interface\Http\Controller\Portal\ClientPortalController;
 use App\Interface\Http\Controller\Portal\PortalConfigurationController;
+use App\Interface\Http\Controller\Portfolio\PortfolioController;
 use App\Interface\Http\Controller\Presentation\PresentationController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
@@ -242,6 +243,10 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
     Route::post('budgets', [BudgetController::class, 'store'])->name('budgets.store');
     /* Every approved budget with pacing and risk — the finance view, in a fixed number of statements. */
+    /* How the whole agency, or one client, is doing - assembled from the reads that already exist. */
+    Route::get('portfolio', [PortfolioController::class, 'agency'])->name('portfolio.agency');
+    Route::get('portfolio/clients/{client}', [PortfolioController::class, 'client'])
+        ->whereUuid('client')->name('portfolio.client');
     Route::get('budgets/control', [BudgetControlController::class, 'index'])->name('budgets.control');
     Route::get('budgets/alerts', [PacingController::class, 'alerts'])->name('budgets.alerts');
     Route::get('budgets/{budget}', [BudgetController::class, 'show'])

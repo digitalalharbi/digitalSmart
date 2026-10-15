@@ -59,28 +59,16 @@ final readonly class GetCampaignControl
         ?int $limit = null,
         int $offset = 0,
     ): CampaignControlPage {
-        $this->guard->ensure(Permission::AnalyticsView);
-
-        $now = $this->clock->now();
-        $to = $now->modify('-1 day');
-        $from = $to->modify(sprintf('-%d days', self::WINDOW_DAYS - 1));
-
+        $assessment = $this->assessAll($filter);
+        $rows = $assessment['rows'];
+        $now = $assessment['now'];
+        $to = $assessment['to'];
+        $from = $assessment['from'];
+        $total = $assessment['total'];
+        $vitals = $assessment['rows'];
         $workspaceId = $this->actor->workspaceId()->value;
-        $visible = $this->visibility->visibleProjectIds();
         $cap = max(1, min($limit ?? self::PER_PAGE, 200));
         $start = max(0, $offset);
-
-        $vitals = $this->campaigns->vitals(
-            $workspaceId,
-            $visible,
-            $filter,
-            $from,
-            $to,
-            self::ASSESSMENT_CAP,
-        );
-        $total = $this->campaigns->count($workspaceId, $visible, $filter);
-
-        $rows = array_map(fn (CampaignVitalsRow $row): CampaignControlRow => $this->judge($row, $now), $vitals);
 
         $counts = array_fill_keys(CampaignControlPage::healthStates(), 0);
 
@@ -148,6 +136,38 @@ final readonly class GetCampaignControl
             limit: $cap,
             offset: $start,
         );
+    }
+
+    /**
+     * Every campaign the reader may see, judged — the shared basis of the control center, the portfolio
+     * and the attention queue.
+     *
+     * Public because those three must agree about a campaign, and the only way to guarantee that is for
+     * there to be one place a verdict is produced. Capped at `ASSESSMENT_CAP`, with `total` beside it.
+     *
+     * @return array{rows: list<CampaignControlRow>, total: int, now: DateTimeImmutable, from: DateTimeImmutable, to: DateTimeImmutable}
+     */
+    public function assessAll(CampaignControlFilter $filter): array
+    {
+        $this->guard->ensure(Permission::AnalyticsView);
+
+        $now = $this->clock->now();
+        $to = $now->modify('-1 day');
+        $from = $to->modify(sprintf('-%d days', self::WINDOW_DAYS - 1));
+
+        $workspaceId = $this->actor->workspaceId()->value;
+        $visible = $this->visibility->visibleProjectIds();
+
+        $vitals = $this->campaigns->vitals($workspaceId, $visible, $filter, $from, $to, self::ASSESSMENT_CAP);
+        $total = $this->campaigns->count($workspaceId, $visible, $filter);
+
+        return [
+            'rows' => array_map(fn (CampaignVitalsRow $row): CampaignControlRow => $this->judge($row, $now), $vitals),
+            'total' => $total,
+            'now' => $now,
+            'from' => $from,
+            'to' => $to,
+        ];
     }
 
     /** Average spend on a reporting day against a *daily* budget. Any other mode has no daily line to read against. */
