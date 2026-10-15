@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/query-keys';
 import { fetchAttention } from './api';
-import type { AttentionStreamValue } from './types';
+import type { AttentionAudience, AttentionStreamValue } from './types';
 
 /**
  * What is waiting on this person.
@@ -12,10 +12,14 @@ import type { AttentionStreamValue } from './types';
  * Thirty seconds, like the boards: several people work the same queue, and an item somebody else cleared
  * five minutes ago should not still be asking.
  */
-export function useAttentionQuery(streams: AttentionStreamValue[] = [], limit?: number) {
+export function useAttentionQuery(
+  streams: AttentionStreamValue[] = [],
+  limit?: number,
+  audience: AttentionAudience = 'all',
+) {
   return useQuery({
-    queryKey: queryKeys.attention.queue({ streams, limit: limit ?? null }),
-    queryFn: () => fetchAttention(streams, limit),
+    queryKey: queryKeys.attention.queue({ streams, limit: limit ?? null, audience }),
+    queryFn: () => fetchAttention(streams, limit, audience),
     staleTime: 30_000,
   });
 }

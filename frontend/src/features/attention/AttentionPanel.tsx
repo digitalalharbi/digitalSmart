@@ -1,14 +1,18 @@
 import type { TFunction } from 'i18next';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { AttentionList } from '@/shared/ui/attention-list';
+import { Choice } from '@/shared/ui/choice';
 import type { AttentionItem as ListItem } from '@/shared/ui/attention.model';
 import { Badge } from '@/shared/ui/badge';
 import { PageSection } from '@/shared/ui/page-header';
 import { useAttentionQuery } from './useAttention';
-import type { AttentionItem, AttentionQueue } from './types';
+import type { AttentionAudience, AttentionItem, AttentionQueue } from './types';
+
+const AUDIENCES: AttentionAudience[] = ['all', 'my_clients', 'my_projects'];
 
 /** The queue's three severities onto the shared health words. Same colour, same glyph, same meaning. */
 const SEVERITY = {
@@ -33,7 +37,8 @@ const SEVERITY = {
  */
 export function AttentionPanel({ limit = 6 }: { limit?: number | undefined }) {
   const { t, i18n } = useTranslation();
-  const { data, isPending, isError, error } = useAttentionQuery([], 50);
+  const [audience, setAudience] = useState<AttentionAudience>('all');
+  const { data, isPending, isError, error } = useAttentionQuery([], 50, audience);
 
   /*
    * `Intl.ListFormat` rather than `join(', ')`: English wants "budgets, tracking and approvals" and
@@ -77,6 +82,14 @@ export function AttentionPanel({ limit = 6 }: { limit?: number | undefined }) {
         )
       }
     >
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t('attention.audience.label')}>
+        {AUDIENCES.map((value) => (
+          <Choice key={value} isSelected={audience === value} onSelect={() => setAudience(value)}>
+            {t(`attention.audience.${value}`)}
+          </Choice>
+        ))}
+      </div>
+
       {failedNotice(data, list, t)}
 
       <AttentionList items={items} isPending={isPending} limit={limit} />

@@ -51,3 +51,6 @@ export type AttentionQueue = {
     streams: Array<{ stream: AttentionStreamValue; label: string; path: string }>;
   };
 };
+
+/** Whose items to show. A narrowing of what the reader may already see, never a widening. */
+export type AttentionAudience = 'all' | 'my_clients' | 'my_projects';

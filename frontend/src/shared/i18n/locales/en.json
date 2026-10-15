@@ -2238,6 +2238,12 @@
     "empty": {
       "title": "Nothing needs attention",
       "body": "Everything in view is within range."
+    },
+    "audience": {
+      "label": "Whose",
+      "all": "Everything I can see",
+      "my_clients": "My clients",
+      "my_projects": "My projects"
     }
   },
   "activity": {
