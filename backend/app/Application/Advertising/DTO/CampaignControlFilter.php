@@ -45,6 +45,13 @@ final readonly class CampaignControlFilter
          * @var list<string>
          */
         public array $tagIds = [],
+        /**
+         * Specific campaigns — the campaign's own page asks for exactly one, through the same read, so its verdict
+         * is by construction the verdict on the card that linked to it.
+         *
+         * @var list<string>
+         */
+        public array $campaignIds = [],
     ) {}
 
     /** @return list<string> */
@@ -68,6 +75,7 @@ final readonly class CampaignControlFilter
             || $this->statuses !== []
             || $this->objectives !== []
             || $this->tagIds !== []
+            || $this->campaignIds !== []
             || ($this->search !== null && $this->search !== '');
     }
 }

@@ -227,6 +227,7 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
     private function narrow(Builder $query, CampaignControlFilter $filter): Builder
     {
         return $query
+            ->when($filter->campaignIds !== [], fn (Builder $q): Builder => $q->whereIn('c.id', $filter->campaignIds))
             ->when($filter->clientIds !== [], fn (Builder $q): Builder => $q->whereIn('cl.id', $filter->clientIds))
             ->when($filter->projectIds !== [], fn (Builder $q): Builder => $q->whereIn(
                 DB::raw('coalesce(ap.id, ip.id)'),

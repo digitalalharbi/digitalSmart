@@ -343,3 +343,17 @@ it('publishes the headline spend and its trend over everything matched, per curr
             test()->actingAs($w->scenario->owner)->getJson('/api/campaigns/control?limit=200')->json('meta.spend_by_currency'),
         );
 });
+
+it('answers for exactly one campaign when asked by id, with the same verdict as the list', function (): void {
+    $w = Tests\Support\SyncedWorkspace::with([App\Domain\Integration\Provider::Meta->value => 'act_sandbox_1001']);
+    $owner = $w->scenario->owner;
+    $all = test()->actingAs($owner)->getJson('/api/campaigns/control?limit=200')->json('data');
+    $one = $all[0];
+
+    $single = test()->actingAs($owner)->getJson('/api/campaigns/control?campaign_id[]='.$one['id'])->assertOk()->json('data');
+
+    expect($single)->toHaveCount(1)
+        ->and($single[0]['id'])->toBe($one['id'])
+        ->and($single[0]['health'])->toBe($one['health'])
+        ->and($single[0]['spend_minor'])->toBe($one['spend_minor']);
+});
