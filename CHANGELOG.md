@@ -4,6 +4,48 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Agency scale: the control plane, measured
+
+The agency surfaces — one place to see every campaign, client, budget, lead and store — built over the
+tenancy model that was already right, and measured at the constitution's size. The audit is
+`docs/AGENCY_SCALE.md`; every rule in it is MET or BLOCKED, with the file or test that carries it.
+
+### Added
+
+- **Surfaces:** Campaign Control Center with a review queue and bulk placement; Agency Portfolio, client
+  portfolio and a project workspace hub; Budget Control Center; Attention queue with *my clients / my
+  projects*; role-shaped Home; global search and command palette with working context, pins and recents;
+  stores across clients; lead scopes (all / my clients / my projects / my leads).
+- **Integrations:** agency- and client-owned connections, the unassigned-account queue, a central sync
+  monitor, per-provider pacing against published limits, and history reads for a chosen 30/90/180/365-day
+  window on the lowest-priority queue.
+- **Operations:** queued CSV/Excel exports with status, notification and owner-only download; scheduled
+  exports (daily / weekly / monthly) that run as their owner and halt with a reason when access is lost;
+  digests that ring the bell once; saved views (private / project team / workspace) on three surfaces;
+  internal tags with bulk apply; project, campaign and data-quality readiness; client offboarding that
+  stops what recurs and deletes nothing; cross-client benchmarks that are internal-only and suppressed
+  below three clients.
+- **Proof:** `AgencyScaleSeeder` (100 clients, 230 projects, 300 accounts, 2,000 campaigns, 180,000 daily
+  rows, 5,000 leads, 20,000 orders); statement-count invariance and absolute budgets with a wall-clock
+  ceiling; a sweep of thirty-six agency-wide endpoints for another client's data; agency-surface e2e on
+  desktop and mobile, with accessibility, Arabic and dark.
+
+### Fixed
+
+- **A budget read that took four minutes in six statements** (a correlated sub-select per metric row,
+  over statistics the planner did not have). 58 ms now. Attention and the portfolio read the same
+  function and were equally slow.
+- **A lead list that issued a `COUNT` per lead.**
+- **Twelve screens that listed a hundred clients and silently dropped the 101st** now search instead of
+  list, composers and forms included.
+- **A locale collision:** the integration monitor's strings had replaced the work board's namespace.
+- **A month-boundary e2e** that passed for half of every month.
+
+### Known
+
+- `AttributionPage`, `MediaPlannerPage` and `StoreAnalyticsPage` still cap client pickers at a hundred;
+  they were under another session's uncommitted edit. Recorded in `docs/AGENCY_SCALE.md`.
+
 ## Live commissioning: the instrument, and an honest ledger of what has never been reached
 
 The product's own work is closed. This begins the other half — making real accounts answer — and the first
