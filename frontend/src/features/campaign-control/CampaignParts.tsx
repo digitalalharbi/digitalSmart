@@ -7,7 +7,7 @@ import { Badge } from '@/shared/ui/badge';
 import { HealthPill } from '@/shared/ui/health';
 import { Sparkline } from '@/shared/ui/sparkline';
 import { ProviderLogo } from '@/features/integrations';
-import { HEALTH_TO_STATE, type CampaignRow, type HealthValue } from './types';
+import { HEALTH_TO_STATE, type CampaignRow } from './types';
 
 /** Average daily spend against a daily budget, as a bar plus the figure beside it. */
 export function BudgetBar({ row }: { row: CampaignRow }) {
@@ -127,67 +127,5 @@ export function CampaignCard({ row }: { row: CampaignRow }) {
           : t('campaignControl.updated', { when: formatRelativeTime(row.last_synced_at, locale) })}
       </p>
     </article>
-  );
-}
-
-/** Six states as one stacked bar, each segment a button that narrows the list to it. */
-export function HealthDistribution({
-  counts,
-  selected,
-  onSelect,
-  order,
-  labels,
-}: {
-  counts: Record<HealthValue, number>;
-  selected: HealthValue | null;
-  onSelect: (health: HealthValue | null) => void;
-  order: HealthValue[];
-  labels: Record<HealthValue, string>;
-}) {
-  const total = order.reduce((sum, key) => sum + counts[key], 0);
-  const tone: Record<HealthValue, string> = {
-    healthy: 'bg-success',
-    watch: 'bg-warning',
-    needs_attention: 'bg-warning',
-    critical: 'bg-danger',
-    inactive: 'bg-content-tertiary',
-    insufficient_data: 'bg-line',
-  };
-
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="bg-surface-sunken flex h-3 w-full overflow-hidden rounded-full" aria-hidden>
-        {order.map((key) =>
-          counts[key] === 0 || total === 0 ? null : (
-            <span
-              key={key}
-              className={cn(tone[key], 'h-full')}
-              style={{ width: `${String((counts[key] / total) * 100)}%` }}
-            />
-          ),
-        )}
-      </div>
-      <ul className="flex flex-wrap gap-2">
-        {order.map((key) => (
-          <li key={key}>
-            <button
-              type="button"
-              aria-pressed={selected === key}
-              onClick={() => onSelect(selected === key ? null : key)}
-              className={cn(
-                'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium',
-                selected === key
-                  ? 'border-accent bg-accent-subtle text-content-brand'
-                  : 'border-line text-content-secondary hover:bg-surface-hover',
-              )}
-            >
-              <span aria-hidden className={cn('size-2 rounded-full', tone[key])} />
-              {labels[key]}
-              <span className="ds-numeric">{counts[key]}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }

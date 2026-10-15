@@ -30,6 +30,12 @@ export const queryKeys = {
     accounts: (provider: string) => ['integrations', 'accounts', provider] as const,
     bindings: (projectId: string) => ['integrations', 'bindings', projectId] as const,
   },
+  portfolio: {
+    view: (clientId: string | null) => ['portfolio', clientId] as const,
+  },
+  budgetControl: {
+    list: (risk: string | null) => ['budget-control', risk] as const,
+  },
   shortcuts: {
     all: () => ['shortcuts'] as const,
   },

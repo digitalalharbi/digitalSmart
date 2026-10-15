@@ -1,6 +1,7 @@
 import {
   BadgeCheck,
   Bell,
+  BriefcaseBusiness,
   Building2,
   Calculator,
   CalendarRange,
@@ -10,6 +11,7 @@ import {
   FolderKanban,
   GitBranch,
   Inbox,
+  Landmark,
   LayoutDashboard,
   LayoutGrid,
   ListChecks,
@@ -39,6 +41,7 @@ import {
 export const NAV_ICONS: Record<string, LucideIcon> = {
   BadgeCheck,
   Bell,
+  BriefcaseBusiness,
   Building2,
   Calculator,
   CalendarRange,
@@ -48,6 +51,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   FolderKanban,
   GitBranch,
   Inbox,
+  Landmark,
   LayoutDashboard,
   LayoutGrid,
   ListChecks,

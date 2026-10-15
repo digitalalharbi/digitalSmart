@@ -116,3 +116,15 @@ export const PresentationsPage = lazy(async () => ({
 export const CampaignControlPage = lazy(async () => ({
   default: (await import('@/features/campaign-control/CampaignControlPage')).CampaignControlPage,
 }));
+
+export const PortfolioPage = lazy(async () => ({
+  default: (await import('@/features/portfolio/PortfolioPage')).PortfolioPage,
+}));
+
+export const ClientPortfolioPage = lazy(async () => ({
+  default: (await import('@/features/portfolio/ClientPortfolioPage')).ClientPortfolioPage,
+}));
+
+export const BudgetControlPage = lazy(async () => ({
+  default: (await import('@/features/budget-control/BudgetControlPage')).BudgetControlPage,
+}));

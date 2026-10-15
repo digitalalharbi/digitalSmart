@@ -24,13 +24,8 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { PAGE_SIZE } from './api';
-import {
-  CampaignCard,
-  CampaignIdentity,
-  HealthDistribution,
-  StatusPair,
-  BudgetBar,
-} from './CampaignParts';
+import { CampaignCard, CampaignIdentity, StatusPair, BudgetBar } from './CampaignParts';
+import { HealthDistribution } from '@/shared/ui/health-distribution';
 import { money, resultText } from './text';
 import { DEFAULT_FILTERS, fromParams, toParams } from './filters';
 import { useCampaignControl } from './useCampaignControl';

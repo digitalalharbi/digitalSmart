@@ -31,7 +31,9 @@
     "commerce": "Store revenue",
     "leads": "Lead Center",
     "attribution": "Attribution",
-    "requests": "Requests"
+    "requests": "Requests",
+    "portfolio": "Portfolio",
+    "budgetControl": "Budget control"
   },
   "actions": {
     "search": "Search",
@@ -2287,6 +2289,77 @@
       "account": "Account",
       "lead": "Lead",
       "report": "Report"
+    }
+  },
+  "portfolio": {
+    "title": "Agency portfolio",
+    "subtitle": "How every client and project is doing, from the same reads as everywhere else.",
+    "openCampaigns": "Campaign control center",
+    "loadFailed": "The portfolio could not be loaded.",
+    "truncated": "Verdicts cover the {{assessed}} highest-spending of {{total}} campaigns.",
+    "kpis": "Key figures",
+    "kpi": {
+      "spend": "Managed spend",
+      "revenue": "Platform revenue",
+      "storeRevenue": "Store revenue",
+      "leads": "Leads",
+      "qualified": "Qualified leads",
+      "sales": "Sales",
+      "clients": "Active clients",
+      "projects": "Active projects",
+      "campaigns": "Active campaigns"
+    },
+    "health": "Campaign health",
+    "budgetHealth": "Budgets at risk",
+    "trackingHealth": "Tracking needing attention",
+    "open": "Open",
+    "clients": "Client performance",
+    "col": {
+      "client": "Client",
+      "attention": "Needs attention",
+      "budgetRisks": "Budget risks"
+    },
+    "platformMix": "Platform mix",
+    "noSpend": "No spend reported in this window.",
+    "notShown": "Not shown to your role",
+    "client": "Client",
+    "clientSubtitle": "Every project of this client, aggregated.",
+    "allClients": "All clients",
+    "noClient": "No such client",
+    "noClientBody": "It does not exist, or it is not one of yours.",
+    "projects": "Projects",
+    "noProjects": "No projects yet",
+    "noProjectsBody": "Projects created for this client appear here.",
+    "openWork": "Open work",
+    "status": {
+      "planning": "Draft",
+      "onboarding": "Onboarding",
+      "active": "Active",
+      "paused": "Paused",
+      "closing": "Closing",
+      "completed": "Completed",
+      "archived": "Archived"
+    }
+  },
+  "budgetControl": {
+    "title": "Budget control",
+    "subtitle": "Every approved budget in the agency, with pacing and the risks it carries.",
+    "loadFailed": "Budgets could not be loaded.",
+    "totals": "Totals by currency",
+    "approved": "Approved",
+    "allocated": "Allocated",
+    "spent": "Spent",
+    "remaining": "Remaining",
+    "unreported": "* Not counted: {{count}} budget(s) whose spend cannot be totalled.",
+    "filter": "Show",
+    "all": "All",
+    "empty": "No budgets match",
+    "emptyBody": "Approved budgets appear here once they exist.",
+    "noRisk": "On track",
+    "col": {
+      "budget": "Budget",
+      "pacing": "Pacing",
+      "risks": "Risks"
     }
   }
 }

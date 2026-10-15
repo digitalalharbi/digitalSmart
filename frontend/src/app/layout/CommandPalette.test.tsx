@@ -89,7 +89,7 @@ describe('CommandPalette', () => {
     await renderWithProviders(<CommandPalette />);
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 
-    await act(async () => {
+    act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
     });
 
