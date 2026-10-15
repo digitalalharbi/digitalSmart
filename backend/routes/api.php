@@ -24,10 +24,12 @@ use App\Interface\Http\Controller\Identity\SessionController;
 use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
 use App\Interface\Http\Controller\Integration\ConnectionController;
 use App\Interface\Http\Controller\Integration\ExternalAccountController;
+use App\Interface\Http\Controller\Integration\OperationsController;
 use App\Interface\Http\Controller\Integration\ProjectBindingController;
 use App\Interface\Http\Controller\Integration\ProviderController;
 use App\Interface\Http\Controller\Intelligence\AssistantController;
 use App\Interface\Http\Controller\Leads\LeadController;
+use App\Interface\Http\Controller\Measurement\AgencyTrackingController;
 use App\Interface\Http\Controller\Measurement\MeasurementController;
 use App\Interface\Http\Controller\Notifications\NotificationController;
 use App\Interface\Http\Controller\Operations\ApprovalController;
@@ -296,6 +298,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::delete('measurement/conversions/{definition}', [MeasurementController::class, 'destroyDefinition'])
         ->whereUuid('definition')->name('measurement.conversions.destroy');
 
+    /* The roll-up: how many projects are healthy, warning, critical, and which ones. */
+    Route::get('measurement/agency-health', [AgencyTrackingController::class, 'show'])->name('measurement.agency-health');
     Route::get('measurement/health', [MeasurementController::class, 'health'])
         ->name('measurement.health');
 
@@ -692,6 +696,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      * Connections as things in their own right — the agency's and each client's — and the review queue of
      * what they discovered. Provider-keyed routes above remain the agency's own connection.
      */
+    /* Is the integration layer healthy: a plain summary for everybody, queue depth and error rates for admins. */
+    Route::get('integrations/operations', [OperationsController::class, 'show'])->name('integrations.operations');
     Route::get('integrations/connections', [ConnectionController::class, 'index'])->name('integrations.connections.index');
     Route::post('integrations/connections', [ConnectionController::class, 'store'])->name('integrations.connections.store');
     Route::post('integrations/connections/{connection}/discover', [ConnectionController::class, 'discover'])

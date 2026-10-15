@@ -46,6 +46,7 @@ use App\Application\Identity\Contract\IdentityReadModel;
 use App\Application\Integration\Contract\ConnectionDirectory;
 use App\Application\Integration\Contract\CredentialCipher;
 use App\Application\Integration\Contract\IntegrationReadModel;
+use App\Application\Integration\Contract\OperationsReadModel;
 use App\Application\Integration\Contract\ProviderAdapterRegistry as ProviderAdapterRegistryContract;
 use App\Application\Integration\Contract\ProviderWriterRegistry;
 use App\Application\Integration\Contract\SyncCandidateSource;
@@ -152,6 +153,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentJourneyReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentLeadReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentMemberReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentObservedEventReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentOperationsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentPortfolioReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSearchReadModel;
@@ -333,6 +335,7 @@ final class AppServiceProvider extends ServiceProvider
         SearchReadModel::class => EloquentSearchReadModel::class,
         ConnectionDirectory::class => EloquentConnectionDirectory::class,
         PortfolioReadModel::class => EloquentPortfolioReadModel::class,
+        OperationsReadModel::class => EloquentOperationsReadModel::class,
         BudgetControlReadModel::class => EloquentBudgetControlReadModel::class,
         SyncCandidateSource::class => EloquentSyncCandidateSource::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
