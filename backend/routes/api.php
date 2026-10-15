@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Interface\Http\Controller\Activity\ActivityController;
 use App\Interface\Http\Controller\Advertising\CampaignControlController;
 use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
 use App\Interface\Http\Controller\Analytics\AnalyticsController;
@@ -595,6 +596,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('views/{surface}', [SurfaceViewController::class, 'store'])->name('surface_views.store');
     Route::delete('views/{view}', [SurfaceViewController::class, 'destroy'])
         ->whereUuid('view')->name('surface_views.destroy');
+
+    Route::get('activity', ActivityController::class)->name('activity.index');
 
     Route::get('exports/schedules', [ExportController::class, 'schedules'])->name('exports.schedules.index');
     Route::post('exports/schedules', [ExportController::class, 'schedule'])->name('exports.schedules.store');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Application\Access\Contract\AccessSynchroniser;
+use App\Application\Activity\Contract\ActivityReadModel;
 use App\Application\Advertising\Contract\AdvertisingStore;
 use App\Application\Advertising\Contract\CampaignAssignmentRepository;
 use App\Application\Advertising\Contract\CampaignControlReadModel;
@@ -153,6 +154,7 @@ use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
 use App\Infrastructure\Operations\BroadcastBoardSignaller;
 use App\Infrastructure\Operations\LocalAttachmentStore;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentActivityReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentActorMemberships;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAttributionReadModel;
@@ -366,6 +368,7 @@ final class AppServiceProvider extends ServiceProvider
         OperationsReadModel::class => EloquentOperationsReadModel::class,
         ClientIndustryDirectory::class => EloquentClientIndustryDirectory::class,
         ActorMemberships::class => EloquentActorMemberships::class,
+        ActivityReadModel::class => EloquentActivityReadModel::class,
         ExportJobStore::class => EloquentExportJobStore::class,
         SurfaceViewRepository::class => EloquentSurfaceViewRepository::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
