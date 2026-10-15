@@ -2297,6 +2297,14 @@
       "requests_other": "{{count}} client requests",
       "tasks": "{{count}} task overdue",
       "tasks_other": "{{count}} tasks overdue"
+    },
+    "streams": {
+      "campaigns": "Campaigns",
+      "budgets": "Budgets",
+      "tracking": "Tracking",
+      "approvals": "Approvals",
+      "requests": "Requests",
+      "tasks": "Tasks"
     }
   },
   "activity": {

@@ -80,7 +80,9 @@ export function ClientRanking({
                 className="text-content hover:text-accent flex min-w-0 items-center gap-2 font-medium hover:underline"
               >
                 <span className="text-content-tertiary ds-numeric w-5 text-xs">{index + 1}</span>
-                <span className="truncate">{client.name}</span>
+                <span dir="auto" className="min-w-0 text-start break-words">
+                  {client.name}
+                </span>
               </Link>
               <span className="flex shrink-0 items-center gap-2">
                 <HealthPill state={worst(client.campaign_health)} />

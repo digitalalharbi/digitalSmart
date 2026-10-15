@@ -67,7 +67,7 @@ describe('AttentionPanel', () => {
     const list = screen.getByRole('list', { name: 'Needs attention' });
     expect(within(list).getByText('Overdue: Ship the Ramadan creative')).toBeInTheDocument();
     expect(within(list).getByText('Alhambra Retail')).toBeInTheDocument();
-    expect(within(list).getByRole('link', { name: /tasks/ })).toHaveAttribute('href', '/tasks');
+    expect(within(list).getByRole('link', { name: /Tasks/ })).toHaveAttribute('href', '/tasks');
   });
 
   /*
@@ -77,7 +77,7 @@ describe('AttentionPanel', () => {
   it('names the streams the server actually looked at', async () => {
     await renderWithProviders(<AttentionPanel />);
 
-    expect(screen.getByText('Across budgets, tracking, and tasks.')).toBeInTheDocument();
+    expect(screen.getByText('Across Budgets, Tracking, and Tasks.')).toBeInTheDocument();
   });
 
   it('renders nothing at all for a role that can see none of the streams', async () => {
@@ -96,7 +96,7 @@ describe('AttentionPanel', () => {
     await renderWithProviders(<AttentionPanel />);
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'This list is incomplete: budgets could not be read just now.',
+      'This list is incomplete: Budgets could not be read just now.',
     );
   });
 

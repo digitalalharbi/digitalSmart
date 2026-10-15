@@ -75,7 +75,7 @@ export function AttentionPanel({ limit = 6 }: { limit?: number | undefined }) {
   }
 
   const visible = (data?.data ?? []).filter((item) => stream === null || item.stream === stream);
-  const items = visible.map(toListItem);
+  const items = visible.map((item) => toListItem(item, t));
   const criticals = data?.meta.severity_counts.critical ?? 0;
 
   return (
@@ -85,7 +85,11 @@ export function AttentionPanel({ limit = 6 }: { limit?: number | undefined }) {
         data === undefined
           ? t('attention.subtitle')
           : t('attention.scope', {
-              streams: list.format(data.meta.covered.map((stream) => stream.label)),
+              streams: list.format(
+                data.meta.covered.map((stream) =>
+                  t(`attention.streams.${stream.stream}`, { defaultValue: stream.label }),
+                ),
+              ),
             })
       }
       actions={
@@ -129,8 +133,10 @@ function failedNotice(data: AttentionQueue | undefined, list: Intl.ListFormat, t
     return null;
   }
 
-  const labels = data.meta.failed.map(
-    (stream) => data.meta.streams.find((known) => known.stream === stream)?.label ?? stream,
+  const labels = data.meta.failed.map((stream) =>
+    t(`attention.streams.${stream}`, {
+      defaultValue: data.meta.streams.find((known) => known.stream === stream)?.label ?? stream,
+    }),
   );
 
   return (
@@ -147,7 +153,7 @@ function failedNotice(data: AttentionQueue | undefined, list: Intl.ListFormat, t
  * `owner` passes through by presence, not by value: the server omits the key for a kind that has no
  * owner, and `'owner' in item` is what keeps that distinct from a `null` meaning nobody holds it.
  */
-function toListItem(item: AttentionItem): ListItem {
+function toListItem(item: AttentionItem, t: TFunction): ListItem {
   return {
     id: item.id,
     severity: SEVERITY[item.severity],
@@ -155,6 +161,9 @@ function toListItem(item: AttentionItem): ListItem {
     entity: { kind: item.entity.kind, label: item.entity.label },
     ...('owner' in item ? { owner: item.owner ?? null } : {}),
     since: item.since,
-    action: { label: item.stream_label, to: item.action.path },
+    action: {
+      label: t(`attention.streams.${item.stream}`, { defaultValue: item.stream_label }),
+      to: item.action.path,
+    },
   };
 }
