@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { AttentionPanel } from '@/features/attention';
-import { usePortfolio } from '@/features/portfolio';
+import { SpendHero } from '@/features/campaign-control';
+import { ClientRanking, KpiGrid, ProjectMatrix, usePortfolio } from '@/features/portfolio';
 import { api } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import { formatMinor } from '@/shared/lib/format';
@@ -12,7 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { HealthPill } from '@/shared/ui/health';
 import type { HealthState } from '@/shared/ui/health.model';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { PortfolioSummary } from './PortfolioSummary';
+import { BudgetTotalsCards, ClientBudgetRanking, Stat, StatRow } from './RoleParts';
+import { useBudgetOverview, useMyCampaignMeta } from './useRoleData';
 
 type Row = {
   id: string;
@@ -96,27 +98,12 @@ function CampaignShortlist({ mine, title }: { mine: boolean; title: string }) {
   );
 }
 
-type BudgetRow = {
-  id: string;
-  name: string;
-  client: { name: string };
-  currency: string;
-  approved_minor: number;
-  spent_minor: number | null;
-  risks: Array<{ risk: string; label: string }>;
-};
-
 function BudgetShortlist() {
   const { t, i18n } = useTranslation();
-  const { data, isPending } = useQuery({
-    queryKey: queryKeys.home.budgets(),
-    queryFn: async (): Promise<BudgetRow[]> => {
-      const { data: body } = await api.get<{ data: BudgetRow[] }>('/budgets/control');
-
-      return body.data.filter((b) => b.risks.length > 0).slice(0, 6);
-    },
-    staleTime: 30_000,
-  });
+  /* The same read the totals and the ranking use, so a finance home is one request for budgets, not three. */
+  const overview = useBudgetOverview();
+  const isPending = overview.isPending;
+  const data = (overview.data?.data ?? []).filter((b) => b.risks.length > 0).slice(0, 6);
 
   return (
     <Card>
@@ -129,11 +116,11 @@ function BudgetShortlist() {
       <CardContent>
         {isPending ? (
           <Skeleton className="h-24" />
-        ) : (data ?? []).length === 0 ? (
+        ) : data.length === 0 ? (
           <p className="text-content-tertiary text-sm">{t('home.noBudgetRisk')}</p>
         ) : (
           <ul className="flex flex-col">
-            {(data ?? []).map((row) => (
+            {data.map((row) => (
               <li
                 key={row.id}
                 className="border-line-subtle flex flex-col gap-1 border-b py-2.5 last:border-0"
@@ -203,16 +190,48 @@ function CreativePipeline() {
   );
 }
 
-/** The sections a profile is made of. Each one is a read model that already exists, shown in short. */
+/** The sections a profile is made of. Each profile is its own composition, not the same page with parts hidden. */
 export function HomeSections({ profile }: { profile: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
   const portfolio = usePortfolio();
+  const mine = useMyCampaignMeta();
 
   switch (profile) {
     case 'executive':
       return (
         <div className="flex flex-col gap-4">
-          <PortfolioSummary portfolio={portfolio.data} isPending={portfolio.isPending} />
+          {portfolio.data === undefined ? (
+            <Skeleton className="h-28 w-full" />
+          ) : (
+            <KpiGrid data={portfolio.data.kpis} locale={locale} />
+          )}
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('portfolio.ranking')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {portfolio.data === undefined ? (
+                  <Skeleton className="h-32" />
+                ) : (
+                  <ClientRanking clients={portfolio.data.clients} locale={locale} />
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('portfolio.projectMatrix')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {portfolio.data === undefined ? (
+                  <Skeleton className="h-32" />
+                ) : (
+                  <ProjectMatrix projects={portfolio.data.projects} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
           <div className="grid gap-4 lg:grid-cols-2">
             <AttentionPanel limit={5} />
             <BudgetShortlist />
@@ -221,23 +240,95 @@ export function HomeSections({ profile }: { profile: string }) {
       );
     case 'finance':
       return (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <BudgetShortlist />
+        <div className="flex flex-col gap-4">
+          <BudgetTotalsCards locale={locale} />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ClientBudgetRanking />
+            <BudgetShortlist />
+          </div>
           <AttentionPanel limit={5} />
         </div>
       );
     case 'media_buyer':
       return (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <CampaignShortlist mine title={t('home.myCampaigns')} />
-          <AttentionPanel limit={5} />
+        <div className="flex flex-col gap-4">
+          {mine.data === undefined ? (
+            <Skeleton className="h-24 w-full" />
+          ) : (
+            <>
+              <StatRow label={t('home.myCampaigns')}>
+                <Stat
+                  label={t('campaignControl.tile.active')}
+                  value={mine.data.active_count}
+                  to="/campaigns?mine=1"
+                />
+                <Stat
+                  label={t('campaignControl.tile.healthy')}
+                  value={mine.data.health_counts.healthy}
+                />
+                <Stat
+                  label={t('campaignControl.tile.attention')}
+                  value={mine.data.health_counts.needs_attention + mine.data.health_counts.watch}
+                  tone="warning"
+                />
+                <Stat
+                  label={t('campaignControl.tile.critical')}
+                  value={mine.data.health_counts.critical}
+                  tone="danger"
+                />
+              </StatRow>
+              <SpendHero meta={mine.data} locale={locale} />
+            </>
+          )}
+          <div className="grid gap-4 lg:grid-cols-2">
+            <CampaignShortlist mine title={t('home.decliningCampaigns')} />
+            <AttentionPanel limit={5} />
+          </div>
         </div>
       );
     case 'project_manager':
       return (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <AttentionPanel limit={6} />
-          <CampaignShortlist mine title={t('home.myCampaigns')} />
+        <div className="flex flex-col gap-4">
+          {portfolio.data === undefined ? (
+            <Skeleton className="h-24 w-full" />
+          ) : (
+            <StatRow label={t('home.myProjects')}>
+              <Stat label={t('portfolio.kpi.clients')} value={portfolio.data.kpis.active_clients} />
+              <Stat
+                label={t('portfolio.kpi.projects')}
+                value={portfolio.data.kpis.active_projects}
+                to="/projects"
+              />
+              <Stat
+                label={t('portfolio.col.attention')}
+                value={portfolio.data.kpis.needs_attention}
+                tone="warning"
+                to="/campaigns"
+              />
+              <Stat
+                label={t('portfolio.col.budgetRisks')}
+                value={portfolio.data.budget_health?.at_risk ?? '—'}
+                tone="danger"
+                to="/budget-control"
+              />
+            </StatRow>
+          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('portfolio.projectMatrix')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {portfolio.data === undefined ? (
+                <Skeleton className="h-32" />
+              ) : (
+                <ProjectMatrix projects={portfolio.data.projects} />
+              )}
+            </CardContent>
+          </Card>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <AttentionPanel limit={6} />
+            <CampaignShortlist mine title={t('home.myCampaigns')} />
+          </div>
         </div>
       );
     case 'creative':

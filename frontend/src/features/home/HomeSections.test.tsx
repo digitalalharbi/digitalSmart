@@ -40,11 +40,12 @@ describe('HomeSections', () => {
       if (url === '/budgets/control') {
         return Promise.resolve({
           data: {
+            meta: { totals: [] },
             data: [
               {
                 id: 'b1',
                 name: 'Q2',
-                client: { name: 'Alhambra' },
+                client: { id: 'c1', name: 'Alhambra' },
                 currency: 'SAR',
                 approved_minor: 5_000_000,
                 spent_minor: null,

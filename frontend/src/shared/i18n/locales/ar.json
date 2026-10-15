@@ -2560,7 +2560,11 @@
       "media_buyer": "الحملات",
       "finance": "الميزانيات",
       "creative": "الإبداع"
-    }
+    },
+    "clientBudgetRanking": "العملاء حسب مخاطر الميزانية",
+    "risksOf": "{{risks}} مخاطر · {{budgets}} ميزانيات",
+    "decliningCampaigns": "حملات تستحق النظر أولًا",
+    "myProjects": "مشاريعي"
   },
   "offboard": {
     "title": "{{name}} يغادر",

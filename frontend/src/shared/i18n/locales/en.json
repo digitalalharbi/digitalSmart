@@ -2529,7 +2529,11 @@
       "media_buyer": "Campaigns",
       "finance": "Budgets",
       "creative": "Creative"
-    }
+    },
+    "clientBudgetRanking": "Clients by budget risk",
+    "risksOf": "{{risks}} risks · {{budgets}} budgets",
+    "decliningCampaigns": "Campaigns to look at first",
+    "myProjects": "My projects"
   },
   "offboard": {
     "title": "{{name}} is leaving",
