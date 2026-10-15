@@ -125,6 +125,8 @@ final class AgencyScaleSeeder extends Seeder
         $campaigns = $this->campaigns($workspaceId, $accounts, $campaignCount);
         $rows = $this->metrics($workspaceId, $campaigns, $days);
         $this->budgets($workspaceId, $clients, (string) $owner->getKey());
+        $this->leads($workspaceId, $clients, $projects, $this->scale('leads_per_client', 50));
+        $this->stores($workspaceId, $clients, $this->scale('orders_per_store', 400));
 
         /*
          * Statistics, as a production bulk load would have them after autovacuum's next pass. Without this the
@@ -133,12 +135,12 @@ final class AgencyScaleSeeder extends Seeder
          * how big the tables are. `ANALYZE` is allowed inside a transaction, so a test that seeds in one gets it
          * too.
          */
-        foreach (['clients', 'projects', 'external_accounts', 'project_integration_bindings', 'campaigns', 'daily_metrics', 'budgets', 'budget_allocations'] as $table) {
+        foreach (['clients', 'projects', 'external_accounts', 'project_integration_bindings', 'campaigns', 'daily_metrics', 'budgets', 'budget_allocations', 'leads', 'stores', 'store_orders'] as $table) {
             DB::statement('analyze '.$table);
         }
 
         $this->command?->info(sprintf(
-            'Seeded %d clients, %d projects, %d accounts, %d campaigns, %d daily rows.',
+            'Seeded %d clients, %d projects, %d accounts, %d campaigns, %d daily rows (plus leads, stores and orders).',
             count($clients),
             count($projects),
             count($accounts),
@@ -426,6 +428,111 @@ final class AgencyScaleSeeder extends Seeder
         }
 
         $this->insert('budgets', $rows);
+    }
+
+    /**
+     * Enquiries across every client — the lead centre's population.
+     *
+     * Spread over stages, sources and the last ninety days, with some owned and some not, so the funnel, the
+     * source breakdown and the "my leads" scopes all have something to count. Values are left out on purpose:
+     * a currency on a lead would put several in one view, which the centre handles by withholding the total —
+     * a separate property with its own test.
+     *
+     * @param  list<string>  $clients
+     * @param  list<array{id: string, client_id: string}>|list<string>  $projects
+     */
+    private function leads(string $workspaceId, array $clients, array $projects, int $perClient): void
+    {
+        $rows = [];
+        $now = now();
+        $stages = ['new', 'new', 'contacted', 'qualified', 'won', 'lost'];
+        $sources = ['form_submission', 'whatsapp_message', 'phone_call', 'chat', 'manual'];
+
+        foreach ($clients as $clientIndex => $clientId) {
+            for ($i = 0; $i < $perClient; $i++) {
+                $stage = $stages[($clientIndex + $i) % count($stages)];
+                $closed = in_array($stage, ['won', 'lost'], true);
+                $received = $now->copy()->subDays($this->noise(90))->subMinutes($this->noise(1_440));
+
+                $rows[] = [
+                    'id' => $this->ids->generate(),
+                    'workspace_id' => $workspaceId,
+                    'client_id' => $clientId,
+                    'project_id' => null,
+                    'source_kind' => $sources[($clientIndex + $i) % count($sources)],
+                    'name' => sprintf('Scale Lead %03d-%03d', $clientIndex + 1, $i + 1),
+                    'stage' => $stage,
+                    'attribution_evidence' => 'none',
+                    'received_at' => $received,
+                    'closed_at' => $closed ? $received->copy()->addDays(3) : null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        $this->insert('leads', $rows);
+    }
+
+    /**
+     * A store for every second client, each with a few hundred paid orders over the last ninety days.
+     *
+     * Currency follows the client's own, so the roll-up has several currencies to keep apart.
+     *
+     * @param  list<string>  $clients
+     */
+    private function stores(string $workspaceId, array $clients, int $ordersPerStore): void
+    {
+        $stores = [];
+        $orders = [];
+        $now = now();
+
+        foreach ($clients as $index => $clientId) {
+            if ($index % 2 === 1) {
+                continue;
+            }
+
+            $storeId = $this->ids->generate();
+            $currency = self::CURRENCIES[$index % 5];
+            $stores[] = [
+                'id' => $storeId,
+                'workspace_id' => $workspaceId,
+                'client_id' => $clientId,
+                'provider' => $index % 4 === 0 ? 'salla' : 'zid',
+                'external_id' => sprintf('scale-store-%03d', $index),
+                'name' => sprintf('Scale Store %03d', $index + 1),
+                'currency' => $currency,
+                'timezone' => 'Asia/Riyadh',
+                'is_active' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            for ($i = 0; $i < $ordersPerStore; $i++) {
+                $total = 5_000 + $this->noise(95_000);
+                $orders[] = [
+                    'id' => $this->ids->generate(),
+                    'workspace_id' => $workspaceId,
+                    'store_id' => $storeId,
+                    'external_id' => sprintf('ord-%03d-%05d', $index, $i),
+                    'payment_state' => 'paid',
+                    'fulfilment_state' => 'delivered',
+                    'currency' => $currency,
+                    'subtotal_minor' => $total,
+                    'total_minor' => $total,
+                    'refunded_minor' => $i % 17 === 0 ? intdiv($total, 4) : 0,
+                    'attribution_evidence' => 'none',
+                    'revenue_source' => $index % 4 === 0 ? 'salla' : 'zid',
+                    'source' => 'sandbox',
+                    'placed_at' => $now->copy()->subDays($this->noise(90))->subMinutes($this->noise(1_440)),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        $this->insert('stores', $stores);
+        $this->insert('store_orders', $orders);
     }
 
     /**

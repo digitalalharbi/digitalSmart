@@ -153,7 +153,15 @@ final readonly class EloquentLeadRepository implements LeadRepository
 
         $leads = $query->orderByDesc('received_at')->limit(max(1, min($limit, 500)))->get();
 
-        return array_values($leads->map(fn (Lead $lead): LeadView => $this->toView($lead))->all());
+        /*
+         * One grouped count for the page, not one per row. `toView` counts a single lead's absorbed records
+         * itself, which is right for a single lead and a statement per card on a list of fifty.
+         */
+        $absorbed = $this->absorbedCounts($workspaceId, array_values($leads->map(static fn (Lead $l): string => (string) $l->getKey())->all()));
+
+        return array_values($leads->map(
+            fn (Lead $lead): LeadView => $this->toView($lead, $absorbed[(string) $lead->getKey()] ?? 0),
+        )->all());
     }
 
     public function changeStage(
@@ -805,7 +813,27 @@ final readonly class EloquentLeadRepository implements LeadRepository
         return Lead::query()->with(self::RELATIONS)->whereKey($lead->getKey())->firstOrFail();
     }
 
-    private function toView(Lead $lead): LeadView
+    /**
+     * @param  list<string>  $leadIds
+     * @return array<string, int>
+     */
+    private function absorbedCounts(string $workspaceId, array $leadIds): array
+    {
+        if ($leadIds === []) {
+            return [];
+        }
+
+        $out = [];
+
+        foreach (Lead::query()->where('workspace_id', $workspaceId)->whereIn('merged_into_id', $leadIds)
+            ->selectRaw('merged_into_id, count(*) as absorbed')->groupBy('merged_into_id')->get() as $row) {
+            $out[(string) $row->getAttribute('merged_into_id')] = (int) $row->getAttribute('absorbed');
+        }
+
+        return $out;
+    }
+
+    private function toView(Lead $lead, ?int $absorbed = null): LeadView
     {
         /** @var LeadSourceKind $sourceKind */
         $sourceKind = $lead->getAttribute('source_kind');
@@ -848,7 +876,7 @@ final readonly class EloquentLeadRepository implements LeadRepository
              * Counted rather than loaded. A surface needs to say "two other enquiries are on this record" so a
              * reader is not surprised by a history longer than one arrival; it does not need the rows.
              */
-            absorbedCount: (int) Lead::query()
+            absorbedCount: $absorbed ?? (int) Lead::query()
                 ->where('workspace_id', $lead->getAttribute('workspace_id'))
                 ->where('merged_into_id', $lead->getKey())
                 ->count(),

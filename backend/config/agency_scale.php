@@ -19,4 +19,6 @@ return [
     'accounts' => (int) env('AGENCY_SCALE_ACCOUNTS', 300),
     'campaigns' => (int) env('AGENCY_SCALE_CAMPAIGNS', 2000),
     'days' => (int) env('AGENCY_SCALE_DAYS', 90),
+    'leads_per_client' => (int) env('AGENCY_SCALE_LEADS_PER_CLIENT', 50),
+    'orders_per_store' => (int) env('AGENCY_SCALE_ORDERS_PER_STORE', 400),
 ];
