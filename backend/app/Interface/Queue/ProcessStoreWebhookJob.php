@@ -30,7 +30,11 @@ final class ProcessStoreWebhookJob implements ShouldQueue
     /** @var list<int> */
     public array $backoff = [10, 60, 300, 900];
 
-    public function __construct(private readonly string $eventId) {}
+    public function __construct(private readonly string $eventId)
+    {
+        /* Its own queue: a platform's webhook burst must not wait behind a backfill, nor a backfill behind it. */
+        $this->onQueue('webhooks');
+    }
 
     public function handle(ProcessStoreWebhook $process): void
     {

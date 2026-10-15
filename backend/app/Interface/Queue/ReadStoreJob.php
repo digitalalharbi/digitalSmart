@@ -40,7 +40,7 @@ final class ReadStoreJob implements ShouldBeUnique, ShouldQueue
         private readonly string $storeId,
         private readonly ?string $since = null,
     ) {
-        $this->onQueue('sync');
+        $this->onQueue('commerce');
     }
 
     public function uniqueId(): string

@@ -99,6 +99,17 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            /*
+             * The session's time zone, set explicitly.
+             *
+             * Laravel hands a timestamp to Postgres as a naive "Y-m-d H:i:s" string in the *application's*
+             * zone, and the server reads it in the *session's*. With the two left to agree by luck, a
+             * database host running in +03 stores every instant three hours wrong while the application
+             * reads them back in the same wrong zone — each side looks self-consistent, and the first
+             * comparison against a clock that never went through the database is three hours out. That
+             * is how "synced five minutes ago" came to mean "three hours ago".
+             */
+            'timezone' => env('DB_TIMEZONE', 'UTC'),
         ],
 
         'sqlsrv' => [

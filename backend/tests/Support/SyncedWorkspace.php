@@ -17,6 +17,8 @@ use App\Infrastructure\Persistence\Eloquent\Model\Client;
 use App\Infrastructure\Persistence\Eloquent\Model\ExternalAccount;
 use App\Infrastructure\Persistence\Eloquent\Model\Project;
 use App\Infrastructure\Persistence\Eloquent\Model\ProjectIntegrationBinding;
+use DateTimeImmutable;
+use Illuminate\Support\Facades\DB;
 
 /**
  * A workspace with real synced data in it.
@@ -76,6 +78,44 @@ final class SyncedWorkspace
     public function project(Provider $provider): Project
     {
         return $this->projects[$provider->value];
+    }
+
+    /**
+     * Make sure last calendar month has figures in it.
+     *
+     * The sandbox fixtures are fourteen hand-authored days, always the fourteen ending yesterday. A test that
+     * asks for "last calendar month" therefore passes during the first fortnight of a month — when those
+     * days straddle the boundary — and fails for the rest of it, because the fixture has nothing from the
+     * month it is asked about. Nothing was wrong with the product; the suite's result depended on the date.
+     *
+     * So when the fixture does not already reach last month, a copy of it is laid down ending on that
+     * month's last day. A copy rather than a move: windows that read the recent fortnight keep theirs.
+     */
+    public function ensureLastMonthCovered(): void
+    {
+        $lastDay = (new DateTimeImmutable('last day of last month'))->format('Y-m-d');
+
+        $earliest = DB::table('daily_metrics')->min('date');
+
+        if ($earliest === null || $earliest <= $lastDay) {
+            return;
+        }
+
+        $shift = (int) (new DateTimeImmutable((string) DB::table('daily_metrics')->max('date')))
+            ->diff(new DateTimeImmutable($lastDay))->days;
+
+        DB::statement(
+            'insert into daily_metrics (id, workspace_id, external_account_id, provider, entity_type, entity_id,
+                external_entity_id, campaign_id, ad_group_id, ad_id, date, account_timezone, currency, spend_minor,
+                revenue_minor, impressions, reach, clicks, link_clicks, video_views, video_completions, engagements,
+                conversions, source, metadata, synced_at, created_at, updated_at)
+             select gen_random_uuid(), workspace_id, external_account_id, provider, entity_type, entity_id,
+                external_entity_id, campaign_id, ad_group_id, ad_id, date - ?::int, account_timezone, currency,
+                spend_minor, revenue_minor, impressions, reach, clicks, link_clicks, video_views, video_completions,
+                engagements, conversions, source, metadata, synced_at, created_at, updated_at
+             from daily_metrics where date - ?::int <= ?::date',
+            [$shift, $shift, $lastDay],
+        );
     }
 
     private function connect(Provider $provider, string $externalId): void

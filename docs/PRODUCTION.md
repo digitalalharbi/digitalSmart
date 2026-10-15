@@ -230,3 +230,50 @@ trusts by mistake:
   nothing else from this side.
 - **No automated backup schedule.** The scripts are real and verified; running them hourly is a cron on a host
   that does not exist yet — the same host that owes `schedule:run` its minute.
+
+
+## Sync policy and queues
+
+Added for agency scale. The point of this section is that a hundred projects must not turn "sync everything
+every hour" into a queue where one large client — or a historical import — delays everybody else.
+
+### Four sync queues, in strict priority order
+
+| Queue | What waits in it | Why it is separate |
+|---|---|---|
+| `sync-recovery` | Active accounts whose figures stopped arriving (no success for 3 cadences) | The account somebody is most likely waiting on |
+| `sync` | Active accounts, hourly | Current monitoring |
+| `sync-low` | Accounts with no running campaigns, every six hours | Worth keeping, not worth the rate limit hourly |
+| `sync-backfill` | A requested historical window | Lowest priority of anything that runs |
+
+Horizon's `supervisor-sync` lists them in that order with `balance => false`, so a worker drains each before the
+next. Archived work spends nothing recurring: an account whose projects are all finished is left alone unless
+`advertising:sync --force` is run.
+
+Other queues: `webhooks` and `commerce` (stores), and `notifications`, `default`, `reports`, `ai`
+(everything user-facing). A provider call that takes minutes can never occupy a worker a notification needs.
+
+### Fairness and throttle
+
+`SyncPlanner` (a pure domain service, exhaustively unit-tested) decides which accounts run and in what order:
+
+- **Round-robin by who the work is for** (the owning client of a client-granted connection, otherwise the
+  client of a bound project). A client with 50 accounts and one with 2 reach their first jobs at the same
+  position; the small one is not queued behind the large one's backlog. Tested at exactly that 50-vs-2 case.
+- **Per-provider bursts**: five jobs released together, then ten seconds, per provider — providers limit by
+  app, not by account, and a hundred accounts dispatched on one tick are otherwise limited only by workers.
+- **Adaptive cadence**: hourly with campaigns running, six-hourly without, never for finished projects.
+
+### Failure isolation
+
+One job per account, each retried independently (`tries = 3`, backoff 60/300/900 s). A failure is that
+job's: the scale tests drive a batch through the real handler with one account vanished mid-flight and assert
+every other account was read.
+
+### Database session time zone
+
+`config/database.php` now sets the Postgres session time zone explicitly (`DB_TIMEZONE`, default UTC). Laravel
+sends timestamps as naive strings in the application's zone and Postgres reads them in the *session's*; with the
+two left to agree by luck, a database host in `+03` stored every instant three hours wrong while the application
+read it back consistently wrong. The first comparison against a clock that had not been through the database
+(`synced five minutes ago`) was then three hours out.

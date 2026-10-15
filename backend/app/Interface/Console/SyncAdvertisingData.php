@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Console;
 
-use App\Domain\Integration\Repository\IntegrationBindingRepository;
+use App\Application\Integration\Contract\SyncCandidateSource;
+use App\Application\Shared\Contract\Clock;
+use App\Domain\Integration\Sync\SyncPlanner;
 use App\Domain\Workspace\WorkspaceId;
 use App\Interface\Queue\SyncBoundAccountJob;
 use Illuminate\Console\Command;
@@ -20,16 +22,17 @@ final class SyncAdvertisingData extends Command
     protected $signature = 'advertising:sync
         {--workspace= : Limit to one workspace id}
         {--since= : Start of the performance window (Y-m-d)}
-        {--until= : End of the performance window (Y-m-d)}';
+        {--until= : End of the performance window (Y-m-d)}
+        {--force : Ignore freshness and archived projects}';
 
     protected $description = 'Queue advertising syncs for every bound, sync-enabled external account';
 
-    public function handle(IntegrationBindingRepository $bindings): int
+    public function handle(SyncCandidateSource $source, SyncPlanner $planner, Clock $clock): int
     {
         $only = $this->stringOption('workspace');
-        $targets = $bindings->syncTargets($only === null ? null : new WorkspaceId($only));
+        $candidates = $source->candidates($only === null ? null : new WorkspaceId($only));
 
-        if ($targets === []) {
+        if ($candidates === []) {
             // Nothing bound with sync enabled. Not an error: discovering an
             // account grants nothing, and neither does connecting a platform.
             $this->components->warn('No bound accounts have sync enabled.');
@@ -37,19 +40,30 @@ final class SyncAdvertisingData extends Command
             return self::SUCCESS;
         }
 
-        foreach ($targets as $target) {
+        $since = $this->stringOption('since');
+        $plan = $planner->plan(
+            $candidates,
+            $clock->now(),
+            /* Naming a window is asking for history, which is the lowest-priority work there is. */
+            backfill: $since !== null || $this->stringOption('until') !== null,
+            force: (bool) $this->option('force'),
+        );
+
+        foreach ($plan as $planned) {
             SyncBoundAccountJob::dispatch(
-                $target->workspaceId->value,
-                $target->externalAccountId->value,
-                $this->stringOption('since'),
+                $planned->candidate->workspaceId,
+                $planned->candidate->externalAccountId,
+                $since,
                 $this->stringOption('until'),
-            );
+                $planned->class->queue(),
+            )->delay($planned->delaySeconds > 0 ? now()->addSeconds($planned->delaySeconds) : null);
         }
 
         $this->components->info(sprintf(
-            'Queued %d account %s.',
-            count($targets),
-            count($targets) === 1 ? 'sync' : 'syncs',
+            'Queued %d of %d account syncs (%d left alone: fresh, or every project finished).',
+            count($plan),
+            count($candidates),
+            count($candidates) - count($plan),
         ));
 
         return self::SUCCESS;

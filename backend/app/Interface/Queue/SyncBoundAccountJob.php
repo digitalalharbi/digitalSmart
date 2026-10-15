@@ -40,8 +40,13 @@ final class SyncBoundAccountJob implements ShouldBeUnique, ShouldQueue
         private readonly string $externalAccountId,
         private readonly ?string $since = null,
         private readonly ?string $until = null,
+        /*
+         * Which of the four sync queues this waits in. The planner decides: recovery, live, low or
+         * backfill. Default is the live queue, which is what a manual dispatch means.
+         */
+        string $queue = 'sync',
     ) {
-        $this->onQueue('sync');
+        $this->onQueue($queue);
     }
 
     public function uniqueId(): string

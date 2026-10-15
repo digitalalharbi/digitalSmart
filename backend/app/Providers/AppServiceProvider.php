@@ -47,6 +47,7 @@ use App\Application\Integration\Contract\CredentialCipher;
 use App\Application\Integration\Contract\IntegrationReadModel;
 use App\Application\Integration\Contract\ProviderAdapterRegistry as ProviderAdapterRegistryContract;
 use App\Application\Integration\Contract\ProviderWriterRegistry;
+use App\Application\Integration\Contract\SyncCandidateSource;
 use App\Application\Intelligence\Analyser\DeliveryStoppedAnalyser;
 use App\Application\Intelligence\Analyser\EfficiencyDriftAnalyser;
 use App\Application\Intelligence\Analyser\PeriodShapeAnalyser;
@@ -151,6 +152,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentObservedEventReadM
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSearchReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentStoreAnalyticsReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSyncCandidateSource;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentApprovalRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAssignedWorkRepository;
@@ -326,6 +328,7 @@ final class AppServiceProvider extends ServiceProvider
         CampaignControlReadModel::class => EloquentCampaignControlReadModel::class,
         SearchReadModel::class => EloquentSearchReadModel::class,
         ConnectionDirectory::class => EloquentConnectionDirectory::class,
+        SyncCandidateSource::class => EloquentSyncCandidateSource::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
         AttributionReadModel::class => EloquentAttributionReadModel::class,
         CreativeSpecRegistry::class => EloquentCreativeSpecRegistry::class,

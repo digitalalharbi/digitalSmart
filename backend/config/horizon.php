@@ -212,9 +212,47 @@ return [
     */
 
     'defaults' => [
-        'supervisor-1' => [
+        /*
+         * Advertising sync, in strict priority order.
+         *
+         * `balance => false` is deliberate: Horizon's `auto` and `simple` strategies share workers across
+         * queues, which is exactly the property this must not have. Listed in order, a worker drains
+         * recovery before live, live before dormant and dormant before backfill — so importing history for
+         * a hundred new accounts can never delay the morning's view of what is spending today.
+         *
+         * Separate from the rest so a long provider call cannot occupy the workers a notification needs.
+         */
+        'supervisor-sync' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            'queue' => ['sync-recovery', 'sync', 'sync-low', 'sync-backfill'],
+            'balance' => false,
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 192,
+            'tries' => 3,
+            'timeout' => 660,
+            'nice' => 0,
+        ],
+
+        /* Stores and their webhooks. Their own queues; commerce reconciliation is nightly and webhooks are bursty. */
+        'supervisor-commerce' => [
+            'connection' => 'redis',
+            'queue' => ['webhooks', 'commerce'],
+            'balance' => false,
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 128,
+            'tries' => 3,
+            'timeout' => 120,
+            'nice' => 0,
+        ],
+
+        /* Everything user-facing: notifications, reports, exports, the assistant. */
+        'supervisor-default' => [
+            'connection' => 'redis',
+            'queue' => ['notifications', 'default', 'reports', 'ai'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
@@ -229,17 +267,19 @@ return [
 
     'environments' => [
         'production' => [
-            'supervisor-1' => [
-                'maxProcesses' => 10,
+            'supervisor-sync' => ['maxProcesses' => 8],
+            'supervisor-commerce' => ['maxProcesses' => 3],
+            'supervisor-default' => [
+                'maxProcesses' => 6,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
         ],
 
         'local' => [
-            'supervisor-1' => [
-                'maxProcesses' => 3,
-            ],
+            'supervisor-sync' => ['maxProcesses' => 2],
+            'supervisor-commerce' => ['maxProcesses' => 1],
+            'supervisor-default' => ['maxProcesses' => 2],
         ],
     ],
 

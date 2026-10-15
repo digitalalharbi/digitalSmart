@@ -29,6 +29,9 @@ function deckScenario(): array
 {
     $workspace = SyncedWorkspace::default();
 
+    /* A monthly deck reads last calendar month; the fixture is fourteen days. See the method. */
+    $workspace->ensureLastMonthCovered();
+
     return [
         'workspace' => $workspace,
         'clientId' => (string) $workspace->project(Provider::Meta)->client_id,
