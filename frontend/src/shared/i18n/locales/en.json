@@ -2511,7 +2511,8 @@
       "tracking": "Tracking",
       "creative": "Creative",
       "approvals": "Approvals",
-      "landing_page": "Landing page"
+      "landing_page": "Landing page",
+      "data_quality": "Data quality"
     }
   },
   "integrationOps": {

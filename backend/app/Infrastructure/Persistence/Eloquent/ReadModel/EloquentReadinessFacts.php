@@ -57,6 +57,48 @@ final readonly class EloquentReadinessFacts implements ReadinessFacts
         ];
     }
 
+    public function dataQuality(string $workspaceId, string $projectId): array
+    {
+        /** @var object{accounts: int|string|null, missing_currency: int|string|null, missing_timezone: int|string|null, timezones: int|string|null}|null $row */
+        $row = DB::table('project_integration_bindings as b')
+            ->join('external_accounts as a', 'a.id', '=', 'b.external_account_id')
+            ->where(['b.workspace_id' => $workspaceId, 'b.project_id' => $projectId])
+            ->selectRaw(
+                'count(*) as accounts, '
+                .'count(*) filter (where a.currency is null) as missing_currency, '
+                .'count(*) filter (where a.timezone is null) as missing_timezone, '
+                .'count(distinct a.timezone) as timezones'
+            )
+            ->first();
+
+        /*
+         * Unplaced: the campaign carries no project of its own, and its account is bound to this project
+         * *and* to at least one other — so nobody can say whose it is without being told.
+         */
+        $unplaced = DB::table('campaigns as c')
+            ->where('c.workspace_id', $workspaceId)
+            ->whereNull('c.project_id')
+            ->whereExists(static function ($q) use ($projectId): void {
+                $q->selectRaw('1')->from('project_integration_bindings as mine')
+                    ->whereColumn('mine.external_account_id', 'c.external_account_id')
+                    ->where('mine.project_id', $projectId);
+            })
+            ->whereExists(static function ($q) use ($projectId): void {
+                $q->selectRaw('1')->from('project_integration_bindings as other')
+                    ->whereColumn('other.external_account_id', 'c.external_account_id')
+                    ->where('other.project_id', '<>', $projectId);
+            })
+            ->count();
+
+        return [
+            'accounts' => (int) ($row->accounts ?? 0),
+            'missing_currency' => (int) ($row->missing_currency ?? 0),
+            'missing_timezone' => (int) ($row->missing_timezone ?? 0),
+            'timezones' => (int) ($row->timezones ?? 0),
+            'unplaced' => $unplaced,
+        ];
+    }
+
     public function stuckApprovals(string $workspaceId, string $projectId, DateTimeImmutable $olderThan): int
     {
         return DB::table('approval_requests')

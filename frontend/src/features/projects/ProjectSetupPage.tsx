@@ -25,6 +25,7 @@ const FIX: Record<string, string> = {
   accounts: '/integrations',
   tracking: '/tracking',
   creative: '/creative-hub',
+  data_quality: '/campaigns',
   approvals: '/approvals',
   landing_page: '/tracking',
 };

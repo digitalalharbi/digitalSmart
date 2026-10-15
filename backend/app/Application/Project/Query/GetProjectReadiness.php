@@ -56,6 +56,7 @@ final readonly class GetProjectReadiness
             'accounts' => $this->accounts($workspace, $projectId),
             'tracking' => $this->trackingCheck($projectId),
             'creative' => $this->creative($workspace, $projectId, $clientId),
+            'data_quality' => $this->dataQuality($workspace, $projectId),
             'approvals' => $this->approvals($workspace, $projectId),
             'landing_page' => [ReadinessState::Unknown, 'Landing pages are not tracked in digitalSmart yet, so this cannot be confirmed here.'],
         ];
@@ -146,6 +147,43 @@ final readonly class GetProjectReadiness
         return $creative['approved']
             ? [ReadinessState::Ready, 'Approved creative is available.']
             : [ReadinessState::NeedsAttention, 'Creative is briefed but none is approved yet.'];
+    }
+
+    /**
+     * Whether the figures this project will report can be trusted, which is a different question from whether
+     * they exist. Nothing bound is `unknown`, not `ready`: with no accounts there is nothing to have verified.
+     *
+     * @return array{0: ReadinessState, 1: string}
+     */
+    private function dataQuality(string $workspace, string $projectId): array
+    {
+        $q = $this->facts->dataQuality($workspace, $projectId);
+
+        if ($q['accounts'] === 0) {
+            return [ReadinessState::Unknown, 'Nothing is bound yet, so there is no data to check.'];
+        }
+
+        $problems = [];
+
+        if ($q['missing_currency'] > 0) {
+            $problems[] = sprintf('%d %s no currency', $q['missing_currency'], $q['missing_currency'] === 1 ? 'account has' : 'accounts have');
+        }
+
+        if ($q['missing_timezone'] > 0) {
+            $problems[] = sprintf('%d %s no timezone', $q['missing_timezone'], $q['missing_timezone'] === 1 ? 'account has' : 'accounts have');
+        }
+
+        if ($q['timezones'] > 1) {
+            $problems[] = sprintf('its accounts span %d timezones, so daily figures do not line up', $q['timezones']);
+        }
+
+        if ($q['unplaced'] > 0) {
+            $problems[] = sprintf('%d %s not been placed in a project', $q['unplaced'], $q['unplaced'] === 1 ? 'campaign has' : 'campaigns have');
+        }
+
+        return $problems === []
+            ? [ReadinessState::Ready, 'Currency, timezone and campaign ownership are all known.']
+            : [ReadinessState::NeedsAttention, ucfirst(implode('; ', $problems)).'.'];
     }
 
     /** @return array{0: ReadinessState, 1: string} */

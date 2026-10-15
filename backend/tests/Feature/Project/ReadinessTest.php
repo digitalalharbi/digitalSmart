@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Access\SystemRole;
 use App\Domain\Integration\Provider;
+use Illuminate\Support\Facades\DB;
 use Tests\Support\SyncedWorkspace;
 
 /** @return array{0: SyncedWorkspace, 1: App\Infrastructure\Persistence\Eloquent\Model\Project} */
@@ -14,13 +15,13 @@ function readyWorld(): array
     return [$w, $w->project(Provider::Meta)];
 }
 
-it('answers six questions, and is blocked until a budget exists', function (): void {
+it('answers seven questions, and is blocked until a budget exists', function (): void {
     [$w, $project] = readyWorld();
 
     $data = test()->actingAs($w->scenario->owner)->getJson("/api/projects/{$project->getKey()}/readiness")->assertOk()->json('data');
     $states = array_column($data['checks'], 'state', 'key');
 
-    expect($data['checks'])->toHaveCount(6)
+    expect($data['checks'])->toHaveCount(7)
         ->and($states['budget'])->toBe('blocked')
         ->and($states['accounts'])->toBe('ready')
         ->and($data['overall']['state'])->toBe('blocked');
@@ -61,4 +62,33 @@ it('is a 404 for a project the reader is not on', function (): void {
     $buyer = $w->scenario->addMember(SystemRole::MediaBuyer);
 
     test()->actingAs($buyer)->getJson("/api/projects/{$project->getKey()}/readiness")->assertNotFound();
+});
+
+it('flags an account whose timezone or currency is unknown, rather than assuming one', function (): void {
+    [$w, $project] = readyWorld();
+    DB::table('external_accounts')->whereIn('id', DB::table('project_integration_bindings')->where('project_id', $project->getKey())->pluck('external_account_id'))
+        ->update(['timezone' => null, 'currency' => null]);
+
+    $checks = array_column(
+        test()->actingAs($w->scenario->owner)->getJson("/api/projects/{$project->getKey()}/readiness")->json('data.checks'),
+        null,
+        'key',
+    );
+
+    expect($checks['data_quality']['state'])->toBe('needs_attention')
+        ->and($checks['data_quality']['reason'])->toContain('no currency')->toContain('no timezone');
+});
+
+it('is ready on data quality when currency and timezone are both known', function (): void {
+    [$w, $project] = readyWorld();
+    DB::table('external_accounts')->whereIn('id', DB::table('project_integration_bindings')->where('project_id', $project->getKey())->pluck('external_account_id'))
+        ->update(['timezone' => 'Asia/Riyadh', 'currency' => 'SAR']);
+
+    $checks = array_column(
+        test()->actingAs($w->scenario->owner)->getJson("/api/projects/{$project->getKey()}/readiness")->json('data.checks'),
+        null,
+        'key',
+    );
+
+    expect($checks['data_quality']['state'])->toBe('ready');
 });
