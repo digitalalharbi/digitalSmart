@@ -1,6 +1,8 @@
 import { api } from '@/shared/api/client';
 import type {
   RenderedReport,
+  ExportJob,
+  ExportKind,
   ReportDraft,
   ReportShare,
   ReportSnapshot,
@@ -156,4 +158,25 @@ export function csvUrl(reportId: string): string {
  */
 export function xlsxUrl(reportId: string): string {
   return `/api/reports/${reportId}/xlsx`;
+}
+
+/** Ask for a file to be made in the background. Answers at once with a queued job. */
+export async function requestExport(kind: ExportKind, subjectId: string): Promise<ExportJob> {
+  const { data } = await api.post<{ data: ExportJob }>('/exports', {
+    kind,
+    subject_id: subjectId,
+  });
+
+  return data.data;
+}
+
+/** The reader's own exports, newest first. Nobody else's, whatever their role. */
+export async function fetchExports(): Promise<ExportJob[]> {
+  const { data } = await api.get<{ data: ExportJob[] }>('/exports');
+
+  return data.data;
+}
+
+export function exportDownloadUrl(exportId: string): string {
+  return `/api/exports/${exportId}/download`;
 }

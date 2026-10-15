@@ -1941,6 +1941,23 @@
       "revoke": "Turn off",
       "revokeReason": "Why it is being turned off",
       "confirmRevoke": "Turn it off"
+    },
+    "exports": {
+      "title": "Prepare a file in the background",
+      "hint": "For wide reports. You'll be told when it is ready, and the file is kept for a week.",
+      "csv": "Prepare CSV",
+      "xlsx": "Prepare Excel",
+      "download": "Download",
+      "failed": "This export did not finish.",
+      "requestFailed": "The export could not be requested. Try again.",
+      "kind": {
+        "report_csv": "CSV export",
+        "report_xlsx": "Excel export"
+      },
+      "status": {
+        "queued": "Waiting to start",
+        "running": "Preparing…"
+      }
     }
   },
   "sharedReport": {

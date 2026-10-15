@@ -217,3 +217,18 @@ export type ReportSnapshot = {
   label: string | null;
   taken_by_name: string | null;
 };
+
+export type ExportKind = 'report_csv' | 'report_xlsx';
+
+export type ExportJob = {
+  id: string;
+  kind: ExportKind;
+  subject_id: string;
+  status: 'queued' | 'running' | 'ready' | 'failed';
+  filename: string | null;
+  byte_size: number | null;
+  error: string | null;
+  requested_at: string;
+  finished_at: string | null;
+  expires_at: string | null;
+};

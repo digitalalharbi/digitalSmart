@@ -1968,6 +1968,23 @@
       "revoke": "أوقِف",
       "revokeReason": "سبب الإيقاف",
       "confirmRevoke": "أوقِفه"
+    },
+    "exports": {
+      "title": "تجهيز ملف في الخلفية",
+      "hint": "للتقارير الواسعة. سنُعلمك عند جاهزيته، ويُحفظ الملف أسبوعًا.",
+      "csv": "تجهيز CSV",
+      "xlsx": "تجهيز Excel",
+      "download": "تنزيل",
+      "failed": "لم يكتمل هذا التصدير.",
+      "requestFailed": "تعذّر طلب التصدير. حاول مرة أخرى.",
+      "kind": {
+        "report_csv": "تصدير CSV",
+        "report_xlsx": "تصدير Excel"
+      },
+      "status": {
+        "queued": "في انتظار البدء",
+        "running": "جارٍ التجهيز…"
+      }
     }
   },
   "sharedReport": {

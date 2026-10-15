@@ -1,0 +1,101 @@
+import { Download, FileSpreadsheet, FileText, LoaderCircle, TriangleAlert } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/shared/ui/button';
+import { exportDownloadUrl } from './api';
+import { useExportsQuery, useRequestExport } from './useReports';
+import type { ExportJob, ExportKind } from './types';
+
+type ExportsPanelProps = {
+  reportId: string;
+};
+
+const KINDS: { kind: ExportKind; icon: typeof FileText; label: string }[] = [
+  { kind: 'report_csv', icon: FileText, label: 'reports.exports.csv' },
+  { kind: 'report_xlsx', icon: FileSpreadsheet, label: 'reports.exports.xlsx' },
+];
+
+/**
+ * Files made in the background.
+ *
+ * Offered beside the direct downloads rather than instead of them: a small report is quicker to fetch than to
+ * wait for, a wide one across many projects is not, and the reader is the one who knows which they asked for.
+ * Only this report's exports are listed, and only the reader's own.
+ */
+export function ExportsPanel({ reportId }: ExportsPanelProps) {
+  const { t } = useTranslation();
+  const exports = useExportsQuery();
+  const request = useRequestExport();
+  const mine = (exports.data ?? []).filter((job) => job.subject_id === reportId).slice(0, 5);
+
+  return (
+    <section aria-labelledby="exports-heading" className="flex flex-col gap-3">
+      <div>
+        <h3 id="exports-heading" className="text-content text-sm font-semibold">
+          {t('reports.exports.title')}
+        </h3>
+        <p className="text-content-tertiary text-xs">{t('reports.exports.hint')}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {KINDS.map(({ kind, icon: Icon, label }) => (
+          <Button
+            key={kind}
+            variant="secondary"
+            size="sm"
+            disabled={request.isPending}
+            onClick={() => request.mutate({ kind, reportId })}
+          >
+            <Icon aria-hidden className="size-3.5" />
+            {t(label)}
+          </Button>
+        ))}
+      </div>
+
+      {request.isError ? (
+        <p role="alert" className="text-danger text-xs">
+          {t('reports.exports.requestFailed')}
+        </p>
+      ) : null}
+
+      {mine.length === 0 ? null : (
+        <ul className="flex flex-col gap-1.5" aria-live="polite">
+          {mine.map((job) => (
+            <ExportRow key={job.id} job={job} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function ExportRow({ job }: { job: ExportJob }) {
+  const { t } = useTranslation();
+
+  return (
+    <li className="border-line-subtle flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm">
+      <span className="min-w-0 truncate">
+        {job.filename ?? t(`reports.exports.kind.${job.kind}`)}
+      </span>
+
+      {job.status === 'ready' ? (
+        <a
+          href={exportDownloadUrl(job.id)}
+          className="text-accent inline-flex shrink-0 items-center gap-1.5 text-xs font-medium hover:underline"
+        >
+          <Download aria-hidden className="size-3.5" />
+          {t('reports.exports.download')}
+        </a>
+      ) : job.status === 'failed' ? (
+        <span className="text-danger inline-flex shrink-0 items-center gap-1.5 text-xs">
+          <TriangleAlert aria-hidden className="size-3.5" />
+          {job.error ?? t('reports.exports.failed')}
+        </span>
+      ) : (
+        <span className="text-content-tertiary inline-flex shrink-0 items-center gap-1.5 text-xs">
+          <LoaderCircle aria-hidden className="size-3.5 motion-safe:animate-spin" />
+          {t(`reports.exports.status.${job.status}`)}
+        </span>
+      )}
+    </li>
+  );
+}

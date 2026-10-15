@@ -58,6 +58,9 @@ vi.mock('./api', () => ({
   fetchReportDraft: () => Promise.resolve(state.draft),
   fetchSnapshots: () => Promise.resolve(state.snapshots),
   fetchShares: () => Promise.resolve(state.shares),
+  fetchExports: () => Promise.resolve([]),
+  requestExport: () => Promise.resolve({ id: 'export-1' }),
+  exportDownloadUrl: (id: string) => `/api/exports/${id}/download`,
   createReport: (input: Record<string, unknown>) => {
     state.created = input;
 

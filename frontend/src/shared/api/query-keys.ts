@@ -197,6 +197,9 @@ export const queryKeys = {
     /** Who one request can be given to. Per request, because it depends on the request's client. */
     owners: (requestId: string) => ['client-requests', 'owners', requestId] as const,
   },
+  exports: {
+    mine: () => ['exports', 'mine'] as const,
+  },
   reports: {
     all: () => ['reports'] as const,
     vocabulary: () => ['reports', 'vocabulary'] as const,

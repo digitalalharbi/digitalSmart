@@ -3,17 +3,20 @@ import { queryKeys } from '@/shared/api/query-keys';
 import {
   createReport,
   deleteReport,
+  fetchExports,
   fetchReport,
   fetchReportDraft,
   fetchReportVocabulary,
   fetchReports,
   fetchShares,
   fetchSnapshots,
+  requestExport,
   revokeShare,
   shareReport,
   takeSnapshot,
   updateReport,
 } from './api';
+import type { ExportKind } from './types';
 
 export function useReportVocabularyQuery(enabled = true) {
   return useQuery({
@@ -113,4 +116,33 @@ export function useShareMutation() {
 
 export function useRevokeShareMutation() {
   return useReportMutation(revokeShare);
+}
+
+/**
+ * The reader's exports, re-read every few seconds **only while one is still being made**.
+ *
+ * A fixed interval would poll a quiet account for ever; stopping once nothing is queued or running means an idle
+ * page costs nothing and a waiting one updates without a click.
+ */
+export function useExportsQuery(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.exports.mine(),
+    queryFn: fetchExports,
+    enabled,
+    staleTime: 5_000,
+    refetchInterval: (query) =>
+      (query.state.data ?? []).some((job) => job.status === 'queued' || job.status === 'running')
+        ? 3_000
+        : false,
+  });
+}
+
+export function useRequestExport() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ kind, reportId }: { kind: ExportKind; reportId: string }) =>
+      requestExport(kind, reportId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.exports.mine() }),
+  });
 }

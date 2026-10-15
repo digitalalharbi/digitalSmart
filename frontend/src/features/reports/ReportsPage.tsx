@@ -13,6 +13,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { PageHeader } from '@/shared/ui/page-header';
 import { csvUrl, xlsxUrl } from './api';
+import { ExportsPanel } from './ExportsPanel';
 import { ReportBuilder } from './ReportBuilder';
 import { ReportView } from './ReportView';
 import { SharePanel } from './SharePanel';
@@ -252,6 +253,8 @@ export function ReportsPage() {
             csvHref={csvUrl(selected)}
             xlsxHref={xlsxUrl(selected)}
           />
+
+          <ExportsPanel reportId={selected} />
 
           {!canManage ? null : (
             <SharePanel
