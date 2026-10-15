@@ -138,6 +138,18 @@ interface ClientRequestRepository
     ): array;
 
     /**
+     * Requests in the given states, oldest first, in one statement and without conversations.
+     *
+     * For the attention queue, which wants the handful the agency is holding up rather than the intake board's
+     * seven columns. The states are the caller's to choose — it asks the domain which ones are the agency's.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @param  list<ClientRequestState>  $states
+     * @return list<ClientRequestView>
+     */
+    public function inStates(string $workspaceId, ?array $visibleProjectIds, array $states, int $limit): array;
+
+    /**
      * The figures, over the whole filtered queue.
      *
      * @param  list<string>|null  $visibleProjectIds

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Attention\Source;
 
+use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Attention\Contract\AttentionSource;
 use App\Application\Attention\DTO\AttentionItem;
-use App\Application\Operations\Contract\TaskFilter;
-use App\Application\Operations\DTO\TaskView;
-use App\Application\Operations\Query\GetTaskBoard;
+use App\Application\Operations\Contract\TaskRepository;
+use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Attention\AttentionSeverity;
 use App\Domain\Attention\AttentionStream;
@@ -22,8 +22,12 @@ use App\Domain\Attention\AttentionStream;
  */
 final readonly class TaskAttentionSource implements AttentionSource
 {
+    private const int CAP = 50;
+
     public function __construct(
-        private GetTaskBoard $board,
+        private TaskRepository $tasks,
+        private ActorContext $actor,
+        private VisibilityResolver $visibility,
         private Clock $clock,
     ) {}
 
@@ -35,32 +39,37 @@ final readonly class TaskAttentionSource implements AttentionSource
     /** @return list<AttentionItem> */
     public function items(): array
     {
-        $board = ($this->board)(TaskFilter::everything());
         $now = $this->clock->now();
         $items = [];
 
-        foreach ($board->columns as $column) {
-            foreach ($column as $task) {
-                if (! $task instanceof TaskView || ! $task->isOverdue($now)) {
-                    continue;
-                }
+        $overdue = $this->tasks->overdue(
+            $this->actor->workspaceId()->value,
+            $this->visibility->visibleProjectIds(),
+            $now,
+            self::CAP,
+        );
 
-                $items[] = new AttentionItem(
-                    id: 'task:'.$task->id,
-                    stream: AttentionStream::Tasks,
-                    severity: AttentionSeverity::NeedsAttention,
-                    message: sprintf('Overdue: %s', $task->title),
-                    entityKind: 'Task',
-                    entityLabel: $task->clientName ?? $task->projectName ?? $task->title,
-                    /* Null, not false: a task *is* assignable, and nobody holding it is the finding. */
-                    owner: $task->assigneeName,
-                    since: $task->dueOn,
-                    clientId: $task->clientId,
-                    clientName: $task->clientName,
-                    projectId: $task->projectId,
-                    projectName: $task->projectName,
-                );
+        foreach ($overdue as $task) {
+            /* The SQL only narrowed. Whether something is overdue is the view's rule, asked here. */
+            if (! $task->isOverdue($now)) {
+                continue;
             }
+
+            $items[] = new AttentionItem(
+                id: 'task:'.$task->id,
+                stream: AttentionStream::Tasks,
+                severity: AttentionSeverity::NeedsAttention,
+                message: sprintf('Overdue: %s', $task->title),
+                entityKind: 'Task',
+                entityLabel: $task->clientName ?? $task->projectName ?? $task->title,
+                /* Null, not false: a task *is* assignable, and nobody holding it is the finding. */
+                owner: $task->assigneeName,
+                since: $task->dueOn,
+                clientId: $task->clientId,
+                clientName: $task->clientName,
+                projectId: $task->projectId,
+                projectName: $task->projectName,
+            );
         }
 
         return $items;

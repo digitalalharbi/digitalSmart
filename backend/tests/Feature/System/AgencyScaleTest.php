@@ -169,6 +169,30 @@ it('issues the same number of statements over a bigger agency: the attention que
     expect($large)->toBe($small);
 });
 
+it('issues the same number of statements over a bigger agency: the budget control center and search', function (): void {
+    seedAgency(clients: 6, accounts: 10, campaigns: 20);
+    $owner = scaleOwner();
+    $urls = ['/api/budgets/control', '/api/search?q=Scale', '/api/integrations/account-queue'];
+
+    $small = [];
+
+    foreach ($urls as $url) {
+        $small[$url] = statementsFor(function () use ($owner, $url): void {
+            $this->actingAs($owner)->getJson($url)->assertOk();
+        });
+    }
+
+    seedAgency(clients: 18, accounts: 30, campaigns: 120);
+
+    foreach ($urls as $url) {
+        $large = statementsFor(function () use ($owner, $url): void {
+            $this->actingAs($owner)->getJson($url)->assertOk();
+        });
+
+        expect($large)->toBe($small[$url], $url);
+    }
+});
+
 it('issues the same number of statements over a bigger agency: the analytics breakdown', function (): void {
     seedAgency(clients: 6, accounts: 10, campaigns: 20);
     $owner = scaleOwner();
@@ -210,7 +234,11 @@ it('keeps the agency views within their stated query budget', function (): void 
          * count is flat with agency size — the test above proves that — and the number is written here so
          * that narrowing a source to the queue's own question shows up as a change somebody made.
          */
-        '/api/attention' => 32,
+        '/api/attention' => 17,
+        '/api/budgets/control' => 9,
+        '/api/search?q=Scale' => 8,
+        '/api/integrations/connections' => 8,
+        '/api/integrations/account-queue' => 9,
         '/api/analytics?preset=28d&metrics[]=spend&dimension=provider&limit=10' => 8,
         '/api/clients?per_page=25' => 7,
         '/api/projects?per_page=25' => 7,

@@ -9,6 +9,7 @@ use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
 use App\Interface\Http\Controller\Attention\AttentionController;
 use App\Interface\Http\Controller\Attribution\AttributionController;
 use App\Interface\Http\Controller\Audit\AuditLogController;
+use App\Interface\Http\Controller\Budget\BudgetControlController;
 use App\Interface\Http\Controller\Budget\BudgetController;
 use App\Interface\Http\Controller\Budget\ForecastController;
 use App\Interface\Http\Controller\Budget\PacingController;
@@ -240,6 +241,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      */
     Route::get('budgets', [BudgetController::class, 'index'])->name('budgets.index');
     Route::post('budgets', [BudgetController::class, 'store'])->name('budgets.store');
+    /* Every approved budget with pacing and risk — the finance view, in a fixed number of statements. */
+    Route::get('budgets/control', [BudgetControlController::class, 'index'])->name('budgets.control');
     Route::get('budgets/alerts', [PacingController::class, 'alerts'])->name('budgets.alerts');
     Route::get('budgets/{budget}', [BudgetController::class, 'show'])
         ->whereUuid('budget')->name('budgets.show');

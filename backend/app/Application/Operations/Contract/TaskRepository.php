@@ -60,6 +60,19 @@ interface TaskRepository
     ): array;
 
     /**
+     * Open work past its date, oldest due date first, in one statement.
+     *
+     * Its own method for the same reason `forSubject` is: a caller that wants one slice of the board — the
+     * attention queue wants only what has gone overdue — should not pay for six columns, a workload
+     * aggregate and a per-person load to get it. The SQL only narrows (open and dated before today); the
+     * caller still asks the view whether it is overdue, so the rule has one author.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return list<TaskView>
+     */
+    public function overdue(string $workspaceId, ?array $visibleProjectIds, DateTimeImmutable $today, int $limit): array;
+
+    /**
      * The tasks raised about one thing, newest first.
      *
      * Its own method rather than a filtered board, because a board is six queries — one per column — and a list

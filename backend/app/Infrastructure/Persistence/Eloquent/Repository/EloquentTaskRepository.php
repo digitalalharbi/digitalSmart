@@ -217,6 +217,28 @@ final readonly class EloquentTaskRepository implements TaskRepository
         return $columns;
     }
 
+    /** @return list<TaskView> */
+    public function overdue(string $workspaceId, ?array $visibleProjectIds, DateTimeImmutable $today, int $limit): array
+    {
+        $rows = $this->scope($workspaceId, $visibleProjectIds)
+            ->whereIn('t.state', array_map(static fn (TaskState $s): string => $s->value, TaskState::open()))
+            ->whereNotNull('t.due_on')
+            ->where('t.due_on', '<', $today->format('Y-m-d'))
+            ->orderBy('t.due_on')
+            ->orderBy('t.id')
+            ->limit($limit)
+            ->get();
+
+        /** @var list<array<string, mixed>> $values */
+        $values = [];
+
+        foreach ($rows as $row) {
+            $values[] = (array) $row;
+        }
+
+        return $this->views($values);
+    }
+
     public function forSubject(
         string $workspaceId,
         ?array $visibleProjectIds,

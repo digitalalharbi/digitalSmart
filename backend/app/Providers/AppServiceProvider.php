@@ -23,6 +23,7 @@ use App\Application\Attention\Source\TrackingAttentionSource;
 use App\Application\Attribution\Contract\AttributionReadModel;
 use App\Application\Audit\Contract\AuditReadModel;
 use App\Application\Budget\Contract\BenchmarkReadModel;
+use App\Application\Budget\Contract\BudgetControlReadModel;
 use App\Application\Budget\Contract\BudgetRepository;
 use App\Application\Budget\Contract\BudgetSpendReadModel;
 use App\Application\Client\Contract\ClientReadModel;
@@ -139,6 +140,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAttributionReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBenchmarkReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetControlReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentCampaignControlReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
@@ -328,6 +330,7 @@ final class AppServiceProvider extends ServiceProvider
         CampaignControlReadModel::class => EloquentCampaignControlReadModel::class,
         SearchReadModel::class => EloquentSearchReadModel::class,
         ConnectionDirectory::class => EloquentConnectionDirectory::class,
+        BudgetControlReadModel::class => EloquentBudgetControlReadModel::class,
         SyncCandidateSource::class => EloquentSyncCandidateSource::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
         AttributionReadModel::class => EloquentAttributionReadModel::class,

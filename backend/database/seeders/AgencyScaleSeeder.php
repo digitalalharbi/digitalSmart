@@ -124,6 +124,7 @@ final class AgencyScaleSeeder extends Seeder
         $this->bindings($workspaceId, $projects, $accounts);
         $campaigns = $this->campaigns($workspaceId, $accounts, $campaignCount);
         $rows = $this->metrics($workspaceId, $campaigns, $days);
+        $this->budgets($workspaceId, $clients, (string) $owner->getKey());
 
         $this->command?->info(sprintf(
             'Seeded %d clients, %d projects, %d accounts, %d campaigns, %d daily rows.',
@@ -372,6 +373,48 @@ final class AgencyScaleSeeder extends Seeder
         $this->insert('campaigns', $rows);
 
         return $campaigns;
+    }
+
+    /**
+     * An approved budget for two clients in three, over the last thirty days.
+     *
+     * Enough that the finance surface and the budget alerts have a population to read, and deliberately
+     * not all of them: a client with no budget is the ordinary case and the surface must say nothing
+     * misleading about it. Allocations are left out, so every one of them carries the `unallocated` risk —
+     * which is the finding a fresh agency would actually have.
+     *
+     * @param  list<string>  $clients
+     */
+    private function budgets(string $workspaceId, array $clients, string $createdBy): void
+    {
+        $rows = [];
+        $now = now();
+
+        foreach ($clients as $index => $clientId) {
+            if ($index % 3 === 2) {
+                continue;
+            }
+
+            $rows[] = [
+                'id' => $this->ids->generate(),
+                'workspace_id' => $workspaceId,
+                'client_id' => $clientId,
+                'project_id' => null,
+                'name' => 'Scale budget',
+                'period_start' => $now->copy()->subDays(29)->toDateString(),
+                'period_end' => $now->copy()->addDays(30)->toDateString(),
+                'amount_minor' => 5_000_000 + ($index % 7) * 1_000_000,
+                'currency' => self::CURRENCIES[$index % 5],
+                'status' => 'approved',
+                'created_by' => $createdBy,
+                'approved_by' => $createdBy,
+                'approved_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        $this->insert('budgets', $rows);
     }
 
     /**

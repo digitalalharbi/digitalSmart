@@ -246,6 +246,31 @@ final readonly class EloquentClientRequestRepository implements ClientRequestRep
         return $columns;
     }
 
+    /** @return list<ClientRequestView> */
+    public function inStates(string $workspaceId, ?array $visibleProjectIds, array $states, int $limit): array
+    {
+        if ($states === []) {
+            return [];
+        }
+
+        $rows = $this->scope($workspaceId, $visibleProjectIds)
+            ->whereIn('r.state', array_map(static fn (ClientRequestState $s): string => $s->value, $states))
+            ->orderBy('r.created_at')
+            ->orderBy('r.id')
+            ->limit($limit)
+            ->get();
+
+        $views = [];
+
+        foreach ($rows as $row) {
+            /** @var array<string, mixed> $values */
+            $values = (array) $row;
+            $views[] = $this->view($workspaceId, $values, false, false);
+        }
+
+        return $views;
+    }
+
     public function load(
         string $workspaceId,
         ?array $visibleProjectIds,

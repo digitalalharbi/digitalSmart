@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Application\Attention\Source;
 
+use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Attention\Contract\AttentionSource;
 use App\Application\Attention\DTO\AttentionItem;
-use App\Application\Operations\Contract\ClientRequestFilter;
+use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\DTO\ClientRequestView;
-use App\Application\Operations\Query\GetIntakeQueue;
+use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Attention\AttentionSeverity;
 use App\Domain\Attention\AttentionStream;
+use App\Domain\Operations\ClientRequestState;
 use App\Domain\Operations\IntakeLoad;
 use DateTimeImmutable;
 
@@ -27,8 +29,12 @@ use DateTimeImmutable;
  */
 final readonly class RequestAttentionSource implements AttentionSource
 {
+    private const int CAP = 100;
+
     public function __construct(
-        private GetIntakeQueue $queue,
+        private ClientRequestRepository $requests,
+        private ActorContext $actor,
+        private VisibilityResolver $visibility,
         private Clock $clock,
     ) {}
 
@@ -40,21 +46,27 @@ final readonly class RequestAttentionSource implements AttentionSource
     /** @return list<AttentionItem> */
     public function items(): array
     {
-        $queue = ($this->queue)(new ClientRequestFilter(onTheAgencyOnly: true));
         $now = $this->clock->now();
         $items = [];
 
-        foreach ($queue->columns as $column) {
-            foreach ($column as $request) {
-                if (! $request instanceof ClientRequestView) {
-                    continue;
-                }
+        /* The domain says which states the agency is holding up; only those are read. */
+        $states = array_values(array_filter(
+            ClientRequestState::cases(),
+            static fn (ClientRequestState $state): bool => $state->isOnTheAgency(),
+        ));
 
-                $item = $this->toItem($request, $now);
+        $requests = $this->requests->inStates(
+            $this->actor->workspaceId()->value,
+            $this->visibility->visibleProjectIds(),
+            $states,
+            self::CAP,
+        );
 
-                if ($item !== null) {
-                    $items[] = $item;
-                }
+        foreach ($requests as $request) {
+            $item = $this->toItem($request, $now);
+
+            if ($item !== null) {
+                $items[] = $item;
             }
         }
 
