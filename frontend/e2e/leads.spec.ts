@@ -7,9 +7,13 @@ import { ACCOUNTS, signIn } from './support/accounts';
  * Per test rather than in a `beforeEach`, because one test needs a different account: signing in
  * twice in one browser context leaves a session the second attempt cannot replace.
  */
-async function openLeads(page: Page, account: string = ACCOUNTS.owner): Promise<void> {
+async function openLeads(page: Page, account: string = ACCOUNTS.owner, list = true): Promise<void> {
   await signIn(page, account);
   await page.goto('/leads');
+  /* The centre opens on the pipeline; these tests are about the review table, one choice away. */
+  if (list) {
+    await page.getByRole('button', { name: 'List', exact: true }).click();
+  }
 }
 
 test.describe('lead centre', () => {
@@ -194,7 +198,7 @@ test.describe('lead centre', () => {
   });
 
   test('keeps the Lead Center away from a role without the permission', async ({ page }) => {
-    await openLeads(page, ACCOUNTS.creative);
+    await openLeads(page, ACCOUNTS.creative, false);
 
     /*
      * The surface carries prospects' names and phone numbers. A creative has no business with
