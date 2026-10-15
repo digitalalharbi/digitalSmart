@@ -596,6 +596,10 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::delete('views/{view}', [SurfaceViewController::class, 'destroy'])
         ->whereUuid('view')->name('surface_views.destroy');
 
+    Route::get('exports/schedules', [ExportController::class, 'schedules'])->name('exports.schedules.index');
+    Route::post('exports/schedules', [ExportController::class, 'schedule'])->name('exports.schedules.store');
+    Route::delete('exports/schedules/{schedule}', [ExportController::class, 'unschedule'])
+        ->whereUuid('schedule')->name('exports.schedules.destroy');
     Route::get('exports', [ExportController::class, 'index'])->name('exports.index');
     Route::post('exports', [ExportController::class, 'store'])->name('exports.store');
     Route::get('exports/{export}/download', [ExportController::class, 'download'])

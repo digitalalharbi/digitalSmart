@@ -71,3 +71,6 @@ Schedule::command('digests:build weekly_projects')->weeklyOn(1, '07:30')->withou
 
 /* Exports are kept a week. The file goes; the row stays as the record of having asked. */
 Schedule::command('exports:prune')->dailyAt('04:00')->withoutOverlapping()->runInBackground();
+
+/* Hourly: schedules carry an hour, so the finest useful grain is one hour. */
+Schedule::command('reports:run-schedules')->hourly()->withoutOverlapping()->runInBackground();

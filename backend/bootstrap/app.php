@@ -14,6 +14,7 @@ use App\Interface\Console\BuildDigestsCommand;
 use App\Interface\Console\CommissionProvider;
 use App\Interface\Console\PruneExportsCommand;
 use App\Interface\Console\ReadStores;
+use App\Interface\Console\RunReportSchedulesCommand;
 use App\Interface\Console\SyncAccessCatalogue;
 use App\Interface\Console\SyncAdvertisingData;
 use App\Interface\Http\Middleware\AssignRequestId;
@@ -50,6 +51,7 @@ return Application::configure(basePath: dirname(__DIR__))
         BuildDigestsCommand::class,
         CommissionProvider::class,
         PruneExportsCommand::class,
+        RunReportSchedulesCommand::class,
         ReadStores::class,
         SyncAccessCatalogue::class,
         SyncAdvertisingData::class,
