@@ -39,6 +39,13 @@ export const queryKeys = {
   budgetControl: {
     list: (risk: string | null) => ['budget-control', risk] as const,
   },
+  home: {
+    profiles: () => ['home', 'profiles'] as const,
+    digests: () => ['home', 'digests'] as const,
+    campaigns: (params: Record<string, unknown>) => ['home', 'campaigns', params] as const,
+    budgets: () => ['home', 'budgets'] as const,
+    creative: () => ['home', 'creative'] as const,
+  },
   shortcuts: {
     all: () => ['shortcuts'] as const,
   },

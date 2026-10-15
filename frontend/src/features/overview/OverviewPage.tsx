@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Plug } from 'lucide-react';
 import { AttentionPanel } from '@/features/attention';
+import { HomeSections, useDigests, useHomeProfiles } from '@/features/home';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useAnalytics } from '@/features/analytics';
 import { ApiError } from '@/shared/api/client';
@@ -14,6 +16,33 @@ import { PageHeader } from '@/shared/ui/page-header';
 import { formatMetric } from '@/shared/metrics';
 import { HealthPanel } from './HealthPanel';
 import { SpendTrend } from './SpendTrend';
+
+/** The latest unread digest, if there is one: one summary instead of N alerts. */
+function DigestBanner() {
+  const { t } = useTranslation();
+  const { data } = useDigests();
+  const latest = (data ?? []).find((digest) => digest.read_at === null);
+
+  if (latest === undefined) {
+    return null;
+  }
+
+  return (
+    <aside
+      aria-label={latest.label}
+      className="bg-accent-subtle/60 border-line-subtle flex flex-col gap-1 rounded-2xl border p-4"
+    >
+      <p className="text-content text-sm font-medium">
+        {latest.label} · {t('home.digest')}
+      </p>
+      <ul className="text-content-secondary text-sm">
+        {latest.summary.top.map((item) => (
+          <li key={item.message}>{item.message}</li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
 
 /** Four figures, not ten. An overview that shows everything prioritises nothing. */
 const HEADLINE = ['spend', 'roas', 'conversions', 'cpa'] as const;
@@ -44,19 +73,51 @@ export function OverviewPage() {
   );
 
   const isForbidden = isError && error instanceof ApiError && error.status === 403;
+  const { data: profiles } = useHomeProfiles();
+  const [chosen, setChosen] = useState<string | null>(null);
+  const setProfile = (key: string) => setChosen(key);
+  const activeProfile =
+    profiles?.profiles.find((p) => p.key === chosen)?.key ?? profiles?.primary ?? 'executive';
 
   return (
     <div className="ds-page">
       <PageHeader title={t('overview.title')} description={t('overview.subtitle')} />
 
       {/*
-        What is waiting on you, before what the money did.
+        What is waiting on you, before what the money did — and shaped by what you do here.
 
-        The figures below answer "how did we do"; this answers "what do I do now", and only one of those
-        is a reason to open a product on a Tuesday morning. One request, assembled server-side from the
-        modules that already know — and it renders nothing at all for a role that can see none of them.
+        The server decides which home screens a person gets, from what they may *do* rather than from a role's
+        name, and can match several: an owner who also buys media has both. Each is a handful of existing read
+        models in short, so no figure on it can disagree with the page it links to.
       */}
-      <AttentionPanel />
+      <DigestBanner />
+
+      {profiles === undefined || profiles.profiles.length === 0 ? (
+        <AttentionPanel />
+      ) : (
+        <section className="flex flex-col gap-4" aria-label={t('home.profile')}>
+          {profiles.profiles.length > 1 ? (
+            <div className="flex flex-wrap gap-2" role="group" aria-label={t('home.profile')}>
+              {profiles.profiles.map((candidate) => (
+                <button
+                  key={candidate.key}
+                  type="button"
+                  aria-pressed={activeProfile === candidate.key}
+                  onClick={() => setProfile(candidate.key)}
+                  className={`rounded-full border px-3 py-1 text-sm ${
+                    activeProfile === candidate.key
+                      ? 'border-accent bg-accent-subtle text-content-brand'
+                      : 'border-line text-content-secondary hover:bg-surface-hover'
+                  }`}
+                >
+                  {t(`home.profiles.${candidate.key}`)}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          <HomeSections profile={activeProfile} />
+        </section>
+      )}
 
       {canSeeAnalytics && !isForbidden && (
         <section className="flex flex-col gap-4" aria-label={t('overview.performance')}>

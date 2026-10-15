@@ -2338,5 +2338,24 @@
     "assign": "Assign to a project",
     "ignore": "Ignore",
     "restore": "Return to queue"
+  },
+  "home": {
+    "openAll": "Open",
+    "noCampaigns": "No campaigns to show.",
+    "budgetRisk": "Budgets at risk",
+    "noBudgetRisk": "No approved budget carries a risk.",
+    "creativePipeline": "Creative pipeline",
+    "myCampaigns": "My campaigns",
+    "agencyHealth": "Agency health",
+    "openPortfolio": "Portfolio",
+    "digest": "Since you were last here",
+    "profile": "Home view",
+    "profiles": {
+      "executive": "Agency",
+      "project_manager": "Projects",
+      "media_buyer": "Campaigns",
+      "finance": "Budgets",
+      "creative": "Creative"
+    }
   }
 }

@@ -2369,5 +2369,24 @@
     "assign": "إسناد إلى مشروع",
     "ignore": "تجاهل",
     "restore": "إعادة إلى الطابور"
+  },
+  "home": {
+    "openAll": "فتح",
+    "noCampaigns": "لا حملات للعرض.",
+    "budgetRisk": "ميزانيات معرّضة للخطر",
+    "noBudgetRisk": "لا ميزانية معتمدة تحمل خطرًا.",
+    "creativePipeline": "مسار الإبداع",
+    "myCampaigns": "حملاتي",
+    "agencyHealth": "صحة الوكالة",
+    "openPortfolio": "المحفظة",
+    "digest": "منذ زيارتك الأخيرة",
+    "profile": "عرض الصفحة الرئيسية",
+    "profiles": {
+      "executive": "الوكالة",
+      "project_manager": "المشاريع",
+      "media_buyer": "الحملات",
+      "finance": "الميزانيات",
+      "creative": "الإبداع"
+    }
   }
 }
