@@ -3,7 +3,10 @@ import { queryKeys } from '@/shared/api/query-keys';
 import {
   createReport,
   deleteReport,
+  createSchedule,
+  deleteSchedule,
   fetchExports,
+  fetchSchedules,
   fetchReport,
   fetchReportDraft,
   fetchReportVocabulary,
@@ -16,7 +19,7 @@ import {
   takeSnapshot,
   updateReport,
 } from './api';
-import type { ExportKind } from './types';
+import type { ExportCadence, ExportKind } from './types';
 
 export function useReportVocabularyQuery(enabled = true) {
   return useQuery({
@@ -145,4 +148,27 @@ export function useRequestExport() {
       requestExport(kind, reportId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.exports.mine() }),
   });
+}
+
+export function useSchedulesQuery(reportId: string) {
+  return useQuery({
+    queryKey: queryKeys.exports.schedules(reportId),
+    queryFn: () => fetchSchedules(reportId),
+    staleTime: 30_000,
+  });
+}
+
+export function useScheduleMutations(reportId: string) {
+  const queryClient = useQueryClient();
+  const refresh = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.exports.schedules(reportId) });
+
+  return {
+    create: useMutation({
+      mutationFn: (input: { kind: ExportKind; cadence: ExportCadence }) =>
+        createSchedule({ reportId, ...input }),
+      onSuccess: refresh,
+    }),
+    remove: useMutation({ mutationFn: deleteSchedule, onSuccess: refresh }),
+  };
 }

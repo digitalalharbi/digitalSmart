@@ -7,7 +7,10 @@ import type { ExportJob } from './types';
 
 const state = vi.hoisted(() => ({
   jobs: [] as unknown[],
+  schedules: [] as unknown[],
   requested: null as Record<string, string> | null,
+  scheduled: null as Record<string, string> | null,
+  unscheduled: null as string | null,
 }));
 
 vi.mock('./api', () => ({
@@ -18,6 +21,17 @@ vi.mock('./api', () => ({
     return Promise.resolve({ id: 'export-new' });
   },
   exportDownloadUrl: (id: string) => `/api/exports/${id}/download`,
+  fetchSchedules: () => Promise.resolve(state.schedules),
+  createSchedule: (input: { reportId: string; kind: string; cadence: string }) => {
+    state.scheduled = { reportId: input.reportId, kind: input.kind, cadence: input.cadence };
+
+    return Promise.resolve({ id: 'schedule-new' });
+  },
+  deleteSchedule: (id: string) => {
+    state.unscheduled = id;
+
+    return Promise.resolve();
+  },
 }));
 
 function job(overrides: Partial<ExportJob>): ExportJob {
@@ -83,5 +97,61 @@ describe('ExportsPanel', () => {
 
     expect(await screen.findByText('Preparing…')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /download/i })).not.toBeInTheDocument();
+  });
+
+  it('schedules a report on a cadence, and stops one', async () => {
+    state.jobs = [];
+    state.schedules = [
+      {
+        id: 'schedule-1',
+        report_id: 'report-1',
+        kind: 'report_xlsx',
+        cadence: 'weekly',
+        hour_utc: 6,
+        weekday: 1,
+        day_of_month: null,
+        next_run_at: '2026-10-19T06:00:00Z',
+        last_run_at: null,
+        last_error: null,
+        is_halted: false,
+      },
+    ];
+    await renderPanel();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Every day' }));
+    await waitFor(() => {
+      expect(state.scheduled).toEqual({
+        reportId: 'report-1',
+        kind: 'report_xlsx',
+        cadence: 'daily',
+      });
+    });
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Stop' }));
+    await waitFor(() => expect(state.unscheduled).toBe('schedule-1'));
+  });
+
+  it('says why a schedule stopped', async () => {
+    state.jobs = [];
+    state.schedules = [
+      {
+        id: 'schedule-2',
+        report_id: 'report-1',
+        kind: 'report_csv',
+        cadence: 'daily',
+        hour_utc: 6,
+        weekday: null,
+        day_of_month: null,
+        next_run_at: null,
+        last_run_at: null,
+        last_error: 'The report is no longer available to its owner.',
+        is_halted: true,
+      },
+    ];
+    await renderPanel();
+
+    expect(
+      await screen.findByText('The report is no longer available to its owner.'),
+    ).toBeInTheDocument();
   });
 });

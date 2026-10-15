@@ -204,6 +204,7 @@ export const queryKeys = {
   },
   exports: {
     mine: () => ['exports', 'mine'] as const,
+    schedules: (reportId: string) => ['exports', 'schedules', reportId] as const,
   },
   reports: {
     all: () => ['reports'] as const,

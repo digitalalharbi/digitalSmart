@@ -1967,7 +1967,17 @@
       "status": {
         "queued": "Waiting to start",
         "running": "Preparing…"
-      }
+      },
+      "repeat": "Make it again on a schedule",
+      "repeatHint": "An Excel file, prepared at 06:00 UTC and kept for a week. It runs as you, so it stops if you lose access to the report.",
+      "cadence": {
+        "daily": "Every day",
+        "weekly": "Every Monday",
+        "monthly": "1st of each month"
+      },
+      "next": "Next: {{when}}",
+      "halted": "Stopped",
+      "stop": "Stop"
     }
   },
   "sharedReport": {

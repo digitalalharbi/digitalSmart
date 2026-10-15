@@ -1,7 +1,9 @@
 import { api } from '@/shared/api/client';
 import type {
   RenderedReport,
+  ExportCadence,
   ExportJob,
+  ExportSchedule,
   ExportKind,
   ReportDraft,
   ReportShare,
@@ -179,4 +181,30 @@ export async function fetchExports(): Promise<ExportJob[]> {
 
 export function exportDownloadUrl(exportId: string): string {
   return `/api/exports/${exportId}/download`;
+}
+
+export async function fetchSchedules(reportId: string): Promise<ExportSchedule[]> {
+  const { data } = await api.get<{ data: ExportSchedule[] }>('/exports/schedules', {
+    params: { report_id: reportId },
+  });
+
+  return data.data;
+}
+
+export async function createSchedule(input: {
+  reportId: string;
+  kind: ExportKind;
+  cadence: ExportCadence;
+}): Promise<ExportSchedule> {
+  const { data } = await api.post<{ data: ExportSchedule }>('/exports/schedules', {
+    report_id: input.reportId,
+    kind: input.kind,
+    cadence: input.cadence,
+  });
+
+  return data.data;
+}
+
+export async function deleteSchedule(scheduleId: string): Promise<void> {
+  await api.delete(`/exports/schedules/${scheduleId}`);
 }

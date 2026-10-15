@@ -232,3 +232,19 @@ export type ExportJob = {
   finished_at: string | null;
   expires_at: string | null;
 };
+
+export type ExportCadence = 'daily' | 'weekly' | 'monthly';
+
+export type ExportSchedule = {
+  id: string;
+  report_id: string;
+  kind: ExportKind;
+  cadence: ExportCadence;
+  hour_utc: number;
+  weekday: number | null;
+  day_of_month: number | null;
+  next_run_at: string | null;
+  last_run_at: string | null;
+  last_error: string | null;
+  is_halted: boolean;
+};
