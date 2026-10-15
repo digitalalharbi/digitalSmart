@@ -38,7 +38,8 @@ export const queryKeys = {
     tracking: () => ['portfolio', 'tracking'] as const,
   },
   budgetControl: {
-    list: (risk: string | null) => ['budget-control', risk] as const,
+    list: (risk: string | null, client: string | null = null, project: string | null = null) =>
+      ['budget-control', risk, client, project] as const,
   },
   home: {
     profiles: () => ['home', 'profiles'] as const,

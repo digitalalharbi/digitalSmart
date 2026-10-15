@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useClientsQuery } from '@/features/clients';
+import { useUiStore } from '@/shared/store/ui-store';
 import { useProjectsQuery } from '@/features/projects';
 import { SavedViewsMenu } from '@/features/surface-views';
 import { useProvidersQuery } from '@/features/integrations';
@@ -60,8 +61,10 @@ export function LeadCentrePage() {
   const { can } = useSession();
 
   const [days, setDays] = useState<(typeof PERIODS)[number]>(30);
-  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
-  const [project, setProject] = useState<{ id: string; label: string } | null>(null);
+  /* Start from the working context; the pickers then override it for this visit. */
+  const { context } = useUiStore();
+  const [client, setClient] = useState<{ id: string; label: string } | null>(context.client);
+  const [project, setProject] = useState<{ id: string; label: string } | null>(context.project);
   const [audience, setAudience] = useState<LeadAudience>('all');
   const [clientTerm, setClientTerm] = useState('');
   const [projectTerm, setProjectTerm] = useState('');

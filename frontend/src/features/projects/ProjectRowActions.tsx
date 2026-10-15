@@ -50,6 +50,13 @@ export function ProjectRowActions({ project, onEdit }: ProjectRowActionsProps) {
             className="bg-surface border-line z-50 min-w-44 rounded-lg border p-1 shadow-md"
           >
             <DropdownMenu.Item
+              onSelect={() => void navigate(`/projects/${project.id}`)}
+              className="text-content hover:bg-surface-hover focus:bg-surface-hover cursor-pointer rounded-md px-2.5 py-1.5 text-sm outline-none"
+            >
+              {t('workspace.open')}
+            </DropdownMenu.Item>
+
+            <DropdownMenu.Item
               onSelect={() => void navigate(`/projects/${project.id}/setup`)}
               className="text-content hover:bg-surface-hover focus:bg-surface-hover cursor-pointer rounded-md px-2.5 py-1.5 text-sm outline-none"
             >

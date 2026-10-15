@@ -2600,5 +2600,31 @@
     },
     "inactive": "Not syncing",
     "note": "Revenue is the store’s own invoiced figure for the chosen authority. “Traced to marketing” counts orders that carried any attribution evidence, which is weaker than naming a campaign."
+  },
+  "workspace": {
+    "title": "Project",
+    "subtitle": "Everything for this project, one place to start from.",
+    "loadFailed": "This project could not be loaded.",
+    "glance": "At a glance",
+    "readiness": "Readiness",
+    "campaigns": "Campaigns",
+    "leads": "Leads",
+    "status": "Status",
+    "unavailable": "Not available to you",
+    "needAttention": "{{count}} need attention",
+    "leadsOpen": "{{open}} open · {{won}} won",
+    "areas": "Areas of this project",
+    "open": "Open project workspace",
+    "area": {
+      "setup": "Setup & readiness",
+      "campaigns": "Campaigns",
+      "budget": "Budgets",
+      "tracking": "Tracking",
+      "leads": "Leads",
+      "creative": "Creative",
+      "tasks": "Tasks",
+      "approvals": "Approvals",
+      "reports": "Reports"
+    }
   }
 }

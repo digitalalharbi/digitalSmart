@@ -1,3 +1,4 @@
+import { useUiStore } from '@/shared/store/ui-store';
 import { SavedViewsMenu } from '@/features/surface-views';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -70,12 +71,20 @@ export function BudgetControlPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const [risk, setRisk] = useState<string | null>(null);
+  /* The working context narrows this surface like every other; the topbar chip says so on every screen. */
+  const { context } = useUiStore();
+  const clientId = context.client?.id ?? null;
+  const projectId = context.project?.id ?? null;
 
   const { data, isPending, isError } = useQuery({
-    queryKey: queryKeys.budgetControl.list(risk),
+    queryKey: queryKeys.budgetControl.list(risk, clientId, projectId),
     queryFn: async (): Promise<Payload> => {
       const { data: body } = await api.get<Payload>('/budgets/control', {
-        params: risk === null ? {} : { risk },
+        params: {
+          ...(risk === null ? {} : { risk }),
+          ...(clientId === null ? {} : { client_id: clientId }),
+          ...(projectId === null ? {} : { project_id: projectId }),
+        },
       });
 
       return body;
