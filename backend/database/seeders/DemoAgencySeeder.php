@@ -627,7 +627,7 @@ final class DemoAgencySeeder extends Seeder
         foreach ($campaigns as $campaign) {
             $profile = self::PLATFORMS[$campaign['provider']];
             $isRevenue = in_array($campaign['objective'], ['sales', 'app_promotion'], true);
-            $aov = 18_000 + (crc32($campaign['id']) % 60_000);
+            $aov = 11_000 + (crc32($campaign['id']) % 28_000);
 
             for ($offset = self::DAYS - 1; $offset >= 0; $offset--) {
                 $date = $today->modify('-'.$offset.' days');
@@ -669,7 +669,7 @@ final class DemoAgencySeeder extends Seeder
                         break;
                     case 'sales':
                     case 'app_promotion':
-                        $conversions = round($clicks * (0.018 + $this->noise(14) / 1000) * $resultFactor, 4);
+                        $conversions = round($clicks * (0.009 + $this->noise(8) / 1000) * $resultFactor, 4);
                         $revenue = (int) round($conversions * $aov);
                         break;
                     case 'video_views':

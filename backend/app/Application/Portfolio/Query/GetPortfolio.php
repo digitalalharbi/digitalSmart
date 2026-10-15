@@ -121,7 +121,7 @@ final readonly class GetPortfolio
             ],
             'health' => $health,
             'clients' => $clients,
-            'projects' => $clientId === null ? [] : $projects,
+            'projects' => $clientId === null ? $this->worstFirst($projects, 60) : $projects,
             'platform_mix' => $this->platformMix($rows),
             'budget_health' => $budgetRows === null ? null : [
                 'approved' => count($budgetRows),
@@ -285,5 +285,26 @@ final readonly class GetPortfolio
             $sources,
             static fn ($s): bool => $s->clientId === $clientId && $s->freshness->needsAttention(),
         ));
+    }
+
+    /**
+     * The agency view carries the projects that most need a look, not all of them — a hundred and fifty tiles is
+     * not a clearer picture than the sixty with something wrong, and the payload stays bounded as the agency grows.
+     * A client's own page carries every project it has.
+     *
+     * @param  list<array<string, mixed>>  $projects
+     * @return list<array<string, mixed>>
+     */
+    private function worstFirst(array $projects, int $limit): array
+    {
+        usort($projects, static function (array $a, array $b): int {
+            $ha = is_array($a['campaign_health'] ?? null) ? $a['campaign_health'] : [];
+            $hb = is_array($b['campaign_health'] ?? null) ? $b['campaign_health'] : [];
+
+            return [-(int) ($ha['critical'] ?? 0), -(int) ($ha['needs_attention'] ?? 0), -(int) ($ha['watch'] ?? 0), (string) $a['name']]
+                <=> [-(int) ($hb['critical'] ?? 0), -(int) ($hb['needs_attention'] ?? 0), -(int) ($hb['watch'] ?? 0), (string) $b['name']];
+        });
+
+        return array_slice($projects, 0, $limit);
     }
 }

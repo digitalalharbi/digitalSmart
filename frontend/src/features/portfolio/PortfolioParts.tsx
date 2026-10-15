@@ -4,17 +4,51 @@ import { formatMinor, formatNumber } from '@/shared/lib/format';
 import { HealthDistribution } from '@/shared/ui/health-distribution';
 import type { Money, Portfolio, Roas } from './types';
 
+/**
+ * A headline figure, shortened: 13.4M, not 13,430,943.38.
+ *
+ * Exact amounts belong in a table or a drill-down; on a card the reader wants magnitude, and a long figure in
+ * a narrow card is how a number ends up clipped. The currency stays attached, so it is still never a bare number.
+ */
+function compactMoney(minor: number, currency: string, locale: string): string {
+  const probe = new Intl.NumberFormat(locale, { style: 'currency', currency });
+  const exponent = probe.resolvedOptions().maximumFractionDigits ?? 2;
+
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    currencyDisplay: 'narrowSymbol',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(minor / 10 ** exponent);
+}
+
 /** Every currency on its own line. Two currencies are never one number. */
-export function MoneyLines({ values, locale }: { values: Money[]; locale: string }) {
+export function MoneyLines({
+  values,
+  locale,
+  compact = false,
+}: {
+  values: Money[];
+  locale: string;
+  /** Shortened for a card. The exact figure is the title, so nothing is lost to a hover. */
+  compact?: boolean;
+}) {
   if (values.length === 0) {
     return <span className="text-content-tertiary">—</span>;
   }
 
   return (
-    <span className="flex flex-col">
+    <span className="flex min-w-0 flex-col">
       {values.map((m) => (
-        <span key={m.currency} className="ds-numeric">
-          {formatMinor(m.minor, m.currency, locale)}
+        <span
+          key={m.currency}
+          className="ds-numeric truncate"
+          title={compact ? formatMinor(m.minor, m.currency, locale) : undefined}
+        >
+          {compact
+            ? compactMoney(m.minor, m.currency, locale)
+            : formatMinor(m.minor, m.currency, locale)}
         </span>
       ))}
     </span>
@@ -39,9 +73,9 @@ export function RoasLines({ values }: { values: Roas[] }) {
 
 export function Kpi({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="bg-surface border-line-subtle flex flex-col gap-1.5 rounded-2xl border p-4 shadow-xs">
-      <span className="ds-overline text-content-tertiary">{label}</span>
-      <span className="ds-figure text-content text-xl">{children}</span>
+    <div className="bg-surface border-line-subtle flex min-w-0 flex-col gap-1.5 rounded-2xl border p-4 shadow-xs">
+      <span className="ds-overline text-content-tertiary truncate">{label}</span>
+      <span className="ds-figure text-content min-w-0 text-xl">{children}</span>
     </div>
   );
 }
@@ -68,13 +102,13 @@ export function KpiGrid({ data, locale }: { data: Portfolio['kpis']; locale: str
       className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5"
     >
       <Kpi label={t('portfolio.kpi.spend')}>
-        <MoneyLines values={data.spend} locale={locale} />
+        <MoneyLines compact values={data.spend} locale={locale} />
       </Kpi>
       <Kpi label={t('portfolio.kpi.revenue')}>
-        <MoneyLines values={data.platform_revenue} locale={locale} />
+        <MoneyLines compact values={data.platform_revenue} locale={locale} />
       </Kpi>
       <Kpi label={t('portfolio.kpi.storeRevenue')}>
-        <MoneyLines values={data.store_revenue} locale={locale} />
+        <MoneyLines compact values={data.store_revenue} locale={locale} />
       </Kpi>
       <Kpi label="ROAS">
         <RoasLines values={data.roas} />
