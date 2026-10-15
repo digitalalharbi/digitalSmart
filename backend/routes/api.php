@@ -9,6 +9,7 @@ use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
 use App\Interface\Http\Controller\Attention\AttentionController;
 use App\Interface\Http\Controller\Attribution\AttributionController;
 use App\Interface\Http\Controller\Audit\AuditLogController;
+use App\Interface\Http\Controller\Benchmark\BenchmarkController;
 use App\Interface\Http\Controller\Budget\BudgetControlController;
 use App\Interface\Http\Controller\Budget\BudgetController;
 use App\Interface\Http\Controller\Budget\ForecastController;
@@ -258,6 +259,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('budgets', [BudgetController::class, 'store'])->name('budgets.store');
     /* Every approved budget with pacing and risk — the finance view, in a fixed number of statements. */
     /* How the whole agency, or one client, is doing - assembled from the reads that already exist. */
+    /* Internal only, and silent about any group of fewer than three clients. */
+    Route::get('benchmarks', [BenchmarkController::class, 'show'])->name('benchmarks.show');
     Route::get('portfolio', [PortfolioController::class, 'agency'])->name('portfolio.agency');
     Route::get('portfolio/clients/{client}', [PortfolioController::class, 'client'])
         ->whereUuid('client')->name('portfolio.client');
