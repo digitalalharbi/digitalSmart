@@ -100,6 +100,23 @@ describe('PortfolioPage', () => {
     expect(within(kpis).getAllByText(/\$/).length).toBeGreaterThan(0);
   });
 
+  it('ranks clients by spend in one currency at a time, and lets the other be chosen', async () => {
+    await renderWithProviders(<PortfolioPage />);
+
+    const [first] = screen.getAllByRole('link', { name: /Alhambra Retail/ });
+    expect(first).toHaveAttribute('href', '/clients/c1');
+    expect(screen.getByRole('button', { name: 'USD' })).toBeInTheDocument();
+  });
+
+  it('shows each project as a tile that says its worst state and opens it', async () => {
+    await renderWithProviders(<PortfolioPage />);
+
+    const tile = screen.getByRole('link', { name: /Ramadan/ });
+
+    expect(tile).toHaveAttribute('href', '/projects/p1');
+    expect(tile).toHaveTextContent('Critical');
+  });
+
   /* Not shown to the role is "—" with a reason, never a zero a reader would take as a fact. */
   it('draws a section the role cannot see as a dash, not a zero', async () => {
     await renderWithProviders(<PortfolioPage />);

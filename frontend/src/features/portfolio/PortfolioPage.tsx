@@ -23,6 +23,7 @@ import {
   PlatformMix,
   RoasLines,
 } from './PortfolioParts';
+import { ClientRanking, ProjectMatrix } from './PortfolioVisuals';
 import { TrackingRollup } from './TrackingRollup';
 import { usePortfolio } from './usePortfolio';
 
@@ -126,53 +127,74 @@ export function PortfolioPage() {
             </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('portfolio.clients')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DataTable label={t('portfolio.clients')} minWidth="56rem">
-                <TableHead>
-                  <TableRow>
-                    <TableHeader>{t('portfolio.col.client')}</TableHeader>
-                    <TableHeader align="end">{t('portfolio.kpi.spend')}</TableHeader>
-                    <TableHeader align="end">{t('portfolio.kpi.revenue')}</TableHeader>
-                    <TableHeader align="end">ROAS</TableHeader>
-                    <TableHeader align="end">{t('portfolio.col.attention')}</TableHeader>
-                    <TableHeader align="end">{t('portfolio.kpi.leads')}</TableHeader>
-                    <TableHeader align="end">{t('portfolio.col.budgetRisks')}</TableHeader>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {data.clients.map((client) => (
-                    <TableRow key={client.id}>
-                      <TableCell>
-                        <ClientLink id={client.id} name={client.name} />
-                      </TableCell>
-                      <TableCell align="end" label={t('portfolio.kpi.spend')}>
-                        <MoneyLines values={client.spend} locale={locale} />
-                      </TableCell>
-                      <TableCell align="end" label={t('portfolio.kpi.revenue')}>
-                        <MoneyLines values={client.platform_revenue} locale={locale} />
-                      </TableCell>
-                      <TableCell align="end" label="ROAS">
-                        <RoasLines values={client.roas} />
-                      </TableCell>
-                      <TableCell align="end" isNumeric label={t('portfolio.col.attention')}>
-                        {client.needs_attention}
-                      </TableCell>
-                      <TableCell align="end" isNumeric label={t('portfolio.kpi.leads')}>
-                        <Count value={client.leads} locale={locale} />
-                      </TableCell>
-                      <TableCell align="end" isNumeric label={t('portfolio.col.budgetRisks')}>
-                        <Count value={client.budget_risks} locale={locale} />
-                      </TableCell>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('portfolio.ranking')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ClientRanking clients={data.clients} locale={locale} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('portfolio.projectMatrix')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProjectMatrix projects={data.projects} />
+              </CardContent>
+            </Card>
+          </div>
+
+          <details className="group">
+            <summary className="text-content-secondary cursor-pointer text-sm font-medium">
+              {t('portfolio.allClients')}
+            </summary>
+            <Card className="mt-3">
+              <CardContent className="pt-5">
+                <DataTable label={t('portfolio.clients')} minWidth="56rem">
+                  <TableHead>
+                    <TableRow>
+                      <TableHeader>{t('portfolio.col.client')}</TableHeader>
+                      <TableHeader align="end">{t('portfolio.kpi.spend')}</TableHeader>
+                      <TableHeader align="end">{t('portfolio.kpi.revenue')}</TableHeader>
+                      <TableHeader align="end">ROAS</TableHeader>
+                      <TableHeader align="end">{t('portfolio.col.attention')}</TableHeader>
+                      <TableHeader align="end">{t('portfolio.kpi.leads')}</TableHeader>
+                      <TableHeader align="end">{t('portfolio.col.budgetRisks')}</TableHeader>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </DataTable>
-            </CardContent>
-          </Card>
+                  </TableHead>
+                  <TableBody>
+                    {data.clients.map((client) => (
+                      <TableRow key={client.id}>
+                        <TableCell>
+                          <ClientLink id={client.id} name={client.name} />
+                        </TableCell>
+                        <TableCell align="end" label={t('portfolio.kpi.spend')}>
+                          <MoneyLines values={client.spend} locale={locale} />
+                        </TableCell>
+                        <TableCell align="end" label={t('portfolio.kpi.revenue')}>
+                          <MoneyLines values={client.platform_revenue} locale={locale} />
+                        </TableCell>
+                        <TableCell align="end" label="ROAS">
+                          <RoasLines values={client.roas} />
+                        </TableCell>
+                        <TableCell align="end" isNumeric label={t('portfolio.col.attention')}>
+                          {client.needs_attention}
+                        </TableCell>
+                        <TableCell align="end" isNumeric label={t('portfolio.kpi.leads')}>
+                          <Count value={client.leads} locale={locale} />
+                        </TableCell>
+                        <TableCell align="end" isNumeric label={t('portfolio.col.budgetRisks')}>
+                          <Count value={client.budget_risks} locale={locale} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </DataTable>
+              </CardContent>
+            </Card>
+          </details>
 
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>

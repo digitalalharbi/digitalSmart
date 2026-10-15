@@ -2413,11 +2413,11 @@
     "notShown": "Not shown to your role",
     "client": "Client",
     "clientSubtitle": "Every project of this client, aggregated.",
-    "allClients": "All clients",
+    "allClients": "All clients, in detail",
     "noClient": "No such client",
     "noClientBody": "It does not exist, or it is not one of yours.",
     "projects": "Projects",
-    "noProjects": "No projects yet",
+    "noProjects": "No projects yet.",
     "noProjectsBody": "Projects created for this client appear here.",
     "openWork": "Open work",
     "status": {
@@ -2436,7 +2436,12 @@
       "critical": "critical",
       "allClear": "Every measured project is reporting.",
       "workspaceIssues": "{{count}} workspace-level findings, such as nothing measuring at all."
-    }
+    },
+    "ranking": "Clients by spend",
+    "projectMatrix": "Project health",
+    "currency": "Currency",
+    "campaignsCount": "{{count}} campaign",
+    "campaignsCount_other": "{{count}} campaigns"
   },
   "budgetControl": {
     "title": "Budget control",

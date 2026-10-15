@@ -2444,11 +2444,11 @@
     "notShown": "غير ظاهر لدورك",
     "client": "العميل",
     "clientSubtitle": "كل مشاريع هذا العميل مجمّعة.",
-    "allClients": "كل العملاء",
+    "allClients": "كل العملاء بالتفصيل",
     "noClient": "لا يوجد هذا العميل",
     "noClientBody": "إما أنه غير موجود أو ليس من عملائك.",
     "projects": "المشاريع",
-    "noProjects": "لا مشاريع بعد",
+    "noProjects": "لا توجد مشاريع بعد.",
     "noProjectsBody": "تظهر هنا المشاريع المنشأة لهذا العميل.",
     "openWork": "العمل المفتوح",
     "status": {
@@ -2467,7 +2467,12 @@
       "critical": "حرج",
       "allClear": "كل مشروع مُقاس يُبلّغ بياناته.",
       "workspaceIssues": "{{count}} ملاحظات على مستوى مساحة العمل، مثل عدم قياس أي شيء."
-    }
+    },
+    "ranking": "العملاء حسب الإنفاق",
+    "projectMatrix": "صحة المشاريع",
+    "currency": "العملة",
+    "campaignsCount": "{{count}} حملة",
+    "campaignsCount_other": "{{count}} حملات"
   },
   "budgetControl": {
     "title": "مركز الميزانيات",
