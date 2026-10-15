@@ -45,8 +45,16 @@ final class SyncBoundAccountJob implements ShouldBeUnique, ShouldQueue
          * backfill. Default is the live queue, which is what a manual dispatch means.
          */
         string $queue = 'sync',
+        /* The platform, so the job can be paced against what that platform has published about its limits. */
+        private readonly ?string $provider = null,
     ) {
         $this->onQueue($queue);
+    }
+
+    /** @return list<object> */
+    public function middleware(): array
+    {
+        return $this->provider === null ? [] : [new ThrottleByProvider($this->provider)];
     }
 
     public function uniqueId(): string

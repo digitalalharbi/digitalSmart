@@ -56,6 +56,7 @@ final class SyncAdvertisingData extends Command
                 $since,
                 $this->stringOption('until'),
                 $planned->class->queue(),
+                $planned->candidate->provider->value,
             )->delay($planned->delaySeconds > 0 ? now()->addSeconds($planned->delaySeconds) : null);
         }
 
