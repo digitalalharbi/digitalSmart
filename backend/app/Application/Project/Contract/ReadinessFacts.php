@@ -40,6 +40,13 @@ interface ReadinessFacts
      */
     public function dataQuality(string $workspaceId, string $projectId): array;
 
+    /**
+     * What a campaign's own readiness is judged from: its account's state and what has been reported against it.
+     *
+     * @return array{account_status: string, sync_enabled: bool, spend_minor: ?int, results: ?int, reported_days: int, objective: string}|null
+     */
+    public function campaign(string $workspaceId, string $campaignId, DateTimeImmutable $from, DateTimeImmutable $to): ?array;
+
     /** Pending approvals older than `$olderThan`. */
     public function stuckApprovals(string $workspaceId, string $projectId, DateTimeImmutable $olderThan): int;
 }

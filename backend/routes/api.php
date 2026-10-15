@@ -163,6 +163,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('client')->name('clients.offboarding.preview');
     Route::post('clients/{client}/offboard', [OffboardingController::class, 'offboard'])
         ->whereUuid('client')->name('clients.offboard');
+    Route::get('campaigns/{campaign}/readiness', [ReadinessController::class, 'campaign'])
+        ->whereUuid('campaign')->name('campaigns.readiness');
     Route::get('projects/{project}/readiness', [ReadinessController::class, 'show'])
         ->whereUuid('project')->name('projects.readiness');
     Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');

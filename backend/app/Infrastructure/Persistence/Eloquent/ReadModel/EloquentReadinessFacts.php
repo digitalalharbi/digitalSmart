@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Eloquent\ReadModel;
 
 use App\Application\Project\Contract\ReadinessFacts;
+use App\Domain\Advertising\CampaignObjective;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -96,6 +97,41 @@ final readonly class EloquentReadinessFacts implements ReadinessFacts
             'missing_timezone' => (int) ($row->missing_timezone ?? 0),
             'timezones' => (int) ($row->timezones ?? 0),
             'unplaced' => $unplaced,
+        ];
+    }
+
+    public function campaign(string $workspaceId, string $campaignId, DateTimeImmutable $from, DateTimeImmutable $to): ?array
+    {
+        $c = DB::table('campaigns as c')
+            ->join('external_accounts as a', 'a.id', '=', 'c.external_account_id')
+            ->where('c.workspace_id', $workspaceId)->where('c.id', $campaignId)
+            ->first(['c.id', 'c.objective', 'c.external_account_id', 'a.status as account_status']);
+
+        if ($c === null) {
+            return null;
+        }
+
+        /* The result column comes from the domain's own whitelist, never from the request. */
+        $column = (CampaignObjective::tryFrom((string) $c->objective) ?? CampaignObjective::Other)->resultColumn();
+
+        /** @var object{spend: int|string|null, results: int|string|null, days: int|string|null} $m */
+        $m = DB::table('daily_metrics')
+            ->where('workspace_id', $workspaceId)->where('entity_type', 'campaign')->where('campaign_id', $campaignId)
+            ->whereBetween('date', [$from->format('Y-m-d'), $to->format('Y-m-d')])
+            ->selectRaw("sum(spend_minor) as spend, sum({$column}) as results, count(distinct date) as days")
+            ->first();
+
+        $enabled = DB::table('project_integration_bindings')
+            ->where('workspace_id', $workspaceId)->where('external_account_id', $c->external_account_id)
+            ->where('sync_enabled', true)->exists();
+
+        return [
+            'account_status' => (string) $c->account_status,
+            'sync_enabled' => $enabled,
+            'spend_minor' => $m->spend === null ? null : (int) $m->spend,
+            'results' => $m->results === null ? null : (int) $m->results,
+            'reported_days' => (int) ($m->days ?? 0),
+            'objective' => (string) $c->objective,
         ];
     }
 

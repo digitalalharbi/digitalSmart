@@ -92,3 +92,44 @@ it('is ready on data quality when currency and timezone are both known', functio
 
     expect($checks['data_quality']['state'])->toBe('ready');
 });
+
+describe('campaign readiness', function (): void {
+    it('answers three questions of its own and includes its project', function (): void {
+        [$w, $project] = readyWorld();
+        $campaign = (string) DB::table('campaigns')->where('project_id', $project->getKey())->value('id')
+            ?: (string) DB::table('campaigns')->value('id');
+
+        $data = test()->actingAs($w->scenario->owner)->getJson("/api/campaigns/{$campaign}/readiness")->assertOk()->json('data');
+
+        expect(array_column($data['checks'], 'key'))->toBe(['placed', 'account', 'measurable'])
+            ->and($data['overall']['state'])->toBeIn(['ready', 'needs_attention', 'blocked', 'unknown']);
+    });
+
+    it('is a 404 for a campaign the reader cannot see', function (): void {
+        [$w] = readyWorld();
+        $buyer = $w->scenario->addMember(SystemRole::MediaBuyer);
+        $campaign = (string) DB::table('campaigns')->value('id');
+
+        test()->actingAs($buyer)->getJson("/api/campaigns/{$campaign}/readiness")->assertNotFound();
+    });
+
+    it('calls a campaign that spent with nothing recorded something to look at, not ready', function (): void {
+        [$w] = readyWorld();
+        $campaign = (string) DB::table('campaigns')->where('objective', 'leads')->value('id');
+
+        if ($campaign === '') {
+            $campaign = (string) DB::table('campaigns')->value('id');
+            DB::table('campaigns')->where('id', $campaign)->update(['objective' => 'leads']);
+        }
+
+        DB::table('daily_metrics')->where('campaign_id', $campaign)->update(['conversions' => 0, 'spend_minor' => 5000]);
+
+        $checks = array_column(
+            test()->actingAs($w->scenario->owner)->getJson("/api/campaigns/{$campaign}/readiness")->json('data.checks'),
+            null,
+            'key',
+        );
+
+        expect($checks['measurable']['state'])->toBe('needs_attention');
+    });
+});
