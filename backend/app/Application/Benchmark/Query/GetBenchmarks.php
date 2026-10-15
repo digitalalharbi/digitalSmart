@@ -7,11 +7,11 @@ namespace App\Application\Benchmark\Query;
 use App\Application\Advertising\DTO\CampaignControlFilter;
 use App\Application\Advertising\DTO\CampaignControlRow;
 use App\Application\Advertising\Query\GetCampaignControl;
+use App\Application\Benchmark\Contract\ClientIndustryDirectory;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Domain\Access\Permission;
 use App\Domain\Advertising\CampaignObjective;
-use Illuminate\Support\Facades\DB;
 
 /**
  * How campaigns perform *relative to each other* across the agency — internal, and suppressed when thin.
@@ -36,6 +36,7 @@ final readonly class GetBenchmarks
 
     public function __construct(
         private GetCampaignControl $campaigns,
+        private ClientIndustryDirectory $industries,
         private AuthorizationGuard $guard,
         private ActorContext $actor,
     ) {}
@@ -50,12 +51,7 @@ final readonly class GetBenchmarks
         /** @var list<CampaignControlRow> $rows */
         $rows = $assessment['rows'];
 
-        /** @var array<string, string> $industry */
-        $industry = [];
-
-        foreach (DB::table('clients')->where('workspace_id', $this->actor->workspaceId()->value)->get(['id', 'industry']) as $c) {
-            $industry[(string) $c->id] = is_string($c->industry) && $c->industry !== '' ? $c->industry : 'Unspecified';
-        }
+        $industry = $this->industries->industries($this->actor->workspaceId()->value);
 
         $groups = [];
 

@@ -22,6 +22,7 @@ use App\Application\Attention\Source\TaskAttentionSource;
 use App\Application\Attention\Source\TrackingAttentionSource;
 use App\Application\Attribution\Contract\AttributionReadModel;
 use App\Application\Audit\Contract\AuditReadModel;
+use App\Application\Benchmark\Contract\ClientIndustryDirectory;
 use App\Application\Budget\Contract\BenchmarkReadModel;
 use App\Application\Budget\Contract\BudgetControlReadModel;
 use App\Application\Budget\Contract\BudgetRepository;
@@ -86,6 +87,7 @@ use App\Application\Portfolio\Contract\PortfolioReadModel;
 use App\Application\Presentation\Contract\DeckWriter;
 use App\Application\Project\Contract\ProjectMemberRepository;
 use App\Application\Project\Contract\ProjectReadModel;
+use App\Application\Project\Contract\ReadinessFacts;
 use App\Application\Reporting\Contract\ReportRepository;
 use App\Application\Reporting\Contract\ReportShareStore;
 use App\Application\Reporting\Contract\ReportWorkbookWriter;
@@ -149,6 +151,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBenchmarkReadModel
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetControlReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentCampaignControlReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientIndustryDirectory;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientVisibility;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentConnectionDirectory;
@@ -160,6 +163,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentObservedEventReadM
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentOperationsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentPortfolioReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentReadinessFacts;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSearchReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentStoreAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSyncCandidateSource;
@@ -348,6 +352,8 @@ final class AppServiceProvider extends ServiceProvider
         ConnectionDirectory::class => EloquentConnectionDirectory::class,
         PortfolioReadModel::class => EloquentPortfolioReadModel::class,
         OperationsReadModel::class => EloquentOperationsReadModel::class,
+        ClientIndustryDirectory::class => EloquentClientIndustryDirectory::class,
+        ReadinessFacts::class => EloquentReadinessFacts::class,
         BudgetControlReadModel::class => EloquentBudgetControlReadModel::class,
         SyncCandidateSource::class => EloquentSyncCandidateSource::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,

@@ -6,13 +6,13 @@ namespace App\Application\Project\Query;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Measurement\Query\GetTrackingHealth;
+use App\Application\Project\Contract\ReadinessFacts;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Project\ReadinessState;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Is this project ready to run — answered visually, not as a technical checklist.
@@ -28,6 +28,7 @@ final readonly class GetProjectReadiness
 {
     public function __construct(
         private GetTrackingHealth $tracking,
+        private ReadinessFacts $facts,
         private AuthorizationGuard $guard,
         private ActorContext $actor,
         private VisibilityResolver $visibility,
@@ -41,15 +42,14 @@ final readonly class GetProjectReadiness
         $workspace = $this->actor->workspaceId()->value;
         $visible = $this->visibility->visibleProjectIds();
 
-        $project = DB::table('projects')->where(['workspace_id' => $workspace, 'id' => $projectId])->whereNull('deleted_at')
-            ->first(['id', 'name', 'client_id', 'status']);
+        $project = $this->facts->project($workspace, $projectId);
 
         if ($project === null || ($visible !== null && ! in_array($projectId, $visible, true))) {
             throw ResourceNotFound::of('Project');
         }
 
         $today = $this->clock->now()->format('Y-m-d');
-        $clientId = (string) $project->client_id;
+        $clientId = $project['client_id'];
 
         $checks = [
             'budget' => $this->budget($workspace, $projectId, $clientId, $today),
@@ -70,7 +70,7 @@ final readonly class GetProjectReadiness
         };
 
         return [
-            'project' => ['id' => (string) $project->id, 'name' => (string) $project->name, 'status' => (string) $project->status],
+            'project' => ['id' => $project['id'], 'name' => $project['name'], 'status' => $project['status']],
             'overall' => ['state' => $overall->value, 'label' => $overall->label()],
             'checks' => array_map(static fn (string $key, array $c): array => [
                 'key' => $key, 'state' => $c[0]->value, 'label' => $c[0]->label(), 'reason' => $c[1],
@@ -83,16 +83,13 @@ final readonly class GetProjectReadiness
     /** @return array{0: ReadinessState, 1: string} */
     private function budget(string $workspace, string $projectId, string $clientId, string $today): array
     {
-        $budgets = DB::table('budgets')->where(['workspace_id' => $workspace, 'status' => 'approved'])
-            ->where(static function ($q) use ($projectId, $clientId): void {
-                $q->where('project_id', $projectId)->orWhere(static fn ($x) => $x->whereNull('project_id')->where('client_id', $clientId));
-            });
+        $budget = $this->facts->approvedBudget($workspace, $projectId, $clientId, $today);
 
-        if ((clone $budgets)->where('period_end', '>=', $today)->where('period_start', '<=', $today)->exists()) {
+        if ($budget['covers_today']) {
             return [ReadinessState::Ready, 'An approved budget covers today.'];
         }
 
-        if ((clone $budgets)->exists()) {
+        if ($budget['any']) {
             return [ReadinessState::NeedsAttention, 'The approved budget does not cover today’s date.'];
         }
 
@@ -102,16 +99,13 @@ final readonly class GetProjectReadiness
     /** @return array{0: ReadinessState, 1: string} */
     private function accounts(string $workspace, string $projectId): array
     {
-        $accounts = DB::table('project_integration_bindings as b')->join('external_accounts as a', 'a.id', '=', 'b.external_account_id')
-            ->where(['b.workspace_id' => $workspace, 'b.project_id' => $projectId]);
+        $accounts = $this->facts->boundAccounts($workspace, $projectId);
 
-        $total = (clone $accounts)->count();
-
-        if ($total === 0) {
+        if ($accounts['bound'] === 0) {
             return [ReadinessState::Blocked, 'No advertising account is connected to this project.'];
         }
 
-        $usable = (clone $accounts)->where('a.status', 'active')->where('b.sync_enabled', true)->count();
+        $usable = $accounts['usable'];
 
         return $usable > 0
             ? [ReadinessState::Ready, sprintf('%d %s connected and syncing.', $usable, $usable === 1 ? 'account' : 'accounts')]
@@ -143,15 +137,13 @@ final readonly class GetProjectReadiness
     /** @return array{0: ReadinessState, 1: string} */
     private function creative(string $workspace, string $projectId, string $clientId): array
     {
-        $requests = DB::table('creative_requests')->where('workspace_id', $workspace)->where('client_id', $clientId)
-            ->where(static fn ($q) => $q->where('project_id', $projectId)->orWhereNull('project_id'))
-            ->where('state', '!=', 'cancelled');
+        $creative = $this->facts->creative($workspace, $projectId, $clientId);
 
-        if (! (clone $requests)->exists()) {
+        if (! $creative['briefed']) {
             return [ReadinessState::NeedsAttention, 'No creative has been briefed.'];
         }
 
-        return (clone $requests)->where('state', 'approved')->exists()
+        return $creative['approved']
             ? [ReadinessState::Ready, 'Approved creative is available.']
             : [ReadinessState::NeedsAttention, 'Creative is briefed but none is approved yet.'];
     }
@@ -159,8 +151,7 @@ final readonly class GetProjectReadiness
     /** @return array{0: ReadinessState, 1: string} */
     private function approvals(string $workspace, string $projectId): array
     {
-        $waiting = DB::table('approval_requests')->where(['workspace_id' => $workspace, 'project_id' => $projectId, 'state' => 'pending'])
-            ->where('created_at', '<', now()->subDays(7))->count();
+        $waiting = $this->facts->stuckApprovals($workspace, $projectId, $this->clock->now()->modify('-7 days'));
 
         return $waiting > 0
             ? [ReadinessState::NeedsAttention, sprintf('%d %s waiting more than a week.', $waiting, $waiting === 1 ? 'decision' : 'decisions')]
