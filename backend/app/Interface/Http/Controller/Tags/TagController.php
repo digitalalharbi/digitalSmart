@@ -78,6 +78,59 @@ final class TagController extends Controller
         return $this->change($tag, $type, $id, true);
     }
 
+    /**
+     * Tag many things at once. Each must be visible to the actor; the rest are reported as skipped rather than
+     * failing the whole request, and are indistinguishable from absent.
+     */
+    public function applyMany(Request $request, string $tag, string $type): JsonResponse
+    {
+        $this->guard->ensure(Permission::ProjectsUpdate);
+
+        if (! in_array($type, self::TYPES, true)) {
+            return response()->json(['message' => 'Unknown type.', 'code' => 'invalid_type', 'allowed' => self::TYPES], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:100'],
+            'ids.*' => ['uuid'],
+        ]);
+
+        $workspace = $this->actor->workspaceId()->value;
+
+        if (! $this->tags->exists($workspace, $tag)) {
+            throw ResourceNotFound::of('Tag');
+        }
+
+        /** @var list<string> $ids */
+        $ids = array_values(array_unique(array_filter((array) $validated['ids'], 'is_string')));
+
+        $found = $this->search->lookup(
+            $workspace,
+            $this->visibility->visibleProjectIds(),
+            array_map(static fn (string $id): array => ['type' => $type, 'id' => $id], $ids),
+        );
+
+        $visible = array_map(static fn ($hit): string => $hit->id, $found);
+
+        foreach ($visible as $id) {
+            $this->tags->apply($workspace, $tag, $type, $id);
+            $this->audit->record(new AuditEntry(
+                workspaceId: $this->actor->workspaceId(),
+                actorId: $this->actor->userId(),
+                action: AuditAction::TagApplied,
+                auditableType: $type,
+                auditableId: $id,
+                summary: 'Applied an internal tag.',
+                changes: ['tag_id' => $tag],
+            ));
+        }
+
+        return response()->json(['data' => [
+            'applied' => $visible,
+            'skipped' => array_values(array_diff($ids, $visible)),
+        ]]);
+    }
+
     public function remove(string $tag, string $type, string $id): JsonResponse
     {
         return $this->change($tag, $type, $id, false);

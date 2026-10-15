@@ -71,3 +71,33 @@ it('shows a card the tags it inherits from its project', function (): void {
     $row = test()->actingAs($owner)->getJson('/api/campaigns/control')->json('data.0');
     expect(array_column($row['tags'], 'name'))->toBe(['High spend']);
 });
+
+it('tags many things at once and reports what it could not reach', function (): void {
+    $w = SyncedWorkspace::with([Provider::Meta->value => 'act_sandbox_1001']);
+    $owner = $w->scenario->owner;
+    $project = $w->project(Provider::Meta);
+    $stranger = (string) Illuminate\Support\Str::uuid();
+
+    $tag = test()->actingAs($owner)->postJson('/api/tags', ['name' => 'Priority'])->json('data.id');
+
+    $result = test()->actingAs($owner)
+        ->postJson("/api/tags/{$tag}/entities/project", ['ids' => [(string) $project->getKey(), $stranger]])
+        ->assertOk()->json('data');
+
+    expect($result['applied'])->toBe([(string) $project->getKey()])
+        ->and($result['skipped'])->toBe([$stranger]);
+});
+
+it('does not let a media buyer tag a project they are not on, even in bulk', function (): void {
+    $w = SyncedWorkspace::with([Provider::Meta->value => 'act_sandbox_1001']);
+    $owner = $w->scenario->owner;
+    $buyer = $w->scenario->addMember(SystemRole::MediaBuyer);
+    $project = $w->project(Provider::Meta);
+    $tag = test()->actingAs($owner)->postJson('/api/tags', ['name' => 'Priority'])->json('data.id');
+
+    $result = test()->actingAs($buyer)
+        ->postJson("/api/tags/{$tag}/entities/project", ['ids' => [(string) $project->getKey()]])
+        ->assertOk()->json('data');
+
+    expect($result['applied'])->toBe([]);
+});

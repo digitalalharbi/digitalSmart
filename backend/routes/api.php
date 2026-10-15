@@ -777,6 +777,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::get('tags', [TagController::class, 'index'])->name('tags.index');
     Route::post('tags', [TagController::class, 'store'])->name('tags.store');
     Route::delete('tags/{tag}', [TagController::class, 'destroy'])->whereUuid('tag')->name('tags.destroy');
+    Route::post('tags/{tag}/entities/{type}', [TagController::class, 'applyMany'])
+        ->whereUuid('tag')->name('tags.apply_many');
     Route::put('tags/{tag}/entities/{type}/{id}', [TagController::class, 'apply'])
         ->whereUuid(['tag', 'id'])->name('tags.apply');
     Route::delete('tags/{tag}/entities/{type}/{id}', [TagController::class, 'remove'])
