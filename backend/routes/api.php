@@ -22,6 +22,7 @@ use App\Interface\Http\Controller\Commerce\StoreWebhookController;
 use App\Interface\Http\Controller\Creative\CreativeController;
 use App\Interface\Http\Controller\Dashboard\DashboardController;
 use App\Interface\Http\Controller\Dashboard\SavedViewController;
+use App\Interface\Http\Controller\Digest\DigestController;
 use App\Interface\Http\Controller\Home\HomeController;
 use App\Interface\Http\Controller\Identity\SessionController;
 use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
@@ -738,6 +739,10 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      * own: each stream carries one, and a reader with none of them gets an empty queue that says so.
      */
     Route::get('attention', [AttentionController::class, 'index'])->name('attention.index');
+
+    /* The caller's own digests: one role-aware summary instead of N alerts. */
+    Route::get('digests', [DigestController::class, 'index'])->name('digests.index');
+    Route::post('digests/{digest}/read', [DigestController::class, 'read'])->whereUuid('digest')->name('digests.read');
 
     /* Which home screens this person should see, decided from what they may do rather than from a role's name. */
     Route::get('home', [HomeController::class, 'show'])->name('home.show');

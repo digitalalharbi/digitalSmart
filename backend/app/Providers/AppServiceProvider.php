@@ -42,6 +42,7 @@ use App\Application\Creative\Contract\CreativeRepository;
 use App\Application\Creative\Contract\CreativeSpecRegistry;
 use App\Application\Dashboard\Contract\DashboardRepository;
 use App\Application\Dashboard\Contract\SavedViewRepository;
+use App\Application\Digest\Contract\DigestStore;
 use App\Application\Identity\Contract\Authenticator;
 use App\Application\Identity\Contract\IdentityReadModel;
 use App\Application\Integration\Contract\ConnectionDirectory;
@@ -173,6 +174,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRequestRepo
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCommerceStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCreativeRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDashboardRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDigestStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentEventDefinitionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
@@ -342,6 +344,7 @@ final class AppServiceProvider extends ServiceProvider
         ShortcutStore::class => EloquentShortcutStore::class,
         TagStore::class => EloquentTagStore::class,
         ClientOffboarding::class => EloquentClientOffboarding::class,
+        DigestStore::class => EloquentDigestStore::class,
         ConnectionDirectory::class => EloquentConnectionDirectory::class,
         PortfolioReadModel::class => EloquentPortfolioReadModel::class,
         OperationsReadModel::class => EloquentOperationsReadModel::class,

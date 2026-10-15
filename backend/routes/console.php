@@ -58,3 +58,13 @@ Schedule::command('access:sync')
     ->dailyAt('03:00')
     ->withoutOverlapping()
     ->runInBackground();
+
+/*
+ * Digests: one summary per person instead of N alerts.
+ *
+ * Staggered after the sync passes they summarise. Morning campaigns land before the working day; budgets
+ * daily; the project digest on Mondays, when the week's waiting work is worth reading as a whole.
+ */
+Schedule::command('digests:build morning_campaigns')->dailyAt('06:30')->withoutOverlapping()->runInBackground();
+Schedule::command('digests:build daily_budget')->dailyAt('07:00')->withoutOverlapping()->runInBackground();
+Schedule::command('digests:build weekly_projects')->weeklyOn(1, '07:30')->withoutOverlapping()->runInBackground();
