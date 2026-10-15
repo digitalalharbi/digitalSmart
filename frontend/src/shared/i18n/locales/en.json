@@ -2469,7 +2469,15 @@
     "projectMatrix": "Project health",
     "currency": "Currency",
     "campaignsCount": "{{count}} campaign",
-    "campaignsCount_other": "{{count}} campaigns"
+    "campaignsCount_other": "{{count}} campaigns",
+    "tabs": {
+      "label": "Client areas",
+      "advertising": "Advertising",
+      "leads": "Leads & sales",
+      "budget": "Budget",
+      "creative": "Creative",
+      "reports": "Reports"
+    }
   },
   "budgetControl": {
     "title": "Budget control",

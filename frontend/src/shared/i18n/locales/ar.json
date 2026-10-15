@@ -2500,7 +2500,15 @@
     "projectMatrix": "صحة المشاريع",
     "currency": "العملة",
     "campaignsCount": "{{count}} حملة",
-    "campaignsCount_other": "{{count}} حملات"
+    "campaignsCount_other": "{{count}} حملات",
+    "tabs": {
+      "label": "أقسام العميل",
+      "advertising": "الإعلانات",
+      "leads": "العملاء المحتملون والمبيعات",
+      "budget": "الميزانية",
+      "creative": "الإبداع",
+      "reports": "التقارير"
+    }
   },
   "budgetControl": {
     "title": "مركز الميزانيات",

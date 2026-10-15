@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
+import { useUiStore } from '@/shared/store/ui-store';
 import { Alert } from '@/shared/ui/alert';
 import { buttonVariants } from '@/shared/ui/button.variants';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
@@ -17,6 +18,15 @@ import {
 } from './PortfolioParts';
 import { usePortfolio } from './usePortfolio';
 
+/** Where each part of a client's work lives. Each is the one implementation of that module, opened narrowed. */
+const TABS: Array<{ key: string; to: string; query?: string }> = [
+  { key: 'advertising', to: '/campaigns' },
+  { key: 'leads', to: '/leads' },
+  { key: 'budget', to: '/budget-control' },
+  { key: 'creative', to: '/creative-hub' },
+  { key: 'reports', to: '/reports' },
+];
+
 /**
  * One client: every one of its projects, aggregated.
  *
@@ -29,6 +39,17 @@ export function ClientPortfolioPage() {
   const { clientId = '' } = useParams();
   const { data, isPending, isError } = usePortfolio(clientId);
   const client = data?.clients[0];
+  const navigate = useNavigate();
+  const { context, setContext } = useUiStore();
+
+  /* Opening a module from here sets the client as the working context, so the module opens already narrowed. */
+  const open = (to: string, query?: string) => {
+    if (client !== undefined) {
+      setContext({ ...context, client: { id: client.id, label: client.name }, project: null });
+    }
+
+    void navigate(query === undefined ? to : `${to}?${query}`);
+  };
 
   return (
     <div className="ds-page">
@@ -50,6 +71,22 @@ export function ClientPortfolioPage() {
         <EmptyState title={t('portfolio.noClient')} description={t('portfolio.noClientBody')} />
       ) : (
         <>
+          <nav
+            aria-label={t('portfolio.tabs.label')}
+            className="border-line-subtle -mb-2 flex gap-1 overflow-x-auto border-b"
+          >
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => open(tab.to, tab.query)}
+                className="text-content-secondary hover:text-content focus-visible:ring-accent/40 shrink-0 rounded-t-md px-3 py-2 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+              >
+                {t(`portfolio.tabs.${tab.key}`)}
+              </button>
+            ))}
+          </nav>
+
           <KpiGrid data={data.kpis} locale={locale} />
 
           <Card>
@@ -77,7 +114,10 @@ export function ClientPortfolioPage() {
                       className="bg-surface border-line-subtle flex flex-col gap-3 rounded-2xl border p-4 shadow-xs"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <Link to="/projects" className="text-content font-medium hover:underline">
+                        <Link
+                          to={`/projects/${project.id}`}
+                          className="text-content font-medium hover:underline"
+                        >
                           {project.name}
                         </Link>
                         <Badge tone="neutral">
