@@ -46,6 +46,7 @@ enum AuditAction: string
      */
     case CampaignProjectAssigned = 'campaign.project_assigned';
 
+    case ClientOffboarded = 'client.offboarded';
     case TagApplied = 'tag.applied';
     case TagRemoved = 'tag.removed';
 
@@ -214,6 +215,7 @@ enum AuditAction: string
             self::IntegrationConnectionReconnected,
             self::IntegrationAccountIgnored,
             self::CampaignProjectAssigned,
+            self::ClientOffboarded,
             /*
              * Beside them for the same reason: it decides whose revenue a merchant's orders become, and it
              * grants the people on one client's projects sight of that store's customers.

@@ -26,6 +26,7 @@ use App\Application\Budget\Contract\BenchmarkReadModel;
 use App\Application\Budget\Contract\BudgetControlReadModel;
 use App\Application\Budget\Contract\BudgetRepository;
 use App\Application\Budget\Contract\BudgetSpendReadModel;
+use App\Application\Client\Contract\ClientOffboarding;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Client\Contract\ClientVisibility;
 use App\Application\Commerce\Contract\CommerceStore;
@@ -166,6 +167,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentApprovalRepositor
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAssignedWorkRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCampaignAssignmentRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientOffboarding;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRequestRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCommerceStore;
@@ -339,6 +341,7 @@ final class AppServiceProvider extends ServiceProvider
         SearchReadModel::class => EloquentSearchReadModel::class,
         ShortcutStore::class => EloquentShortcutStore::class,
         TagStore::class => EloquentTagStore::class,
+        ClientOffboarding::class => EloquentClientOffboarding::class,
         ConnectionDirectory::class => EloquentConnectionDirectory::class,
         PortfolioReadModel::class => EloquentPortfolioReadModel::class,
         OperationsReadModel::class => EloquentOperationsReadModel::class,

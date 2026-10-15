@@ -14,8 +14,8 @@ use stdClass;
 
 final readonly class EloquentSyncCandidateSource implements SyncCandidateSource
 {
-    /** Project states that still have work in them. Paused is live: it resumes, and its figures matter. */
-    private const array LIVE_PROJECTS = ['planning', 'active', 'paused'];
+    /** Project states that still have work in them — `ProjectStatus::isLive()` is the rule; SQL needs the list. */
+    private const array LIVE_PROJECTS = ['planning', 'onboarding', 'active', 'paused', 'closing'];
 
     /** @return list<SyncCandidate> */
     public function candidates(?WorkspaceId $workspaceId = null): array

@@ -14,6 +14,7 @@ use App\Interface\Http\Controller\Budget\BudgetController;
 use App\Interface\Http\Controller\Budget\ForecastController;
 use App\Interface\Http\Controller\Budget\PacingController;
 use App\Interface\Http\Controller\Client\ClientController;
+use App\Interface\Http\Controller\Client\OffboardingController;
 use App\Interface\Http\Controller\Commerce\StoreAnalyticsController;
 use App\Interface\Http\Controller\Commerce\StoreController;
 use App\Interface\Http\Controller\Commerce\StoreWebhookController;
@@ -149,6 +150,11 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::delete('clients/{client}', [ClientController::class, 'destroy'])
         ->whereUuid('client')->name('clients.destroy');
 
+    /* Leaving: a preview of what stops, and the act. Nothing a client produced is deleted. */
+    Route::get('clients/{client}/offboarding', [OffboardingController::class, 'preview'])
+        ->whereUuid('client')->name('clients.offboarding.preview');
+    Route::post('clients/{client}/offboard', [OffboardingController::class, 'offboard'])
+        ->whereUuid('client')->name('clients.offboard');
     Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::get('projects/{project}', [ProjectController::class, 'show'])
