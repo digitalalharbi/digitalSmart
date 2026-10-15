@@ -13,6 +13,7 @@ use App\Application\Leads\Command\RecordLead;
 use App\Application\Leads\Command\SetLeadValue;
 use App\Application\Leads\Command\SyncCrmDeals;
 use App\Application\Leads\DTO\LeadDuplicateRow;
+use App\Application\Leads\DTO\LeadFilter;
 use App\Application\Leads\DTO\LeadHistoryEntry;
 use App\Application\Leads\DTO\LeadView;
 use App\Application\Leads\Query\FindLeadDuplicates;
@@ -21,6 +22,7 @@ use App\Application\Leads\Query\GetLeadHistory;
 use App\Application\Leads\Query\ListLeadOwners;
 use App\Application\Leads\Query\ListLeads;
 use App\Application\Shared\DTO\OwnerCandidate;
+use App\Domain\Leads\LeadScope;
 use App\Domain\Leads\LeadStage;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Request\Leads\RecordLeadRequest;
@@ -56,6 +58,13 @@ final class LeadController extends Controller
                     from: $this->date($request, 'from'),
                     until: $this->date($request, 'until'),
                     limit: (int) ($request->integer('limit') ?: 100),
+                    filter: new LeadFilter(
+                        scope: LeadScope::tryFrom($request->string('scope')->value()) ?? LeadScope::All,
+                        projectId: $this->scopeId($request, 'project_id'),
+                        ownerId: $this->scopeId($request, 'owner_id'),
+                        sourceKind: $this->scopeId($request, 'source_kind'),
+                        campaign: $this->scopeId($request, 'campaign'),
+                    ),
                 ),
             ),
         ]);

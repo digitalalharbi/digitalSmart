@@ -6,12 +6,14 @@ namespace App\Infrastructure\Persistence\Eloquent\Repository;
 
 use App\Application\Leads\Contract\LeadRepository;
 use App\Application\Leads\DTO\LeadDuplicateRow;
+use App\Application\Leads\DTO\LeadFilter;
 use App\Application\Leads\DTO\LeadHistoryEntry;
 use App\Application\Leads\DTO\LeadInput;
 use App\Application\Leads\DTO\LeadView;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Commerce\AttributionEvidence;
 use App\Domain\Leads\LeadMergePlan;
+use App\Domain\Leads\LeadScope;
 use App\Domain\Leads\LeadSourceKind;
 use App\Domain\Leads\LeadStage;
 use App\Domain\Shared\ValueObject\ContactPoint;
@@ -125,8 +127,13 @@ final readonly class EloquentLeadRepository implements LeadRepository
         ?DateTimeImmutable $from = null,
         ?DateTimeImmutable $until = null,
         int $limit = 100,
+        ?LeadFilter $filter = null,
     ): array {
         $query = $this->visibleQuery($workspaceId, $visibleProjectIds)->with(self::RELATIONS);
+
+        if ($filter !== null) {
+            $this->narrow($query, $workspaceId, $filter);
+        }
 
         if ($clientId !== null) {
             $query->where('client_id', $clientId);
@@ -752,6 +759,44 @@ final readonly class EloquentLeadRepository implements LeadRepository
                 ->where('workspace_id', $workspaceId)
                 ->whereIn('id', $visibleProjectIds);
         });
+    }
+
+    /** @param  Builder<Lead>  $query */
+    private function narrow(Builder $query, string $workspaceId, LeadFilter $filter): void
+    {
+        $actor = $filter->actorId;
+
+        match ($filter->scope) {
+            LeadScope::All => null,
+            /* Without an actor there is no "my" — an empty result, never a silent fall back to everything. */
+            LeadScope::Mine => $actor === null ? $query->whereRaw('1 = 0') : $query->where('owner_id', $actor),
+            LeadScope::MyProjects => $actor === null ? $query->whereRaw('1 = 0') : $query->whereIn(
+                'project_id',
+                static fn (QueryBuilder $sub) => $sub->select('project_id')->from('project_members')->where('user_id', $actor),
+            ),
+            LeadScope::MyClients => $actor === null ? $query->whereRaw('1 = 0') : $query->whereIn(
+                'client_id',
+                static fn (QueryBuilder $sub) => $sub->select('p.client_id')->from('projects as p')
+                    ->join('project_members as m', 'm.project_id', '=', 'p.id')
+                    ->where('p.workspace_id', $workspaceId)->where('m.user_id', $actor),
+            ),
+        };
+
+        if ($filter->projectId !== null) {
+            $query->where('project_id', $filter->projectId);
+        }
+
+        if ($filter->ownerId !== null) {
+            $query->where('owner_id', $filter->ownerId);
+        }
+
+        if ($filter->sourceKind !== null) {
+            $query->where('source_kind', $filter->sourceKind);
+        }
+
+        if ($filter->campaign !== null) {
+            $query->where('utm_campaign', $filter->campaign);
+        }
     }
 
     private function reload(Lead $lead): Lead

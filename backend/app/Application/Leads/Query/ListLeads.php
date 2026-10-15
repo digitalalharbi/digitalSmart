@@ -6,6 +6,7 @@ namespace App\Application\Leads\Query;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Leads\Contract\LeadRepository;
+use App\Application\Leads\DTO\LeadFilter;
 use App\Application\Leads\DTO\LeadView;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -33,6 +34,7 @@ final readonly class ListLeads
         ?DateTimeImmutable $from = null,
         ?DateTimeImmutable $until = null,
         int $limit = 100,
+        ?LeadFilter $filter = null,
     ): array {
         $this->guard->ensure(Permission::LeadsView);
 
@@ -44,6 +46,9 @@ final readonly class ListLeads
             $from,
             $until,
             $limit,
+            $filter === null ? null : new LeadFilter(
+                $filter->scope, $this->actor->userId()->value, $filter->projectId, $filter->ownerId, $filter->sourceKind, $filter->campaign,
+            ),
         );
     }
 }

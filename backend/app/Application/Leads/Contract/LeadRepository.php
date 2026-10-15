@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Leads\Contract;
 
 use App\Application\Leads\DTO\LeadDuplicateRow;
+use App\Application\Leads\DTO\LeadFilter;
 use App\Application\Leads\DTO\LeadHistoryEntry;
 use App\Application\Leads\DTO\LeadInput;
 use App\Application\Leads\DTO\LeadView;
@@ -47,6 +48,7 @@ interface LeadRepository
         ?DateTimeImmutable $from = null,
         ?DateTimeImmutable $until = null,
         int $limit = 100,
+        ?LeadFilter $filter = null,
     ): array;
 
     /**
