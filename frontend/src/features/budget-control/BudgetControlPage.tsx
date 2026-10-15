@@ -135,7 +135,31 @@ export function BudgetControlPage() {
                 {formatMinor(total.spent_minor, total.currency, locale)}
                 {total.unreported > 0 ? <span className="text-content-tertiary"> *</span> : null}
               </dd>
+              <dt className="text-content-tertiary">{t('budgetControl.remaining')}</dt>
+              <dd
+                className={`ds-numeric text-end ${total.approved_minor - total.spent_minor < 0 ? 'text-danger' : ''}`}
+              >
+                {formatMinor(total.approved_minor - total.spent_minor, total.currency, locale)}
+              </dd>
             </dl>
+            <div
+              role="progressbar"
+              aria-label={t('budgetControl.used', { currency: total.currency })}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.min(
+                100,
+                Math.round((total.spent_minor / Math.max(total.approved_minor, 1)) * 100),
+              )}
+              className="bg-surface-sunken mt-3 h-2 overflow-hidden rounded-full"
+            >
+              <div
+                className={`h-full rounded-full ${total.spent_minor > total.approved_minor ? 'bg-danger' : 'bg-accent'}`}
+                style={{
+                  width: `${String(Math.min(100, (total.spent_minor / Math.max(total.approved_minor, 1)) * 100))}%`,
+                }}
+              />
+            </div>
             {total.unreported > 0 ? (
               <p className="text-content-tertiary mt-2 text-xs">
                 {t('budgetControl.unreported', { count: total.unreported })}

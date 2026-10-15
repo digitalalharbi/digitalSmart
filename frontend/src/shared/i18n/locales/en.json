@@ -2457,7 +2457,8 @@
       "budget": "Budget",
       "pacing": "Pacing",
       "risks": "Risks"
-    }
+    },
+    "used": "Share of approved budget spent, {{currency}}"
   },
   "connections": {
     "title": "Connections",
