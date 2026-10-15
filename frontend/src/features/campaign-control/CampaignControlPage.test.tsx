@@ -14,6 +14,10 @@ vi.mock('@/features/clients', () => ({
 vi.mock('@/features/projects', () => ({
   useProjectsQuery: () => ({ data: { data: [] }, isFetching: false }),
 }));
+vi.mock('@/features/search', () => ({
+  useShortcutsQuery: () => ({ data: { pinned: [], recent: [] } }),
+  usePinMutation: () => ({ mutate: vi.fn() }),
+}));
 vi.mock('@/features/integrations', () => ({
   useProvidersQuery: () => ({ data: [{ provider: 'meta', label: 'Meta' }] }),
   ProviderLogo: () => <span data-testid="logo" />,
@@ -52,6 +56,7 @@ function row(o: Partial<CampaignRow> = {}): CampaignRow {
     trend: [1, 2, 3, null, 5],
     reported_days: 28,
     last_synced_at: '2026-06-15T09:00:00Z',
+    tags: [],
     ...o,
   };
 }
@@ -152,5 +157,31 @@ describe('CampaignControlPage', () => {
     await renderWithProviders(<CampaignControlPage />);
 
     expect(screen.getByText(/2000 highest-spending of 2500/)).toBeInTheDocument();
+  });
+
+  /* The agency's own vocabulary reaches the card: the campaign's tags plus those inherited from its project. */
+  it('shows the internal tags a campaign carries', async () => {
+    query.mockReturnValue(
+      page([
+        row({
+          tags: [
+            { id: 't1', name: 'Ramadan' },
+            { id: 't2', name: 'High spend' },
+          ],
+        }),
+      ]),
+    );
+    await renderWithProviders(<CampaignControlPage />);
+    const card = screen.getByRole('article', { name: 'Ramadan Push' });
+
+    expect(
+      within(within(card).getByRole('list', { name: 'Tags' })).getAllByRole('listitem'),
+    ).toHaveLength(2);
+  });
+
+  it('offers to pin a campaign, by name', async () => {
+    await renderWithProviders(<CampaignControlPage />);
+
+    expect(screen.getByRole('button', { name: 'Pin Ramadan Push' })).toBeInTheDocument();
   });
 });

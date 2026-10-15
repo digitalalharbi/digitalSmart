@@ -60,3 +60,14 @@ it('stops filtering once the tag is removed', function (): void {
 
     test()->actingAs($owner)->getJson("/api/campaigns/control?tag_id[]={$tag}")->assertOk()->assertJsonCount(0, 'data');
 });
+
+it('shows a card the tags it inherits from its project', function (): void {
+    $w = SyncedWorkspace::with([Provider::Meta->value => 'act_sandbox_1001']);
+    $owner = $w->scenario->owner;
+    $project = $w->project(Provider::Meta);
+    $tag = test()->actingAs($owner)->postJson('/api/tags', ['name' => 'High spend'])->json('data.id');
+    test()->actingAs($owner)->putJson("/api/tags/{$tag}/entities/project/{$project->getKey()}")->assertNoContent();
+
+    $row = test()->actingAs($owner)->getJson('/api/campaigns/control')->json('data.0');
+    expect(array_column($row['tags'], 'name'))->toBe(['High spend']);
+});

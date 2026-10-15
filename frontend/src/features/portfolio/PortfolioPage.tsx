@@ -23,6 +23,7 @@ import {
   PlatformMix,
   RoasLines,
 } from './PortfolioParts';
+import { TrackingRollup } from './TrackingRollup';
 import { usePortfolio } from './usePortfolio';
 
 /**
@@ -184,6 +185,8 @@ export function PortfolioPage() {
             </Card>
             <AttentionPanel limit={5} />
           </div>
+
+          {data.tracking_health === null ? null : <TrackingRollup />}
         </>
       )}
     </div>

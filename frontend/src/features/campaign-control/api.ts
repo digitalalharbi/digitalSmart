@@ -12,6 +12,7 @@ export async function fetchCampaignControl(filters: ControlFilters): Promise<Cam
       ...(filters.descending ? { direction: 'desc' } : {}),
       ...(filters.client === null ? {} : { client_id: filters.client.id }),
       ...(filters.project === null ? {} : { project_id: filters.project.id }),
+      ...(filters.tag === null ? {} : { tag_id: filters.tag.id }),
       ...(filters.provider === null ? {} : { provider: filters.provider }),
       ...(filters.status === null ? {} : { status: filters.status }),
       ...(filters.objective === null ? {} : { objective: filters.objective }),

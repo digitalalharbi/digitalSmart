@@ -7,6 +7,8 @@ import { Badge } from '@/shared/ui/badge';
 import { HealthPill } from '@/shared/ui/health';
 import { Sparkline } from '@/shared/ui/sparkline';
 import { ProviderLogo } from '@/features/integrations';
+import { Pin, PinOff } from 'lucide-react';
+import { usePinMutation, useShortcutsQuery } from '@/features/search';
 import { HEALTH_TO_STATE, type CampaignRow } from './types';
 
 /** Average daily spend against a daily budget, as a bar plus the figure beside it. */
@@ -80,8 +82,20 @@ export function CampaignCard({ row }: { row: CampaignRow }) {
       aria-label={row.name}
       className="bg-surface border-line-subtle flex flex-col gap-3 rounded-2xl border p-4 shadow-xs"
     >
-      <CampaignIdentity row={row} />
+      <div className="flex items-start justify-between gap-2">
+        <CampaignIdentity row={row} />
+        <PinButton row={row} />
+      </div>
       <StatusPair row={row} />
+      {row.tags.length === 0 ? null : (
+        <ul className="flex flex-wrap gap-1" aria-label={t('campaignControl.tags')}>
+          {row.tags.map((tag) => (
+            <li key={tag.id}>
+              <Badge tone="neutral">{tag.name}</Badge>
+            </li>
+          ))}
+        </ul>
+      )}
       <p className="text-content-secondary text-sm">{row.health_reason}</p>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
@@ -127,5 +141,27 @@ export function CampaignCard({ row }: { row: CampaignRow }) {
           : t('campaignControl.updated', { when: formatRelativeTime(row.last_synced_at, locale) })}
       </p>
     </article>
+  );
+}
+
+/** Keep a campaign close. Pinned state comes from the same shortcuts the palette reads. */
+function PinButton({ row }: { row: CampaignRow }) {
+  const { t } = useTranslation();
+  const shortcuts = useShortcutsQuery();
+  const pin = usePinMutation();
+  const pinned = (shortcuts.data?.pinned ?? []).some(
+    (hit) => hit.type === 'campaign' && hit.id === row.id,
+  );
+
+  return (
+    <button
+      type="button"
+      aria-pressed={pinned}
+      aria-label={t(pinned ? 'palette.unpin' : 'palette.pin', { name: row.name })}
+      onClick={() => pin.mutate({ hit: { type: 'campaign', id: row.id }, pinned: !pinned })}
+      className="text-content-tertiary hover:text-content shrink-0 rounded p-1"
+    >
+      {pinned ? <PinOff aria-hidden className="size-4" /> : <Pin aria-hidden className="size-4" />}
+    </button>
   );
 }

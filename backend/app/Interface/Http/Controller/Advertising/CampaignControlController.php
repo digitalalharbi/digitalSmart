@@ -7,6 +7,7 @@ namespace App\Interface\Http\Controller\Advertising;
 use App\Application\Advertising\DTO\CampaignControlFilter;
 use App\Application\Advertising\Query\GetCampaignControl;
 use App\Application\Shared\Contract\ActorContext;
+use App\Application\Tags\Contract\TagStore;
 use App\Domain\Advertising\CampaignHealth;
 use App\Domain\Advertising\CampaignObjective;
 use App\Domain\Advertising\EntityStatus;
@@ -25,7 +26,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class CampaignControlController extends Controller
 {
-    public function index(Request $request, GetCampaignControl $campaigns, ActorContext $actor): JsonResponse
+    public function index(Request $request, GetCampaignControl $campaigns, ActorContext $actor, TagStore $tags): JsonResponse
     {
         $statuses = $this->enums($request, 'status', EntityStatus::class);
 
@@ -78,7 +79,47 @@ final class CampaignControlController extends Controller
             $this->intOrNull($request, 'offset') ?? 0,
         );
 
-        return response()->json(CampaignControlResource::page($page));
+        /*
+         * Tags for the page, in one statement. A campaign carries its own and inherits its project's and its
+         * client's, which is how the filter reads them — so the card shows the same set the filter matched on.
+         * Internal vocabulary: only a reader who holds `clients.view` is ever sent any.
+         */
+        $tagMap = [];
+
+        if ($actor->permissions()->has(\App\Domain\Access\Permission::ClientsView)) {
+            $entities = [];
+
+            foreach ($page->rows as $row) {
+                $entities[] = ['type' => 'campaign', 'id' => $row->campaignId];
+
+                if ($row->projectId !== null) {
+                    $entities[] = ['type' => 'project', 'id' => $row->projectId];
+                }
+
+                if ($row->clientId !== null) {
+                    $entities[] = ['type' => 'client', 'id' => $row->clientId];
+                }
+            }
+
+            $found = $tags->forEntities($actor->workspaceId()->value, $entities);
+
+            foreach ($page->rows as $row) {
+                $merged = [
+                    ...($found['campaign:'.$row->campaignId] ?? []),
+                    ...($row->projectId === null ? [] : ($found['project:'.$row->projectId] ?? [])),
+                    ...($row->clientId === null ? [] : ($found['client:'.$row->clientId] ?? [])),
+                ];
+                $tagMap[$row->campaignId] = array_values(array_column($merged, null, 'id'));
+            }
+        }
+
+        $payload = CampaignControlResource::page($page);
+
+        foreach ($payload['data'] as $index => $item) {
+            $payload['data'][$index]['tags'] = $tagMap[$item['id']] ?? [];
+        }
+
+        return response()->json($payload);
     }
 
     /**

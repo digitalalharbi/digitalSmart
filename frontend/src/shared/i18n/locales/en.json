@@ -1423,31 +1423,102 @@
     }
   },
   "operations": {
-    "loadFailed": "Integration status could not be loaded.",
-    "summary": "Integration summary",
-    "healthy": "Healthy connections",
-    "needsReconnect": "Need reconnecting",
-    "syncTrouble": "Accounts with sync trouble",
-    "stale": "Stale accounts",
-    "syncing": "Accounts syncing",
-    "neverSynced": "Nothing has synced yet",
-    "lastSync": "Last sync {{when}}",
-    "nextSync": "next due {{when}}",
-    "nothingScheduled": "nothing scheduled",
-    "advancedHidden": "Queue depth and error rates are visible to people who administer integrations.",
-    "advanced": "Advanced",
-    "providers": "By provider",
-    "failures": "Recent failures",
-    "noFailures": "No failed or partial syncs in the last {{hours}} hours.",
-    "col": {
-      "provider": "Provider",
-      "runs": "Runs",
-      "failed": "Failed",
-      "errorRate": "Error rate",
-      "account": "Account",
-      "kind": "Step",
-      "code": "Code",
-      "message": "Message"
+    "title": "Operations",
+    "subtitle": "The work the week is made of: what is open, what is late, what nobody has dated, and who is carrying it.",
+    "loadFailed": "Could not load the board. Try again in a moment.",
+    "board": "The board",
+    "counts": "Board summary",
+    "truncated": "Each column shows the first page of its work. The figures above and the charts below are computed over the whole board.",
+    "denied": {
+      "title": "The operations board is not part of your access",
+      "body": "It carries an agency's own reasons for work being blocked and its own estimates. Ask a workspace owner if you need it."
+    },
+    "scope": {
+      "client": "Client",
+      "allClients": "All clients",
+      "audience": "Whose work",
+      "everyone": "Everyone",
+      "me": "Mine",
+      "unassigned": "Nobody's"
+    },
+    "count": {
+      "open": "Open",
+      "overdue": "Overdue",
+      "overdueNote": "Past its date",
+      "undated": "No due date",
+      "undatedNote": "Cannot be late",
+      "unassigned": "Unassigned",
+      "unassignedNote": "Nobody has agreed to it",
+      "waiting": "Waiting on somebody"
+    },
+    "completion": {
+      "none": "Nothing has been finished or abandoned yet, so there is no completion rate to report.",
+      "rate": "{{rate}} of the {{settled}} tasks that have settled were completed rather than abandoned."
+    },
+    "due": {
+      "title": "When the open work is due",
+      "subtitle": "Open tasks by how soon they are due, soonest first",
+      "bucket": "Due",
+      "count": "Tasks",
+      "aria": "Open tasks by due horizon",
+      "caveatClosed": "Finished and cancelled work is left out. Work that was late and is now done is history, and counting it would leave an overdue figure nobody could clear.",
+      "caveatUndated": "Work with no due date is its own bar. It is not \"later\": it is work that cannot be late, and folding the two together is how a board reports a tidy pipeline it does not have.",
+      "notReportable": "{{overdue}} tasks are overdue, but {{undated}} have no due date at all — only {{share}} of the open board carries one, below the {{floor}} this product treats as reportable. Read the overdue figure as a statement about the dated work, not about all of it.",
+      "emptyTitle": "Nothing open",
+      "emptyBody": "There is no open work on this board, so there is nothing to be due."
+    },
+    "load": {
+      "title": "Who is carrying the work",
+      "subtitle": "Open tasks per person, stacked by priority",
+      "person": "Person",
+      "open": "Open",
+      "overdue": "Overdue",
+      "unassigned": "Nobody",
+      "aria": "Open tasks per person, by priority",
+      "caveatOpen": "Open work only. Finished and cancelled tasks are not a load anybody is carrying.",
+      "caveatHidden": "{{count}} more people are in the table but not drawn, so the chart stays readable.",
+      "emptyTitle": "No open work",
+      "emptyBody": "Nobody is carrying anything on this board at the moment."
+    },
+    "detail": {
+      "pickTitle": "Pick a task",
+      "pickBody": "Choose a card to see where it can go, what it is waiting on, and what it is about.",
+      "internal": "Internal",
+      "unassigned": "Unassigned",
+      "due": "Due",
+      "noDueDate": "No due date",
+      "daysAway": "{{count}} day away",
+      "daysAway_other": "{{count}} days away",
+      "workingDays": "Working days",
+      "about": "About",
+      "subjectGone": "This {{type}} has been deleted",
+      "moves": "Where it can go",
+      "noMoves": "There is nowhere for this task to go from here.",
+      "blockedBy": "Blocked: {{reason}}",
+      "wasBlockedBy": "Was blocked: {{reason}}",
+      "cancelledBecause": "Cancelled: {{reason}}",
+      "blockReason": "What is blocking it",
+      "cancelReason": "Why it is being cancelled",
+      "reasonHint": "The only record of why the work stopped. Somebody will ask about it.",
+      "confirmMove": "Save and move",
+      "reschedule": "Due date",
+      "setDate": "Set date",
+      "clearDate": "Clear the date",
+      "assignee": "Who is doing it",
+      "assigneeHint": "Only colleagues who can open this client’s work are listed. Somebody who cannot see a task cannot do it."
+    },
+    "composer": {
+      "open": "Put work on the board",
+      "title": "New task",
+      "titleField": "What needs doing",
+      "description": "Detail",
+      "priority": "Priority",
+      "client": "Client",
+      "clientHint": "Leave this internal for the agency's own work.",
+      "internal": "Internal",
+      "due": "Due date",
+      "dueHint": "Optional. Left empty, the task is reported as undated rather than given a deadline nobody agreed to.",
+      "submit": "Open the task"
     }
   },
   "approvals": {
@@ -2203,7 +2274,9 @@
       "none": "No campaigns yet",
       "filtered": "No campaigns match these filters",
       "body": "Connect an ad account and bind it to a project, or relax a filter."
-    }
+    },
+    "tag": "Tag",
+    "tags": "Tags"
   },
   "palette": {
     "title": "Search the agency",
@@ -2273,6 +2346,14 @@
       "closing": "Closing",
       "completed": "Completed",
       "archived": "Archived"
+    },
+    "trackingRollup": "Tracking across the agency",
+    "tracking": {
+      "healthy": "healthy",
+      "warning": "warning",
+      "critical": "critical",
+      "allClear": "Every measured project is reporting.",
+      "workspaceIssues": "{{count}} workspace-level findings, such as nothing measuring at all."
     }
   },
   "budgetControl": {
@@ -2377,5 +2458,51 @@
     "reason": "Reason",
     "confirm": "Offboard client",
     "failed": "Offboarding did not complete."
+  },
+  "setup": {
+    "title": "Project setup",
+    "subtitle": "Everything a project needs before it runs, and where to settle each thing.",
+    "back": "All projects",
+    "loadFailed": "Readiness could not be loaded.",
+    "progress": "Setup progress",
+    "progressLabel": "{{ready}} of {{total}} ready",
+    "fix": "Settle this",
+    "openSetup": "Setup & readiness",
+    "check": {
+      "budget": "Budget",
+      "accounts": "Accounts",
+      "tracking": "Tracking",
+      "creative": "Creative",
+      "approvals": "Approvals",
+      "landing_page": "Landing page"
+    }
+  },
+  "integrationOps": {
+    "loadFailed": "Integration status could not be loaded.",
+    "summary": "Integration summary",
+    "healthy": "Healthy connections",
+    "needsReconnect": "Need reconnecting",
+    "syncTrouble": "Accounts with sync trouble",
+    "stale": "Stale accounts",
+    "syncing": "Accounts syncing",
+    "neverSynced": "Nothing has synced yet",
+    "lastSync": "Last sync {{when}}",
+    "nextSync": "next due {{when}}",
+    "nothingScheduled": "nothing scheduled",
+    "advancedHidden": "Queue depth and error rates are visible to people who administer integrations.",
+    "advanced": "Advanced",
+    "providers": "By provider",
+    "failures": "Recent failures",
+    "noFailures": "No failed or partial syncs in the last {{hours}} hours.",
+    "col": {
+      "provider": "Provider",
+      "runs": "Runs",
+      "failed": "Failed",
+      "errorRate": "Error rate",
+      "account": "Account",
+      "kind": "Step",
+      "code": "Code",
+      "message": "Message"
+    }
   }
 }

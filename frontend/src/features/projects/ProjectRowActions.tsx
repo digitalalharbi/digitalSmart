@@ -3,6 +3,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import { useTranslation } from 'react-i18next';
 import { MoreHorizontal } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { Button } from '@/shared/ui/button';
 import { buttonVariants } from '@/shared/ui/button.variants';
@@ -19,6 +20,7 @@ export function ProjectRowActions({ project, onEdit }: ProjectRowActionsProps) {
   const { can } = useSession();
   const changeStatus = useChangeProjectStatusMutation();
   const deleteProject = useDeleteProjectMutation();
+  const navigate = useNavigate();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const canUpdate = can(PERMISSIONS.projectsUpdate);
@@ -47,6 +49,13 @@ export function ProjectRowActions({ project, onEdit }: ProjectRowActionsProps) {
             sideOffset={4}
             className="bg-surface border-line z-50 min-w-44 rounded-lg border p-1 shadow-md"
           >
+            <DropdownMenu.Item
+              onSelect={() => void navigate(`/projects/${project.id}/setup`)}
+              className="text-content hover:bg-surface-hover focus:bg-surface-hover cursor-pointer rounded-md px-2.5 py-1.5 text-sm outline-none"
+            >
+              {t('setup.openSetup')}
+            </DropdownMenu.Item>
+
             {canUpdate ? (
               <DropdownMenu.Item
                 onSelect={() => onEdit(project)}

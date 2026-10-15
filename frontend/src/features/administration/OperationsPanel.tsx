@@ -74,7 +74,7 @@ export function OperationsPanel() {
   });
 
   if (isError) {
-    return <Alert tone="danger">{t('operations.loadFailed')}</Alert>;
+    return <Alert tone="danger">{t('integrationOps.loadFailed')}</Alert>;
   }
 
   if (isPending || data === undefined) {
@@ -94,31 +94,35 @@ export function OperationsPanel() {
   return (
     <div className="flex flex-col gap-6">
       <section
-        aria-label={t('operations.summary')}
+        aria-label={t('integrationOps.summary')}
         className="grid grid-cols-2 gap-3 lg:grid-cols-5"
       >
-        {tile(t('operations.healthy'), summary.connections.healthy)}
-        {tile(t('operations.needsReconnect'), summary.connections.needs_reconnect, true)}
-        {tile(t('operations.syncTrouble'), summary.accounts_with_sync_trouble, true)}
-        {tile(t('operations.stale'), summary.stale_accounts, true)}
-        {tile(t('operations.syncing'), summary.accounts_syncing)}
+        {tile(t('integrationOps.healthy'), summary.connections.healthy)}
+        {tile(t('integrationOps.needsReconnect'), summary.connections.needs_reconnect, true)}
+        {tile(t('integrationOps.syncTrouble'), summary.accounts_with_sync_trouble, true)}
+        {tile(t('integrationOps.stale'), summary.stale_accounts, true)}
+        {tile(t('integrationOps.syncing'), summary.accounts_syncing)}
       </section>
 
       <p className="text-content-secondary text-sm">
         {summary.last_sync_at === null
-          ? t('operations.neverSynced')
-          : t('operations.lastSync', { when: formatRelativeTime(summary.last_sync_at, locale) })}
+          ? t('integrationOps.neverSynced')
+          : t('integrationOps.lastSync', {
+              when: formatRelativeTime(summary.last_sync_at, locale),
+            })}
         {' · '}
         {summary.next_sync_at === null
-          ? t('operations.nothingScheduled')
-          : t('operations.nextSync', { when: formatRelativeTime(summary.next_sync_at, locale) })}
+          ? t('integrationOps.nothingScheduled')
+          : t('integrationOps.nextSync', {
+              when: formatRelativeTime(summary.next_sync_at, locale),
+            })}
       </p>
 
       {advanced === null ? (
-        <p className="text-content-tertiary text-sm">{t('operations.advancedHidden')}</p>
+        <p className="text-content-tertiary text-sm">{t('integrationOps.advancedHidden')}</p>
       ) : (
-        <section aria-label={t('operations.advanced')} className="flex flex-col gap-4">
-          <h2 className="text-content text-lg font-semibold">{t('operations.advanced')}</h2>
+        <section aria-label={t('integrationOps.advanced')} className="flex flex-col gap-4">
+          <h2 className="text-content text-lg font-semibold">{t('integrationOps.advanced')}</h2>
 
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
             {Object.entries(advanced.queue_depth).map(([queue, depth]) => (
@@ -129,26 +133,26 @@ export function OperationsPanel() {
             ))}
           </ul>
 
-          <DataTable label={t('operations.providers')} minWidth="36rem">
+          <DataTable label={t('integrationOps.providers')} minWidth="36rem">
             <TableHead>
               <TableRow>
-                <TableHeader>{t('operations.col.provider')}</TableHeader>
-                <TableHeader align="end">{t('operations.col.runs')}</TableHeader>
-                <TableHeader align="end">{t('operations.col.failed')}</TableHeader>
-                <TableHeader align="end">{t('operations.col.errorRate')}</TableHeader>
+                <TableHeader>{t('integrationOps.col.provider')}</TableHeader>
+                <TableHeader align="end">{t('integrationOps.col.runs')}</TableHeader>
+                <TableHeader align="end">{t('integrationOps.col.failed')}</TableHeader>
+                <TableHeader align="end">{t('integrationOps.col.errorRate')}</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>
               {advanced.providers.map((p) => (
                 <TableRow key={p.provider}>
                   <TableCell>{p.provider}</TableCell>
-                  <TableCell isNumeric align="end" label={t('operations.col.runs')}>
+                  <TableCell isNumeric align="end" label={t('integrationOps.col.runs')}>
                     {p.runs}
                   </TableCell>
-                  <TableCell isNumeric align="end" label={t('operations.col.failed')}>
+                  <TableCell isNumeric align="end" label={t('integrationOps.col.failed')}>
                     {p.failed}
                   </TableCell>
-                  <TableCell isNumeric align="end" label={t('operations.col.errorRate')}>
+                  <TableCell isNumeric align="end" label={t('integrationOps.col.errorRate')}>
                     {p.error_rate === null ? '—' : formatPercent(p.error_rate, locale, 1)}
                   </TableCell>
                 </TableRow>
@@ -158,25 +162,27 @@ export function OperationsPanel() {
 
           {advanced.failures.length === 0 ? (
             <p className="text-content-tertiary text-sm">
-              {t('operations.noFailures', { hours: advanced.window_hours })}
+              {t('integrationOps.noFailures', { hours: advanced.window_hours })}
             </p>
           ) : (
-            <DataTable label={t('operations.failures')} minWidth="48rem">
+            <DataTable label={t('integrationOps.failures')} minWidth="48rem">
               <TableHead>
                 <TableRow>
-                  <TableHeader>{t('operations.col.account')}</TableHeader>
-                  <TableHeader>{t('operations.col.kind')}</TableHeader>
-                  <TableHeader>{t('operations.col.code')}</TableHeader>
-                  <TableHeader>{t('operations.col.message')}</TableHeader>
+                  <TableHeader>{t('integrationOps.col.account')}</TableHeader>
+                  <TableHeader>{t('integrationOps.col.kind')}</TableHeader>
+                  <TableHeader>{t('integrationOps.col.code')}</TableHeader>
+                  <TableHeader>{t('integrationOps.col.message')}</TableHeader>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {advanced.failures.map((f, i) => (
                   <TableRow key={`${f.at}-${String(i)}`}>
                     <TableCell>{f.account_name || f.provider}</TableCell>
-                    <TableCell label={t('operations.col.kind')}>{f.kind}</TableCell>
-                    <TableCell label={t('operations.col.code')}>{f.code ?? '—'}</TableCell>
-                    <TableCell label={t('operations.col.message')}>{f.message ?? '—'}</TableCell>
+                    <TableCell label={t('integrationOps.col.kind')}>{f.kind}</TableCell>
+                    <TableCell label={t('integrationOps.col.code')}>{f.code ?? '—'}</TableCell>
+                    <TableCell label={t('integrationOps.col.message')}>
+                      {f.message ?? '—'}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

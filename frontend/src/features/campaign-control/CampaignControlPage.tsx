@@ -1,6 +1,8 @@
 import { LayoutGrid, Rows3 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/shared/api/client';
 import { useUiStore } from '@/shared/store/ui-store';
 import { Link, useSearchParams } from 'react-router';
 import { useClientsQuery } from '@/features/clients';
@@ -71,6 +73,16 @@ export function CampaignControlPage() {
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const projects = useProjectsQuery({ search: projectTerm, per_page: 8 });
   const providers = useProvidersQuery();
+  const tags = useQuery({
+    queryKey: ['tags'] as const,
+    queryFn: async (): Promise<Array<{ id: string; name: string }>> => {
+      const { data: body } = await api.get<{ data: Array<{ id: string; name: string }> }>('/tags');
+
+      return body.data;
+    },
+    staleTime: 60_000,
+    retry: false,
+  });
 
   const update = (patch: Partial<ControlFilters>) => {
     /* Any filter change goes back to the first page; staying on page 9 of a different list is a blank screen. */
@@ -228,6 +240,22 @@ export function CampaignControlPage() {
           options={(providers.data ?? []).map((p) => ({ value: p.provider, label: p.label }))}
           any={t('campaignControl.any')}
         />
+        {(tags.data ?? []).length === 0 ? null : (
+          <Select
+            label={t('campaignControl.tag')}
+            value={filters.tag?.id ?? null}
+            onChange={(id) =>
+              update({
+                tag:
+                  id === null
+                    ? null
+                    : { id, label: (tags.data ?? []).find((tag) => tag.id === id)?.name ?? '' },
+              })
+            }
+            options={(tags.data ?? []).map((tag) => ({ value: tag.id, label: tag.name }))}
+            any={t('campaignControl.any')}
+          />
+        )}
         <Select
           label={t('campaignControl.status')}
           value={filters.status}

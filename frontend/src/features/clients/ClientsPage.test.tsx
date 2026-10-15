@@ -27,7 +27,12 @@ vi.mock('./api', () => ({
   useDeleteClientMutation: () => ({ mutate: vi.fn(), isPending: false }),
   /* The offboarding dialog's hooks. Never reached unless somebody chooses Offboarded. */
   useOffboardingPreview: () => ({ data: undefined, isPending: true }),
-  useOffboardClientMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false, error: null }),
+  useOffboardClientMutation: () => ({
+    mutate: vi.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  }),
 }));
 
 vi.mock('@/features/auth', async () => {

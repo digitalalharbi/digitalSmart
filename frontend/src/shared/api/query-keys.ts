@@ -35,6 +35,7 @@ export const queryKeys = {
   },
   portfolio: {
     view: (clientId: string | null) => ['portfolio', clientId] as const,
+    tracking: () => ['portfolio', 'tracking'] as const,
   },
   budgetControl: {
     list: (risk: string | null) => ['budget-control', risk] as const,

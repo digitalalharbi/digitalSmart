@@ -46,6 +46,8 @@ export type CampaignRow = {
   trend: Array<number | null>;
   reported_days: number;
   last_synced_at: string | null;
+  /** Internal tags: the campaign's own plus its project's and client's. Empty for a role that may not see them. */
+  tags: Array<{ id: string; name: string }>;
 };
 
 export type CampaignControlPage = {
@@ -76,6 +78,7 @@ export type ControlFilters = {
   status: string | null;
   objective: string | null;
   health: HealthValue | null;
+  tag: { id: string; label: string } | null;
   search: string;
   sort: SortKey;
   descending: boolean;

@@ -17,6 +17,7 @@ export const DEFAULT_FILTERS: ControlFilters = {
   status: null,
   objective: null,
   health: null,
+  tag: null,
   search: '',
   sort: 'health',
   descending: false,
@@ -45,6 +46,7 @@ export function fromParams(params: URLSearchParams): ControlFilters {
   return {
     client: entity('client'),
     project: entity('project'),
+    tag: entity('tag'),
     provider: params.get('provider'),
     status: params.get('status'),
     objective: params.get('objective'),
@@ -70,6 +72,7 @@ export function toParams(filters: ControlFilters): URLSearchParams {
     'project',
     filters.project === null ? null : `${filters.project.id}~${filters.project.label}`,
   );
+  set('tag', filters.tag === null ? null : `${filters.tag.id}~${filters.tag.label}`);
   set('provider', filters.provider);
   set('status', filters.status);
   set('objective', filters.objective);

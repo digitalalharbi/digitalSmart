@@ -18,6 +18,7 @@ export function useCampaignControl(filters: ControlFilters) {
       status: filters.status,
       objective: filters.objective,
       health: filters.health,
+      tag: filters.tag?.id ?? null,
       search: filters.search,
       sort: filters.sort,
       descending: filters.descending,
