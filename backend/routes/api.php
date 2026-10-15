@@ -52,6 +52,7 @@ use App\Interface\Http\Controller\Reporting\ReportController;
 use App\Interface\Http\Controller\Reporting\SharedReportController;
 use App\Interface\Http\Controller\Search\SearchController;
 use App\Interface\Http\Controller\Shortcuts\ShortcutController;
+use App\Interface\Http\Controller\SurfaceView\SurfaceViewController;
 use App\Interface\Http\Controller\System\HealthController;
 use App\Interface\Http\Controller\Tags\TagController;
 use App\Interface\Http\Controller\Workspace\MemberController;
@@ -589,6 +590,12 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      * Heavy files, made on the `reports` queue and fetched when ready. Always the requester's own: someone
      * else's export is a 404, not a 403.
      */
+    /* Saved filter sets for the agency surfaces: private, a project's team, or the whole workspace. */
+    Route::get('views/{surface}', [SurfaceViewController::class, 'index'])->name('surface_views.index');
+    Route::post('views/{surface}', [SurfaceViewController::class, 'store'])->name('surface_views.store');
+    Route::delete('views/{view}', [SurfaceViewController::class, 'destroy'])
+        ->whereUuid('view')->name('surface_views.destroy');
+
     Route::get('exports', [ExportController::class, 'index'])->name('exports.index');
     Route::post('exports', [ExportController::class, 'store'])->name('exports.store');
     Route::get('exports/{export}/download', [ExportController::class, 'download'])

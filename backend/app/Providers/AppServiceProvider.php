@@ -107,6 +107,7 @@ use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Application\Shared\Contract\OwnerDirectory;
 use App\Application\Shared\Contract\WorkLedger;
 use App\Application\Shortcuts\Contract\ShortcutStore;
+use App\Application\SurfaceView\Contract\SurfaceViewRepository;
 use App\Application\System\Query\GetSystemHealth;
 use App\Application\Tags\Contract\TagStore;
 use App\Application\Workspace\Contract\AssignedWorkRepository;
@@ -201,6 +202,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewReposito
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentShortcutStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentStoreDirectory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentStoreLocator;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSurfaceViewRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTagStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTaskRepository;
@@ -360,6 +362,7 @@ final class AppServiceProvider extends ServiceProvider
         OperationsReadModel::class => EloquentOperationsReadModel::class,
         ClientIndustryDirectory::class => EloquentClientIndustryDirectory::class,
         ExportJobStore::class => EloquentExportJobStore::class,
+        SurfaceViewRepository::class => EloquentSurfaceViewRepository::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
         ExportRenderer::class => ReportExportRenderer::class,
         ReadinessFacts::class => EloquentReadinessFacts::class,
