@@ -47,9 +47,7 @@ export function ProviderCard({ provider }: { provider: ProviderRow }) {
             <ProviderLogo provider={provider.provider} />
             <div>
               <CardTitle>{provider.label}</CardTitle>
-              <p className="text-content-tertiary text-xs">
-                {t(`integrations.authMethod.${provider.auth_method}`)}
-              </p>
+              <p className="text-content-tertiary text-xs">{provider.category_label}</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-1.5">
@@ -68,27 +66,9 @@ export function ProviderCard({ provider }: { provider: ProviderRow }) {
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col gap-4">
-        {/*
-          Capabilities are listed from what the adapter actually implements, so
-          this is a statement of fact rather than a brochure.
-        */}
-        {provider.capabilities.length > 0 ? (
-          <ul
-            className="flex flex-wrap gap-1.5"
-            aria-label={t('integrations.capabilitiesFor', { provider: provider.label })}
-          >
-            {provider.capabilities.map((capability) => (
-              <li key={capability.slug}>
-                <Badge tone={capability.is_write ? 'warning' : 'neutral'}>
-                  {capability.is_write ? <Lock className="size-3" aria-hidden="true" /> : null}
-                  {capability.label}
-                </Badge>
-              </li>
-            ))}
-          </ul>
-        ) : (
+        {provider.capabilities.length === 0 ? (
           <p className="text-content-secondary text-sm">{t('integrations.noCapabilities')}</p>
-        )}
+        ) : null}
 
         {provider.status_message ? (
           <p className="text-content-secondary flex items-start gap-2 text-xs">
@@ -97,16 +77,43 @@ export function ProviderCard({ provider }: { provider: ProviderRow }) {
           </p>
         ) : null}
 
-        {provider.missing_credentials.length > 0 ? (
-          <Alert tone="info" className="text-xs">
-            <p className="font-medium">{t('integrations.blockedTitle')}</p>
-            <p className="mt-1">
-              {t('integrations.blockedBody', {
-                keys: provider.missing_credentials.join(', '),
-              })}
+        {/*
+          Technical detail, closed: what the connection can do and which credentials it still wants. A person
+          running campaigns needs the status above; whoever sets the connection up opens this.
+        */}
+        <details className="text-xs">
+          <summary className="text-content-secondary cursor-pointer font-medium">
+            {t('integrations.advanced')}
+          </summary>
+          <div className="mt-2 flex flex-col gap-3">
+            <p className="text-content-tertiary">
+              {t(`integrations.authMethod.${provider.auth_method}`)}
             </p>
-          </Alert>
-        ) : null}
+            {provider.capabilities.length > 0 ? (
+              <ul
+                className="flex flex-wrap gap-1.5"
+                aria-label={t('integrations.capabilitiesFor', { provider: provider.label })}
+              >
+                {provider.capabilities.map((capability) => (
+                  <li key={capability.slug}>
+                    <Badge tone={capability.is_write ? 'warning' : 'neutral'}>
+                      {capability.is_write ? <Lock className="size-3" aria-hidden="true" /> : null}
+                      {capability.label}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {provider.missing_credentials.length > 0 ? (
+              <Alert tone="info" className="text-xs">
+                <p className="font-medium">{t('integrations.blockedTitle')}</p>
+                <p className="mt-1">
+                  {t('integrations.blockedBody', { keys: provider.missing_credentials.join(', ') })}
+                </p>
+              </Alert>
+            ) : null}
+          </div>
+        </details>
 
         {discoverError ? (
           <Alert tone="warning" className="text-xs">

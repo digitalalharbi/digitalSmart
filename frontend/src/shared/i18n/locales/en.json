@@ -428,7 +428,8 @@
       "days": "Last {{count}} days",
       "read": "Read history",
       "queued": "History from {{from}} to {{until}} is queued. It runs after live syncs, so current figures are never held up."
-    }
+    },
+    "advanced": "Advanced"
   },
   "analytics": {
     "subtitle": "Performance across every platform a project is bound to.",
