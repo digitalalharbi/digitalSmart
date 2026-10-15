@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Attention\Query;
 
+use App\Application\Attention\Contract\ActorMemberships;
 use App\Application\Attention\Contract\AttentionSource;
 use App\Application\Attention\DTO\AttentionItem;
 use App\Application\Attention\DTO\AttentionQueue;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Access\PermissionSet;
+use App\Domain\Attention\AttentionAudience;
 use App\Domain\Attention\AttentionSeverity;
 use App\Domain\Attention\AttentionStream;
 use Throwable;
@@ -41,12 +43,13 @@ final readonly class GetAttentionQueue
         private iterable $sources,
         private ActorContext $actor,
         private Clock $clock,
+        private ActorMemberships $memberships,
     ) {}
 
     /**
      * @param  list<AttentionStream>  $only  Restrict to these streams; empty means every stream permitted.
      */
-    public function __invoke(array $only = [], ?int $limit = null): AttentionQueue
+    public function __invoke(array $only = [], ?int $limit = null, AttentionAudience $audience = AttentionAudience::Everything): AttentionQueue
     {
         $permissions = $this->actor->isBound()
             ? $this->actor->permissions()
@@ -82,6 +85,8 @@ final readonly class GetAttentionQueue
             }
         }
 
+        $items = $this->narrow($items, $audience);
+
         $counts = array_fill_keys(AttentionSeverity::values(), 0);
 
         foreach ($items as $item) {
@@ -114,7 +119,38 @@ final readonly class GetAttentionQueue
             failed: $failed,
             total: $total,
             asOf: $this->clock->now(),
+            audience: $audience,
         );
+    }
+
+    /**
+     * @param  list<AttentionItem>  $items
+     * @return list<AttentionItem>
+     */
+    private function narrow(array $items, AttentionAudience $audience): array
+    {
+        if ($audience === AttentionAudience::Everything || ! $this->actor->isBound()) {
+            return $items;
+        }
+
+        $workspaceId = $this->actor->workspaceId()->value;
+        $userId = $this->actor->userId()->value;
+
+        if ($audience === AttentionAudience::MyProjects) {
+            $mine = array_flip($this->memberships->projectIds($workspaceId, $userId));
+
+            return array_values(array_filter(
+                $items,
+                static fn (AttentionItem $i): bool => $i->projectId !== null && isset($mine[$i->projectId]),
+            ));
+        }
+
+        $mine = array_flip($this->memberships->clientIds($workspaceId, $userId));
+
+        return array_values(array_filter(
+            $items,
+            static fn (AttentionItem $i): bool => $i->clientId !== null && isset($mine[$i->clientId]),
+        ));
     }
 
     /** Every permission the stream names, not any of them. */

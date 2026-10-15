@@ -12,6 +12,7 @@ use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegis
 use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Analytics\Contract\AnalyticsReadModel;
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Attention\Contract\ActorMemberships;
 use App\Application\Attention\Contract\AttentionSource;
 use App\Application\Attention\Query\GetAttentionQueue;
 use App\Application\Attention\Source\ApprovalAttentionSource;
@@ -152,6 +153,7 @@ use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
 use App\Infrastructure\Operations\BroadcastBoardSignaller;
 use App\Infrastructure\Operations\LocalAttachmentStore;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentActorMemberships;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAttributionReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentAuditReadModel;
@@ -363,6 +365,7 @@ final class AppServiceProvider extends ServiceProvider
         PortfolioReadModel::class => EloquentPortfolioReadModel::class,
         OperationsReadModel::class => EloquentOperationsReadModel::class,
         ClientIndustryDirectory::class => EloquentClientIndustryDirectory::class,
+        ActorMemberships::class => EloquentActorMemberships::class,
         ExportJobStore::class => EloquentExportJobStore::class,
         SurfaceViewRepository::class => EloquentSurfaceViewRepository::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
@@ -451,6 +454,7 @@ final class AppServiceProvider extends ServiceProvider
             $app->tagged(AttentionSource::class),
             $app->make(ActorContext::class),
             $app->make(Clock::class),
+            $app->make(ActorMemberships::class),
         ));
 
         /*

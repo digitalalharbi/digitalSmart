@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Attention\DTO;
 
+use App\Domain\Attention\AttentionAudience;
 use App\Domain\Attention\AttentionStream;
 use DateTimeImmutable;
 
@@ -23,5 +24,6 @@ final readonly class AttentionQueue
         public array $failed,
         public int $total,
         public DateTimeImmutable $asOf,
+        public AttentionAudience $audience = AttentionAudience::Everything,
     ) {}
 }

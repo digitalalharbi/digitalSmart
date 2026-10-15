@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Interface\Http\Controller\Attention;
 
 use App\Application\Attention\Query\GetAttentionQueue;
+use App\Domain\Attention\AttentionAudience;
 use App\Domain\Attention\AttentionStream;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Resource\Attention\AttentionResource;
@@ -40,9 +41,10 @@ final class AttentionController extends Controller
         }
 
         $limit = $request->query('limit');
+        $audience = AttentionAudience::tryFrom($request->string('audience')->value()) ?? AttentionAudience::Everything;
 
         return response()->json(AttentionResource::queue(
-            $queue($only, is_numeric($limit) ? (int) $limit : null),
+            $queue($only, is_numeric($limit) ? (int) $limit : null, $audience),
         ));
     }
 }

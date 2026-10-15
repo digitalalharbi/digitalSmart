@@ -193,3 +193,39 @@ it('surfaces a workspace that is measuring nothing at all', function (): void {
         ->assertJsonPath('data.0.stream', 'tracking')
         ->assertJsonPath('data.0.action.path', '/tracking');
 });
+
+it('narrows to the projects and clients the reader is a member of, and says it is narrowed', function (): void {
+    $scenario = WorkspaceScenario::create();
+    $mine = Project::factory()->forClient(Client::factory()->create(['workspace_id' => $scenario->workspace->getKey()]))->create();
+    $theirs = Project::factory()->forClient(Client::factory()->create(['workspace_id' => $scenario->workspace->getKey()]))->create();
+
+    foreach ([[$mine, 'My overdue'], [$theirs, 'Their overdue']] as [$project, $title]) {
+        $id = $this->actingAs($scenario->owner)->postJson('/api/tasks', [
+            'client_id' => (string) $project->getAttribute('client_id'), 'project_id' => (string) $project->getKey(),
+            'title' => $title, 'priority' => 'normal', 'due_on' => now()->addDays(3)->toDateString(),
+        ])->assertSuccessful()->json('data.id');
+        DB::table('tasks')->where('id', $id)->update(['due_on' => now()->subDays(3)->toDateString()]);
+    }
+
+    $buyer = $scenario->addMember(SystemRole::ProjectManager);
+    DB::table('project_members')->insert([
+        'id' => (string) Illuminate\Support\Str::uuid(), 'project_id' => $mine->getKey(), 'user_id' => $buyer->getKey(),
+        'role_id' => $scenario->role(SystemRole::ProjectManager)->getKey(), 'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    $messages = fn (string $audience): array => array_column(
+        $this->actingAs($scenario->owner)->getJson('/api/attention?audience='.$audience)->assertOk()->json('data'),
+        'message',
+    );
+
+    // The owner sees the whole agency; narrowing to "my projects" for an owner who is on none is empty.
+    expect(implode('|', $messages('all')))->toContain('My overdue')->toContain('Their overdue')
+        ->and($messages('my_projects'))->toBe([])
+        ->and($this->actingAs($scenario->owner)->getJson('/api/attention?audience=my_projects')->json('meta.audience'))->toBe('my_projects');
+
+    $own = $this->actingAs($buyer)->getJson('/api/attention?audience=my_projects')->assertOk()->json('data');
+    $ownText = implode('|', array_column($own, 'message'));
+
+    expect($ownText)->toContain('My overdue');
+    expect(str_contains($ownText, 'Their overdue'))->toBeFalse();
+});

@@ -72,6 +72,8 @@ final readonly class AttentionResource
                     $queue->failed,
                 ),
                 'as_of' => $queue->asOf->format(DateTimeInterface::ATOM),
+                /* Said, so a narrowed list is never read as the whole agency's. */
+                'audience' => $queue->audience->value,
             ] + self::vocabulary(),
         ];
     }
