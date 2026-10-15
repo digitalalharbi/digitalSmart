@@ -7,6 +7,7 @@ import { Alert } from '@/shared/ui/alert';
 import { buttonVariants } from '@/shared/ui/button.variants';
 import { Button } from '@/shared/ui/button';
 import { PageHeader } from '@/shared/ui/page-header';
+import { ActivityFeed } from '@/shared/ui/activity-feed';
 import { Skeleton } from '@/shared/ui/skeleton';
 
 type Readiness = {
@@ -18,6 +19,14 @@ type Readiness = {
 
 type ControlMeta = {
   meta: { health_counts: Record<string, number>; total: number; matched: number };
+};
+
+type ActivityRow = {
+  id: string;
+  sentence: string;
+  actor: string | null;
+  project_id: string | null;
+  at: string;
 };
 
 type CentreFunnel = { data: { funnel: { total: number; open: number; won: number } } };
@@ -77,6 +86,19 @@ export function ProjectWorkspacePage() {
       });
 
       return data.data.funnel;
+    },
+    retry: false,
+  });
+
+  const activity = useQuery({
+    queryKey: ['projects', 'workspace', 'activity', projectId] as const,
+    queryFn: async (): Promise<ActivityRow[]> => {
+      const { data } = await api.get<{ data: ActivityRow[] }>('/activity', {
+        params: { limit: 100 },
+      });
+
+      /* The feed is the agency's recent events within the reader's scope; this page is one project of it. */
+      return data.data.filter((row) => row.project_id === projectId).slice(0, 8);
     },
     retry: false,
   });
@@ -141,6 +163,21 @@ export function ProjectWorkspacePage() {
           <Tile label={t('workspace.status')} value={project?.status ?? '—'} note="" />
         </section>
       )}
+
+      <section aria-label={t('workspace.activity')} className="flex flex-col gap-2">
+        <h2 className="text-content text-sm font-semibold">{t('workspace.activity')}</h2>
+        {activity.isError ? null : (
+          <ActivityFeed
+            isPending={activity.isPending}
+            entries={(activity.data ?? []).map((row) => ({
+              id: row.id,
+              actor: row.actor,
+              summary: row.sentence,
+              at: row.at,
+            }))}
+          />
+        )}
+      </section>
 
       <nav aria-label={t('workspace.areas')} className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {AREAS.map((area) => (

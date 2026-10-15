@@ -42,6 +42,29 @@ vi.mock('@/shared/api/client', async (importOriginal) => {
               });
         }
 
+        if (url === '/activity') {
+          return Promise.resolve({
+            data: {
+              data: [
+                {
+                  id: 'a1',
+                  sentence: 'Ramadan moved to active',
+                  actor: 'Sara',
+                  project_id: 'p1',
+                  at: '2026-10-14T10:00:00Z',
+                },
+                {
+                  id: 'a2',
+                  sentence: 'Another project event',
+                  actor: 'Omar',
+                  project_id: 'other',
+                  at: '2026-10-14T11:00:00Z',
+                },
+              ],
+            },
+          });
+        }
+
         return Promise.resolve({ data: { data: { funnel: { total: 30, open: 12, won: 5 } } } });
       },
     },
@@ -88,5 +111,12 @@ describe('ProjectWorkspacePage', () => {
 
     expect(await screen.findByText('budget page')).toBeInTheDocument();
     expect(useUiStore.getState().context.project).toEqual({ id: 'p1', label: 'Ramadan' });
+  });
+
+  it('lists only this project’s recent events', async () => {
+    await page();
+
+    expect(await screen.findByText(/Ramadan moved to active/)).toBeInTheDocument();
+    expect(screen.queryByText(/Another project event/)).not.toBeInTheDocument();
   });
 });
