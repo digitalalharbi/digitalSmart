@@ -119,3 +119,19 @@ it('never widens a client viewer past the project they hold', function (): void 
         $response->assertForbidden();
     }
 });
+
+it('scopes the centre’s figures to the same people as the list', function (): void {
+    ['s' => $s, 'mine' => $mine, 'other' => $other, 'buyer' => $buyer] = scopedPipeline();
+    scopedLead($mine, ['owner_id' => $buyer->getKey()]);
+    scopedLead($mine);
+    scopedLead($other);
+
+    $total = fn (string $q) => $this->actingAs($buyer)->getJson('/api/leads/centre?'.$q)->assertOk()->json('data.funnel.total');
+
+    expect($total('scope=all'))->toBe(2)
+        ->and($total('scope=mine'))->toBe(1)
+        ->and($total('scope=my_projects'))->toBe(2);
+
+    // The owner belongs to no project, so their "my projects" is empty rather than the whole agency.
+    expect($this->actingAs($s->owner)->getJson('/api/leads/centre?scope=my_projects')->assertOk()->json('data.funnel.total'))->toBe(0);
+});

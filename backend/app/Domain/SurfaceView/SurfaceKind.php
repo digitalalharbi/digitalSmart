@@ -31,9 +31,10 @@ enum SurfaceKind: string
     public function filters(): array
     {
         return match ($this) {
-            self::CampaignControl => ['client_id', 'project_id', 'provider', 'account_id', 'status', 'objective', 'health', 'search', 'sort', 'direction', 'owner'],
-            self::BudgetControl => ['client_id', 'project_id', 'state', 'search'],
-            self::Leads => ['scope', 'client_id', 'project_id', 'owner_id', 'source_kind', 'campaign', 'stage', 'days'],
+            /* The names the page's own URL uses, so a saved view *is* a link and opens by setting them. */
+            self::CampaignControl => ['client', 'project', 'tag', 'provider', 'status', 'objective', 'health', 'q', 'sort', 'dir', 'view'],
+            self::BudgetControl => ['risk', 'client', 'project', 'q'],
+            self::Leads => ['scope', 'client_id', 'project_id', 'owner_id', 'source_kind', 'campaign', 'days'],
         };
     }
 

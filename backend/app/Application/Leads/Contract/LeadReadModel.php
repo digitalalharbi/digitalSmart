@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Leads\Contract;
 
 use App\Application\Leads\DTO\LeadBreakdownRow;
+use App\Application\Leads\DTO\LeadFilter;
 use App\Application\Leads\DTO\LeadSourceRow;
 use App\Domain\Leads\LeadFunnel;
 use DateTimeImmutable;
@@ -25,6 +26,7 @@ interface LeadReadModel
         ?string $clientId,
         DateTimeImmutable $from,
         DateTimeImmutable $until,
+        ?LeadFilter $filter = null,
     ): LeadFunnel;
 
     /**
@@ -37,6 +39,7 @@ interface LeadReadModel
         ?string $clientId,
         DateTimeImmutable $from,
         DateTimeImmutable $until,
+        ?LeadFilter $filter = null,
     ): array;
 
     /**
@@ -55,5 +58,6 @@ interface LeadReadModel
         ?string $clientId,
         DateTimeImmutable $from,
         DateTimeImmutable $until,
+        ?LeadFilter $filter = null,
     ): array;
 }

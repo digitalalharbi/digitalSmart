@@ -7,6 +7,7 @@ namespace App\Application\Leads\Query;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Leads\Contract\LeadReadModel;
 use App\Application\Leads\DTO\LeadCentreView;
+use App\Application\Leads\DTO\LeadFilter;
 use App\Application\Measurement\Contract\MeasurementSourceRepository;
 use App\Application\Measurement\Contract\ObservedEventReadModel;
 use App\Application\Measurement\DTO\MeasurementSourceView;
@@ -47,7 +48,7 @@ final readonly class GetLeadCentre
         private Clock $clock,
     ) {}
 
-    public function __invoke(?string $clientId = null, ?int $days = null): LeadCentreView
+    public function __invoke(?string $clientId = null, ?int $days = null, ?LeadFilter $filter = null): LeadCentreView
     {
         $this->guard->ensure(Permission::LeadsView);
 
@@ -55,13 +56,17 @@ final readonly class GetLeadCentre
         $visibleProjects = $this->visibility->visibleProjectIds();
         $windowDays = max(1, min($days ?? self::WINDOW_DAYS, 365));
 
+        $filter = $filter === null ? null : new LeadFilter(
+            $filter->scope, $this->actor->userId()->value, $filter->projectId, $filter->ownerId, $filter->sourceKind, $filter->campaign,
+        );
+
         $until = $this->clock->now();
         $from = $until->modify('-'.($windowDays - 1).' days')->setTime(0, 0);
 
         return new LeadCentreView(
-            funnel: $this->leads->funnel($workspaceId, $visibleProjects, $clientId, $from, $until),
-            bySource: $this->leads->bySource($workspaceId, $visibleProjects, $clientId, $from, $until),
-            byCampaign: $this->leads->byCampaign($workspaceId, $visibleProjects, $clientId, $from, $until),
+            funnel: $this->leads->funnel($workspaceId, $visibleProjects, $clientId, $from, $until, $filter),
+            bySource: $this->leads->bySource($workspaceId, $visibleProjects, $clientId, $from, $until, $filter),
+            byCampaign: $this->leads->byCampaign($workspaceId, $visibleProjects, $clientId, $from, $until, $filter),
             signals: $this->signals($workspaceId, $visibleProjects, $clientId, $windowDays),
             windowDays: $windowDays,
         );

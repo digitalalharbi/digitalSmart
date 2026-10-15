@@ -36,7 +36,7 @@ it('keeps a private view private, shows a workspace view to everyone, and a team
 
     $this->actingAs($onA)->postJson('/api/views/campaign_control', ['name' => 'Mine', 'filters' => ['health' => ['critical']]])->assertCreated();
     $this->actingAs($onA)->postJson('/api/views/campaign_control', ['name' => 'Everyone', 'visibility' => 'workspace', 'filters' => ['status' => 'active']])->assertCreated();
-    $this->actingAs($onA)->postJson('/api/views/campaign_control', ['name' => 'Team A', 'visibility' => 'project', 'project_id' => (string) $a->getKey(), 'filters' => ['search' => 'ramadan']])->assertCreated();
+    $this->actingAs($onA)->postJson('/api/views/campaign_control', ['name' => 'Team A', 'visibility' => 'project', 'project_id' => (string) $a->getKey(), 'filters' => ['q' => 'ramadan']])->assertCreated();
 
     $names = fn ($user): array => array_column($this->actingAs($user)->getJson('/api/views/campaign_control')->assertOk()->json('data'), 'name');
 
@@ -55,10 +55,11 @@ it('keeps only the filters a surface offers, and only as plain strings', functio
     ['s' => $s] = viewWorld();
 
     $view = $this->actingAs($s->owner)->postJson('/api/views/budget_control', [
-        'name' => 'Pacing', 'filters' => ['state' => 'overspending', 'drop_table' => 'x', 'search' => ['a', ['nested'], 'b'], 'client_id' => ['deep' => ['x']]],
+        'name' => 'Pacing', 'filters' => ['risk' => 'overspending', 'drop_table' => 'x', 'q' => ['a', ['nested'], 'b'], 'client' => ['deep' => ['x']]],
     ])->assertCreated()->json('data.filters');
 
-    expect($view)->toBe(['state' => 'overspending', 'search' => ['a', 'b']]);
+    // JSONB does not keep key order, so equality rather than identity.
+    expect($view)->toEqual(['risk' => 'overspending', 'q' => ['a', 'b']]);
 });
 
 it('does not let a name be used twice, and lets only the author delete', function (): void {

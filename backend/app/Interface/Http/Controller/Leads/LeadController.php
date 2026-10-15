@@ -58,13 +58,7 @@ final class LeadController extends Controller
                     from: $this->date($request, 'from'),
                     until: $this->date($request, 'until'),
                     limit: (int) ($request->integer('limit') ?: 100),
-                    filter: new LeadFilter(
-                        scope: LeadScope::tryFrom($request->string('scope')->value()) ?? LeadScope::All,
-                        projectId: $this->scopeId($request, 'project_id'),
-                        ownerId: $this->scopeId($request, 'owner_id'),
-                        sourceKind: $this->scopeId($request, 'source_kind'),
-                        campaign: $this->scopeId($request, 'campaign'),
-                    ),
+                    filter: $this->filter($request),
                 ),
             ),
         ]);
@@ -289,6 +283,7 @@ final class LeadController extends Controller
             'data' => LeadResource::centre($centre(
                 $this->scopeId($request, 'client_id'),
                 $request->integer('days') ?: null,
+                $this->filter($request),
             )),
         ]);
     }
@@ -317,6 +312,18 @@ final class LeadController extends Controller
         } catch (Exception) {
             return null;
         }
+    }
+
+    /** Who and what to narrow to — shared by the list and the centre so their figures describe the same people. */
+    private function filter(Request $request): LeadFilter
+    {
+        return new LeadFilter(
+            scope: LeadScope::tryFrom($request->string('scope')->value()) ?? LeadScope::All,
+            projectId: $this->scopeId($request, 'project_id'),
+            ownerId: $this->scopeId($request, 'owner_id'),
+            sourceKind: $this->scopeId($request, 'source_kind'),
+            campaign: $this->scopeId($request, 'campaign'),
+        );
     }
 
     private function scopeId(Request $request, string $key): ?string

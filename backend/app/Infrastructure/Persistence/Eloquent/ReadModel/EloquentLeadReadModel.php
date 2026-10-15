@@ -6,9 +6,11 @@ namespace App\Infrastructure\Persistence\Eloquent\ReadModel;
 
 use App\Application\Leads\Contract\LeadReadModel;
 use App\Application\Leads\DTO\LeadBreakdownRow;
+use App\Application\Leads\DTO\LeadFilter;
 use App\Application\Leads\DTO\LeadSourceRow;
 use App\Domain\Commerce\AttributionEvidence;
 use App\Domain\Leads\LeadFunnel;
+use App\Domain\Leads\LeadScope;
 use App\Domain\Leads\LeadSourceKind;
 use App\Domain\Leads\LeadStage;
 use DateTimeImmutable;
@@ -32,9 +34,10 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
         ?string $clientId,
         DateTimeImmutable $from,
         DateTimeImmutable $until,
+        ?LeadFilter $filter = null,
     ): LeadFunnel {
         /** @var stdClass|null $row */
-        $row = $this->scope($workspaceId, $visibleProjectIds, $clientId, $from, $until)
+        $row = $this->scope($workspaceId, $visibleProjectIds, $clientId, $from, $until, $filter)
             ->selectRaw(
                 'count(*) as total, '
                 ."count(*) filter (where l.stage = 'contacted') as contacted, "
@@ -100,8 +103,9 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
         ?string $clientId,
         DateTimeImmutable $from,
         DateTimeImmutable $until,
+        ?LeadFilter $filter = null,
     ): array {
-        $rows = $this->scope($workspaceId, $visibleProjectIds, $clientId, $from, $until)
+        $rows = $this->scope($workspaceId, $visibleProjectIds, $clientId, $from, $until, $filter)
             ->selectRaw(
                 'l.source_kind, '
                 ."coalesce(nullif(l.source_detail, ''), '') as source_detail, "
@@ -153,10 +157,11 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
         ?string $clientId,
         DateTimeImmutable $from,
         DateTimeImmutable $until,
+        ?LeadFilter $filter = null,
     ): array {
         $naming = $this->campaignNamingEvidence();
 
-        $named = $this->scope($workspaceId, $visibleProjectIds, $clientId, $from, $until)
+        $named = $this->scope($workspaceId, $visibleProjectIds, $clientId, $from, $until, $filter)
             ->whereIn('l.attribution_evidence', $naming)
             ->whereNotNull('l.utm_campaign')
             ->selectRaw(
@@ -188,7 +193,7 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
             );
         }
 
-        $rest = $this->unattributedRow($workspaceId, $visibleProjectIds, $clientId, $from, $until, $naming);
+        $rest = $this->unattributedRow($workspaceId, $visibleProjectIds, $clientId, $from, $until, $naming, $filter);
 
         if ($rest !== null) {
             $rows[] = $rest;
@@ -230,9 +235,10 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
         DateTimeImmutable $from,
         DateTimeImmutable $until,
         array $naming,
+        ?LeadFilter $filter = null,
     ): ?LeadBreakdownRow {
         /** @var stdClass|null $row */
-        $row = $this->scope($workspaceId, $visibleProjectIds, $clientId, $from, $until)
+        $row = $this->scope($workspaceId, $visibleProjectIds, $clientId, $from, $until, $filter)
             ->where(function (Builder $scope) use ($naming): void {
                 $scope->whereNotIn('l.attribution_evidence', $naming)
                     ->orWhereNull('l.utm_campaign');
@@ -289,6 +295,7 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
         ?string $clientId,
         DateTimeImmutable $from,
         DateTimeImmutable $until,
+        ?LeadFilter $filter = null,
     ): Builder {
         $builder = DB::table('leads as l')
             ->where('l.workspace_id', $workspaceId)
@@ -322,7 +329,51 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
             });
         }
 
+        if ($filter !== null) {
+            $this->narrow($builder, $workspaceId, $filter);
+        }
+
         return $builder;
+    }
+
+    /**
+     * The same narrowing the lead list applies, so the figures above a list and the list below it describe the
+     * same set of people. Two implementations of "my leads" is how a header says 14 and the table shows 11.
+     */
+    private function narrow(Builder $builder, string $workspaceId, LeadFilter $filter): void
+    {
+        $actor = $filter->actorId;
+
+        match ($filter->scope) {
+            LeadScope::All => null,
+            LeadScope::Mine => $actor === null ? $builder->whereRaw('1 = 0') : $builder->where('l.owner_id', $actor),
+            LeadScope::MyProjects => $actor === null ? $builder->whereRaw('1 = 0') : $builder->whereIn(
+                'l.project_id',
+                static fn (Builder $sub) => $sub->select('project_id')->from('project_members')->where('user_id', $actor),
+            ),
+            LeadScope::MyClients => $actor === null ? $builder->whereRaw('1 = 0') : $builder->whereIn(
+                'l.client_id',
+                static fn (Builder $sub) => $sub->select('p.client_id')->from('projects as p')
+                    ->join('project_members as m', 'm.project_id', '=', 'p.id')
+                    ->where('p.workspace_id', $workspaceId)->where('m.user_id', $actor),
+            ),
+        };
+
+        if ($filter->projectId !== null) {
+            $builder->where('l.project_id', $filter->projectId);
+        }
+
+        if ($filter->ownerId !== null) {
+            $builder->where('l.owner_id', $filter->ownerId);
+        }
+
+        if ($filter->sourceKind !== null) {
+            $builder->where('l.source_kind', $filter->sourceKind);
+        }
+
+        if ($filter->campaign !== null) {
+            $builder->where('l.utm_campaign', $filter->campaign);
+        }
     }
 
     /** @return list<string> */
