@@ -13,7 +13,7 @@
 /**
  * Every kind the server can announce.
  *
- * Ten, and the labels are the server's: this union exists so a `kind` that stops being announced fails the
+ * Eleven, and the labels are the server's: this union exists so a `kind` that stops being announced fails the
  * build rather than becoming a branch nobody takes. Four of them are about a client request, because the
  * recipient and the action differ — a client told their request moved has nothing to do, a client asked for
  * information has, an agency told a client replied has, and "the agency answered you" goes the other way.
@@ -32,9 +32,10 @@ export type NotificationKindValue =
   | 'client_request_moved'
   | 'client_request_needs_information'
   | 'client_request_answered'
-  | 'client_request_replied';
+  | 'client_request_replied'
+  | 'digest_ready';
 
-export type NotificationSubjectValue = 'task' | 'approval' | 'client_request';
+export type NotificationSubjectValue = 'task' | 'approval' | 'client_request' | 'lead' | 'digest';
 
 export type NotificationItem = {
   id: string;

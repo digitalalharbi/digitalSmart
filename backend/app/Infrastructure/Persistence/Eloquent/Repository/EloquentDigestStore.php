@@ -28,17 +28,23 @@ final readonly class EloquentDigestStore implements DigestStore
         return $out;
     }
 
-    public function put(string $workspaceId, string $userId, DigestKind $kind, DateTimeImmutable $on, int $total, array $summary): void
+    public function put(string $workspaceId, string $userId, DigestKind $kind, DateTimeImmutable $on, int $total, array $summary): ?string
     {
+        $key = ['workspace_id' => $workspaceId, 'user_id' => $userId, 'kind' => $kind->value, 'period_on' => $on->format('Y-m-d')];
+        $existed = DB::table('digests')->where($key)->exists();
+        $id = $this->ids->generate();
+
         DB::table('digests')->upsert(
             [[
-                'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'user_id' => $userId,
+                'id' => $id, 'workspace_id' => $workspaceId, 'user_id' => $userId,
                 'kind' => $kind->value, 'period_on' => $on->format('Y-m-d'), 'total' => $total,
                 'summary' => json_encode($summary, JSON_THROW_ON_ERROR), 'created_at' => $on, 'updated_at' => $on,
             ]],
             ['user_id', 'workspace_id', 'kind', 'period_on'],
             ['total', 'summary', 'updated_at'],
         );
+
+        return $existed ? null : $id;
     }
 
     /** @return list<array{id: string, kind: string, period_on: string, total: int, summary: array<string, mixed>, read_at: ?string}> */

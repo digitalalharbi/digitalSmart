@@ -78,3 +78,24 @@ it('never lets one person read another’s digest', function (): void {
 it('refuses an unknown digest kind', function (): void {
     $this->artisan('digests:build gossip')->assertFailed();
 });
+
+it('rings the bell once per digest, not once per run', function (): void {
+    $w = digestWorld();
+
+    $this->artisan('digests:build weekly_projects')->assertSuccessful();
+    $this->artisan('digests:build weekly_projects')->assertSuccessful();
+
+    $bell = DB::table('notifications')->where('kind', 'digest_ready')->where('user_id', $w->scenario->owner->getKey());
+
+    expect($bell->count())->toBe(1)
+        ->and((string) $bell->value('subject_id'))->toBe((string) DB::table('digests')->where('user_id', $w->scenario->owner->getKey())->value('id'));
+});
+
+it('does not announce a digest to someone who has none', function (): void {
+    $w = digestWorld();
+    $buyer = $w->scenario->addMember(SystemRole::MediaBuyer);
+
+    $this->artisan('digests:build weekly_projects')->assertSuccessful();
+
+    expect(DB::table('notifications')->where('kind', 'digest_ready')->where('user_id', $buyer->getKey())->count())->toBe(0);
+});

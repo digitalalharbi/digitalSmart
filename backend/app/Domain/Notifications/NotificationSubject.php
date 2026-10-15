@@ -22,6 +22,8 @@ enum NotificationSubject: string
 
     case Lead = 'lead';
 
+    case Digest = 'digest';
+
     public function table(): string
     {
         return match ($this) {
@@ -29,6 +31,7 @@ enum NotificationSubject: string
             self::Approval => 'approval_requests',
             self::ClientRequest => 'client_requests',
             self::Lead => 'leads',
+            self::Digest => 'digests',
         };
     }
 
@@ -44,6 +47,7 @@ enum NotificationSubject: string
         return match ($this) {
             self::Task, self::Approval, self::ClientRequest => 'title',
             self::Lead => 'name',
+            self::Digest => 'kind',
         };
     }
 
@@ -55,6 +59,7 @@ enum NotificationSubject: string
             self::Approval => '/approvals',
             self::ClientRequest => '/client-requests',
             self::Lead => '/leads',
+            self::Digest => '/',
         };
     }
 
@@ -65,6 +70,7 @@ enum NotificationSubject: string
             self::Approval => 'Approval request',
             self::ClientRequest => 'Client request',
             self::Lead => 'Lead',
+            self::Digest => 'Digest',
         };
     }
 

@@ -7,10 +7,12 @@ namespace App\Application\Digest\Command;
 use App\Application\Attention\DTO\AttentionItem;
 use App\Application\Attention\Query\GetAttentionQueue;
 use App\Application\Digest\Contract\DigestStore;
+use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Attention\DigestKind;
 use App\Domain\Identity\UserId;
+use App\Domain\Notifications\NotificationKind;
 use App\Domain\Workspace\WorkspaceId;
 use Throwable;
 
@@ -30,6 +32,7 @@ final readonly class BuildDigests
 
     public function __construct(
         private DigestStore $store,
+        private NotificationStore $notifications,
         private GetAttentionQueue $queue,
         private ActorContextBinder $actors,
         private Clock $clock,
@@ -59,7 +62,7 @@ final readonly class BuildDigests
                     $byStream[$item->stream->value] = ($byStream[$item->stream->value] ?? 0) + 1;
                 }
 
-                $this->store->put(
+                $digestId = $this->store->put(
                     $recipient['workspace_id'],
                     $recipient['user_id'],
                     $kind,
@@ -77,6 +80,19 @@ final readonly class BuildDigests
                         'covered' => array_map(static fn ($s): string => $s->value, $queue->covered),
                     ],
                 );
+
+                if ($digestId !== null) {
+                    $this->notifications->announce(
+                        $recipient['workspace_id'],
+                        [$recipient['user_id']],
+                        NotificationKind::DigestReady,
+                        sprintf('%s: %d %s', $kind->label(), $queue->total, $queue->total === 1 ? 'item needs attention' : 'items need attention'),
+                        null,
+                        NotificationKind::DigestReady->subject(),
+                        $digestId,
+                        null,
+                    );
+                }
 
                 $written++;
             } catch (Throwable) {

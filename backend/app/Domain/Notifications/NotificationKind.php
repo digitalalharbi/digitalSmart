@@ -100,6 +100,14 @@ enum NotificationKind: string
      */
     case ClientRequestReplied = 'client_request_replied';
 
+    /**
+     * A digest — one summary standing in for N alerts — was written for you.
+     *
+     * Exists so a person who has the bell open sees *one* entry for "8 campaigns need attention" rather than
+     * eight. The digest is built as the recipient, so whatever it names they were already entitled to see.
+     */
+    case DigestReady = 'digest_ready';
+
     public function label(): string
     {
         return match ($this) {
@@ -113,6 +121,7 @@ enum NotificationKind: string
             self::ClientRequestNeedsInformation => 'We need something from you',
             self::ClientRequestAnswered => 'Your request was answered',
             self::ClientRequestReplied => 'A client replied on a request',
+            self::DigestReady => 'Your digest is ready',
         };
     }
 
@@ -147,6 +156,8 @@ enum NotificationKind: string
             self::ClientRequestMoved,
             self::ClientRequestNeedsInformation,
             self::ClientRequestAnswered => Permission::ClientRequestsSubmit,
+            /* Digests are built from streams the recipient's permissions already admit; this only has to be a floor. */
+            self::DigestReady => Permission::AnalyticsView,
         };
     }
 
@@ -183,6 +194,7 @@ enum NotificationKind: string
             self::ClientRequestNeedsInformation,
             self::ClientRequestAnswered,
             self::ClientRequestReplied => NotificationSubject::ClientRequest,
+            self::DigestReady => NotificationSubject::Digest,
         };
     }
 
