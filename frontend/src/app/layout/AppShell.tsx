@@ -4,6 +4,7 @@ import { cn } from '@/shared/lib/cn';
 import { useUiStore } from '@/shared/store/ui-store';
 import { MobileNavDrawer } from './MobileNavDrawer';
 import { Sidebar } from './Sidebar';
+import { CommandPalette } from './CommandPalette';
 import { Topbar } from './Topbar';
 
 /**
@@ -43,6 +44,7 @@ export function AppShell() {
 
         <div className="flex min-w-0 flex-col">
           <Topbar />
+          <CommandPalette />
           <main
             id="main"
             className="mx-auto w-full max-w-[96rem] flex-1 px-[var(--ds-page-gutter)] pt-2 pb-10 lg:px-[var(--ds-page-gutter-lg)] lg:pb-14"

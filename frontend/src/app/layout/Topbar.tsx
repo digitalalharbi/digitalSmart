@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Languages, Moon, PanelsTopLeft, Search, Sun } from 'lucide-react';
+import { Languages, Moon, PanelsTopLeft, Search, Sun, X } from 'lucide-react';
 import { NotificationBell } from '@/features/notifications';
 import { AccountMenu } from './AccountMenu';
 import { Button } from '@/shared/ui/button';
@@ -8,7 +8,18 @@ import type { Locale } from '@/shared/i18n';
 
 export function Topbar() {
   const { t } = useTranslation();
-  const { theme, locale, setTheme, setLocale, toggleSidebar, setMobileNavOpen } = useUiStore();
+  const {
+    theme,
+    locale,
+    setTheme,
+    setLocale,
+    toggleSidebar,
+    setMobileNavOpen,
+    setPaletteOpen,
+    context,
+    setContext,
+  } = useUiStore();
+  const scope = context.project ?? context.client;
   const resolved = resolveTheme(theme);
   const nextLocale: Locale = locale === 'en' ? 'ar' : 'en';
 
@@ -40,9 +51,9 @@ export function Topbar() {
         <PanelsTopLeft />
       </Button>
 
-      {/* Command palette lands in Phase 4; the affordance and its shortcut hint exist now. */}
       <button
         type="button"
+        onClick={() => setPaletteOpen(true)}
         className="border-line-subtle bg-surface text-content-tertiary hover:border-line flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border px-4 text-sm shadow-xs transition-colors duration-[var(--ds-duration-fast)] md:max-w-md"
       >
         <Search className="size-4 shrink-0" aria-hidden="true" />
@@ -51,6 +62,24 @@ export function Topbar() {
           ⌘K
         </kbd>
       </button>
+
+      {/*
+        The working context, always on screen when it is set. It narrows every surface that reads it, so it is
+        never allowed to be invisible: a silent narrowing is a dashboard that looks complete and is not.
+      */}
+      {scope === null ? null : (
+        <span className="bg-accent-subtle text-content-brand hidden h-10 max-w-48 items-center gap-2 rounded-full ps-4 pe-2 text-sm md:inline-flex">
+          <span className="truncate">{scope.label}</span>
+          <button
+            type="button"
+            aria-label={t('palette.clearContext')}
+            onClick={() => setContext({ client: null, project: null })}
+            className="hover:bg-surface/60 rounded-full p-1"
+          >
+            <X aria-hidden className="size-3.5" />
+          </button>
+        </span>
+      )}
 
       {/* The action cluster sits on its own surface so it reads as one control group rather than four icons. */}
       <div className="border-line-subtle bg-surface ms-auto flex items-center gap-0.5 rounded-full border p-1 shadow-xs">

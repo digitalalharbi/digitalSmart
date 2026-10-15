@@ -2268,5 +2268,25 @@
       "filtered": "No campaigns match these filters",
       "body": "Connect an ad account and bind it to a project, or relax a filter."
     }
+  },
+  "palette": {
+    "title": "Search the agency",
+    "placeholder": "Search clients, projects, campaigns, accounts…",
+    "none": "Nothing matches.",
+    "pinned": "Pinned",
+    "recent": "Recent",
+    "pages": "Page",
+    "workInside": "Work inside",
+    "pin": "Pin {{name}}",
+    "unpin": "Unpin {{name}}",
+    "clearContext": "Work across the whole agency",
+    "type": {
+      "client": "Client",
+      "project": "Project",
+      "campaign": "Campaign",
+      "account": "Account",
+      "lead": "Lead",
+      "report": "Report"
+    }
   }
 }

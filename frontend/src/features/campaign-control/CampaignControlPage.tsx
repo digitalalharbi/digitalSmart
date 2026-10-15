@@ -1,6 +1,7 @@
 import { LayoutGrid, Rows3 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useUiStore } from '@/shared/store/ui-store';
 import { Link, useSearchParams } from 'react-router';
 import { useClientsQuery } from '@/features/clients';
 import { useProjectsQuery } from '@/features/projects';
@@ -57,7 +58,17 @@ export function CampaignControlPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const [params, setParams] = useSearchParams();
-  const filters = fromParams(params);
+  const { context, setContext } = useUiStore();
+  const fromUrl = fromParams(params);
+  /*
+   * The working context fills in a client or project the address bar does not name. The URL still wins:
+   * a link somebody pasted must show what its sender saw, whatever the reader happens to be working inside.
+   */
+  const filters: ControlFilters = {
+    ...fromUrl,
+    client: fromUrl.client ?? context.client,
+    project: fromUrl.project ?? context.project,
+  };
   const { data, isPending, isError, isFetching } = useCampaignControl(filters);
 
   const [clientTerm, setClientTerm] = useState('');
@@ -189,7 +200,13 @@ export function CampaignControlPage() {
           label={t('campaignControl.client')}
           clearLabel={t('campaignControl.clear')}
           value={filters.client}
-          onChange={(o) => update({ client: o === null ? null : { id: o.id, label: o.label } })}
+          onChange={(o) => {
+            if (o === null) {
+              setContext({ ...context, client: null, project: null });
+            }
+
+            update({ client: o === null ? null : { id: o.id, label: o.label } });
+          }}
           onSearch={setClientTerm}
           options={(clients.data?.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
           isLoading={clients.isFetching}
@@ -198,7 +215,13 @@ export function CampaignControlPage() {
           label={t('campaignControl.project')}
           clearLabel={t('campaignControl.clear')}
           value={filters.project}
-          onChange={(o) => update({ project: o === null ? null : { id: o.id, label: o.label } })}
+          onChange={(o) => {
+            if (o === null) {
+              setContext({ ...context, project: null });
+            }
+
+            update({ project: o === null ? null : { id: o.id, label: o.label } });
+          }}
           onSearch={setProjectTerm}
           options={(projects.data?.data ?? []).map((p) => ({ id: p.id, label: p.name }))}
           isLoading={projects.isFetching}

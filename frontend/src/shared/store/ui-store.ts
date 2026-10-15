@@ -15,7 +15,23 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 export type ChartTexturePreference = 'auto' | 'always';
 export type ResolvedTheme = 'light' | 'dark';
 
+/**
+ * The agency's working context: everything, one client, or one project.
+ *
+ * Held in memory and **not** persisted. A narrowing that survives a reload is one somebody forgets they set,
+ * and every surface then quietly shows a fraction of the agency under its normal title. It survives
+ * navigation — which is the point — and the chip that shows it is always on screen.
+ */
+export type WorkContext = {
+  client: { id: string; label: string } | null;
+  project: { id: string; label: string } | null;
+};
+
 type UiState = {
+  context: WorkContext;
+  setContext: (context: WorkContext) => void;
+  isPaletteOpen: boolean;
+  setPaletteOpen: (open: boolean) => void;
   theme: ThemePreference;
   locale: Locale;
   /** Desktop: rail vs full sidebar. Persisted. */
@@ -54,6 +70,10 @@ function detectInitialLocale(): Locale {
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
+      context: { client: null, project: null },
+      setContext: (context) => set({ context }),
+      isPaletteOpen: false,
+      setPaletteOpen: (open) => set({ isPaletteOpen: open }),
       theme: 'system',
       locale: detectInitialLocale(),
       isSidebarCollapsed: false,
