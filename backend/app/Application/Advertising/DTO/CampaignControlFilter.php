@@ -35,7 +35,16 @@ final readonly class CampaignControlFilter
         public array $health = [],
         /** Matches a campaign, client, project or account name. */
         public ?string $search = null,
+        /** One of `health`, `spend`, `name`, `cost`, `roas`. Applied after verdicts, because health is not a column. */
+        public string $sort = 'health',
+        public bool $descending = false,
     ) {}
+
+    /** @return list<string> */
+    public static function sorts(): array
+    {
+        return ['health', 'spend', 'name', 'cost', 'roas'];
+    }
 
     /**
      * Whether anything narrows the population *before* health is computed.

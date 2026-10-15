@@ -51,6 +51,11 @@ final class CampaignControlController extends Controller
         }
 
         $search = $request->query('search');
+        $sort = $request->query('sort', 'health');
+
+        if (! is_string($sort) || ! in_array($sort, CampaignControlFilter::sorts(), true)) {
+            return $this->unknown('sort', CampaignControlFilter::sorts());
+        }
 
         $filter = new CampaignControlFilter(
             clientIds: $this->uuids($request, 'client_id'),
@@ -61,6 +66,8 @@ final class CampaignControlController extends Controller
             objectives: $objectives,
             health: $health,
             search: is_string($search) && trim($search) !== '' ? trim($search) : null,
+            sort: $sort,
+            descending: $request->query('direction') === 'desc',
         );
 
         $page = $campaigns(

@@ -63,6 +63,9 @@ final readonly class CampaignControlResource
             'revenue_minor' => $row->revenueMinor,
             'roas' => $row->roas,
 
+            /* Null unless the budget is daily; a lifetime budget has no daily line to measure against. */
+            'budget_utilisation' => $row->budgetUtilisation,
+            'trend' => $row->trend,
             'reported_days' => $row->reportedDays,
             'last_synced_at' => $row->lastSyncedAt?->format(DateTimeInterface::ATOM),
         ];
@@ -79,6 +82,8 @@ final readonly class CampaignControlResource
             'meta' => [
                 'health_counts' => $page->healthCounts,
                 'total' => $page->total,
+                'matched' => $page->matched,
+                'active_count' => $page->activeCount,
                 'assessed' => $page->assessed,
                 /*
                  * True when the verdicts cover only part of the agency. The interface must say so rather

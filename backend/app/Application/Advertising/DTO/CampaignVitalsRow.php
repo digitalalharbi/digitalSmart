@@ -29,6 +29,7 @@ final readonly class CampaignVitalsRow
         public ?string $clientName,
         public ?string $currency,
         public ?int $budgetMinor,
+        public string $budgetMode,
         public CampaignVitals $vitals,
         public ?DateTimeImmutable $lastSyncedAt,
     ) {}

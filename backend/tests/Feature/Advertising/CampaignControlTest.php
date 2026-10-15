@@ -290,3 +290,34 @@ it('reads health over a four-week window ending yesterday', function (): void {
         ->assertJsonPath('data.0.spend_minor', null)
         ->assertJsonPath('data.0.health', 'insufficient_data');
 });
+
+it('sorts on the server, nulls last, and refuses a sort it does not know', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = controlAccounts($scenario);
+    controlProject($scenario, $accounts[0]['id']);
+    metricsFor($scenario, controlCampaign($scenario, $accounts[0]['id'], 'Cheap'), days: 28, spendMinor: 1_000);
+    metricsFor($scenario, controlCampaign($scenario, $accounts[0]['id'], 'Dear'), days: 28, spendMinor: 90_000);
+
+    $this->actingAs($scenario->owner)->getJson('/api/campaigns/control?sort=spend')
+        ->assertOk()->assertJsonPath('data.0.name', 'Dear');
+
+    $this->actingAs($scenario->owner)->getJson('/api/campaigns/control?sort=spend&direction=desc')
+        ->assertOk()->assertJsonPath('data.0.name', 'Cheap');
+
+    $this->actingAs($scenario->owner)->getJson('/api/campaigns/control?sort=vibes')
+        ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)->assertJsonPath('code', 'invalid_sort');
+});
+
+it('gives each row a fourteen-day trend with unreported days as null, and utilisation only for daily budgets', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = controlAccounts($scenario);
+    controlProject($scenario, $accounts[0]['id']);
+    $campaign = controlCampaign($scenario, $accounts[0]['id'], 'Trended');
+    metricsFor($scenario, $campaign, days: 5, spendMinor: 50_000);
+
+    $row = $this->actingAs($scenario->owner)->getJson('/api/campaigns/control')->assertOk()->json('data.0');
+
+    expect($row['trend'])->toHaveCount(14)
+        ->and(array_filter($row['trend'], static fn ($v): bool => $v === null))->not->toBeEmpty()
+        ->and($row['budget_utilisation'])->toBe(0.5);
+});

@@ -32,6 +32,16 @@ interface CampaignControlReadModel
     ): array;
 
     /**
+     * Spend per day for each campaign over a window, oldest first, `null` for an unreported day.
+     *
+     * One statement for any number of campaigns.
+     *
+     * @param  list<string>  $campaignIds
+     * @return array<string, list<int|null>>
+     */
+    public function trends(string $workspaceId, array $campaignIds, DateTimeImmutable $from, DateTimeImmutable $to): array;
+
+    /**
      * How many campaigns match the filter before the cap is applied.
      *
      * Published beside a capped page so the interface can say "showing 500 of 2,140" rather than implying

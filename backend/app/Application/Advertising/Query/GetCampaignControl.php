@@ -100,13 +100,45 @@ final readonly class GetCampaignControl
          * Worst first, then by spend. A critical campaign spending nothing still outranks a healthy one
          * spending a fortune, because this list is a queue of work rather than a league table.
          */
-        usort($rows, static function (CampaignControlRow $a, CampaignControlRow $b): int {
-            return [$a->health->rank(), -($a->spendMinor ?? 0)]
-                <=> [$b->health->rank(), -($b->spendMinor ?? 0)];
-        });
+        $key = match ($filter->sort) {
+            'spend' => static fn (CampaignControlRow $r): array => [-($r->spendMinor ?? -1), $r->campaignName],
+            'name' => static fn (CampaignControlRow $r): array => [mb_strtolower($r->campaignName)],
+            /* Nulls last whichever way it is sorted: "no figure" is not the cheapest or the dearest result. */
+            'cost' => static fn (CampaignControlRow $r): array => [$r->costPerResultMinor === null ? 1 : 0, $r->costPerResultMinor ?? 0.0, $r->campaignName],
+            'roas' => static fn (CampaignControlRow $r): array => [$r->roas === null ? 1 : 0, -($r->roas ?? 0.0), $r->campaignName],
+            default => static fn (CampaignControlRow $r): array => [$r->health->rank(), -($r->spendMinor ?? 0), $r->campaignName],
+        };
+
+        usort($rows, static fn (CampaignControlRow $a, CampaignControlRow $b): int => $key($a) <=> $key($b));
+
+        if ($filter->descending) {
+            $rows = array_reverse($rows);
+        }
+
+        $matched = count($rows);
+        $activeCount = count(array_filter(
+            $rows,
+            static fn (CampaignControlRow $r): bool => $r->status->isSpending(),
+        ));
+        $slice = array_slice($rows, $start, $cap);
+
+        /* One statement for the whole page, not one per card. Only the page is drawn, so only the page is read. */
+        $trends = $this->campaigns->trends(
+            $workspaceId,
+            array_map(static fn (CampaignControlRow $r): string => $r->campaignId, $slice),
+            $now->modify('-14 days'),
+            $to,
+        );
+
+        $slice = array_map(
+            static fn (CampaignControlRow $r): CampaignControlRow => $r->withTrend($trends[$r->campaignId] ?? []),
+            $slice,
+        );
 
         return new CampaignControlPage(
-            rows: array_slice($rows, $start, $cap),
+            rows: $slice,
+            matched: $matched,
+            activeCount: $activeCount,
             healthCounts: $counts,
             total: $total,
             assessed: count($vitals),
@@ -116,6 +148,19 @@ final readonly class GetCampaignControl
             limit: $cap,
             offset: $start,
         );
+    }
+
+    /** Average spend on a reporting day against a *daily* budget. Any other mode has no daily line to read against. */
+    private function utilisation(CampaignVitalsRow $row): ?float
+    {
+        $spend = $row->vitals->spendMinor;
+
+        if ($row->budgetMode !== 'daily' || $row->budgetMinor === null || $row->budgetMinor <= 0
+            || $spend === null || $row->vitals->reportedDays === 0) {
+            return null;
+        }
+
+        return ($spend / $row->vitals->reportedDays) / $row->budgetMinor;
     }
 
     private function judge(CampaignVitalsRow $row, DateTimeImmutable $now): CampaignControlRow
@@ -148,6 +193,7 @@ final readonly class GetCampaignControl
             roas: $row->vitals->roas(),
             reportedDays: $row->vitals->reportedDays,
             lastSyncedAt: $row->lastSyncedAt,
+            budgetUtilisation: $this->utilisation($row),
         );
     }
 }

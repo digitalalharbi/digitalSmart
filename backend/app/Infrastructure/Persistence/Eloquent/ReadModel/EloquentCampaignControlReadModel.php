@@ -73,6 +73,46 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
         return array_map(fn (stdClass $row): CampaignVitalsRow => $this->toRow($row), $rows);
     }
 
+    /**
+     * @param  list<string>  $campaignIds
+     * @return array<string, list<int|null>>
+     */
+    public function trends(string $workspaceId, array $campaignIds, DateTimeImmutable $from, DateTimeImmutable $to): array
+    {
+        if ($campaignIds === []) {
+            return [];
+        }
+
+        /** @var list<stdClass> $rows */
+        $rows = DB::table('daily_metrics')
+            ->where('workspace_id', $workspaceId)
+            ->where('entity_type', 'campaign')
+            ->whereIn('campaign_id', $campaignIds)
+            ->whereBetween('date', [$from->format('Y-m-d'), $to->format('Y-m-d')])
+            ->get(['campaign_id', 'date', 'spend_minor'])
+            ->all();
+
+        $days = [];
+
+        for ($day = $from; $day <= $to; $day = $day->modify('+1 day')) {
+            $days[] = $day->format('Y-m-d');
+        }
+
+        $byCampaign = [];
+
+        foreach ($rows as $row) {
+            $byCampaign[(string) $row->campaign_id][substr((string) $row->date, 0, 10)] = $this->nullableInt($row->spend_minor);
+        }
+
+        $out = [];
+
+        foreach ($campaignIds as $id) {
+            $out[$id] = array_map(static fn (string $d): ?int => $byCampaign[$id][$d] ?? null, $days);
+        }
+
+        return $out;
+    }
+
     /** @param list<string>|null $visibleProjectIds */
     public function count(
         string $workspaceId,
@@ -134,6 +174,7 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
                 'c.raw_status',
                 'c.objective',
                 'c.budget_minor',
+                'c.budget_mode',
                 'c.currency',
                 'c.synced_at',
                 'c.project_id as assigned_project_id',
@@ -254,6 +295,7 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
             clientName: $this->nullableString($row->client_name),
             currency: $this->nullableString($row->currency),
             budgetMinor: $this->nullableInt($row->budget_minor),
+            budgetMode: (string) ($row->budget_mode ?? 'unknown'),
             vitals: new CampaignVitals(
                 status: EntityStatus::from((string) $row->status),
                 objective: $objective,

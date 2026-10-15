@@ -16,6 +16,10 @@ final readonly class CampaignControlPage
      */
     public function __construct(
         public array $rows,
+        /** Rows matching every filter including health: what pagination pages through. */
+        public int $matched,
+        /** Campaigns the platform reports as spending, among those assessed. */
+        public int $activeCount,
         public array $healthCounts,
         /** Campaigns matching the filter, before the cap and before the page. */
         public int $total,
