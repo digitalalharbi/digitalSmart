@@ -78,3 +78,23 @@ arch('strict types everywhere')
 arch('no facades inside the application layer')
     ->expect('Illuminate\Support\Facades')
     ->not->toBeUsedIn(['App\Domain', 'App\Application']);
+
+/*
+ * Rule 73, held by prohibition rather than by promise: no code reaches the shared cache directly. Every cache
+ * key in a multi-tenant product has to carry the workspace, and the way to guarantee that is for there to be
+ * exactly one place a key is built. None exists yet — nothing in this product caches tenant data — so the
+ * facade is closed off, and the first thing that needs a cache has to write that one place (and be reviewed for
+ * the workspace in its key) rather than call `Cache::remember('campaigns', …)` and serve one agency's numbers
+ * to another.
+ *
+ * The rate limiter is not exempt by accident: it keys on a provider or an account id, never on tenant data,
+ * and it is a different facade.
+ */
+arch('nothing caches tenant data through the shared cache directly')
+    ->expect('Illuminate\Support\Facades\Cache')
+    ->not->toBeUsedIn([
+        'App\Domain',
+        'App\Application',
+        'App\Infrastructure',
+        'App\Interface',
+    ]);
