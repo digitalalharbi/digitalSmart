@@ -46,6 +46,9 @@ enum AuditAction: string
      */
     case CampaignProjectAssigned = 'campaign.project_assigned';
 
+    case TagApplied = 'tag.applied';
+    case TagRemoved = 'tag.removed';
+
     /*
      * Connecting a store to a client is a data-access decision as much as a setup one: from then on, every
      * order that merchant reports counts towards that client's revenue, and the people on that client's

@@ -211,6 +211,17 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
                 'c.objective',
                 array_map(static fn (CampaignObjective $o): string => $o->value, $filter->objectives),
             ))
+            ->when($filter->tagIds !== [], fn (Builder $q): Builder => $q->whereExists(
+                static fn (Builder $tag): Builder => $tag->from('taggings as tg')
+                    ->whereIn('tg.tag_id', $filter->tagIds)
+                    ->where(static function (Builder $on): void {
+                        $on->where(static fn (Builder $x): Builder => $x->where('tg.entity_type', 'campaign')->whereColumn('tg.entity_id', 'c.id'))
+                            ->orWhere(static fn (Builder $x): Builder => $x->where('tg.entity_type', 'project')
+                                ->whereRaw('tg.entity_id = coalesce(ap.id, ip.id)'))
+                            ->orWhere(static fn (Builder $x): Builder => $x->where('tg.entity_type', 'client')
+                                ->whereColumn('tg.entity_id', 'cl.id'));
+                    }),
+            ))
             ->when(
                 $filter->search !== null && $filter->search !== '',
                 function (Builder $q) use ($filter): Builder {

@@ -44,7 +44,9 @@ use App\Interface\Http\Controller\Project\ProjectMemberController;
 use App\Interface\Http\Controller\Reporting\ReportController;
 use App\Interface\Http\Controller\Reporting\SharedReportController;
 use App\Interface\Http\Controller\Search\SearchController;
+use App\Interface\Http\Controller\Shortcuts\ShortcutController;
 use App\Interface\Http\Controller\System\HealthController;
+use App\Interface\Http\Controller\Tags\TagController;
 use App\Interface\Http\Controller\Workspace\MemberController;
 use App\Interface\Http\Middleware\BindActorContext;
 use Illuminate\Support\Facades\Route;
@@ -726,6 +728,21 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
 
     /* One box for the agency: six entity types in one statement, each narrowed to what the reader may open. */
     Route::get('search', [SearchController::class, 'index'])->name('search.index');
+
+    /* The agency's own vocabulary for its work. Internal; never reaches a client. */
+    Route::get('tags', [TagController::class, 'index'])->name('tags.index');
+    Route::post('tags', [TagController::class, 'store'])->name('tags.store');
+    Route::delete('tags/{tag}', [TagController::class, 'destroy'])->whereUuid('tag')->name('tags.destroy');
+    Route::put('tags/{tag}/entities/{type}/{id}', [TagController::class, 'apply'])
+        ->whereUuid(['tag', 'id'])->name('tags.apply');
+    Route::delete('tags/{tag}/entities/{type}/{id}', [TagController::class, 'remove'])
+        ->whereUuid(['tag', 'id'])->name('tags.remove');
+
+    /* What this person pinned and last looked at. Personal: nothing here names another user. */
+    Route::get('shortcuts', [ShortcutController::class, 'index'])->name('shortcuts.index');
+    Route::put('shortcuts/pins/{type}/{id}', [ShortcutController::class, 'pin'])->whereUuid('id')->name('shortcuts.pin');
+    Route::delete('shortcuts/pins/{type}/{id}', [ShortcutController::class, 'unpin'])->whereUuid('id')->name('shortcuts.unpin');
+    Route::post('shortcuts/recents', [ShortcutController::class, 'visit'])->name('shortcuts.visit');
 
     /*
      * The Campaign Control Center: every campaign the reader may see, with a business health verdict

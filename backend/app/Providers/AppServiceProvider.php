@@ -99,7 +99,9 @@ use App\Application\Shared\Contract\HealthProbe;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Application\Shared\Contract\OwnerDirectory;
 use App\Application\Shared\Contract\WorkLedger;
+use App\Application\Shortcuts\Contract\ShortcutStore;
 use App\Application\System\Query\GetSystemHealth;
+use App\Application\Tags\Contract\TagStore;
 use App\Application\Workspace\Contract\AssignedWorkRepository;
 use App\Application\Workspace\Contract\MemberDirectory;
 use App\Application\Workspace\Contract\MemberReadModel;
@@ -183,9 +185,11 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentReportRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentShortcutStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentStoreDirectory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentStoreLocator;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTagStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTaskRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
@@ -333,6 +337,8 @@ final class AppServiceProvider extends ServiceProvider
         CampaignAssignmentRepository::class => EloquentCampaignAssignmentRepository::class,
         CampaignControlReadModel::class => EloquentCampaignControlReadModel::class,
         SearchReadModel::class => EloquentSearchReadModel::class,
+        ShortcutStore::class => EloquentShortcutStore::class,
+        TagStore::class => EloquentTagStore::class,
         ConnectionDirectory::class => EloquentConnectionDirectory::class,
         PortfolioReadModel::class => EloquentPortfolioReadModel::class,
         OperationsReadModel::class => EloquentOperationsReadModel::class,

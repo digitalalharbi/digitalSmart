@@ -81,6 +81,54 @@ final readonly class EloquentSearchReadModel implements SearchReadModel
         ), $rows);
     }
 
+    /**
+     * @param  list<array{type: string, id: string}>  $entities
+     * @param  list<string>|null  $visibleProjectIds
+     * @return list<SearchHit>
+     */
+    public function lookup(string $workspaceId, ?array $visibleProjectIds, array $entities): array
+    {
+        $byType = [];
+
+        foreach ($entities as $entity) {
+            $byType[$entity['type']][] = $entity['id'];
+        }
+
+        $sql = [];
+        $bindings = [];
+
+        foreach ($byType as $type => $ids) {
+            $branch = match ($type) {
+                'client' => $this->clients($workspaceId, $visibleProjectIds),
+                'project' => $this->projects($workspaceId, $visibleProjectIds),
+                'campaign' => $this->campaigns($workspaceId, $visibleProjectIds),
+                default => null,
+            };
+
+            if ($branch === null) {
+                continue;
+            }
+
+            $sql[] = '(select * from ('.$branch->toSql().') as hit where hit.id in ('.implode(',', array_fill(0, count($ids), '?')).'))';
+            $bindings = [...$bindings, ...$branch->getBindings(), ...$ids];
+        }
+
+        if ($sql === []) {
+            return [];
+        }
+
+        /** @var list<stdClass> $rows */
+        $rows = DB::select(implode(' union all ', $sql), $bindings);
+
+        return array_map(static fn (stdClass $row): SearchHit => new SearchHit(
+            type: (string) $row->type,
+            id: (string) $row->id,
+            label: (string) $row->label,
+            context: is_string($row->context ?? null) && $row->context !== '' ? $row->context : null,
+            path: (string) $row->path,
+        ), $rows);
+    }
+
     private function select(Builder $query, string $type, string $label, string $context, string $path): Builder
     {
         return $query->selectRaw(

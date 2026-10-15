@@ -38,6 +38,13 @@ final readonly class CampaignControlFilter
         /** One of `health`, `spend`, `name`, `cost`, `roas`. Applied after verdicts, because health is not a column. */
         public string $sort = 'health',
         public bool $descending = false,
+        /**
+         * Internal tag ids. A campaign matches when it, its project or its client carries the tag — tagging a
+         * project "Ramadan" should not mean tagging each of its forty campaigns by hand.
+         *
+         * @var list<string>
+         */
+        public array $tagIds = [],
     ) {}
 
     /** @return list<string> */
@@ -60,6 +67,7 @@ final readonly class CampaignControlFilter
             || $this->externalAccountIds !== []
             || $this->statuses !== []
             || $this->objectives !== []
+            || $this->tagIds !== []
             || ($this->search !== null && $this->search !== '');
     }
 }

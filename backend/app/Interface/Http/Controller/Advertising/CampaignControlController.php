@@ -67,6 +67,7 @@ final class CampaignControlController extends Controller
             health: $health,
             search: is_string($search) && trim($search) !== '' ? trim($search) : null,
             sort: $sort,
+            tagIds: $this->uuids($request, 'tag_id'),
             descending: $request->query('direction') === 'desc',
         );
 
