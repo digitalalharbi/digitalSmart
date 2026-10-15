@@ -32,6 +32,15 @@ interface CampaignControlReadModel
     ): array;
 
     /**
+     * Spend per day for a set of campaigns, summed in SQL and kept per currency — two currencies on one day are
+     * two figures, never one.
+     *
+     * @param  list<string>  $campaignIds
+     * @return array<string, list<int|null>> currency => one value per day from `$from` to `$to`, null where nothing was reported
+     */
+    public function spendByDay(string $workspaceId, array $campaignIds, DateTimeImmutable $from, DateTimeImmutable $to): array;
+
+    /**
      * Spend per day for each campaign over a window, oldest first, `null` for an unreported day.
      *
      * One statement for any number of campaigns.

@@ -73,6 +73,40 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
         return array_map(fn (stdClass $row): CampaignVitalsRow => $this->toRow($row), $rows);
     }
 
+    public function spendByDay(string $workspaceId, array $campaignIds, DateTimeImmutable $from, DateTimeImmutable $to): array
+    {
+        if ($campaignIds === []) {
+            return [];
+        }
+
+        $days = [];
+
+        for ($day = $from; $day <= $to; $day = $day->modify('+1 day')) {
+            $days[] = $day->format('Y-m-d');
+        }
+
+        $byCurrency = [];
+
+        foreach (DB::table('daily_metrics')
+            ->where('workspace_id', $workspaceId)->where('entity_type', 'campaign')
+            ->whereIn('campaign_id', $campaignIds)
+            ->whereBetween('date', [$from->format('Y-m-d'), $to->format('Y-m-d')])
+            ->whereNotNull('spend_minor')
+            ->groupBy('currency', 'date')
+            ->selectRaw('currency, date, sum(spend_minor) as spend')
+            ->get() as $row) {
+            $byCurrency[(string) $row->currency][substr((string) $row->date, 0, 10)] = (int) $row->spend;
+        }
+
+        $out = [];
+
+        foreach ($byCurrency as $currency => $series) {
+            $out[$currency] = array_map(static fn (string $d): ?int => $series[$d] ?? null, $days);
+        }
+
+        return $out;
+    }
+
     /**
      * @param  list<string>  $campaignIds
      * @return array<string, list<int|null>>

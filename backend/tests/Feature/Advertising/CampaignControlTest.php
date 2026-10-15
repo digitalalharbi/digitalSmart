@@ -321,3 +321,25 @@ it('gives each row a fourteen-day trend with unreported days as null, and utilis
         ->and(array_filter($row['trend'], static fn ($v): bool => $v === null))->not->toBeEmpty()
         ->and($row['budget_utilisation'])->toBe(0.5);
 });
+
+it('publishes the headline spend and its trend over everything matched, per currency', function (): void {
+    $w = Tests\Support\SyncedWorkspace::with([App\Domain\Integration\Provider::Meta->value => 'act_sandbox_1001']);
+
+    $meta = test()->actingAs($w->scenario->owner)->getJson('/api/campaigns/control?limit=1')->assertOk()->json('meta');
+
+    $perPage = test()->actingAs($w->scenario->owner)->getJson('/api/campaigns/control?limit=200')->json('data');
+    $expected = 0;
+
+    foreach ($perPage as $row) {
+        $expected += (int) ($row['spend_minor'] ?? 0);
+    }
+
+    expect($meta['spend_by_currency'])->not->toBeEmpty()
+        ->and(array_sum(array_column($meta['spend_by_currency'], 'spend_minor')))->toBe($expected)
+        // One value per day of the fourteen-day trend window... or the assessment window, whichever the server uses.
+        ->and(count($meta['spend_trend'][0]['points']))->toBeGreaterThan(1)
+        // The headline describes the matched set, not the page: asking for one row changes nothing.
+        ->and($meta['spend_by_currency'])->toBe(
+            test()->actingAs($w->scenario->owner)->getJson('/api/campaigns/control?limit=200')->json('meta.spend_by_currency'),
+        );
+});

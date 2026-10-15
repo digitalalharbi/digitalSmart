@@ -81,6 +81,16 @@ final readonly class CampaignControlResource
             ),
             'meta' => [
                 'health_counts' => $page->healthCounts,
+                'spend_by_currency' => array_map(
+                    static fn (string $currency, int $minor): array => ['currency' => $currency, 'spend_minor' => $minor],
+                    array_keys($page->spendByCurrency),
+                    array_values($page->spendByCurrency),
+                ),
+                'spend_trend' => array_map(
+                    static fn (string $currency, array $points): array => ['currency' => $currency, 'points' => $points],
+                    array_keys($page->spendTrend),
+                    array_values($page->spendTrend),
+                ),
                 'total' => $page->total,
                 'matched' => $page->matched,
                 'active_count' => $page->activeCount,

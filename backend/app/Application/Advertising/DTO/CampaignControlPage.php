@@ -13,6 +13,8 @@ final readonly class CampaignControlPage
     /**
      * @param  list<CampaignControlRow>  $rows
      * @param  array<string, int>  $healthCounts  Every state present, so a zero reads as "none".
+     * @param  array<string, int>  $spendByCurrency
+     * @param  array<string, list<int|null>>  $spendTrend
      */
     public function __construct(
         public array $rows,
@@ -37,6 +39,10 @@ final readonly class CampaignControlPage
         public DateTimeImmutable $to,
         public int $limit,
         public int $offset,
+        /** Spend over the window across every matched campaign, per currency — never summed across them. */
+        public array $spendByCurrency = [],
+        /** One value per day of the window, per currency. */
+        public array $spendTrend = [],
     ) {}
 
     /** @return list<string> */

@@ -110,6 +110,20 @@ final readonly class GetCampaignControl
         ));
         $slice = array_slice($rows, $start, $cap);
 
+        /*
+         * The headline spend and its trend describe everything that matched, not the page — summed in one
+         * grouped statement, per currency.
+         */
+        $matchedIds = array_map(static fn (CampaignControlRow $r): string => $r->campaignId, $rows);
+        $spendTrend = $this->campaigns->spendByDay($workspaceId, $matchedIds, $from, $to);
+        $spendByCurrency = [];
+
+        foreach ($rows as $row) {
+            if ($row->spendMinor !== null && $row->currency !== null) {
+                $spendByCurrency[$row->currency] = ($spendByCurrency[$row->currency] ?? 0) + $row->spendMinor;
+            }
+        }
+
         /* One statement for the whole page, not one per card. Only the page is drawn, so only the page is read. */
         $trends = $this->campaigns->trends(
             $workspaceId,
@@ -135,6 +149,8 @@ final readonly class GetCampaignControl
             to: $to,
             limit: $cap,
             offset: $start,
+            spendByCurrency: $spendByCurrency,
+            spendTrend: $spendTrend,
         );
     }
 
