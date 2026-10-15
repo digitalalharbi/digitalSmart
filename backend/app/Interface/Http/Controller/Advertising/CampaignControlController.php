@@ -6,6 +6,7 @@ namespace App\Interface\Http\Controller\Advertising;
 
 use App\Application\Advertising\DTO\CampaignControlFilter;
 use App\Application\Advertising\Query\GetCampaignControl;
+use App\Application\Shared\Contract\ActorContext;
 use App\Domain\Advertising\CampaignHealth;
 use App\Domain\Advertising\CampaignObjective;
 use App\Domain\Advertising\EntityStatus;
@@ -24,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class CampaignControlController extends Controller
 {
-    public function index(Request $request, GetCampaignControl $campaigns): JsonResponse
+    public function index(Request $request, GetCampaignControl $campaigns, ActorContext $actor): JsonResponse
     {
         $statuses = $this->enums($request, 'status', EntityStatus::class);
 
@@ -59,7 +60,7 @@ final class CampaignControlController extends Controller
 
         $filter = new CampaignControlFilter(
             clientIds: $this->uuids($request, 'client_id'),
-            projectIds: $this->uuids($request, 'project_id'),
+            projectIds: $this->projectScope($request, $actor),
             providers: $this->strings($request, 'provider'),
             externalAccountIds: $this->uuids($request, 'external_account_id'),
             statuses: $statuses,
@@ -121,6 +122,38 @@ final class CampaignControlController extends Controller
         }
 
         return $values;
+    }
+
+    /**
+     * The projects the page is narrowed to.
+     *
+     * `mine=1` means *the ones I am assigned to*, which for somebody who can see every project is a real
+     * narrowing and for somebody scoped is a no-op. An empty assignment is **none**, not "no filter":
+     * collapsing the two would show a newly-added media buyer the whole agency under a "My campaigns" title.
+     *
+     * @return list<string>
+     */
+    private function projectScope(Request $request, ActorContext $actor): array
+    {
+        $explicit = $this->uuids($request, 'project_id');
+
+        if (! $request->boolean('mine')) {
+            return $explicit;
+        }
+
+        $mine = $actor->assignedProjectIds();
+
+        if ($mine === []) {
+            return ['00000000-0000-0000-0000-000000000000'];
+        }
+
+        if ($explicit === []) {
+            return $mine;
+        }
+
+        $both = array_values(array_intersect($explicit, $mine));
+
+        return $both === [] ? ['00000000-0000-0000-0000-000000000000'] : $both;
     }
 
     /** @return list<string> */

@@ -21,6 +21,7 @@ use App\Interface\Http\Controller\Commerce\StoreWebhookController;
 use App\Interface\Http\Controller\Creative\CreativeController;
 use App\Interface\Http\Controller\Dashboard\DashboardController;
 use App\Interface\Http\Controller\Dashboard\SavedViewController;
+use App\Interface\Http\Controller\Home\HomeController;
 use App\Interface\Http\Controller\Identity\SessionController;
 use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
 use App\Interface\Http\Controller\Integration\ConnectionController;
@@ -42,6 +43,7 @@ use App\Interface\Http\Controller\Portfolio\PortfolioController;
 use App\Interface\Http\Controller\Presentation\PresentationController;
 use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
+use App\Interface\Http\Controller\Project\ReadinessController;
 use App\Interface\Http\Controller\Reporting\ReportController;
 use App\Interface\Http\Controller\Reporting\SharedReportController;
 use App\Interface\Http\Controller\Search\SearchController;
@@ -155,6 +157,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('client')->name('clients.offboarding.preview');
     Route::post('clients/{client}/offboard', [OffboardingController::class, 'offboard'])
         ->whereUuid('client')->name('clients.offboard');
+    Route::get('projects/{project}/readiness', [ReadinessController::class, 'show'])
+        ->whereUuid('project')->name('projects.readiness');
     Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::get('projects/{project}', [ProjectController::class, 'show'])
@@ -731,6 +735,9 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
      * own: each stream carries one, and a reader with none of them gets an empty queue that says so.
      */
     Route::get('attention', [AttentionController::class, 'index'])->name('attention.index');
+
+    /* Which home screens this person should see, decided from what they may do rather than from a role's name. */
+    Route::get('home', [HomeController::class, 'show'])->name('home.show');
 
     /* One box for the agency: six entity types in one statement, each narrowed to what the reader may open. */
     Route::get('search', [SearchController::class, 'index'])->name('search.index');
