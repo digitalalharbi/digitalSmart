@@ -18,6 +18,7 @@ import {
   AttributionPage,
   CreativeHubPage,
   BudgetCalculatorPage,
+  CampaignControlPage,
   CampaignsPage,
   DashboardsPage,
   LeadCentrePage,
@@ -47,7 +48,8 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/administration': <AdministrationPage />,
   '/integrations': <IntegrationsPage />,
   '/analytics': deferred(<AnalyticsPage />),
-  '/campaigns': deferred(<CampaignsPage />),
+  /* The control center is the daily surface; the metric drill-down it grew out of lives one level down. */
+  '/campaigns': deferred(<CampaignControlPage />),
   '/dashboards': deferred(<DashboardsPage />),
   '/media-planner': deferred(<MediaPlannerPage />),
   '/budget-calculator': deferred(<BudgetCalculatorPage />),
@@ -109,6 +111,7 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <PortalLanding /> },
       ...featureRoutes,
+      { path: 'campaigns/explore', element: deferred(<CampaignsPage />) },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

@@ -2207,5 +2207,66 @@
   },
   "insight": {
     "label": "Insight"
+  },
+  "campaignControl": {
+    "title": "Campaign Control Center",
+    "subtitle": "Every campaign you may see, across clients, projects and platforms. Worst first.",
+    "explore": "Explore performance",
+    "summary": "Campaign summary",
+    "distribution": "Campaign health",
+    "filters": "Filters",
+    "search": "Search",
+    "searchPlaceholder": "Client, project, campaign or account",
+    "client": "Client",
+    "project": "Project",
+    "provider": "Platform",
+    "status": "Platform status",
+    "objective": "Objective",
+    "sort": "Sort by",
+    "any": "Any",
+    "clear": "Clear",
+    "view": "View",
+    "cards": "Cards",
+    "table": "Table",
+    "loading": "Loading campaigns…",
+    "loadFailed": "Campaigns could not be loaded.",
+    "reset": "Clear all filters",
+    "pagination": "Pages",
+    "previous": "Previous",
+    "next": "Next",
+    "range": "{{from}}–{{to}} of {{total}}",
+    "noDailyBudget": "No daily budget",
+    "ofDailyBudget": "{{value}} of daily budget",
+    "trendLabel": "Spend over the last two weeks for {{name}}",
+    "neverUpdated": "No figures received yet",
+    "updated": "Updated {{when}}",
+    "truncated": "Health was assessed on the {{assessed}} highest-spending of {{total}} campaigns.",
+    "tile": {
+      "active": "Active campaigns",
+      "healthy": "Healthy",
+      "watch": "Watch",
+      "attention": "Needs attention",
+      "critical": "Critical"
+    },
+    "col": {
+      "campaign": "Campaign",
+      "health": "Health",
+      "spend": "Spend",
+      "result": "Result",
+      "costPerResult": "Cost per result",
+      "budget": "Budget"
+    },
+    "sortBy": {
+      "health": "Health",
+      "spend": "Spend",
+      "cost": "Cost per result",
+      "roas": "ROAS",
+      "name": "Name"
+    },
+    "empty": {
+      "none": "No campaigns yet",
+      "filtered": "No campaigns match these filters",
+      "body": "Connect an ad account and bind it to a project, or relax a filter."
+    }
   }
 }

@@ -135,7 +135,7 @@ test.describe('campaign explorer', () => {
   });
 
   test('drills from a platform down to its ads', async ({ page }) => {
-    await openSurface(page, '/campaigns', 'Key figures');
+    await openSurface(page, '/campaigns/explore', 'Key figures');
 
     const trail = page.getByRole('navigation', { name: /Drill-down trail/i });
     await expect(trail.getByRole('button', { name: /All platforms/ })).toBeVisible();

@@ -112,3 +112,7 @@ export const AssistantPage = lazy(async () => ({
 export const PresentationsPage = lazy(async () => ({
   default: (await import('@/features/presentations/PresentationsPage')).PresentationsPage,
 }));
+
+export const CampaignControlPage = lazy(async () => ({
+  default: (await import('@/features/campaign-control/CampaignControlPage')).CampaignControlPage,
+}));
