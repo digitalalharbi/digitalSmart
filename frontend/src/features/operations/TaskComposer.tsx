@@ -7,11 +7,14 @@ import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import type { TaskPriorityInfo, TaskPriorityValue } from './types';
 
 type TaskComposerProps = {
   priorities: TaskPriorityInfo[];
   clients: { id: string; name: string }[];
+  onSearchClients: (term: string) => void;
+  isSearching?: boolean;
   isSaving: boolean;
   error: string | null;
   onSubmit: (input: {
@@ -38,6 +41,8 @@ type TaskComposerProps = {
 export function TaskComposer({
   priorities,
   clients,
+  onSearchClients,
+  isSearching = false,
   isSaving,
   error,
   onSubmit,
@@ -46,7 +51,8 @@ export function TaskComposer({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<TaskPriorityValue>('normal');
-  const [clientId, setClientId] = useState<string | null>(null);
+  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
+  const clientId = client?.id ?? null;
   const [dueOn, setDueOn] = useState('');
 
   const ordered = [...priorities].sort((a, b) => a.rank - b.rank);
@@ -117,25 +123,21 @@ export function TaskComposer({
             </div>
           </ChoiceGroup>
 
-          <ChoiceGroup
-            label={t('operations.composer.client')}
-            hint={t('operations.composer.clientHint')}
-          >
-            <div className="flex flex-wrap gap-2">
-              <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
-                {t('operations.composer.internal')}
-              </Choice>
-              {clients.map((client) => (
-                <Choice
-                  key={client.id}
-                  isSelected={clientId === client.id}
-                  onSelect={() => setClientId(client.id)}
-                >
-                  {client.name}
-                </Choice>
-              ))}
-            </div>
-          </ChoiceGroup>
+          <div className="flex flex-col gap-1">
+            <EntityPicker
+              label={t('operations.composer.client')}
+              clearLabel={t('actions.clear')}
+              placeholder={t('operations.composer.internal')}
+              value={client}
+              onChange={(option) =>
+                setClient(option === null ? null : { id: option.id, label: option.label })
+              }
+              onSearch={onSearchClients}
+              options={clients.map((c) => ({ id: c.id, label: c.name }))}
+              isLoading={isSearching}
+            />
+            <p className="text-content-tertiary text-xs">{t('operations.composer.clientHint')}</p>
+          </div>
 
           <Field label={t('operations.composer.due')} hint={t('operations.composer.dueHint')}>
             {(props) => (

@@ -7,11 +7,14 @@ import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import type { ClientRequestKindValue, RequestVocabulary, StatedUrgencyValue } from './types';
 
 type RequestComposerProps = {
   vocabulary: RequestVocabulary | undefined;
   clients: { id: string; name: string }[];
+  onSearchClients: (term: string) => void;
+  isSearching?: boolean;
   /** Pre-selected and locked when a client is raising their own request: they have exactly one. */
   lockedClientId: string | null;
   isSaving: boolean;
@@ -43,13 +46,16 @@ type RequestComposerProps = {
 export function RequestComposer({
   vocabulary,
   clients,
+  onSearchClients,
+  isSearching = false,
   lockedClientId,
   isSaving,
   error,
   onSubmit,
 }: RequestComposerProps) {
   const { t } = useTranslation();
-  const [clientId, setClientId] = useState<string | null>(lockedClientId);
+  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
+  const clientId = client?.id ?? lockedClientId;
   const [kind, setKind] = useState<ClientRequestKindValue>('change');
   const [title, setTitle] = useState('');
   const [detail, setDetail] = useState('');
@@ -90,19 +96,17 @@ export function RequestComposer({
           {error === null ? null : <Alert tone="danger">{error}</Alert>}
 
           {lockedClientId !== null ? null : (
-            <ChoiceGroup label={t('requests.composer.client')}>
-              <div className="flex flex-wrap gap-2">
-                {clients.map((client) => (
-                  <Choice
-                    key={client.id}
-                    isSelected={clientId === client.id}
-                    onSelect={() => setClientId(client.id)}
-                  >
-                    {client.name}
-                  </Choice>
-                ))}
-              </div>
-            </ChoiceGroup>
+            <EntityPicker
+              label={t('requests.composer.client')}
+              clearLabel={t('actions.clear')}
+              value={client}
+              onChange={(option) =>
+                setClient(option === null ? null : { id: option.id, label: option.label })
+              }
+              onSearch={onSearchClients}
+              options={clients.map((c) => ({ id: c.id, label: c.name }))}
+              isLoading={isSearching}
+            />
           )}
 
           <ChoiceGroup label={t('requests.composer.kind')}>

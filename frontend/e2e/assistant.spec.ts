@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ACCOUNTS, signIn } from './support/accounts';
+import { chooseClient } from './support/pickers';
 
 /**
  * The assistant.
@@ -13,7 +14,7 @@ async function openAssistant(page: Page, account: string = ACCOUNTS.owner): Prom
 }
 
 async function chooseFirstClient(page: Page): Promise<void> {
-  await page.getByRole('group', { name: 'Client' }).getByRole('button').first().click();
+  await chooseClient(page);
 }
 
 test.describe('the assistant', () => {

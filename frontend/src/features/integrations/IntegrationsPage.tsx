@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
@@ -38,7 +38,12 @@ function groupByCategory(providers: ProviderRow[]): Array<[string, ProviderRow[]
 export function IntegrationsPage() {
   const { t } = useTranslation();
   const { data: providers, isPending, isError, error } = useProvidersQuery();
-  const { data: projectPage, isPending: loadingProjects } = useProjectsQuery({ per_page: 100 });
+  /* Searched, never listed: an agency has more projects than fit in a page, and the picker finds by name. */
+  const [projectTerm, setProjectTerm] = useState('');
+  const { data: projectPage, isFetching: loadingProjects } = useProjectsQuery({
+    search: projectTerm,
+    per_page: 8,
+  });
 
   const projects = useMemo(
     () =>
@@ -127,7 +132,11 @@ export function IntegrationsPage() {
       </section>
 
       <section className="border-line-subtle border-t pt-8">
-        <AccountBindingPanel projects={projects} isLoadingProjects={loadingProjects} />
+        <AccountBindingPanel
+          projects={projects}
+          isLoadingProjects={loadingProjects}
+          onSearchProjects={setProjectTerm}
+        />
       </section>
     </div>
   );

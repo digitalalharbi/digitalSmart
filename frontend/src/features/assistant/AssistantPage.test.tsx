@@ -133,9 +133,15 @@ function answer(overrides: Partial<AssistantAnswer> = {}): AssistantAnswer {
   };
 }
 
+/** The client picker is a search box over the server's top few, not a row of every client. */
+async function chooseClient(name: string): Promise<void> {
+  await userEvent.type(await screen.findByRole('combobox', { name: /client/i }), name.slice(0, 3));
+  await userEvent.click(await screen.findByRole('option', { name }));
+}
+
 async function open(): Promise<void> {
   await renderWithProviders(<AssistantPage />);
-  await userEvent.click(await screen.findByRole('button', { name: 'Alhambra' }));
+  await chooseClient('Alhambra');
 }
 
 beforeEach(() => {

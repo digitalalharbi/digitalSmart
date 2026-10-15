@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { ACCOUNTS, signIn } from './support/accounts';
+import { chooseClient } from './support/pickers';
 
 /**
  * A conversion name unique to the running project.
@@ -98,7 +99,7 @@ test.describe('tracking centre', () => {
 
     const editor = await openEditor(page);
     // Chosen rather than assumed: see the note in ConversionEditor about why there is no default.
-    await editor.getByLabel('Client').selectOption({ index: 1 });
+    await chooseClient(editor);
     await editor.getByLabel('Name', { exact: true }).fill(name);
     await editor.getByLabel('Raw event name').first().fill(rawName);
     await editor.getByRole('button', { name: 'Save', exact: true }).click();
@@ -115,7 +116,7 @@ test.describe('tracking centre', () => {
      * form says which name to change rather than "something went wrong".
      */
     const second = await openEditor(page);
-    await second.getByLabel('Client').selectOption({ index: 1 });
+    await chooseClient(second);
     await second.getByLabel('Name', { exact: true }).fill(named('Enquiry'));
     await second.getByLabel('Raw event name').first().fill(rawName);
     await second.getByRole('button', { name: 'Save', exact: true }).click();
@@ -207,7 +208,7 @@ test.describe('tracking centre', () => {
      * than by label: the picker's `<label>` wraps the `<select>`, so its text content carries every option
      * with it and an exact label match finds nothing.
      */
-    await page.getByRole('combobox', { name: 'Client' }).selectOption({ label: client });
+    await chooseClient(page, client, client);
 
     /*
      * Scoped to the panel. The issue list raises the same sentence as a critical finding — correctly: a client

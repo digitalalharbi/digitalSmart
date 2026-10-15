@@ -7,6 +7,7 @@ import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import { useContainersQuery, useCreateSourceMutation, usePropertiesQuery } from './useTracking';
 import type { DiscoveredProperty, TagContainer } from './types';
 
@@ -45,14 +46,19 @@ type DiscoveryKind = (typeof KINDS)[number];
 export function SourceRegistration({
   clientId,
   clients,
+  onSearchClients,
+  isSearching = false,
 }: {
   clientId: string | null;
   clients: Client[];
+  onSearchClients: (term: string) => void;
+  isSearching?: boolean;
 }) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [kind, setKind] = useState<DiscoveryKind>('property');
   const [chosenClient, setChosenClient] = useState<string | null>(clientId);
+  const [picked, setPicked] = useState<{ id: string; label: string } | null>(null);
   const properties = usePropertiesQuery(isOpen && kind === 'property' ? 'google_analytics' : null);
   const containers = useContainersQuery(isOpen && kind === 'container');
   const create = useCreateSourceMutation();
@@ -135,23 +141,21 @@ export function SourceRegistration({
       </ChoiceGroup>
 
       {clientId === null ? (
-        <label className="mt-4 flex flex-col gap-1.5">
-          <span className="text-content text-sm font-medium">{t('tracking.register.client')}</span>
-          <select
-            className="border-line bg-surface text-content rounded-lg border px-3 py-2 text-sm"
-            value={chosenClient ?? ''}
-            onChange={(event) =>
-              setChosenClient(event.target.value === '' ? null : event.target.value)
-            }
-          >
-            <option value="">{t('tracking.register.chooseClient')}</option>
-            {clients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="mt-4">
+          <EntityPicker
+            label={t('tracking.register.client')}
+            clearLabel={t('actions.clear')}
+            placeholder={t('tracking.register.chooseClient')}
+            value={picked}
+            onChange={(option) => {
+              setPicked(option === null ? null : { id: option.id, label: option.label });
+              setChosenClient(option?.id ?? null);
+            }}
+            onSearch={onSearchClients}
+            options={clients.map((c) => ({ id: c.id, label: c.name }))}
+            isLoading={isSearching}
+          />
+        </div>
       ) : null}
 
       {create.isError ? (

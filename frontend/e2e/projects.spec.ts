@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { ACCOUNTS, signIn } from './support/accounts';
+import { chooseClient } from './support/pickers';
 
 test.describe('projects', () => {
   test('an owner sees every project in the workspace', async ({ page }) => {
@@ -19,19 +20,19 @@ test.describe('projects', () => {
     await expect(page.getByText(/A project manager assigns people/)).toBeVisible();
   });
 
-  test('a manager creates a project, which starts in planning', async ({ page }) => {
+  test('a manager creates a project, which starts as a draft', async ({ page }) => {
     await signIn(page, ACCOUNTS.manager);
     await page.goto('/projects');
 
     const name = `E2E Project ${Date.now()}`;
     await page.getByRole('button', { name: 'New project' }).click();
-    await page.getByLabel('Client').selectOption({ index: 1 });
+    await chooseClient(page.getByRole('dialog'));
     await page.getByLabel('Project name').fill(name);
     await page.getByRole('button', { name: 'Save' }).click();
 
     const row = page.getByRole('row', { name: new RegExp(name) });
     await expect(row).toBeVisible();
-    await expect(row.getByText('Planning')).toBeVisible();
+    await expect(row.getByText('Draft')).toBeVisible();
   });
 
   /*
@@ -50,7 +51,7 @@ test.describe('projects', () => {
 
     const name = `E2E Access ${Date.now()}`;
     await page.getByRole('button', { name: 'New project' }).click();
-    await page.getByLabel('Client').selectOption({ index: 1 });
+    await chooseClient(page.getByRole('dialog'));
     await page.getByLabel('Project name').fill(name);
     await page.getByRole('button', { name: 'Save' }).click();
 
@@ -98,7 +99,7 @@ test.describe('projects', () => {
     await page.goto('/projects');
 
     await page.getByRole('button', { name: 'New project' }).click();
-    await page.getByLabel('Client').selectOption({ index: 1 });
+    await chooseClient(page.getByRole('dialog'));
     await page.getByLabel('Project name').fill('Backwards schedule');
     await page.getByLabel('Starts').fill('2026-06-01');
     await page.getByLabel('Ends').fill('2026-05-01');

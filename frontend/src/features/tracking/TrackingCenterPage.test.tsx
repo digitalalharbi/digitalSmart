@@ -437,7 +437,8 @@ describe('what the tracking centre can set up', () => {
      * page showing every client the panel has to ask — and the control that would register nothing is disabled
      * until it has an answer.
      */
-    await user.selectOptions(await screen.findByLabelText('Client'), 'client-1');
+    await user.type(await screen.findByRole('combobox', { name: 'Client' }), 'No');
+    await user.click(await screen.findByRole('option', { name: 'Noon Retail' }));
 
     await user.click(screen.getByRole('button', { name: 'Add a property' }));
     await user.click(screen.getByRole('button', { name: 'Tag container' }));

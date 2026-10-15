@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ACCOUNTS, signIn } from './support/accounts';
+import { chooseClient } from './support/pickers';
 
 /**
  * Presentations.
@@ -13,7 +14,7 @@ async function openPresentations(page: Page, account: string = ACCOUNTS.owner): 
 }
 
 async function chooseFirstClient(page: Page): Promise<void> {
-  await page.getByRole('group', { name: 'Client' }).getByRole('button').first().click();
+  await chooseClient(page);
 }
 
 test.describe('presentations', () => {
@@ -29,6 +30,12 @@ test.describe('presentations', () => {
 
   test('builds a deck whose figures are already formatted', async ({ page }) => {
     await openPresentations(page);
+    /*
+     * The weekly deck, because the sandbox fixture covers the last fourteen days. The default monthly deck reads
+     * the previous *calendar* month, which holds no sandbox data from the fifteenth onwards — a test that passed
+     * for half of every month and failed for the other half.
+     */
+    await page.getByRole('button', { name: 'Weekly report' }).click();
     await chooseFirstClient(page);
 
     /* The title slide names the client and the period. */

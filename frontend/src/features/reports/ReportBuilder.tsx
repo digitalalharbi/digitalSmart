@@ -9,6 +9,7 @@ import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import type {
   ComparisonModeValue,
   ReportAudienceValue,
@@ -21,6 +22,8 @@ import type {
 type ReportBuilderProps = {
   vocabulary: ReportVocabulary | undefined;
   clients: { id: string; name: string }[];
+  onSearchClients: (term: string) => void;
+  isSearching?: boolean;
   /** The report being edited, or undefined for a new one. */
   draft: ReportDraft | undefined;
   isSaving: boolean;
@@ -55,6 +58,8 @@ type ReportBuilderProps = {
 export function ReportBuilder({
   vocabulary,
   clients,
+  onSearchClients,
+  isSearching = false,
   draft,
   isSaving,
   error,
@@ -65,7 +70,18 @@ export function ReportBuilder({
 
   const [name, setName] = useState(draft?.name ?? '');
   const [description, setDescription] = useState(draft?.description ?? '');
-  const [clientId, setClientId] = useState<string | null>(draft?.client_id ?? null);
+  /* A draft opened for editing names its client by id only; the label is the chosen client's once picked. */
+  const [client, setClient] = useState<{ id: string; label: string } | null>(
+    draft?.client_id == null
+      ? null
+      : {
+          id: draft.client_id,
+          label:
+            clients.find((c) => c.id === draft.client_id)?.name ??
+            t('reports.builder.currentClient'),
+        },
+  );
+  const clientId = client?.id ?? null;
   const [window, setWindow] = useState<ReportWindowValue>(draft?.window ?? 'last_30_days');
   const [customFrom, setCustomFrom] = useState(draft?.custom_from ?? '');
   const [customUntil, setCustomUntil] = useState(draft?.custom_until ?? '');
@@ -149,22 +165,21 @@ export function ReportBuilder({
             )}
           </Field>
 
-          <ChoiceGroup label={t('reports.builder.client')} hint={t('reports.builder.clientHint')}>
-            <div className="flex flex-wrap gap-2">
-              <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
-                {t('reports.builder.everyClient')}
-              </Choice>
-              {clients.map((client) => (
-                <Choice
-                  key={client.id}
-                  isSelected={clientId === client.id}
-                  onSelect={() => setClientId(client.id)}
-                >
-                  {client.name}
-                </Choice>
-              ))}
-            </div>
-          </ChoiceGroup>
+          <div className="flex flex-col gap-1">
+            <EntityPicker
+              label={t('reports.builder.client')}
+              clearLabel={t('actions.clear')}
+              placeholder={t('reports.builder.everyClient')}
+              value={client}
+              onChange={(option) =>
+                setClient(option === null ? null : { id: option.id, label: option.label })
+              }
+              onSearch={onSearchClients}
+              options={clients.map((c) => ({ id: c.id, label: c.name }))}
+              isLoading={isSearching}
+            />
+            <p className="text-content-tertiary text-xs">{t('reports.builder.clientHint')}</p>
+          </div>
 
           <ChoiceGroup label={t('reports.builder.period')} hint={t('reports.builder.periodHint')}>
             <div className="flex flex-wrap gap-2">

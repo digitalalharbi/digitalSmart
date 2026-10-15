@@ -54,7 +54,8 @@
     "delete": "Delete",
     "previous": "Previous",
     "next": "Next",
-    "remove": "Remove"
+    "remove": "Remove",
+    "clear": "Clear"
   },
   "overview": {
     "title": "Overview",
@@ -826,7 +827,8 @@
       "containerUnavailable": "Google Tag Manager is not connected yet, or its authorisation is not complete. Fix that on the integrations page.",
       "containerNone": "The connected account can read no tag containers.",
       "notWeb": "Not a web container",
-      "noDomains": "No domain recorded on the container"
+      "noDomains": "No domain recorded on the container",
+      "chosen": "Chosen client"
     },
     "sync": {
       "done": "Read {{name}}: {{rows}} rows across {{days}} days.",
@@ -1924,7 +1926,8 @@
       "metricsHint": "Up to {{cap}} in this shape. Past that it stops being readable — add a second section instead.",
       "groupBy": "Group by",
       "carriesComparison": "This section carries the comparison",
-      "save": "Save the report"
+      "save": "Save the report",
+      "currentClient": "Chosen client"
     },
     "share": {
       "title": "Snapshots and links",

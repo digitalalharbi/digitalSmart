@@ -7,9 +7,9 @@ import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/empty-state';
-import { Field } from '@/shared/ui/field';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { PageHeader } from '@/shared/ui/page-header';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import { ContainerReadiness } from './ContainerReadiness';
 import { ConversionEditor } from './ConversionEditor';
 import { IssueList } from './IssueList';
@@ -56,15 +56,14 @@ function formatDate(value: string | null, locale: string): string {
 export function TrackingCenterPage() {
   const { t, i18n } = useTranslation();
   const { can } = useSession();
-  const [clientId, setClientId] = useState<string | null>(null);
+  /* Searched, never listed: the 101st client is not a typo. */
+  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
+  const [clientTerm, setClientTerm] = useState('');
+  const clientId = client?.id ?? null;
   const [editing, setEditing] = useState<EventDefinition | null | 'new'>(null);
   const [lastSync, setLastSync] = useState<{ name: string; result: SyncResult } | null>(null);
 
-  /*
-   * Enough clients for a picker, in one page. An agency with more than this has a search problem
-   * rather than a scroll problem, and that is the client list's job rather than this page's.
-   */
-  const clients = useClientsQuery({ page: 1, per_page: 100, sort: 'name', direction: 'asc' });
+  const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const scope = useMemo(() => ({ client_id: clientId }), [clientId]);
   const health = useTrackingHealthQuery(scope);
   const sync = useSyncSourceMutation();
@@ -89,25 +88,18 @@ export function TrackingCenterPage() {
         title={t('tracking.title')}
         description={t('tracking.subtitle')}
         filters={
-          <Field label={t('tracking.scope.client')}>
-            {(props) => (
-              <select
-                {...props}
-                className="border-line-subtle bg-surface text-content h-10 rounded-full border px-4 text-sm shadow-xs"
-                value={clientId ?? ''}
-                onChange={(event) =>
-                  setClientId(event.target.value === '' ? null : event.target.value)
-                }
-              >
-                <option value="">{t('tracking.scope.allClients')}</option>
-                {clientOptions.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name}
-                  </option>
-                ))}
-              </select>
-            )}
-          </Field>
+          <EntityPicker
+            label={t('tracking.scope.client')}
+            clearLabel={t('actions.clear')}
+            placeholder={t('tracking.scope.allClients')}
+            value={client}
+            onChange={(option) =>
+              setClient(option === null ? null : { id: option.id, label: option.label })
+            }
+            onSearch={setClientTerm}
+            options={clientOptions.map((c) => ({ id: c.id, label: c.name }))}
+            isLoading={clients.isFetching}
+          />
         }
       />
 
@@ -145,7 +137,12 @@ export function TrackingCenterPage() {
               <h2 id="tracking-sources" className="text-content text-lg font-semibold">
                 {t('tracking.sources.title')}
               </h2>
-              <SourceRegistration clientId={clientId} clients={clientOptions} />
+              <SourceRegistration
+                clientId={clientId}
+                clients={clientOptions}
+                onSearchClients={setClientTerm}
+                isSearching={clients.isFetching}
+              />
             </div>
 
             {health.data.sources.length === 0 ? (
@@ -302,6 +299,8 @@ export function TrackingCenterPage() {
           definition={editing === 'new' ? null : editing}
           clientId={clientId}
           clients={clientOptions}
+          onSearchClients={setClientTerm}
+          isSearching={clients.isFetching}
           sources={health.data?.sources ?? []}
           onClose={() => setEditing(null)}
         />

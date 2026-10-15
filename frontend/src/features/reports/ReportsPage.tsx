@@ -8,10 +8,10 @@ import { formatNumber } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
-import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { PageHeader } from '@/shared/ui/page-header';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import { csvUrl, xlsxUrl } from './api';
 import { ExportsPanel } from './ExportsPanel';
 import { ReportBuilder } from './ReportBuilder';
@@ -48,12 +48,15 @@ export function ReportsPage() {
   const canManage = can(PERMISSIONS.reportsManage);
   const canShare = can(PERMISSIONS.reportsShare);
 
-  const [clientId, setClientId] = useState<string | null>(null);
+  /* Searched, never listed: a hundred-client agency cannot be a row of buttons, and the 101st is not a typo. */
+  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
+  const [clientTerm, setClientTerm] = useState('');
+  const clientId = client?.id ?? null;
   const [selected, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<'new' | 'existing' | null>(null);
   const [freshToken, setFreshToken] = useState<string | null>(null);
 
-  const clients = useClientsQuery({ page: 1, per_page: 100, sort: 'name', direction: 'asc' });
+  const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const vocabulary = useReportVocabularyQuery(canView);
   const reports = useReportsQuery(clientId, canView);
   const rendered = useRenderedReportQuery(editing === null ? selected : null);
@@ -106,22 +109,17 @@ export function ReportsPage() {
           }
         />
 
-        <ChoiceGroup label={t('reports.scope.client')}>
-          <div className="flex flex-wrap gap-2">
-            <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
-              {t('reports.scope.allClients')}
-            </Choice>
-            {(clients.data?.data ?? []).map((client) => (
-              <Choice
-                key={client.id}
-                isSelected={clientId === client.id}
-                onSelect={() => setClientId(client.id)}
-              >
-                {client.name}
-              </Choice>
-            ))}
-          </div>
-        </ChoiceGroup>
+        <EntityPicker
+          label={t('reports.scope.client')}
+          clearLabel={t('actions.clear')}
+          value={client}
+          onChange={(option) =>
+            setClient(option === null ? null : { id: option.id, label: option.label })
+          }
+          onSearch={setClientTerm}
+          options={(clients.data?.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
+          isLoading={clients.isFetching}
+        />
       </header>
 
       {error === null ? null : <Alert tone="danger">{error}</Alert>}
@@ -189,6 +187,8 @@ export function ReportsPage() {
 
       {editing !== null ? (
         <ReportBuilder
+          onSearchClients={setClientTerm}
+          isSearching={clients.isFetching}
           /* Keyed, so switching between a new report and an edit cannot carry one's fields into the other. */
           key={editing === 'new' ? 'new' : (selected ?? 'existing')}
           vocabulary={vocabulary.data}

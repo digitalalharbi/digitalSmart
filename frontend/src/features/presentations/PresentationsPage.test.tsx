@@ -156,6 +156,12 @@ function deck(overrides: Partial<Deck> = {}): Deck {
   };
 }
 
+/** The client picker is a search box over the server's top few, not a row of every client. */
+async function chooseClient(name: string): Promise<void> {
+  await userEvent.type(await screen.findByRole('combobox', { name: /client/i }), name.slice(0, 3));
+  await userEvent.click(await screen.findByRole('option', { name }));
+}
+
 beforeEach(() => {
   permissions.current = ['reports.view'];
   state.vocabulary = vocabulary();
@@ -174,7 +180,7 @@ describe('PresentationsPage', () => {
   it('renders every slide the deck carries', async () => {
     await renderWithProviders(<PresentationsPage />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Alhambra' }));
+    await chooseClient('Alhambra');
 
     const deckRegion = await screen.findByRole('region', { name: 'Alhambra — Monthly report' });
     /* One article per slide, each labelled with its position so a reader can refer to it. */
@@ -185,7 +191,7 @@ describe('PresentationsPage', () => {
   it('shows the caveats as a slide', async () => {
     await renderWithProviders(<PresentationsPage />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Alhambra' }));
+    await chooseClient('Alhambra');
 
     /* In a room, read out loud: a footnote in six-point type is a footnote the projector crops. */
     expect(await screen.findByText('What these figures do not say')).toBeInTheDocument();
@@ -195,7 +201,7 @@ describe('PresentationsPage', () => {
   it('shows a figure with its change and its source, already formatted', async () => {
     await renderWithProviders(<PresentationsPage />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Alhambra' }));
+    await chooseClient('Alhambra');
 
     /* Formatted by the server, so the slide and the PowerPoint file cannot disagree about a rounding. */
     expect(await screen.findByText('SAR 1,250.00')).toBeInTheDocument();
@@ -205,7 +211,7 @@ describe('PresentationsPage', () => {
   it('says the theme is a placeholder', async () => {
     await renderWithProviders(<PresentationsPage />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Alhambra' }));
+    await chooseClient('Alhambra');
 
     /* A placeholder presented as an agency's brand is worse than an obvious placeholder. */
     expect(
@@ -216,7 +222,7 @@ describe('PresentationsPage', () => {
   it('explains why the PDF comes from the browser', async () => {
     await renderWithProviders(<PresentationsPage />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Alhambra' }));
+    await chooseClient('Alhambra');
 
     expect(await screen.findByRole('button', { name: /Save as PDF/ })).toBeInTheDocument();
     expect(screen.getByText(/a second renderer to disagree with this one/)).toBeInTheDocument();
@@ -225,7 +231,7 @@ describe('PresentationsPage', () => {
   it('offers PowerPoint as a plain link', async () => {
     await renderWithProviders(<PresentationsPage />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Alhambra' }));
+    await chooseClient('Alhambra');
 
     /* The browser downloads it, rather than JavaScript holding a deck in memory to hand back to itself. */
     const link = await screen.findByRole('link', { name: /Download PowerPoint/ });
@@ -248,7 +254,7 @@ describe('PresentationsPage', () => {
   it('publishes the deck it will not compose, with the reason', async () => {
     await renderWithProviders(<PresentationsPage />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Alhambra' }));
+    await chooseClient('Alhambra');
 
     const deferred = await screen.findByRole('region', { name: 'Not composed from this data' });
 

@@ -12,6 +12,7 @@ import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { PageHeader } from '@/shared/ui/page-header';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import { AnswerView } from './AnswerView';
 import {
   useAnalysisQuery,
@@ -44,12 +45,15 @@ export function AssistantPage() {
   const canReport = can(PERMISSIONS.reportsManage);
 
   const [mode, setMode] = useState<AssistantModeValue>('analyse');
-  const [clientId, setClientId] = useState<string | null>(null);
+  /* Searched, never listed: a hundred-client agency cannot be a row of buttons, and the 101st is not a typo. */
+  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
+  const [clientTerm, setClientTerm] = useState('');
+  const clientId = client?.id ?? null;
   const [days, setDays] = useState<number>(30);
   const [question, setQuestion] = useState('');
   const [investigating, setInvestigating] = useState<string | null>(null);
 
-  const clients = useClientsQuery({ per_page: 100 });
+  const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const vocabulary = useAssistantVocabularyQuery(canUse);
 
   const analysis = useAnalysisQuery(clientId, days, canUse && mode === 'analyse');
@@ -102,23 +106,17 @@ export function AssistantPage() {
       {error === null ? null : <Alert tone="danger">{error}</Alert>}
 
       <div className="flex flex-col gap-4">
-        <ChoiceGroup label={t('assistant.client')}>
-          <div className="flex flex-wrap gap-2">
-            {(clients.data?.data ?? []).map((client) => (
-              <Choice
-                key={client.id}
-                isSelected={clientId === client.id}
-                onSelect={() => {
-                  setClientId(client.id);
-                  setInvestigating(null);
-                  ask.reset();
-                }}
-              >
-                {client.name}
-              </Choice>
-            ))}
-          </div>
-        </ChoiceGroup>
+        <EntityPicker
+          label={t('assistant.client')}
+          clearLabel={t('actions.clear')}
+          value={client}
+          onChange={(option) =>
+            setClient(option === null ? null : { id: option.id, label: option.label })
+          }
+          onSearch={setClientTerm}
+          options={(clients.data?.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
+          isLoading={clients.isFetching}
+        />
 
         <ChoiceGroup label={t('assistant.period')}>
           <div className="flex flex-wrap gap-2">

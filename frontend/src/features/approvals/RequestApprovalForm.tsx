@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,6 +12,7 @@ import { Button } from '@/shared/ui/button';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import { useRequestApprovalMutation } from './useApprovals';
 import type { ApprovalKindValue, ApprovalVocabulary } from './types';
 
@@ -39,6 +40,8 @@ type RequestApprovalFormProps = {
   onOpenChange: (open: boolean) => void;
   vocabulary: ApprovalVocabulary | undefined;
   clients: { id: string; name: string }[];
+  onSearchClients: (term: string) => void;
+  isSearching?: boolean;
 };
 
 function defaults(): FormValues {
@@ -56,14 +59,19 @@ export function RequestApprovalForm({
   onOpenChange,
   vocabulary,
   clients,
+  onSearchClients,
+  isSearching = false,
 }: RequestApprovalFormProps) {
   const { t } = useTranslation();
+  /* Only the *label* is held here: the id lives in the form, so a reset clears the chosen client for free. */
+  const [clientLabel, setClientLabel] = useState('');
   const ask = useRequestApprovalMutation();
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: defaults() });
@@ -79,6 +87,9 @@ export function RequestApprovalForm({
   }, [open]);
 
   const kind = useWatch({ control, name: 'kind' });
+  const clientId = useWatch({ control, name: 'client_id' });
+  const client =
+    clientId === undefined || clientId === '' ? null : { id: clientId, label: clientLabel };
   const chosen = vocabulary?.kinds.find((entry) => entry.kind === kind);
 
   const onSubmit = handleSubmit(async (values) => {
@@ -188,22 +199,26 @@ export function RequestApprovalForm({
               {(field) => <Textarea {...field} {...register('rationale')} rows={3} />}
             </Field>
 
-            <Field label={t('approvals.form.client')} error={errors.client_id?.message}>
-              {(field) => (
-                <select
-                  {...field}
-                  {...register('client_id')}
-                  className="border-line bg-surface text-content h-9 w-full rounded-md border px-3 text-sm"
-                >
-                  <option value="">{t('approvals.form.noClient')}</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name}
-                    </option>
-                  ))}
-                </select>
+            <div className="flex flex-col gap-1">
+              <EntityPicker
+                label={t('approvals.form.client')}
+                clearLabel={t('actions.clear')}
+                placeholder={t('approvals.form.noClient')}
+                value={client}
+                onChange={(option) => {
+                  setClientLabel(option?.label ?? '');
+                  setValue('client_id', option?.id ?? '', { shouldValidate: true });
+                }}
+                onSearch={onSearchClients}
+                options={clients.map((c) => ({ id: c.id, label: c.name }))}
+                isLoading={isSearching}
+              />
+              {errors.client_id?.message === undefined ? null : (
+                <p role="alert" className="text-danger text-xs">
+                  {errors.client_id.message}
+                </p>
               )}
-            </Field>
+            </div>
 
             <fieldset className="flex flex-col gap-2">
               <legend className="text-content text-sm font-medium">

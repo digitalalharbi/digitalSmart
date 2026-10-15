@@ -12,6 +12,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import { PageHeader } from '@/shared/ui/page-header';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import type { MetricSourceValue } from '@/shared/metrics';
 import { pptxUrl } from './api';
 import { SlideView } from './SlideView';
@@ -39,11 +40,14 @@ export function PresentationsPage() {
   const canUse = can(PERMISSIONS.reportsView);
 
   const [kind, setKind] = useState<DeckKindValue>('monthly_report');
-  const [clientId, setClientId] = useState<string | null>(null);
+  /* Searched, never listed: a hundred-client agency cannot be a row of buttons, and the 101st is not a typo. */
+  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
+  const [clientTerm, setClientTerm] = useState('');
+  const clientId = client?.id ?? null;
   const [budgetId, setBudgetId] = useState<string | null>(null);
 
   const vocabulary = usePresentationVocabularyQuery(canUse);
-  const clients = useClientsQuery({ per_page: 100 });
+  const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const budgets = useBudgetsQuery({}, canUse);
 
   const kindInfo = useMemo(
@@ -120,19 +124,17 @@ export function PresentationsPage() {
             </ChoiceGroup>
           )
         ) : (
-          <ChoiceGroup label={t('presentations.client')}>
-            <div className="flex flex-wrap gap-2">
-              {(clients.data?.data ?? []).map((client) => (
-                <Choice
-                  key={client.id}
-                  isSelected={clientId === client.id}
-                  onSelect={() => setClientId(client.id)}
-                >
-                  {client.name}
-                </Choice>
-              ))}
-            </div>
-          </ChoiceGroup>
+          <EntityPicker
+            label={t('presentations.client')}
+            clearLabel={t('actions.clear')}
+            value={client}
+            onChange={(option) =>
+              setClient(option === null ? null : { id: option.id, label: option.label })
+            }
+            onSearch={setClientTerm}
+            options={(clients.data?.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
+            isLoading={clients.isFetching}
+          />
         )}
       </div>
 

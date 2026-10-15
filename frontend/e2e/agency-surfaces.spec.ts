@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { ACCOUNTS, signIn } from './support/accounts';
+import { chooseClient } from './support/pickers';
 
 /**
  * The agency-wide surfaces, end to end: they open, say what they are, and survive the states a real agency
@@ -87,7 +88,7 @@ test.describe('agency surfaces', () => {
     /* Its own project, so the test does not depend on what other specs left behind. */
     const name = `E2E Workspace ${String(Date.now())}`;
     await page.getByRole('button', { name: 'New project' }).click();
-    await page.getByLabel('Client').selectOption({ index: 1 });
+    await chooseClient(page.getByRole('dialog'));
     await page.getByLabel('Project name').fill(name);
     await page.getByRole('button', { name: 'Save' }).click();
 

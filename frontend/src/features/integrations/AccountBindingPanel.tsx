@@ -8,6 +8,7 @@ import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { LoadingRegion } from '@/shared/ui/loading-region';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import {
   useBindAccountMutation,
@@ -21,6 +22,7 @@ import { ProviderLogo } from './ProviderLogo';
 type AccountBindingPanelProps = {
   projects: { id: string; name: string; clientName: string }[];
   isLoadingProjects: boolean;
+  onSearchProjects: (term: string) => void;
 };
 
 /**
@@ -31,10 +33,15 @@ type AccountBindingPanelProps = {
  * The copy says so, because someone granting access should understand what
  * they are doing.
  */
-export function AccountBindingPanel({ projects, isLoadingProjects }: AccountBindingPanelProps) {
+export function AccountBindingPanel({
+  projects,
+  isLoadingProjects,
+  onSearchProjects,
+}: AccountBindingPanelProps) {
   const { t } = useTranslation();
   const { can } = useSession();
-  const [projectId, setProjectId] = useState<string>('');
+  const [project, setProject] = useState<{ id: string; label: string } | null>(null);
+  const projectId = project?.id ?? '';
 
   const { data: accounts, isPending: loadingAccounts } = useExternalAccountsQuery();
   const { data: bindings, isPending: loadingBindings } = useProjectBindingsQuery(
@@ -60,22 +67,24 @@ export function AccountBindingPanel({ projects, isLoadingProjects }: AccountBind
 
       {error ? <Alert tone="danger">{error.message}</Alert> : null}
 
-      <label className="flex max-w-sm flex-col gap-1.5">
-        <span className="text-content text-sm font-medium">{t('integrations.chooseProject')}</span>
-        <select
-          value={projectId}
-          disabled={isLoadingProjects}
-          onChange={(event) => setProjectId(event.target.value)}
-          className="border-line bg-surface text-content h-9 w-full rounded-md border px-3 text-sm"
-        >
-          <option value="">{t('integrations.selectProject')}</option>
-          {projects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.clientName} — {project.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="max-w-sm">
+        <EntityPicker
+          label={t('integrations.chooseProject')}
+          clearLabel={t('actions.clear')}
+          placeholder={t('integrations.selectProject')}
+          value={project}
+          onChange={(option) =>
+            setProject(option === null ? null : { id: option.id, label: option.label })
+          }
+          onSearch={onSearchProjects}
+          options={projects.map((p) => ({
+            id: p.id,
+            label: p.name,
+            context: p.clientName,
+          }))}
+          isLoading={isLoadingProjects}
+        />
+      </div>
 
       {projectId === '' ? (
         <EmptyState

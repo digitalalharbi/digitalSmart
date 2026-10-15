@@ -8,6 +8,7 @@ import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import {
   useDeleteConversionMutation,
   useSaveConversionMutation,
@@ -53,12 +54,16 @@ export function ConversionEditor({
   definition,
   clientId,
   clients,
+  onSearchClients,
+  isSearching = false,
   sources,
   onClose,
 }: {
   definition: EventDefinition | null;
   clientId: string | null;
   clients: Client[];
+  onSearchClients: (term: string) => void;
+  isSearching?: boolean;
   sources: MeasurementSource[];
   onClose: () => void;
 }) {
@@ -67,6 +72,7 @@ export function ConversionEditor({
   const save = useSaveConversionMutation();
   const remove = useDeleteConversionMutation();
 
+  const [pickedLabel, setPickedLabel] = useState<string | null>(null);
   const [draft, setDraft] = useState<ConversionDraft>(() => ({
     /*
      * No fallback to the first client in the list — deliberately, and it used to have one.
@@ -207,23 +213,29 @@ export function ConversionEditor({
         </Field>
 
         {clientId === null ? (
-          <Field label={t('tracking.register.client')}>
-            {(props) => (
-              <select
-                {...props}
-                className="border-line bg-surface text-content rounded-lg border px-3 py-2 text-sm"
-                value={draft.client_id}
-                onChange={(event) => update({ client_id: event.target.value })}
-              >
-                <option value="">{t('tracking.register.chooseClient')}</option>
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name}
-                  </option>
-                ))}
-              </select>
-            )}
-          </Field>
+          <EntityPicker
+            label={t('tracking.register.client')}
+            clearLabel={t('actions.clear')}
+            placeholder={t('tracking.register.chooseClient')}
+            value={
+              draft.client_id === ''
+                ? null
+                : {
+                    id: draft.client_id,
+                    label:
+                      pickedLabel ??
+                      clients.find((c) => c.id === draft.client_id)?.name ??
+                      t('tracking.register.chosen'),
+                  }
+            }
+            onChange={(option) => {
+              setPickedLabel(option?.label ?? null);
+              update({ client_id: option?.id ?? '' });
+            }}
+            onSearch={onSearchClients}
+            options={clients.map((c) => ({ id: c.id, label: c.name }))}
+            isLoading={isSearching}
+          />
         ) : null}
       </div>
 

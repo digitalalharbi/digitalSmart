@@ -34,6 +34,7 @@ vi.mock('@/features/projects', () => ({
       data: [{ id: 'p1', name: 'Ramadan Campaign', client: { id: 'c1', name: 'Alhambra Retail' } }],
     },
     isPending: false,
+    isFetching: false,
   }),
 }));
 
@@ -206,7 +207,8 @@ describe('IntegrationsPage', () => {
     const user = userEvent.setup();
     await renderWithProviders(<IntegrationsPage />);
 
-    await user.selectOptions(screen.getByLabelText('Project'), 'p1');
+    await user.type(screen.getByRole('combobox', { name: 'Project' }), 'Ra');
+    await user.click(await screen.findByRole('option', { name: /Ramadan Campaign/ }));
     await user.click(screen.getByRole('button', { name: 'Grant access' }));
 
     expect(bind).toHaveBeenCalledWith({ projectId: 'p1', accountId: 'a1' });
@@ -217,7 +219,8 @@ describe('IntegrationsPage', () => {
     const user = userEvent.setup();
     await renderWithProviders(<IntegrationsPage />);
 
-    await user.selectOptions(screen.getByLabelText('Project'), 'p1');
+    await user.type(screen.getByRole('combobox', { name: 'Project' }), 'Ra');
+    await user.click(await screen.findByRole('option', { name: /Ramadan Campaign/ }));
 
     expect(screen.getByRole('button', { name: 'Grant access' })).toBeDisabled();
     expect(screen.getByText('Disabled')).toBeInTheDocument();
@@ -244,7 +247,8 @@ describe('IntegrationsPage', () => {
     const user = userEvent.setup();
     await renderWithProviders(<IntegrationsPage />);
 
-    await user.selectOptions(screen.getByLabelText('Project'), 'p1');
+    await user.type(screen.getByRole('combobox', { name: 'Project' }), 'Ra');
+    await user.click(await screen.findByRole('option', { name: /Ramadan Campaign/ }));
 
     const row = within(screen.getByRole('list', { name: 'Discovered ad accounts' })).getByRole(
       'listitem',
@@ -260,7 +264,8 @@ describe('IntegrationsPage', () => {
     const user = userEvent.setup();
     await renderWithProviders(<IntegrationsPage />);
 
-    await user.selectOptions(screen.getByLabelText('Project'), 'p1');
+    await user.type(screen.getByRole('combobox', { name: 'Project' }), 'Ra');
+    await user.click(await screen.findByRole('option', { name: /Ramadan Campaign/ }));
 
     expect(screen.queryByRole('button', { name: 'Grant access' })).not.toBeInTheDocument();
   });

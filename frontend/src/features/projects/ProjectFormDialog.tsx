@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ import { Button } from '@/shared/ui/button';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import { useClientsQuery } from '@/features/clients';
 import { useCreateProjectMutation, useUpdateProjectMutation } from './api';
 import type { Project, ProjectPayload } from './types';
@@ -56,15 +57,22 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
   const mutation = isEditing ? update : create;
 
   // Only the clients the viewer may see can be chosen as a parent.
-  const { data: clients } = useClientsQuery({ per_page: 100 });
+  const [clientTerm, setClientTerm] = useState('');
+  const [clientLabel, setClientLabel] = useState('');
+  const { data: clients, isFetching } = useClientsQuery({ search: clientTerm, per_page: 8 });
 
   const {
     register,
     handleSubmit,
     reset,
     setError,
+    setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: toDefaults(project) });
+
+  const watchedClient = useWatch({ control, name: 'client_id' });
+  const chosenClient = watchedClient === '' ? null : { id: watchedClient, label: clientLabel };
 
   useEffect(() => {
     if (open) {
@@ -139,28 +147,36 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
           >
             {serverError ? <Alert tone="danger">{serverError}</Alert> : null}
 
-            <Field
-              label={t('projects.fields.client')}
-              required
-              error={errors.client_id?.message}
-              hint={isEditing ? t('projects.fields.clientLocked') : undefined}
-            >
-              {(field) => (
-                <select
-                  {...field}
-                  {...register('client_id')}
-                  disabled={isEditing}
-                  className="border-line bg-surface text-content h-9 w-full rounded-md border px-3 text-sm disabled:opacity-60"
-                >
-                  <option value="">{t('projects.fields.selectClient')}</option>
-                  {clients?.data.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </Field>
+            {isEditing ? (
+              <div className="flex flex-col gap-1">
+                <span className="text-content text-sm font-medium">
+                  {t('projects.fields.client')}
+                </span>
+                <p className="text-content text-sm">{project.client.name}</p>
+                <p className="text-content-tertiary text-xs">{t('projects.fields.clientLocked')}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <EntityPicker
+                  label={t('projects.fields.client')}
+                  clearLabel={t('actions.clear')}
+                  placeholder={t('projects.fields.selectClient')}
+                  value={chosenClient}
+                  onChange={(option) => {
+                    setClientLabel(option?.label ?? '');
+                    setValue('client_id', option?.id ?? '', { shouldValidate: true });
+                  }}
+                  onSearch={setClientTerm}
+                  options={(clients?.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
+                  isLoading={isFetching}
+                />
+                {errors.client_id?.message === undefined ? null : (
+                  <p role="alert" className="text-danger text-xs">
+                    {errors.client_id.message}
+                  </p>
+                )}
+              </div>
+            )}
 
             <Field label={t('projects.fields.name')} required error={errors.name?.message}>
               {(field) => <Input {...field} {...register('name')} />}

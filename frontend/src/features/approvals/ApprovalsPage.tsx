@@ -16,6 +16,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { LiveBadge } from '@/shared/ui/live-badge';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { PageHeader } from '@/shared/ui/page-header';
+import { EntityPicker } from '@/shared/ui/entity-picker';
 import { ApprovalDetail } from './ApprovalDetail';
 import { KindBreakdown } from './KindBreakdown';
 import { RequestApprovalForm } from './RequestApprovalForm';
@@ -53,12 +54,15 @@ export function ApprovalsPage() {
   const canRequest = can(PERMISSIONS.approvalsRequest);
   const canCarryOut = can(PERMISSIONS.providerWritesExecute);
 
-  const [clientId, setClientId] = useState<string | null>(null);
+  /* Searched, never listed: a hundred-client agency cannot be a row of buttons, and the 101st is not a typo. */
+  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
+  const [clientTerm, setClientTerm] = useState('');
+  const clientId = client?.id ?? null;
   const [spendOnly, setSpendOnly] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
 
-  const clients = useClientsQuery({ page: 1, per_page: 100, sort: 'name', direction: 'asc' });
+  const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const vocabulary = useApprovalVocabularyQuery(canView);
   const queue = useApprovalQueueQuery({ clientId, spendOnly }, canView);
   const request = useApprovalQuery(selected);
@@ -151,22 +155,17 @@ export function ApprovalsPage() {
         actions={<LiveBadge isLive={isLive} />}
         filters={
           <div className="flex flex-wrap gap-6">
-            <ChoiceGroup label={t('approvals.scope.client')}>
-              <div className="flex flex-wrap gap-2">
-                <Choice isSelected={clientId === null} onSelect={() => setClientId(null)}>
-                  {t('approvals.scope.allClients')}
-                </Choice>
-                {(clients.data?.data ?? []).map((client) => (
-                  <Choice
-                    key={client.id}
-                    isSelected={clientId === client.id}
-                    onSelect={() => setClientId(client.id)}
-                  >
-                    {client.name}
-                  </Choice>
-                ))}
-              </div>
-            </ChoiceGroup>
+            <EntityPicker
+              label={t('approvals.scope.client')}
+              clearLabel={t('actions.clear')}
+              value={client}
+              onChange={(option) =>
+                setClient(option === null ? null : { id: option.id, label: option.label })
+              }
+              onSearch={setClientTerm}
+              options={(clients.data?.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
+              isLoading={clients.isFetching}
+            />
 
             <ChoiceGroup label={t('approvals.scope.what')}>
               <div className="flex flex-wrap gap-2">
@@ -326,6 +325,8 @@ export function ApprovalsPage() {
       />
 
       <RequestApprovalForm
+        onSearchClients={setClientTerm}
+        isSearching={clients.isFetching}
         open={asking}
         onOpenChange={setAsking}
         vocabulary={vocabulary.data}
