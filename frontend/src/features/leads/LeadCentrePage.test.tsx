@@ -230,6 +230,12 @@ function centre(overrides: Partial<LeadCentre> = {}): LeadCentre {
   };
 }
 
+/** The page opens on the pipeline; the review table is one choice away, and these tests are about the table. */
+async function renderList(): Promise<void> {
+  await renderWithProviders(<LeadCentrePage />);
+  await userEvent.click(await screen.findByRole('button', { name: 'List' }));
+}
+
 /** The client picker is a search box over the server's top few, not a row of every client. */
 async function chooseClient(term: string): Promise<void> {
   await userEvent.type(await screen.findByRole('combobox', { name: 'Client' }), term);
@@ -297,7 +303,7 @@ beforeEach(() => {
 
 describe('the Lead Center', () => {
   it('shows the leads and the counted taps without a ratio between them', async () => {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const signals = await screen.findByRole('region', { name: 'Taps and forms begun' });
 
@@ -319,7 +325,7 @@ describe('the Lead Center', () => {
   });
 
   it('leaves qualified out of the funnel and says why', async () => {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const pipeline = await screen.findByRole('region', { name: 'How far leads got' });
 
@@ -332,7 +338,7 @@ describe('the Lead Center', () => {
   });
 
   it('divides wins by closed leads, and says so beside the figure', async () => {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const pipeline = await screen.findByRole('region', { name: 'How far leads got' });
 
@@ -350,7 +356,7 @@ describe('the Lead Center', () => {
       funnel: funnel({ win_rate: null, closed: 0, won: 0, lost: 0, disqualified: 0 }),
     });
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     /*
      * `0%` and "nothing has closed" look identical on a card and mean opposite things: the
@@ -370,7 +376,7 @@ describe('the Lead Center', () => {
       }),
     });
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     // A dash with no explanation reads as a bug. The reason is a fact somebody can act on.
     expect(await screen.findByText(/2 different currencies/)).toBeInTheDocument();
@@ -378,7 +384,7 @@ describe('the Lead Center', () => {
   });
 
   it('marks a hand-entered route as not measured', async () => {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const bySource = await screen.findByRole('region', { name: 'By route' });
 
@@ -393,7 +399,7 @@ describe('the Lead Center', () => {
   });
 
   it('keeps the unattributed campaign row in the breakdown', async () => {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const byCampaign = await screen.findByRole('region', { name: 'By campaign' });
 
@@ -407,7 +413,7 @@ describe('the Lead Center', () => {
   });
 
   it('shows a lead nobody has contacted as waiting, not as zero hours', async () => {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const row = await screen.findByRole('row', { name: /Layla Al-Harbi/ });
 
@@ -416,7 +422,7 @@ describe('the Lead Center', () => {
   });
 
   it('asks why before it lets somebody disqualify a lead', async () => {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const row = await screen.findByRole('row', { name: /Layla Al-Harbi/ });
 
@@ -439,7 +445,7 @@ describe('the Lead Center', () => {
   it('offers no move controls to a role that may only read', async () => {
     permissions.current = ['leads.view'];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const row = await screen.findByRole('row', { name: /Layla Al-Harbi/ });
 
@@ -489,7 +495,7 @@ describe('the Lead Center', () => {
       limitations: ['The marketing before this enquiry is not available to this product.'],
     };
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const row = await screen.findByRole('row', { name: /Layla Al-Harbi/ });
     await userEvent.click(within(row).getByRole('button', { name: 'Layla Al-Harbi' }));
@@ -518,7 +524,7 @@ describe('a lead the CRM owns', () => {
       }),
     ];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const table = await screen.findByRole('table', { name: /Leads, with their route/ });
 
@@ -537,7 +543,7 @@ describe('a lead the CRM owns', () => {
   it('still offers the controls on a lead from anywhere else', async () => {
     state.leads = [lead({ id: 'lead-form', source_kind: 'form_submission' })];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     const table = await screen.findByRole('table', { name: /Leads, with their route/ });
 
@@ -552,7 +558,7 @@ describe('two leads, one person', () => {
    * and the one time it has something to say it will be ignored too.
    */
   it('says nothing at all when no lead shares a contact point', async () => {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
 
@@ -562,7 +568,7 @@ describe('two leads, one person', () => {
   it('names the contact point that matched, never a similarity', async () => {
     state.duplicates = [duplicate()];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
 
@@ -580,7 +586,7 @@ describe('two leads, one person', () => {
   it('offers only the two stages the leads are in', async () => {
     state.duplicates = [duplicate()];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Merge with this' }));
@@ -595,7 +601,7 @@ describe('two leads, one person', () => {
   it('states what the merge will do before it is done', async () => {
     state.duplicates = [duplicate()];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Merge with this' }));
@@ -607,7 +613,7 @@ describe('two leads, one person', () => {
   it('will not merge until a surviving stage is chosen', async () => {
     state.duplicates = [duplicate()];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Merge with this' }));
@@ -632,7 +638,7 @@ describe('two leads, one person', () => {
     permissions.current = ['leads.view'];
     state.duplicates = [duplicate()];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
 
@@ -643,7 +649,7 @@ describe('two leads, one person', () => {
 
 describe('working a lead', () => {
   async function openLead() {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
   }
 
@@ -761,7 +767,7 @@ describe('what has happened to a lead', () => {
   it('shows a note that was written', async () => {
     state.history = [entry()];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
 
     expect(await screen.findByText('Rang twice, no answer.')).toBeInTheDocument();
@@ -786,7 +792,7 @@ describe('what has happened to a lead', () => {
       }),
     ];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
 
     expect(await screen.findByText('recorded by the system')).toBeInTheDocument();
@@ -794,7 +800,7 @@ describe('what has happened to a lead', () => {
   });
 
   it('says nothing is recorded rather than showing an empty list', async () => {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
 
     expect(await screen.findByText('Nothing recorded yet')).toBeInTheDocument();
@@ -805,7 +811,7 @@ describe('what has happened to a lead', () => {
     permissions.current = ['leads.view'];
     state.history = [entry()];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
     await userEvent.click(await screen.findByRole('button', { name: 'Layla Al-Harbi' }));
 
     expect(await screen.findByText('Rang twice, no answer.')).toBeInTheDocument();
@@ -826,7 +832,7 @@ describe('reading a CRM', () => {
    * advertisement, and the place to connect a provider is the integrations page.
    */
   it('says nothing when no CRM is connected', async () => {
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     await screen.findByRole('heading', { level: 1 });
 
@@ -840,7 +846,7 @@ describe('reading a CRM', () => {
   it('asks for a client before offering to read anything', async () => {
     state.crmProviders = [hubspot];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     expect(await screen.findByText('Deals in HubSpot')).toBeInTheDocument();
     expect(screen.getByText(/Choose a client above first/)).toBeInTheDocument();
@@ -850,7 +856,7 @@ describe('reading a CRM', () => {
   it('reads for the chosen client, and reports what it left alone', async () => {
     state.crmProviders = [hubspot];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     await chooseClient('Noon');
     await userEvent.click(screen.getByRole('button', { name: 'Read the deals' }));
@@ -871,7 +877,7 @@ describe('reading a CRM', () => {
   it('never lets a sandbox read pass as the client’s own pipeline', async () => {
     state.crmProviders = [hubspot];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     await chooseClient('Noon');
     await userEvent.click(screen.getByRole('button', { name: 'Read the deals' }));
@@ -883,10 +889,20 @@ describe('reading a CRM', () => {
     permissions.current = ['leads.view'];
     state.crmProviders = [hubspot];
 
-    await renderWithProviders(<LeadCentrePage />);
+    await renderList();
 
     await screen.findByRole('heading', { level: 1 });
 
     expect(screen.queryByText(/Deals in/)).not.toBeInTheDocument();
+  });
+
+  it('opens on the pipeline, one column per stage, with a card per enquiry', async () => {
+    await renderWithProviders(<LeadCentrePage />);
+
+    const board = await screen.findByRole('region', { name: 'Pipeline' });
+
+    expect(within(board).getByRole('region', { name: 'New' })).toBeInTheDocument();
+    expect(within(board).getByRole('region', { name: 'Won' })).toBeInTheDocument();
+    expect(within(board).getAllByRole('article').length).toBeGreaterThan(0);
   });
 });

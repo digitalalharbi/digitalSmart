@@ -22,6 +22,7 @@ import { LeadHistoryPanel } from './LeadHistoryPanel';
 import { LeadWorkPanel } from './LeadWorkPanel';
 import { MergePanel } from './MergePanel';
 import { PipelineChart } from './PipelineChart';
+import { PipelineBoard } from './PipelineBoard';
 import { PipelineList } from './PipelineList';
 import { SignalsPanel } from './SignalsPanel';
 import {
@@ -57,7 +58,7 @@ const AUDIENCES: LeadAudience[] = ['all', 'my_clients', 'my_projects', 'mine'];
  * the credit — are deliberately absent rather than approximated.
  */
 export function LeadCentrePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { can } = useSession();
 
   const [days, setDays] = useState<(typeof PERIODS)[number]>(30);
@@ -71,6 +72,8 @@ export function LeadCentrePage() {
   const clientId = client?.id ?? null;
   const projectId = project?.id ?? null;
   const [selectedLead, setSelectedLead] = useState<string | null>(null);
+  /* Pipeline first: the question a board answers is "where is everybody", and the table is for review. */
+  const [view, setView] = useState<'board' | 'list'>('board');
 
   const canView = can(PERMISSIONS.leadsView);
   const canManage = can(PERMISSIONS.leadsManage);
@@ -310,23 +313,52 @@ export function LeadCentrePage() {
       )}
 
       <div className="grid gap-6 xl:grid-cols-[2fr_1fr]">
-        <PipelineList
-          leads={leads.data}
-          isLoading={leads.isPending}
-          selectedId={selectedLead}
-          onSelect={setSelectedLead}
-          onMove={(leadId, stage: LeadStage, reason) =>
-            move.mutate({ leadId, stage, ...(reason === undefined ? {} : { reason }) })
-          }
-          canMove={canManage}
-          moveError={
-            move.error instanceof ApiError && move.error.message !== ''
-              ? move.error.message
-              : move.isError
-                ? t('leads.list.moveFailed')
-                : null
-          }
-        />
+        <div className="flex min-w-0 flex-col gap-3">
+          <div className="flex gap-2" role="group" aria-label={t('leads.board.label')}>
+            <Choice isSelected={view === 'board'} onSelect={() => setView('board')}>
+              {t('leads.board.viewBoard')}
+            </Choice>
+            <Choice isSelected={view === 'list'} onSelect={() => setView('list')}>
+              {t('leads.board.viewList')}
+            </Choice>
+          </div>
+          {view === 'board' ? (
+            <PipelineBoard
+              leads={leads.data}
+              isLoading={leads.isPending}
+              selectedId={selectedLead}
+              onSelect={setSelectedLead}
+              onMove={(leadId, stage) => move.mutate({ leadId, stage })}
+              canMove={canManage}
+              locale={i18n.language}
+            />
+          ) : null}
+          {view === 'list' ? (
+            <PipelineList
+              leads={leads.data}
+              isLoading={leads.isPending}
+              selectedId={selectedLead}
+              onSelect={setSelectedLead}
+              onMove={(leadId, stage: LeadStage, reason) =>
+                move.mutate({ leadId, stage, ...(reason === undefined ? {} : { reason }) })
+              }
+              canMove={canManage}
+              moveError={
+                move.error instanceof ApiError && move.error.message !== ''
+                  ? move.error.message
+                  : move.isError
+                    ? t('leads.list.moveFailed')
+                    : null
+              }
+            />
+          ) : move.isError ? (
+            <Alert tone="danger">
+              {move.error instanceof ApiError && move.error.message !== ''
+                ? move.error.message
+                : t('leads.list.moveFailed')}
+            </Alert>
+          ) : null}
+        </div>
 
         <div className="flex flex-col gap-6">
           <JourneyPanel

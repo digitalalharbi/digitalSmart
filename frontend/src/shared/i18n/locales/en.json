@@ -1275,6 +1275,24 @@
       "my_clients": "My clients",
       "my_projects": "My projects",
       "mine": "My leads"
+    },
+    "board": {
+      "label": "Pipeline",
+      "empty": "Nothing here",
+      "unnamed": "Unnamed enquiry",
+      "unowned": "Unassigned",
+      "move": "Move to…",
+      "moveTo": "Move {{name}} to",
+      "viewBoard": "Pipeline",
+      "viewList": "List",
+      "stage": {
+        "new": "New",
+        "contacted": "Contacted",
+        "qualified": "Qualified",
+        "won": "Won",
+        "lost": "Lost",
+        "disqualified": "Disqualified"
+      }
     }
   },
   "attribution": {

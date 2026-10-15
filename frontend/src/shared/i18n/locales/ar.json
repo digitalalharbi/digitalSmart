@@ -1302,6 +1302,24 @@
       "my_clients": "عملائي",
       "my_projects": "مشاريعي",
       "mine": "عملائي المحتملون"
+    },
+    "board": {
+      "label": "مسار المبيعات",
+      "empty": "لا شيء هنا",
+      "unnamed": "استفسار بلا اسم",
+      "unowned": "غير مُسند",
+      "move": "انقل إلى…",
+      "moveTo": "انقل {{name}} إلى",
+      "viewBoard": "المسار",
+      "viewList": "قائمة",
+      "stage": {
+        "new": "جديد",
+        "contacted": "تم التواصل",
+        "qualified": "مؤهَّل",
+        "won": "مكسوب",
+        "lost": "خاسر",
+        "disqualified": "مستبعد"
+      }
     }
   },
   "attribution": {
