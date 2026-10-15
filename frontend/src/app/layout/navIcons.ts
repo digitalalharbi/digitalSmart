@@ -22,6 +22,7 @@ import {
   Radar,
   Settings2,
   ShoppingBag,
+  Store,
   Sparkles,
   UserRoundSearch,
   type LucideIcon,
@@ -62,6 +63,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   Radar,
   Settings2,
   ShoppingBag,
+  Store,
   Sparkles,
   UserRoundSearch,
 };

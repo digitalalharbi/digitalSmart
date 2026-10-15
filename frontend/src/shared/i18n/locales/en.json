@@ -33,7 +33,8 @@
     "attribution": "Attribution",
     "requests": "Requests",
     "portfolio": "Portfolio",
-    "budgetControl": "Budget control"
+    "budgetControl": "Budget control",
+    "stores": "Stores"
   },
   "actions": {
     "search": "Search",
@@ -2560,5 +2561,27 @@
     "save": "Save view",
     "delete": "Delete {{name}}",
     "failed": "The view could not be saved."
+  },
+  "commerceRollup": {
+    "title": "Stores across clients",
+    "subtitle": "Every store you may see, one row each, in its own currency. Nothing here is added across stores.",
+    "source": "Revenue authority",
+    "clear": "Clear",
+    "loadFailed": "The stores could not be loaded.",
+    "empty": {
+      "title": "No stores yet",
+      "body": "Connect a store to a client and its orders appear here."
+    },
+    "col": {
+      "store": "Store",
+      "client": "Client",
+      "orders": "Orders",
+      "revenue": "Revenue",
+      "net": "Net of refunds",
+      "aov": "Average order",
+      "attributed": "Traced to marketing"
+    },
+    "inactive": "Not syncing",
+    "note": "Revenue is the store’s own invoiced figure for the chosen authority. “Traced to marketing” counts orders that carried any attribution evidence, which is weaker than naming a campaign."
   }
 }

@@ -35,6 +35,7 @@ import {
   RequestsPage,
   SharedReportPage,
   StoreAnalyticsPage,
+  StoresRollupPage,
   TrackingCenterPage,
 } from '@/app/router/lazyPages';
 import { SurfaceFallback } from '@/app/router/SurfaceFallback';
@@ -76,6 +77,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
    */
   '/notifications': <NotificationsPage />,
   '/commerce': deferred(<StoreAnalyticsPage />),
+  '/commerce/stores': deferred(<StoresRollupPage />),
 };
 
 const featureRoutes: RouteObject[] = NAV_ITEMS.filter((item) => item.path !== '/').map((item) => ({

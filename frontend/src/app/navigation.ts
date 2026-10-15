@@ -133,6 +133,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'analytics.view',
   },
   {
+    path: '/commerce/stores',
+    labelKey: 'nav.stores',
+    icon: 'Store',
+    section: 'intelligence',
+    phase: 'Phase 14',
+    permission: 'analytics.view',
+  },
+  {
     path: '/attribution',
     labelKey: 'nav.attribution',
     icon: 'GitBranch',

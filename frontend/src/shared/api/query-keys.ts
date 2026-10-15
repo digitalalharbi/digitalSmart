@@ -90,6 +90,7 @@ export const queryKeys = {
   },
   commerce: {
     all: () => ['commerce'] as const,
+    rollup: (params: Record<string, unknown>) => ['commerce', 'rollup', params] as const,
     /*
      * Keyed by the whole query, revenue source included. Changing the source does not refine the answer,
      * it asks a different question — and caching two authorities under one key would show one total under
