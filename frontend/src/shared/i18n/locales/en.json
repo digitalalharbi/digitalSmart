@@ -2253,6 +2253,22 @@
       "all": "Everything I can see",
       "my_clients": "My clients",
       "my_projects": "My projects"
+    },
+    "group": {
+      "label": "Group by area",
+      "all": "All ({{count}})",
+      "campaigns": "{{count}} campaign needs attention",
+      "campaigns_other": "{{count}} campaigns need attention",
+      "budgets": "{{count}} budget at risk",
+      "budgets_other": "{{count}} budgets at risk",
+      "tracking": "{{count}} tracking problem",
+      "tracking_other": "{{count}} tracking problems",
+      "approvals": "{{count}} approval waiting",
+      "approvals_other": "{{count}} approvals waiting",
+      "requests": "{{count}} client request",
+      "requests_other": "{{count}} client requests",
+      "tasks": "{{count}} task overdue",
+      "tasks_other": "{{count}} tasks overdue"
     }
   },
   "activity": {

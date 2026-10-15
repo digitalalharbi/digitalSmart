@@ -10,7 +10,12 @@ import type { AttentionItem as ListItem } from '@/shared/ui/attention.model';
 import { Badge } from '@/shared/ui/badge';
 import { PageSection } from '@/shared/ui/page-header';
 import { useAttentionQuery } from './useAttention';
-import type { AttentionAudience, AttentionItem, AttentionQueue } from './types';
+import type {
+  AttentionAudience,
+  AttentionItem,
+  AttentionQueue,
+  AttentionStreamValue,
+} from './types';
 
 const AUDIENCES: AttentionAudience[] = ['all', 'my_clients', 'my_projects'];
 
@@ -38,6 +43,7 @@ const SEVERITY = {
 export function AttentionPanel({ limit = 6 }: { limit?: number | undefined }) {
   const { t, i18n } = useTranslation();
   const [audience, setAudience] = useState<AttentionAudience>('all');
+  const [stream, setStream] = useState<AttentionStreamValue | null>(null);
   const { data, isPending, isError, error } = useAttentionQuery([], 50, audience);
 
   /*
@@ -61,7 +67,15 @@ export function AttentionPanel({ limit = 6 }: { limit?: number | undefined }) {
     return null;
   }
 
-  const items = data === undefined ? [] : data.data.map(toListItem);
+  /* Counted from the one response: grouping is a way of reading the list, not another request. */
+  const groups = new Map<AttentionStreamValue, number>();
+
+  for (const item of data?.data ?? []) {
+    groups.set(item.stream, (groups.get(item.stream) ?? 0) + 1);
+  }
+
+  const visible = (data?.data ?? []).filter((item) => stream === null || item.stream === stream);
+  const items = visible.map(toListItem);
   const criticals = data?.meta.severity_counts.critical ?? 0;
 
   return (
@@ -89,6 +103,19 @@ export function AttentionPanel({ limit = 6 }: { limit?: number | undefined }) {
           </Choice>
         ))}
       </div>
+
+      {groups.size < 2 ? null : (
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t('attention.group.label')}>
+          <Choice isSelected={stream === null} onSelect={() => setStream(null)}>
+            {t('attention.group.all', { count: data?.data.length ?? 0 })}
+          </Choice>
+          {[...groups.entries()].map(([key, count]) => (
+            <Choice key={key} isSelected={stream === key} onSelect={() => setStream(key)}>
+              {t(`attention.group.${key}`, { count })}
+            </Choice>
+          ))}
+        </div>
+      )}
 
       {failedNotice(data, list, t)}
 

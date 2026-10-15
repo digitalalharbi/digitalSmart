@@ -2284,6 +2284,22 @@
       "all": "كل ما أراه",
       "my_clients": "عملائي",
       "my_projects": "مشاريعي"
+    },
+    "group": {
+      "label": "التجميع حسب المجال",
+      "all": "الكل ({{count}})",
+      "campaigns": "{{count}} حملة تحتاج انتباهًا",
+      "campaigns_other": "{{count}} حملات تحتاج انتباهًا",
+      "budgets": "{{count}} ميزانية معرّضة للخطر",
+      "budgets_other": "{{count}} ميزانيات معرّضة للخطر",
+      "tracking": "{{count}} مشكلة تتبع",
+      "tracking_other": "{{count}} مشاكل تتبع",
+      "approvals": "{{count}} موافقة في الانتظار",
+      "approvals_other": "{{count}} موافقات في الانتظار",
+      "requests": "{{count}} طلب عميل",
+      "requests_other": "{{count}} طلبات عملاء",
+      "tasks": "{{count}} مهمة متأخرة",
+      "tasks_other": "{{count}} مهام متأخرة"
     }
   },
   "activity": {

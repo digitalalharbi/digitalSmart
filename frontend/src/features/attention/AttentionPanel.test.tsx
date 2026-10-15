@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { ApiError } from '@/shared/api/client';
 import { AttentionPanel } from './AttentionPanel';
@@ -147,5 +148,26 @@ describe('AttentionPanel', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'What needs attention could not be loaded.',
     );
+  });
+
+  it('groups by area from the one response, and narrows the list to the area chosen', async () => {
+    query.mockReturnValue(
+      queue({}, [
+        item({
+          id: 'campaign:1',
+          stream: 'campaigns',
+          message: 'Ramadan Push has spent with nothing recorded',
+        }),
+        item({ id: 'campaign:2', stream: 'campaigns', message: 'Eid Push is delivering far less' }),
+        item({ id: 'task:1', stream: 'tasks', message: 'Overdue: Ship the creative' }),
+      ]),
+    );
+    const user = userEvent.setup();
+    await renderWithProviders(<AttentionPanel />);
+
+    await user.click(screen.getByRole('button', { name: '2 campaigns need attention' }));
+
+    expect(screen.getByText('Ramadan Push has spent with nothing recorded')).toBeInTheDocument();
+    expect(screen.queryByText('Overdue: Ship the creative')).not.toBeInTheDocument();
   });
 });
