@@ -279,6 +279,9 @@ it('keeps the agency views within their stated query budget', function (): void 
         '/api/integrations/connections' => 8,
         '/api/integrations/account-queue' => 9,
         '/api/analytics?preset=28d&metrics[]=spend&dimension=provider&limit=10' => 8,
+        '/api/leads?limit=50' => 7,
+        '/api/leads/centre' => 10,
+        '/api/commerce/rollup?revenue_source=salla' => 6,
         '/api/clients?per_page=25' => 7,
         '/api/projects?per_page=25' => 7,
     ];
