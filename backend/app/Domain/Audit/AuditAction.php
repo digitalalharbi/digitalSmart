@@ -39,6 +39,7 @@ enum AuditAction: string
     case IntegrationConnectionReconnected = 'integration.connection_reconnected';
     case IntegrationAccountIgnored = 'integration.account_ignored';
     case IntegrationAccountRestored = 'integration.account_restored';
+    case IntegrationBackfillRequested = 'integration.backfill_requested';
 
     /*
      * Which project owns a campaign. A data-access grant in everything but name: the campaign's spend joins

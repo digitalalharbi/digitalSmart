@@ -146,3 +146,35 @@ export function useSetBindingSyncMutation() {
     onSuccess: () => void invalidate(),
   });
 }
+
+/** The windows the server offers for reading history. A short list, not a free field. */
+export const BACKFILL_WINDOWS = [30, 90, 180, 365] as const;
+
+export type BackfillResult = {
+  account_id: string;
+  days: number;
+  from: string;
+  until: string;
+  queue: string;
+};
+
+/** Read an account's history at the lowest priority. Refused for six hours after a request. */
+export function useBackfillMutation() {
+  return useMutation({
+    mutationFn: async ({
+      accountId,
+      days,
+    }: {
+      accountId: string;
+      days: (typeof BACKFILL_WINDOWS)[number];
+    }): Promise<BackfillResult> => {
+      await ensureCsrfCookie();
+      const { data } = await api.post<{ data: BackfillResult }>(
+        `/integrations/accounts/${accountId}/backfill`,
+        { days },
+      );
+
+      return data.data;
+    },
+  });
+}

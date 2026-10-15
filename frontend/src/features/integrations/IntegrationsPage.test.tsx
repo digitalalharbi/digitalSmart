@@ -9,6 +9,7 @@ const providersQuery = vi.hoisted(() => vi.fn());
 const accountsQuery = vi.hoisted(() => vi.fn());
 const bindingsQuery = vi.hoisted(() => vi.fn());
 const bind = vi.hoisted(() => vi.fn());
+const backfill = vi.hoisted(() => vi.fn());
 const permissions = vi.hoisted(() => ({ current: [] as string[] }));
 
 vi.mock('./api', () => ({
@@ -18,6 +19,8 @@ vi.mock('./api', () => ({
   useBindAccountMutation: () => ({ mutate: bind, isPending: false, error: null }),
   useUnbindAccountMutation: () => ({ mutate: vi.fn(), isPending: false, error: null }),
   useSetBindingSyncMutation: () => ({ mutate: vi.fn(), isPending: false, error: null }),
+  useBackfillMutation: () => ({ mutate: backfill, isPending: false, error: null, data: undefined }),
+  BACKFILL_WINDOWS: [30, 90, 180, 365],
   useConfigureConnectionMutation: () => ({
     mutate: vi.fn(),
     isPending: false,
@@ -288,5 +291,37 @@ describe('IntegrationsPage', () => {
     const secret = await screen.findByLabelText(/Client secret/);
     expect(secret).toHaveAttribute('type', 'password');
     expect(secret).toHaveValue('');
+  });
+
+  it('reads an account’s history for the window chosen from a short list', async () => {
+    bindingsQuery.mockReturnValue(
+      ok([
+        {
+          id: 'b1',
+          project_id: 'p1',
+          external_account: {
+            id: 'a1',
+            name: 'SANDBOX — Alhambra Retail (Meta)',
+            provider: 'meta',
+            provider_label: 'Meta Ads',
+          },
+          sync_enabled: true,
+          bound_at: null,
+          last_synced_at: null,
+        },
+      ] as ProjectBinding[]),
+    );
+    const user = userEvent.setup();
+    await renderWithProviders(<IntegrationsPage />);
+
+    await user.type(screen.getByRole('combobox', { name: 'Project' }), 'Ra');
+    await user.click(await screen.findByRole('option', { name: /Ramadan Campaign/ }));
+    await user.selectOptions(
+      await screen.findByRole('combobox', { name: /History to read for/ }),
+      '90',
+    );
+    await user.click(screen.getByRole('button', { name: 'Read history' }));
+
+    expect(backfill).toHaveBeenCalledWith({ accountId: 'a1', days: 90 });
   });
 });

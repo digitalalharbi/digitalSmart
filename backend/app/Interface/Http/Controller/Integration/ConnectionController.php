@@ -6,15 +6,19 @@ namespace App\Interface\Http\Controller\Integration;
 
 use App\Application\Integration\Command\ConnectClientProvider;
 use App\Application\Integration\Command\ManageConnection;
+use App\Application\Integration\Command\RequestBackfill;
 use App\Application\Integration\Command\TriageAccount;
 use App\Application\Integration\DTO\AccountRow;
 use App\Application\Integration\DTO\ConnectionView;
 use App\Application\Integration\Query\ListAccountQueue;
 use App\Application\Integration\Query\ListConnections;
 use App\Domain\Integration\Provider;
+use App\Domain\Integration\Sync\SyncClass;
 use App\Interface\Http\Controller\Controller;
+use App\Interface\Queue\SyncBoundAccountJob;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -158,6 +162,41 @@ final class ConnectionController extends Controller
         $triage->ignore($account);
 
         return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /** Read an account's history, at the lowest priority, once every six hours at most. */
+    public function backfill(Request $request, string $account, RequestBackfill $backfill): JsonResponse
+    {
+        $validated = $request->validate(['days' => ['required', 'integer', 'in:'.implode(',', RequestBackfill::WINDOWS)]]);
+
+        $window = $backfill($account, (int) $validated['days']);
+
+        $key = 'backfill:'.$account;
+
+        if (! RateLimiter::attempt($key, 1, static fn (): bool => true, 6 * 3600)) {
+            return response()->json([
+                'message' => 'This account was already asked for history in the last six hours. Wait for that read to finish.',
+                'code' => 'backfill_recently_requested',
+                'retry_after_seconds' => RateLimiter::availableIn($key),
+            ], Response::HTTP_TOO_MANY_REQUESTS);
+        }
+
+        SyncBoundAccountJob::dispatch(
+            $window['workspace_id'],
+            $window['account_id'],
+            $window['since']->format('Y-m-d'),
+            $window['until']->format('Y-m-d'),
+            SyncClass::Backfill->queue(),
+            $window['provider']->value,
+        );
+
+        return response()->json(['data' => [
+            'account_id' => $account,
+            'days' => $window['days'],
+            'from' => $window['since']->format('Y-m-d'),
+            'until' => $window['until']->format('Y-m-d'),
+            'queue' => SyncClass::Backfill->queue(),
+        ]], Response::HTTP_ACCEPTED);
     }
 
     public function restore(string $account, TriageAccount $triage): JsonResponse

@@ -16,6 +16,8 @@ import {
   useProjectBindingsQuery,
   useSetBindingSyncMutation,
   useUnbindAccountMutation,
+  BACKFILL_WINDOWS,
+  useBackfillMutation,
 } from './api';
 import { ProviderLogo } from './ProviderLogo';
 
@@ -49,12 +51,14 @@ export function AccountBindingPanel({
   );
 
   const bind = useBindAccountMutation();
+  const backfill = useBackfillMutation();
+  const [backfillDays, setBackfillDays] = useState<(typeof BACKFILL_WINDOWS)[number]>(30);
   const unbind = useUnbindAccountMutation();
   const setSync = useSetBindingSyncMutation();
 
   const canManage = can(PERMISSIONS.workspacesUpdate);
   const boundIds = new Set((bindings ?? []).map((binding) => binding.external_account.id));
-  const error = [bind.error, unbind.error, setSync.error].find(
+  const error = [bind.error, unbind.error, setSync.error, backfill.error].find(
     (candidate): candidate is ApiError => candidate instanceof ApiError,
   );
 
@@ -66,6 +70,14 @@ export function AccountBindingPanel({
       </div>
 
       {error ? <Alert tone="danger">{error.message}</Alert> : null}
+      {backfill.data === undefined ? null : (
+        <Alert tone="info">
+          {t('integrations.backfill.queued', {
+            from: backfill.data.from,
+            until: backfill.data.until,
+          })}
+        </Alert>
+      )}
 
       <div className="max-w-sm">
         <EntityPicker
@@ -161,6 +173,32 @@ export function AccountBindingPanel({
                           {binding.sync_enabled
                             ? t('integrations.pauseSync')
                             : t('integrations.resumeSync')}
+                        </Button>
+                        <select
+                          aria-label={t('integrations.backfill.window', { name: account.name })}
+                          className="border-line bg-surface h-8 rounded-md border px-2 text-xs"
+                          value={backfillDays}
+                          onChange={(event) =>
+                            setBackfillDays(
+                              Number(event.target.value) as (typeof BACKFILL_WINDOWS)[number],
+                            )
+                          }
+                        >
+                          {BACKFILL_WINDOWS.map((days) => (
+                            <option key={days} value={days}>
+                              {t('integrations.backfill.days', { count: days })}
+                            </option>
+                          ))}
+                        </select>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={backfill.isPending}
+                          onClick={() =>
+                            backfill.mutate({ accountId: account.id, days: backfillDays })
+                          }
+                        >
+                          {t('integrations.backfill.read')}
                         </Button>
                         <Button
                           variant="ghost"

@@ -751,6 +751,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::delete('integrations/connections/{connection}', [ConnectionController::class, 'destroy'])
         ->whereUuid('connection')->name('integrations.connections.destroy');
     Route::get('integrations/account-queue', [ConnectionController::class, 'accounts'])->name('integrations.account-queue');
+    Route::post('integrations/accounts/{account}/backfill', [ConnectionController::class, 'backfill'])
+        ->whereUuid('account')->name('integrations.accounts.backfill');
     Route::post('integrations/accounts/{account}/ignore', [ConnectionController::class, 'ignore'])
         ->whereUuid('account')->name('integrations.accounts.ignore');
     Route::delete('integrations/accounts/{account}/ignore', [ConnectionController::class, 'restore'])

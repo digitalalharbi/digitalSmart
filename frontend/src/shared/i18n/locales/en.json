@@ -422,7 +422,13 @@
     },
     "accountsList": "Discovered ad accounts",
     "capabilitiesFor": "What {{provider}} can do",
-    "sandboxCredentials": "Sandbox credentials"
+    "sandboxCredentials": "Sandbox credentials",
+    "backfill": {
+      "window": "History to read for {{name}}",
+      "days": "Last {{count}} days",
+      "read": "Read history",
+      "queued": "History from {{from}} to {{until}} is queued. It runs after live syncs, so current figures are never held up."
+    }
   },
   "analytics": {
     "subtitle": "Performance across every platform a project is bound to.",
