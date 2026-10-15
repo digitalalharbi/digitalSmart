@@ -7,6 +7,10 @@ import type { CampaignControlPage as Page, CampaignRow } from './types';
 
 const query = vi.hoisted(() => vi.fn());
 
+vi.mock('./useOwnershipQueue', () => ({
+  useOwnershipQueue: () => ({ data: { data: [], meta: { counts: {} } } }),
+  useBulkAssign: () => ({ mutate: vi.fn(), isPending: false, data: undefined }),
+}));
 vi.mock('./useCampaignControl', () => ({ useCampaignControl: (f: unknown) => query(f) }));
 vi.mock('@/features/clients', () => ({
   useClientsQuery: () => ({ data: { data: [] }, isFetching: false }),

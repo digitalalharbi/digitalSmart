@@ -30,6 +30,7 @@ import { CampaignCard, CampaignIdentity, StatusPair, BudgetBar } from './Campaig
 import { HealthDistribution } from '@/shared/ui/health-distribution';
 import { money, resultText } from './text';
 import { SavedViewsMenu } from '@/features/surface-views';
+import { OwnershipQueue } from './OwnershipQueue';
 import { DEFAULT_FILTERS, fromParams, toParams } from './filters';
 import { useCampaignControl } from './useCampaignControl';
 import type { ControlFilters, HealthValue, SortKey } from './types';
@@ -202,6 +203,8 @@ export function CampaignControlPage() {
           )}
         </CardContent>
       </Card>
+
+      <OwnershipQueue />
 
       <section aria-label={t('campaignControl.filters')} className="flex flex-wrap items-end gap-3">
         <div className="min-w-56 flex-1">

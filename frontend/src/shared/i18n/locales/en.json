@@ -2302,7 +2302,17 @@
       "body": "Connect an ad account and bind it to a project, or relax a filter."
     },
     "tag": "Tag",
-    "tags": "Tags"
+    "tags": "Tags",
+    "ownership": {
+      "title": "{{count}} campaigns need a project",
+      "body": "Their account serves several projects, or none. Placing them is what makes their spend count in the right place.",
+      "bindFirst": "Bind its account to a project first",
+      "target": "Place in",
+      "choose": "Choose a project",
+      "assign": "Place {{count}} campaigns",
+      "noCommon": "These campaigns share no project their accounts are bound to.",
+      "result": "{{assigned}} placed, {{refused}} refused."
+    }
   },
   "palette": {
     "title": "Search the agency",

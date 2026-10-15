@@ -59,6 +59,7 @@ export const queryKeys = {
   campaignControl: {
     all: () => ['campaign-control'] as const,
     list: (params: Record<string, unknown>) => ['campaign-control', 'list', params] as const,
+    ownership: () => ['campaign-control', 'ownership'] as const,
   },
   attention: {
     all: () => ['attention'] as const,
