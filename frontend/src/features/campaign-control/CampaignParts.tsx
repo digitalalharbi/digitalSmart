@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import { cn } from '@/shared/lib/cn';
 import { formatPercent } from '@/shared/lib/format';
 import { money, resultText } from './text';
@@ -42,7 +43,12 @@ export function CampaignIdentity({ row }: { row: CampaignRow }) {
     <span className="flex min-w-0 items-center gap-3">
       <ProviderLogo provider={row.provider as never} className="size-8" />
       <span className="flex min-w-0 flex-col">
-        <span className="text-content truncate text-sm font-medium">{row.name}</span>
+        <Link
+          to={`/campaigns/${row.id}`}
+          className="text-content truncate text-sm font-medium hover:underline"
+        >
+          {row.name}
+        </Link>
         <span className="text-content-tertiary truncate text-xs">
           {[row.client_name, row.project_name, row.external_account.name]
             .filter((part): part is string => part !== null)

@@ -133,6 +133,10 @@ export const BudgetControlPage = lazy(async () => ({
   default: (await import('@/features/budget-control/BudgetControlPage')).BudgetControlPage,
 }));
 
+export const CampaignDetailPage = lazy(async () => ({
+  default: (await import('@/features/campaign-control/CampaignDetailPage')).CampaignDetailPage,
+}));
+
 export const ProjectWorkspacePage = lazy(async () => ({
   default: (await import('@/features/projects/ProjectWorkspacePage')).ProjectWorkspacePage,
 }));

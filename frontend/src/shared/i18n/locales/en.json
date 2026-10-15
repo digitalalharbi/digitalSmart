@@ -2702,5 +2702,26 @@
       "reports": "Reports"
     },
     "activity": "Recent activity"
+  },
+  "campaignDetail": {
+    "title": "Campaign",
+    "back": "All campaigns",
+    "notFound": "This campaign is not available to you, or no longer exists.",
+    "updated": "Updated {{when}}",
+    "kpis": "Key figures",
+    "revenue": "Revenue",
+    "trend": "Daily spend",
+    "trendLabel": "Daily spend for {{name}}",
+    "budget": "Budget",
+    "readiness": "Readiness",
+    "noReadiness": "Readiness is not available for this campaign.",
+    "providerStatus": "Platform status",
+    "account": "Ad account",
+    "objective": "Objective",
+    "check": {
+      "placed": "Placed in a project",
+      "account": "Ad account",
+      "measurable": "Measured"
+    }
   }
 }
