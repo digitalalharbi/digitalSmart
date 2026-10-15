@@ -40,6 +40,9 @@ tenancy model that was already right, and measured at the constitution's size. T
   list, composers and forms included.
 - **A locale collision:** the integration monitor's strings had replaced the work board's namespace.
 - **A month-boundary e2e** that passed for half of every month.
+- **A sign-out that could be undone by a late response:** an answer to a request begun while signed in
+  carried the old session's cookie and overwrote the new one, signing the person back in behind the login
+  screen — one run in four under load. Sign-out now withdraws everything in flight first.
 
 ### Known
 
