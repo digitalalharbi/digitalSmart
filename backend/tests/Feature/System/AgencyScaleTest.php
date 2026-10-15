@@ -298,14 +298,24 @@ it('keeps the agency views within their stated query budget', function (): void 
 
     foreach ($budgets as $url => $budget) {
         $rows = 0;
+        $started = hrtime(true);
 
         $used = statementsFor(function () use ($owner, $url, &$rows): void {
             $payload = $this->actingAs($owner)->getJson($url)->assertOk()->json('data');
             $rows = is_array($payload) ? count($payload) : 0;
         });
 
+        $elapsed = (hrtime(true) - $started) / 1e6;
+
+        /*
+         * A wall-clock ceiling, generous on purpose — it exists for the defect a statement count cannot see.
+         * The budget read once issued six statements and took four minutes, because one of them was a
+         * correlated sub-select evaluated per metric row. Six statements was true the whole time. A ceiling
+         * of five seconds is two orders of magnitude from a healthy read and one from a broken one.
+         */
         expect($rows)->toBeGreaterThan(0, sprintf('%s returned nothing to measure', $url))
-            ->and($used)->toBeLessThanOrEqual($budget, sprintf('%s used %d statements', $url, $used));
+            ->and($used)->toBeLessThanOrEqual($budget, sprintf('%s used %d statements', $url, $used))
+            ->and($elapsed)->toBeLessThan(5_000.0, sprintf('%s took %.0f ms', $url, $elapsed));
     }
 });
 

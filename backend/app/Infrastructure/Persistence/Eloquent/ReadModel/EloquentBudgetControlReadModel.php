@@ -24,17 +24,26 @@ final readonly class EloquentBudgetControlReadModel implements BudgetControlRead
      */
     public function facts(string $workspaceId, ?array $visibleProjectIds, ?string $clientId, ?string $projectId): array
     {
-        $spend = DB::table('daily_metrics as m')
+        /*
+         * The accounts a budget may count are resolved **first, once per budget**, and joined — never tested
+         * per metric row with `m.external_account_id in (select …)`. That form is correlated with the budget, so
+         * PostgreSQL runs the sub-select once for every candidate metric row: at a hundred clients and sixty
+         * thousand daily rows it took four minutes, in six statements, which no statement count would ever
+         * have shown. Joined, the accounts are a handful and the metric read is an index range per account.
+         */
+        $spend = DB::table(DB::raw('(
+                select distinct bi.external_account_id
+                from project_integration_bindings bi
+                join projects pr on pr.id = bi.project_id
+                where bi.workspace_id = b.workspace_id
+                  and ((b.project_id is not null and bi.project_id = b.project_id)
+                    or (b.project_id is null and pr.client_id = b.client_id))
+            ) as acc'))
+            ->join('daily_metrics as m', 'm.external_account_id', '=', 'acc.external_account_id')
             ->whereColumn('m.workspace_id', 'b.workspace_id')
             ->where('m.entity_type', 'campaign')
             ->whereColumn('m.date', '>=', 'b.period_start')
             ->whereColumn('m.date', '<=', 'b.period_end')
-            ->whereRaw('m.external_account_id in (
-                select bi.external_account_id from project_integration_bindings bi
-                join projects pr on pr.id = bi.project_id
-                where bi.workspace_id = b.workspace_id
-                  and ((b.project_id is not null and bi.project_id = b.project_id)
-                    or (b.project_id is null and pr.client_id = b.client_id)))')
             ->selectRaw('sum(m.spend_minor) as spend_minor, count(m.spend_minor) as reported')
             ->selectRaw("string_agg(distinct m.currency, ',') as currencies")
             ->selectRaw("string_agg(distinct m.source, ',') as sources");

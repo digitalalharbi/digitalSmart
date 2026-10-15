@@ -126,6 +126,17 @@ final class AgencyScaleSeeder extends Seeder
         $rows = $this->metrics($workspaceId, $campaigns, $days);
         $this->budgets($workspaceId, $clients, (string) $owner->getKey());
 
+        /*
+         * Statistics, as a production bulk load would have them after autovacuum's next pass. Without this the
+         * planner sees tables it believes are empty and chooses plans for an agency of zero — the first
+         * measurement here took four minutes for a read that takes eighty milliseconds once the planner knows
+         * how big the tables are. `ANALYZE` is allowed inside a transaction, so a test that seeds in one gets it
+         * too.
+         */
+        foreach (['clients', 'projects', 'external_accounts', 'project_integration_bindings', 'campaigns', 'daily_metrics', 'budgets', 'budget_allocations'] as $table) {
+            DB::statement('analyze '.$table);
+        }
+
         $this->command?->info(sprintf(
             'Seeded %d clients, %d projects, %d accounts, %d campaigns, %d daily rows.',
             count($clients),
