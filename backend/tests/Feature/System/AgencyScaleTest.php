@@ -193,6 +193,44 @@ it('issues the same number of statements over a bigger agency: the budget contro
     }
 });
 
+it('issues the same number of statements over a bigger agency: lead centre, commerce, tracking, activity, benchmarks, home, monitor', function (): void {
+    seedAgency(clients: 6, accounts: 10, campaigns: 20);
+    $owner = scaleOwner();
+    /* Measured cost plus two, as the budget test below does: invariance says it is flat, this says it is small. */
+    $ceilings = [
+        '/api/leads/centre' => 10,
+        '/api/leads?limit=50' => 6,
+        '/api/commerce/rollup?revenue_source=salla' => 6,
+        '/api/measurement/agency-health' => 7,
+        '/api/activity' => 6,
+        '/api/benchmarks' => 8,
+        '/api/home' => 5,
+        '/api/integrations/operations' => 10,
+        '/api/exports' => 6,
+        '/api/views/campaign_control' => 6,
+    ];
+    $urls = array_keys($ceilings);
+
+    $small = [];
+
+    foreach ($urls as $url) {
+        $small[$url] = statementsFor(function () use ($owner, $url): void {
+            $this->actingAs($owner)->getJson($url)->assertOk();
+        });
+    }
+
+    seedAgency(clients: 18, accounts: 30, campaigns: 120);
+
+    foreach ($urls as $url) {
+        $large = statementsFor(function () use ($owner, $url): void {
+            $this->actingAs($owner)->getJson($url)->assertOk();
+        });
+
+        expect($large)->toBe($small[$url], $url)
+            ->and($large)->toBeLessThanOrEqual($ceilings[$url], sprintf('%s used %d statements', $url, $large));
+    }
+});
+
 it('issues the same number of statements over a bigger agency: the analytics breakdown', function (): void {
     seedAgency(clients: 6, accounts: 10, campaigns: 20);
     $owner = scaleOwner();
