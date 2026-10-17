@@ -816,7 +816,7 @@
   },
   "tracking": {
     "title": "Tracking Center",
-    "subtitle": "What is measuring each client's work, what counts as success there, and whether any of it is actually working.",
+    "subtitle": "Is each client's tracking working, and what counts as success?",
     "loadFailed": "Could not load the tracking picture. Try again in a moment.",
     "scope": {
       "client": "Client",
@@ -1152,7 +1152,7 @@
   },
   "leads": {
     "title": "Lead Center",
-    "subtitle": "Every enquiry a client received, how far it got, and — beside it rather than inside it — how many taps and part-filled forms were counted over the same days.",
+    "subtitle": "Every enquiry, how far it got, and the taps and forms counted beside it.",
     "loadFailed": "Could not load the Lead Center. Try again in a moment.",
     "scorecard": "Lead summary",
     "mixedCurrency": "These leads carried {{count}} different currencies, so their totals are not shown: a sum of two currencies is not a larger number, it is not a number. Filter to one client to see a total.",
@@ -1445,7 +1445,7 @@
   },
   "creative": {
     "title": "Creative Hub",
-    "subtitle": "Briefs, the versions produced for them, what each file measures against the platform's own requirements, and who signed off on which one.",
+    "subtitle": "Briefs and their versions, checked against each platform's requirements.",
     "loadFailed": "Could not load the creative board. Try again in a moment.",
     "board": "The board",
     "counts": "Creative summary",
@@ -1561,7 +1561,7 @@
   },
   "operations": {
     "title": "Operations",
-    "subtitle": "The work the week is made of: what is open, what is late, what nobody has dated, and who is carrying it.",
+    "subtitle": "What is open, what is late, and who is carrying it.",
     "loadFailed": "Could not load the board. Try again in a moment.",
     "board": "The board",
     "counts": "Board summary",
@@ -2238,7 +2238,7 @@
   },
   "assistant": {
     "title": "Assistant",
-    "subtitle": "What the figures say, with the figures. Every number here was computed by the product, not written by a model.",
+    "subtitle": "What the figures say — every number computed by the product, not a model.",
     "loadFailed": "Could not run the analysis. Try again in a moment.",
     "denied": {
       "title": "The assistant is not part of your access",
@@ -3035,5 +3035,10 @@
         "body": "Executive or detailed, frozen as a snapshot, shared by a link that never shows internal notes."
       }
     }
+  },
+  "notFoundPage": {
+    "title": "This page does not exist",
+    "body": "The address may be mistyped, or the page may have moved. Nothing has been changed.",
+    "home": "Back to the overview"
   }
 }
