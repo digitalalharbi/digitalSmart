@@ -57,6 +57,7 @@ use App\Interface\Http\Controller\SurfaceView\SurfaceViewController;
 use App\Interface\Http\Controller\System\HealthController;
 use App\Interface\Http\Controller\Tags\TagController;
 use App\Interface\Http\Controller\Workspace\MemberController;
+use App\Interface\Http\Controller\Workspace\RoleController;
 use App\Interface\Http\Middleware\BindActorContext;
 use Illuminate\Support\Facades\Route;
 
@@ -192,6 +193,8 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
         ->whereUuid('project')->whereUuid('user')->name('projects.members.destroy');
 
     Route::get('members', [MemberController::class, 'index'])->name('members.index');
+    /* The roles and the permissions they hold, read-only: what "media buyer" means, without reading a migration. */
+    Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
     /*
      * Add a colleague. Needs `users.invite`, which existed and was checked nowhere until this route.
      *

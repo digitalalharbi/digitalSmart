@@ -117,6 +117,7 @@ use App\Application\Workspace\Contract\AssignedWorkRepository;
 use App\Application\Workspace\Contract\MemberDirectory;
 use App\Application\Workspace\Contract\MemberReadModel;
 use App\Application\Workspace\Contract\MembershipRepository;
+use App\Application\Workspace\Contract\RoleReadModel;
 use App\Domain\Client\Repository\ClientRepository;
 use App\Domain\Integration\Repository\ExternalAccountRepository;
 use App\Domain\Integration\Repository\IntegrationBindingRepository;
@@ -176,6 +177,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentOperationsReadMode
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentPortfolioReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentProjectReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentReadinessFacts;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentRoleReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSearchReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentStoreAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSyncCandidateSource;
@@ -300,6 +302,7 @@ final class AppServiceProvider extends ServiceProvider
         ProjectReadModel::class => EloquentProjectReadModel::class,
         ProjectMemberRepository::class => EloquentProjectMemberRepository::class,
         MemberReadModel::class => EloquentMemberReadModel::class,
+        RoleReadModel::class => EloquentRoleReadModel::class,
         MembershipRepository::class => EloquentMembershipRepository::class,
         /*
          * Creating people, as opposed to re-roling them: a different lifetime, a different table, and the only
