@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 
 final class BuildDigestsCommand extends Command
 {
-    protected $signature = 'digests:build {kind : morning_campaigns | daily_budget | weekly_projects} {--workspace= : Limit to one workspace id}';
+    protected $signature = 'digests:build {kind : morning_campaigns | daily_budget | weekly_projects | monthly_executive} {--workspace= : Limit to one workspace id}';
 
     protected $description = 'Write each person one role-aware summary instead of many alerts';
 

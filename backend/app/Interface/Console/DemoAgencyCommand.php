@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Console;
 
+use App\Domain\Attention\DigestKind;
 use Database\Seeders\DemoAgencySeeder;
 use Database\Seeders\DemoWorkspaceSeeder;
 use Illuminate\Console\Command;
@@ -43,6 +44,13 @@ final class DemoAgencyCommand extends Command
 
         $this->components->info('Building the agency around it…');
         $this->call('db:seed', ['--class' => DemoAgencySeeder::class, '--force' => true]);
+
+        /* The summaries each person would have received this morning, so the notification centre is not empty. */
+        $workspace = DB::table('workspaces')->where('slug', 'demo-smart-code')->value('id');
+
+        foreach (DigestKind::values() as $kind) {
+            $this->callSilently('digests:build', ['kind' => $kind, '--workspace' => $workspace]);
+        }
 
         $this->newLine();
         $this->table(['Role', 'Email', 'Password'], [

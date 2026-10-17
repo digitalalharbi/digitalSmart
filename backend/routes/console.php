@@ -68,6 +68,7 @@ Schedule::command('access:sync')
 Schedule::command('digests:build morning_campaigns')->dailyAt('06:30')->withoutOverlapping()->runInBackground();
 Schedule::command('digests:build daily_budget')->dailyAt('07:00')->withoutOverlapping()->runInBackground();
 Schedule::command('digests:build weekly_projects')->weeklyOn(1, '07:30')->withoutOverlapping()->runInBackground();
+Schedule::command('digests:build monthly_executive')->monthlyOn(1, '08:00')->withoutOverlapping()->runInBackground();
 
 /* Exports are kept a week. The file goes; the row stays as the record of having asked. */
 Schedule::command('exports:prune')->dailyAt('04:00')->withoutOverlapping()->runInBackground();

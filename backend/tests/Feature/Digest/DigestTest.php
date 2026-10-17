@@ -99,3 +99,13 @@ it('does not announce a digest to someone who has none', function (): void {
 
     expect(DB::table('notifications')->where('kind', 'digest_ready')->where('user_id', $buyer->getKey())->count())->toBe(0);
 });
+
+it('writes a monthly executive digest across every stream, and only one per person per month', function (): void {
+    digestWorld();
+
+    $this->artisan('digests:build monthly_executive')->assertSuccessful();
+    $this->artisan('digests:build monthly_executive')->assertSuccessful();
+
+    expect(DB::table('digests')->where('kind', 'monthly_executive')->count())
+        ->toBe(DB::table('digests')->where('kind', 'monthly_executive')->distinct()->count('user_id'));
+});

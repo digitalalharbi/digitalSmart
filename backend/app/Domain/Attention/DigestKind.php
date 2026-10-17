@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Attention;
 
 /**
- * Three digests, each answering one role's morning question.
+ * Four digests, each answering one role's question at its own rhythm.
  *
  * Which streams feed each is the whole definition. A media buyer's morning digest is about campaigns and
  * tracking; finance's is about budgets; a project manager's weekly one is about the work waiting between
@@ -17,6 +17,7 @@ enum DigestKind: string
     case MorningCampaigns = 'morning_campaigns';
     case DailyBudget = 'daily_budget';
     case WeeklyProjects = 'weekly_projects';
+    case MonthlyExecutive = 'monthly_executive';
 
     public function label(): string
     {
@@ -24,6 +25,7 @@ enum DigestKind: string
             self::MorningCampaigns => 'Morning campaign digest',
             self::DailyBudget => 'Daily budget digest',
             self::WeeklyProjects => 'Weekly project digest',
+            self::MonthlyExecutive => 'Monthly executive digest',
         };
     }
 
@@ -34,6 +36,8 @@ enum DigestKind: string
             self::MorningCampaigns => [AttentionStream::Campaigns, AttentionStream::Tracking],
             self::DailyBudget => [AttentionStream::Budgets],
             self::WeeklyProjects => [AttentionStream::Approvals, AttentionStream::Requests, AttentionStream::Tasks],
+            /* Everything, and worst first: the executive reads the three largest risks, not the queue. */
+            self::MonthlyExecutive => AttentionStream::cases(),
         };
     }
 
