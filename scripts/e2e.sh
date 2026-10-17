@@ -95,6 +95,13 @@ E2E_BCRYPT_ROUNDS="${E2E_BCRYPT_ROUNDS:-4}"
 (
   cd "$ROOT/backend"
   DB_DATABASE="$E2E_DB" BCRYPT_ROUNDS="$E2E_BCRYPT_ROUNDS" php artisan migrate:fresh --seed --force
+
+  # E2E_AGENCY=1 builds the whole sandbox agency on top — sixty clients, a year of habits, every role's
+  # working day — so the role journeys run against what a Smart Code morning actually looks like. Off by
+  # default: the rest of the suite makes assumptions about the small base demo.
+  if [[ "${E2E_AGENCY:-}" == "1" ]]; then
+    DB_DATABASE="$E2E_DB" BCRYPT_ROUNDS="$E2E_BCRYPT_ROUNDS" php artisan demo:agency
+  fi
 )
 
 # Sanctum only establishes a session for requests it recognises as first-party,

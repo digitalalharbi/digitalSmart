@@ -94,7 +94,11 @@ export function OperationsPage() {
 
   if (!canView) {
     return (
-      <EmptyState title={t('operations.denied.title')} description={t('operations.denied.body')} />
+      <EmptyState
+        title={t('operations.denied.title')}
+        level={1}
+        description={t('operations.denied.body')}
+      />
     );
   }
 

@@ -83,7 +83,13 @@ export function ReportsPage() {
   }, [create, update, remove, snapshot, share, revoke]);
 
   if (!canView) {
-    return <EmptyState title={t('reports.denied.title')} description={t('reports.denied.body')} />;
+    return (
+      <EmptyState
+        title={t('reports.denied.title')}
+        level={1}
+        description={t('reports.denied.body')}
+      />
+    );
   }
 
   const list = reports.data ?? [];

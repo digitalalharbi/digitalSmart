@@ -95,6 +95,9 @@ function TaskDialog({ row, onClose }: { row: CampaignRow; onClose: () => void })
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['tasks'] }),
         queryClient.invalidateQueries({ queryKey: ['attention'] }),
+        /* The page that opened this dialog reads the campaign's tasks and the project's tasks under these keys. */
+        queryClient.invalidateQueries({ queryKey: ['campaign-detail'] }),
+        queryClient.invalidateQueries({ queryKey: ['projects', 'workspace'] }),
       ]);
       onClose();
     },

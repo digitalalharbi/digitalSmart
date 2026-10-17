@@ -11,6 +11,7 @@ export const ACCOUNTS = {
   manager: 'manager@demo.digitalsmart.test',
   buyer: 'buyer@demo.digitalsmart.test',
   creative: 'creative@demo.digitalsmart.test',
+  finance: 'finance@demo.digitalsmart.test',
   client: 'client@demo.digitalsmart.test',
 } as const;
 

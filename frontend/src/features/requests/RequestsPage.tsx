@@ -101,7 +101,11 @@ export function RequestsPage() {
 
   if (!canSubmit) {
     return (
-      <EmptyState title={t('requests.denied.title')} description={t('requests.denied.body')} />
+      <EmptyState
+        title={t('requests.denied.title')}
+        level={1}
+        description={t('requests.denied.body')}
+      />
     );
   }
 

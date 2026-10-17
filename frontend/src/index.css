@@ -124,6 +124,17 @@
     color: var(--ds-text-primary);
   }
 
+  /*
+   * A grid item may shrink below its content.
+   *
+   * The default minimum is "as wide as the longest unbreakable thing inside", so one long campaign name in a
+   * one-column phone grid made the card — and with it the whole page — wider than the screen. Anything that
+   * genuinely must not shrink says so with its own `min-w-*`, which wins over this.
+   */
+  .grid > * {
+    min-width: 0;
+  }
+
   /* Every table cell compares numbers, so every table cell is tabular. */
   table :is(td, th) {
     font-variant-numeric: tabular-nums lining-nums;

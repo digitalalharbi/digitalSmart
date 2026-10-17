@@ -96,6 +96,7 @@ export function PresentationsPage() {
     return (
       <EmptyState
         title={t('presentations.denied.title')}
+        level={1}
         description={t('presentations.denied.body')}
       />
     );

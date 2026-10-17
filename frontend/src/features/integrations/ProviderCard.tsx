@@ -121,12 +121,12 @@ export function ProviderCard({ provider }: { provider: ProviderRow }) {
           </Alert>
         ) : null}
 
-        <div className="text-content-secondary mt-auto flex items-center justify-between gap-2 text-xs">
+        <div className="text-content-secondary mt-auto flex flex-wrap items-center justify-between gap-2 text-xs">
           <span className="ds-numeric">
             {t('integrations.accountCount', { count: provider.account_count })}
           </span>
 
-          <div className="flex gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             {canManage ? (
               <Button variant="secondary" size="sm" onClick={() => setDialogOpen(true)}>
                 <Link2 />

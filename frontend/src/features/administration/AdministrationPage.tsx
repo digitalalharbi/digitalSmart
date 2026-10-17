@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { PERMISSIONS, useSession } from '@/features/auth';
+import { HealthPanel } from '@/features/overview';
 import { Alert } from '@/shared/ui/alert';
 import { PageHeader } from '@/shared/ui/page-header';
 import { cn } from '@/shared/lib/cn';
@@ -106,7 +107,12 @@ export function AdministrationPage() {
           {active === 'setup' ? <SetupPanel /> : null}
           {active === 'audit' ? <AuditPanel /> : null}
           {active === 'health' ? <OperationsPanel part="health" /> : null}
-          {active === 'diagnostics' ? <OperationsPanel part="diagnostics" /> : null}
+          {active === 'diagnostics' ? (
+            <div className="flex flex-col gap-6">
+              <HealthPanel />
+              <OperationsPanel part="diagnostics" />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

@@ -73,7 +73,11 @@ export function AssistantPage() {
 
   if (!canUse) {
     return (
-      <EmptyState title={t('assistant.denied.title')} description={t('assistant.denied.body')} />
+      <EmptyState
+        title={t('assistant.denied.title')}
+        level={1}
+        description={t('assistant.denied.body')}
+      />
     );
   }
 

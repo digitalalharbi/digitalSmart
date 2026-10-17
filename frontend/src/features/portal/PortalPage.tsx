@@ -74,7 +74,13 @@ export function PortalPage() {
   }, [enable.error, suspend.error, resume.error, save.error]);
 
   if (!canView) {
-    return <EmptyState title={t('portal.denied.title')} description={t('portal.denied.body')} />;
+    return (
+      <EmptyState
+        title={t('portal.denied.title')}
+        level={1}
+        description={t('portal.denied.body')}
+      />
+    );
   }
 
   const list = portals.data ?? [];

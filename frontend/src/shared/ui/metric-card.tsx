@@ -78,10 +78,12 @@ export function MetricCard({
       */}
       <span
         className={cn(
-          'ds-figure text-content',
-          emphasis === 'primary' ? 'text-3xl' : 'text-2xl',
-          value.value === null && 'text-content-tertiary text-2xl font-normal',
+          /* Steps down on a phone and truncates rather than overflow: a nine-digit figure in a half-width card. */
+          'ds-figure text-content max-w-full min-w-0 truncate',
+          emphasis === 'primary' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl',
+          value.value === null && 'text-content-tertiary text-xl font-normal sm:text-2xl',
         )}
+        title={formatMetric(value, i18n.language)}
       >
         {formatMetric(value, i18n.language)}
       </span>

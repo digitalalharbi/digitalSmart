@@ -69,10 +69,10 @@ export function CreativeDesk({ board }: { board: CreativeBoard }) {
                 {name === '' ? t('attention.unassigned') : name}
               </span>
               <span className="text-content-secondary ds-numeric shrink-0">
-                {number.format(load.open)}
+                <span>{number.format(load.open)}</span>
                 {load.overdue > 0 ? (
                   <span className="text-danger ms-2">
-                    {t('creative.desk.late', { count: load.overdue })}
+                    · {t('creative.desk.late', { count: load.overdue })}
                   </span>
                 ) : null}
               </span>

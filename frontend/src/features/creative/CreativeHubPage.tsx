@@ -80,7 +80,11 @@ export function CreativeHubPage() {
 
   if (!canView) {
     return (
-      <EmptyState title={t('creative.denied.title')} description={t('creative.denied.body')} />
+      <EmptyState
+        title={t('creative.denied.title')}
+        level={1}
+        description={t('creative.denied.body')}
+      />
     );
   }
 

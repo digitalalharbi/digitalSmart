@@ -128,7 +128,9 @@ export function LeadCentrePage() {
      * Said plainly rather than shown as an empty page. A reader who lands here from a link
      * should learn that the surface exists and is not theirs, not conclude it is broken.
      */
-    return <EmptyState title={t('leads.denied.title')} description={t('leads.denied.body')} />;
+    return (
+      <EmptyState title={t('leads.denied.title')} level={1} description={t('leads.denied.body')} />
+    );
   }
 
   const sourceRows: BreakdownRow[] = (data?.by_source ?? []).map((row) => ({

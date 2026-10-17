@@ -153,7 +153,7 @@ function Group({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2">
       <span className="text-content-tertiary flex items-center gap-1 text-xs font-medium">
         {icon}
         {label}
@@ -175,7 +175,7 @@ function Segmented({
   return (
     <div
       role="group"
-      className="bg-surface-sunken border-line-subtle inline-flex rounded-lg border p-0.5"
+      className="bg-surface-sunken border-line-subtle inline-flex max-w-full overflow-x-auto rounded-lg border p-0.5"
     >
       {options.map((option) => {
         const isSelected = option.value === selected;

@@ -101,7 +101,11 @@ export function ApprovalsPage() {
 
   if (!canView) {
     return (
-      <EmptyState title={t('approvals.denied.title')} description={t('approvals.denied.body')} />
+      <EmptyState
+        title={t('approvals.denied.title')}
+        level={1}
+        description={t('approvals.denied.body')}
+      />
     );
   }
 

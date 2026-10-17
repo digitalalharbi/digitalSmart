@@ -173,7 +173,7 @@ export function ProjectWorkspacePage() {
                 </Link>
               </span>
             </div>
-            <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <dl className="grid grid-cols-2 gap-3 xl:grid-cols-5">
               <Fact label={t('workspace.owner')}>
                 <span dir="auto">{owner?.name ?? t('attention.unassigned')}</span>
               </Fact>

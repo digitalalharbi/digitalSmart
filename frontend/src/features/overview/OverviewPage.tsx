@@ -14,7 +14,6 @@ import { MetricCard, MetricCardSkeleton } from '@/shared/ui/metric-card';
 import { SourceNotice } from '@/shared/ui/source-badge';
 import { PageHeader } from '@/shared/ui/page-header';
 import { formatMetric } from '@/shared/metrics';
-import { HealthPanel } from './HealthPanel';
 import { SpendTrend } from './SpendTrend';
 
 /** The latest unread digest, if there is one: one summary instead of N alerts. */
@@ -36,8 +35,17 @@ function DigestBanner() {
         {latest.label} · {t('home.digest')}
       </p>
       <ul className="text-content-secondary text-sm">
-        {latest.summary.top.map((item) => (
-          <li key={item.message}>{item.message}</li>
+        {latest.summary.top.map((item, index) => (
+          /* Whose it is first: three budget warnings with the same sentence are three different clients. */
+          <li key={`${item.entity}-${String(index)}`}>
+            <span className="text-content font-medium" dir="auto">
+              {[item.client, item.entity]
+                .filter((part) => part !== null && part !== '')
+                .join(' · ')}
+            </span>
+            {' — '}
+            {item.message}
+          </li>
         ))}
       </ul>
     </aside>
@@ -240,12 +248,6 @@ export function OverviewPage() {
           )}
         </section>
       )}
-
-      {/*
-        System health last, not first. It is what an operator checks when something
-        feels wrong, not what anyone opens the product to see.
-      */}
-      <HealthPanel />
     </div>
   );
 }

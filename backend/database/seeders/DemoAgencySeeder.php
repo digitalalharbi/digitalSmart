@@ -855,7 +855,7 @@ final class DemoAgencySeeder extends Seeder
                 $objective = $spec['objectives'][($sequence + $c) % count($spec['objectives'])];
                 $programme = $spec['programmes'][($sequence + $c) % count($spec['programmes'])];
                 $pattern = self::PATTERNS[$sequence % count(self::PATTERNS)];
-                $platformName = ucfirst(str_replace('_', ' ', $account['provider']));
+                $platformName = Provider::from($account['provider'])->label();
                 $audience = ['Riyadh', 'Jeddah', 'Eastern Province', 'GCC', 'Lookalike 1%', 'Retargeting'][($sequence + $c) % 6];
                 $status = match (true) {
                     $sequence % 11 === 0 => 'paused',

@@ -6,9 +6,16 @@ type EmptyStateProps = {
   description?: string;
   action?: ReactNode;
   className?: string;
+  /**
+   * Render the title as a heading of this level. A page that has nothing else to say — access refused, nothing
+   * set up — must still have a first-level heading, or a screen reader lands in an unnamed `main`.
+   */
+  level?: 1 | 2 | 3;
 };
 
-export function EmptyState({ title, description, action, className }: EmptyStateProps) {
+export function EmptyState({ title, description, action, className, level }: EmptyStateProps) {
+  const Title = level === undefined ? 'p' : (`h${String(level)}` as 'h1' | 'h2' | 'h3');
+
   return (
     <div
       className={cn(
@@ -16,7 +23,7 @@ export function EmptyState({ title, description, action, className }: EmptyState
         className,
       )}
     >
-      <p className="text-content text-sm font-medium">{title}</p>
+      <Title className="text-content text-sm font-medium">{title}</Title>
       {description ? (
         <p className="text-content-secondary max-w-sm text-sm">{description}</p>
       ) : null}
