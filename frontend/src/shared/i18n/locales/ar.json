@@ -314,14 +314,7 @@
       "active": "نشط",
       "suspended": "معلّق"
     },
-    "roles": {
-      "owner": "مالك",
-      "admin": "مسؤول",
-      "project-manager": "مدير مشاريع",
-      "media-buyer": "مشتري وسائط",
-      "creative": "مصمم",
-      "client-viewer": "عميل مُشاهد"
-    },
+    "roles": "الأدوار والصلاحيات",
     "columns": {
       "person": "الشخص",
       "role": "الدور",
@@ -367,7 +360,54 @@
       "anyRole": "أي دور"
     },
     "noPeopleFiltered": "لا أحد يطابق هذا البحث وهذه المرشّحات. إلغاؤها يُظهر كل من في مساحة العمل.",
-    "operations": "تشغيل التكاملات"
+    "operations": "تشغيل التكاملات",
+    "rolesFailed": "تعذّر تحميل الأدوار.",
+    "roleMembers_zero": "لا أحد",
+    "roleMembers_one": "شخص واحد",
+    "roleMembers_two": "شخصان",
+    "roleMembers_few": "{{count}} أشخاص",
+    "roleMembers_many": "{{count}} شخصًا",
+    "roleMembers_other": "{{count}} شخص",
+    "rolePermissions_zero": "لا صلاحيات",
+    "rolePermissions_one": "صلاحية واحدة",
+    "rolePermissions_two": "صلاحيتان",
+    "rolePermissions_few": "{{count}} صلاحيات",
+    "rolePermissions_many": "{{count}} صلاحية",
+    "rolePermissions_other": "{{count}} صلاحية",
+    "setup": "الإعداد",
+    "health": "سلامة النظام",
+    "diagnostics": "تشخيصات متقدمة",
+    "sections": "أقسام الإدارة",
+    "group": {
+      "workspace": "مساحة العمل",
+      "oversight": "الرقابة"
+    },
+    "area": {
+      "clients": {
+        "title": "العملاء",
+        "body": "من تعمل لأجلهم الوكالة، ومشاريعهم."
+      },
+      "integrations": {
+        "title": "التكاملات والمزوّدون",
+        "body": "الاتصالات والحسابات المكتشفة وأي مشروع يرى أي حساب."
+      },
+      "tracking": {
+        "title": "التتبّع والتحويلات",
+        "body": "المصادر وسلامة الأحداث وما يُعدّ تحويلًا."
+      },
+      "stores": {
+        "title": "المتاجر",
+        "body": "المتاجر المتصلة وبيانات تجارتها."
+      },
+      "benchmarks": {
+        "title": "المعايير المرجعية",
+        "body": "الأرقام المرجعية التي تُبنى عليها التوقعات، مع إصدارها."
+      },
+      "notifications": {
+        "title": "الإشعارات",
+        "body": "ما يصل إلى من، والملخصات اليومية والأسبوعية."
+      }
+    }
   },
   "integrations": {
     "subtitle": "منصات الإعلانات التي يمكن لمساحة العمل القراءة منها، وأي المشاريع يقرأ ماذا.",

@@ -112,12 +112,12 @@ describe('AdministrationPage', () => {
     );
   });
 
-  it('shows only the tabs the role may use', async () => {
+  it('shows only the sections the role may use', async () => {
     permissions.current = ['audit.view'];
     await renderWithProviders(<AdministrationPage />);
 
-    expect(screen.queryByRole('tab', { name: 'People' })).not.toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Audit log' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'People' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Audit log' })).toBeInTheDocument();
   });
 
   it('lists people with their role and status', async () => {
@@ -268,7 +268,7 @@ describe('AdministrationPage', () => {
     const user = userEvent.setup();
     await renderWithProviders(<AdministrationPage />);
 
-    await user.click(screen.getByRole('tab', { name: 'Audit log' }));
+    await user.click(screen.getByRole('button', { name: 'Audit log' }));
 
     expect(screen.getByText('Signed in.')).toBeInTheDocument();
     expect(screen.getByText('Security')).toBeInTheDocument();
@@ -280,7 +280,7 @@ describe('AdministrationPage', () => {
     const user = userEvent.setup();
     await renderWithProviders(<AdministrationPage />);
 
-    await user.click(screen.getByRole('tab', { name: 'Audit log' }));
+    await user.click(screen.getByRole('button', { name: 'Audit log' }));
 
     expect(screen.getByText('Nothing recorded yet')).toBeInTheDocument();
   });

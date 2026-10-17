@@ -59,7 +59,7 @@ type Operations = {
  * rates and the failing runs with their codes are *advanced* and the server only sends them to somebody who
  * may act — so this panel cannot show them by accident.
  */
-export function OperationsPanel() {
+export function OperationsPanel({ part = 'all' }: { part?: 'all' | 'health' | 'diagnostics' }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const { data, isPending, isError } = useQuery({
@@ -93,32 +93,36 @@ export function OperationsPanel() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section
-        aria-label={t('integrationOps.summary')}
-        className="grid grid-cols-2 gap-3 lg:grid-cols-5"
-      >
-        {tile(t('integrationOps.healthy'), summary.connections.healthy)}
-        {tile(t('integrationOps.needsReconnect'), summary.connections.needs_reconnect, true)}
-        {tile(t('integrationOps.syncTrouble'), summary.accounts_with_sync_trouble, true)}
-        {tile(t('integrationOps.stale'), summary.stale_accounts, true)}
-        {tile(t('integrationOps.syncing'), summary.accounts_syncing)}
-      </section>
+      {part === 'diagnostics' ? null : (
+        <>
+          <section
+            aria-label={t('integrationOps.summary')}
+            className="grid grid-cols-2 gap-3 lg:grid-cols-5"
+          >
+            {tile(t('integrationOps.healthy'), summary.connections.healthy)}
+            {tile(t('integrationOps.needsReconnect'), summary.connections.needs_reconnect, true)}
+            {tile(t('integrationOps.syncTrouble'), summary.accounts_with_sync_trouble, true)}
+            {tile(t('integrationOps.stale'), summary.stale_accounts, true)}
+            {tile(t('integrationOps.syncing'), summary.accounts_syncing)}
+          </section>
 
-      <p className="text-content-secondary text-sm">
-        {summary.last_sync_at === null
-          ? t('integrationOps.neverSynced')
-          : t('integrationOps.lastSync', {
-              when: formatRelativeTime(summary.last_sync_at, locale),
-            })}
-        {' · '}
-        {summary.next_sync_at === null
-          ? t('integrationOps.nothingScheduled')
-          : t('integrationOps.nextSync', {
-              when: formatRelativeTime(summary.next_sync_at, locale),
-            })}
-      </p>
+          <p className="text-content-secondary text-sm">
+            {summary.last_sync_at === null
+              ? t('integrationOps.neverSynced')
+              : t('integrationOps.lastSync', {
+                  when: formatRelativeTime(summary.last_sync_at, locale),
+                })}
+            {' · '}
+            {summary.next_sync_at === null
+              ? t('integrationOps.nothingScheduled')
+              : t('integrationOps.nextSync', {
+                  when: formatRelativeTime(summary.next_sync_at, locale),
+                })}
+          </p>
+        </>
+      )}
 
-      {advanced === null ? (
+      {part === 'health' ? null : advanced === null ? (
         <p className="text-content-tertiary text-sm">{t('integrationOps.advancedHidden')}</p>
       ) : (
         <section aria-label={t('integrationOps.advanced')} className="flex flex-col gap-4">

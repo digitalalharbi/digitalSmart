@@ -9,7 +9,7 @@ test.describe('administration', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Administration' })).toBeVisible();
     await expect(page.getByRole('row', { name: /Demo Buyer/ })).toBeVisible();
 
-    await page.getByRole('tab', { name: 'Audit log' }).click();
+    await page.getByRole('button', { name: 'Audit log' }).click();
     // Signing in is itself recorded, so the trail is never empty here.
     await expect(page.getByText('Security').first()).toBeVisible();
   });
@@ -208,7 +208,7 @@ test.describe('administration', () => {
     // they must not get is role management, suspension or the audit trail.
     await page.goto('/administration');
     await expect(page.getByRole('row', { name: /Demo Owner/ })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Audit log' })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Audit log' })).toBeHidden();
     /*
      * No control over anybody's role. The two **filters** above the table are not privileged — narrowing a
      * directory you may read is reading — so this asks about the per-person control by name rather than

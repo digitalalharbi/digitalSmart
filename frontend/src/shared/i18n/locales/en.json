@@ -306,14 +306,7 @@
       "active": "Active",
       "suspended": "Suspended"
     },
-    "roles": {
-      "owner": "Owner",
-      "admin": "Administrator",
-      "project-manager": "Project manager",
-      "media-buyer": "Media buyer",
-      "creative": "Creative",
-      "client-viewer": "Client viewer"
-    },
+    "roles": "Roles & permissions",
     "columns": {
       "person": "Person",
       "role": "Role",
@@ -359,7 +352,46 @@
       "anyRole": "Any role"
     },
     "noPeopleFiltered": "Nobody matches this search and these filters. Clearing them shows everyone in the workspace.",
-    "operations": "Integration operations"
+    "operations": "Integration operations",
+    "rolesFailed": "Roles could not be loaded.",
+    "roleMembers_one": "{{count}} person",
+    "roleMembers_other": "{{count}} people",
+    "rolePermissions_one": "{{count}} permission",
+    "rolePermissions_other": "{{count}} permissions",
+    "setup": "Setup",
+    "health": "System health",
+    "diagnostics": "Advanced diagnostics",
+    "sections": "Administration sections",
+    "group": {
+      "workspace": "Workspace",
+      "oversight": "Oversight"
+    },
+    "area": {
+      "clients": {
+        "title": "Clients",
+        "body": "Who the agency works for, and their projects."
+      },
+      "integrations": {
+        "title": "Integrations & providers",
+        "body": "Connections, discovered accounts and which project may see which."
+      },
+      "tracking": {
+        "title": "Tracking & conversions",
+        "body": "Sources, event health and what counts as a conversion."
+      },
+      "stores": {
+        "title": "Stores",
+        "body": "Connected shops and their commerce data."
+      },
+      "benchmarks": {
+        "title": "Benchmarks",
+        "body": "The reference figures forecasts are built on, with their version."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "body": "What reaches whom, and the daily and weekly digests."
+      }
+    }
   },
   "integrations": {
     "subtitle": "Ad platforms this workspace can read from, and which projects may read what.",
