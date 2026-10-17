@@ -147,7 +147,12 @@ export function ProjectMatrix({ projects }: { projects: PortfolioProject[] }) {
               TILE[state],
             )}
           >
-            <span className="text-content truncate font-medium">{project.name}</span>
+            <span className="text-content-tertiary truncate text-[11px]" dir="auto">
+              {project.client_name ?? ''}
+            </span>
+            <span className="text-content line-clamp-2 font-medium" dir="auto">
+              {project.name}
+            </span>
             <span className="text-content-secondary text-xs">
               {t(`health.${state}`)} · {t('portfolio.campaignsCount', { count: project.campaigns })}
             </span>

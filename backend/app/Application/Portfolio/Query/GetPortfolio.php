@@ -85,11 +85,18 @@ final readonly class GetPortfolio
         }
 
         $projects = [];
+        $clientNames = [];
+
+        foreach ($roster['clients'] as $client) {
+            $clientNames[$client['id']] = $client['name'];
+        }
 
         foreach ($roster['projects'] as $project) {
             $group = $perProject[$project['id']] ?? $this->emptyGroup();
             $projects[] = [
                 ...$project,
+                /* Project names repeat across an agency — "Always-on" belongs to a dozen clients — so a tile says whose it is. */
+                'client_name' => $clientNames[$project['client_id']] ?? null,
                 ...$this->present($group),
                 'open_work' => $work[$project['id']] ?? 0,
             ];

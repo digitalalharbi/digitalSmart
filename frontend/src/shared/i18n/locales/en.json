@@ -59,7 +59,7 @@
   },
   "overview": {
     "title": "Overview",
-    "subtitle": "Platform foundation status for this environment.",
+    "subtitle": "What needs you today, across every client.",
     "foundationTitle": "Phase 0 foundation",
     "foundationBody": "Backend, database, cache and queue wiring are verified by the health endpoint below. Product surfaces arrive phase by phase.",
     "health": {

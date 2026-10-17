@@ -35,6 +35,8 @@ export type PortfolioClient = Figures & {
 export type PortfolioProject = Figures & {
   id: string;
   client_id: string;
+  /** Whose project it is. Null only if the client is not in the reader's roster. */
+  client_name?: string | null;
   name: string;
   status: string;
   open_work: number;

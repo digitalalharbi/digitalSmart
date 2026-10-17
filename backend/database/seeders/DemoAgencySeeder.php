@@ -795,6 +795,50 @@ final class DemoAgencySeeder extends Seeder
         }
 
         $this->insert('budgets', $rows);
+
+        /*
+         * The plan under each approved budget: the money split by platform in proportion to how many of the
+         * client's campaigns run there, with a tenth left unallocated on every third one — so the planned,
+         * allocated and unallocated figures all have something to say.
+         */
+        $providersOf = [];
+
+        foreach ($campaigns as $campaign) {
+            $providersOf[$campaign['client_id']][$campaign['provider']] = ($providersOf[$campaign['client_id']][$campaign['provider']] ?? 0) + 1;
+        }
+
+        $allocations = [];
+
+        foreach ($rows as $position => $budget) {
+            $mix = $providersOf[$budget['client_id']] ?? [];
+
+            if ($budget['status'] !== 'approved' || $mix === []) {
+                continue;
+            }
+
+            $pool = $position % 3 === 0 ? (int) floor($budget['amount_minor'] * 0.9) : $budget['amount_minor'];
+            $total = array_sum($mix);
+            $assigned = 0;
+            $last = array_key_last($mix);
+
+            foreach ($mix as $provider => $count) {
+                $amount = $provider === $last ? $pool - $assigned : (int) floor($pool * $count / $total);
+                $assigned += $amount;
+
+                if ($amount <= 0) {
+                    continue;
+                }
+
+                $allocations[] = [
+                    'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'budget_id' => $budget['id'],
+                    'parent_id' => null, 'level' => 'platform', 'provider' => $provider,
+                    'label' => ucfirst(str_replace('_', ' ', $provider)), 'amount_minor' => $amount,
+                    'position' => count($allocations), 'created_at' => $now, 'updated_at' => $now,
+                ];
+            }
+        }
+
+        $this->insert('budget_allocations', $allocations);
     }
 
     /**
@@ -955,9 +999,14 @@ final class DemoAgencySeeder extends Seeder
         $notify = [];
 
         $taskTitles = ['Refresh creative for weekend push', 'Rebuild audience exclusions', 'Prepare mid-month performance review', 'Fix purchase event on checkout', 'Reconcile spend with client invoice', 'Draft proposal for next quarter', 'Update landing page copy', 'Audit conversion tracking'];
-        $creativeTitles = ['Ramadan hero video — 15s', 'Carousel: bestsellers', 'Static set — national day', 'Story ads — product launch', 'Offer banner — white friday', 'Testimonial reel', 'Lead form creative — services'];
+        $creativeTitles = [
+            ['Ramadan hero video — 15s', 'video'], ['Carousel: bestsellers', 'carousel'], ['Static set — national day', 'image'],
+            ['Story ads — product launch', 'video'], ['Offer banner — white friday', 'image'], ['Testimonial reel', 'video'],
+            ['Lead form copy — services', 'copy'], ['Search ads copy — brand', 'copy'], ['Carousel: new arrivals', 'carousel'],
+        ];
         $states = ['draft', 'briefed', 'in_production', 'in_production', 'in_review', 'changes_requested', 'approved'];
-        $kinds = ['image', 'video', 'carousel', 'copy'];
+
+        $creativeIndex = 0;
 
         foreach ($projects as $index => $project) {
             $assignee = $people['all'][$index % count($people['all'])];
@@ -988,11 +1037,13 @@ final class DemoAgencySeeder extends Seeder
             }
 
             if ($index % 2 === 0) {
+                /* Its own counter: every request here has an even project index, so indexing by it would use half of everything. */
+                $n = $creativeIndex++;
                 $creative[] = [
                     'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'client_id' => $project['client_id'], 'project_id' => $project['id'],
-                    'title' => $creativeTitles[$index % count($creativeTitles)], 'state' => $states[$index % count($states)],
-                    'kind' => $kinds[$index % count($kinds)], 'provider' => ['meta', 'tiktok', 'snapchat', 'google_ads'][$index % 4],
-                    'due_at' => $now->copy()->addDays(($index % 10) - 3), 'owner_id' => $people['creatives'][$index % 2],
+                    'title' => $creativeTitles[($n * 4 + 1) % count($creativeTitles)][0], 'state' => $states[($n * 3 + intdiv($n, 7)) % count($states)],
+                    'kind' => $creativeTitles[($n * 4 + 1) % count($creativeTitles)][1], 'provider' => ['meta', 'tiktok', 'snapchat', 'google_ads'][$n % 4],
+                    'due_at' => $now->copy()->addDays(($n % 10) - 3), 'owner_id' => $n % 9 === 8 ? null : $people['creatives'][$n % 2],
                     'created_by' => $people['owner'], 'state_changed_at' => $now, 'created_at' => $now, 'updated_at' => $now,
                 ];
             }
@@ -1024,6 +1075,47 @@ final class DemoAgencySeeder extends Seeder
 
         $this->insert('tasks', $tasks);
         $this->insert('creative_requests', $creative);
+
+        /*
+         * A file behind every request that has got as far as production: measured the way an upload is, and decided
+         * the way a review is — approved where the request says so, sent back with a reason where it says that.
+         */
+        $shapes = ['image' => [1080, 1080, 'jpg'], 'video' => [1080, 1920, 'mp4'], 'carousel' => [1080, 1350, 'jpg'], 'copy' => [null, null, null]];
+        $versions = [];
+        $decisions = [];
+
+        foreach ($creative as $request) {
+            if (in_array($request['state'], ['draft', 'briefed'], true)) {
+                continue;
+            }
+
+            [$width, $height, $format] = $shapes[$request['kind']];
+            $versionId = $this->ids->generate();
+            $versions[] = [
+                'id' => $versionId, 'workspace_id' => $workspaceId, 'creative_request_id' => $request['id'], 'number' => 1,
+                'kind' => $request['kind'], 'label' => 'First cut', 'storage_path' => $request['kind'] === 'copy' ? null : 'demo/'.$request['id'].'.'.$format,
+                'body' => $request['kind'] === 'copy' ? 'Demo copy — sandbox text.' : null,
+                'width_px' => $width, 'height_px' => $height, 'format' => $format,
+                'file_size_bytes' => $request['kind'] === 'video' ? 8_400_000 : ($request['kind'] === 'copy' ? null : 640_000),
+                'duration_seconds' => $request['kind'] === 'video' ? 15.0 : null,
+                'text_length' => $request['kind'] === 'copy' ? 25 : null,
+                'uploaded_by' => $request['owner_id'], 'created_at' => $now, 'updated_at' => $now,
+            ];
+
+            if ($request['state'] === 'approved' || $request['state'] === 'changes_requested') {
+                $approved = $request['state'] === 'approved';
+                $decisions[] = [
+                    'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'creative_version_id' => $versionId,
+                    'outcome' => $approved ? 'approved' : 'changes_requested',
+                    'reason' => $approved ? null : 'The offer line is too small on mobile.',
+                    'decided_by' => $people['manager'], 'decided_at' => $now->copy()->subHours(2 + count($decisions)),
+                    'created_at' => $now, 'updated_at' => $now,
+                ];
+            }
+        }
+
+        $this->insert('creative_versions', $versions);
+        $this->insert('creative_approvals', $decisions);
         $this->insert('approval_requests', $approvals);
         $this->insert('client_requests', $requests);
         $this->insert('notifications', $notify);

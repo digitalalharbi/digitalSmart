@@ -22,6 +22,7 @@ export function SpendHero({ meta, locale }: { meta: CampaignControlPage['meta'];
       className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
     >
       {meta.spend_by_currency.map((entry) => {
+        const figure = formatMinor(entry.spend_minor, entry.currency, locale);
         const trend = meta.spend_trend.find((s) => s.currency === entry.currency)?.points ?? [];
 
         return (
@@ -32,8 +33,12 @@ export function SpendHero({ meta, locale }: { meta: CampaignControlPage['meta'];
             <span className="ds-overline text-content-tertiary">
               {t('campaignControl.spend.title')} · {entry.currency}
             </span>
-            <span className="ds-figure text-content text-3xl">
-              {formatMinor(entry.spend_minor, entry.currency, locale)}
+            {/* Long figures step down a size rather than run out of their card; the whole figure stays on hover. */}
+            <span
+              className={`ds-figure text-content min-w-0 truncate ${figure.length > 14 ? 'text-2xl' : 'text-3xl'}`}
+              title={figure}
+            >
+              {figure}
             </span>
             <Sparkline
               stretch
