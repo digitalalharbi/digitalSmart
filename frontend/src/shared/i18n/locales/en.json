@@ -306,7 +306,14 @@
       "active": "Active",
       "suspended": "Suspended"
     },
-    "roles": "Roles & permissions",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Administrator",
+      "project-manager": "Project manager",
+      "media-buyer": "Media buyer",
+      "creative": "Creative",
+      "client-viewer": "Client viewer"
+    },
     "columns": {
       "person": "Person",
       "role": "Role",
@@ -391,7 +398,8 @@
         "title": "Notifications",
         "body": "What reaches whom, and the daily and weekly digests."
       }
-    }
+    },
+    "rolesTitle": "Roles & permissions"
   },
   "integrations": {
     "subtitle": "Ad platforms this workspace can read from, and which projects may read what.",

@@ -47,7 +47,7 @@ export function RolesPanel() {
   const meaning = new Map(data.permissions.map((permission) => [permission.slug, permission]));
 
   return (
-    <ul className="grid gap-4 lg:grid-cols-2" aria-label={t('administration.roles')}>
+    <ul className="grid gap-4 lg:grid-cols-2" aria-label={t('administration.rolesTitle')}>
       {data.roles.map((role) => {
         const groups = new Map<string, string[]>();
 

@@ -45,7 +45,7 @@ export function AdministrationPage() {
       label: t('administration.group.workspace'),
       items: [
         { id: 'people', label: t('administration.people'), visible: canSeePeople },
-        { id: 'roles', label: t('administration.roles'), visible: canSeePeople },
+        { id: 'roles', label: t('administration.rolesTitle'), visible: canSeePeople },
         { id: 'setup', label: t('administration.setup'), visible: true },
       ],
     },

@@ -120,6 +120,13 @@ describe('AdministrationPage', () => {
     expect(screen.getByRole('button', { name: 'Audit log' })).toBeInTheDocument();
   });
 
+  /* A key that resolves to nothing prints as itself — "administration.roles.media-buyer" on the page. */
+  it('never prints a translation key where a role name belongs', async () => {
+    await renderWithProviders(<AdministrationPage />);
+
+    expect(document.body.textContent).not.toMatch(/administration\.[a-z]/);
+  });
+
   it('lists people with their role and status', async () => {
     await renderWithProviders(<AdministrationPage />);
 
