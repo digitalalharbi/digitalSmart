@@ -1290,6 +1290,7 @@ final class DemoAgencySeeder extends Seeder
 
         foreach ($projects as $index => $project) {
             $assignee = $people['all'][$index % count($people['all'])];
+            $assigner = $assignee === $people['owner'] ? $people['manager'] : $people['owner'];
 
             for ($t = 0; $t < 1 + $index % 3; $t++) {
                 $sequence = $index * 3 + $t;
@@ -1308,8 +1309,8 @@ final class DemoAgencySeeder extends Seeder
 
                 if ($state !== 'done' && $sequence % 6 === 0) {
                     $notify[] = [
-                        'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'user_id' => $assignee, 'actor_id' => $people['owner'],
-                        'kind' => 'task_assigned', 'title' => $taskTitles[$sequence % count($taskTitles)].' · '.$project['name'],
+                        'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'user_id' => $assignee, 'actor_id' => $assigner,
+                        'kind' => 'task_assigned', 'title' => $taskTitles[$sequence % count($taskTitles)].' · '.$project['name'], 'body' => null,
                         'subject_type' => 'task', 'subject_id' => $taskId, 'read_at' => null,
                         'created_at' => $now->copy()->subHours($sequence % 30), 'updated_at' => $now,
                     ];
@@ -1330,8 +1331,21 @@ final class DemoAgencySeeder extends Seeder
 
             if ($index % 5 === 0) {
                 $proposal = ['campaign' => $project['name'], 'change' => 'Increase daily budget by 15%'];
+                $approvalId = $this->ids->generate();
+                $approvalTitle = ['Raise daily budget — '.$project['name'], 'Publish new creative set', 'Launch '.$project['name']][$index % 3];
+
+                /* The people who could decide it are told once each — and the person who asked is not one of them. */
+                foreach ([$people['owner'], $people['manager']] as $who) {
+                    $notify[] = [
+                        'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'user_id' => $who, 'actor_id' => $people['buyers'][$index % 3],
+                        'kind' => 'approval_requested', 'title' => $approvalTitle, 'body' => 'Waiting for a decision.',
+                        'subject_type' => 'approval', 'subject_id' => $approvalId, 'read_at' => $index % 4 === 0 ? $now : null,
+                        'created_at' => $now->copy()->subHours(2 + $index % 40), 'updated_at' => $now,
+                    ];
+                }
+
                 $approvals[] = [
-                    'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'client_id' => $project['client_id'], 'project_id' => $project['id'],
+                    'id' => $approvalId, 'workspace_id' => $workspaceId, 'client_id' => $project['client_id'], 'project_id' => $project['id'],
                     'kind' => ['spend_change', 'creative_publish', 'campaign_launch'][$index % 3],
                     'title' => ['Raise daily budget — '.$project['name'], 'Publish new creative set', 'Launch '.$project['name']][$index % 3],
                     'rationale' => 'Performance is ahead of plan and the budget is the constraint.',
@@ -1343,8 +1357,15 @@ final class DemoAgencySeeder extends Seeder
             }
 
             if ($index % 6 === 1) {
+                $requestId = $this->ids->generate();
+                $notify[] = [
+                    'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'user_id' => $people['pms'][$index % 2], 'actor_id' => null,
+                    'kind' => 'client_request_submitted', 'title' => ['Can we pause the weekend campaigns?', 'Need the monthly report before Thursday', 'New offer creatives for next week', 'Why did cost per lead go up?', 'Launch a campaign for the new branch'][$index % 5],
+                    'body' => 'A client asked for something.', 'subject_type' => 'client_request', 'subject_id' => $requestId,
+                    'read_at' => null, 'created_at' => $now->copy()->subHours(1 + $index % 30), 'updated_at' => $now,
+                ];
                 $requests[] = [
-                    'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'client_id' => $project['client_id'], 'project_id' => $project['id'],
+                    'id' => $requestId, 'workspace_id' => $workspaceId, 'client_id' => $project['client_id'], 'project_id' => $project['id'],
                     'kind' => ['change', 'report', 'creative', 'question', 'new_campaign'][$index % 5],
                     'title' => ['Can we pause the weekend campaigns?', 'Need the monthly report before Thursday', 'New offer creatives for next week', 'Why did cost per lead go up?', 'Launch a campaign for the new branch'][$index % 5],
                     'state' => ['submitted', 'in_progress', 'accepted', 'submitted'][$index % 4], 'stated_urgency' => ['this_week', 'whenever', 'urgent', 'this_month'][$index % 4],
