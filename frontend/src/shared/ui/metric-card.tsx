@@ -63,6 +63,7 @@ export function MetricCard({
         <span className="text-content-tertiary ds-overline">{value.label}</span>
         {value.unavailable_reason !== null && (
           <span
+            role="img"
             className="text-content-tertiary inline-flex"
             title={value.unavailable_reason}
             aria-label={value.unavailable_reason}

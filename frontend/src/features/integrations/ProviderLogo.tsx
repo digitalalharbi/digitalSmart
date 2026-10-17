@@ -8,19 +8,19 @@ import type { ProviderSlug } from './types';
  * is an identifier chip, and the design system keeps platform colour to exactly
  * this role rather than letting it spread across the interface.
  */
-const MARKS: Record<ProviderSlug, { initials: string; token: string }> = {
-  meta: { initials: 'M', token: '--ds-platform-meta' },
-  google_ads: { initials: 'G', token: '--ds-platform-google' },
-  tiktok: { initials: 'TT', token: '--ds-platform-tiktok' },
-  snapchat: { initials: 'S', token: '--ds-platform-snapchat' },
-  x: { initials: 'X', token: '--ds-platform-x' },
-  linkedin: { initials: 'in', token: '--ds-platform-linkedin' },
-  openai: { initials: 'AI', token: '--ds-platform-openai' },
-  google_analytics: { initials: 'GA', token: '--ds-platform-google-analytics' },
-  google_tag_manager: { initials: 'GT', token: '--ds-platform-google-tag-manager' },
-  salla: { initials: 'SA', token: '--ds-platform-salla' },
-  zid: { initials: 'Z', token: '--ds-platform-zid' },
-  hubspot: { initials: 'HS', token: '--ds-platform-hubspot' },
+const MARKS: Record<ProviderSlug, { initials: string; token: string; ink: 'light' | 'dark' }> = {
+  meta: { initials: 'M', token: '--ds-platform-meta', ink: 'dark' },
+  google_ads: { initials: 'G', token: '--ds-platform-google', ink: 'dark' },
+  tiktok: { initials: 'TT', token: '--ds-platform-tiktok', ink: 'dark' },
+  snapchat: { initials: 'S', token: '--ds-platform-snapchat', ink: 'dark' },
+  x: { initials: 'X', token: '--ds-platform-x', ink: 'light' },
+  linkedin: { initials: 'in', token: '--ds-platform-linkedin', ink: 'light' },
+  openai: { initials: 'AI', token: '--ds-platform-openai', ink: 'dark' },
+  google_analytics: { initials: 'GA', token: '--ds-platform-google-analytics', ink: 'dark' },
+  google_tag_manager: { initials: 'GT', token: '--ds-platform-google-tag-manager', ink: 'light' },
+  salla: { initials: 'SA', token: '--ds-platform-salla', ink: 'dark' },
+  zid: { initials: 'Z', token: '--ds-platform-zid', ink: 'light' },
+  hubspot: { initials: 'HS', token: '--ds-platform-hubspot', ink: 'light' },
 };
 
 /**
@@ -34,7 +34,7 @@ const MARKS: Record<ProviderSlug, { initials: string; token: string }> = {
  * So an unknown provider now renders as its own initials on a neutral chip. A new provider missing its colour is
  * a cosmetic gap somebody notices; a new provider taking the page down is an outage.
  */
-function markFor(provider: string): { initials: string; token: string } {
+function markFor(provider: string): { initials: string; token: string; ink: 'light' | 'dark' } {
   return (
     MARKS[provider as ProviderSlug] ?? {
       /* The slug's own first letters — `google_ads` becomes "GA" — which is at least the right provider. */
@@ -44,7 +44,8 @@ function markFor(provider: string): { initials: string; token: string } {
         .join('')
         .slice(0, 2)
         .toUpperCase(),
-      token: '--ds-text-tertiary',
+      token: '--ds-surface-sunken',
+      ink: 'dark',
     }
   );
 }
@@ -62,10 +63,18 @@ export function ProviderLogo({
     <span
       aria-hidden="true"
       className={cn(
-        'grid size-9 shrink-0 place-items-center rounded-lg text-xs font-semibold text-white',
+        'grid size-9 shrink-0 place-items-center rounded-lg text-xs font-semibold',
         className,
       )}
-      style={{ backgroundColor: `var(${mark.token})` }}
+      style={{
+        backgroundColor: `var(${mark.token})`,
+        /*
+         * Ink chosen against each chip by measured contrast (at least 4.5:1 for these twelve-pixel initials), not
+         * assumed white: white on a platform's yellow or orange is unreadable. The choice is per provider because
+         * lightness alone does not decide it — a green and a blue of equal lightness want different ink.
+         */
+        color: mark.ink === 'light' ? '#ffffff' : '#14161c',
+      }}
     >
       {mark.initials}
     </span>
