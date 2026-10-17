@@ -2946,5 +2946,40 @@
   "contextInsight": {
     "title": "What the assistant noticed",
     "open": "Open in assistant"
+  },
+  "sandbox": {
+    "label": "Sandbox workspace",
+    "short": "Sandbox agency",
+    "long": "Every figure here is a fixture. Nothing is live provider data, and nothing here can change a real campaign.",
+    "tour": "Take the tour",
+    "dismiss": "Hide this notice",
+    "go": "Go there",
+    "done": "Finish",
+    "step": {
+      "overview": {
+        "title": "Start with what needs you",
+        "body": "The overview is composed for your role: what is waiting on you, then what the money did."
+      },
+      "campaigns": {
+        "title": "Every campaign, worst first",
+        "body": "Filter by account, period or your own projects; open a campaign for its trend, budget and readiness."
+      },
+      "project": {
+        "title": "A project is where the team works",
+        "body": "Open any project: scope in the header, nine tabs, and the people, alerts and changes beside them."
+      },
+      "budget": {
+        "title": "Plan, pace, forecast",
+        "body": "Approved, expected by today, spent and projected — one scale per currency, never added across them."
+      },
+      "creative": {
+        "title": "Creative, media first",
+        "body": "Gallery, board or table, with a desk for workload, deadlines and what was just approved."
+      },
+      "reports": {
+        "title": "Reports you can send",
+        "body": "Executive or detailed, frozen as a snapshot, shared by a link that never shows internal notes."
+      }
+    }
   }
 }
