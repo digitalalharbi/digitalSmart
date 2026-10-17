@@ -77,6 +77,13 @@ export type SortKey = 'health' | 'spend' | 'name' | 'cost' | 'roas';
 export type ControlFilters = {
   client: { id: string; label: string } | null;
   project: { id: string; label: string } | null;
+  account: { id: string; label: string } | null;
+  /** Only the projects the reader is assigned to — the smallest truthful "owner": a project assignment. */
+  mine: boolean;
+  /** The window, in days. Null is the default the daily queue uses. */
+  days: number | null;
+  /** Summary shows the answer; detailed shows the machinery. */
+  mode: 'summary' | 'detailed';
   provider: string | null;
   status: string | null;
   objective: string | null;

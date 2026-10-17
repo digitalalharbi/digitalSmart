@@ -32,7 +32,7 @@ import { money, resultText } from './text';
 import { SavedViewsMenu } from '@/features/surface-views';
 import { OwnershipQueue } from './OwnershipQueue';
 import { SpendHero } from './SpendHero';
-import { DEFAULT_FILTERS, fromParams, toParams } from './filters';
+import { DEFAULT_FILTERS, PERIODS, fromParams, toParams } from './filters';
 import { useCampaignControl } from './useCampaignControl';
 import type { ControlFilters, HealthValue, SortKey } from './types';
 
@@ -75,6 +75,20 @@ export function CampaignControlPage() {
   const [projectTerm, setProjectTerm] = useState('');
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const projects = useProjectsQuery({ search: projectTerm, per_page: 8 });
+  const [accountTerm, setAccountTerm] = useState('');
+  const accounts = useQuery({
+    queryKey: ['campaign-control', 'accounts', accountTerm] as const,
+    queryFn: async (): Promise<Array<{ id: string; label: string; context: string | null }>> => {
+      const { data: body } = await api.get<{
+        data: Array<{ id: string; label: string; context: string | null }>;
+      }>('/search', { params: { q: accountTerm, type: ['account'], limit: 8 } });
+
+      return body.data;
+    },
+    enabled: accountTerm.trim().length >= 2,
+    staleTime: 30_000,
+    retry: false,
+  });
   const providers = useProvidersQuery();
   const tags = useQuery({
     queryKey: ['tags'] as const,
@@ -111,6 +125,8 @@ export function CampaignControlPage() {
   const isFiltered =
     filters.client !== null ||
     filters.project !== null ||
+    filters.account !== null ||
+    filters.mine ||
     filters.provider !== null ||
     filters.status !== null ||
     filters.objective !== null ||
@@ -124,6 +140,23 @@ export function CampaignControlPage() {
         description={t('campaignControl.subtitle')}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <div
+              className="bg-surface-sunken flex rounded-lg p-0.5"
+              role="group"
+              aria-label={t('campaignControl.mode.label')}
+            >
+              {(['summary', 'detailed'] as const).map((mode) => (
+                <Button
+                  key={mode}
+                  size="sm"
+                  variant={filters.mode === mode ? 'secondary' : 'ghost'}
+                  aria-pressed={filters.mode === mode}
+                  onClick={() => update({ mode })}
+                >
+                  {t(`campaignControl.mode.${mode}`)}
+                </Button>
+              ))}
+            </div>
             <SavedViewsMenu
               surface="campaign_control"
               current={Object.fromEntries(toParams({ ...filters, offset: 0 }))}
@@ -207,7 +240,7 @@ export function CampaignControlPage() {
         </CardContent>
       </Card>
 
-      <OwnershipQueue />
+      {filters.mode === 'detailed' ? <OwnershipQueue /> : null}
 
       <section aria-label={t('campaignControl.filters')} className="flex flex-wrap items-end gap-3">
         <div className="min-w-56 flex-1">
@@ -252,6 +285,37 @@ export function CampaignControlPage() {
           options={(projects.data?.data ?? []).map((p) => ({ id: p.id, label: p.name }))}
           isLoading={projects.isFetching}
         />
+        <EntityPicker
+          label={t('campaignControl.account')}
+          clearLabel={t('campaignControl.clear')}
+          value={filters.account}
+          onChange={(o) => update({ account: o === null ? null : { id: o.id, label: o.label } })}
+          onSearch={setAccountTerm}
+          options={(accounts.data ?? []).map((a) => ({
+            id: a.id,
+            label: a.label,
+            context: a.context,
+          }))}
+          isLoading={accounts.isFetching}
+        />
+        <Select
+          label={t('campaignControl.period')}
+          value={filters.days === null ? null : String(filters.days)}
+          onChange={(days) => update({ days: days === null ? null : Number(days) })}
+          options={PERIODS.map((days) => ({
+            value: String(days),
+            label: t('campaignControl.lastDays', { count: days }),
+          }))}
+          any={t('campaignControl.defaultPeriod')}
+        />
+        <label className="flex h-9 items-center gap-2 self-end text-sm">
+          <input
+            type="checkbox"
+            checked={filters.mine}
+            onChange={(event) => update({ mine: event.target.checked })}
+          />
+          {t('campaignControl.mine')}
+        </label>
         <Select
           label={t('campaignControl.provider')}
           value={filters.provider}
@@ -259,39 +323,46 @@ export function CampaignControlPage() {
           options={(providers.data ?? []).map((p) => ({ value: p.provider, label: p.label }))}
           any={t('campaignControl.any')}
         />
-        {(tags.data ?? []).length === 0 ? null : (
-          <Select
-            label={t('campaignControl.tag')}
-            value={filters.tag?.id ?? null}
-            onChange={(id) =>
-              update({
-                tag:
-                  id === null
-                    ? null
-                    : { id, label: (tags.data ?? []).find((tag) => tag.id === id)?.name ?? '' },
-              })
-            }
-            options={(tags.data ?? []).map((tag) => ({ value: tag.id, label: tag.name }))}
-            any={t('campaignControl.any')}
-          />
-        )}
-        <Select
-          label={t('campaignControl.status')}
-          value={filters.status}
-          onChange={(status) => update({ status })}
-          options={(data?.meta.statuses ?? []).map((s) => ({ value: s.status, label: s.label }))}
-          any={t('campaignControl.any')}
-        />
-        <Select
-          label={t('campaignControl.objective')}
-          value={filters.objective}
-          onChange={(objective) => update({ objective })}
-          options={(data?.meta.objectives ?? []).map((o) => ({
-            value: o.objective,
-            label: o.label,
-          }))}
-          any={t('campaignControl.any')}
-        />
+        {filters.mode === 'detailed' ? (
+          <>
+            {(tags.data ?? []).length === 0 ? null : (
+              <Select
+                label={t('campaignControl.tag')}
+                value={filters.tag?.id ?? null}
+                onChange={(id) =>
+                  update({
+                    tag:
+                      id === null
+                        ? null
+                        : { id, label: (tags.data ?? []).find((tag) => tag.id === id)?.name ?? '' },
+                  })
+                }
+                options={(tags.data ?? []).map((tag) => ({ value: tag.id, label: tag.name }))}
+                any={t('campaignControl.any')}
+              />
+            )}
+            <Select
+              label={t('campaignControl.status')}
+              value={filters.status}
+              onChange={(status) => update({ status })}
+              options={(data?.meta.statuses ?? []).map((s) => ({
+                value: s.status,
+                label: s.label,
+              }))}
+              any={t('campaignControl.any')}
+            />
+            <Select
+              label={t('campaignControl.objective')}
+              value={filters.objective}
+              onChange={(objective) => update({ objective })}
+              options={(data?.meta.objectives ?? []).map((o) => ({
+                value: o.objective,
+                label: o.label,
+              }))}
+              any={t('campaignControl.any')}
+            />
+          </>
+        ) : null}
         <Select
           label={t('campaignControl.sort')}
           value={filters.sort}

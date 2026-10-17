@@ -224,6 +224,32 @@ it('filters by health, client and a search term', function (): void {
         ->assertJsonPath('data.0.name', 'Healthy One');
 });
 
+it('narrows to an ad account and reads the period the reader chose, ignoring one it does not offer', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = controlAccounts($scenario);
+    controlProject($scenario, $accounts[0]['id']);
+    metricsFor($scenario, controlCampaign($scenario, $accounts[0]['id'], 'Account One'), days: 28);
+
+    $this->actingAs($scenario->owner)
+        ->getJson('/api/campaigns/control?external_account_id='.$accounts[0]['id'])
+        ->assertOk()
+        ->assertJsonCount(1, 'data');
+
+    $this->actingAs($scenario->owner)
+        ->getJson('/api/campaigns/control?external_account_id=00000000-0000-4000-8000-000000000000')
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+
+    $window = fn (string $query): int => (int) round(
+        (strtotime((string) $this->actingAs($scenario->owner)->getJson('/api/campaigns/control'.$query)->json('meta.window.to'))
+        - strtotime((string) $this->actingAs($scenario->owner)->getJson('/api/campaigns/control'.$query)->json('meta.window.from'))) / 86_400,
+    ) + 1;
+
+    expect($window('?days=7'))->toBe(7)
+        ->and($window('?days=90'))->toBe(90)
+        ->and($window('?days=365'))->toBe(28);
+});
+
 /*
  * A filter the server did not understand returns a page the reader believes is narrowed and is not,
  * which is worse than an error.

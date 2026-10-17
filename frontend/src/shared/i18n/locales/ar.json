@@ -2425,6 +2425,31 @@
     "spend": {
       "title": "الإنفاق",
       "trend": "الإنفاق اليومي بـ {{currency}}"
+    },
+    "account": "الحساب الإعلاني",
+    "period": "الفترة",
+    "lastDays_zero": "آخر {{count}} يوم",
+    "lastDays_one": "آخر يوم",
+    "lastDays_two": "آخر يومين",
+    "lastDays_few": "آخر {{count}} أيام",
+    "lastDays_many": "آخر {{count}} يومًا",
+    "lastDays_other": "آخر {{count}} يوم",
+    "defaultPeriod": "آخر 28 يومًا (الافتراضي)",
+    "mine": "مشاريعي فقط",
+    "mode": {
+      "label": "مستوى التفاصيل",
+      "summary": "ملخص",
+      "detailed": "مفصّل"
+    },
+    "actions": {
+      "label": "إجراءات سريعة",
+      "task": "إضافة مهمة",
+      "report": "التقارير",
+      "defaultTitle": "مراجعة {{name}}",
+      "taskTitle": "ما المطلوب",
+      "due": "تاريخ الاستحقاق",
+      "create": "إنشاء المهمة",
+      "failed": "تعذّر إنشاء المهمة."
     }
   },
   "palette": {

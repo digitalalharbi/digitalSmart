@@ -8,11 +8,16 @@ const HEALTH: HealthValue[] = [
   'inactive',
   'insufficient_data',
 ];
+export const PERIODS = [7, 14, 28, 56, 90] as const;
 const SORTS: SortKey[] = ['health', 'spend', 'name', 'cost', 'roas'];
 
 export const DEFAULT_FILTERS: ControlFilters = {
   client: null,
   project: null,
+  account: null,
+  mine: false,
+  days: null,
+  mode: 'summary',
   provider: null,
   status: null,
   objective: null,
@@ -46,6 +51,10 @@ export function fromParams(params: URLSearchParams): ControlFilters {
   return {
     client: entity('client'),
     project: entity('project'),
+    account: entity('account'),
+    mine: params.get('mine') === '1',
+    days: PERIODS.includes(Number(params.get('days')) as never) ? Number(params.get('days')) : null,
+    mode: params.get('mode') === 'detailed' ? 'detailed' : 'summary',
     tag: entity('tag'),
     provider: params.get('provider'),
     status: params.get('status'),
@@ -72,6 +81,13 @@ export function toParams(filters: ControlFilters): URLSearchParams {
     'project',
     filters.project === null ? null : `${filters.project.id}~${filters.project.label}`,
   );
+  set(
+    'account',
+    filters.account === null ? null : `${filters.account.id}~${filters.account.label}`,
+  );
+  set('mine', filters.mine ? '1' : null);
+  set('days', filters.days === null ? null : String(filters.days));
+  set('mode', filters.mode === 'detailed' ? 'detailed' : null);
   set('tag', filters.tag === null ? null : `${filters.tag.id}~${filters.tag.label}`);
   set('provider', filters.provider);
   set('status', filters.status);

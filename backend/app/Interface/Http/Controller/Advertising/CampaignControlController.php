@@ -78,6 +78,7 @@ final class CampaignControlController extends Controller
             $filter,
             $this->intOrNull($request, 'limit'),
             $this->intOrNull($request, 'offset') ?? 0,
+            $this->intOrNull($request, 'days'),
         );
 
         /*

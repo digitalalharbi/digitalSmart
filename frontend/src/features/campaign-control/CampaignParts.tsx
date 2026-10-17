@@ -10,6 +10,7 @@ import { Sparkline } from '@/shared/ui/sparkline';
 import { ProviderLogo } from '@/features/integrations';
 import { Pin, PinOff } from 'lucide-react';
 import { usePinMutation, useShortcutsQuery } from '@/features/search';
+import { QuickActions } from './QuickActions';
 import { HEALTH_TO_STATE, type CampaignRow } from './types';
 
 /** Average daily spend against a daily budget, as a bar plus the figure beside it. */
@@ -146,6 +147,7 @@ export function CampaignCard({ row }: { row: CampaignRow }) {
           ? t('campaignControl.neverUpdated')
           : t('campaignControl.updated', { when: formatRelativeTime(row.last_synced_at, locale) })}
       </p>
+      <QuickActions row={row} />
     </article>
   );
 }

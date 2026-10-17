@@ -14,6 +14,9 @@ export function useCampaignControl(filters: ControlFilters) {
     queryKey: queryKeys.campaignControl.list({
       client: filters.client?.id ?? null,
       project: filters.project?.id ?? null,
+      account: filters.account?.id ?? null,
+      mine: filters.mine,
+      days: filters.days,
       provider: filters.provider,
       status: filters.status,
       objective: filters.objective,

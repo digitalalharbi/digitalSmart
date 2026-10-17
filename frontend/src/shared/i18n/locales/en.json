@@ -2394,6 +2394,27 @@
     "spend": {
       "title": "Spend",
       "trend": "Daily spend in {{currency}}"
+    },
+    "account": "Ad account",
+    "period": "Period",
+    "lastDays_one": "Last {{count}} day",
+    "lastDays_other": "Last {{count}} days",
+    "defaultPeriod": "Last 28 days (default)",
+    "mine": "My projects only",
+    "mode": {
+      "label": "Level of detail",
+      "summary": "Summary",
+      "detailed": "Detailed"
+    },
+    "actions": {
+      "label": "Quick actions",
+      "task": "Add task",
+      "report": "Reports",
+      "defaultTitle": "Review {{name}}",
+      "taskTitle": "What needs doing",
+      "due": "Due date",
+      "create": "Create task",
+      "failed": "The task could not be created."
     }
   },
   "palette": {

@@ -43,6 +43,9 @@ final readonly class GetCampaignControl
     /** The window health is read over. Four weeks, so a monthly rhythm appears and a weekly one averages. */
     public const int WINDOW_DAYS = 28;
 
+    /** The periods a reader may choose. Anything else is the default, so a typo cannot ask for a year. */
+    public const array WINDOWS = [7, 14, 28, 56, 90];
+
     private const int PER_PAGE = 50;
 
     public function __construct(
@@ -58,8 +61,9 @@ final readonly class GetCampaignControl
         CampaignControlFilter $filter,
         ?int $limit = null,
         int $offset = 0,
+        ?int $windowDays = null,
     ): CampaignControlPage {
-        $assessment = $this->assessAll($filter);
+        $assessment = $this->assessAll($filter, $windowDays);
         $rows = $assessment['rows'];
         $now = $assessment['now'];
         $to = $assessment['to'];
@@ -163,13 +167,13 @@ final readonly class GetCampaignControl
      *
      * @return array{rows: list<CampaignControlRow>, total: int, now: DateTimeImmutable, from: DateTimeImmutable, to: DateTimeImmutable}
      */
-    public function assessAll(CampaignControlFilter $filter): array
+    public function assessAll(CampaignControlFilter $filter, ?int $windowDays = null): array
     {
         $this->guard->ensure(Permission::AnalyticsView);
 
         $now = $this->clock->now();
         $to = $now->modify('-1 day');
-        $from = $to->modify(sprintf('-%d days', self::WINDOW_DAYS - 1));
+        $from = $to->modify(sprintf('-%d days', self::window($windowDays) - 1));
 
         $workspaceId = $this->actor->workspaceId()->value;
         $visible = $this->visibility->visibleProjectIds();
@@ -184,6 +188,11 @@ final readonly class GetCampaignControl
             'from' => $from,
             'to' => $to,
         ];
+    }
+
+    public static function window(?int $days): int
+    {
+        return $days !== null && in_array($days, self::WINDOWS, true) ? $days : self::WINDOW_DAYS;
     }
 
     /** Average spend on a reporting day against a *daily* budget. Any other mode has no daily line to read against. */
