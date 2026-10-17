@@ -6,6 +6,7 @@ import { ContextInsight } from '@/features/assistant';
 import { BackgroundWork } from '@/features/background-work';
 import { api } from '@/shared/api/client';
 import { Button } from '@/shared/ui/button';
+import { ActivityFeed } from '@/shared/ui/activity-feed';
 import { useUiStore } from '@/shared/store/ui-store';
 import { Alert } from '@/shared/ui/alert';
 import { buttonVariants } from '@/shared/ui/button.variants';
@@ -85,6 +86,36 @@ export function ClientPortfolioPage() {
 
     void navigate(query === undefined ? to : `${to}?${query}`);
   };
+
+  /* What changed, for this client: the agency's feed, narrowed to the projects this client has. */
+  const projectIds = new Set((data?.projects ?? []).map((project) => project.id));
+  const changes = useQuery({
+    queryKey: ['portfolio', 'client-activity', clientId] as const,
+    queryFn: async (): Promise<
+      Array<{
+        id: string;
+        sentence: string;
+        actor: string | null;
+        project_id: string | null;
+        at: string;
+      }>
+    > => {
+      const { data: body } = await api.get<{
+        data: Array<{
+          id: string;
+          sentence: string;
+          actor: string | null;
+          project_id: string | null;
+          at: string;
+        }>;
+      }>('/activity', { params: { limit: 100 } });
+
+      return body.data;
+    },
+    retry: false,
+    staleTime: 30_000,
+    enabled: mode === 'operational',
+  });
 
   return (
     <div className="ds-page">
@@ -265,6 +296,31 @@ export function ClientPortfolioPage() {
                           </li>
                         ))}
                       </ul>
+                    )}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('workspace.changes')}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {changes.isError ? (
+                      <p className="text-content-tertiary text-sm">{t('workspace.unavailable')}</p>
+                    ) : (
+                      <ActivityFeed
+                        isPending={changes.isPending}
+                        entries={(changes.data ?? [])
+                          .filter(
+                            (row) => row.project_id !== null && projectIds.has(row.project_id),
+                          )
+                          .slice(0, 8)
+                          .map((row) => ({
+                            id: row.id,
+                            actor: row.actor,
+                            summary: row.sentence,
+                            at: row.at,
+                          }))}
+                      />
                     )}
                   </CardContent>
                 </Card>
