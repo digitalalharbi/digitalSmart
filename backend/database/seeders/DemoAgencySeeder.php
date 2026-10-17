@@ -4,14 +4,30 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Application\Analytics\DTO\AnalyticsFilters;
+use App\Application\Portal\Command\EnablePortal;
+use App\Application\Portal\Command\SetPortalModules;
+use App\Application\Reporting\Command\SaveReport;
+use App\Application\Reporting\Command\TakeSnapshot;
+use App\Application\Reporting\DTO\ReportDefinition;
+use App\Application\Reporting\DTO\SectionDefinition;
+use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\SystemRole;
+use App\Domain\Analytics\Dimension;
+use App\Domain\Analytics\Metric;
+use App\Domain\Identity\UserId;
 use App\Domain\Integration\ConnectionOwner;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
 use App\Domain\Integration\ProviderConnectionId;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
+use App\Domain\Portal\PortalModule;
+use App\Domain\Reporting\ComparisonMode;
+use App\Domain\Reporting\ReportAudience;
+use App\Domain\Reporting\ReportWindow;
+use App\Domain\Reporting\SectionKind;
 use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceId;
 use DateTimeImmutable;
@@ -186,8 +202,79 @@ final class DemoAgencySeeder extends Seeder
             }
         });
 
+        $this->reportsAndPortals($workspaceId);
+
         $this->command?->info('Demo agency ready. Sign in with any demo address and the password "password".');
         $this->command?->warn('Every figure is a SANDBOX fixture, not real spend and not live provider data.');
+    }
+
+    /**
+     * Saved reports with a frozen copy behind the client-safe ones, and a client portal for the first few clients —
+     * made through the product's own use cases, as the owner, so the audit trail and the module grants are the ones a
+     * real agency would have.
+     */
+    private function reportsAndPortals(string $workspaceId): void
+    {
+        $owner = DB::table('users')->where('email', 'owner@demo.digitalsmart.test')->value('id');
+
+        if (! is_string($owner)) {
+            return;
+        }
+
+        app(ActorContextBinder::class)->bind(new UserId($owner), new WorkspaceId($workspaceId));
+
+        $clients = DB::table('clients')->where('workspace_id', $workspaceId)
+            ->where('slug', 'like', self::TAG.'%')->where('status', 'active')
+            ->orderBy('name')->limit(10)->get(['id', 'name']);
+
+        $save = app(SaveReport::class);
+        $snapshot = app(TakeSnapshot::class);
+
+        foreach ($clients as $position => $client) {
+            $clientId = (string) $client->id;
+            $filters = new AnalyticsFilters(clientId: $clientId);
+
+            $safe = $save(new ReportDefinition(
+                name: 'Monthly performance',
+                window: ReportWindow::LastMonth,
+                comparison: ComparisonMode::PreviousPeriod,
+                audience: ReportAudience::ClientSafe,
+                filters: $filters,
+                sections: [
+                    new SectionDefinition(kind: SectionKind::Scorecard, metrics: [Metric::Spend, Metric::Clicks, Metric::Impressions]),
+                    new SectionDefinition(kind: SectionKind::Trend, metrics: [Metric::Spend]),
+                    new SectionDefinition(kind: SectionKind::Table, metrics: [Metric::Spend, Metric::Clicks], dimension: Dimension::Campaign),
+                ],
+                description: 'Written to be read by the client.',
+                clientId: $clientId,
+            ));
+
+            if ($position % 2 === 0) {
+                $snapshot($safe->id, 'Last month, as sent');
+            }
+
+            if ($position % 3 !== 2) {
+                $save(new ReportDefinition(
+                    name: 'Weekly review — internal',
+                    window: ReportWindow::Last7Days,
+                    comparison: ComparisonMode::PreviousPeriod,
+                    audience: ReportAudience::Internal,
+                    filters: $filters,
+                    sections: [
+                        new SectionDefinition(kind: SectionKind::Scorecard, metrics: [Metric::Spend, Metric::Clicks, Metric::Ctr, Metric::Cpc]),
+                        new SectionDefinition(kind: SectionKind::Breakdown, metrics: [Metric::Spend], dimension: Dimension::Provider),
+                    ],
+                    description: 'What moved this week, with our own notes on it.',
+                    clientId: $clientId,
+                    internalNote: 'SANDBOX note — internal commentary never reaches a client link.',
+                ));
+            }
+
+            if ($position < 5) {
+                app(EnablePortal::class)($clientId);
+                app(SetPortalModules::class)($clientId, [PortalModule::Performance, PortalModule::Reports, PortalModule::Tracking]);
+            }
+        }
     }
 
     /** Remove what an earlier run created, and only that. */
@@ -211,7 +298,7 @@ final class DemoAgencySeeder extends Seeder
             DB::table('store_orders')->whereIn('store_id', $stores)->delete();
             DB::table('stores')->whereIn('id', $stores)->delete();
 
-            foreach (['leads', 'tasks', 'creative_requests', 'approval_requests', 'client_requests', 'budgets'] as $table) {
+            foreach (['leads', 'tasks', 'creative_requests', 'approval_requests', 'client_requests', 'budgets', 'reports'] as $table) {
                 DB::table($table)->whereIn('client_id', $clients)->delete();
             }
 
@@ -1137,6 +1224,9 @@ final class DemoAgencySeeder extends Seeder
                 'id' => $storeId, 'workspace_id' => $workspaceId, 'client_id' => $client['id'], 'provider' => $provider,
                 'external_id' => self::TAG.'store-'.($index + 1), 'name' => $client['name'].' Store',
                 'currency' => $client['currency'], 'timezone' => 'Asia/Riyadh', 'is_active' => true,
+                /* Most stores were read this morning; one in eleven has not been for four days. */
+                'last_synced_at' => $index % 11 === 5 ? $now->copy()->subDays(4) : $now->copy()->subHours(1 + $index % 5),
+                'orders_synced_through' => $index % 11 === 5 ? $now->copy()->subDays(4) : $now->copy()->subHours(1 + $index % 5),
                 'created_at' => $now, 'updated_at' => $now,
             ];
 
