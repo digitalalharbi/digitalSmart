@@ -14,6 +14,7 @@ test.describe('creative hub', () => {
       timeout: 30_000,
     });
 
+    await page.getByRole('button', { name: 'Board' }).click();
     const board = page.getByRole('region', { name: 'The board' });
     await expect(board).toBeVisible();
 

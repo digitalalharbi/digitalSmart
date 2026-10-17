@@ -163,7 +163,12 @@ final readonly class CreativeResource
             'cancelled_reason' => $request->cancelledReason,
             'state_changed_at' => $request->stateChangedAt?->format(DATE_ATOM),
             'created_at' => $request->createdAt->format(DATE_ATOM),
-            'version_count' => count($request->versions),
+            'version_count' => max($request->versionCount, count($request->versions)),
+            'preview' => $request->previewWidthPx === null || $request->previewHeightPx === null ? null : [
+                'width_px' => $request->previewWidthPx,
+                'height_px' => $request->previewHeightPx,
+                'format' => $request->previewFormat,
+            ],
         ];
     }
 

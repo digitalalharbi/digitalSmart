@@ -235,6 +235,7 @@ final readonly class EloquentCreativeRepository implements CreativeRepository
         int $limitPerColumn,
     ): array {
         $columns = [];
+        $rows = [];
 
         foreach (CreativeState::cases() as $state) {
             /*
@@ -252,18 +253,32 @@ final readonly class EloquentCreativeRepository implements CreativeRepository
                 $query->where('r.client_id', $clientId);
             }
 
+            $rows[$state->value] = $query->get()->map(static fn (object $row): array => (array) $row)->all();
+        }
+
+        /*
+         * What every card needs of its files, in two statements for the whole board: how many versions, and the
+         * shape of the newest. Loading the versions themselves would make the board's cost grow with the
+         * history rather than with the work in flight.
+         */
+        $ids = [];
+
+        foreach ($rows as $stateRows) {
+            foreach ($stateRows as $values) {
+                $ids[] = (string) ($values['id'] ?? '');
+            }
+        }
+
+        $previews = $this->previews($workspaceId, $ids);
+
+        foreach ($rows as $state => $stateRows) {
             $requests = [];
 
-            foreach ($query->get() as $row) {
-                /** @var array<string, mixed> $values */
-                $values = (array) $row;
-
-                // Without versions or comments: a card does not show them, and loading them would make the
-                // board's cost grow with the history rather than with the work in flight.
-                $requests[] = $this->view($values, $workspaceId, withDetail: false);
+            foreach ($stateRows as $values) {
+                $requests[] = $this->view($values, $workspaceId, withDetail: false, preview: $previews[(string) ($values['id'] ?? '')] ?? null);
             }
 
-            $columns[$state->value] = $requests;
+            $columns[$state] = $requests;
         }
 
         return $columns;
@@ -277,6 +292,45 @@ final readonly class EloquentCreativeRepository implements CreativeRepository
             ->first(['creative_request_id']);
 
         return $row === null ? null : (string) $row->creative_request_id;
+    }
+
+    /**
+     * @param  list<string>  $requestIds
+     * @return array<string, array{count: int, width: ?int, height: ?int, format: ?string}>
+     */
+    private function previews(string $workspaceId, array $requestIds): array
+    {
+        if ($requestIds === []) {
+            return [];
+        }
+
+        $counts = DB::table('creative_versions')
+            ->where('workspace_id', $workspaceId)
+            ->whereIn('creative_request_id', $requestIds)
+            ->groupBy('creative_request_id')
+            ->selectRaw('creative_request_id, count(*) as total')
+            ->pluck('total', 'creative_request_id');
+
+        $latest = DB::table('creative_versions')
+            ->where('workspace_id', $workspaceId)
+            ->whereIn('creative_request_id', $requestIds)
+            ->orderBy('creative_request_id')
+            ->orderByDesc('number')
+            ->selectRaw('distinct on (creative_request_id) creative_request_id, width_px, height_px, format')
+            ->get();
+
+        $out = [];
+
+        foreach ($latest as $row) {
+            $out[(string) $row->creative_request_id] = [
+                'count' => (int) ($counts[$row->creative_request_id] ?? 0),
+                'width' => $this->integer($row->width_px),
+                'height' => $this->integer($row->height_px),
+                'format' => $this->text($row->format),
+            ];
+        }
+
+        return $out;
     }
 
     /** @param list<string>|null $visibleProjectIds */
@@ -321,8 +375,11 @@ final readonly class EloquentCreativeRepository implements CreativeRepository
         });
     }
 
-    /** @param array<string, mixed> $values */
-    private function view(array $values, string $workspaceId, bool $withDetail = true): CreativeRequestView
+    /**
+     * @param  array<string, mixed>  $values
+     * @param  array{count: int, width: ?int, height: ?int, format: ?string}|null  $preview
+     */
+    private function view(array $values, string $workspaceId, bool $withDetail = true, ?array $preview = null): CreativeRequestView
     {
         $id = (string) ($values['id'] ?? '');
 
@@ -346,6 +403,10 @@ final readonly class EloquentCreativeRepository implements CreativeRepository
             stateChangedAt: $this->date($values['state_changed_at'] ?? null),
             versions: $withDetail ? $this->versions($workspaceId, $id) : [],
             comments: $withDetail ? $this->comments($workspaceId, $id) : [],
+            versionCount: $preview['count'] ?? 0,
+            previewWidthPx: $preview['width'] ?? null,
+            previewHeightPx: $preview['height'] ?? null,
+            previewFormat: $preview['format'] ?? null,
         );
     }
 

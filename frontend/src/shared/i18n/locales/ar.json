@@ -1493,6 +1493,40 @@
       "moveTo": "انقلها إلى",
       "cancelReason": "سبب الإلغاء",
       "confirmCancel": "ألغِ هذا العمل"
+    },
+    "gallery": "المعرض",
+    "view": {
+      "label": "العرض",
+      "gallery": "معرض",
+      "board": "لوحة",
+      "table": "جدول"
+    },
+    "col": {
+      "request": "الطلب",
+      "state": "الحالة",
+      "platform": "المنصة",
+      "owner": "المسؤول",
+      "due": "الاستحقاق"
+    },
+    "desk": {
+      "label": "مكتب الإبداع",
+      "open": "قيد التنفيذ",
+      "overdue": "متأخر",
+      "review": "بانتظار المراجعة",
+      "changes": "مطلوب تعديلات",
+      "ready": "جاهز للنشر",
+      "workload": "الحمل لكل شخص",
+      "deadlines": "مستحق هذا الأسبوع",
+      "approved": "اعتُمد مؤخرًا",
+      "noWork": "لا شيء قيد التنفيذ.",
+      "noDeadlines": "لا شيء مستحق خلال سبعة أيام.",
+      "noApproved": "لا شيء معتمد بعد.",
+      "late_zero": "لا متأخر",
+      "late_one": "متأخر واحد",
+      "late_two": "متأخران",
+      "late_few": "{{count}} متأخرة",
+      "late_many": "{{count}} متأخرًا",
+      "late_other": "{{count}} متأخر"
     }
   },
   "operations": {

@@ -157,6 +157,7 @@ function board(overrides: Partial<CreativeBoard> = {}): CreativeBoard {
             state_changed_at: null,
             created_at: '2026-10-01T00:00:00+00:00',
             version_count: 0,
+            preview: null,
           },
         ],
       },

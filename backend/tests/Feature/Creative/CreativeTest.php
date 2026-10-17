@@ -187,6 +187,24 @@ describe('the board', function (): void {
             ->and($board['waiting_on_review'])->toBe(0);
     });
 
+    it('gives each card the count and shape of its newest file without loading the history', function (): void {
+        $setup = creativeScenario();
+        workInReview($setup);
+
+        /** @var array<string, mixed> $board */
+        $board = $this->actingAs($setup['scenario']->owner)
+            ->getJson('/api/creative/board')
+            ->assertOk()
+            ->json('data');
+
+        $cards = array_merge(...array_map(static fn (array $column): array => $column['requests'], $board['columns']));
+
+        // Unmeasured stays null elsewhere; here the file was measured, so the card can draw its true shape.
+        expect($cards)->toHaveCount(1)
+            ->and($cards[0]['version_count'])->toBe(1)
+            ->and($cards[0]['preview'])->toBe(['width_px' => 360, 'height_px' => 600, 'format' => 'png']);
+    });
+
     it('refuses an illegal move and says where the work can go', function (): void {
         $setup = creativeScenario();
         $id = briefWork($setup);

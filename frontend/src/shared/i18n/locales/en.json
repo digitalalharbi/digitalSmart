@@ -1466,6 +1466,36 @@
       "moveTo": "Move to",
       "cancelReason": "Why it is being cancelled",
       "confirmCancel": "Cancel this work"
+    },
+    "gallery": "Gallery",
+    "view": {
+      "label": "View",
+      "gallery": "Gallery",
+      "board": "Board",
+      "table": "Table"
+    },
+    "col": {
+      "request": "Request",
+      "state": "Status",
+      "platform": "Platform",
+      "owner": "Owner",
+      "due": "Due"
+    },
+    "desk": {
+      "label": "Creative desk",
+      "open": "In progress",
+      "overdue": "Overdue",
+      "review": "Waiting for review",
+      "changes": "Changes requested",
+      "ready": "Ready to publish",
+      "workload": "Workload by person",
+      "deadlines": "Due this week",
+      "approved": "Recently approved",
+      "noWork": "Nothing in progress.",
+      "noDeadlines": "Nothing due in the next seven days.",
+      "noApproved": "Nothing approved yet.",
+      "late_one": "{{count}} late",
+      "late_other": "{{count}} late"
     }
   },
   "operations": {

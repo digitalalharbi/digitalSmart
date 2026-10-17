@@ -156,6 +156,8 @@ export type CreativeCard = {
   state_changed_at: string | null;
   created_at: string;
   version_count: number;
+  /** The shape of the newest file, when it was measured. Null is unknown, never a default size. */
+  preview: { width_px: number; height_px: number; format: string | null } | null;
 };
 
 export type CreativeRequest = CreativeCard & {

@@ -38,6 +38,14 @@ final readonly class CreativeRequestView
         public ?DateTimeImmutable $stateChangedAt = null,
         public array $versions = [],
         public array $comments = [],
+        /**
+         * What a card shows of the newest file without loading the history: how many versions exist and the
+         * shape of the latest one. Null measurements stay null — an unread width is unknown, not zero.
+         */
+        public int $versionCount = 0,
+        public ?int $previewWidthPx = null,
+        public ?int $previewHeightPx = null,
+        public ?string $previewFormat = null,
     ) {}
 
     public function latestVersion(): ?CreativeVersionView
