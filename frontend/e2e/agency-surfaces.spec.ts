@@ -98,10 +98,14 @@ test.describe('agency surfaces', () => {
     await row.getByRole('button', { name: new RegExp(`^Actions for ${name}`) }).click();
     await page.getByRole('menuitem', { name: 'Open project workspace' }).click();
 
-    await expect(page.getByRole('region', { name: 'At a glance' })).toBeVisible({
-      timeout: 30_000,
-    });
-    await expect(page.getByRole('navigation', { name: 'Areas of this project' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('tablist', { name: 'Areas of this project' })).toBeVisible();
+    await page.getByRole('tab', { name: 'Budget' }).click();
+    await expect(page.getByRole('tab', { name: 'Budget' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await expect(page.getByRole('complementary', { name: 'Project context' })).toBeVisible();
   });
 
   test('has no machine-detectable WCAG violation on the new global pages', async ({ page }) => {

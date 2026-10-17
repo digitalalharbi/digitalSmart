@@ -2717,7 +2717,62 @@
       "approvals": "Approvals",
       "reports": "Reports"
     },
-    "activity": "Recent activity"
+    "activity": "Recent activity",
+    "scope": "Where you are",
+    "demo": "Sandbox",
+    "owner": "Owner",
+    "dates": "Dates",
+    "budget": "Budget",
+    "campaignHealth": "Campaigns",
+    "context": "Project context",
+    "team": "Team",
+    "alerts": "Alerts",
+    "changes": "Recent changes",
+    "nextActions": "Next actions",
+    "nothingNext": "Nothing is waiting",
+    "nothingNextHint": "New work will appear here as it needs someone.",
+    "act": "Open",
+    "alertCount_one": "{{count}} item needs attention",
+    "alertCount_other": "{{count}} items need attention",
+    "spentShare": "{{percent}}% of the approved amount spent",
+    "overdue": "Overdue",
+    "waitingDays_one": "waiting {{count}} day",
+    "waitingDays_other": "waiting {{count}} days",
+    "shared_one": "Shared",
+    "shared_other": "{{count}} links",
+    "tab": {
+      "overview": "Overview",
+      "campaigns": "Campaigns",
+      "budget": "Budget",
+      "leads": "Leads",
+      "creative": "Creative",
+      "tasks": "Tasks",
+      "approvals": "Approvals",
+      "reports": "Reports",
+      "activity": "Activity"
+    },
+    "none": {
+      "campaigns": "No campaigns in this project yet.",
+      "budget": "No approved budget for this project yet.",
+      "leads": "No leads captured for this project yet.",
+      "tasks": "No open tasks.",
+      "creative": "No creative requests for this project.",
+      "approvals": "Nothing is waiting for approval.",
+      "reports": "No reports for this client yet.",
+      "team": "Nobody is assigned yet."
+    },
+    "lead": {
+      "total": "Leads",
+      "open": "Open",
+      "won": "Won"
+    },
+    "severity": {
+      "critical": "Critical",
+      "needs_attention": "Needs attention",
+      "watch": "Watch"
+    },
+    "clientBudget": "This project has no budget of its own; showing the client’s.",
+    "clientBudgetShort": "Client budget"
   },
   "campaignDetail": {
     "title": "Campaign",

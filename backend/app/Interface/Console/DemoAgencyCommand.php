@@ -7,6 +7,7 @@ namespace App\Interface\Console;
 use Database\Seeders\DemoAgencySeeder;
 use Database\Seeders\DemoWorkspaceSeeder;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 /**
  * One command to a populated agency: the demo workspace and its people, then about sixty clients around them.
@@ -16,7 +17,7 @@ use Illuminate\Console\Command;
  */
 final class DemoAgencyCommand extends Command
 {
-    protected $signature = 'demo:agency {--fresh : Rebuild the base demo workspace from scratch first}';
+    protected $signature = 'demo:agency {--fresh : Wipe this local database and rebuild everything from scratch}';
 
     protected $description = 'Prepare a realistic, populated, SANDBOX agency for exploring the product';
 
@@ -28,8 +29,17 @@ final class DemoAgencyCommand extends Command
             return self::FAILURE;
         }
 
-        $this->components->info('Preparing the demo workspace…');
-        $this->call('db:seed', ['--class' => DemoWorkspaceSeeder::class, '--force' => true]);
+        if ($this->option('fresh')) {
+            $this->components->warn('Rebuilding this local database from scratch.');
+            $this->call('migrate:fresh', ['--force' => true]);
+        }
+
+        if (DB::table('workspaces')->where('slug', 'demo-smart-code')->exists()) {
+            $this->components->info('The demo workspace is already there; refreshing the agency around it.');
+        } else {
+            $this->components->info('Preparing the demo workspace…');
+            $this->call('db:seed', ['--class' => DemoWorkspaceSeeder::class, '--force' => true]);
+        }
 
         $this->components->info('Building the agency around it…');
         $this->call('db:seed', ['--class' => DemoAgencySeeder::class, '--force' => true]);

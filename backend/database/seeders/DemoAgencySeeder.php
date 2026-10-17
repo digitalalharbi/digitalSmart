@@ -386,6 +386,8 @@ final class DemoAgencySeeder extends Seeder
                 $rows[] = [
                     'id' => $id, 'workspace_id' => $workspaceId, 'client_id' => $client['id'], 'name' => $name,
                     'slug' => self::TAG.'p-'.$sequence, 'status' => $status, 'currency' => $client['currency'],
+                    'starts_on' => $now->copy()->subDays(20 + ($sequence * 7) % 70)->toDateString(),
+                    'ends_on' => $now->copy()->addDays($status === 'closing' ? 9 : 25 + ($sequence * 11) % 110)->toDateString(),
                     'is_demo' => true, 'created_at' => $now, 'updated_at' => $now,
                 ];
                 $out[] = ['id' => $id, 'client_id' => $client['id'], 'name' => $name, 'industry' => $client['industry'], 'currency' => $client['currency'], 'status' => $status, 'commerce' => $client['commerce']];
