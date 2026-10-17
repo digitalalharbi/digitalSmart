@@ -92,7 +92,11 @@ function Due({ card }: { card: CreativeCard }) {
   }
 
   return card.days_until_due === null ? null : (
-    <Badge tone="neutral">{t('creative.card.due', { days: card.days_until_due })}</Badge>
+    <Badge tone="neutral">
+      {card.days_until_due === 0
+        ? t('creative.card.dueToday')
+        : t('creative.card.due', { days: card.days_until_due })}
+    </Badge>
   );
 }
 

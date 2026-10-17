@@ -103,7 +103,7 @@ export function CreativeDesk({ board }: { board: CreativeBoard }) {
 function deadline(card: CreativeCard, t: TFunction, date: Intl.DateTimeFormat) {
   return card.due_at === null
     ? ''
-    : `${date.format(new Date(card.due_at))} · ${t('creative.card.due', { days: card.days_until_due ?? 0 })}`;
+    : `${date.format(new Date(card.due_at))} · ${card.days_until_due === 0 ? t('creative.card.dueToday') : t('creative.card.due', { days: card.days_until_due ?? 0 })}`;
 }
 
 function DeskList({

@@ -1489,7 +1489,8 @@
       "versions_other": "{{count}} نسخ",
       "overdue": "متأخّر",
       "due": "مستحق بعد {{days}} يوم",
-      "noPlacement": "لا موضع"
+      "noPlacement": "لا موضع",
+      "dueToday": "يُستحق اليوم"
     },
     "workload": {
       "title": "أين يقف العمل",

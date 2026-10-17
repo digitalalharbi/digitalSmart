@@ -37,8 +37,8 @@ function DigestBanner() {
       <ul className="text-content-secondary text-sm">
         {latest.summary.top.map((item, index) => (
           /* Whose it is first: three budget warnings with the same sentence are three different clients. */
-          <li key={`${item.entity}-${String(index)}`}>
-            <span className="text-content font-medium" dir="auto">
+          <li key={`${item.entity}-${String(index)}`} dir="auto">
+            <span className="text-content font-medium">
               {[...new Set([item.client, item.entity])]
                 .filter((part) => part !== null && part !== '')
                 .join(' · ')}

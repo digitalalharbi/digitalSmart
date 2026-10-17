@@ -43,7 +43,7 @@ export function MoneyLines({
       {values.map((m) => (
         <span
           key={m.currency}
-          className="ds-numeric truncate"
+          className="ds-numeric break-words"
           title={compact ? formatMinor(m.minor, m.currency, locale) : undefined}
         >
           {compact
@@ -75,7 +75,7 @@ export function Kpi({ label, children }: { label: string; children: React.ReactN
   return (
     <div className="bg-surface border-line-subtle flex min-w-0 flex-col gap-1.5 rounded-2xl border p-4 shadow-xs">
       <span className="ds-overline text-content-tertiary truncate">{label}</span>
-      <span className="ds-figure text-content min-w-0 text-xl">{children}</span>
+      <span className="ds-figure text-content min-w-0 text-lg sm:text-xl">{children}</span>
     </div>
   );
 }

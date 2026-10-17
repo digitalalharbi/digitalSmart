@@ -1454,7 +1454,8 @@
       "versions_other": "{{count}} versions",
       "overdue": "Overdue",
       "due": "Due in {{days}} days",
-      "noPlacement": "No placement"
+      "noPlacement": "No placement",
+      "dueToday": "Due today"
     },
     "workload": {
       "title": "Where the work sits",
