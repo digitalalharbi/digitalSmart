@@ -68,6 +68,26 @@ describe('SavedViewsMenu', () => {
     expect(onApply).toHaveBeenCalledWith({ health: 'critical', q: 'ramadan' });
   });
 
+  it("offers ready-made views that set the page's own filters, with nothing saved", async () => {
+    const onApply = vi.fn();
+    await renderWithProviders(
+      <SavedViewsMenu
+        surface="campaign_control"
+        current={{}}
+        onApply={onApply}
+        presets={[
+          { key: 'critical', label: 'Critical campaigns', filters: { health: 'critical' } },
+        ]}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Saved views' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Critical campaigns' }));
+
+    expect(onApply).toHaveBeenCalledWith({ health: 'critical' });
+    expect(state.saved).toBeNull();
+  });
+
   it('saves the current filters under a name, privately by default', async () => {
     await renderWithProviders(
       <SavedViewsMenu surface="leads" current={{ scope: 'mine', days: '30' }} onApply={vi.fn()} />,

@@ -1345,6 +1345,12 @@
         "lost": "Lost",
         "disqualified": "Disqualified"
       }
+    },
+    "preset": {
+      "mine": "My leads",
+      "clients": "My clients’ leads",
+      "week": "This week",
+      "quarter": "Last 90 days"
     }
   },
   "attribution": {
@@ -2499,6 +2505,13 @@
       "due": "Due date",
       "create": "Create task",
       "failed": "The task could not be created."
+    },
+    "preset": {
+      "critical": "Critical campaigns",
+      "attention": "Needs attention",
+      "mine": "My campaigns",
+      "google": "Google Ads campaigns",
+      "meta": "Meta Ads campaigns"
     }
   },
   "palette": {
@@ -2626,6 +2639,12 @@
       "actual": "Spent",
       "forecast": "Projected at the end",
       "variance": "vs expected"
+    },
+    "preset": {
+      "overspend": "Overspending",
+      "underpace": "Behind plan",
+      "near_limit": "Close to the limit",
+      "unallocated": "Money not allocated"
     }
   },
   "connections": {
@@ -2779,7 +2798,8 @@
     "nothingToSave": "Set at least one filter to save a view.",
     "save": "Save view",
     "delete": "Delete {{name}}",
-    "failed": "The view could not be saved."
+    "failed": "The view could not be saved.",
+    "presets": "Ready-made"
   },
   "commerceRollup": {
     "title": "Stores across clients",

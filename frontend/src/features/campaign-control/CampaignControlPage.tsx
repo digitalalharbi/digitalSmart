@@ -165,6 +165,29 @@ export function CampaignControlPage() {
                   ? null
                   : { id: filters.project.id, label: filters.project.label }
               }
+              presets={[
+                {
+                  key: 'critical',
+                  label: t('campaignControl.preset.critical'),
+                  filters: { health: 'critical' },
+                },
+                {
+                  key: 'attention',
+                  label: t('campaignControl.preset.attention'),
+                  filters: { health: 'needs_attention' },
+                },
+                { key: 'mine', label: t('campaignControl.preset.mine'), filters: { mine: '1' } },
+                {
+                  key: 'google',
+                  label: t('campaignControl.preset.google'),
+                  filters: { provider: 'google_ads' },
+                },
+                {
+                  key: 'meta',
+                  label: t('campaignControl.preset.meta'),
+                  filters: { provider: 'meta' },
+                },
+              ]}
               onApply={(saved) => setParams(new URLSearchParams(saved), { replace: true })}
             />
             <Link to="/campaigns/explore" className={buttonVariants({ variant: 'secondary' })}>

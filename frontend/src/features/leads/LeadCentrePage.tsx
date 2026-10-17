@@ -233,6 +233,20 @@ export function LeadCentrePage() {
               days: String(days),
             }}
             project={project}
+            presets={[
+              {
+                key: 'mine',
+                label: t('leads.preset.mine'),
+                filters: { scope: 'mine', days: '30' },
+              },
+              {
+                key: 'clients',
+                label: t('leads.preset.clients'),
+                filters: { scope: 'my_clients', days: '30' },
+              },
+              { key: 'week', label: t('leads.preset.week'), filters: { days: '7' } },
+              { key: 'quarter', label: t('leads.preset.quarter'), filters: { days: '90' } },
+            ]}
             onApply={(saved) => {
               const a = saved['scope'];
               setAudience(AUDIENCES.find((v) => v === a) ?? 'all');

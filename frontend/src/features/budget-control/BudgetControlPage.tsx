@@ -107,6 +107,11 @@ export function BudgetControlPage() {
           <SavedViewsMenu
             surface="budget_control"
             current={risk === null ? {} : { risk }}
+            presets={['overspend', 'underpace', 'near_limit', 'unallocated'].map((key) => ({
+              key,
+              label: t(`budgetControl.preset.${key}`),
+              filters: { risk: key },
+            }))}
             onApply={(saved) => setRisk(saved['risk'] ?? null)}
           />
         }

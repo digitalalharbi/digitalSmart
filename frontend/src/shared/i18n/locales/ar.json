@@ -1380,6 +1380,12 @@
         "lost": "خاسر",
         "disqualified": "مستبعد"
       }
+    },
+    "preset": {
+      "mine": "عملائي المحتملون",
+      "clients": "عملاء عملائي",
+      "week": "هذا الأسبوع",
+      "quarter": "آخر 90 يومًا"
     }
   },
   "attribution": {
@@ -2550,6 +2556,13 @@
       "due": "تاريخ الاستحقاق",
       "create": "إنشاء المهمة",
       "failed": "تعذّر إنشاء المهمة."
+    },
+    "preset": {
+      "critical": "حملات حرجة",
+      "attention": "تحتاج انتباهًا",
+      "mine": "حملاتي",
+      "google": "حملات Google Ads",
+      "meta": "حملات Meta Ads"
     }
   },
   "palette": {
@@ -2677,6 +2690,12 @@
       "actual": "المصروف",
       "forecast": "المتوقع عند النهاية",
       "variance": "مقابل المتوقع"
+    },
+    "preset": {
+      "overspend": "إنفاق زائد",
+      "underpace": "متأخرة عن الخطة",
+      "near_limit": "قريبة من الحد",
+      "unallocated": "مبالغ غير موزّعة"
     }
   },
   "connections": {
@@ -2830,7 +2849,8 @@
     "nothingToSave": "اضبط مرشّحًا واحدًا على الأقل لحفظ عرض.",
     "save": "حفظ العرض",
     "delete": "حذف {{name}}",
-    "failed": "تعذّر حفظ العرض."
+    "failed": "تعذّر حفظ العرض.",
+    "presets": "جاهزة"
   },
   "commerceRollup": {
     "title": "المتاجر عبر العملاء",

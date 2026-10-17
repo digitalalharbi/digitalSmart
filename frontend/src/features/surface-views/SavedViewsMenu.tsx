@@ -18,6 +18,11 @@ type SavedViewsMenuProps = {
   onApply: (filters: SurfaceFilters) => void;
   /** The project the page is narrowed to, if any — the only team a view can be shared with from here. */
   project?: { id: string; label: string } | null;
+  /**
+   * Views every workspace has without anybody saving them: the handful of questions an agency asks every morning.
+   * They are filters like any other — opening one only sets the page's own controls.
+   */
+  presets?: Array<{ key: string; label: string; filters: SurfaceFilters }>;
 };
 
 /** A stored filter value is a string or a list; a page's URL holds one string. */
@@ -42,7 +47,13 @@ function flatten(filters: SurfaceView['filters']): SurfaceFilters {
  * choices, and the page asks its usual question with them. So a view can never show somebody more than the page
  * would have shown them with the same filters typed by hand.
  */
-export function SavedViewsMenu({ surface, current, onApply, project = null }: SavedViewsMenuProps) {
+export function SavedViewsMenu({
+  surface,
+  current,
+  onApply,
+  project = null,
+  presets = [],
+}: SavedViewsMenuProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -74,6 +85,30 @@ export function SavedViewsMenu({ surface, current, onApply, project = null }: Sa
               {t('surfaceViews.body')}
             </Dialog.Description>
           </div>
+
+          {presets.length === 0 ? null : (
+            <section aria-label={t('surfaceViews.presets')} className="flex flex-col gap-1.5">
+              <h3 className="text-content-tertiary text-xs font-medium">
+                {t('surfaceViews.presets')}
+              </h3>
+              <ul className="flex flex-wrap gap-1.5">
+                {presets.map((preset) => (
+                  <li key={preset.key}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        onApply(preset.filters);
+                        setOpen(false);
+                      }}
+                    >
+                      {preset.label}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {views.isPending ? (
             <p className="text-content-tertiary text-sm">{t('surfaceViews.loading')}</p>
