@@ -2922,5 +2922,9 @@
     "exportsFailed_other": "{{count}} exports could not be made",
     "exportsReady_one": "{{count}} export ready to download",
     "exportsReady_other": "{{count}} exports ready to download"
+  },
+  "contextInsight": {
+    "title": "What the assistant noticed",
+    "open": "Open in assistant"
   }
 }

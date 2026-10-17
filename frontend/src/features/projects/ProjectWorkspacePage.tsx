@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { formatMinor } from '@/shared/lib/format';
+import { ContextInsight } from '@/features/assistant';
 import { BackgroundWork } from '@/features/background-work';
 import { useUiStore } from '@/shared/store/ui-store';
 import { Alert } from '@/shared/ui/alert';
@@ -295,6 +296,10 @@ export function ProjectWorkspacePage() {
                   )}
                 </CardContent>
               </Card>
+              <ContextInsight
+                clientId={clientId ?? null}
+                clientName={project?.client.name ?? null}
+              />
               <div className="grid gap-4 lg:grid-cols-2">
                 <Section
                   query={campaigns}

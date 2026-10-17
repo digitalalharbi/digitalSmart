@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router';
 import { Ban, Info } from 'lucide-react';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useClientsQuery } from '@/features/clients';
@@ -46,7 +47,14 @@ export function AssistantPage() {
 
   const [mode, setMode] = useState<AssistantModeValue>('analyse');
   /* Searched, never listed: a hundred-client agency cannot be a row of buttons, and the 101st is not a typo. */
-  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
+  const [params] = useSearchParams();
+  const [client, setClient] = useState<{ id: string; label: string } | null>(() => {
+    /* Arrived from a client's own page: `id~name`, so the chip needs no second request to be labelled. */
+    const raw = params.get('client');
+    const at = raw?.indexOf('~') ?? -1;
+
+    return raw !== null && at > 0 ? { id: raw.slice(0, at), label: raw.slice(at + 1) } : null;
+  });
   const [clientTerm, setClientTerm] = useState('');
   const clientId = client?.id ?? null;
   const [days, setDays] = useState<number>(30);

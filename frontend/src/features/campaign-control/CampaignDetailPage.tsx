@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
+import { ContextInsight } from '@/features/assistant';
 import { BackgroundWork } from '@/features/background-work';
 import { api } from '@/shared/api/client';
 import { formatRelativeTime } from '@/shared/lib/relative-time';
@@ -266,6 +267,7 @@ export function CampaignDetailPage() {
                 <QuickActions row={row} />
               </CardContent>
             </Card>
+            <ContextInsight clientId={row.client_id} clientName={row.client_name} />
             <BackgroundWork />
           </aside>
         </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
+import { ContextInsight } from '@/features/assistant';
 import { BackgroundWork } from '@/features/background-work';
 import { api } from '@/shared/api/client';
 import { Button } from '@/shared/ui/button';
@@ -149,6 +150,8 @@ export function ClientPortfolioPage() {
           >
             <div className="flex min-w-0 flex-col gap-4">
               <KpiGrid data={data.kpis} locale={locale} />
+
+              <ContextInsight clientId={clientId} clientName={client.name} />
 
               <Card>
                 <CardHeader>

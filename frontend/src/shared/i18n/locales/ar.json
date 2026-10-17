@@ -3000,5 +3000,9 @@
     "exportsReady_few": "{{count}} تصديرات جاهزة للتنزيل",
     "exportsReady_many": "{{count}} تصديرًا جاهزًا للتنزيل",
     "exportsReady_other": "{{count}} تصدير جاهز للتنزيل"
+  },
+  "contextInsight": {
+    "title": "ما لاحظه المساعد",
+    "open": "افتح في المساعد"
   }
 }
