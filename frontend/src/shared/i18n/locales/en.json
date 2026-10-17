@@ -999,6 +999,15 @@
       "label": "Level of detail",
       "health": "Health",
       "diagnostics": "Diagnostics"
+    },
+    "kinds": {
+      "analytics": "Analytics",
+      "tag_manager": "Tag Manager",
+      "ad_platform": "Ad platform",
+      "store": "Store",
+      "crm": "CRM",
+      "website": "Website",
+      "manual": "Entered by hand"
     }
   },
   "commerce": {

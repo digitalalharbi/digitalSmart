@@ -59,7 +59,9 @@ export function TrackingScorecards({
     const key =
       source.kind === 'ad_platform' ? `ad:${source.provider ?? source.name}` : source.kind;
     const label =
-      source.kind === 'ad_platform' ? (source.provider_label ?? source.name) : source.kind_label;
+      source.kind === 'ad_platform'
+        ? (source.provider_label ?? source.name)
+        : t(`tracking.kinds.${source.kind}`, { defaultValue: source.kind_label });
     const group = groups.get(key) ?? {
       key,
       label,

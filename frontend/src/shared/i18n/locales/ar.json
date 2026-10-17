@@ -1034,6 +1034,15 @@
       "label": "مستوى التفاصيل",
       "health": "السلامة",
       "diagnostics": "التشخيص"
+    },
+    "kinds": {
+      "analytics": "التحليلات",
+      "tag_manager": "مدير الوسوم",
+      "ad_platform": "منصة إعلانية",
+      "store": "المتجر",
+      "crm": "إدارة العملاء",
+      "website": "الموقع",
+      "manual": "إدخال يدوي"
     }
   },
   "commerce": {
