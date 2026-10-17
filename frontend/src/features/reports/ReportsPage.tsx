@@ -15,6 +15,7 @@ import { EntityPicker } from '@/shared/ui/entity-picker';
 import { csvUrl, xlsxUrl } from './api';
 import { ExportsPanel } from './ExportsPanel';
 import { ReportBuilder } from './ReportBuilder';
+import { ReportCover } from './ReportCover';
 import { ReportView } from './ReportView';
 import { SharePanel } from './SharePanel';
 import {
@@ -151,8 +152,17 @@ export function ReportsPage() {
                 selected === entry.id && 'border-accent ring-accent/25 ring-1',
               )}
             >
-              <span className="text-content block text-sm font-medium">{entry.name}</span>
-              <span className="text-content-tertiary mt-1 block text-xs">
+              <ReportCover
+                name={entry.name}
+                client={entry.client_name ?? t('reports.view.allClients')}
+                window={entry.window_label}
+                sections={entry.section_count}
+                clientSafe={entry.audience === 'client_safe'}
+              />
+              <span className="text-content mt-3 block text-sm font-medium" dir="auto">
+                {entry.name}
+              </span>
+              <span className="text-content-tertiary mt-1 block text-xs" dir="auto">
                 {entry.client_name ?? t('reports.view.allClients')} · {entry.window_label}
               </span>
               <span className="mt-2 flex flex-wrap items-center gap-1.5">

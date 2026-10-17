@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { CalendarClock, Download, Snowflake, TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import type { MetricSourceValue } from '@/shared/metrics';
@@ -40,6 +42,19 @@ type ReportViewProps = {
  */
 export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
   const { t } = useTranslation();
+  /*
+   * Two readings of one report. Executive is the answer — the scorecards and the trends; detailed is the
+   * working: every breakdown and table. A client-safe report opens as the first, because the people it was
+   * made for read the answer, and an internal one as the second, because the people who made it check the work.
+   */
+  const [level, setLevel] = useState<'executive' | 'detailed'>(
+    report.audience === 'client_safe' ? 'executive' : 'detailed',
+  );
+  const headline = report.sections.filter(
+    (section) => section.kind === 'scorecard' || section.kind === 'trend',
+  );
+  const canSummarise = headline.length > 0 && headline.length < report.sections.length;
+  const shown = level === 'executive' && canSummarise ? headline : report.sections;
 
   return (
     <article className="flex flex-col gap-5">
@@ -143,7 +158,26 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
         />
       ) : (
         <div className="flex flex-col gap-6">
-          {report.sections.map((section, index) => (
+          {canSummarise ? (
+            <div
+              className="bg-surface-sunken flex w-fit rounded-lg p-0.5"
+              role="group"
+              aria-label={t('reports.level.label')}
+            >
+              {(['executive', 'detailed'] as const).map((key) => (
+                <Button
+                  key={key}
+                  size="sm"
+                  variant={level === key ? 'secondary' : 'ghost'}
+                  aria-pressed={level === key}
+                  onClick={() => setLevel(key)}
+                >
+                  {t(`reports.level.${key}`)}
+                </Button>
+              ))}
+            </div>
+          ) : null}
+          {shown.map((section, index) => (
             <ReportSectionView key={`${section.kind}-${index}`} section={section} />
           ))}
         </div>

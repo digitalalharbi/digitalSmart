@@ -54,7 +54,10 @@ test.describe('presentations', () => {
     await chooseFirstClient(page);
 
     /* A deck is read out loud by somebody who may not have built it. */
-    await expect(page.getByText('What these figures do not say')).toBeVisible({ timeout: 30_000 });
+    const rail = page.getByRole('list', { name: 'Slides' });
+    await rail
+      .getByRole('button', { name: /What these figures do not say/ })
+      .click({ timeout: 30_000 });
     await expect(page.getByText(/Read out, not skipped/)).toBeVisible();
   });
 

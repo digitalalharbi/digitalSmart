@@ -2076,6 +2076,19 @@
       "next": "التالي: {{when}}",
       "halted": "متوقف",
       "stop": "إيقاف"
+    },
+    "level": {
+      "label": "مستوى التفاصيل",
+      "executive": "تنفيذي",
+      "detailed": "مفصّل"
+    },
+    "cover": {
+      "sections_zero": "بلا أقسام",
+      "sections_one": "قسم واحد",
+      "sections_two": "قسمان",
+      "sections_few": "{{count}} أقسام",
+      "sections_many": "{{count}} قسمًا",
+      "sections_other": "{{count}} قسم"
     }
   },
   "sharedReport": {
@@ -2308,7 +2321,10 @@
       "title": "لا يُبنى من هذه البيانات",
       "body": "مُعلَن بدلًا من أن يُقدَّم كقالب ينتج شرائح فارغة."
     },
-    "prepared": "أُعِدّ في {{at}}. الأرقام: {{source}}."
+    "prepared": "أُعِدّ في {{at}}. الأرقام: {{source}}.",
+    "slides": "الشرائح",
+    "previous": "السابقة",
+    "next": "التالية"
   },
   "realtime": {
     "live": "مباشر. تغييرات الآخرين تظهر لحظة حدوثها.",

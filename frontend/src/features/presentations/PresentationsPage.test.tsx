@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { PresentationsPage } from './PresentationsPage';
@@ -177,31 +177,59 @@ describe('PresentationsPage', () => {
     expect(state.asked).toBeNull();
   });
 
-  it('renders every slide the deck carries', async () => {
+  it('lists every slide in a rail and shows one large, with its position', async () => {
+    const user = userEvent.setup();
     await renderWithProviders(<PresentationsPage />);
 
     await chooseClient('Alhambra');
 
-    const deckRegion = await screen.findByRole('region', { name: 'Alhambra — Monthly report' });
-    /* One article per slide, each labelled with its position so a reader can refer to it. */
-    expect(within(deckRegion).getAllByRole('article')).toHaveLength(3);
-    expect(within(deckRegion).getByLabelText('Slide 1 of 3')).toBeInTheDocument();
+    const rail = await screen.findByRole('list', { name: 'Slides' });
+    expect(within(rail).getAllByRole('listitem')).toHaveLength(3);
+    /* One article at a time, labelled with its position so a reader can refer to it. */
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+    expect(screen.getByLabelText('Slide 1 of 3')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Next/ }));
+    expect(screen.getByLabelText('Slide 2 of 3')).toBeInTheDocument();
   });
 
   it('shows the caveats as a slide', async () => {
+    const user = userEvent.setup();
     await renderWithProviders(<PresentationsPage />);
 
     await chooseClient('Alhambra');
 
     /* In a room, read out loud: a footnote in six-point type is a footnote the projector crops. */
-    expect(await screen.findByText('What these figures do not say')).toBeInTheDocument();
-    expect(screen.getByText('Read out, not skipped.')).toBeInTheDocument();
+    const rail = await screen.findByRole('list', { name: 'Slides' });
+    await user.click(within(rail).getByRole('button', { name: /What these figures do not say/ }));
+    expect(await screen.findByText('Read out, not skipped.')).toBeInTheDocument();
+  });
+
+  it('draws the whole deck when it is printed, and one slide on screen', async () => {
+    await renderWithProviders(<PresentationsPage />);
+
+    await chooseClient('Alhambra');
+    await screen.findByRole('list', { name: 'Slides' });
+
+    act(() => {
+      window.dispatchEvent(new Event('beforeprint'));
+    });
+    expect(await screen.findAllByRole('article')).toHaveLength(3);
+
+    act(() => {
+      window.dispatchEvent(new Event('afterprint'));
+    });
+    expect(await screen.findAllByRole('article')).toHaveLength(1);
   });
 
   it('shows a figure with its change and its source, already formatted', async () => {
     await renderWithProviders(<PresentationsPage />);
 
     await chooseClient('Alhambra');
+    await screen.findByRole('list', { name: 'Slides' });
+    act(() => {
+      window.dispatchEvent(new Event('beforeprint'));
+    });
 
     /* Formatted by the server, so the slide and the PowerPoint file cannot disagree about a rounding. */
     expect(await screen.findByText('SAR 1,250.00')).toBeInTheDocument();

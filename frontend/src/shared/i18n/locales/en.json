@@ -2045,6 +2045,15 @@
       "next": "Next: {{when}}",
       "halted": "Stopped",
       "stop": "Stop"
+    },
+    "level": {
+      "label": "Level of detail",
+      "executive": "Executive",
+      "detailed": "Detailed"
+    },
+    "cover": {
+      "sections_one": "{{count}} section",
+      "sections_other": "{{count}} sections"
     }
   },
   "sharedReport": {
@@ -2277,7 +2286,10 @@
       "title": "Not composed from this data",
       "body": "Published rather than offered as a template that produces empty slides."
     },
-    "prepared": "Prepared {{at}}. Figures: {{source}}."
+    "prepared": "Prepared {{at}}. Figures: {{source}}.",
+    "slides": "Slides",
+    "previous": "Previous",
+    "next": "Next"
   },
   "realtime": {
     "live": "Live. Changes from other people appear as they happen.",

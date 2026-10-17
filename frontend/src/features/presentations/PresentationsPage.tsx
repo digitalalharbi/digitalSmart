@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Download, Info, Printer } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Info, Printer } from 'lucide-react';
+import { cn } from '@/shared/lib/cn';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useBudgetsQuery, type BudgetPayload } from '@/features/budgets';
 import { useClientsQuery } from '@/features/clients';
@@ -45,6 +47,30 @@ export function PresentationsPage() {
   const [clientTerm, setClientTerm] = useState('');
   const clientId = client?.id ?? null;
   const [budgetId, setBudgetId] = useState<string | null>(null);
+  const [position, setPosition] = useState<{ key: string; index: number }>({ key: '', index: 0 });
+  /* A different deck starts at its first slide: the position remembers which deck it was chosen in. */
+  const deckKey = `${kind}|${clientId ?? ''}|${budgetId ?? ''}`;
+  const active = position.key === deckKey ? position.index : 0;
+  const setActive = (next: number | ((current: number) => number)) =>
+    setPosition({ key: deckKey, index: typeof next === 'function' ? next(active) : next });
+  /*
+   * Printing needs every slide on the page, and the screen shows one. Rather than draw the whole deck twice,
+   * the deck is drawn in full only while the browser prints — whether the button asked for it or the reader
+   * pressed the keyboard shortcut, which `beforeprint` covers.
+   */
+  const [printing, setPrinting] = useState(false);
+
+  useEffect(() => {
+    const before = () => flushSync(() => setPrinting(true));
+    const after = () => setPrinting(false);
+    window.addEventListener('beforeprint', before);
+    window.addEventListener('afterprint', after);
+
+    return () => {
+      window.removeEventListener('beforeprint', before);
+      window.removeEventListener('afterprint', after);
+    };
+  }, []);
 
   const vocabulary = usePresentationVocabularyQuery(canUse);
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
@@ -163,7 +189,14 @@ export function PresentationsPage() {
             </span>
 
             <span className="ms-auto flex flex-wrap gap-2">
-              <Button variant="secondary" size="sm" onClick={() => window.print()}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  flushSync(() => setPrinting(true));
+                  window.print();
+                }}
+              >
                 <Printer aria-hidden className="me-1 size-3.5" />
                 {t('presentations.actions.print')}
               </Button>
@@ -197,16 +230,88 @@ export function PresentationsPage() {
             </Alert>
           )}
 
-          <section aria-label={deck.data.title} className="ds-deck flex flex-col gap-6">
-            {deck.data.slides.map((slide, index) => (
-              <SlideView
-                key={`${slide.kind}-${index}`}
-                slide={slide}
-                theme={deck.data.theme}
-                index={index}
-                total={deck.data.slides.length}
-              />
-            ))}
+          <section
+            aria-label={deck.data.title}
+            className={cn(
+              'ds-deck',
+              printing ? 'flex flex-col gap-6' : 'grid gap-4 lg:grid-cols-[12rem_minmax(0,1fr)]',
+            )}
+          >
+            {printing ? (
+              deck.data.slides.map((slide, index) => (
+                <SlideView
+                  key={`${slide.kind}-${index}`}
+                  slide={slide}
+                  theme={deck.data.theme}
+                  index={index}
+                  total={deck.data.slides.length}
+                />
+              ))
+            ) : (
+              <>
+                <ol
+                  aria-label={t('presentations.slides')}
+                  className="ds-no-print flex gap-2 overflow-x-auto pb-1 lg:max-h-[34rem] lg:flex-col lg:overflow-x-visible lg:overflow-y-auto"
+                >
+                  {deck.data.slides.map((slide, index) => (
+                    <li key={`${slide.kind}-${index}`} className="shrink-0">
+                      <button
+                        type="button"
+                        aria-current={active === index ? 'true' : undefined}
+                        onClick={() => setActive(index)}
+                        className={cn(
+                          'bg-surface border-line-subtle flex w-40 flex-col gap-1 rounded-lg border p-2 text-start lg:w-full',
+                          'hover:border-line-strong focus-visible:ring-accent/40 focus-visible:ring-2 focus-visible:outline-none',
+                          active === index && 'border-accent ring-accent/25 ring-1',
+                        )}
+                      >
+                        <span className="text-content-tertiary text-[10px] tabular-nums">
+                          {index + 1}
+                        </span>
+                        <span className="text-content line-clamp-2 text-xs font-medium" dir="auto">
+                          {slide.title}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+                <div className="flex min-w-0 flex-col gap-3">
+                  {deck.data.slides[active] === undefined ? null : (
+                    <SlideView
+                      slide={deck.data.slides[active]}
+                      theme={deck.data.theme}
+                      index={active}
+                      total={deck.data.slides.length}
+                    />
+                  )}
+                  <div className="ds-no-print flex items-center justify-between gap-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={active === 0}
+                      onClick={() => setActive((value) => Math.max(0, value - 1))}
+                    >
+                      <ChevronLeft aria-hidden className="rtl:rotate-180" />
+                      {t('presentations.previous')}
+                    </Button>
+                    <span className="text-content-secondary text-sm tabular-nums">
+                      {active + 1} / {deck.data.slides.length}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={active >= deck.data.slides.length - 1}
+                      onClick={() =>
+                        setActive((value) => Math.min(deck.data.slides.length - 1, value + 1))
+                      }
+                    >
+                      {t('presentations.next')}
+                      <ChevronRight aria-hidden className="rtl:rotate-180" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
           </section>
 
           {(vocabulary.data?.deferred ?? []).length === 0 ? null : (
