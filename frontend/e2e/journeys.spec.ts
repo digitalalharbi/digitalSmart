@@ -110,24 +110,39 @@ test.describe('journey D — the creative', () => {
 });
 
 test.describe('journey E — the client', () => {
-  test('reads only their own portal and cannot reach the agency', async ({ page }) => {
+  test('lands on their own portal, and the agency says no to everything else', async ({ page }) => {
     await signIn(page, ACCOUNTS.client);
-    await page.goto('/campaigns');
+    await page.goto('/');
 
-    // The agency's surfaces are not theirs: they are sent home, to their own portal.
+    // Their own application, not the agency's.
     await expect(page).toHaveURL(/\/portal/, SLOW);
     await expect(page.getByRole('navigation', { name: 'Main navigation' })).toHaveCount(0);
+    await expect(page.getByRole('navigation', { name: 'Your portal' })).toBeVisible(SLOW);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    const portal = page.getByRole('navigation', { name: 'Your portal' });
-    await expect(portal).toBeVisible(SLOW);
+    // The agency's API refuses them — the pages are not the control, the server is.
+    const statuses = await page.evaluate(async () => {
+      const out: number[] = [];
 
-    // And the agency's API says no, rather than the page merely hiding the link.
-    const refused = await page.evaluate(async () => {
-      const response = await fetch('/api/campaigns/control', { credentials: 'include' });
+      for (const path of [
+        '/api/campaigns/control',
+        '/api/portfolio',
+        '/api/budgets/control',
+        '/api/members',
+      ]) {
+        out.push((await fetch(path, { credentials: 'include' })).status);
+      }
 
-      return response.status;
+      return out;
     });
-    expect([401, 403]).toContain(refused);
+
+    for (const status of statuses) {
+      expect([401, 403]).toContain(status);
+    }
+
+    // And typing an agency address shows no agency figures, only a refusal.
+    await page.goto('/campaigns');
+    await expect(page.getByRole('article')).toHaveCount(0);
   });
 });
 

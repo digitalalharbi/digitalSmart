@@ -264,7 +264,8 @@ export function CampaignControlPage() {
         </CardContent>
       </Card>
 
-      {filters.mode === 'detailed' ? <OwnershipQueue /> : null}
+      {/* Always: it shows itself only when campaigns are waiting to be placed, and that is not a detail. */}
+      <OwnershipQueue />
 
       <section aria-label={t('campaignControl.filters')} className="flex flex-wrap items-end gap-3">
         <div className="min-w-56 flex-1">

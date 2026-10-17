@@ -27,17 +27,6 @@ export function PortalLanding() {
 }
 
 /**
- * Keeps a client out of the agency's application, on every route and not only the landing page.
- *
- * `PortalLanding` handles the front door; a client who types `/campaigns` is just as far from home. The server
- * already refuses every one of these requests, so this is about not showing a reader an empty agency shell and a
- * wall of errors — it is a courtesy, and the refusal is the control.
- */
-export function AgencyOnly({ children }: { children: ReactElement }) {
-  return useIsClientReader() ? <Navigate to="/portal" replace /> : children;
-}
-
-/**
  * Keeps agency staff out of the portal shell unless they are previewing deliberately.
  *
  * A previewer reaching `/portal` is legitimate — reading a client's page as the client is the thing to do before

@@ -41,7 +41,7 @@ import {
   TrackingCenterPage,
 } from '@/app/router/lazyPages';
 import { SurfaceFallback } from '@/app/router/SurfaceFallback';
-import { AgencyOnly, PortalLanding, PortalRedirectGuard } from '@/app/router/portalGuards';
+import { PortalLanding, PortalRedirectGuard } from '@/app/router/portalGuards';
 
 /** Wraps a lazily loaded surface so its chunk can arrive without a blank page. */
 function deferred(element: ReactElement): ReactElement {
@@ -115,9 +115,7 @@ export const routes: RouteObject[] = [
     path: '/',
     element: (
       <RequireSession>
-        <AgencyOnly>
-          <AppShell />
-        </AgencyOnly>
+        <AppShell />
       </RequireSession>
     ),
     children: [
