@@ -60,8 +60,6 @@
   "overview": {
     "title": "Overview",
     "subtitle": "What needs you today, across every client.",
-    "foundationTitle": "Phase 0 foundation",
-    "foundationBody": "Backend, database, cache and queue wiring are verified by the health endpoint below. Product surfaces arrive phase by phase.",
     "health": {
       "title": "System health",
       "loading": "Checking services…",
@@ -1098,7 +1096,7 @@
       "loadFailed": "Could not load the stores. Try again in a moment.",
       "listLabel": "Connected stores",
       "emptyTitle": "No store is connected",
-      "emptyBody": "Until one is, the figures below have nothing to read — orders arriving by webhook are refused, because nothing says which client the merchant belongs to.",
+      "emptyBody": "Until one is, there are no figures to read — orders sent by a shop are refused, because nothing says which client the shop belongs to.",
       "forClient": "For {{client}}",
       "read": "Read now",
       "cannotRead": "Cannot be read",
@@ -1108,7 +1106,7 @@
       "readDone": "Read {{name}}: {{orders}} orders, {{products}} products, {{customers}} customers.",
       "readPartial": "Read {{name}} in part: {{orders}} orders, {{products}} products, {{customers}} customers landed, then it stopped — {{reason}}",
       "readFailed": "Could not read {{name}}: {{reason}}",
-      "readSkipped": "{{name}} is on a platform this product cannot read. Its webhooks still arrive."
+      "readSkipped": "{{name}} is on a platform this product cannot read yet. The orders it sends are still received."
     },
     "forbidden": "Your role does not include access to store revenue."
   },

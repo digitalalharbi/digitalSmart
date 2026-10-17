@@ -116,7 +116,7 @@ describe('the stores panel', () => {
     await renderWithProviders(<StoresPanel clientId={null} clients={CLIENTS} />);
 
     expect(await screen.findByText('No store is connected')).toBeInTheDocument();
-    expect(screen.getByText(/orders arriving by webhook are refused/)).toBeInTheDocument();
+    expect(screen.getByText(/orders sent by a shop are refused/)).toBeInTheDocument();
   });
 
   it('connects a merchant to a client, sending only what the platform cannot tell us', async () => {
