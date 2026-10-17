@@ -3,6 +3,7 @@ import { useUiStore } from '@/shared/store/ui-store';
 import { SavedViewsMenu } from '@/features/surface-views';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Button } from '@/shared/ui/button';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
@@ -95,6 +96,13 @@ export function BudgetControlPage() {
     staleTime: 30_000,
   });
 
+  /*
+   * Overview is the answer: plan, pace, forecast and the totals. Breakdown is the working — every budget with its risks.
+   * Choosing a risk is asking a breakdown question, so it opens the breakdown by itself.
+   */
+  const [breakdown, setBreakdown] = useState(false);
+  const showBreakdown = breakdown || risk !== null;
+
   const money = (minor: number | null, currency: string) =>
     minor === null ? '—' : formatMinor(minor, currency, locale);
 
@@ -104,16 +112,41 @@ export function BudgetControlPage() {
         title={t('budgetControl.title')}
         description={t('budgetControl.subtitle')}
         actions={
-          <SavedViewsMenu
-            surface="budget_control"
-            current={risk === null ? {} : { risk }}
-            presets={['overspend', 'underpace', 'near_limit', 'unallocated'].map((key) => ({
-              key,
-              label: t(`budgetControl.preset.${key}`),
-              filters: { risk: key },
-            }))}
-            onApply={(saved) => setRisk(saved['risk'] ?? null)}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <div
+              className="bg-surface-sunken flex rounded-lg p-0.5"
+              role="group"
+              aria-label={t('budgetControl.mode.label')}
+            >
+              {(['overview', 'breakdown'] as const).map((key) => (
+                <Button
+                  key={key}
+                  size="sm"
+                  variant={(key === 'breakdown') === showBreakdown ? 'secondary' : 'ghost'}
+                  aria-pressed={(key === 'breakdown') === showBreakdown}
+                  onClick={() => {
+                    setBreakdown(key === 'breakdown');
+
+                    if (key === 'overview') {
+                      setRisk(null);
+                    }
+                  }}
+                >
+                  {t(`budgetControl.mode.${key}`)}
+                </Button>
+              ))}
+            </div>
+            <SavedViewsMenu
+              surface="budget_control"
+              current={risk === null ? {} : { risk }}
+              presets={['overspend', 'underpace', 'near_limit', 'unallocated'].map((key) => ({
+                key,
+                label: t(`budgetControl.preset.${key}`),
+                filters: { risk: key },
+              }))}
+              onApply={(saved) => setRisk(saved['risk'] ?? null)}
+            />
+          </div>
         }
       />
 
@@ -179,95 +212,142 @@ export function BudgetControlPage() {
         ))}
       </section>
 
-      <ChoiceGroup label={t('budgetControl.filter')}>
-        <div className="flex flex-wrap gap-2">
-          <Choice isSelected={risk === null} onSelect={() => setRisk(null)}>
-            {t('budgetControl.all')}
-          </Choice>
-          {(data?.meta.risks ?? []).map((r) => (
-            <Choice key={r.risk} isSelected={risk === r.risk} onSelect={() => setRisk(r.risk)}>
-              {r.label}
-            </Choice>
-          ))}
-        </div>
-      </ChoiceGroup>
-
-      {isPending ? (
-        <Skeleton className="h-56 w-full" />
-      ) : data === undefined || data.data.length === 0 ? (
-        <EmptyState title={t('budgetControl.empty')} description={t('budgetControl.emptyBody')} />
-      ) : (
-        <DataTable label={t('budgetControl.title')} minWidth="64rem">
-          <TableHead>
-            <TableRow>
-              <TableHeader>{t('budgetControl.col.budget')}</TableHeader>
-              <TableHeader align="end">{t('budgetControl.approved')}</TableHeader>
-              <TableHeader align="end">{t('budgetControl.allocated')}</TableHeader>
-              <TableHeader align="end">{t('budgetControl.spent')}</TableHeader>
-              <TableHeader align="end">{t('budgetControl.remaining')}</TableHeader>
-              <TableHeader>{t('budgetControl.col.pacing')}</TableHeader>
-              <TableHeader>{t('budgetControl.col.risks')}</TableHeader>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.data.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell>
-                  <span className="flex flex-col">
-                    <span className="text-content font-medium">{row.name}</span>
-                    <span className="text-content-tertiary text-xs">
-                      {[row.client.name, row.project?.name].filter(Boolean).join(' · ')}
+      {showBreakdown ? null : (
+        <section aria-label={t('budgetControl.atRisk')} className="flex flex-col gap-2">
+          <h2 className="text-content text-lg font-semibold">{t('budgetControl.atRisk')}</h2>
+          {(data?.data ?? []).filter((row) => row.risks.length > 0).length === 0 ? (
+            <p className="text-content-tertiary text-sm">{t('budgetControl.noneAtRisk')}</p>
+          ) : (
+            <ul className="bg-surface border-line-subtle divide-line-subtle divide-y rounded-2xl border">
+              {(data?.data ?? [])
+                .filter((row) => row.risks.length > 0)
+                .slice(0, 6)
+                .map((row) => (
+                  <li
+                    key={row.id}
+                    className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
+                  >
+                    <span className="flex min-w-0 flex-col">
+                      <span className="text-content truncate text-sm font-medium" dir="auto">
+                        {row.name}
+                      </span>
+                      <span className="text-content-tertiary truncate text-xs" dir="auto">
+                        {[row.client.name, row.project?.name].filter(Boolean).join(' · ')}
+                      </span>
                     </span>
-                  </span>
-                </TableCell>
-                <TableCell isNumeric align="end" label={t('budgetControl.approved')}>
-                  {money(row.approved_minor, row.currency)}
-                </TableCell>
-                <TableCell isNumeric align="end" label={t('budgetControl.allocated')}>
-                  {money(row.allocated_minor, row.currency)}
-                </TableCell>
-                <TableCell isNumeric align="end" label={t('budgetControl.spent')}>
-                  <span title={row.spend_unavailable_reason ?? undefined}>
-                    {money(row.spent_minor, row.currency)}
-                  </span>
-                </TableCell>
-                <TableCell isNumeric align="end" label={t('budgetControl.remaining')}>
-                  {money(row.remaining_minor, row.currency)}
-                </TableCell>
-                <TableCell label={t('budgetControl.col.pacing')}>
-                  {row.pacing === null ? (
-                    <span className="text-content-tertiary text-xs">
-                      {row.spend_unavailable_reason}
-                    </span>
-                  ) : (
-                    <span className="flex flex-col text-sm">
-                      {row.pacing.status_label}
-                      {row.pacing.variance_percent === null ? null : (
-                        <span className="text-content-tertiary text-xs">
-                          {formatPercent(row.pacing.variance_percent, locale, 0)}
-                        </span>
-                      )}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell label={t('budgetControl.col.risks')}>
-                  <span className="flex flex-wrap gap-1">
-                    {row.risks.length === 0 ? (
-                      <Badge tone="success">{t('budgetControl.noRisk')}</Badge>
-                    ) : (
-                      row.risks.map((r) => (
+                    <span className="flex flex-wrap gap-1">
+                      {row.risks.map((r) => (
                         <Badge key={r.risk} tone={r.risk === 'overspend' ? 'danger' : 'warning'}>
                           {r.label}
                         </Badge>
-                      ))
-                    )}
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </DataTable>
+                      ))}
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </section>
       )}
+
+      {showBreakdown ? (
+        <>
+          <ChoiceGroup label={t('budgetControl.filter')}>
+            <div className="flex flex-wrap gap-2">
+              <Choice isSelected={risk === null} onSelect={() => setRisk(null)}>
+                {t('budgetControl.all')}
+              </Choice>
+              {(data?.meta.risks ?? []).map((r) => (
+                <Choice key={r.risk} isSelected={risk === r.risk} onSelect={() => setRisk(r.risk)}>
+                  {r.label}
+                </Choice>
+              ))}
+            </div>
+          </ChoiceGroup>
+
+          {isPending ? (
+            <Skeleton className="h-56 w-full" />
+          ) : data === undefined || data.data.length === 0 ? (
+            <EmptyState
+              title={t('budgetControl.empty')}
+              description={t('budgetControl.emptyBody')}
+            />
+          ) : (
+            <DataTable label={t('budgetControl.title')} minWidth="64rem">
+              <TableHead>
+                <TableRow>
+                  <TableHeader>{t('budgetControl.col.budget')}</TableHeader>
+                  <TableHeader align="end">{t('budgetControl.approved')}</TableHeader>
+                  <TableHeader align="end">{t('budgetControl.allocated')}</TableHeader>
+                  <TableHeader align="end">{t('budgetControl.spent')}</TableHeader>
+                  <TableHeader align="end">{t('budgetControl.remaining')}</TableHeader>
+                  <TableHeader>{t('budgetControl.col.pacing')}</TableHeader>
+                  <TableHeader>{t('budgetControl.col.risks')}</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.data.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>
+                      <span className="flex flex-col">
+                        <span className="text-content font-medium">{row.name}</span>
+                        <span className="text-content-tertiary text-xs">
+                          {[row.client.name, row.project?.name].filter(Boolean).join(' · ')}
+                        </span>
+                      </span>
+                    </TableCell>
+                    <TableCell isNumeric align="end" label={t('budgetControl.approved')}>
+                      {money(row.approved_minor, row.currency)}
+                    </TableCell>
+                    <TableCell isNumeric align="end" label={t('budgetControl.allocated')}>
+                      {money(row.allocated_minor, row.currency)}
+                    </TableCell>
+                    <TableCell isNumeric align="end" label={t('budgetControl.spent')}>
+                      <span title={row.spend_unavailable_reason ?? undefined}>
+                        {money(row.spent_minor, row.currency)}
+                      </span>
+                    </TableCell>
+                    <TableCell isNumeric align="end" label={t('budgetControl.remaining')}>
+                      {money(row.remaining_minor, row.currency)}
+                    </TableCell>
+                    <TableCell label={t('budgetControl.col.pacing')}>
+                      {row.pacing === null ? (
+                        <span className="text-content-tertiary text-xs">
+                          {row.spend_unavailable_reason}
+                        </span>
+                      ) : (
+                        <span className="flex flex-col text-sm">
+                          {row.pacing.status_label}
+                          {row.pacing.variance_percent === null ? null : (
+                            <span className="text-content-tertiary text-xs">
+                              {formatPercent(row.pacing.variance_percent, locale, 0)}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell label={t('budgetControl.col.risks')}>
+                      <span className="flex flex-wrap gap-1">
+                        {row.risks.length === 0 ? (
+                          <Badge tone="success">{t('budgetControl.noRisk')}</Badge>
+                        ) : (
+                          row.risks.map((r) => (
+                            <Badge
+                              key={r.risk}
+                              tone={r.risk === 'overspend' ? 'danger' : 'warning'}
+                            >
+                              {r.label}
+                            </Badge>
+                          ))
+                        )}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </DataTable>
+          )}
+        </>
+      ) : null}
     </div>
   );
 }

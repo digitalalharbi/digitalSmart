@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useClientsQuery } from '@/features/clients';
 import { Alert } from '@/shared/ui/alert';
@@ -62,6 +63,11 @@ export function TrackingCenterPage() {
   const [clientTerm, setClientTerm] = useState('');
   const clientId = client?.id ?? null;
   const [editing, setEditing] = useState<EventDefinition | null | 'new'>(null);
+  /* Health is the answer — scores, what needs attention, what counts as a conversion. Diagnostics is every source and container. */
+  const [params, setParams] = useSearchParams();
+  const diagnostics = params.get('view') === 'diagnostics';
+  const setDiagnostics = (on: boolean) =>
+    setParams(on ? { view: 'diagnostics' } : {}, { replace: true });
   const [lastSync, setLastSync] = useState<{ name: string; result: SyncResult } | null>(null);
 
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
@@ -88,6 +94,25 @@ export function TrackingCenterPage() {
       <PageHeader
         title={t('tracking.title')}
         description={t('tracking.subtitle')}
+        actions={
+          <div
+            className="bg-surface-sunken flex rounded-lg p-0.5"
+            role="group"
+            aria-label={t('tracking.mode.label')}
+          >
+            {(['health', 'diagnostics'] as const).map((key) => (
+              <Button
+                key={key}
+                size="sm"
+                variant={(key === 'diagnostics') === diagnostics ? 'secondary' : 'ghost'}
+                aria-pressed={(key === 'diagnostics') === diagnostics}
+                onClick={() => setDiagnostics(key === 'diagnostics')}
+              >
+                {t(`tracking.mode.${key}`)}
+              </Button>
+            ))}
+          </div>
+        }
         filters={
           <EntityPicker
             label={t('tracking.scope.client')}
@@ -135,128 +160,136 @@ export function TrackingCenterPage() {
             <IssueList issues={health.data.issues} />
           </section>
 
-          <section className="flex flex-col gap-3" aria-labelledby="tracking-sources">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 id="tracking-sources" className="text-content text-lg font-semibold">
-                {t('tracking.sources.title')}
-              </h2>
-              <SourceRegistration
-                clientId={clientId}
-                clients={clientOptions}
-                onSearchClients={setClientTerm}
-                isSearching={clients.isFetching}
-              />
-            </div>
+          {diagnostics ? (
+            <>
+              <section className="flex flex-col gap-3" aria-labelledby="tracking-sources">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h2 id="tracking-sources" className="text-content text-lg font-semibold">
+                    {t('tracking.sources.title')}
+                  </h2>
+                  <SourceRegistration
+                    clientId={clientId}
+                    clients={clientOptions}
+                    onSearchClients={setClientTerm}
+                    isSearching={clients.isFetching}
+                  />
+                </div>
 
-            {health.data.sources.length === 0 ? (
-              <EmptyState
-                title={t('tracking.sources.emptyTitle')}
-                description={t('tracking.sources.emptyBody')}
-              />
-            ) : (
-              <Card
-                role="group"
-                aria-label={t('tracking.sources.title')}
-                tabIndex={0}
-                className="overflow-x-auto"
-              >
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-content-tertiary border-line-subtle border-b text-start text-xs">
-                      <th scope="col" className="px-4 py-3 text-start font-medium">
-                        {t('tracking.sources.name')}
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-start font-medium">
-                        {t('tracking.sources.kind')}
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-start font-medium">
-                        {t('tracking.sources.freshness')}
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-start font-medium">
-                        {t('tracking.sources.lastEvent')}
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-end font-medium">
-                        {t('tracking.sources.actions')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {health.data.sources.map((source) => (
-                      <tr key={source.id} className="border-line-subtle border-b last:border-0">
-                        <td className="px-4 py-3">
-                          <p className="text-content font-medium">{source.name}</p>
-                          <p className="text-content-tertiary text-xs">{source.external_id}</p>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="text-content-secondary">{source.kind_label}</span>
-                            {/*
-                             * Only a store or a CRM can speak for revenue. An analytics property
-                             * reports what a browser said a sale was worth; neither is an invoice.
-                             */}
-                            {source.is_revenue_authority ? (
-                              <Badge tone="accent">{t('tracking.sources.revenueAuthority')}</Badge>
-                            ) : null}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge tone={FRESHNESS_TONE[source.freshness]}>
-                            {source.freshness_label}
-                          </Badge>
-                        </td>
-                        <td className="text-content-secondary px-4 py-3">
-                          {formatDate(source.last_event_at, i18n.language)}
-                        </td>
-                        <td className="px-4 py-3 text-end">
-                          <div className="flex justify-end gap-1.5">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => runSync(source)}
-                              disabled={sync.isPending}
-                            >
-                              {t('tracking.sources.sync')}
-                            </Button>
-                            {/*
+                {health.data.sources.length === 0 ? (
+                  <EmptyState
+                    title={t('tracking.sources.emptyTitle')}
+                    description={t('tracking.sources.emptyBody')}
+                  />
+                ) : (
+                  <Card
+                    role="group"
+                    aria-label={t('tracking.sources.title')}
+                    tabIndex={0}
+                    className="overflow-x-auto"
+                  >
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-content-tertiary border-line-subtle border-b text-start text-xs">
+                          <th scope="col" className="px-4 py-3 text-start font-medium">
+                            {t('tracking.sources.name')}
+                          </th>
+                          <th scope="col" className="px-4 py-3 text-start font-medium">
+                            {t('tracking.sources.kind')}
+                          </th>
+                          <th scope="col" className="px-4 py-3 text-start font-medium">
+                            {t('tracking.sources.freshness')}
+                          </th>
+                          <th scope="col" className="px-4 py-3 text-start font-medium">
+                            {t('tracking.sources.lastEvent')}
+                          </th>
+                          <th scope="col" className="px-4 py-3 text-end font-medium">
+                            {t('tracking.sources.actions')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {health.data.sources.map((source) => (
+                          <tr key={source.id} className="border-line-subtle border-b last:border-0">
+                            <td className="px-4 py-3">
+                              <p className="text-content font-medium">{source.name}</p>
+                              <p className="text-content-tertiary text-xs">{source.external_id}</p>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="text-content-secondary">{source.kind_label}</span>
+                                {/*
+                                 * Only a store or a CRM can speak for revenue. An analytics property
+                                 * reports what a browser said a sale was worth; neither is an invoice.
+                                 */}
+                                {source.is_revenue_authority ? (
+                                  <Badge tone="accent">
+                                    {t('tracking.sources.revenueAuthority')}
+                                  </Badge>
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <Badge tone={FRESHNESS_TONE[source.freshness]}>
+                                {source.freshness_label}
+                              </Badge>
+                            </td>
+                            <td className="text-content-secondary px-4 py-3">
+                              {formatDate(source.last_event_at, i18n.language)}
+                            </td>
+                            <td className="px-4 py-3 text-end">
+                              <div className="flex justify-end gap-1.5">
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => runSync(source)}
+                                  disabled={sync.isPending}
+                                >
+                                  {t('tracking.sources.sync')}
+                                </Button>
+                                {/*
                               Registering a source is `tracking.manage`, and so is unregistering one. A reader
                               who can only look at the tracking picture is offered neither rather than a
                               disabled control that would always be refused.
                             */}
-                            {canManage ? (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-danger"
-                                onClick={() => setRemoving(source)}
-                              >
-                                {t('tracking.sources.remove')}
-                              </Button>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Card>
-            )}
-          </section>
+                                {canManage ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-danger"
+                                    onClick={() => setRemoving(source)}
+                                  >
+                                    {t('tracking.sources.remove')}
+                                  </Button>
+                                ) : null}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Card>
+                )}
+              </section>
 
-          {/*
+              {/*
             Fourth panel, and last of the four deliberately: it is the only one that reaches a provider. The
             three above are derived from this product's own tables and always answer, so a slow or unauthorised
             Tag Manager cannot empty the page of facts it already had.
           */}
-          <section className="flex flex-col gap-3" aria-labelledby="tracking-containers">
-            <div className="flex flex-col gap-1">
-              <h2 id="tracking-containers" className="text-content text-lg font-semibold">
-                {t('tracking.containers.title')}
-              </h2>
-              <p className="text-content-secondary text-sm">{t('tracking.containers.subtitle')}</p>
-            </div>
+              <section className="flex flex-col gap-3" aria-labelledby="tracking-containers">
+                <div className="flex flex-col gap-1">
+                  <h2 id="tracking-containers" className="text-content text-lg font-semibold">
+                    {t('tracking.containers.title')}
+                  </h2>
+                  <p className="text-content-secondary text-sm">
+                    {t('tracking.containers.subtitle')}
+                  </p>
+                </div>
 
-            <ContainerReadiness sources={health.data.sources} canManage={canManage} />
-          </section>
+                <ContainerReadiness sources={health.data.sources} canManage={canManage} />
+              </section>
+            </>
+          ) : null}
 
           <section className="flex flex-col gap-3" aria-labelledby="tracking-conversions">
             <div className="flex flex-wrap items-center justify-between gap-2">

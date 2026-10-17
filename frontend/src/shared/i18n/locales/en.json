@@ -994,6 +994,11 @@
       "none": "None",
       "needsAttention": "Needs attention",
       "ofTotal": "{{count}} of {{total}}"
+    },
+    "mode": {
+      "label": "Level of detail",
+      "health": "Health",
+      "diagnostics": "Diagnostics"
     }
   },
   "commerce": {
@@ -2678,7 +2683,14 @@
       "underpace": "Behind plan",
       "near_limit": "Close to the limit",
       "unallocated": "Money not allocated"
-    }
+    },
+    "mode": {
+      "label": "Level of detail",
+      "overview": "Overview",
+      "breakdown": "Breakdown"
+    },
+    "atRisk": "Budgets that need a look",
+    "noneAtRisk": "No approved budget carries a risk."
   },
   "connections": {
     "title": "Connections",

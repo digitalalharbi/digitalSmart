@@ -61,9 +61,10 @@ export function MyPortalPage() {
         >
           dS
         </span>
-        <span className="text-content text-sm font-medium">
+        {/* The page's first-level heading: the client's own name, which is what this page is about. */}
+        <h1 className="text-content text-sm font-medium" dir="auto">
           {entry?.client_name ?? t('myPortal.title')}
-        </span>
+        </h1>
 
         <div className="ms-auto flex items-center gap-1">
           <Button

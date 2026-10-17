@@ -174,8 +174,22 @@ beforeEach(() => {
 });
 
 describe('the tracking centre', function () {
-  it('says plainly when nothing needs attention', async () => {
+  it('opens on health and keeps the source-by-source working one click away', async () => {
+    const user = userEvent.setup();
     await renderWithProviders(<TrackingCenterPage />);
+
+    expect(await screen.findByText('Nothing needs attention')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'What is measuring' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Diagnostics' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'What is measuring' }),
+    ).toBeInTheDocument();
+  });
+
+  it('says plainly when nothing needs attention', async () => {
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     /*
      * Silence is the goal, so it is said out loud. A blank area here would read as a loading
@@ -187,7 +201,7 @@ describe('the tracking centre', function () {
   it('leads with what is wrong rather than with a tidy table', async () => {
     state.health = health({ is_healthy: false, critical_count: 1, issues: [issue()] });
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     const headings = await screen.findAllByRole('heading', { level: 2 });
 
@@ -202,7 +216,7 @@ describe('the tracking centre', function () {
   it('shows the remedy and the evidence beside each problem', async () => {
     state.health = health({ is_healthy: false, issues: [issue()] });
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     expect(
       await screen.findByText('Check that the tag is still deployed and firing on the live site.'),
@@ -223,7 +237,7 @@ describe('the tracking centre', function () {
       sources: [source({ freshness: 'silent', freshness_label: 'No recent events' })],
     });
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     // Working perfectly and measuring nothing. Carries the same visual weight as never connected,
     // because the consequence is the same: every report built on it is empty.
@@ -243,7 +257,7 @@ describe('the tracking centre', function () {
       ],
     });
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     /*
      * An analytics property reports what a browser said a sale was worth; a store reports what was
@@ -261,7 +275,7 @@ describe('the tracking centre', function () {
       ],
     });
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     await screen.findByText('Qualified lead');
 
@@ -282,7 +296,7 @@ describe('the tracking centre', function () {
       ],
     });
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     // The distinction that stops a cost per click being read as a cost per lead.
     expect(await screen.findByText('Intent signal')).toBeInTheDocument();
@@ -303,7 +317,7 @@ describe('the tracking centre', function () {
       failure_message: null,
     };
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     await userEvent.click(await screen.findByRole('button', { name: 'Read now' }));
 
@@ -330,7 +344,7 @@ describe('the tracking centre', function () {
       failure_message: 'Google Analytics 4 has not completed its authorisation handshake.',
     };
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     await userEvent.click(await screen.findByRole('button', { name: 'Read now' }));
 
@@ -354,7 +368,7 @@ describe('the tracking centre', function () {
       failure_message: null,
     };
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     await userEvent.click(await screen.findByRole('button', { name: 'Read now' }));
 
@@ -368,7 +382,7 @@ describe('the tracking centre', function () {
   it('says nothing is measuring when nothing is', async () => {
     state.health = health({ sources: [], definitions: [], issues: [] });
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     expect(await screen.findByText('Nothing is measuring this work yet')).toBeInTheDocument();
     expect(screen.getByText('No conversion is defined')).toBeInTheDocument();
@@ -377,7 +391,7 @@ describe('the tracking centre', function () {
   it('will not save a conversion until a client is chosen', async () => {
     state.health = health();
 
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     await userEvent.click(await screen.findByRole('button', { name: 'Define a conversion' }));
 
@@ -402,7 +416,7 @@ describe('the tracking centre', function () {
  */
 describe('what the tracking centre can set up', () => {
   it('offers no removal to somebody who can only read the page', async () => {
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     expect(await screen.findByRole('button', { name: 'Read now' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
@@ -411,7 +425,7 @@ describe('what the tracking centre can set up', () => {
   it('names what removing a source takes with it, and removes nothing until confirmed', async () => {
     permissions.current = ['tracking.manage'];
     const user = userEvent.setup();
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     await user.click(await screen.findByRole('button', { name: 'Remove' }));
 
@@ -430,7 +444,7 @@ describe('what the tracking centre can set up', () => {
   it('registers a tag container from discovery, as a container rather than a property', async () => {
     permissions.current = ['tracking.manage'];
     const user = userEvent.setup();
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     /*
      * The client first, in the page's own scope picker. Registration binds a source to one client, so with the
@@ -467,7 +481,7 @@ describe('what the tracking centre can set up', () => {
     permissions.current = ['tracking.manage'];
     state.containers = [container({ is_web: false, usage_contexts: ['ios'] })];
     const user = userEvent.setup();
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     await user.click(await screen.findByRole('button', { name: 'Add a property' }));
     await user.click(screen.getByRole('button', { name: 'Tag container' }));
@@ -479,7 +493,7 @@ describe('what the tracking centre can set up', () => {
     permissions.current = ['tracking.manage'];
     state.containers = [];
     const user = userEvent.setup();
-    await renderWithProviders(<TrackingCenterPage />);
+    await renderWithProviders(<TrackingCenterPage />, { route: '/tracking?view=diagnostics' });
 
     await user.click(await screen.findByRole('button', { name: 'Add a property' }));
     await user.click(screen.getByRole('button', { name: 'Tag container' }));

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { BudgetControlPage } from './BudgetControlPage';
 
@@ -78,6 +79,7 @@ describe('BudgetControlPage', () => {
 
   it('shows every risk a budget carries, not just one', async () => {
     await renderWithProviders(<BudgetControlPage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Breakdown' }));
     const row = (await screen.findByText('Q2 Retail')).closest('tr') as HTMLElement;
 
     expect(within(row).getByText('Spending ahead of plan')).toBeInTheDocument();
@@ -87,6 +89,7 @@ describe('BudgetControlPage', () => {
   /* Null is "cannot be totalled", explained — and never drawn as a zero. */
   it('explains a spend it could not total instead of showing zero', async () => {
     await renderWithProviders(<BudgetControlPage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Breakdown' }));
     const row = (await screen.findByText('Mixed')).closest('tr') as HTMLElement;
 
     expect(within(row).getByText(/cannot be totalled/)).toBeInTheDocument();

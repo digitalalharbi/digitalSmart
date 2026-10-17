@@ -1029,6 +1029,11 @@
       "none": "لا شيء",
       "needsAttention": "يحتاج انتباهًا",
       "ofTotal": "{{count}} من {{total}}"
+    },
+    "mode": {
+      "label": "مستوى التفاصيل",
+      "health": "السلامة",
+      "diagnostics": "التشخيص"
     }
   },
   "commerce": {
@@ -2729,7 +2734,14 @@
       "underpace": "متأخرة عن الخطة",
       "near_limit": "قريبة من الحد",
       "unallocated": "مبالغ غير موزّعة"
-    }
+    },
+    "mode": {
+      "label": "مستوى التفاصيل",
+      "overview": "نظرة عامة",
+      "breakdown": "تفصيل"
+    },
+    "atRisk": "ميزانيات تحتاج إلى نظرة",
+    "noneAtRisk": "لا ميزانية معتمدة تحمل خطرًا."
   },
   "connections": {
     "title": "الاتصالات",
