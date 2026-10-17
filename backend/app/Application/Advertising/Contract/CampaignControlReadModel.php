@@ -51,6 +51,17 @@ interface CampaignControlReadModel
     public function trends(string $workspaceId, array $campaignIds, DateTimeImmutable $from, DateTimeImmutable $to): array;
 
     /**
+     * What a status request has to name: the platform's own ids for one campaign the reader may see.
+     *
+     * Null where the campaign does not exist or is not theirs — the two are the same answer, so a reference
+     * cannot be used to learn that a campaign exists on a client they have no access to.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return array{name: string, provider: string, status: string, currency: string|null, external_campaign_id: string, external_account_id: string, client_id: string|null, project_id: string|null}|null
+     */
+    public function writeTarget(string $workspaceId, ?array $visibleProjectIds, string $campaignId): ?array;
+
+    /**
      * How many campaigns match the filter before the cap is applied.
      *
      * Published beside a capped page so the interface can say "showing 500 of 2,140" rather than implying

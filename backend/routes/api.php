@@ -807,6 +807,9 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::get('campaigns/control', [CampaignControlController::class, 'index'])
         ->name('campaigns.control.index');
 
+    /* Ask for a pause or a resume. Writes an approval request; it never touches the platform. */
+    Route::post('campaigns/{campaign}/status-request', [CampaignControlController::class, 'requestStatusChange'])
+        ->whereUuid('campaign')->name('campaigns.status_request');
     Route::post('campaigns/project', [CampaignOwnershipController::class, 'assignMany'])
         ->name('campaigns.ownership.assign_many');
     Route::get('campaigns/ownership', [CampaignOwnershipController::class, 'index'])

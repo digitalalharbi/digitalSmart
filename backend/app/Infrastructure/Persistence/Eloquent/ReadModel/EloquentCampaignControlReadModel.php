@@ -73,6 +73,28 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
         return array_map(fn (stdClass $row): CampaignVitalsRow => $this->toRow($row), $rows);
     }
 
+    public function writeTarget(string $workspaceId, ?array $visibleProjectIds, string $campaignId): ?array
+    {
+        $row = $this->base($workspaceId, $visibleProjectIds, new CampaignControlFilter(campaignIds: [$campaignId]))
+            ->addSelect(['c.external_id as campaign_external_id', 'ea.external_id as account_external_id'])
+            ->first();
+
+        if ($row === null) {
+            return null;
+        }
+
+        return [
+            'name' => (string) $row->campaign_name,
+            'provider' => (string) $row->provider,
+            'status' => (string) $row->status,
+            'currency' => $row->currency === null ? null : (string) $row->currency,
+            'external_campaign_id' => (string) $row->campaign_external_id,
+            'external_account_id' => (string) $row->account_external_id,
+            'client_id' => $row->client_id === null ? null : (string) $row->client_id,
+            'project_id' => $row->project_id === null ? null : (string) $row->project_id,
+        ];
+    }
+
     public function spendByDay(string $workspaceId, array $campaignIds, DateTimeImmutable $from, DateTimeImmutable $to): array
     {
         if ($campaignIds === []) {

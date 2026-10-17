@@ -9,6 +9,7 @@ use App\Infrastructure\Persistence\Eloquent\Model\Campaign;
 use App\Infrastructure\Persistence\Eloquent\Model\Client;
 use App\Infrastructure\Persistence\Eloquent\Model\DailyMetric;
 use App\Infrastructure\Persistence\Eloquent\Model\Project;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\WorkspaceScenario;
 
@@ -248,6 +249,73 @@ it('narrows to an ad account and reads the period the reader chose, ignoring one
     expect($window('?days=7'))->toBe(7)
         ->and($window('?days=90'))->toBe(90)
         ->and($window('?days=365'))->toBe(28);
+});
+
+it('offers to ask for a pause or a resume only where the platform’s write is documented and the state fits', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = controlAccounts($scenario);
+    controlProject($scenario, $accounts[0]['id']);
+    metricsFor($scenario, controlCampaign($scenario, $accounts[0]['id'], 'Running One'), days: 28);
+    metricsFor($scenario, controlCampaign($scenario, $accounts[0]['id'], 'Stopped One', status: 'paused'), days: 28);
+    $tiktok = controlCampaign($scenario, $accounts[0]['id'], 'Elsewhere One');
+    $tiktok->forceFill(['provider' => 'tiktok'])->save();
+    metricsFor($scenario, $tiktok, days: 28);
+
+    /** @var list<array<string, mixed>> $data */
+    $data = $this->actingAs($scenario->owner)->getJson('/api/campaigns/control')->assertOk()->json('data');
+    $rows = array_column($data, null, 'name');
+
+    // Offered as a request, never as an action: the word is the state's, the control is the server's.
+    expect($rows['Running One']['status_action'])->toBe('pause')
+        ->and($rows['Stopped One']['status_action'])->toBe('resume')
+        // TikTok's write is `unverified`, so a control that could only be refused is not offered.
+        ->and($rows['Elsewhere One']['status_action'])->toBeNull();
+});
+
+it('writes an approval request naming the platform’s own ids, and changes nothing about the campaign', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = controlAccounts($scenario);
+    controlProject($scenario, $accounts[0]['id']);
+    $campaign = controlCampaign($scenario, $accounts[0]['id'], 'Ramadan Push');
+    metricsFor($scenario, $campaign, days: 28);
+
+    $response = $this->actingAs($scenario->owner)
+        ->postJson("/api/campaigns/{$campaign->getKey()}/status-request", ['action' => 'pause', 'reason' => 'Spend is up and nothing converts.'])
+        ->assertCreated();
+
+    $proposal = $response->json('data.proposal');
+
+    expect($response->json('data.kind'))->toBe('campaign_pause')
+        ->and($proposal['external_campaign_id'])->toBe($campaign->getAttribute('external_id'))
+        ->and($proposal['provider'])->toBe('meta')
+        ->and($proposal['change'])->toBe('pause')
+        // Asking is not doing: the campaign is exactly as it was.
+        ->and(DB::table('campaigns')->where('id', $campaign->getKey())->value('status'))->toBe('active');
+});
+
+it('refuses to ask for what makes no sense, in words', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = controlAccounts($scenario);
+    controlProject($scenario, $accounts[0]['id']);
+    $running = controlCampaign($scenario, $accounts[0]['id'], 'Running One');
+    metricsFor($scenario, $running, days: 28);
+    $elsewhere = controlCampaign($scenario, $accounts[0]['id'], 'Elsewhere One');
+    $elsewhere->forceFill(['provider' => 'tiktok'])->save();
+    metricsFor($scenario, $elsewhere, days: 28);
+
+    $this->actingAs($scenario->owner)
+        ->postJson("/api/campaigns/{$running->getKey()}/status-request", ['action' => 'resume', 'reason' => 'It should be on.'])
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'wrong_state');
+
+    $this->actingAs($scenario->owner)
+        ->postJson("/api/campaigns/{$elsewhere->getKey()}/status-request", ['action' => 'pause', 'reason' => 'Please stop it.'])
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'provider_not_documented');
+
+    $this->actingAs($scenario->owner)
+        ->postJson('/api/campaigns/00000000-0000-4000-8000-000000000000/status-request', ['action' => 'pause', 'reason' => 'Anything at all.'])
+        ->assertNotFound();
 });
 
 /*
