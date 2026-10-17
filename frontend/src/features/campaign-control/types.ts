@@ -48,6 +48,11 @@ export type CampaignRow = {
   last_synced_at: string | null;
   /** Internal tags: the campaign's own plus its project's and client's. Empty for a role that may not see them. */
   tags: Array<{ id: string; name: string }>;
+  /**
+   * Which change this reader may *ask for*, decided by the server: pause for what is spending, resume for what is
+   * paused, nothing where the platform's write is not documented or the reader may not request approvals.
+   */
+  status_action: 'pause' | 'resume' | null;
 };
 
 export type CampaignControlPage = {

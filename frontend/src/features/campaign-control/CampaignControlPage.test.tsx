@@ -61,6 +61,7 @@ function row(o: Partial<CampaignRow> = {}): CampaignRow {
     reported_days: 28,
     last_synced_at: '2026-06-15T09:00:00Z',
     tags: [],
+    status_action: null,
     ...o,
   };
 }

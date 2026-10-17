@@ -2517,7 +2517,14 @@
       "taskTitle": "What needs doing",
       "due": "Due date",
       "create": "Create task",
-      "failed": "The task could not be created."
+      "failed": "The task could not be created.",
+      "askPause": "Ask to pause",
+      "askResume": "Ask to resume",
+      "askExplain": "This sends a request for approval. The campaign is not changed: someone who may decide it will read it, and only after it is approved can it be carried out on the platform.",
+      "why": "Why",
+      "sendRequest": "Send the request",
+      "requested": "Requested. The campaign is unchanged until the request is approved and carried out.",
+      "openApprovals": "Open approvals"
     },
     "preset": {
       "critical": "Critical campaigns",
