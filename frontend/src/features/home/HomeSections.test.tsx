@@ -84,7 +84,7 @@ describe('HomeSections', () => {
   it('gives finance only the budgets that carry a risk', async () => {
     await renderWithProviders(<HomeSections profile="finance" />);
 
-    expect(await screen.findByText('Q2')).toBeInTheDocument();
+    expect(await screen.findByText('Alhambra · Q2')).toBeInTheDocument();
     expect(screen.queryByText('Fine')).not.toBeInTheDocument();
   });
 

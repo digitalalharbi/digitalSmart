@@ -93,20 +93,20 @@ export function BudgetTotalsCards({ locale }: { locale: string }) {
                 style={{ width: `${String(used)}%` }}
               />
             </div>
-            <dl className="text-content-secondary grid grid-cols-3 gap-2 text-xs">
-              <div>
+            <dl className="text-content-secondary flex flex-col gap-1 text-xs">
+              <div className="flex items-baseline justify-between gap-3">
                 <dt>{t('budgetControl.approved')}</dt>
                 <dd className="ds-numeric text-content text-sm">
                   {formatMinor(total.approved_minor, total.currency, locale)}
                 </dd>
               </div>
-              <div>
+              <div className="flex items-baseline justify-between gap-3">
                 <dt>{t('budgetControl.allocated')}</dt>
                 <dd className="ds-numeric text-content text-sm">
                   {formatMinor(total.allocated_minor, total.currency, locale)}
                 </dd>
               </div>
-              <div>
+              <div className="flex items-baseline justify-between gap-3">
                 <dt>{t('budgetControl.spent')}</dt>
                 <dd className="ds-numeric text-content text-sm">
                   {formatMinor(total.spent_minor, total.currency, locale)}

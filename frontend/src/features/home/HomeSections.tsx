@@ -126,7 +126,9 @@ function BudgetShortlist() {
                 className="border-line-subtle flex flex-col gap-1 border-b py-2.5 last:border-0"
               >
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-content truncate font-medium">{row.name}</span>
+                  <span className="text-content min-w-0 truncate font-medium" dir="auto">
+                    {[row.client.name, row.name].join(' · ')}
+                  </span>
                   <span className="ds-numeric text-content-secondary">
                     {row.spent_minor === null
                       ? '—'
