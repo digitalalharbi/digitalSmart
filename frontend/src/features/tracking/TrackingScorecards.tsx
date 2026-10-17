@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { formatRelativeTime } from '@/shared/lib/relative-time';
 import { HealthPill } from '@/shared/ui/health';
 import { HEALTH_RANK, type HealthState } from '@/shared/ui/health.model';
-import type { Freshness, MeasurementSource, TrackingIssue } from './types';
+import type { Freshness, MeasurementSource } from './types';
 
 /** The technical freshness onto the product's one health vocabulary. `silent` is the worst: it looks fine. */
 const STATE: Record<Freshness, HealthState> = {
@@ -20,7 +20,7 @@ type Group = {
   state: HealthState;
   lastEventAt: string | null;
   lastSyncedAt: string | null;
-  issues: number;
+  healthy: number;
 };
 
 function newest(values: Array<string | null>): string | null {
@@ -41,11 +41,9 @@ function newest(values: Array<string | null>): string | null {
  */
 export function TrackingScorecards({
   sources,
-  issues,
   locale,
 }: {
   sources: MeasurementSource[];
-  issues: TrackingIssue[];
   locale: string;
 }) {
   const { t } = useTranslation();
@@ -69,7 +67,7 @@ export function TrackingScorecards({
       state: 'healthy' as HealthState,
       lastEventAt: null,
       lastSyncedAt: null,
-      issues: 0,
+      healthy: 0,
     };
 
     group.sources.push(source);
@@ -77,7 +75,7 @@ export function TrackingScorecards({
     group.state = HEALTH_RANK[state] < HEALTH_RANK[group.state] ? state : group.state;
     group.lastEventAt = newest([group.lastEventAt, source.last_event_at]);
     group.lastSyncedAt = newest([group.lastSyncedAt, source.last_synced_at]);
-    group.issues += issues.filter((i) => i.subject !== null && i.subject === source.name).length;
+    group.healthy += state === 'healthy' ? 1 : 0;
     groups.set(key, group);
   }
 
@@ -129,9 +127,16 @@ export function TrackingScorecards({
               <dd className="text-content text-end">
                 {group.lastSyncedAt === null ? '—' : formatRelativeTime(group.lastSyncedAt, locale)}
               </dd>
-              <dt>{t('tracking.cards.issues')}</dt>
-              <dd className={`text-end ${group.issues > 0 ? 'text-danger' : 'text-content'}`}>
-                {group.issues === 0 ? t('tracking.cards.none') : group.issues}
+              <dt>{t('tracking.cards.needsAttention')}</dt>
+              <dd
+                className={`text-end ${group.sources.length > group.healthy ? 'text-danger' : 'text-content'}`}
+              >
+                {group.sources.length === group.healthy
+                  ? t('tracking.cards.none')
+                  : t('tracking.cards.ofTotal', {
+                      count: group.sources.length - group.healthy,
+                      total: group.sources.length,
+                    })}
               </dd>
             </dl>
           </li>

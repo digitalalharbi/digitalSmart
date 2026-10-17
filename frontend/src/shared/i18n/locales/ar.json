@@ -1017,10 +1017,12 @@
       "title": "صحة التتبع",
       "score": "صحة التتبع",
       "summary": "{{healthy}} من {{total}} مصدرًا يعمل",
-      "lastEvent": "آخر حدث",
+      "lastEvent": "أحدث حدث",
       "lastSync": "آخر مزامنة",
       "issues": "المشكلات",
-      "none": "لا شيء"
+      "none": "لا شيء",
+      "needsAttention": "يحتاج انتباهًا",
+      "ofTotal": "{{count}} من {{total}}"
     }
   },
   "commerce": {

@@ -121,11 +121,7 @@ export function TrackingCenterPage() {
         <Alert tone="danger">{t('tracking.loadFailed')}</Alert>
       ) : health.data === undefined ? null : (
         <>
-          <TrackingScorecards
-            sources={health.data.sources}
-            issues={health.data.issues}
-            locale={i18n.language}
-          />
+          <TrackingScorecards sources={health.data.sources} locale={i18n.language} />
 
           <section className="flex flex-col gap-3" aria-labelledby="tracking-issues">
             <div className="flex flex-wrap items-center justify-between gap-2">

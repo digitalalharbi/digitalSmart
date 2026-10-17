@@ -6,7 +6,14 @@ namespace Database\Seeders;
 
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Access\SystemRole;
+use App\Domain\Integration\ConnectionOwner;
+use App\Domain\Integration\Credentials;
+use App\Domain\Integration\Provider;
+use App\Domain\Integration\ProviderConnection;
+use App\Domain\Integration\ProviderConnectionId;
+use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use App\Domain\Workspace\MembershipStatus;
+use App\Domain\Workspace\WorkspaceId;
 use DateTimeImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -172,8 +179,9 @@ final class DemoAgencySeeder extends Seeder
             $this->leads($workspaceId, $clients, $campaigns, $people, $conversions['leads']);
             $this->stores($workspaceId, $clients, $campaigns, $conversions['orders']);
             $this->work($workspaceId, $clients, $projects, $people);
+            $this->tracking($workspaceId, $clients);
 
-            foreach (['clients', 'projects', 'external_accounts', 'project_integration_bindings', 'campaigns', 'daily_metrics', 'budgets', 'leads', 'stores', 'store_orders', 'tasks'] as $table) {
+            foreach (['clients', 'projects', 'external_accounts', 'project_integration_bindings', 'campaigns', 'daily_metrics', 'budgets', 'leads', 'stores', 'store_orders', 'tasks', 'measurement_sources', 'observed_event_counts'] as $table) {
                 DB::statement('analyze '.$table);
             }
         });
@@ -434,32 +442,214 @@ final class DemoAgencySeeder extends Seeder
         }
     }
 
-    /** @return array<string, string> provider => connection id */
+    /**
+     * One agency connection per platform, holding **sandbox** credentials.
+     *
+     * Through the domain, the way the base demo does it, so each connection reads "Sandbox credentials" on the
+     * integrations page rather than "Connected" with nothing behind it — a connection that claimed to be live with
+     * no credential would be the one dishonest thing in a deliberately honest demo.
+     *
+     * @return array<string, string> provider => connection id
+     */
     private function connections(string $workspaceId): array
     {
         $out = [];
         $now = now();
+        $repository = app(ProviderConnectionRepository::class);
 
-        foreach (array_keys(self::PLATFORMS) as $provider) {
-            $existing = DB::table('provider_connections')
-                ->where(['workspace_id' => $workspace = $workspaceId, 'provider' => $provider, 'owner_type' => 'agency'])->value('id');
+        foreach (array_keys(self::PLATFORMS) as $providerValue) {
+            $provider = Provider::from($providerValue);
+            $keys = $provider->requiredCredentialKeys();
+            $existing = $repository->agencyConnection(new WorkspaceId($workspaceId), $provider);
 
-            if (is_string($existing)) {
-                $out[$provider] = $existing;
+            if ($keys === []) {
+                /* A platform with no published API has nothing to authenticate with. */
+                $id = $existing instanceof ProviderConnection ? $existing->id->value : $this->ids->generate();
+
+                if (! $existing instanceof ProviderConnection) {
+                    DB::table('provider_connections')->insert([
+                        'id' => $id, 'workspace_id' => $workspaceId, 'provider' => $providerValue, 'owner_type' => 'agency',
+                        'owner_client_id' => null, 'name' => 'SANDBOX — '.$provider->label(),
+                        'status' => 'connected', 'credentials' => null, 'created_at' => $now, 'updated_at' => $now,
+                    ]);
+                }
+
+                $out[$providerValue] = $id;
 
                 continue;
             }
 
-            $id = $this->ids->generate();
-            DB::table('provider_connections')->insert([
-                'id' => $id, 'workspace_id' => $workspace, 'provider' => $provider, 'owner_type' => 'agency',
-                'owner_client_id' => null, 'name' => ucfirst(str_replace('_', ' ', $provider)).' — Smart Code',
-                'status' => 'connected', 'credentials' => null, 'created_at' => $now, 'updated_at' => $now,
-            ]);
-            $out[$provider] = $id;
+            $credentials = new Credentials(array_fill_keys($keys, Credentials::SANDBOX_TOKEN));
+
+            if ($existing instanceof ProviderConnection) {
+                $existing->replaceCredentials($credentials);
+                $connection = $existing;
+            } else {
+                $connection = ProviderConnection::register(
+                    id: new ProviderConnectionId($this->ids->generate()),
+                    workspaceId: new WorkspaceId($workspaceId),
+                    provider: $provider,
+                    owner: ConnectionOwner::agency(),
+                    name: 'SANDBOX — '.$provider->label(),
+                    credentials: $credentials,
+                );
+            }
+
+            $repository->save($connection);
+            $out[$providerValue] = $connection->id->value;
         }
 
         return $out;
+    }
+
+    /** A sandbox-credentialled agency connection for one provider, reusing the workspace's own if it has one. */
+    private function sandboxConnection(string $workspaceId, Provider $provider): string
+    {
+        $repository = app(ProviderConnectionRepository::class);
+        $credentials = new Credentials(array_fill_keys($provider->requiredCredentialKeys(), Credentials::SANDBOX_TOKEN));
+        $existing = $repository->agencyConnection(new WorkspaceId($workspaceId), $provider);
+
+        if ($existing instanceof ProviderConnection) {
+            $existing->replaceCredentials($credentials);
+            $connection = $existing;
+        } else {
+            $connection = ProviderConnection::register(
+                id: new ProviderConnectionId($this->ids->generate()),
+                workspaceId: new WorkspaceId($workspaceId),
+                provider: $provider,
+                owner: ConnectionOwner::agency(),
+                name: 'SANDBOX — '.$provider->label(),
+                credentials: $credentials,
+            );
+        }
+
+        $repository->save($connection);
+
+        return $connection->id->value;
+    }
+
+    /**
+     * What measures each client, and how well it is measuring.
+     *
+     * Most sources are healthy and reporting. A few have gone quiet for days, one in thirteen has synced but seen no
+     * event for five, and onboarding clients have a property nobody has read yet — the shapes a tracking review
+     * actually turns up. Event counts are aggregates per day, SANDBOX, and only exist for the days a source was
+     * seeing events at all.
+     *
+     * @param  list<array<string, mixed>>  $clients
+     */
+    private function tracking(string $workspaceId, array $clients): void
+    {
+        $now = now();
+        $connection = [];
+
+        foreach ([Provider::GoogleAnalytics, Provider::GoogleTagManager, Provider::Salla, Provider::Zid, Provider::HubSpot] as $provider) {
+            $connection[$provider->value] = $this->sandboxConnection($workspaceId, $provider);
+        }
+
+        $sources = [];
+        $counts = [];
+        $definitions = [];
+        $mappings = [];
+
+        foreach ($clients as $i => $client) {
+            $commerce = (bool) $client['commerce'];
+            $onboarding = $client['status'] === 'onboarding';
+            $stale = ! $onboarding && $i % 9 === 4;
+            $silent = ! $onboarding && ! $stale && $i % 13 === 6;
+
+            $syncedAt = $onboarding ? null : ($stale ? $now->copy()->subDays(3) : $now->copy()->subHours(1 + $i % 6));
+            $eventAt = $onboarding ? null : ($stale ? $now->copy()->subDays(3) : ($silent ? $now->copy()->subDays(5) : $now->copy()->subHour()));
+            $lastEventDay = $eventAt?->copy()->startOfDay();
+            $analyticsId = $this->ids->generate();
+
+            $sources[] = [
+                'id' => $analyticsId, 'workspace_id' => $workspaceId, 'client_id' => $client['id'], 'project_id' => null,
+                'provider' => Provider::GoogleAnalytics->value, 'kind' => 'analytics',
+                'external_id' => 'properties/'.(300_000_000 + $i * 7_919), 'name' => 'SANDBOX — '.$client['name'].' GA4',
+                'provider_connection_id' => $connection[Provider::GoogleAnalytics->value],
+                'last_synced_at' => $syncedAt, 'last_event_at' => $eventAt, 'is_active' => true, 'metadata' => '{}',
+                'created_at' => $now, 'updated_at' => $now,
+            ];
+
+            if (! $onboarding && $i % 10 !== 9) {
+                $sources[] = [
+                    'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'client_id' => $client['id'], 'project_id' => null,
+                    'provider' => Provider::GoogleTagManager->value, 'kind' => 'tag_manager',
+                    'external_id' => 'accounts/'.(6_000_000 + $i).'/containers/'.(190_000_000 + $i * 31),
+                    'name' => 'SANDBOX — '.$client['name'].' web container',
+                    'provider_connection_id' => $connection[Provider::GoogleTagManager->value],
+                    'last_synced_at' => $syncedAt, 'last_event_at' => null, 'is_active' => true, 'metadata' => '{}',
+                    'created_at' => $now, 'updated_at' => $now,
+                ];
+            }
+
+            if (! $onboarding) {
+                $platform = $commerce ? ($i % 2 === 0 ? Provider::Salla : Provider::Zid) : Provider::HubSpot;
+                $sources[] = [
+                    'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'client_id' => $client['id'], 'project_id' => null,
+                    'provider' => $platform->value, 'kind' => $commerce ? 'store' : 'crm',
+                    'external_id' => ($commerce ? 'store-' : 'portal-').(70_000 + $i),
+                    'name' => 'SANDBOX — '.$client['name'].' '.$platform->label(),
+                    'provider_connection_id' => $connection[$platform->value],
+                    'last_synced_at' => $syncedAt, 'last_event_at' => $eventAt, 'is_active' => true, 'metadata' => '{}',
+                    'created_at' => $now, 'updated_at' => $now,
+                ];
+            }
+
+            if ($lastEventDay !== null) {
+                $names = $commerce ? ['page_view', 'add_to_cart', 'begin_checkout', 'purchase'] : ['page_view', 'form_start', 'form_submit', 'generate_lead'];
+
+                if ($i % 6 === 2) {
+                    $names[] = 'cta_click_v2';
+                }
+
+                for ($day = 0; $day < 14; $day++) {
+                    $date = $now->copy()->startOfDay()->subDays($day);
+
+                    if ($date->greaterThan($lastEventDay)) {
+                        continue;
+                    }
+
+                    foreach ($names as $step => $name) {
+                        $base = 2_400 + (($i * 211) % 5_000);
+                        $count = (int) max(3, $base / (1 + $step * 2.4) * (0.85 + $this->noise(30) / 100));
+                        $value = $name === 'purchase' ? $count * (9_000 + ($i * 700) % 26_000) : null;
+                        $counts[] = [
+                            'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'measurement_source_id' => $analyticsId,
+                            'raw_event_name' => $name, 'date' => $date->toDateString(), 'event_count' => $count,
+                            'value_minor' => $value, 'currency' => $value === null ? null : $client['currency'],
+                            'source' => 'sandbox', 'created_at' => $now, 'updated_at' => $now,
+                        ];
+                    }
+                }
+            }
+
+            if (! $onboarding) {
+                $definitionId = $this->ids->generate();
+                $definitions[] = [
+                    'id' => $definitionId, 'workspace_id' => $workspaceId, 'client_id' => $client['id'], 'project_id' => null,
+                    'name' => $commerce ? 'Purchase' : 'Lead', 'normalized_event' => $commerce ? 'purchase' : 'generate_lead',
+                    'description' => $commerce ? 'A completed order.' : 'A submitted enquiry.',
+                    'is_conversion' => true, 'is_primary' => true, 'expects_value' => $commerce,
+                    'created_at' => $now, 'updated_at' => $now,
+                ];
+
+                /* One client in seven has a primary conversion nobody has mapped an event to — a finding, on purpose. */
+                if ($i % 7 !== 3) {
+                    $mappings[] = [
+                        'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'event_definition_id' => $definitionId,
+                        'measurement_source_id' => null, 'raw_event_name' => $commerce ? 'purchase' : 'generate_lead',
+                        'created_at' => $now, 'updated_at' => $now,
+                    ];
+                }
+            }
+        }
+
+        $this->insert('measurement_sources', $sources);
+        $this->insert('observed_event_counts', $counts);
+        $this->insert('event_definitions', $definitions);
+        $this->insert('event_mappings', $mappings);
     }
 
     /**
