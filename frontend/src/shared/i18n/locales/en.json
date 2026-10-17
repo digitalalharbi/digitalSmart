@@ -2580,7 +2580,13 @@
       "budget": "Budget",
       "creative": "Creative",
       "reports": "Reports"
-    }
+    },
+    "mode": {
+      "label": "Level of detail",
+      "executive": "Executive",
+      "operational": "Operational"
+    },
+    "context": "Client context"
   },
   "budgetControl": {
     "title": "Budget control",
@@ -2888,6 +2894,23 @@
       "placed": "Placed in a project",
       "account": "Ad account",
       "measurable": "Measured"
-    }
+    },
+    "context": "Campaign context",
+    "where": "Where it sits",
+    "tasks": "Tasks about this campaign",
+    "noTasks": "No open tasks about this campaign."
+  },
+  "backgroundWork": {
+    "title": "Background work",
+    "syncing_one": "Refreshing {{count}} ad account",
+    "syncing_other": "Refreshing {{count}} ad accounts",
+    "neverSynced": "Nothing has been refreshed yet",
+    "synced": "Figures refreshed {{when}}",
+    "exportsRunning_one": "{{count}} export is being prepared",
+    "exportsRunning_other": "{{count}} exports are being prepared",
+    "exportsFailed_one": "{{count}} export could not be made",
+    "exportsFailed_other": "{{count}} exports could not be made",
+    "exportsReady_one": "{{count}} export ready to download",
+    "exportsReady_other": "{{count}} exports ready to download"
   }
 }

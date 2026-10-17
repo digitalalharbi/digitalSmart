@@ -2631,7 +2631,13 @@
       "budget": "الميزانية",
       "creative": "الإبداع",
       "reports": "التقارير"
-    }
+    },
+    "mode": {
+      "label": "مستوى التفاصيل",
+      "executive": "تنفيذي",
+      "operational": "تشغيلي"
+    },
+    "context": "سياق العميل"
   },
   "budgetControl": {
     "title": "مركز الميزانيات",
@@ -2950,6 +2956,39 @@
       "placed": "موضوعة في مشروع",
       "account": "الحساب الإعلاني",
       "measurable": "قابلة للقياس"
-    }
+    },
+    "context": "سياق الحملة",
+    "where": "موقعها",
+    "tasks": "مهام عن هذه الحملة",
+    "noTasks": "لا مهام مفتوحة عن هذه الحملة."
+  },
+  "backgroundWork": {
+    "title": "العمل في الخلفية",
+    "syncing_zero": "لا حسابات قيد التحديث",
+    "syncing_one": "تحديث حساب إعلاني واحد",
+    "syncing_two": "تحديث حسابين إعلانيين",
+    "syncing_few": "تحديث {{count}} حسابات إعلانية",
+    "syncing_many": "تحديث {{count}} حسابًا إعلانيًا",
+    "syncing_other": "تحديث {{count}} حساب إعلاني",
+    "neverSynced": "لم يُحدَّث شيء بعد",
+    "synced": "حُدِّثت الأرقام {{when}}",
+    "exportsRunning_zero": "لا تصديرات قيد الإعداد",
+    "exportsRunning_one": "تصدير واحد قيد الإعداد",
+    "exportsRunning_two": "تصديران قيد الإعداد",
+    "exportsRunning_few": "{{count}} تصديرات قيد الإعداد",
+    "exportsRunning_many": "{{count}} تصديرًا قيد الإعداد",
+    "exportsRunning_other": "{{count}} تصدير قيد الإعداد",
+    "exportsFailed_zero": "لا تصديرات فاشلة",
+    "exportsFailed_one": "تعذّر إعداد تصدير واحد",
+    "exportsFailed_two": "تعذّر إعداد تصديرين",
+    "exportsFailed_few": "تعذّر إعداد {{count}} تصديرات",
+    "exportsFailed_many": "تعذّر إعداد {{count}} تصديرًا",
+    "exportsFailed_other": "تعذّر إعداد {{count}} تصدير",
+    "exportsReady_zero": "لا تصديرات جاهزة",
+    "exportsReady_one": "تصدير واحد جاهز للتنزيل",
+    "exportsReady_two": "تصديران جاهزان للتنزيل",
+    "exportsReady_few": "{{count}} تصديرات جاهزة للتنزيل",
+    "exportsReady_many": "{{count}} تصديرًا جاهزًا للتنزيل",
+    "exportsReady_other": "{{count}} تصدير جاهز للتنزيل"
   }
 }

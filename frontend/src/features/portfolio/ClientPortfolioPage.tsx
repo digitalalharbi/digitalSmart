@@ -1,5 +1,10 @@
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
+import { BackgroundWork } from '@/features/background-work';
+import { api } from '@/shared/api/client';
+import { Button } from '@/shared/ui/button';
 import { useUiStore } from '@/shared/store/ui-store';
 import { Alert } from '@/shared/ui/alert';
 import { buttonVariants } from '@/shared/ui/button.variants';
@@ -41,6 +46,35 @@ export function ClientPortfolioPage() {
   const client = data?.clients[0];
   const navigate = useNavigate();
   const { context, setContext } = useUiStore();
+  /* Executive is the answer in four blocks; operational adds the projects and the work waiting on them. */
+  const [mode, setMode] = useState<'executive' | 'operational'>('executive');
+
+  const waiting = useQuery({
+    queryKey: ['portfolio', 'client-attention', clientId] as const,
+    queryFn: async (): Promise<
+      Array<{
+        id: string;
+        message: string;
+        severity: string;
+        client_id: string | null;
+        action: { path: string };
+      }>
+    > => {
+      const { data: body } = await api.get<{
+        data: Array<{
+          id: string;
+          message: string;
+          severity: string;
+          client_id: string | null;
+          action: { path: string };
+        }>;
+      }>('/attention', { params: { limit: 200 } });
+
+      return body.data.filter((item) => item.client_id === clientId);
+    },
+    retry: false,
+    staleTime: 30_000,
+  });
 
   /* Opening a module from here sets the client as the working context, so the module opens already narrowed. */
   const open = (to: string, query?: string) => {
@@ -57,9 +91,28 @@ export function ClientPortfolioPage() {
         title={client?.name ?? t('portfolio.client')}
         description={t('portfolio.clientSubtitle')}
         actions={
-          <Link to="/clients" className={buttonVariants({ variant: 'ghost' })}>
-            {t('portfolio.allClients')}
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <div
+              className="bg-surface-sunken flex rounded-lg p-0.5"
+              role="group"
+              aria-label={t('portfolio.mode.label')}
+            >
+              {(['executive', 'operational'] as const).map((key) => (
+                <Button
+                  key={key}
+                  size="sm"
+                  variant={mode === key ? 'secondary' : 'ghost'}
+                  aria-pressed={mode === key}
+                  onClick={() => setMode(key)}
+                >
+                  {t(`portfolio.mode.${key}`)}
+                </Button>
+              ))}
+            </div>
+            <Link to="/clients" className={buttonVariants({ variant: 'ghost' })}>
+              {t('portfolio.allClients')}
+            </Link>
+          </div>
         }
       />
 
@@ -87,91 +140,135 @@ export function ClientPortfolioPage() {
             ))}
           </nav>
 
-          <KpiGrid data={data.kpis} locale={locale} />
+          <div
+            className={
+              mode === 'operational'
+                ? 'grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]'
+                : 'grid gap-4'
+            }
+          >
+            <div className="flex min-w-0 flex-col gap-4">
+              <KpiGrid data={data.kpis} locale={locale} />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('portfolio.health')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <HealthSection health={data.health} />
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('portfolio.health')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <HealthSection health={data.health} />
+                </CardContent>
+              </Card>
 
-          <section aria-label={t('portfolio.projects')} className="flex flex-col gap-3">
-            <h2 className="text-content text-lg font-semibold">{t('portfolio.projects')}</h2>
-            {data.projects.length === 0 ? (
-              <EmptyState
-                title={t('portfolio.noProjects')}
-                description={t('portfolio.noProjectsBody')}
-              />
-            ) : (
-              <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {data.projects.map((project) => (
-                  <li key={project.id}>
-                    <article
-                      aria-label={project.name}
-                      className="bg-surface border-line-subtle flex flex-col gap-3 rounded-2xl border p-4 shadow-xs"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <Link
-                          to={`/projects/${project.id}`}
-                          className="text-content font-medium hover:underline"
-                        >
-                          {project.name}
-                        </Link>
-                        <Badge tone="neutral">
-                          {t(`portfolio.status.${project.status}`, project.status)}
-                        </Badge>
-                      </div>
-                      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                        <div>
-                          <dt className="text-content-tertiary text-xs">
-                            {t('portfolio.kpi.spend')}
-                          </dt>
-                          <dd>
-                            <MoneyLines values={project.spend} locale={locale} />
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-content-tertiary text-xs">ROAS</dt>
-                          <dd>
-                            <RoasLines values={project.roas} />
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-content-tertiary text-xs">
-                            {t('portfolio.kpi.campaigns')}
-                          </dt>
-                          <dd className="ds-numeric">
-                            {project.active_campaigns} / {project.campaigns}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-content-tertiary text-xs">
-                            {t('portfolio.openWork')}
-                          </dt>
-                          <dd className="ds-numeric">
-                            <Count value={project.open_work} locale={locale} />
-                          </dd>
-                        </div>
-                      </dl>
-                      <HealthSection health={project.campaign_health} />
-                    </article>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+              {mode === 'operational' ? (
+                <section aria-label={t('portfolio.projects')} className="flex flex-col gap-3">
+                  <h2 className="text-content text-lg font-semibold">{t('portfolio.projects')}</h2>
+                  {data.projects.length === 0 ? (
+                    <EmptyState
+                      title={t('portfolio.noProjects')}
+                      description={t('portfolio.noProjectsBody')}
+                    />
+                  ) : (
+                    <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      {data.projects.map((project) => (
+                        <li key={project.id}>
+                          <article
+                            aria-label={project.name}
+                            className="bg-surface border-line-subtle flex flex-col gap-3 rounded-2xl border p-4 shadow-xs"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <Link
+                                to={`/projects/${project.id}`}
+                                className="text-content font-medium hover:underline"
+                              >
+                                {project.name}
+                              </Link>
+                              <Badge tone="neutral">
+                                {t(`portfolio.status.${project.status}`, project.status)}
+                              </Badge>
+                            </div>
+                            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                              <div>
+                                <dt className="text-content-tertiary text-xs">
+                                  {t('portfolio.kpi.spend')}
+                                </dt>
+                                <dd>
+                                  <MoneyLines values={project.spend} locale={locale} />
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="text-content-tertiary text-xs">ROAS</dt>
+                                <dd>
+                                  <RoasLines values={project.roas} />
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="text-content-tertiary text-xs">
+                                  {t('portfolio.kpi.campaigns')}
+                                </dt>
+                                <dd className="ds-numeric">
+                                  {project.active_campaigns} / {project.campaigns}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="text-content-tertiary text-xs">
+                                  {t('portfolio.openWork')}
+                                </dt>
+                                <dd className="ds-numeric">
+                                  <Count value={project.open_work} locale={locale} />
+                                </dd>
+                              </div>
+                            </dl>
+                            <HealthSection health={project.campaign_health} />
+                          </article>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              ) : null}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('portfolio.platformMix')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PlatformMix mix={data.platform_mix} locale={locale} />
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('portfolio.platformMix')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PlatformMix mix={data.platform_mix} locale={locale} />
+                </CardContent>
+              </Card>
+            </div>
+
+            {mode === 'operational' ? (
+              <aside aria-label={t('portfolio.context')} className="flex min-w-0 flex-col gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('workspace.nextActions')}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {waiting.data === undefined ? (
+                      <p className="text-content-tertiary text-sm">{t('workspace.unavailable')}</p>
+                    ) : waiting.data.length === 0 ? (
+                      <p className="text-content-tertiary text-sm">{t('workspace.nothingNext')}</p>
+                    ) : (
+                      <ul className="flex flex-col gap-2">
+                        {waiting.data.slice(0, 6).map((item) => (
+                          <li key={item.id} className="flex flex-col gap-0.5 text-sm">
+                            <span dir="auto">{item.message}</span>
+                            <Link
+                              to={item.action.path}
+                              className="text-content-brand text-xs font-medium hover:underline"
+                            >
+                              {t('workspace.act')}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </CardContent>
+                </Card>
+                <BackgroundWork />
+              </aside>
+            ) : null}
+          </div>
         </>
       )}
     </div>

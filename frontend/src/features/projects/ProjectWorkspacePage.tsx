@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { formatMinor } from '@/shared/lib/format';
+import { BackgroundWork } from '@/features/background-work';
 import { useUiStore } from '@/shared/store/ui-store';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
@@ -412,6 +413,7 @@ export function ProjectWorkspacePage() {
               )}
             </CardContent>
           </Card>
+          <BackgroundWork />
           <Card>
             <CardHeader>
               <CardTitle>{t('workspace.changes')}</CardTitle>

@@ -6,6 +6,8 @@ import { useUiStore } from '@/shared/store/ui-store';
 import { renderWithProviders } from '@/test/render';
 import { ProjectWorkspacePage } from './ProjectWorkspacePage';
 
+vi.mock('@/features/background-work', () => ({ BackgroundWork: () => null }));
+
 const state = vi.hoisted(() => ({ failCampaigns: false }));
 
 const ok = (data: unknown) => Promise.resolve({ data });

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { PortfolioPage } from './PortfolioPage';
 import { ClientPortfolioPage } from './ClientPortfolioPage';
@@ -8,6 +9,7 @@ import type { Portfolio } from './types';
 const query = vi.hoisted(() => vi.fn());
 
 vi.mock('./usePortfolio', () => ({ usePortfolio: () => query() }));
+vi.mock('@/features/background-work', () => ({ BackgroundWork: () => null }));
 vi.mock('@/features/attention', () => ({ AttentionPanel: () => <div data-testid="attention" /> }));
 vi.mock('react-router', async () => ({
   ...(await vi.importActual<Record<string, unknown>>('react-router')),
@@ -154,6 +156,9 @@ describe('ClientPortfolioPage', () => {
 
   it('shows each project of the client as a card with its status and open work', async () => {
     await renderWithProviders(<ClientPortfolioPage />);
+    /* Executive by default: the projects belong to the operational reading. */
+    expect(screen.queryByRole('article', { name: 'Ramadan' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Operational' }));
     const card = screen.getByRole('article', { name: 'Ramadan' });
 
     expect(within(card).getByText('Onboarding')).toBeInTheDocument();
