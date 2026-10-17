@@ -14,6 +14,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { Sparkline } from '@/shared/ui/sparkline';
 import { BudgetBar } from './CampaignParts';
 import { QuickActions } from './QuickActions';
+import { objectiveName, resultName } from './labels';
 import { money, resultText } from './text';
 import { HEALTH_TO_STATE, type CampaignControlPage, type CampaignRow } from './types';
 
@@ -137,7 +138,7 @@ export function CampaignDetailPage() {
                 label={t('campaignControl.col.spend')}
                 value={money(row.spend_minor, row.currency, locale)}
               />
-              <Figure label={row.result_label.replace('_', ' ')} value={resultText(row, locale)} />
+              <Figure label={resultName(t, row)} value={resultText(row, locale)} />
               <Figure
                 label={t('campaignControl.col.costPerResult')}
                 value={money(row.cost_per_result_minor, row.currency, locale)}
@@ -213,7 +214,7 @@ export function CampaignDetailPage() {
                 <dt>{t('campaignDetail.account')}</dt>
                 <dd className="text-content">{row.external_account.name}</dd>
                 <dt>{t('campaignDetail.objective')}</dt>
-                <dd className="text-content">{row.objective_label}</dd>
+                <dd className="text-content">{objectiveName(t, row)}</dd>
               </dl>
             </details>
           </div>
@@ -235,7 +236,7 @@ export function CampaignDetailPage() {
                   </Link>
                 )}
                 <span className="text-content-tertiary text-xs">
-                  {row.objective_label} · {row.external_account.name}
+                  {objectiveName(t, row)} · {row.external_account.name}
                 </span>
               </CardContent>
             </Card>

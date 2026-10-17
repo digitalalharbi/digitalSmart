@@ -2510,6 +2510,40 @@
       "mine": "My campaigns",
       "google": "Google Ads campaigns",
       "meta": "Meta Ads campaigns"
+    },
+    "statusName": {
+      "active": "Active",
+      "paused": "Paused",
+      "not_delivering": "Not delivering",
+      "in_review": "In review",
+      "rejected": "Rejected",
+      "completed": "Completed",
+      "archived": "Archived",
+      "removed": "Removed",
+      "unknown": "Unknown"
+    },
+    "objectiveName": {
+      "awareness": "Awareness",
+      "reach": "Reach",
+      "traffic": "Traffic",
+      "engagement": "Engagement",
+      "video_views": "Video views",
+      "leads": "Leads",
+      "app_promotion": "App promotion",
+      "sales": "Sales",
+      "store_traffic": "Store traffic",
+      "messages": "Messages",
+      "other": "Other"
+    },
+    "resultName": {
+      "reach": "Reach",
+      "link_clicks": "Link clicks",
+      "engagements": "Engagements",
+      "video_views": "Video views",
+      "leads": "Leads",
+      "installs": "Installs",
+      "purchases": "Purchases",
+      "impressions": "Impressions"
     }
   },
   "palette": {

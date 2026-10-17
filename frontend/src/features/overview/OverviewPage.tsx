@@ -39,7 +39,7 @@ function DigestBanner() {
           /* Whose it is first: three budget warnings with the same sentence are three different clients. */
           <li key={`${item.entity}-${String(index)}`}>
             <span className="text-content font-medium" dir="auto">
-              {[item.client, item.entity]
+              {[...new Set([item.client, item.entity])]
                 .filter((part) => part !== null && part !== '')
                 .join(' · ')}
             </span>

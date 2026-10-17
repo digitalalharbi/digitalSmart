@@ -10,6 +10,7 @@ import { Sparkline } from '@/shared/ui/sparkline';
 import { ProviderLogo } from '@/features/integrations';
 import { Pin, PinOff } from 'lucide-react';
 import { usePinMutation, useShortcutsQuery } from '@/features/search';
+import { resultName, statusName } from './labels';
 import { QuickActions } from './QuickActions';
 import { HEALTH_TO_STATE, type CampaignRow } from './types';
 
@@ -68,6 +69,8 @@ export function StatusPair({
   row: CampaignRow;
   withReason?: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <span className="flex flex-wrap items-center gap-1.5">
       <HealthPill
@@ -75,7 +78,7 @@ export function StatusPair({
         detail={withReason ? row.health_reason : undefined}
       />
       {/* The platform's word, beside ours — rule 11. They disagree exactly when it matters. */}
-      <Badge tone="neutral">{row.status_label}</Badge>
+      <Badge tone="neutral">{statusName(t, row)}</Badge>
     </span>
   );
 }
@@ -113,9 +116,7 @@ export function CampaignCard({ row }: { row: CampaignRow }) {
           </dd>
         </div>
         <div>
-          <dt className="text-content-tertiary text-xs capitalize">
-            {row.result_label.replace('_', ' ')}
-          </dt>
+          <dt className="text-content-tertiary text-xs capitalize">{resultName(t, row)}</dt>
           <dd className="ds-numeric text-content">{resultText(row, locale)}</dd>
         </div>
         <div>

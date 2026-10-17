@@ -34,7 +34,7 @@ import { OwnershipQueue } from './OwnershipQueue';
 import { SpendHero } from './SpendHero';
 import { DEFAULT_FILTERS, PERIODS, fromParams, toParams } from './filters';
 import { useCampaignControl } from './useCampaignControl';
-import type { ControlFilters, HealthValue, SortKey } from './types';
+import { HEALTH_TO_STATE, type ControlFilters, type HealthValue, type SortKey } from './types';
 
 const HEALTH_ORDER: HealthValue[] = [
   'critical',
@@ -116,8 +116,9 @@ export function CampaignControlPage() {
     );
   };
 
+  /* The product's own six words, in the reader's language — not the server's English labels. */
   const healthLabels = Object.fromEntries(
-    (data?.meta.health ?? []).map((h) => [h.health, h.label]),
+    HEALTH_ORDER.map((health) => [health, t(`health.${HEALTH_TO_STATE[health]}`)]),
   ) as Record<HealthValue, string>;
 
   const counts = data?.meta.health_counts;

@@ -2561,6 +2561,40 @@
       "mine": "حملاتي",
       "google": "حملات Google Ads",
       "meta": "حملات Meta Ads"
+    },
+    "statusName": {
+      "active": "نشطة",
+      "paused": "متوقفة مؤقتًا",
+      "not_delivering": "لا تُعرض",
+      "in_review": "قيد المراجعة",
+      "rejected": "مرفوضة",
+      "completed": "مكتملة",
+      "archived": "مؤرشفة",
+      "removed": "محذوفة",
+      "unknown": "غير معروفة"
+    },
+    "objectiveName": {
+      "awareness": "الوعي",
+      "reach": "الوصول",
+      "traffic": "الزيارات",
+      "engagement": "التفاعل",
+      "video_views": "مشاهدات الفيديو",
+      "leads": "العملاء المحتملون",
+      "app_promotion": "ترويج التطبيق",
+      "sales": "المبيعات",
+      "store_traffic": "زيارات المتجر",
+      "messages": "الرسائل",
+      "other": "أخرى"
+    },
+    "resultName": {
+      "reach": "الوصول",
+      "link_clicks": "نقرات الروابط",
+      "engagements": "التفاعلات",
+      "video_views": "مشاهدات الفيديو",
+      "leads": "العملاء المحتملون",
+      "installs": "التثبيتات",
+      "purchases": "المشتريات",
+      "impressions": "مرات الظهور"
     }
   },
   "palette": {
