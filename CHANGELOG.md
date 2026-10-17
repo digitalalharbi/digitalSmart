@@ -4,6 +4,42 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## UX restructure and the sandbox agency
+
+The agency surfaces re-composed around how the work is done, and a realistic demo to prove them against. Ways to
+run it, and what is in it, are in `docs/DEMO.md`.
+
+### Added
+
+- **Project workspace:** a real hub — scope in the header (client, owner, dates, budget, campaign health,
+  readiness), nine tabs, and a right-hand panel for the team, alerts, background work and recent changes.
+- **Campaign control:** ad-account, period and *my projects* filters; summary / detailed; add-task from a card;
+  ready-made views. A campaign's own page gains a context sidebar and the assistant's reading of its client.
+- **Creative hub:** gallery, board and table with shape-true previews, and a desk for workload, lateness,
+  review, readiness, deadlines and recent approvals. Board cards now carry their version count and the shape of
+  the newest file.
+- **Reports and presentations:** report covers and an executive / detailed reading; a preview-first deck with a
+  slide rail, one large slide, and the whole deck on print.
+- **Administration:** sectioned — people, roles & permissions (read-only, from the live role table), setup,
+  audit, system health, and *Advanced diagnostics* as the one place for technical detail.
+- **Digests:** a monthly executive digest beside the morning, budget and weekly ones.
+- **Contextual assistant:** issue, figures, recommendation (only when the evidence is firm) and confidence, on
+  client, project and campaign.
+- **Sandbox notice and tour** on every screen of a demo workspace.
+
+### Changed
+
+- The agency overview's project matrix is bounded (the sixty that most need a look) and says whose each project is.
+- Every grid item may shrink below its content; a long campaign name no longer widens a phone screen.
+- Access-denied pages have a first-level heading; clients are kept to their portal on every route.
+- System health moved from the overview to Administration → Advanced diagnostics.
+
+### Fixed
+
+- Role names printing as translation keys in Administration (a new section title had overwritten the role
+  names); caught by a test that now fails on any visible key.
+- Analytics filters, metric cards and provider cards overflowing at phone width.
+
 ## Agency scale: the control plane, measured
 
 The agency surfaces — one place to see every campaign, client, budget, lead and store — built over the
