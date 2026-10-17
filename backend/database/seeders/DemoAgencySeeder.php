@@ -229,6 +229,7 @@ final class DemoAgencySeeder extends Seeder
 
         $save = app(SaveReport::class);
         $snapshot = app(TakeSnapshot::class);
+        $firstReport = null;
 
         foreach ($clients as $position => $client) {
             $clientId = (string) $client->id;
@@ -248,6 +249,8 @@ final class DemoAgencySeeder extends Seeder
                 description: 'Written to be read by the client.',
                 clientId: $clientId,
             ));
+
+            $firstReport ??= $safe->id;
 
             if ($position % 2 === 0) {
                 $snapshot($safe->id, 'Last month, as sent');
@@ -274,6 +277,26 @@ final class DemoAgencySeeder extends Seeder
                 app(EnablePortal::class)($clientId);
                 app(SetPortalModules::class)($clientId, [PortalModule::Performance, PortalModule::Reports, PortalModule::Tracking]);
             }
+        }
+
+        if ($firstReport !== null) {
+            $now = now();
+            /* A finished export and one that could not be made: both are things somebody asked for this morning. */
+            DB::table('export_jobs')->where('workspace_id', $workspaceId)->where('user_id', $owner)->where('filename', 'like', 'sandbox-%')->delete();
+            DB::table('export_jobs')->insert([
+                [
+                    'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'user_id' => $owner, 'kind' => 'report_csv',
+                    'subject_id' => $firstReport, 'status' => 'ready', 'filename' => 'sandbox-monthly-performance.csv', 'storage_path' => null,
+                    'byte_size' => 18_432, 'error' => null, 'requested_at' => $now->copy()->subHours(3), 'started_at' => $now->copy()->subHours(3),
+                    'finished_at' => $now->copy()->subHours(3), 'expires_at' => $now->copy()->addDays(6), 'created_at' => $now, 'updated_at' => $now,
+                ],
+                [
+                    'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'user_id' => $owner, 'kind' => 'report_xlsx',
+                    'subject_id' => $firstReport, 'status' => 'failed', 'filename' => 'sandbox-monthly-performance.xlsx', 'storage_path' => null,
+                    'byte_size' => null, 'error' => 'The report had no figures for that period.', 'requested_at' => $now->copy()->subHours(5), 'started_at' => $now->copy()->subHours(5),
+                    'finished_at' => $now->copy()->subHours(5), 'expires_at' => null, 'created_at' => $now, 'updated_at' => $now,
+                ],
+            ]);
         }
     }
 
