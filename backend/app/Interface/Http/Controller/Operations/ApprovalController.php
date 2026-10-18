@@ -73,6 +73,13 @@ final class ApprovalController extends Controller
 
     public function store(Request $request, RequestApproval $ask, Clock $clock): JsonResponse
     {
+        $request->validate([
+            'client_id' => ['nullable', 'uuid'],
+            'project_id' => ['nullable', 'uuid'],
+            'subject_id' => ['nullable', 'uuid'],
+            'supersedes_id' => ['nullable', 'uuid'],
+        ]);
+
         $kind = $this->kind($request);
 
         if ($kind === false || $kind === null) {

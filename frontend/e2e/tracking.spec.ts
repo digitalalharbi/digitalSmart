@@ -33,7 +33,8 @@ function named(base: string): string {
  */
 async function openTracking(page: Page, account: string = ACCOUNTS.owner): Promise<void> {
   await signIn(page, account);
-  await page.goto('/tracking');
+  /* Diagnostics, because the sources and containers these tests work on live there; health is the default. */
+  await page.goto('/tracking?view=diagnostics');
   await expect(page.getByRole('heading', { level: 1, name: 'Tracking Center' })).toBeVisible({
     timeout: 30_000,
   });

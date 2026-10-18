@@ -73,6 +73,13 @@ final readonly class RequestApproval
             throw ResourceNotFound::of('Project');
         }
 
+        /* Everything the request names has to be this workspace's own and visible to this reader. */
+        $missing = $this->approvals->missingReference($workspaceId, $visible, $input);
+
+        if ($missing !== null) {
+            throw ResourceNotFound::of($missing);
+        }
+
         if ($input->supersedesId !== null) {
             /*
              * The request being replaced has to be one the actor can see. Otherwise a reference becomes a way

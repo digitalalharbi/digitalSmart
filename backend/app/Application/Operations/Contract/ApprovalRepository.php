@@ -20,6 +20,14 @@ use DateTimeImmutable;
  */
 interface ApprovalRepository
 {
+    /**
+     * What a new request points at that does not exist for this reader: Client, Project or Subject, else null.
+     * The queue prints the name of whatever a request names, so it may only name this workspace's own.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     */
+    public function missingReference(string $workspaceId, ?array $visibleProjectIds, ApprovalInput $input): ?string;
+
     public function request(string $workspaceId, ApprovalInput $input, ?string $actorId): ApprovalView;
 
     /** @param list<string>|null $visibleProjectIds */

@@ -570,3 +570,31 @@ describe('the vocabulary', function (): void {
         expect($spend['decided_with'])->toBe('budgets.approve');
     });
 });
+
+it('will not ask for approval about another workspace’s client, project or subject', function (): void {
+    $mine = approvalScenario();
+    $theirs = approvalScenario();
+
+    foreach ([
+        ['client_id' => (string) $theirs['client']->getKey(), 'project_id' => null],
+        ['project_id' => (string) $theirs['project']->getKey()],
+        ['subject_type' => 'project', 'subject_id' => (string) $theirs['project']->getKey()],
+    ] as $naming) {
+        $this->actingAs($mine['scenario']->owner)
+            ->postJson('/api/approvals', [
+                'kind' => 'spend_change',
+                'title' => 'Look at their account',
+                'rationale' => 'It should not be possible.',
+                'proposal' => ['change' => 'anything'],
+                'client_id' => (string) $mine['client']->getKey(),
+                ...$naming,
+            ])
+            ->assertNotFound();
+    }
+
+    $this->actingAs($mine['scenario']->owner)
+        ->postJson('/api/approvals', [
+            'kind' => 'spend_change', 'title' => 'x', 'rationale' => 'y', 'proposal' => ['a' => 'b'], 'client_id' => 'nope',
+        ])
+        ->assertUnprocessable();
+});

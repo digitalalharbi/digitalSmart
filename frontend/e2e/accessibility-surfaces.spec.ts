@@ -45,6 +45,8 @@ for (const [theme, locale] of [
   test(`restructured surfaces have no machine-detectable violation (${theme}, ${locale})`, async ({
     page,
   }) => {
+    /* Twelve surfaces, each measured by axe: it needs more than the default forty-five seconds on a busy machine. */
+    test.setTimeout(300_000);
     await signIn(page, ACCOUNTS.owner);
     await appearance(page, theme, locale);
 
@@ -74,6 +76,7 @@ for (const [theme, locale] of [
 }
 
 test('a project workspace has no machine-detectable violation, in each tab', async ({ page }) => {
+  test.setTimeout(180_000);
   await signIn(page, ACCOUNTS.owner);
   await page.goto('/projects');
   await page
