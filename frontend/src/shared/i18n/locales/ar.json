@@ -17,6 +17,12 @@
     "tabs": "أقسام هذا المجال"
   },
   "actionCenter": {
+    "changeWord": {
+      "launch": "إطلاق",
+      "pause": "إيقاف",
+      "resume": "استئناف",
+      "publish_the_new_creative_set": "نشر مجموعة التصاميم الجديدة"
+    },
     "preparedBy": "أعدّه {{agent}}",
     "costPerResult": "تكلفة النتيجة",
     "target": "الهدف",

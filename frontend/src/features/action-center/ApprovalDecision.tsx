@@ -55,7 +55,14 @@ export function ApprovalDecision({ row, locale }: { row: ApprovalRow; locale: st
         }).format(value);
 
   const scope = [row.client_name, row.project_name].filter(Boolean).join(' · ');
-  const change = text(proposal['change']);
+  /* The common words a proposal carries are the product's own, so they translate; anything else is shown as written. */
+  const rawChange = text(proposal['change']);
+  const change =
+    rawChange === null
+      ? null
+      : t(`actionCenter.changeWord.${rawChange.toLowerCase().replace(/[^a-z]+/g, '_')}`, {
+          defaultValue: rawChange,
+        });
 
   const evidence = row.evidence ?? {};
   const cost = num(evidence['cost_per_result_minor']);

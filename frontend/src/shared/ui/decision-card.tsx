@@ -49,7 +49,7 @@ export function DecisionCard({
   return (
     <article
       aria-label={`${type}: ${headline}`}
-      className={cn('bg-surface flex flex-col gap-4 rounded-3xl p-5 shadow-xs', className)}
+      className={cn('bg-surface flex w-full flex-col gap-4 rounded-3xl p-5 shadow-xs', className)}
     >
       <header className="flex items-start justify-between gap-3">
         <span

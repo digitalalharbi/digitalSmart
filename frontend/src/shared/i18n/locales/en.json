@@ -17,6 +17,12 @@
     "tabs": "Sections in this area"
   },
   "actionCenter": {
+    "changeWord": {
+      "launch": "Launch",
+      "pause": "Pause",
+      "resume": "Resume",
+      "publish_the_new_creative_set": "Publish the new creative set"
+    },
     "preparedBy": "Prepared by {{agent}}",
     "costPerResult": "Cost per result",
     "target": "Target",
