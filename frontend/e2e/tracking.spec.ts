@@ -199,7 +199,7 @@ test.describe('tracking centre', () => {
      */
     await expect(page.getByRole('article', { name: client })).toBeVisible({ timeout: 20_000 });
 
-    await page.goto('/tracking');
+    await page.goto('/tracking?view=diagnostics');
     await expect(page.getByRole('heading', { level: 1, name: 'Tracking Center' })).toBeVisible({
       timeout: 30_000,
     });
