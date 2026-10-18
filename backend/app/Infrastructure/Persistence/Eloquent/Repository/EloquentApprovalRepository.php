@@ -97,6 +97,11 @@ final readonly class EloquentApprovalRepository implements ApprovalRepository
             'subject_id' => $input->subjectId,
             'requested_by' => $actorId,
             'supersedes_id' => $input->supersedesId,
+            'origin' => $input->origin,
+            'agent' => $input->agent,
+            'evidence' => $input->evidence === null ? null : json_encode($input->evidence, JSON_THROW_ON_ERROR),
+            'risk' => $input->risk,
+            'expires_at' => $input->expiresAt,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -540,6 +545,11 @@ final readonly class EloquentApprovalRepository implements ApprovalRepository
                 enactmentNote: $this->text($values['enactment_note'] ?? null),
                 subject: $subject,
                 supersedesId: $this->text($values['supersedes_id'] ?? null),
+                origin: (string) ($values['origin'] ?? 'person'),
+                agent: $this->text($values['agent'] ?? null),
+                evidence: $this->proposal($values['evidence'] ?? null) ?: null,
+                risk: $this->text($values['risk'] ?? null),
+                expiresAt: $this->date($values['expires_at'] ?? null),
             );
         }
 

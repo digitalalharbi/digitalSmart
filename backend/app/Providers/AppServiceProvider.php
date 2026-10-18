@@ -6,12 +6,26 @@ namespace App\Providers;
 
 use App\Application\Access\Contract\AccessSynchroniser;
 use App\Application\Activity\Contract\ActivityReadModel;
+use App\Application\Advertising\Command\RequestCampaignStatusChange as RequestStatusChangeUseCase;
 use App\Application\Advertising\Contract\AdvertisingStore;
 use App\Application\Advertising\Contract\CampaignAssignmentRepository;
 use App\Application\Advertising\Contract\CampaignControlReadModel;
 use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegistryContract;
 use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Agents\Contract\OperatingRuleRepository;
+use App\Application\Agents\Contract\ProposalHistory;
+use App\Application\Agents\Contract\ToolCallLog;
+use App\Application\Agents\Tool\CreateTaskTool;
+use App\Application\Agents\Tool\GetAttentionItemsTool;
+use App\Application\Agents\Tool\GetBudgetStatusTool;
+use App\Application\Agents\Tool\GetCampaignTool;
+use App\Application\Agents\Tool\GetOperatingRulesTool;
+use App\Application\Agents\Tool\ListCampaignsTool;
+use App\Application\Agents\Tool\ProposeBudgetChangeTool;
+use App\Application\Agents\Tool\ProposeStatusChangeTool;
+use App\Application\Agents\Tool\StatusEvidence;
+use App\Application\Agents\Tool\ToolCaller;
+use App\Application\Agents\Tool\ToolGateway;
 use App\Application\Analytics\Contract\AnalyticsReadModel;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Attention\Contract\ActorMemberships;
@@ -125,6 +139,7 @@ use App\Domain\Client\Repository\ClientRepository;
 use App\Domain\Integration\Repository\ExternalAccountRepository;
 use App\Domain\Integration\Repository\IntegrationBindingRepository;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
+use App\Domain\Integration\WriteOperation;
 use App\Domain\Project\Repository\ProjectRepository;
 use App\Infrastructure\Access\ActorVisibilityResolver;
 use App\Infrastructure\Access\EloquentOwnerDirectory;
@@ -209,6 +224,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentOperatingRuleRepo
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentPortalRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProposalHistory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentReportRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
@@ -219,6 +235,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSurfaceViewReposi
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTagStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTaskRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentToolCallLog;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
 use App\Infrastructure\Presentation\PptxWriter;
@@ -382,6 +399,8 @@ final class AppServiceProvider extends ServiceProvider
         SurfaceViewRepository::class => EloquentSurfaceViewRepository::class,
         AutomationRuleRepository::class => EloquentAutomationRuleRepository::class,
         OperatingRuleRepository::class => EloquentOperatingRuleRepository::class,
+        ProposalHistory::class => EloquentProposalHistory::class,
+        ToolCallLog::class => EloquentToolCallLog::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
         ScheduleStore::class => EloquentScheduleStore::class,
         ExportRenderer::class => ReportExportRenderer::class,
@@ -463,6 +482,29 @@ final class AppServiceProvider extends ServiceProvider
         foreach (self::ATTENTION_SOURCES as $source) {
             $this->app->tag($source, AttentionSource::class);
         }
+
+        /*
+         * The tools, behind one gateway. Adding a tool is adding a line here; nothing in the gateway knows the set.
+         * The caller holder is shared so a proposal records who really made it.
+         */
+        $this->app->singleton(ToolCaller::class);
+        $this->app->bind(ToolGateway::class, static fn ($app): ToolGateway => new ToolGateway(
+            [
+                $app->make(ListCampaignsTool::class),
+                $app->make(GetCampaignTool::class),
+                $app->make(GetBudgetStatusTool::class),
+                $app->make(GetAttentionItemsTool::class),
+                $app->make(GetOperatingRulesTool::class),
+                $app->make(CreateTaskTool::class),
+                new ProposeStatusChangeTool($app->make(RequestStatusChangeUseCase::class), $app->make(StatusEvidence::class), $app->make(ToolCaller::class), WriteOperation::PauseCampaign),
+                new ProposeStatusChangeTool($app->make(RequestStatusChangeUseCase::class), $app->make(StatusEvidence::class), $app->make(ToolCaller::class), WriteOperation::ResumeCampaign),
+                $app->make(ProposeBudgetChangeTool::class),
+            ],
+            $app->make(ActorContext::class),
+            $app->make(ToolCallLog::class),
+            $app->make(Clock::class),
+            $app->make(ToolCaller::class),
+        ));
 
         $this->app->bind(GetAttentionQueue::class, static fn ($app): GetAttentionQueue => new GetAttentionQueue(
             $app->tagged(AttentionSource::class),

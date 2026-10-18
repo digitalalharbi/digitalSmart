@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Application\Advertising\Command;
 
 use App\Application\Advertising\Contract\CampaignControlReadModel;
+use App\Application\Agents\Contract\ProposalHistory;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Operations\Command\RequestApproval;
 use App\Application\Operations\DTO\ApprovalInput;
 use App\Application\Operations\DTO\ApprovalView;
+use App\Application\Operations\DTO\ProposalOrigin;
 use App\Application\Shared\Contract\ActorContext;
+use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Advertising\EntityStatus;
+use App\Domain\Agents\ActionRefused;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\WriteOperation;
 use App\Domain\Integration\WriteSupport;
@@ -37,9 +41,11 @@ final readonly class RequestCampaignStatusChange
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private RequestApproval $ask,
+        private ProposalHistory $history,
+        private Clock $clock,
     ) {}
 
-    public function __invoke(string $campaignId, WriteOperation $operation, string $reason): ApprovalView
+    public function __invoke(string $campaignId, WriteOperation $operation, string $reason, ?ProposalOrigin $origin = null): ApprovalView
     {
         if (! in_array($operation, [WriteOperation::PauseCampaign, WriteOperation::ResumeCampaign], true)) {
             throw InvalidApprovalRequest::notAStatusChange();
@@ -66,6 +72,22 @@ final readonly class RequestCampaignStatusChange
             throw InvalidApprovalRequest::wrongState($pausing);
         }
 
+        if ($origin !== null) {
+            /*
+             * An agent never stacks a second request on a campaign that already has one waiting, and does not come
+             * back to the same campaign within a day. Both are limits in code: the agent is not asked to remember.
+             */
+            $workspaceId = $this->actor->workspaceId()->value;
+
+            if ($this->history->hasPending($workspaceId, $operation->authorisedBy(), $target['external_campaign_id'])) {
+                throw ActionRefused::alreadyProposed();
+            }
+
+            if ($this->history->hasSince($workspaceId, $operation->authorisedBy(), $target['external_campaign_id'], $this->clock->now()->modify('-1 day'))) {
+                throw ActionRefused::coolingDown();
+            }
+        }
+
         return ($this->ask)(new ApprovalInput(
             kind: $operation->authorisedBy(),
             title: sprintf('%s %s', $pausing ? 'Pause' : 'Resume', $target['name']),
@@ -81,6 +103,11 @@ final readonly class RequestCampaignStatusChange
             projectId: $target['project_id'],
             subjectType: TaskSubjectType::Campaign,
             subjectId: $campaignId,
+            origin: $origin === null ? 'person' : 'agent',
+            agent: $origin?->agent,
+            evidence: $origin?->evidence,
+            risk: $origin?->risk,
+            expiresAt: $origin?->expiresAt,
         ));
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Interface\Http\Controller\Activity\ActivityController;
 use App\Interface\Http\Controller\Advertising\CampaignControlController;
 use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
+use App\Interface\Http\Controller\Agents\McpController;
+use App\Interface\Http\Controller\Agents\McpTokenController;
 use App\Interface\Http\Controller\Agents\OperatingRulesController;
 use App\Interface\Http\Controller\Analytics\AnalyticsController;
 use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
@@ -61,6 +63,7 @@ use App\Interface\Http\Controller\Tags\TagController;
 use App\Interface\Http\Controller\Workspace\MemberController;
 use App\Interface\Http\Controller\Workspace\RoleController;
 use App\Interface\Http\Middleware\BindActorContext;
+use App\Interface\Http\Middleware\RestrictMcpTokens;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -131,7 +134,7 @@ Route::get('shared-reports/{token}', SharedReportController::class)
     ->name('shared_reports.show');
 
 // --------------------------------------------------------- Authenticated ---
-Route::middleware(['auth:sanctum', BindActorContext::class])->group(function (): void {
+Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::class])->group(function (): void {
     Route::get('auth/me', [SessionController::class, 'show'])->name('auth.me');
     Route::post('auth/logout', [SessionController::class, 'destroy'])->name('auth.logout');
     /*
@@ -603,6 +606,12 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('views/{surface}', [SurfaceViewController::class, 'store'])->name('surface_views.store');
     Route::delete('views/{view}', [SurfaceViewController::class, 'destroy'])
         ->whereUuid('view')->name('surface_views.destroy');
+
+    /* digitalSmart's own MCP server, and the tokens an AI client signs in with. */
+    Route::post('mcp', McpController::class)->middleware('throttle:60,1')->name('mcp.rpc');
+    Route::get('mcp/tokens', [McpTokenController::class, 'index'])->name('mcp.tokens.index');
+    Route::post('mcp/tokens', [McpTokenController::class, 'store'])->name('mcp.tokens.store');
+    Route::delete('mcp/tokens/{token}', [McpTokenController::class, 'destroy'])->name('mcp.tokens.destroy');
 
     /* Targets and limits for a client or a project: what good means, and what no agent may cross. */
     Route::get('operating-rules', [OperatingRulesController::class, 'show'])->name('operating_rules.show');

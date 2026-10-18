@@ -140,6 +140,12 @@ final readonly class ApprovalResource
              */
             'rationale' => $view->rationale,
             'proposal' => $view->proposal,
+            /* Who proposed it and on what — so a card can say "prepared by the Analyst" and show the figures. */
+            'origin' => $view->origin,
+            'agent' => $view->agent,
+            'evidence' => $view->evidence,
+            'risk' => $view->risk,
+            'expires_at' => $view->expiresAt?->format(DateTimeImmutable::ATOM),
             'state' => $view->state->value,
             'state_label' => $view->state->label(),
             'enactment' => $view->enactment->value,

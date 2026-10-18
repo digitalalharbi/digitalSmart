@@ -55,6 +55,12 @@ final readonly class ApprovalView
         public ?string $enactmentNote,
         public ?TaskSubjectView $subject,
         public ?string $supersedesId,
+        public string $origin = 'person',
+        public ?string $agent = null,
+        /** @var array<string, mixed>|null */
+        public ?array $evidence = null,
+        public ?string $risk = null,
+        public ?DateTimeImmutable $expiresAt = null,
     ) {}
 
     /**
