@@ -40,7 +40,14 @@ const SEVERITY = {
  * **A stream that failed to load is said out loud.** Otherwise a broken request and a quiet week render
  * identically, and the broken one renders as the reassuring one.
  */
-export function AttentionPanel({ limit = 6 }: { limit?: number | undefined }) {
+export function AttentionPanel({
+  limit = 6,
+  compact = false,
+}: {
+  limit?: number | undefined;
+  /** Just the list and its grouping: no heading, scope sentence or audience switch — for a card that already has a title. */
+  compact?: boolean | undefined;
+}) {
   const { t, i18n } = useTranslation();
   const [audience, setAudience] = useState<AttentionAudience>('all');
   const [stream, setStream] = useState<AttentionStreamValue | null>(null);
@@ -77,6 +84,31 @@ export function AttentionPanel({ limit = 6 }: { limit?: number | undefined }) {
   const visible = (data?.data ?? []).filter((item) => stream === null || item.stream === stream);
   const items = visible.map((item) => toListItem(item, t));
   const criticals = data?.meta.severity_counts.critical ?? 0;
+
+  if (compact) {
+    return (
+      <div className="flex flex-col gap-3">
+        {groups.size < 2 ? null : (
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-label={t('attention.group.label')}
+          >
+            <Choice isSelected={stream === null} onSelect={() => setStream(null)}>
+              {t('attention.group.all', { count: data?.data.length ?? 0 })}
+            </Choice>
+            {[...groups.entries()].map(([key, count]) => (
+              <Choice key={key} isSelected={stream === key} onSelect={() => setStream(key)}>
+                {t(`attention.group.${key}`, { count })}
+              </Choice>
+            ))}
+          </div>
+        )}
+        {failedNotice(data, list, t)}
+        <AttentionList items={items} isPending={isPending} limit={limit} />
+      </div>
+    );
+  }
 
   return (
     <PageSection

@@ -73,6 +73,58 @@
   "overview": {
     "title": "Overview",
     "subtitle": "What needs you today, across every client.",
+    "cc": {
+      "kpi": {
+        "spend": "Managed spend",
+        "revenue": "Revenue",
+        "roas": "ROAS",
+        "leads": "Leads",
+        "sales": "Sales",
+        "clients": "Active clients",
+        "campaigns": "Active campaigns",
+        "budget": "Budget health",
+        "notTracked": "Not tracked",
+        "onTrack": "of {{count}} budgets on track",
+        "budgets": "{{count}} budgets"
+      },
+      "hero": {
+        "title": "Spend, last 28 days",
+        "view": "View data"
+      },
+      "health": {
+        "title": "Campaign health",
+        "centre": "campaigns"
+      },
+      "ranking": {
+        "title": "Top clients",
+        "projects": "{{count}} project",
+        "projects_other": "{{count}} projects",
+        "attention": "{{count}} needs attention",
+        "attention_other": "{{count}} need attention",
+        "none": "No spend reported in this currency yet."
+      },
+      "platforms": {
+        "title": "Platform mix"
+      },
+      "funnel": {
+        "title": "Lead funnel",
+        "leads": "Leads",
+        "qualified": "Qualified",
+        "won": "Sales"
+      },
+      "attention": {
+        "title": "Needs attention"
+      },
+      "activity": {
+        "title": "Recent activity",
+        "empty": "Nothing has changed yet.",
+        "system": "System"
+      },
+      "currency": "Currency",
+      "openCampaigns": "All campaigns",
+      "openClients": "All clients",
+      "openBudget": "Budget details"
+    },
     "health": {
       "title": "System health",
       "loading": "Checking services…",
@@ -91,7 +143,10 @@
     "roadmapTitle": "What comes next",
     "roadmapBody": "Phase 1 delivers identity, workspaces, roles, clients and projects with server-side authorization and audit logging.",
     "performance": "Performance",
-    "mixedCurrency": {"title": "Spend is in several currencies", "description": "Each platform reports in its own currencies, so a single total would be misleading. The figures above are shown per currency; open Analytics and pick one currency or account to chart it."},
+    "mixedCurrency": {
+      "title": "Spend is in several currencies",
+      "description": "Each platform reports in its own currencies, so a single total would be misleading. The figures above are shown per currency; open Analytics and pick one currency or account to chart it."
+    },
     "byPlatform": "Spend by platform",
     "openAnalytics": "Open analytics",
     "noData": {
