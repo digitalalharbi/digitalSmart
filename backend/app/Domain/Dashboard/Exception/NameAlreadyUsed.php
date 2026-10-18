@@ -27,6 +27,11 @@ final class NameAlreadyUsed extends DomainException
         return new self(sprintf('You already have a dashboard called "%s". Choose another name.', $name));
     }
 
+    public static function byARule(string $name): self
+    {
+        return new self(sprintf('A rule called "%s" already exists. Choose another name.', $name));
+    }
+
     public static function byASavedView(string $name): self
     {
         return new self(sprintf('You already have a saved view called "%s". Choose another name.', $name));

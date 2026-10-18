@@ -53,6 +53,7 @@ use App\Interface\Http\Controller\Reporting\ReportController;
 use App\Interface\Http\Controller\Reporting\SharedReportController;
 use App\Interface\Http\Controller\Search\SearchController;
 use App\Interface\Http\Controller\Shortcuts\ShortcutController;
+use App\Interface\Http\Controller\Automation\AutomationRuleController;
 use App\Interface\Http\Controller\SurfaceView\SurfaceViewController;
 use App\Interface\Http\Controller\System\HealthController;
 use App\Interface\Http\Controller\Tags\TagController;
@@ -601,6 +602,14 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('views/{surface}', [SurfaceViewController::class, 'store'])->name('surface_views.store');
     Route::delete('views/{view}', [SurfaceViewController::class, 'destroy'])
         ->whereUuid('view')->name('surface_views.destroy');
+
+    /* Rules over campaigns: their only outcome is an item in the attention queue. */
+    Route::get('automation/rules', [AutomationRuleController::class, 'index'])->name('automation.rules.index');
+    Route::post('automation/rules', [AutomationRuleController::class, 'store'])->name('automation.rules.store');
+    Route::put('automation/rules/{rule}', [AutomationRuleController::class, 'update'])
+        ->whereUuid('rule')->name('automation.rules.update');
+    Route::delete('automation/rules/{rule}', [AutomationRuleController::class, 'destroy'])
+        ->whereUuid('rule')->name('automation.rules.destroy');
 
     Route::get('activity', ActivityController::class)->name('activity.index');
 

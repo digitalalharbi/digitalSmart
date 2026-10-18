@@ -17,6 +17,7 @@ use App\Application\Attention\Contract\ActorMemberships;
 use App\Application\Attention\Contract\AttentionSource;
 use App\Application\Attention\Query\GetAttentionQueue;
 use App\Application\Attention\Source\ApprovalAttentionSource;
+use App\Application\Attention\Source\AutomationAttentionSource;
 use App\Application\Attention\Source\BudgetAttentionSource;
 use App\Application\Attention\Source\CampaignAttentionSource;
 use App\Application\Attention\Source\RequestAttentionSource;
@@ -24,6 +25,7 @@ use App\Application\Attention\Source\TaskAttentionSource;
 use App\Application\Attention\Source\TrackingAttentionSource;
 use App\Application\Attribution\Contract\AttributionReadModel;
 use App\Application\Audit\Contract\AuditReadModel;
+use App\Application\Automation\Contract\AutomationRuleRepository;
 use App\Application\Benchmark\Contract\ClientIndustryDirectory;
 use App\Application\Budget\Contract\BenchmarkReadModel;
 use App\Application\Budget\Contract\BudgetControlReadModel;
@@ -184,6 +186,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSyncCandidateSourc
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentApprovalRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAssignedWorkRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAutomationRuleRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCampaignAssignmentRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientOffboarding;
@@ -256,6 +259,7 @@ final class AppServiceProvider extends ServiceProvider
      */
     private const ATTENTION_SOURCES = [
         CampaignAttentionSource::class,
+        AutomationAttentionSource::class,
         BudgetAttentionSource::class,
         TrackingAttentionSource::class,
         ApprovalAttentionSource::class,
@@ -374,6 +378,7 @@ final class AppServiceProvider extends ServiceProvider
         ActivityReadModel::class => EloquentActivityReadModel::class,
         ExportJobStore::class => EloquentExportJobStore::class,
         SurfaceViewRepository::class => EloquentSurfaceViewRepository::class,
+        AutomationRuleRepository::class => EloquentAutomationRuleRepository::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
         ScheduleStore::class => EloquentScheduleStore::class,
         ExportRenderer::class => ReportExportRenderer::class,

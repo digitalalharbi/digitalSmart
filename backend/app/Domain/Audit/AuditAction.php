@@ -119,6 +119,8 @@ enum AuditAction: string
      * goes looking for when they want to know who was asked, and a generic "updated" buries it.
      */
     case TaskAssigned = 'task.assigned';
+    case AutomationRuleSaved = 'automation_rule.saved';
+    case AutomationRuleDeleted = 'automation_rule.deleted';
     case TaskUpdated = 'task.updated';
 
     case ApprovalRequested = 'approval.requested';

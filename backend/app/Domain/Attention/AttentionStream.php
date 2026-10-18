@@ -25,6 +25,7 @@ enum AttentionStream: string
     case Approvals = 'approvals';
     case Requests = 'requests';
     case Tasks = 'tasks';
+    case Automation = 'automation';
 
     /**
      * Everything the reader needs before this stream is consulted. All of them, not any.
@@ -46,6 +47,7 @@ enum AttentionStream: string
             self::Approvals => [Permission::ApprovalsView],
             self::Requests => [Permission::ClientRequestsView, Permission::ClientRequestsSubmit],
             self::Tasks => [Permission::TasksView],
+            self::Automation => [Permission::AnalyticsView],
         };
     }
 
@@ -58,6 +60,7 @@ enum AttentionStream: string
             self::Approvals => 'approvals',
             self::Requests => 'client requests',
             self::Tasks => 'tasks',
+            self::Automation => 'rules',
         };
     }
 
@@ -71,6 +74,7 @@ enum AttentionStream: string
             self::Approvals => '/approvals',
             self::Requests => '/client-requests',
             self::Tasks => '/tasks',
+            self::Automation => '/campaigns/rules',
         };
     }
 
