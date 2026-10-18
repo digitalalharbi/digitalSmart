@@ -91,6 +91,14 @@ final class TaskController extends Controller
 
     public function store(Request $request, OpenTask $open, Clock $clock): JsonResponse
     {
+        /* An id that is not an id is a 422 here rather than a database error three layers down. */
+        $request->validate([
+            'client_id' => ['nullable', 'uuid'],
+            'project_id' => ['nullable', 'uuid'],
+            'subject_id' => ['nullable', 'uuid'],
+            'assignee_id' => ['nullable', 'uuid'],
+        ]);
+
         $title = trim($request->string('title')->value());
 
         if ($title === '') {

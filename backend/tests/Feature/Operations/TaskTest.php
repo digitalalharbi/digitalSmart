@@ -10,6 +10,7 @@ use App\Infrastructure\Persistence\Eloquent\Model\Project;
 use App\Infrastructure\Persistence\Eloquent\Model\ProjectMember;
 use App\Infrastructure\Persistence\Eloquent\Model\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\WorkspaceScenario;
 
 /*
@@ -682,4 +683,62 @@ describe('who work can be given to', function (): void {
             ->getJson("/api/tasks/{$id}/assignees")
             ->assertNotFound();
     });
+});
+
+/*
+ * A task prints the name of whatever it points at, so what it may point at is the tenancy boundary.
+ */
+it('refuses to name another workspace’s client, project or subject, and says what it could not find', function (): void {
+    $mine = taskScenario();
+    $theirs = taskScenario();
+
+    foreach ([
+        ['client_id' => (string) $theirs['client']->getKey(), 'project_id' => null],
+        ['client_id' => (string) $mine['client']->getKey(), 'project_id' => (string) $theirs['project']->getKey()],
+        ['client_id' => (string) $mine['client']->getKey(), 'subject_type' => 'project', 'subject_id' => (string) $theirs['project']->getKey()],
+    ] as $naming) {
+        $this->actingAs($mine['scenario']->owner)
+            ->postJson('/api/tasks', ['title' => 'Look at their account', 'priority' => 'normal', ...$naming])
+            ->assertNotFound();
+    }
+
+    // Their own client and project are fine.
+    $this->actingAs($mine['scenario']->owner)
+        ->postJson('/api/tasks', [
+            'title' => 'Look at ours',
+            'priority' => 'normal',
+            'client_id' => (string) $mine['client']->getKey(),
+            'project_id' => (string) $mine['project']->getKey(),
+            'subject_type' => 'project',
+            'subject_id' => (string) $mine['project']->getKey(),
+        ])
+        ->assertCreated();
+});
+
+it('answers 422, not a database error, for an id that is not an id', function (): void {
+    $setup = taskScenario();
+
+    $this->actingAs($setup['scenario']->owner)
+        ->postJson('/api/tasks', ['title' => 'Anything', 'priority' => 'normal', 'client_id' => 'not-a-uuid'])
+        ->assertUnprocessable();
+});
+
+it('does not resolve a subject label across workspaces on the board', function (): void {
+    $mine = taskScenario();
+    $theirs = taskScenario();
+
+    // A row written around the use case (as an old row might be): the board must still not print their name.
+    DB::table('tasks')->insert([
+        'id' => (string) Str::uuid(), 'workspace_id' => $mine['scenario']->workspace->getKey(), 'title' => 'Stale link',
+        'state' => 'todo', 'priority' => 'normal', 'subject_type' => 'project', 'subject_id' => (string) $theirs['project']->getKey(),
+        'state_changed_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    $board = $this->actingAs($mine['scenario']->owner)->getJson('/api/tasks/board')->assertOk()->json('data.columns');
+    $cards = array_merge(...array_map(static fn (array $column): array => $column['tasks'], $board));
+    $stale = array_values(array_filter($cards, static fn (array $card): bool => $card['title'] === 'Stale link'));
+
+    expect($stale)->toHaveCount(1)
+        ->and($stale[0]['subject']['exists'])->toBeFalse()
+        ->and($stale[0]['subject']['label'])->toBeNull();
 });

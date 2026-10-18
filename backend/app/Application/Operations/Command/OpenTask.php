@@ -64,6 +64,17 @@ final readonly class OpenTask
             throw ResourceNotFound::of('Project');
         }
 
+        /*
+         * Everything the task names has to be this workspace's, and visible to this reader. Without it an
+         * administrator — who sees every project, so the check above lets anything through — could point a task at
+         * another workspace's client or campaign and read its name back off their own board.
+         */
+        $missing = $this->tasks->missingReference($this->actor->workspaceId()->value, $visible, $input);
+
+        if ($missing !== null) {
+            throw ResourceNotFound::of($missing);
+        }
+
         if ($input->assigneeId !== null) {
             /*
              * The same check `AssignTask` makes, because opening a task already in somebody's name has the same

@@ -22,6 +22,17 @@ use DateTimeImmutable;
  */
 interface TaskRepository
 {
+    /**
+     * What a new task points at that does not exist for this reader, or null when everything it names is theirs.
+     *
+     * Checked on the way in because the board resolves a subject's label and a client's name by id: a task that
+     * named another workspace's client or campaign would then print that workspace's name on this one's board.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return string|null The thing that could not be found, as a word for a refusal: Client, Project or Subject.
+     */
+    public function missingReference(string $workspaceId, ?array $visibleProjectIds, TaskInput $input): ?string;
+
     public function open(string $workspaceId, TaskInput $input, ?string $actorId): TaskView;
 
     /** @param list<string>|null $visibleProjectIds null means every project is visible */

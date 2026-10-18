@@ -44,6 +44,44 @@ final readonly class EloquentTaskRepository implements TaskRepository
 {
     public function __construct(private IdentifierGenerator $identifiers) {}
 
+    public function missingReference(string $workspaceId, ?array $visibleProjectIds, TaskInput $input): ?string
+    {
+        if ($input->clientId !== null) {
+            $client = DB::table('clients')->where('workspace_id', $workspaceId)->where('id', $input->clientId);
+
+            if ($visibleProjectIds !== null) {
+                /* A reader scoped to some projects sees a client through the projects of it they hold. */
+                $client->whereExists(static fn ($projects) => $projects
+                    ->selectRaw('1')->from('projects')
+                    ->whereColumn('projects.client_id', 'clients.id')
+                    ->whereIn('projects.id', $visibleProjectIds === [] ? ['00000000-0000-0000-0000-000000000000'] : $visibleProjectIds));
+            }
+
+            if (! $client->exists()) {
+                return 'Client';
+            }
+        }
+
+        if ($input->projectId !== null) {
+            $project = DB::table('projects')->where('workspace_id', $workspaceId)->where('id', $input->projectId);
+
+            if ($input->clientId !== null) {
+                $project->where('client_id', $input->clientId);
+            }
+
+            if (! $project->exists()) {
+                return 'Project';
+            }
+        }
+
+        if ($input->subjectType !== null && $input->subjectId !== null
+            && ! DB::table($input->subjectType->table())->where('workspace_id', $workspaceId)->where('id', $input->subjectId)->exists()) {
+            return 'Subject';
+        }
+
+        return null;
+    }
+
     public function open(string $workspaceId, TaskInput $input, ?string $actorId): TaskView
     {
         $id = $this->identifiers->generate();
@@ -625,6 +663,12 @@ final readonly class EloquentTaskRepository implements TaskRepository
             }
         }
 
+        /* Only this workspace's own rows can name a subject: an id from another one resolves to "deleted". */
+        $workspaces = array_values(array_unique(array_map(
+            static fn (array $values): string => (string) ($values['workspace_id'] ?? ''),
+            $rows,
+        )));
+
         $resolved = [];
 
         foreach ($wanted as $typeValue => $ids) {
@@ -632,6 +676,7 @@ final readonly class EloquentTaskRepository implements TaskRepository
             $labels = [];
 
             $found = DB::table($type->table())
+                ->whereIn('workspace_id', $workspaces)
                 ->whereIn('id', array_values(array_unique($ids)))
                 ->get(['id', $type->labelColumn().' as label']);
 
