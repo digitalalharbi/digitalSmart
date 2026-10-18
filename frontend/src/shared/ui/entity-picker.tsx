@@ -39,7 +39,7 @@ export function EntityPicker({
     return (
       <div className="flex flex-col gap-1">
         <span className="text-content-secondary text-xs font-medium">{label}</span>
-        <span className="bg-accent-subtle text-content-brand inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm">
+        <span className="bg-accent-subtle text-content-brand inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm">
           <span className="truncate">{value.label}</span>
           <button
             type="button"

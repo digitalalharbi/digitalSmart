@@ -191,7 +191,7 @@ export function CampaignControlPage() {
       ) : null}
 
       <section aria-label={t('campaignControl.filters')} className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="bg-surface flex flex-wrap items-end gap-3 rounded-3xl p-4 shadow-xs">
           <div className="min-w-56 flex-1">
             <label htmlFor="cc-search" className="text-content-secondary text-xs font-medium">
               {t('campaignControl.search')}
@@ -458,6 +458,8 @@ export function CampaignControlPage() {
           </Button>
         </nav>
       ) : null}
+      {/* Shows itself only when campaigns are waiting to be placed; closed, because it is housekeeping, not the picture. */}
+      <OwnershipQueue />
     </div>
   );
 }
@@ -486,7 +488,7 @@ function Select({
         id={id}
         value={value ?? ''}
         onChange={(event) => onChange(event.target.value === '' ? null : event.target.value)}
-        className="border-line bg-surface text-content h-9 rounded-md border px-2 text-sm"
+        className="bg-surface-sunken text-content h-10 rounded-full border-0 px-4 text-sm"
       >
         {any === null ? null : <option value="">{any}</option>}
         {options.map((option) => (
@@ -495,9 +497,6 @@ function Select({
           </option>
         ))}
       </select>
-
-      {/* Shows itself only when campaigns are waiting to be placed; closed, because it is housekeeping, not the picture. */}
-      <OwnershipQueue />
     </div>
   );
 }

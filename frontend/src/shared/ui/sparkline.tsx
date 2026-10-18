@@ -74,7 +74,7 @@ export function Sparkline({
           key={d}
           d={d}
           fill="none"
-          stroke="var(--ds-chart-1)"
+          stroke="var(--ds-accent)"
           strokeWidth={1.5}
           strokeLinecap="round"
           strokeLinejoin="round"
