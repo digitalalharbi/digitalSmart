@@ -28,9 +28,9 @@ const TONE: Record<
   synced: 'neutral',
   stale: 'warning',
   partial: 'warning',
-  // Deliberately the loudest tone available: a sandbox figure mistaken for a
-  // client's spend is the failure this whole mechanism exists to prevent.
-  sandbox: 'danger',
+  // Still labelled on every figure and never shareable, but not the alarm colour: a whole sandbox workspace in red
+  // reads as an error, and the workspace-level notice already says plainly that nothing here is live.
+  sandbox: 'info',
   manual: 'info',
   estimated: 'info',
 };
@@ -89,7 +89,7 @@ export function SourceNotice({ source }: { source: MetricSourceValue }) {
 
   const tone =
     source === 'sandbox'
-      ? 'border-danger/30 bg-danger-surface text-danger'
+      ? 'border-info/30 bg-info-surface text-content-secondary'
       : 'border-warning/30 bg-warning-surface text-warning';
 
   return (

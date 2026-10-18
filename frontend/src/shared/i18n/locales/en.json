@@ -551,7 +551,7 @@
       "sandbox": {
         "label": "Sandbox",
         "help": "From sandbox fixtures. Not real performance, and never to be shared with a client.",
-        "notice": "these are sandbox figures from test fixtures, not real performance. They exist so the product can be used before a platform grants API access. Do not share them with a client or act on them."
+        "notice": "figures — not real performance. Fine for exploring the product; do not share them with a client or act on them."
       },
       "manual": {
         "label": "Manual",
