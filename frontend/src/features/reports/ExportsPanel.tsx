@@ -143,7 +143,7 @@ function ExportRow({ job }: { job: ExportJob }) {
       {job.status === 'ready' ? (
         <a
           href={exportDownloadUrl(job.id)}
-          className="text-accent inline-flex shrink-0 items-center gap-1.5 text-xs font-medium hover:underline"
+          className="text-content-brand inline-flex shrink-0 items-center gap-1.5 text-xs font-medium hover:underline"
         >
           <Download aria-hidden className="size-3.5" />
           {t('reports.exports.download')}

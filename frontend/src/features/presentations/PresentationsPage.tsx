@@ -222,7 +222,7 @@ export function PresentationsPage() {
                   clientId: fromBudget ? null : clientId,
                   budgetId: fromBudget ? budgetId : null,
                 })}
-                className="bg-accent text-accent-contrast hover:bg-accent-strong focus-visible:ring-accent/40 inline-flex h-8 items-center rounded-md px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                className="bg-action text-action-contrast hover:bg-action-hover focus-visible:ring-accent/40 inline-flex h-8 items-center rounded-md px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
                 <Download aria-hidden className="me-1 size-3.5" />
                 {t('presentations.actions.pptx')}

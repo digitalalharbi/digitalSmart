@@ -85,7 +85,7 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
             {csvHref === undefined ? null : (
               <a
                 href={csvHref}
-                className="text-accent inline-flex items-center gap-1.5 text-sm hover:underline"
+                className="text-content-brand inline-flex items-center gap-1.5 text-sm hover:underline"
               >
                 <Download aria-hidden className="size-3.5" />
                 {t('reports.view.csv')}
@@ -94,7 +94,7 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
             {xlsxHref === undefined ? null : (
               <a
                 href={xlsxHref}
-                className="text-accent inline-flex items-center gap-1.5 text-sm hover:underline"
+                className="text-content-brand inline-flex items-center gap-1.5 text-sm hover:underline"
               >
                 <Download aria-hidden className="size-3.5" />
                 {t('reports.view.xlsx')}

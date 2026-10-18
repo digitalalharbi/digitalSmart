@@ -8,10 +8,9 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary:
-          'bg-accent text-accent-contrast shadow-xs hover:bg-accent-hover active:translate-y-px',
+        primary: 'bg-action text-action-contrast hover:bg-action-hover active:translate-y-px',
         secondary:
-          'border border-line-subtle bg-surface text-content shadow-xs hover:bg-surface-hover hover:border-line active:bg-surface-active',
+          'bg-surface-sunken text-content hover:bg-surface-active active:bg-surface-active',
         ghost: 'text-content-secondary hover:bg-surface-hover hover:text-content',
         subtle: 'bg-accent-subtle text-content-brand hover:brightness-[0.98]',
         danger: 'bg-danger text-white shadow-xs hover:brightness-110',
@@ -25,7 +24,7 @@ export const buttonVariants = cva(
         sm: 'h-8 rounded-full px-3.5 text-[0.8125rem]',
         md: 'h-10 rounded-full px-4.5 text-sm',
         lg: 'h-12 rounded-full px-6 text-base',
-        icon: 'size-9 rounded-xl',
+        icon: 'size-9 rounded-full',
       },
     },
     defaultVariants: { variant: 'primary', size: 'md' },

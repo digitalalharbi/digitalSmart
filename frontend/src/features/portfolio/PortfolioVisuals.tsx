@@ -77,7 +77,7 @@ export function ClientRanking({
             <div className="flex items-center justify-between gap-3 text-sm">
               <Link
                 to={`/clients/${client.id}`}
-                className="text-content hover:text-accent flex min-w-0 items-center gap-2 font-medium hover:underline"
+                className="text-content hover:text-content-brand flex min-w-0 items-center gap-2 font-medium hover:underline"
               >
                 <span className="text-content-tertiary ds-numeric w-5 text-xs">{index + 1}</span>
                 <span dir="auto" className="min-w-0 text-start break-words">

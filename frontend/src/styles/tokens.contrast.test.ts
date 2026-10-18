@@ -108,7 +108,12 @@ function colour(mode: Mode, name: string, backdrop?: string): string {
 }
 
 /** The surfaces text is actually read on, worst case last. */
-const SURFACES = ['surface', 'surface-raised', 'canvas', 'surface-sunken'] as const;
+/*
+ * `workspace` replaced `canvas` here when the shell became a large rounded panel on a grey page: everything is read
+ * on the panel, and the page behind it is only the margin around that panel on a wide screen. Below `lg` the panel
+ * fills the viewport, so the margin is not on screen at all.
+ */
+const SURFACES = ['surface', 'surface-raised', 'workspace', 'surface-sunken'] as const;
 
 /** Inks that appear as ordinary text somewhere in the product. */
 const INKS = [
@@ -171,14 +176,32 @@ describe.each(['light', 'dark'] as Mode[])('text contrast in the %s theme', (mod
     ).toBeGreaterThanOrEqual(AA_TEXT);
   });
 
-  it('reads a button label on the accent it sits on', () => {
-    const ratio = contrastRatio(colour(mode, 'accent-contrast'), colour(mode, 'accent'));
+  it('reads a button label on the action it sits on', () => {
+    const ratio = contrastRatio(colour(mode, 'action-contrast'), colour(mode, 'action'));
 
-    // The one pair where both sides are brand colours, and the one a primary action depends on.
+    // The pair a primary action and the active navigation pill depend on. Graphite, so it is not close.
     expect(
       ratio,
-      `accent-contrast on accent in ${mode} is ${ratio.toFixed(2)}:1`,
+      `action-contrast on action in ${mode} is ${ratio.toFixed(2)}:1`,
     ).toBeGreaterThanOrEqual(AA_TEXT);
+  });
+
+  it('reads a small label on the strong accent, and the orange itself as a mark', () => {
+    /*
+     * The reference's orange is a fill, and white text on it is 3.5:1 — under AA for small text. Small labels
+     * that must sit on orange use the strong step, which clears 4.5:1; the orange itself is held to the 3:1 a
+     * non-text mark needs against the white card it is drawn on.
+     */
+    const strong = contrastRatio(colour(mode, 'accent-contrast'), colour(mode, 'accent-strong'));
+    expect(
+      strong,
+      `accent-contrast on accent-strong in ${mode} is ${strong.toFixed(2)}:1`,
+    ).toBeGreaterThanOrEqual(AA_TEXT);
+
+    const mark = contrastRatio(colour(mode, 'accent'), colour(mode, 'surface'));
+    expect(mark, `accent on surface in ${mode} is ${mark.toFixed(2)}:1`).toBeGreaterThanOrEqual(
+      AA_NON_TEXT,
+    );
   });
 
   it('shows a focus ring against every surface', () => {

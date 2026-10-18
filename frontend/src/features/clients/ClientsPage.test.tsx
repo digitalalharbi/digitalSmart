@@ -98,7 +98,7 @@ describe('ClientsPage', () => {
     clientsQuery.mockReturnValue(page([client()]));
     await renderWithProviders(<ClientsPage />);
 
-    const card = screen.getByText('Alhambra Retail').closest('div[class*="rounded-2xl"]');
+    const card = screen.getByText('Alhambra Retail').closest('div[class*="rounded-3xl"]');
     expect(card).not.toBeNull();
     expect(within(card as HTMLElement).getByText('Active')).toBeInTheDocument();
     expect(within(card as HTMLElement).getByText('Retail')).toBeInTheDocument();

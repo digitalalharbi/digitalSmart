@@ -368,7 +368,7 @@ export function RequestsPage() {
           <button
             type="button"
             onClick={() => setIsComposing(true)}
-            className="text-accent text-sm font-medium hover:underline"
+            className="text-content-brand text-sm font-medium hover:underline"
           >
             {t(isAgencyView ? 'requests.composer.open' : 'requests.composer.openClient')}
           </button>

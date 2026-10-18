@@ -411,7 +411,7 @@ export function RequestDetail({
                   */}
                   <a
                     href={attachmentUrl(file.id)}
-                    className="text-accent text-sm hover:underline"
+                    className="text-content-brand text-sm hover:underline"
                     download={file.name}
                   >
                     {file.name}

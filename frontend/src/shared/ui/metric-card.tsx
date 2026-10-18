@@ -51,7 +51,7 @@ export function MetricCard({
          * Generous padding and a large radius: a scorecard is the first thing read on every analytical page,
          * and the references' confidence comes from giving the figure room rather than from decoration.
          */
-        'bg-surface border-line-subtle flex flex-col gap-2 rounded-2xl border p-5 text-start shadow-xs',
+        'bg-surface flex flex-col gap-2 rounded-3xl p-5 text-start shadow-xs',
         'ease-standard transition-[border-color,box-shadow,transform] duration-[var(--ds-duration-fast)]',
         isInteractive &&
           'hover:border-line focus-visible:ring-accent/40 hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none',

@@ -10,42 +10,50 @@
  */
 
 :root {
-  /* ---- Brand ramp: "smart indigo" — precise, premium, calm ---- */
-  --ds-brand-50: oklch(0.971 0.016 268);
-  --ds-brand-100: oklch(0.938 0.035 268);
-  --ds-brand-200: oklch(0.886 0.064 267);
-  --ds-brand-300: oklch(0.806 0.101 266);
-  --ds-brand-400: oklch(0.706 0.142 265);
-  --ds-brand-500: oklch(0.606 0.173 264);
-  --ds-brand-600: oklch(0.524 0.178 263);
-  --ds-brand-700: oklch(0.448 0.157 263);
-  --ds-brand-800: oklch(0.378 0.127 263);
-  --ds-brand-900: oklch(0.316 0.099 263);
+  /*
+   * ---- Brand ramp: Finexy orange ----
+   *
+   * Sampled from the reference: the highlight card and the loss bars are #F05328 / #F1683E, which is step 500.
+   * Orange is a *fill and indicator* colour here: white on step 500 measures 3.5:1, so it carries large figures,
+   * bars and marks, and never small text. Step 600 is the lightest that clears 4.5:1 with white, and step 700
+   * is brand ink on a tint. The primary action is graphite (`--ds-action`), exactly as the reference's
+   * "Transfer" button is, so no button label depends on orange at all.
+   */
+  --ds-brand-50: oklch(0.973 0.015 45);
+  --ds-brand-100: oklch(0.945 0.034 42);
+  --ds-brand-200: oklch(0.894 0.07 40);
+  --ds-brand-300: oklch(0.822 0.12 38);
+  --ds-brand-400: oklch(0.73 0.178 36);
+  --ds-brand-500: oklch(0.65 0.208 35);
+  --ds-brand-600: oklch(0.57 0.185 33);
+  --ds-brand-700: oklch(0.49 0.155 33);
+  --ds-brand-800: oklch(0.41 0.125 32);
+  --ds-brand-900: oklch(0.34 0.095 32);
 
   /* ---- Neutral ramp: near-white → graphite, faint cool cast ---- */
   --ds-neutral-0: oklch(1 0 0);
-  --ds-neutral-25: oklch(0.991 0.002 264);
-  --ds-neutral-50: oklch(0.981 0.003 264);
-  --ds-neutral-100: oklch(0.967 0.004 264);
-  --ds-neutral-150: oklch(0.945 0.005 264);
-  --ds-neutral-200: oklch(0.917 0.006 264);
-  --ds-neutral-300: oklch(0.845 0.008 264);
-  --ds-neutral-400: oklch(0.708 0.012 264);
-  --ds-neutral-500: oklch(0.595 0.014 264);
+  --ds-neutral-25: oklch(0.991 0 0);
+  --ds-neutral-50: oklch(0.981 0 0);
+  --ds-neutral-100: oklch(0.967 0 0);
+  --ds-neutral-150: oklch(0.945 0 0);
+  --ds-neutral-200: oklch(0.917 0 0);
+  --ds-neutral-300: oklch(0.845 0 0);
+  --ds-neutral-400: oklch(0.708 0 0);
+  --ds-neutral-500: oklch(0.595 0 0);
   /*
    * Added for tertiary ink. The 500 step measures 3.66:1 against the sunken surface and 4.03:1 against white,
    * both under the 4.5:1 that WCAG 2.2 AA requires of normal-size text — and tertiary ink carries table headers,
    * timestamps and the source labels this product's honesty depends on, none of which are decoration.
    * This step measures 4.80:1 on sunken, 5.00:1 on canvas, 5.28:1 on white. Found by search, not by eye.
    */
-  --ds-neutral-550: oklch(0.53 0.014 264);
-  --ds-neutral-600: oklch(0.492 0.014 264);
-  --ds-neutral-700: oklch(0.398 0.013 264);
-  --ds-neutral-800: oklch(0.295 0.012 264);
-  --ds-neutral-850: oklch(0.242 0.011 264);
-  --ds-neutral-900: oklch(0.197 0.01 264);
-  --ds-neutral-950: oklch(0.154 0.009 264);
-  --ds-neutral-1000: oklch(0.118 0.008 264);
+  --ds-neutral-550: oklch(0.53 0 0);
+  --ds-neutral-600: oklch(0.492 0 0);
+  --ds-neutral-700: oklch(0.398 0 0);
+  --ds-neutral-800: oklch(0.295 0 0);
+  --ds-neutral-850: oklch(0.242 0 0);
+  --ds-neutral-900: oklch(0.197 0 0);
+  --ds-neutral-950: oklch(0.154 0 0);
+  --ds-neutral-1000: oklch(0.118 0 0);
 
   /* ---- Semantic ramps (status, never decoration) ---- */
   --ds-success-100: oklch(0.942 0.055 158);
@@ -85,6 +93,8 @@
    * pill" — the hero reads as the dominant surface because nothing else is this round.
    */
   --ds-radius-3xl: 1.5rem;
+  /* The application workspace panel. */
+  --ds-radius-workspace: 2rem;
   --ds-radius-full: 9999px;
 
   /* ---- Motion: 150–300ms, purposeful ---- */
@@ -125,7 +135,9 @@
    * drop to a hairline and the shadows to near-nothing. The references all do this, and it is the single
    * change that most makes a page read as cards floating on a canvas rather than panels drawn on a page.
    */
-  --ds-canvas: oklch(0.968 0.003 264);
+  --ds-canvas: oklch(0.928 0 0); /* #EAEAEA — the page behind the workspace */
+  /* The large rounded workspace the whole application sits in (#F6F6F6). Cards are white on it. */
+  --ds-workspace: oklch(0.968 0 0);
   --ds-surface: var(--ds-neutral-0);
   --ds-surface-raised: var(--ds-neutral-0);
   --ds-surface-sunken: var(--ds-neutral-100);
@@ -141,18 +153,26 @@
   --ds-text-secondary: var(--ds-neutral-600);
   --ds-text-tertiary: var(--ds-neutral-550);
   --ds-text-inverse: var(--ds-neutral-0);
-  --ds-text-brand: var(--ds-brand-600);
+  --ds-text-brand: var(--ds-brand-700);
 
   /* Hairlines. The canvas now does the separating, so a border is a definition of an edge, not a container. */
   --ds-border-subtle: oklch(0.197 0.01 264 / 0.055);
   --ds-border: oklch(0.197 0.01 264 / 0.1);
   --ds-border-strong: oklch(0.197 0.01 264 / 0.2);
-  --ds-focus-ring: var(--ds-brand-500);
+  --ds-focus-ring: var(--ds-neutral-850);
 
-  --ds-accent: var(--ds-brand-600);
-  --ds-accent-hover: var(--ds-brand-700);
+  /* The orange itself: fills, bars, indicators, the highlight card. Not for small text — see the brand ramp. */
+  --ds-accent: var(--ds-brand-500);
+  --ds-accent-hover: var(--ds-brand-600);
+  /* The orange that white text can stand on at 4.5:1, for the rare small label placed on an orange fill. */
+  --ds-accent-strong: var(--ds-brand-600);
   --ds-accent-subtle: var(--ds-brand-50);
   --ds-accent-contrast: var(--ds-neutral-0);
+
+  /* The primary action and the active navigation pill: graphite, as in the reference (#242424). */
+  --ds-action: var(--ds-neutral-850);
+  --ds-action-hover: var(--ds-neutral-700);
+  --ds-action-contrast: var(--ds-neutral-0);
 
   --ds-success: var(--ds-success-600);
   --ds-success-surface: var(--ds-success-100);
@@ -249,12 +269,13 @@
    * so the same "floating card" reading works here — in dark mode that separation is the *surface* step,
    * because a shadow on near-black is a grey smear rather than depth.
    */
-  --ds-canvas: oklch(0.142 0.008 264);
-  --ds-surface: oklch(0.178 0.009 264);
-  --ds-surface-raised: oklch(0.205 0.01 264);
-  --ds-surface-sunken: oklch(0.098 0.007 264);
-  --ds-surface-hover: var(--ds-neutral-900);
-  --ds-surface-active: var(--ds-neutral-850);
+  --ds-canvas: oklch(0.115 0 0);
+  --ds-workspace: oklch(0.158 0 0);
+  --ds-surface: oklch(0.205 0 0);
+  --ds-surface-raised: oklch(0.225 0 0);
+  --ds-surface-sunken: oklch(0.17 0 0);
+  --ds-surface-hover: oklch(0.26 0 0);
+  --ds-surface-active: oklch(0.3 0 0);
   --ds-overlay: oklch(0.098 0.007 264 / 0.6);
 
   --ds-material: oklch(0.154 0.009 264 / 0.72);
@@ -274,13 +295,18 @@
   --ds-border-subtle: oklch(1 0 0 / 0.06);
   --ds-border: oklch(1 0 0 / 0.11);
   --ds-border-strong: oklch(1 0 0 / 0.2);
-  --ds-focus-ring: var(--ds-brand-400);
+  --ds-focus-ring: var(--ds-neutral-100);
 
-  --ds-accent: var(--ds-brand-400);
-  --ds-accent-hover: var(--ds-brand-300);
+  --ds-accent: var(--ds-brand-500);
+  --ds-accent-hover: var(--ds-brand-400);
+  --ds-accent-strong: var(--ds-brand-600);
+  /* In the dark the action inverts: a light pill on graphite, the way the reference's dark pill reads on light. */
+  --ds-action: var(--ds-neutral-100);
+  --ds-action-hover: var(--ds-neutral-200);
+  --ds-action-contrast: var(--ds-neutral-1000);
   /* The same reasoning, at the same alpha, so a brand chip and a status chip are the same weight. */
-  --ds-accent-subtle: oklch(0.606 0.173 264 / 0.06);
-  --ds-accent-contrast: var(--ds-neutral-1000);
+  --ds-accent-subtle: oklch(0.65 0.208 35 / 0.1);
+  --ds-accent-contrast: var(--ds-neutral-0);
 
   /*
    * Status, and the tint is 6% rather than 16%.

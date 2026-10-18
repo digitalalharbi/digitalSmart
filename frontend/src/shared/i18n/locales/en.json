@@ -106,6 +106,7 @@
   },
   "a11y": {
     "mainNavigation": "Main navigation",
+    "sectionsNavigation": "Sections",
     "skipToContent": "Skip to content"
   },
   "auth": {

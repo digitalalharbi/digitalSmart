@@ -67,7 +67,7 @@ export function ActivityFeed({
             {entry.to === undefined ? (
               entry.summary
             ) : (
-              <Link to={entry.to} className="hover:text-accent hover:underline">
+              <Link to={entry.to} className="hover:text-content-brand hover:underline">
                 {entry.summary}
               </Link>
             )}

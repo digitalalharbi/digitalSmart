@@ -94,7 +94,7 @@ export function AttentionList({
 
             <Link
               to={item.action.to}
-              className="text-accent inline-flex shrink-0 items-center gap-1 text-sm hover:underline"
+              className="text-content-brand inline-flex shrink-0 items-center gap-1 text-sm hover:underline"
             >
               {item.action.label}
               <ArrowRight aria-hidden className="size-3.5 rtl:rotate-180" />

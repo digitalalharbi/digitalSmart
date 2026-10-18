@@ -261,7 +261,7 @@ export function ApprovalDetail({
               ) : request.subject.exists ? (
                 <Link
                   to={request.subject.path}
-                  className="text-accent inline-flex items-center gap-1 hover:underline"
+                  className="text-content-brand inline-flex items-center gap-1 hover:underline"
                 >
                   {request.subject.label ?? request.subject.type_label}
                   <ArrowUpRight aria-hidden className="size-3.5" />

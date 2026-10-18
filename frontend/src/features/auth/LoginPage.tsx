@@ -47,7 +47,7 @@ export function LoginPage() {
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
           <span
             aria-hidden="true"
-            className="bg-accent text-accent-contrast grid size-11 place-items-center rounded-xl text-base font-bold"
+            className="bg-accent-strong text-accent-contrast grid size-11 place-items-center rounded-xl text-base font-bold"
           >
             dS
           </span>

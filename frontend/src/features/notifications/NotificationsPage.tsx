@@ -194,7 +194,7 @@ export function NotificationsPage() {
                       {item.subject.exists ? (
                         <Link
                           to={item.subject.path}
-                          className="text-accent text-sm hover:underline"
+                          className="text-content-brand text-sm hover:underline"
                           onClick={() => {
                             if (item.is_unread) {
                               /*

@@ -10,6 +10,7 @@
  */
 @theme inline {
   --color-canvas: var(--ds-canvas);
+  --color-workspace: var(--ds-workspace);
   --color-surface: var(--ds-surface);
   --color-surface-raised: var(--ds-surface-raised);
   --color-surface-sunken: var(--ds-surface-sunken);
@@ -32,6 +33,10 @@
   --color-accent-hover: var(--ds-accent-hover);
   --color-accent-subtle: var(--ds-accent-subtle);
   --color-accent-contrast: var(--ds-accent-contrast);
+  --color-accent-strong: var(--ds-accent-strong);
+  --color-action: var(--ds-action);
+  --color-action-hover: var(--ds-action-hover);
+  --color-action-contrast: var(--ds-action-contrast);
 
   --color-success: var(--ds-success);
   --color-success-surface: var(--ds-success-surface);

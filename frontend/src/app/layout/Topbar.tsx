@@ -1,7 +1,9 @@
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Languages, Moon, PanelsTopLeft, Search, Sun, X } from 'lucide-react';
 import { NotificationBell } from '@/features/notifications';
 import { AccountMenu } from './AccountMenu';
+import { TopNav } from './TopNav';
 import { Button } from '@/shared/ui/button';
 import { useUiStore, resolveTheme } from '@/shared/store/ui-store';
 import type { Locale } from '@/shared/i18n';
@@ -13,7 +15,6 @@ export function Topbar() {
     locale,
     setTheme,
     setLocale,
-    toggleSidebar,
     setMobileNavOpen,
     setPaletteOpen,
     context,
@@ -25,11 +26,11 @@ export function Topbar() {
 
   return (
     /*
-     * Chrome on the canvas, not a bar across the window: no border, a translucent material so content scrolling
-     * under it stays legible, and the same gutter as the page below so the search field lines up with the first
-     * card rather than floating four pixels off it.
+     * The reference's header row: a logo pill, the navigation pill centred, and the actions on the right, all
+     * floating on the workspace with nothing drawn behind them. It is sticky with a soft wash of the workspace
+     * colour so content scrolling beneath stays legible without a bar being drawn.
      */
-    <header className="ds-material sticky top-0 z-20 flex h-16 items-center gap-2 px-[var(--ds-page-gutter)] lg:px-[var(--ds-page-gutter-lg)]">
+    <header className="bg-workspace/90 sticky top-0 z-20 flex h-[4.5rem] items-center gap-3 px-[var(--ds-page-gutter)] backdrop-blur-md lg:rounded-t-[var(--ds-radius-workspace)] lg:px-6">
       {/* Below lg the rail is hidden, so this opens the drawer instead. */}
       <Button
         variant="ghost"
@@ -41,27 +42,25 @@ export function Topbar() {
         <PanelsTopLeft />
       </Button>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleSidebar}
-        aria-label={t('actions.collapseNavigation')}
-        className="hidden lg:inline-flex"
+      <Link
+        to="/"
+        aria-label={t('brand.name')}
+        className="bg-surface flex h-12 shrink-0 items-center gap-2.5 rounded-full ps-2 pe-5 shadow-xs"
       >
-        <PanelsTopLeft />
-      </Button>
+        <span
+          aria-hidden="true"
+          className="bg-accent-strong text-accent-contrast grid size-8 place-items-center rounded-full text-xs font-bold"
+        >
+          dS
+        </span>
+        <span className="text-content hidden text-sm font-semibold sm:inline">
+          {t('brand.name')}
+        </span>
+      </Link>
 
-      <button
-        type="button"
-        onClick={() => setPaletteOpen(true)}
-        className="border-line-subtle bg-surface text-content-tertiary hover:border-line flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border px-4 text-sm shadow-xs transition-colors duration-[var(--ds-duration-fast)] md:max-w-md"
-      >
-        <Search className="size-4 shrink-0" aria-hidden="true" />
-        <span className="truncate">{t('actions.search')}</span>
-        <kbd className="border-line-subtle bg-surface-sunken text-content-tertiary ms-auto hidden rounded-md border px-1.5 py-0.5 font-mono text-[0.6875rem] md:inline-block">
-          ⌘K
-        </kbd>
-      </button>
+      <div className="flex min-w-0 flex-1 justify-center">
+        <TopNav />
+      </div>
 
       {/*
         The working context, always on screen when it is set. It narrows every surface that reads it, so it is
@@ -81,8 +80,18 @@ export function Topbar() {
         </span>
       )}
 
-      {/* The action cluster sits on its own surface so it reads as one control group rather than four icons. */}
-      <div className="border-line-subtle bg-surface ms-auto flex items-center gap-0.5 rounded-full border p-1 shadow-xs">
+      {/* Search, alerts, language and appearance share one white pill, as in the reference. */}
+      <div className="bg-surface ms-auto flex h-12 items-center gap-0.5 rounded-full p-1 shadow-xs lg:ms-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setPaletteOpen(true)}
+          aria-label={t('actions.search')}
+          title={`${t('actions.search')} (⌘K)`}
+          className="rounded-full"
+        >
+          <Search />
+        </Button>
         {/*
           The bell lives here because it is the one control present on every screen, which is also why it owns
           the realtime subscription: a notification arriving while somebody reads a chart still moves the number.
@@ -94,6 +103,7 @@ export function Topbar() {
           onClick={() => setLocale(nextLocale)}
           aria-label={t('actions.toggleLanguage')}
           title={t('actions.toggleLanguage')}
+          className="rounded-full"
         >
           <Languages />
         </Button>
@@ -103,10 +113,13 @@ export function Topbar() {
           onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
           aria-label={t('actions.toggleTheme')}
           title={t('actions.toggleTheme')}
+          className="rounded-full"
         >
           {resolved === 'dark' ? <Sun /> : <Moon />}
         </Button>
+      </div>
 
+      <div className="bg-surface h-12 shrink-0 rounded-full shadow-xs">
         <AccountMenu />
       </div>
     </header>

@@ -328,7 +328,7 @@ export function OperationsPage() {
           <button
             type="button"
             onClick={() => setIsComposing(true)}
-            className="text-accent text-sm font-medium hover:underline"
+            className="text-content-brand text-sm font-medium hover:underline"
           >
             {t('operations.composer.open')}
           </button>

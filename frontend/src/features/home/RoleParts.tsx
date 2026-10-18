@@ -164,7 +164,7 @@ export function ClientBudgetRanking() {
                 <div className="flex justify-between text-sm">
                   <Link
                     to={`/clients/${c.id}`}
-                    className="text-content hover:text-accent font-medium hover:underline"
+                    className="text-content hover:text-content-brand font-medium hover:underline"
                   >
                     {c.name}
                   </Link>

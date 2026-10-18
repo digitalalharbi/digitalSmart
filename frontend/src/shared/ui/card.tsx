@@ -6,11 +6,10 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
     <div
       className={cn(
         /*
-         * A card floats on the canvas: its own surface, a hairline to define the edge, and barely any shadow.
-         * The separation comes from the canvas being a measurable step darker — see `--ds-canvas` — which is
-         * what allows the border and shadow to be this light without the card dissolving into the page.
+         * A white card floating on the workspace: no border, a 24px radius and barely any shadow. The separation
+         * is the surface step — white on `--ds-workspace` — exactly as in the reference.
          */
-        'bg-surface border-line-subtle rounded-2xl border shadow-xs',
+        'bg-surface rounded-3xl shadow-xs',
         'ease-standard transition-shadow duration-[var(--ds-duration-base)]',
         className,
       )}

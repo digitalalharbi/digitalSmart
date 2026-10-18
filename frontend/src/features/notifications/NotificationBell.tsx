@@ -45,7 +45,7 @@ export function NotificationBell() {
             : t('notifications.bell.quiet')
       }
       title={t('nav.notifications')}
-      className="relative"
+      className="relative rounded-full"
     >
       <Bell />
       {waiting > 0 ? (

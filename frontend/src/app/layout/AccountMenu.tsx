@@ -38,14 +38,23 @@ export function AccountMenu() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2 px-2" aria-label={t('account.menu')}>
+        <Button
+          variant="ghost"
+          className="h-12 gap-2.5 rounded-full ps-1.5 pe-3"
+          aria-label={t('account.menu')}
+        >
           <span
             aria-hidden="true"
-            className="bg-accent-subtle text-content-brand grid size-7 place-items-center rounded-full text-xs font-semibold"
+            className="bg-accent-subtle text-content-brand grid size-9 place-items-center rounded-full text-xs font-semibold"
           >
             {initials}
           </span>
-          <span className="hidden max-w-32 truncate sm:inline">{user.active_workspace?.name}</span>
+          <span className="hidden min-w-0 flex-col items-start text-start leading-tight xl:flex">
+            <span className="text-content max-w-36 truncate text-sm font-medium">{user.name}</span>
+            <span className="text-content-tertiary max-w-36 truncate text-xs font-normal">
+              {user.active_workspace?.name}
+            </span>
+          </span>
           <ChevronsUpDown className="text-content-tertiary" />
         </Button>
       </DropdownMenu.Trigger>
@@ -92,7 +101,10 @@ export function AccountMenu() {
                 }}
                 className="text-content hover:bg-surface-hover focus:bg-surface-hover flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-none"
               >
-                <Check className={isActive ? 'text-accent' : 'invisible'} aria-hidden={!isActive} />
+                <Check
+                  className={isActive ? 'text-content-brand' : 'invisible'}
+                  aria-hidden={!isActive}
+                />
                 <span className="flex min-w-0 flex-col">
                   <span className="truncate">{workspace.name}</span>
                   <span className="text-content-tertiary text-xs">{workspace.role_name}</span>

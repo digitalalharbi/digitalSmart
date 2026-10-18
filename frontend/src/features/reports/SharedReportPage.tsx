@@ -60,7 +60,7 @@ export function SharedReportPage() {
       <header className="border-line-subtle flex h-14 items-center gap-3 border-b px-4">
         <span
           aria-hidden="true"
-          className="bg-accent text-accent-contrast grid size-8 place-items-center rounded-lg text-xs font-bold"
+          className="bg-accent-strong text-accent-contrast grid size-8 place-items-center rounded-lg text-xs font-bold"
         >
           dS
         </span>

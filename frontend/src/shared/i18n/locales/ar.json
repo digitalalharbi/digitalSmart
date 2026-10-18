@@ -106,6 +106,7 @@
   },
   "a11y": {
     "mainNavigation": "التنقل الرئيسي",
+    "sectionsNavigation": "الأقسام",
     "skipToContent": "تخطَّ إلى المحتوى"
   },
   "auth": {

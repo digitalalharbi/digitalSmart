@@ -243,7 +243,7 @@ export function ClientLink({ id, name }: { id: string; name: string }) {
   return (
     <Link
       to={`/clients/${id}`}
-      className="text-content hover:text-accent font-medium hover:underline"
+      className="text-content hover:text-content-brand font-medium hover:underline"
     >
       {name}
     </Link>
