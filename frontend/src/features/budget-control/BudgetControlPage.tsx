@@ -152,7 +152,11 @@ export function BudgetControlPage() {
 
       {isError ? <Alert tone="danger">{t('budgetControl.loadFailed')}</Alert> : null}
 
-      <PacingHero rows={data?.data ?? []} locale={locale} />
+      {isPending ? (
+        <Skeleton className="h-56 w-full" />
+      ) : (
+        <PacingHero rows={data?.data ?? []} locale={locale} />
+      )}
 
       <section
         aria-label={t('budgetControl.totals')}
@@ -215,7 +219,9 @@ export function BudgetControlPage() {
       {showBreakdown ? null : (
         <section aria-label={t('budgetControl.atRisk')} className="flex flex-col gap-2">
           <h2 className="text-content text-lg font-semibold">{t('budgetControl.atRisk')}</h2>
-          {(data?.data ?? []).filter((row) => row.risks.length > 0).length === 0 ? (
+          {isPending ? (
+            <Skeleton className="h-32 w-full" />
+          ) : (data?.data ?? []).filter((row) => row.risks.length > 0).length === 0 ? (
             <p className="text-content-tertiary text-sm">{t('budgetControl.noneAtRisk')}</p>
           ) : (
             <ul className="bg-surface border-line-subtle divide-line-subtle divide-y rounded-2xl border">
