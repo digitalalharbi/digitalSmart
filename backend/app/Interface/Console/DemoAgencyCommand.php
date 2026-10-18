@@ -57,6 +57,7 @@ final class DemoAgencyCommand extends Command
 
         /* Rebuilt every run, so last run's bells are cleared first rather than stacked beneath the new ones. */
         DB::table('notifications')->where('workspace_id', $workspace)->where('kind', 'digest_ready')->delete();
+        DB::table('digests')->where('workspace_id', $workspace)->delete();
 
         foreach (DigestKind::values() as $kind) {
             $this->callSilently('digests:build', ['kind' => $kind, '--workspace' => $workspace]);
