@@ -5,10 +5,9 @@ import { compactMoney } from '@/shared/lib/compact-money';
 import { formatCompact, formatNumber } from '@/shared/lib/format';
 import { cn } from '@/shared/lib/cn';
 import { providerName } from '@/shared/lib/providers';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { KpiTile } from '@/shared/ui/kpi-tile';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { DonutChart, HEALTH_COLOUR, TrendChart } from '@/shared/ui/viz';
+import { ChartCard, DonutChart, HEALTH_COLOUR, TrendChart } from '@/shared/ui/viz';
 import { HEALTH_TO_STATE, type CampaignControlPage, type HealthValue } from './types';
 
 const ORDER: HealthValue[] = [
@@ -129,17 +128,16 @@ export function CampaignsHero({
           showMix && mix.length > 0 ? 'xl:grid-cols-4' : 'xl:grid-cols-3',
         )}
       >
-        <Card className={showMix && mix.length > 0 ? 'xl:col-span-2' : 'xl:col-span-2'}>
-          <CardHeader className="flex-row flex-wrap items-center justify-between gap-3 pb-3">
-            <CardTitle>
-              {t('campaignControl.spend.title')}
-              {spend === undefined ? null : (
-                <span className="ds-numeric text-content-secondary ms-3 font-normal">
-                  {compactMoney(spend.spend_minor, spend.currency, locale)}
-                </span>
-              )}
-            </CardTitle>
-            {currencies.length > 1 ? (
+        <ChartCard
+          className="xl:col-span-2"
+          title={t('campaignControl.spend.title')}
+          value={
+            spend === undefined
+              ? undefined
+              : compactMoney(spend.spend_minor, spend.currency, locale)
+          }
+          action={
+            currencies.length > 1 ? (
               <div
                 className="bg-surface-sunken inline-flex gap-1 rounded-full p-1"
                 role="group"
@@ -162,97 +160,86 @@ export function CampaignsHero({
                   </button>
                 ))}
               </div>
-            ) : null}
-          </CardHeader>
-          <CardContent>
-            {series === undefined || labels.length < 2 ? null : (
-              <TrendChart
-                labels={labels}
-                series={[
-                  {
-                    key: 'spend',
-                    label: t('campaignControl.spend.title'),
-                    values: series.points.map((v) => (v === null ? null : v / 100)),
-                    colour: 'var(--ds-accent)',
-                  },
-                ]}
-                format={(v) => formatCompact(v, locale)}
-                label={t('campaignControl.spend.title')}
-                height={290}
-              />
-            )}
-          </CardContent>
-        </Card>
+            ) : undefined
+          }
+        >
+          {series === undefined || labels.length < 2 ? null : (
+            <TrendChart
+              labels={labels}
+              series={[
+                {
+                  key: 'spend',
+                  label: t('campaignControl.spend.title'),
+                  values: series.points.map((v) => (v === null ? null : v / 100)),
+                  colour: 'var(--ds-accent)',
+                },
+              ]}
+              format={(v) => formatCompact(v, locale)}
+              label={t('campaignControl.spend.title')}
+              height={260}
+            />
+          )}
+        </ChartCard>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>{t('overview.cc.health.title')}</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <ChartCard title={t('overview.cc.health.title')}>
+          <DonutChart
+            className="sm:flex-col xl:flex-col"
+            size={150}
+            label={t('overview.cc.health.title')}
+            centre={{
+              value: formatNumber(
+                ORDER.reduce((sum, key) => sum + counts[key], 0),
+                locale,
+              ),
+              caption: t('overview.cc.health.centre'),
+            }}
+            segments={ORDER.map((key) => ({
+              key,
+              label: t(`health.${HEALTH_TO_STATE[key]}`),
+              value: counts[key],
+              colour: HEALTH_COLOUR[key],
+            }))}
+          />
+          <div
+            className="mt-3 flex flex-wrap gap-1.5"
+            role="group"
+            aria-label={t('campaignControl.distribution')}
+          >
+            {ORDER.filter((key) => counts[key] > 0).map((key) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={selected === key}
+                onClick={() => onSelect(selected === key ? null : key)}
+                className={cn(
+                  'rounded-full px-2.5 py-1 text-xs font-medium',
+                  selected === key
+                    ? 'bg-action text-action-contrast'
+                    : 'bg-surface-sunken text-content-secondary hover:bg-surface-active',
+                )}
+              >
+                {t(`health.${HEALTH_TO_STATE[key]}`)}
+              </button>
+            ))}
+          </div>
+        </ChartCard>
+
+        {showMix && mix.length > 0 ? (
+          <ChartCard title={t('overview.cc.platforms.title')}>
             <DonutChart
               className="sm:flex-col xl:flex-col"
               size={150}
-              label={t('overview.cc.health.title')}
-              centre={{
-                value: formatNumber(
-                  ORDER.reduce((sum, key) => sum + counts[key], 0),
-                  locale,
-                ),
-                caption: t('overview.cc.health.centre'),
-              }}
-              segments={ORDER.map((key) => ({
-                key,
-                label: t(`health.${HEALTH_TO_STATE[key]}`),
-                value: counts[key],
-                colour: HEALTH_COLOUR[key],
+              label={t('overview.cc.platforms.title')}
+              format={(v) => `${String(Math.round((v / mixTotal) * 100))}%`}
+              centre={{ value: formatCompact(mixTotal / 100, locale), caption: currency }}
+              segments={mix.map((row, index) => ({
+                key: row.provider,
+                label: providerName(row.provider),
+                value: row.minor,
+                colour: MIX[index % MIX.length] ?? 'var(--ds-accent)',
               }))}
             />
-            <div
-              className="mt-3 flex flex-wrap gap-1.5"
-              role="group"
-              aria-label={t('campaignControl.distribution')}
-            >
-              {ORDER.filter((key) => counts[key] > 0).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  aria-pressed={selected === key}
-                  onClick={() => onSelect(selected === key ? null : key)}
-                  className={cn(
-                    'rounded-full px-2.5 py-1 text-xs font-medium',
-                    selected === key
-                      ? 'bg-action text-action-contrast'
-                      : 'bg-surface-sunken text-content-secondary hover:bg-surface-active',
-                  )}
-                >
-                  {t(`health.${HEALTH_TO_STATE[key]}`)}
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {showMix && mix.length > 0 ? (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>{t('overview.cc.platforms.title')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DonutChart
-                className="sm:flex-col xl:flex-col"
-                size={150}
-                label={t('overview.cc.platforms.title')}
-                format={(v) => `${String(Math.round((v / mixTotal) * 100))}%`}
-                centre={{ value: formatCompact(mixTotal / 100, locale), caption: currency }}
-                segments={mix.map((row, index) => ({
-                  key: row.provider,
-                  label: providerName(row.provider),
-                  value: row.minor,
-                  colour: MIX[index % MIX.length] ?? 'var(--ds-accent)',
-                }))}
-              />
-            </CardContent>
-          </Card>
+          </ChartCard>
         ) : null}
       </div>
     </div>

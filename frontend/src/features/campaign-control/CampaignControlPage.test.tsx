@@ -180,6 +180,7 @@ describe('CampaignControlPage', () => {
     await renderWithProviders(<CampaignControlPage />);
 
     /* The headline is compact (12.5K); the currency switch only appears when there is more than one. */
-    expect(screen.getByRole('heading', { name: /Spend.*12\.5K/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Spend' })).toBeInTheDocument();
+    expect(screen.getByText(/12\.5K/)).toBeInTheDocument();
   });
 });

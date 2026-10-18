@@ -42,14 +42,16 @@ describe('what a line is not allowed to do', () => {
     expect(series.data[1]).toBeNull();
   });
 
-  it('is never smoothed', () => {
+  it('is smoothed only monotonically', () => {
     const series = lineSeries(palette, { name: 'Spend', data: [10, 90, 20] });
 
     /*
-     * A spline passes through values nobody measured and overshoots the real extremes, so
-     * a reader takes a peak off the chart that is not in the data.
+     * The soft line is the product's chart language, but a free spline passes through values nobody measured and
+     * overshoots the real extremes. Monotone smoothing runs only between neighbouring readings, so a peak on the chart
+     * is a peak in the data.
      */
-    expect(series.smooth).toBe(false);
+    expect(series.smooth).toBeGreaterThan(0);
+    expect(series.smoothMonotone).toBe('x');
   });
 });
 
@@ -95,24 +97,20 @@ describe('what a bar is not allowed to do', () => {
     });
 
     // A bar visibly grows from the axis rather than floating, whichever side the axis is on.
-    expect(ltrBar.itemStyle.borderRadius).toEqual([0, 4, 4, 0]);
-    expect(rtlBar.itemStyle.borderRadius).toEqual([4, 0, 0, 4]);
+    expect(ltrBar.itemStyle.borderRadius).toEqual([0, 6, 6, 0]);
+    expect(rtlBar.itemStyle.borderRadius).toEqual([6, 0, 0, 6]);
   });
 });
 
 describe('chrome', () => {
-  it('draws gridlines and the crosshair as solid hairlines', () => {
+  it('draws gridlines faint and dashed, the crosshair solid, and thresholds heavier than either', () => {
     const axis = valueAxis(ltr, palette, { format: String });
     const tooltip = baseOption(ltr, palette).tooltip as {
       axisPointer: { lineStyle: { type: string } };
     };
 
-    /*
-     * Dashing is not decoration: a dashed rule reads as a projection or a threshold. On a
-     * chart that also carries a real threshold line, a dashed grid makes the threshold
-     * invisible.
-     */
-    expect(axis.splitLine.lineStyle.type).toBe('solid');
+    /* The grid is the quiet rule; a real threshold is solid and heavier, so the two are never confused. */
+    expect(axis.splitLine.lineStyle.type).toEqual([3, 3]);
     expect(tooltip.axisPointer.lineStyle.type).toBe('solid');
   });
 
@@ -125,15 +123,10 @@ describe('chrome', () => {
     expect(legend(ltr, palette, 2).show).toBe(true);
   });
 
-  it('mirrors a chart in Arabic by inverting the axis, never by reversing the data', () => {
+  it('keeps time running left to right in Arabic, and moves only the value axis', () => {
     const axis = categoryAxis(rtl, palette, { data: ['2026-09-01', '2026-09-02'] });
 
-    /*
-     * Reversed data has to be reversed identically in every series and every tooltip that
-     * looks a row up by its index, and the first place that forgets plots one campaign's
-     * number against another's name.
-     */
-    expect(axis.inverse).toBe(true);
+    expect(axis.inverse).toBe(false);
     expect(axis.data[0]).toBe('2026-09-01');
     expect(valueAxis(rtl, palette, { format: String }).position).toBe('right');
     expect(valueAxis(ltr, palette, { format: String }).position).toBe('left');

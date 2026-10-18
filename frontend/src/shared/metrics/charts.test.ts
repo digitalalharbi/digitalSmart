@@ -100,7 +100,7 @@ describe('trendOption', () => {
     expect(series?.data[0]).toBe(100);
   });
 
-  it('mirrors the time axis and the value axis in Arabic', () => {
+  it('keeps time left to right in Arabic and moves only the value axis', () => {
     const ltr = trendOption(payload, ['spend'], definitions, { locale: 'en', isRtl: false });
     const rtl = trendOption(payload, ['spend'], definitions, { locale: 'ar', isRtl: true });
 
@@ -108,17 +108,14 @@ describe('trendOption', () => {
     const rtlAxis = rtl.xAxis as { data: string[]; inverse: boolean };
 
     /*
-     * A time series reading left-to-right inside a right-to-left interface asks the
-     * reader to change direction mid-page, so the time axis mirrors and the value axis
-     * moves to the other side.
-     *
-     * Mirrored by inverting the axis, not by reversing the data: the dates stay in
-     * order, so anything that looks a point up by its index still finds the right one.
+     * Time stays chronological left to right in Arabic: a timeline that reversed with the page would put last week on
+     * the wrong side of this week for anybody reading a chart from a screenshot. What localises is the value axis
+     * (which moves to the reading side) and the labels and tooltips.
      */
     expect(ltrAxis.data[0]).toBe('2026-09-01');
     expect(rtlAxis.data[0]).toBe('2026-09-01');
     expect(ltrAxis.inverse).toBe(false);
-    expect(rtlAxis.inverse).toBe(true);
+    expect(rtlAxis.inverse).toBe(false);
     expect((ltr.yAxis as { position: string }).position).toBe('left');
     expect((rtl.yAxis as { position: string }).position).toBe('right');
   });

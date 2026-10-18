@@ -246,6 +246,19 @@
   --ds-chart-pole-high: oklch(0.51 0.14 25);
 
   /*
+   * Chart chrome, light. Declared (the dark theme always did) so the hand-drawn SVG charts, which read these as CSS
+   * variables, have a grid and a tooltip in the light theme too; the ECharts ones used to fall back to hex values
+   * in `theme.ts`, which is why the two families could drift apart.
+   */
+  --ds-chart-grid: oklch(0 0 0 / 0.09);
+  --ds-chart-axis: var(--ds-neutral-400);
+  --ds-chart-axis-label: var(--ds-neutral-550);
+  --ds-chart-tooltip-surface: var(--ds-neutral-0);
+  --ds-chart-tooltip-border: oklch(0 0 0 / 0.14);
+  --ds-chart-comparison: var(--ds-neutral-400);
+  --ds-chart-threshold: var(--ds-neutral-600);
+
+  /*
    * Shadows: subtle, physically plausible, single light source above.
    *
    * Wider and fainter than they were. A card should look like it is resting a millimetre off the canvas, not

@@ -1,4 +1,5 @@
 import { cn } from '@/shared/lib/cn';
+import { CHART } from './theme';
 
 export type DonutSegment = {
   key: string;
@@ -20,7 +21,7 @@ export function DonutChart({
   centre,
   caption,
   size = 168,
-  thickness = 18,
+  thickness = Math.round(size * 0.15),
   label,
   className,
   legend = true,
@@ -42,7 +43,7 @@ export function DonutChart({
   const total = shown.reduce((sum, segment) => sum + segment.value, 0);
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
-  const gap = shown.length > 1 ? 3 : 0;
+  const gap = shown.length > 1 ? (CHART.ringGapDegrees / 360) * circumference : 0;
 
   let offset = 0;
 
@@ -82,7 +83,6 @@ export function DonutChart({
                     fill="none"
                     stroke={segment.colour}
                     strokeWidth={thickness}
-                    strokeLinecap="round"
                     strokeDasharray={`${String(dash)} ${String(circumference - dash)}`}
                     strokeDashoffset={-start}
                   />
@@ -93,7 +93,7 @@ export function DonutChart({
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
             <span
               className={cn(
-                'ds-numeric text-content leading-none font-semibold',
+                'ds-numeric text-content leading-none font-extrabold',
                 size < 100 ? (size < 56 ? 'text-[0.625rem]' : 'text-xs') : 'text-2xl',
               )}
             >

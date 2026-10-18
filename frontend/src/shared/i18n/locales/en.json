@@ -16,7 +16,35 @@
     "settings": "Settings",
     "tabs": "Sections in this area"
   },
+  "actionCenter": {
+    "launch": "Launch",
+    "title": "Today",
+    "filter": "Filter by type",
+    "all": "{{count}} to do",
+    "clear": "All clear",
+    "open": "Open",
+    "details": "Details",
+    "approve": "Approve",
+    "change": "Change",
+    "reject": "Reject",
+    "now": "Now",
+    "requested": "Requested",
+    "changeWhat": "What should change?",
+    "send": "Send",
+    "changePrefix": "Change needed:",
+    "rejectedReason": "Not approved",
+    "failed": "Could not send. Try again.",
+    "type": {
+      "budget": "Budget",
+      "campaign": "Campaign",
+      "creative": "Creative",
+      "tracking": "Tracking",
+      "task": "Task",
+      "request": "Request"
+    }
+  },
   "nav": {
+    "today": "Today",
     "overview": "Overview",
     "projects": "Projects",
     "campaigns": "Campaigns",
@@ -2474,7 +2502,9 @@
       "requests": "{{count}} client request",
       "requests_other": "{{count}} client requests",
       "tasks": "{{count}} task overdue",
-      "tasks_other": "{{count}} tasks overdue"
+      "tasks_other": "{{count}} tasks overdue",
+      "automation": "{{count}} from your rules",
+      "automation_other": "{{count}} from your rules"
     },
     "streams": {
       "campaigns": "Campaigns",
@@ -2482,7 +2512,8 @@
       "tracking": "Tracking",
       "approvals": "Approvals",
       "requests": "Requests",
-      "tasks": "Tasks"
+      "tasks": "Tasks",
+      "automation": "Rules"
     }
   },
   "activity": {

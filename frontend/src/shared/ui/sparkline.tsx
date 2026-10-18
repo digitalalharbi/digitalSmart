@@ -60,6 +60,8 @@ export function Sparkline({
     segments.push(current);
   }
 
+  const gradient = `spark-${String(Math.abs(Math.round(known[0] ?? 0)))}-${String(values.length)}`;
+
   return (
     <svg
       viewBox={`0 0 ${String(width)} ${String(height)}`}
@@ -69,6 +71,21 @@ export function Sparkline({
       aria-label={label}
       aria-hidden={label === undefined ? true : undefined}
     >
+      <defs>
+        <linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--ds-accent)" stopOpacity={0.3} />
+          <stop offset="100%" stopColor="var(--ds-accent)" stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      {segments
+        .filter((d) => d.includes('L'))
+        .map((d) => (
+          <path
+            key={`wash-${d}`}
+            d={`${d} L${d.slice(d.lastIndexOf('L') + 1).split(',')[0] ?? '0'},${String(height)} L${d.slice(1).split(',')[0] ?? '0'},${String(height)} Z`}
+            fill={`url(#${gradient})`}
+          />
+        ))}
       {segments.map((d) => (
         <path
           key={d}

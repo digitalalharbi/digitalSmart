@@ -62,7 +62,7 @@ export function RankingBars({
             >
               {row.value === null ? null : (
                 <span
-                  className="block h-full rounded-full"
+                  className="block h-full rounded-md"
                   style={{
                     width: `${String(Math.max(2, (row.value / largest) * 100))}%`,
                     backgroundColor: row.colour ?? 'var(--ds-accent)',

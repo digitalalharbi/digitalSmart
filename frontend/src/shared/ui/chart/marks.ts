@@ -11,9 +11,10 @@
  *
  *  - **A gap is never drawn through.** A day with no data is `null` and the line breaks
  *    there. Bridging it says delivery continued at some level when it stopped.
- *  - **A line is never smoothed.** A spline passes through values that were never
- *    measured and overshoots the real extremes, so a reader takes a peak off the chart
- *    that is not in the data.
+ *  - **A line is smoothed only monotonically.** The soft curve the rest of the product
+ *    uses is drawn with ECharts' monotone mode, which between two readings only ever
+ *    runs between them. A free spline would overshoot the real extremes and let a
+ *    reader take a peak off the chart that is not in the data; this cannot.
  */
 import type { EChartsCoreOption } from 'echarts/core';
 import type { ChartPalette } from './theme';
@@ -24,19 +25,21 @@ export const MARK = {
   /** Never let a bar fill its band: the leftover space is what makes bars readable. */
   barMaxWidth: 24,
   lineWidth: 2,
+  /** The rounded, soft line of the product's chart language. Monotone — see the note above. */
+  smooth: 0.3,
   /** Big enough to see, and big enough to be a hover target with its ring. */
   symbolSize: 9,
   /** White doing the separating, instead of a border drawn around each mark. */
   surfaceGap: 2,
   /** A wash, never a saturated block. */
-  areaOpacity: 0.1,
+  areaOpacity: 0.14,
   /**
    * The radius on a bar's data end.
    *
    * Four pixels: enough to read as a deliberate shape at the sizes these charts use, small enough that a
    * short bar is still a bar rather than a lozenge. The baseline end stays square — see `barSeries`.
    */
-  barRadius: 4,
+  barRadius: 6,
 } as const;
 
 export type ChartContext = {
@@ -79,7 +82,7 @@ export function baseOption(
       borderRadius: 12,
       padding: [10, 14],
       extraCssText: 'box-shadow: var(--ds-shadow-md); backdrop-filter: blur(8px);',
-      textStyle: { color: palette.textPrimary, fontSize: 12, fontFamily: palette.fontFamily },
+      textStyle: { color: palette.textPrimary, fontSize: 13, fontFamily: palette.fontFamily },
       /*
        * Solid, not dashed. A dashed rule reads as a projection or a threshold; this is
        * a crosshair, and it should look like one.
@@ -112,17 +115,15 @@ export function valueAxis(
     nameTextStyle: { color: palette.axisLabel, fontSize: 11, padding: [0, 0, 6, 0] },
     position: options.side === 'far' ? far : near,
     /*
-     * Solid, and lighter than it was. Dashing was tried here and reverted by a test that was right: a dashed
-     * rule reads as a projection or a threshold, and these charts carry real threshold lines — a pacing
-     * target drawn dashed is invisible against a dashed grid. The ink came out of the colour instead; see
-     * `--ds-chart-grid`.
+     * Faint and dashed, like the rest of the product's charts. A dashed rule could be mistaken for a threshold, so
+     * real thresholds (`thresholdLine`) are drawn solid and heavier — the grid is the quiet one.
      */
-    splitLine: { lineStyle: { color: palette.grid, width: 1, type: 'solid' as const } },
+    splitLine: { lineStyle: { color: palette.grid, width: 1, type: [3, 3] as [number, number] } },
     axisLine: { show: false },
     axisTick: { show: false },
     axisLabel: {
       color: palette.axisLabel,
-      fontSize: 11,
+      fontSize: 12,
       formatter: options.format,
     },
   };
@@ -130,7 +131,7 @@ export function valueAxis(
 
 /** A category axis along the bottom. */
 export function categoryAxis(
-  context: ChartContext,
+  _context: ChartContext,
   palette: ChartPalette,
   options: {
     data: string[];
@@ -144,14 +145,11 @@ export function categoryAxis(
     type: 'category' as const,
     data: options.data,
     /*
-     * Mirrored by inverting the axis, never by reversing the data.
-     *
-     * A reversed array has to be reversed identically everywhere else — every series,
-     * every tooltip that looks a row up by `dataIndex` — and the first place that forgets
-     * silently plots one campaign's number against another's name. Inverting the axis
-     * leaves every index meaning what it says.
+     * Time runs left to right in Arabic as well. A timeline that reversed with the page would put last week on the
+     * wrong side of this week for anybody reading a chart from a screenshot; the labels and tooltips localise
+     * instead. (Earlier builds inverted this axis, by index and never by reversing data, for the opposite policy.)
      */
-    inverse: context.isRtl,
+    inverse: false,
     ...(options.gridIndex === undefined ? {} : { gridIndex: options.gridIndex }),
     boundaryGap: options.boundaryGap ?? false,
     /* No baseline rule: the bottom-most grid line already marks the floor of the plot. */
@@ -160,7 +158,7 @@ export function categoryAxis(
     axisLabel: {
       show: options.showLabels ?? true,
       color: palette.axisLabel,
-      fontSize: 11,
+      fontSize: 12,
       // A 90-day range has no room for 90 labels, so ECharts thins them out.
       hideOverlap: true,
       ...(options.format === undefined ? {} : { formatter: options.format }),
@@ -181,10 +179,10 @@ export function legend(context: ChartContext, palette: ChartPalette, seriesCount
     show: seriesCount > 1,
     top: 0,
     left: context.isRtl ? 'right' : 'left',
-    icon: 'roundRect',
+    icon: 'circle',
     itemWidth: 10,
     itemHeight: 10,
-    textStyle: { color: palette.textSecondary, fontSize: 12 },
+    textStyle: { color: palette.textSecondary, fontSize: 13 },
   };
 }
 
@@ -197,7 +195,7 @@ type LineSeriesOptions = {
   yAxisIndex?: number;
 };
 
-/** A time series as a line. Broken where data is missing, never smoothed. */
+/** A time series as a line. Broken where data is missing; softened, never overshooting. */
 export function lineSeries(palette: ChartPalette, options: LineSeriesOptions) {
   return {
     name: options.name,
@@ -205,14 +203,37 @@ export function lineSeries(palette: ChartPalette, options: LineSeriesOptions) {
     ...(options.xAxisIndex === undefined ? {} : { xAxisIndex: options.xAxisIndex }),
     ...(options.yAxisIndex === undefined ? {} : { yAxisIndex: options.yAxisIndex }),
     // See the note at the top of this file: neither of these is a style preference.
-    smooth: false,
+    smooth: MARK.smooth,
+    smoothMonotone: 'x' as const,
     connectNulls: false,
     showSymbol: false,
     symbolSize: MARK.symbolSize,
     lineStyle: { width: MARK.lineWidth, cap: 'round' as const, join: 'round' as const },
     ...(options.colour === undefined ? {} : { itemStyle: { color: options.colour } }),
     ...(options.area === true
-      ? { areaStyle: { opacity: MARK.areaOpacity } }
+      ? {
+          /*
+           * A wash that is strongest at the line and gone at the floor — the soft gradient of the product's chart
+           * language. It needs the series' own colour, so without one it falls back to a flat, faint fill.
+           */
+          areaStyle:
+            options.colour === undefined
+              ? { opacity: MARK.areaOpacity }
+              : {
+                  color: {
+                    type: 'linear' as const,
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [
+                      { offset: 0, color: options.colour },
+                      { offset: 1, color: 'transparent' },
+                    ],
+                  },
+                  opacity: 0.28,
+                },
+        }
       : { areaStyle: { opacity: 0 } }),
     /*
      * The ring is in the surface colour so a marker stays legible where it crosses
@@ -292,7 +313,7 @@ export function thresholdLine(palette: ChartPalette, value: number, label: strin
       color: palette.textTertiary,
       fontSize: 11,
     },
-    lineStyle: { color: palette.threshold, width: 1, type: 'dashed' as const },
+    lineStyle: { color: palette.threshold, width: 1.5, type: 'solid' as const },
     data: [{ yAxis: value }],
   };
 }

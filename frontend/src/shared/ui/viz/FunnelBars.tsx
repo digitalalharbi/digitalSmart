@@ -8,10 +8,11 @@ export type FunnelStage = {
 };
 
 /**
- * A funnel: each stage a bar, narrowing, with the step-to-step rate between them.
+ * A funnel: each stage a bar, narrowing, with the step rate and the drop-off beside it.
  *
- * A stage nobody measured is drawn as "not tracked" rather than as zero — a funnel that silently reports zero
- * qualified leads when qualification simply is not recorded would read as a collapse that never happened.
+ * A stage nobody measured is a dashed empty track saying so — never a short bar. A bar is a measurement, and
+ * `null / top` is `0` in JavaScript: drawing it would read, to a client, as "this step almost never happened".
+ * Scaled to the largest stage that *was* reported, not the first, because the first is the one that can be missing.
  */
 export function FunnelBars({
   stages,
@@ -24,45 +25,54 @@ export function FunnelBars({
   label: string;
   notTracked: string;
 }) {
-  const first = stages.find((stage) => stage.value !== null)?.value ?? 0;
-  const top = Math.max(first, 1);
+  const reported = stages.map((s) => s.value).filter((v): v is number => v !== null);
+  const top = reported.length > 0 ? Math.max(...reported) : 1;
 
   return (
     <ol aria-label={label} className={cn('flex flex-col gap-2.5', className)}>
       {stages.map((stage, index) => {
         const previous = index === 0 ? null : (stages[index - 1]?.value ?? null);
         const rate =
-          stage.value !== null && previous !== null && previous > 0
+          stage.value !== null && previous !== null && previous > 0 && stage.value <= previous
             ? Math.round((stage.value / previous) * 100)
             : null;
 
         return (
-          <li key={stage.key} className="flex flex-col gap-1">
-            <div className="flex items-baseline justify-between gap-3 text-sm">
-              <span className="text-content-secondary">{stage.label}</span>
-              <span className="flex items-baseline gap-2">
-                {rate === null ? null : (
-                  <span className="text-content-tertiary ds-numeric text-xs">{rate}%</span>
-                )}
-                <span className="ds-numeric text-content font-medium">
-                  {stage.value === null ? notTracked : stage.display}
+          <li key={stage.key} className="flex items-center gap-3">
+            <span className="text-content-secondary w-24 shrink-0 truncate text-sm font-medium">
+              {stage.label}
+            </span>
+            {stage.value === null ? (
+              <span className="border-line text-content-tertiary flex h-9 flex-1 items-center rounded-xl border border-dashed px-3 text-xs">
+                {notTracked}
+              </span>
+            ) : (
+              <span
+                aria-hidden
+                className="bg-surface-sunken block h-9 flex-1 overflow-hidden rounded-xl"
+              >
+                <span
+                  className="flex h-full items-center rounded-xl px-3 text-sm font-semibold text-white"
+                  style={{
+                    width: `${String(Math.max(8, (stage.value / top) * 100))}%`,
+                    backgroundColor: `color-mix(in oklab, var(--ds-accent-strong) ${String(100 - index * 12)}%, var(--ds-action))`,
+                  }}
+                >
+                  <span className="ds-numeric">{stage.display}</span>
                 </span>
               </span>
-            </div>
-            <span
-              aria-hidden
-              className="bg-surface-sunken block h-7 w-full overflow-hidden rounded-xl"
-            >
-              {stage.value === null ? null : (
-                <span
-                  className="block h-full rounded-xl"
-                  style={{
-                    width: `${String(Math.max(3, (stage.value / top) * 100))}%`,
-                    backgroundColor: `color-mix(in oklch, var(--ds-accent) ${String(100 - index * 20)}%, var(--ds-surface-sunken))`,
-                  }}
-                />
+            )}
+            <span className="text-content-tertiary ds-numeric w-20 shrink-0 text-end text-xs">
+              {rate === null ? null : (
+                <>
+                  <span className="text-content-secondary font-medium">{rate}%</span>
+                  {previous !== null && stage.value !== null ? (
+                    <span className="ms-1.5">−{100 - rate}%</span>
+                  ) : null}
+                </>
               )}
             </span>
+            <span className="sr-only">{stage.value === null ? notTracked : stage.display}</span>
           </li>
         );
       })}

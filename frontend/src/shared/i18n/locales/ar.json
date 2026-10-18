@@ -16,7 +16,35 @@
     "settings": "الإعدادات",
     "tabs": "أقسام هذا المجال"
   },
+  "actionCenter": {
+    "launch": "إطلاق",
+    "title": "اليوم",
+    "filter": "التصفية حسب النوع",
+    "all": "{{count}} مهمة",
+    "clear": "لا شيء معلّق",
+    "open": "فتح",
+    "details": "التفاصيل",
+    "approve": "موافقة",
+    "change": "تعديل",
+    "reject": "رفض",
+    "now": "الحالي",
+    "requested": "المطلوب",
+    "changeWhat": "ما المطلوب تعديله؟",
+    "send": "إرسال",
+    "changePrefix": "مطلوب تعديل:",
+    "rejectedReason": "غير موافق",
+    "failed": "تعذّر الإرسال. حاول مرة أخرى.",
+    "type": {
+      "budget": "ميزانية",
+      "campaign": "حملة",
+      "creative": "تصميم",
+      "tracking": "قياس",
+      "task": "مهمة",
+      "request": "طلب"
+    }
+  },
   "nav": {
+    "today": "اليوم",
     "overview": "نظرة عامة",
     "projects": "المشاريع",
     "campaigns": "الحملات",
@@ -2521,7 +2549,9 @@
       "requests": "{{count}} طلب عميل",
       "requests_other": "{{count}} طلبات عملاء",
       "tasks": "{{count}} مهمة متأخرة",
-      "tasks_other": "{{count}} مهام متأخرة"
+      "tasks_other": "{{count}} مهام متأخرة",
+      "automation": "{{count}} من قواعدك",
+      "automation_other": "{{count}} من قواعدك"
     },
     "streams": {
       "campaigns": "الحملات",
@@ -2529,7 +2559,8 @@
       "tracking": "التتبّع",
       "approvals": "الموافقات",
       "requests": "الطلبات",
-      "tasks": "المهام"
+      "tasks": "المهام",
+      "automation": "القواعد"
     }
   },
   "activity": {

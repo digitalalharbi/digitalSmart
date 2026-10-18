@@ -6,7 +6,8 @@ describe('Sparkline', () => {
   it('breaks the line at an unreported day instead of bridging or zeroing it', () => {
     const { container } = render(<Sparkline values={[1, 2, null, 3, 4]} />);
 
-    expect(container.querySelectorAll('path')).toHaveLength(2);
+    /* Two lines — one per run. The soft wash under each is decoration and is not counted. */
+    expect(container.querySelectorAll('path[fill="none"]')).toHaveLength(2);
   });
 
   it('draws nothing it cannot support from fewer than two figures', () => {

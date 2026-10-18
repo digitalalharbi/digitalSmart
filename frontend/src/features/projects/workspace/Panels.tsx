@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { formatMinor, formatNumber } from '@/shared/lib/format';
-import { DonutChart, HealthRing } from '@/shared/ui/viz';
+import { ChartCard, DonutChart, HealthRing } from '@/shared/ui/viz';
 import { ActivityFeed } from '@/shared/ui/activity-feed';
 import { Badge } from '@/shared/ui/badge';
 import { buttonVariants } from '@/shared/ui/button.variants';
@@ -431,11 +431,8 @@ export function OverviewRings({
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>{t('workspace.campaignHealth')}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center gap-4">
+      <ChartCard title={t('workspace.campaignHealth')}>
+        <div className="flex items-center gap-4">
           {health === null ? (
             <Skeleton className="h-24 w-full" />
           ) : (
@@ -446,14 +443,11 @@ export function OverviewRings({
               label={t('workspace.campaignHealth')}
             />
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </ChartCard>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>{t('workspace.tab.budget')}</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <ChartCard title={t('workspace.tab.budget')}>
+        <div>
           {approved === 0 ? (
             <p className="text-content-tertiary text-sm">—</p>
           ) : (
@@ -479,14 +473,11 @@ export function OverviewRings({
               ]}
             />
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </ChartCard>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>{t('workspace.tab.work')}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-3 text-center">
+      <ChartCard title={t('workspace.tab.work')}>
+        <div className="grid grid-cols-3 gap-3 text-center">
           {[
             [t('workspace.tab.tasks'), openTasks],
             [t('workspace.overdue'), overdue],
@@ -499,8 +490,8 @@ export function OverviewRings({
               <span className="text-content-tertiary text-xs">{label}</span>
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </ChartCard>
     </div>
   );
 }
