@@ -18,5 +18,5 @@ interface ActivityReadModel
      * @param  list<string>|null  $visibleProjectIds
      * @return list<ActivityItem>
      */
-    public function recent(string $workspaceId, ?array $visibleProjectIds, int $limit): array;
+    public function recent(string $workspaceId, ?array $visibleProjectIds, int $limit, ?string $projectId = null, ?string $clientId = null): array;
 }

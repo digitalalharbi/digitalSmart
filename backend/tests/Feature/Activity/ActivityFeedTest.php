@@ -72,3 +72,23 @@ it('places a task’s event with its project, so scope applies to it', function 
     expect($this->actingAs($buyer)->getJson('/api/activity')->json('data'))->toBe([])
         ->and($this->actingAs($s->owner)->getJson('/api/activity')->json('data'))->not->toBeEmpty();
 });
+
+it('reads one project’s events even when the agency has had a great many since', function (): void {
+    $s = WorkspaceScenario::create();
+    $ws = $s->workspace->getKey();
+    $quiet = Project::factory()->forClient(Client::factory()->create(['workspace_id' => $ws]))->create();
+    $busy = Project::factory()->forClient(Client::factory()->create(['workspace_id' => $ws]))->create();
+
+    activityEntry($s, AuditAction::ProjectStatusChanged, 'project', (string) $quiet->getKey(), 'The quiet one moved');
+
+    foreach (range(1, 120) as $n) {
+        activityEntry($s, AuditAction::ProjectStatusChanged, 'project', (string) $busy->getKey(), 'Busy event '.$n);
+    }
+
+    // Ask for the agency's last thirty and the quiet project's one event is not among them; ask for it and it is.
+    $agency = array_column($this->actingAs($s->owner)->getJson('/api/activity?limit=30')->json('data'), 'sentence');
+    $scoped = array_column($this->actingAs($s->owner)->getJson('/api/activity?limit=30&project_id='.$quiet->getKey())->json('data'), 'sentence');
+
+    expect($agency)->not->toContain('The quiet one moved')
+        ->and($scoped)->toBe(['The quiet one moved']);
+});

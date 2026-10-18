@@ -20,6 +20,7 @@ final readonly class ApprovalFilter
         public ?ApprovalKind $kind = null,
         /** True to show only the requests that would move a client's money. */
         public bool $spendOnly = false,
+        public ?string $projectId = null,
     ) {}
 
     public static function everything(): self
@@ -34,6 +35,7 @@ final readonly class ApprovalFilter
             'client_id' => $this->clientId,
             'kind' => $this->kind?->value,
             'spend_only' => $this->spendOnly,
+            'project_id' => $this->projectId,
         ];
     }
 }

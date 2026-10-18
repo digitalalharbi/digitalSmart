@@ -44,7 +44,20 @@ final class AttentionController extends Controller
         $audience = AttentionAudience::tryFrom($request->string('audience')->value()) ?? AttentionAudience::Everything;
 
         return response()->json(AttentionResource::queue(
-            $queue($only, is_numeric($limit) ? (int) $limit : null, $audience),
+            $queue(
+                $only,
+                is_numeric($limit) ? (int) $limit : null,
+                $audience,
+                $this->uuidOrNull($request, 'project_id'),
+                $this->uuidOrNull($request, 'client_id'),
+            ),
         ));
+    }
+
+    private function uuidOrNull(Request $request, string $key): ?string
+    {
+        $value = $request->query($key);
+
+        return is_string($value) && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $value) === 1 ? $value : null;
     }
 }

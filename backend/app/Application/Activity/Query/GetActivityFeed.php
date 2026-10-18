@@ -28,7 +28,7 @@ final readonly class GetActivityFeed
     ) {}
 
     /** @return list<ActivityItem> */
-    public function __invoke(int $limit = 30): array
+    public function __invoke(int $limit = 30, ?string $projectId = null, ?string $clientId = null): array
     {
         $this->guard->ensure(Permission::ClientsView);
 
@@ -36,6 +36,8 @@ final readonly class GetActivityFeed
             $this->actor->workspaceId()->value,
             $this->visibility->visibleProjectIds(),
             max(1, min($limit, 100)),
+            $projectId,
+            $clientId,
         );
     }
 }

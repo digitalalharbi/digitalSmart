@@ -47,6 +47,8 @@ final class ApprovalController extends Controller
 
     public function queue(Request $request, GetApprovalQueue $queue): JsonResponse
     {
+        $request->validate(['client_id' => ['nullable', 'uuid'], 'project_id' => ['nullable', 'uuid']]);
+
         $kind = $this->kind($request);
 
         if ($kind === false) {
@@ -57,6 +59,7 @@ final class ApprovalController extends Controller
             clientId: $this->scopeId($request, 'client_id'),
             kind: $kind,
             spendOnly: $request->boolean('spend_only'),
+            projectId: $this->scopeId($request, 'project_id'),
         );
 
         return response()->json([

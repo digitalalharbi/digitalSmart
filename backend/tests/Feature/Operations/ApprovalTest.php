@@ -598,3 +598,15 @@ it('will not ask for approval about another workspace’s client, project or sub
         ])
         ->assertUnprocessable();
 });
+
+it('narrows the queue to one project when asked, in the database rather than on the page', function (): void {
+    $setup = approvalScenario();
+    $other = Project::factory()->forClient($setup['client'])->create(['name' => 'Other']);
+
+    askApproval($setup, ['title' => 'Ours']);
+    askApproval($setup, ['title' => 'Elsewhere', 'project_id' => (string) $other->getKey()]);
+
+    $queue = readQueue($setup, ['project_id' => (string) $setup['project']->getKey()]);
+
+    expect(array_column($queue['pending'], 'title'))->toBe(['Ours']);
+});

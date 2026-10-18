@@ -49,10 +49,13 @@ final class CreativeController extends Controller
 
     public function board(Request $request, GetCreativeBoard $board): JsonResponse
     {
+        $request->validate(['client_id' => ['nullable', 'uuid'], 'project_id' => ['nullable', 'uuid']]);
+
         return response()->json([
             'data' => CreativeResource::board($board(
                 $this->scopeId($request, 'client_id'),
                 $request->integer('per_column') ?: null,
+                $this->scopeId($request, 'project_id'),
             )),
         ]);
     }

@@ -49,7 +49,7 @@ final readonly class GetAttentionQueue
     /**
      * @param  list<AttentionStream>  $only  Restrict to these streams; empty means every stream permitted.
      */
-    public function __invoke(array $only = [], ?int $limit = null, AttentionAudience $audience = AttentionAudience::Everything): AttentionQueue
+    public function __invoke(array $only = [], ?int $limit = null, AttentionAudience $audience = AttentionAudience::Everything, ?string $projectId = null, ?string $clientId = null): AttentionQueue
     {
         $permissions = $this->actor->isBound()
             ? $this->actor->permissions()
@@ -86,6 +86,15 @@ final readonly class GetAttentionQueue
         }
 
         $items = $this->narrow($items, $audience);
+
+        if ($projectId !== null || $clientId !== null) {
+            /* One project's or one client's own page asks for its own items — not the agency's top two hundred, filtered. */
+            $items = array_values(array_filter(
+                $items,
+                static fn (AttentionItem $item): bool => ($projectId === null || $item->projectId === $projectId)
+                    && ($clientId === null || $item->clientId === $clientId),
+            ));
+        }
 
         $counts = array_fill_keys(AttentionSeverity::values(), 0);
 

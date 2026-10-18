@@ -233,6 +233,7 @@ final readonly class EloquentCreativeRepository implements CreativeRepository
         ?array $visibleProjectIds,
         ?string $clientId,
         int $limitPerColumn,
+        ?string $projectId = null,
     ): array {
         $columns = [];
         $rows = [];
@@ -251,6 +252,10 @@ final readonly class EloquentCreativeRepository implements CreativeRepository
 
             if ($clientId !== null) {
                 $query->where('r.client_id', $clientId);
+            }
+
+            if ($projectId !== null) {
+                $query->where('r.project_id', $projectId);
             }
 
             $rows[$state->value] = $query->get()->map(static fn (object $row): array => (array) $row)->all();

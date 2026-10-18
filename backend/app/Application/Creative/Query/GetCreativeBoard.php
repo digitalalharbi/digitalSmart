@@ -32,7 +32,7 @@ final readonly class GetCreativeBoard
         private Clock $clock,
     ) {}
 
-    public function __invoke(?string $clientId = null, ?int $perColumn = null): CreativeBoardView
+    public function __invoke(?string $clientId = null, ?int $perColumn = null, ?string $projectId = null): CreativeBoardView
     {
         $this->guard->ensure(Permission::CreativeView);
 
@@ -42,6 +42,7 @@ final readonly class GetCreativeBoard
                 $this->visibility->visibleProjectIds(),
                 $clientId,
                 max(1, min($perColumn ?? self::PER_COLUMN, 200)),
+                $projectId,
             ),
             // Passed in rather than read inside the view, so "overdue" is one moment for the whole board.
             now: $this->clock->now(),

@@ -24,6 +24,17 @@ final class ActivityController extends Controller
             'project_id' => $i->projectId,
             'client_id' => $i->clientId,
             'at' => $i->at->format(DATE_ATOM),
-        ], $feed($request->integer('limit') ?: 30))]);
+        ], $feed(
+            $request->integer('limit') ?: 30,
+            $this->uuidOrNull($request, 'project_id'),
+            $this->uuidOrNull($request, 'client_id'),
+        ))]);
+    }
+
+    private function uuidOrNull(Request $request, string $key): ?string
+    {
+        $value = $request->query($key);
+
+        return is_string($value) && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $value) === 1 ? $value : null;
     }
 }

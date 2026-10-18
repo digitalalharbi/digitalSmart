@@ -229,3 +229,28 @@ it('narrows to the projects and clients the reader is a member of, and says it i
     expect($ownText)->toContain('My overdue');
     expect(str_contains($ownText, 'Their overdue'))->toBeFalse();
 });
+
+it('answers for one project or client when asked, not for the agency’s top items filtered afterwards', function (): void {
+    $scenario = WorkspaceScenario::create();
+    overdueTask($scenario, 'Somebody else’s problem');
+    overdueTask($scenario, 'Ours');
+
+    $all = test()->actingAs($scenario->owner)->getJson('/api/attention')->assertOk()->json('data');
+    $ours = null;
+
+    foreach ($all as $item) {
+        if (str_contains((string) $item['message'], 'Ours')) {
+            $ours = $item;
+        }
+    }
+
+    expect($ours)->not->toBeNull();
+
+    $scoped = test()->actingAs($scenario->owner)
+        ->getJson('/api/attention?project_id='.$ours['project_id'])
+        ->assertOk();
+
+    // Only that project's own items — not the workspace-level ones, and not the other task.
+    expect(array_unique(array_column($scoped->json('data'), 'project_id')))->toBe([$ours['project_id']])
+        ->and($scoped->json('meta.total'))->toBeLessThan(count($all));
+});

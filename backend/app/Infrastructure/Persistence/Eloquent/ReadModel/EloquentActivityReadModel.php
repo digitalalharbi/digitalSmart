@@ -34,7 +34,7 @@ final readonly class EloquentActivityReadModel implements ActivityReadModel
         'creative_request' => 'creative_requests', 'client_request' => 'client_requests',
     ];
 
-    public function recent(string $workspaceId, ?array $visibleProjectIds, int $limit): array
+    public function recent(string $workspaceId, ?array $visibleProjectIds, int $limit, ?string $onlyProjectId = null, ?string $onlyClientId = null): array
     {
         if ($visibleProjectIds === []) {
             return [];
@@ -46,7 +46,8 @@ final readonly class EloquentActivityReadModel implements ActivityReadModel
             ->whereIn('a.action', array_map(static fn (AuditAction $a): string => $a->value, self::ACTIONS))
             ->whereNotNull('a.auditable_id')
             ->orderByDesc('a.created_at')
-            ->limit(self::CANDIDATES)
+            /* One project's or client's events are a small share of the agency's, so a scoped read looks further back. */
+            ->limit($onlyProjectId !== null || $onlyClientId !== null ? self::CANDIDATES * 6 : self::CANDIDATES)
             ->get(['a.id', 'a.action', 'a.summary', 'a.created_at', 'a.auditable_type', 'a.auditable_id', 'u.name as actor_name']);
 
         /** @var array<string, list<string>> $idsByType */
@@ -65,6 +66,11 @@ final readonly class EloquentActivityReadModel implements ActivityReadModel
         foreach ($rows as $row) {
             $key = $row->auditable_type.':'.$row->auditable_id;
             [$projectId, $clientId] = $resolved[$key] ?? [null, null];
+
+            if (($onlyProjectId !== null && $onlyProjectId !== $projectId)
+                || ($onlyClientId !== null && $onlyClientId !== $clientId)) {
+                continue;
+            }
 
             if ($visibleProjects !== null) {
                 $inProject = $projectId !== null && isset($visibleProjects[$projectId]);

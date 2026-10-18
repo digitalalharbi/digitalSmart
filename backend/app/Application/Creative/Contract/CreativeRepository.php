@@ -74,6 +74,7 @@ interface CreativeRepository
         ?array $visibleProjectIds,
         ?string $clientId,
         int $limitPerColumn,
+        ?string $projectId = null,
     ): array;
 
     /** The version's request id, for a decision that has to check what it is deciding on. */

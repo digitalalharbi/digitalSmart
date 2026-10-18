@@ -404,6 +404,10 @@ final readonly class EloquentApprovalRepository implements ApprovalRepository
             $builder->where('a.client_id', $filter->clientId);
         }
 
+        if ($filter->projectId !== null) {
+            $builder->where('a.project_id', $filter->projectId);
+        }
+
         if ($filter->kind !== null) {
             $builder->where('a.kind', $filter->kind->value);
         }

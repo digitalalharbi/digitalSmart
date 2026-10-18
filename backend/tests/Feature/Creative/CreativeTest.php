@@ -697,3 +697,25 @@ describe('who is making the work', function (): void {
             ->assertForbidden();
     });
 });
+
+it('narrows the board to one project when asked', function (): void {
+    $setup = creativeScenario();
+    $other = Project::factory()->forClient($setup['client'])->create(['name' => 'Other']);
+    $owner = $setup['scenario']->owner;
+
+    briefWork($setup);
+    test()->actingAs($owner)->postJson('/api/creative', [
+        'client_id' => (string) $setup['client']->getKey(),
+        'project_id' => (string) $other->getKey(),
+        'title' => 'Elsewhere',
+        'kind' => 'image',
+    ])->assertCreated();
+
+    $board = test()->actingAs($owner)
+        ->getJson('/api/creative/board?project_id='.$other->getKey())
+        ->assertOk()
+        ->json('data');
+    $titles = array_merge(...array_map(static fn (array $column): array => array_column($column['requests'], 'title'), $board['columns']));
+
+    expect($titles)->toBe(['Elsewhere']);
+});
