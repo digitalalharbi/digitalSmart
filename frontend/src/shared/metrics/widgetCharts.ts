@@ -1,5 +1,6 @@
 import type { EChartsCoreOption } from 'echarts/core';
 import { formatCompact } from '@/shared/lib/format';
+import { fromMinor } from '@/shared/lib/money';
 import { foldToOther, readChartPalette, seriesColour } from '@/shared/ui/chart';
 import { formatMetric } from './format';
 import type { AnalyticsPayload, BreakdownRowPayload, MetricDefinition } from './types';
@@ -40,7 +41,7 @@ function numericValue(row: BreakdownRowPayload, metric: string): number | null {
     return null;
   }
 
-  return value.is_minor_units ? value.value / 100 : value.value;
+  return value.is_minor_units ? fromMinor(value.value, value.currency) : value.value;
 }
 
 function base(context: Context): EChartsCoreOption {
@@ -312,7 +313,7 @@ export function widgetLineOption(
       return value === undefined || value.value === null
         ? null
         : value.is_minor_units
-          ? value.value / 100
+          ? fromMinor(value.value, value.currency)
           : value.value;
     }),
   );

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCompact, formatCurrency, formatNumber, formatPercent } from './format';
+import { formatCompact, formatCurrency, formatMinor, formatNumber, formatPercent } from './format';
 
 describe('formatters', () => {
   it('formats integers for English', () => {
@@ -27,6 +27,59 @@ describe('formatters', () => {
 
   it('can be asked for whole units explicitly', () => {
     expect(formatCurrency(12500, 'SAR', 'en', 0)).not.toMatch(/\./);
+  });
+
+  it('takes its decimals from the currency, not from a constant', () => {
+    /*
+     * A yen has no subdivision and a Kuwaiti dinar has a thousand fils. Two decimals is
+     * the right default for most of the world and is a fabricated precision on one and a
+     * lost fils on the other.
+     */
+    expect(formatCurrency(1200, 'JPY', 'en')).toMatch(/1,200(?!\.)/);
+    expect(formatCurrency(1.234, 'KWD', 'en')).toMatch(/1\.234/);
+    expect(formatCurrency(840.25, 'SAR', 'en')).toMatch(/840\.25/);
+  });
+});
+
+describe('formatMinor', () => {
+  /*
+   * The regression these tests exist for: the frontend used to divide every amount by a
+   * hundred, whatever the currency, while the server stored it to the currency's own ISO
+   * 4217 exponent. A yen amount was therefore shown at a hundredth of its value and a
+   * dinar at a thousandth — on a figure a client is billed for.
+   */
+  it('shows a yen with no decimals and at full value', () => {
+    const rendered = formatMinor(1200, 'JPY', 'en');
+
+    expect(rendered).toMatch(/1,200/);
+    // The old behaviour: ¥1,200 rendered as 12.00.
+    expect(rendered).not.toMatch(/12\.00/);
+  });
+
+  it('divides a Kuwaiti dinar by a thousand, to three decimals', () => {
+    const rendered = formatMinor(1200, 'KWD', 'en');
+
+    expect(rendered).toMatch(/1\.200/);
+    // The old behaviour: 1.200 KWD rendered as 12.00.
+    expect(rendered).not.toMatch(/12\.00/);
+  });
+
+  it('divides a riyal by a hundred, to two decimals', () => {
+    expect(formatMinor(123_456, 'SAR', 'en')).toMatch(/1,234\.56/);
+  });
+
+  it('names the currency on every amount', () => {
+    // An amount labelled with the wrong currency is worse than an amount with none.
+    expect(formatMinor(1200, 'JPY', 'en')).toMatch(/¥/);
+    expect(formatMinor(1200, 'KWD', 'en')).toMatch(/KWD/);
+    expect(formatMinor(123_456, 'SAR', 'en')).toMatch(/SAR/);
+  });
+
+  it('uses Latin digits in Arabic, as the rest of the product does', () => {
+    const rendered = formatMinor(123_456, 'SAR', 'ar');
+
+    expect(rendered).toMatch(/1,234\.56/);
+    expect(rendered).not.toMatch(/[٠-٩]/);
   });
 
   it('formats percentages with one fraction digit by default', () => {

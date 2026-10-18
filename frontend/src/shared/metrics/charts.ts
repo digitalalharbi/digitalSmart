@@ -1,5 +1,6 @@
 import type { EChartsCoreOption } from 'echarts/core';
 import { formatCompact, formatNumber } from '@/shared/lib/format';
+import { fromMinor } from '@/shared/lib/money';
 import {
   barSeries,
   baseOption,
@@ -27,7 +28,7 @@ function valueOf(point: SeriesPointPayload, key: string): number | null {
     return null;
   }
 
-  return value.is_minor_units ? value.value / 100 : value.value;
+  return value.is_minor_units ? fromMinor(value.value, value.currency) : value.value;
 }
 
 function rowValue(row: BreakdownRowPayload, key: string): number | null {
@@ -37,7 +38,7 @@ function rowValue(row: BreakdownRowPayload, key: string): number | null {
     return null;
   }
 
-  return value.is_minor_units ? value.value / 100 : value.value;
+  return value.is_minor_units ? fromMinor(value.value, value.currency) : value.value;
 }
 
 /**

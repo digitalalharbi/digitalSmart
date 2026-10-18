@@ -4,6 +4,8 @@
  * Arabic uses Latin digits deliberately: media buyers reconcile these numbers
  * against platform dashboards, which render Latin digits in every locale.
  */
+import { currencyExponent, fromMinor } from './money';
+
 const LOCALE_TAG: Record<string, string> = {
   en: 'en-US',
   ar: 'ar-SA-u-nu-latn',
@@ -21,20 +23,27 @@ export function formatNumber(value: number, locale = 'en', fractionDigits = 0): 
 }
 
 /**
- * Money, to the minor unit.
+ * Money in major units, to the currency's own minor unit.
  *
- * Always two decimals by default, including above a thousand. These figures get
- * reconciled against a platform's own invoice, and a column where 840.25 keeps its
- * cents while 1,234.56 becomes 1,235 is both inconsistent to scan and short of the
- * precision someone is checking. Dense tiles that genuinely cannot afford the
- * width use `formatCompact` instead, which is an explicit choice rather than a
- * silent threshold.
+ * Every decimal the currency has by default, including above a thousand: two for SAR and
+ * USD, none for a yen, three for a dinar. These figures get reconciled against a
+ * platform's own invoice, and a column where 840.25 keeps its cents while 1,234.56
+ * becomes 1,235 is both inconsistent to scan and short of the precision someone is
+ * checking — while a yen padded with two zeroes is a precision the currency does not
+ * have. Dense tiles that genuinely cannot afford the width use `formatCompact` instead,
+ * which is an explicit choice rather than a silent threshold.
+ *
+ * The digit count is deliberately not left to `Intl`, which would print a forint or an
+ * Iraqi dinar to CLDR's cash convention rather than to the precision the figure was
+ * stored with. See `./money`.
+ *
+ * Takes **major** units. For a figure straight off the wire use `formatMinor`.
  */
 export function formatCurrency(
   value: number,
   currency: string,
   locale = 'en',
-  fractionDigits = 2,
+  fractionDigits = currencyExponent(currency),
 ): string {
   return new Intl.NumberFormat(tagFor(locale), {
     style: 'currency',
@@ -43,6 +52,22 @@ export function formatCurrency(
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   }).format(value);
+}
+
+/**
+ * Money straight off the wire: minor units in, a formatted amount out.
+ *
+ * The one place a monetary figure is divided, so nothing rounds twice on its way to a
+ * reader and no screen has to remember what a currency's minor unit is. How many minor
+ * units make a major one comes from the currency rather than from a constant — see
+ * `./money`.
+ *
+ * A currency is required rather than defaulted: an amount labelled with the wrong
+ * currency is worse than an amount with none, and the surfaces that cannot name one
+ * withhold the figure instead, precisely so this is never asked to guess.
+ */
+export function formatMinor(minor: number, currency: string, locale = 'en'): string {
+  return formatCurrency(fromMinor(minor, currency), currency, locale);
 }
 
 /**

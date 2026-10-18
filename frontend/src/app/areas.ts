@@ -16,7 +16,7 @@ export type AreaKey =
   | 'clients'
   | 'campaigns'
   | 'performance'
-  | 'leads'
+  | 'finance'
   | 'creative'
   | 'work'
   | 'reports'
@@ -54,13 +54,7 @@ export const AREAS: readonly Area[] = [
     key: 'performance',
     labelKey: 'areas.performance',
     icon: 'ChartNoAxesCombined',
-    paths: ['/analytics', '/budget-control', '/budget-calculator', '/attribution', '/tracking'],
-  },
-  {
-    key: 'leads',
-    labelKey: 'areas.leads',
-    icon: 'UserRoundSearch',
-    paths: ['/leads', '/commerce', '/commerce/stores'],
+    paths: ['/analytics', '/leads', '/commerce', '/commerce/stores', '/attribution', '/tracking'],
   },
   { key: 'creative', labelKey: 'areas.creative', icon: 'Palette', paths: ['/creative-hub'] },
   {
@@ -68,6 +62,12 @@ export const AREAS: readonly Area[] = [
     labelKey: 'areas.work',
     icon: 'ListChecks',
     paths: ['/tasks', '/approvals', '/client-requests'],
+  },
+  {
+    key: 'finance',
+    labelKey: 'areas.finance',
+    icon: 'Landmark',
+    paths: ['/budget-control', '/budget-calculator'],
   },
   {
     key: 'reports',
@@ -89,10 +89,10 @@ export const AREAS: readonly Area[] = [
  * locked out of an area they have the permission for — the top bar is just the part that is relevant all day.
  */
 export const ROLE_AREAS: Record<HomeProfileKey, readonly AreaKey[]> = {
-  executive: ['overview', 'clients', 'performance', 'reports'],
-  media_buyer: ['overview', 'campaigns', 'performance', 'creative'],
+  executive: ['overview', 'clients', 'performance', 'reports', 'finance'],
+  media_buyer: ['overview', 'campaigns', 'performance', 'creative', 'work'],
   project_manager: ['overview', 'clients', 'work', 'reports'],
-  finance: ['overview', 'performance', 'clients', 'reports'],
+  finance: ['overview', 'finance', 'clients', 'reports'],
   creative: ['overview', 'creative', 'work'],
 };
 

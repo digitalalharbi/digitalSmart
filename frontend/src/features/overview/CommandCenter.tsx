@@ -6,6 +6,8 @@ import { AttentionPanel } from '@/features/attention';
 import { usePortfolio } from '@/features/portfolio';
 import type { Money, Portfolio } from '@/features/portfolio';
 import { formatCompact, formatNumber } from '@/shared/lib/format';
+import { compactMoney } from '@/shared/lib/compact-money';
+import { KpiTile } from '@/shared/ui/kpi-tile';
 import { providerName } from '@/shared/lib/providers';
 import { cn } from '@/shared/lib/cn';
 import { ActivityFeed } from '@/shared/ui/activity-feed';
@@ -14,16 +16,6 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { DonutChart, FunnelBars, HEALTH_COLOUR, RankingBars, TrendChart } from '@/shared/ui/viz';
 import { useAgencyActivity, useSpendTrend } from './useOverviewData';
-
-/** 13.6M SAR rather than 13,580,070.00: a headline figure is read, not reconciled — the exact one is a tap away. */
-function compactMoney(minor: number, currency: string, locale: string): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(minor / 100);
-}
 
 /*
  * Platform shares are told apart by shade, not by each platform's brand colour: seven brand hues at ring size would
@@ -51,61 +43,6 @@ function dominantCurrency(portfolio: Portfolio): string {
   }
 
   return [...totals.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'USD';
-}
-
-/** One headline figure on the strip. The first is the orange one, the way the reference leads with its highlight. */
-function Kpi({
-  label,
-  value,
-  sub,
-  highlight = false,
-  to,
-}: {
-  label: string;
-  value: string;
-  sub?: string | undefined;
-  highlight?: boolean;
-  to?: string | undefined;
-}) {
-  const body = (
-    <>
-      <span
-        className={cn(
-          'text-xs font-medium',
-          highlight ? 'text-white/90' : 'text-content-secondary',
-        )}
-      >
-        {label}
-      </span>
-      <span className="ds-figure text-2xl leading-tight font-semibold sm:text-[1.75rem]">
-        {value}
-      </span>
-      {sub === undefined ? null : (
-        <span className={cn('text-xs', highlight ? 'text-white/85' : 'text-content-tertiary')}>
-          {sub}
-        </span>
-      )}
-    </>
-  );
-
-  const shape = cn(
-    'flex min-w-0 flex-col gap-1.5 rounded-3xl p-5 shadow-xs',
-    highlight ? 'bg-accent-strong text-white' : 'bg-surface text-content',
-  );
-
-  return to === undefined ? (
-    <div className={shape}>{body}</div>
-  ) : (
-    <Link
-      to={to}
-      className={cn(
-        shape,
-        'ease-standard transition-shadow duration-[var(--ds-duration-fast)] hover:shadow-md focus-visible:ring-2 focus-visible:ring-[var(--ds-focus-ring)] focus-visible:outline-none',
-      )}
-    >
-      {body}
-    </Link>
-  );
 }
 
 function SectionTitle({ title, to, action }: { title: string; to?: string; action?: string }) {
@@ -250,35 +187,44 @@ export function CommandCenter() {
         aria-label={t('overview.performance')}
         className="grid grid-cols-2 gap-4 xl:grid-cols-4"
       >
-        <Kpi highlight label={t('overview.cc.kpi.spend')} value={money(k.spend)} to="/analytics" />
-        <Kpi
+        <KpiTile
+          highlight
+          label={t('overview.cc.kpi.spend')}
+          value={money(k.spend)}
+          to="/analytics"
+        />
+        <KpiTile
           label={t('overview.cc.kpi.revenue')}
           value={money(k.platform_revenue)}
           to="/analytics"
         />
-        <Kpi
+        <KpiTile
           label={t('overview.cc.kpi.roas')}
           value={roas === undefined ? '—' : `${formatNumber(roas, locale, 2)}×`}
           to="/analytics"
         />
-        <Kpi
+        <KpiTile
           label={t('overview.cc.kpi.leads')}
           value={k.leads === null ? '—' : formatNumber(k.leads, locale)}
           sub={k.leads === null ? t('overview.cc.kpi.notTracked') : undefined}
           to="/leads"
         />
-        <Kpi label={t('overview.cc.kpi.sales')} value={formatNumber(k.sales, locale)} to="/leads" />
-        <Kpi
+        <KpiTile
+          label={t('overview.cc.kpi.sales')}
+          value={formatNumber(k.sales, locale)}
+          to="/leads"
+        />
+        <KpiTile
           label={t('overview.cc.kpi.clients')}
           value={formatNumber(k.active_clients, locale)}
           to="/clients"
         />
-        <Kpi
+        <KpiTile
           label={t('overview.cc.kpi.campaigns')}
           value={formatNumber(k.active_campaigns, locale)}
           to="/campaigns"
         />
-        <Kpi
+        <KpiTile
           label={t('overview.cc.kpi.budget')}
           value={onTrack === null ? '—' : formatNumber(onTrack, locale)}
           sub={

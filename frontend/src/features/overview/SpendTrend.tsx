@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EChartsCoreOption } from 'echarts/core';
 import { formatCompact } from '@/shared/lib/format';
+import { fromMinor } from '@/shared/lib/money';
 import { formatMetric } from '@/shared/metrics';
 import type { AnalyticsPayload, MetricSourceValue } from '@/shared/metrics';
 import {
@@ -45,7 +46,7 @@ export function SpendTrend({ analytics }: SpendTrendProps) {
             value === undefined || value.value === null
               ? null
               : value.is_minor_units
-                ? value.value / 100
+                ? fromMinor(value.value, value.currency)
                 : value.value,
           formatted: value === undefined ? '—' : formatMetric(value, locale),
         };

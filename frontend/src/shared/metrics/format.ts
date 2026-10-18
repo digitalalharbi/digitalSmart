@@ -1,4 +1,5 @@
 import { formatCompact, formatCurrency, formatNumber, formatPercent } from '@/shared/lib/format';
+import { fromMinor } from '@/shared/lib/money';
 import type { MetricValue } from './types';
 
 /**
@@ -18,13 +19,18 @@ export function formatMetric(value: MetricValue, locale: string, compact = false
 
   switch (value.format) {
     case 'currency': {
-      // Minor units on the wire; divided once, here.
-      const major = value.is_minor_units ? value.value / 100 : value.value;
+      /*
+       * Minor units on the wire; divided once, here, by the currency's own scale rather
+       * than by a hundred. `precision` is not consulted for money: a currency's decimals
+       * are a property of the currency, and a server sending 2 for a yen would render a
+       * precision the yen does not have.
+       */
       const currency = value.currency ?? 'USD';
+      const major = value.is_minor_units ? fromMinor(value.value, currency) : value.value;
 
       return compact
         ? `${formatCompact(major, locale)} ${currency}`
-        : formatCurrency(major, currency, locale, value.precision);
+        : formatCurrency(major, currency, locale);
     }
     case 'percentage':
       // The API sends 2.35 for 2.35%, not 0.0235, so it is divided before Intl's
