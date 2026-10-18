@@ -10,6 +10,7 @@ import { applyTheme, useUiStore } from '@/shared/store/ui-store';
  * them — a bare CSS @import of node_modules resolved to nothing.
  */
 import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
 import '@fontsource/ibm-plex-sans-arabic/400.css';
 import '@fontsource/ibm-plex-sans-arabic/500.css';
 import '@fontsource/ibm-plex-sans-arabic/600.css';

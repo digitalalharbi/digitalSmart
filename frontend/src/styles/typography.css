@@ -31,9 +31,21 @@
   /* ---------------------------------------------------------- families ---- */
   --ds-font-sans:
     'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /*
+   * DIN Next Arabic is the preferred Arabic UI face and is first in the stack, but it is a commercial font whose
+   * licence this project does not hold, so no file is shipped: where a licensed copy is installed on the machine it
+   * is used, and everywhere else IBM Plex Sans Arabic (open licence, real weights) carries the interface. To adopt it
+   * properly, add the licensed files and an @font-face for 'DIN Next Arabic' — nothing else changes.
+   */
   --ds-font-arabic:
-    'IBM Plex Sans Arabic', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
-  --ds-font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+    'DIN Next Arabic', 'IBM Plex Sans Arabic', 'Noto Sans Arabic', ui-sans-serif, system-ui,
+    sans-serif;
+  --ds-font-mono:
+    'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --ds-font-body-en: var(--ds-font-sans);
+  --ds-font-heading-en: var(--ds-font-sans);
+  --ds-font-body-ar: var(--ds-font-arabic);
+  --ds-font-heading-ar: var(--ds-font-arabic);
 
   /*
    * Mixed runs are the normal case here: Arabic prose carrying Latin brand
@@ -230,4 +242,30 @@
   text-transform: none;
   letter-spacing: var(--ds-tracking-arabic);
   font-size: var(--ds-text-xs);
+}
+
+/*
+ * Language-aware faces, stated the way the design brief states them: body and headings each pick their family from
+ * the document language. Arabic never inherits Latin tracking (see the RTL block above) and never drops below a
+ * medium weight on headings.
+ */
+html[lang='en'] body {
+  font-family: var(--ds-font-body-en);
+}
+html[lang='ar'] body {
+  font-family: var(--ds-font-body-ar);
+}
+html[lang='en'] :is(h1, h2, h3, h4) {
+  font-family: var(--ds-font-heading-en);
+}
+html[lang='ar'] :is(h1, h2, h3, h4) {
+  font-family: var(--ds-font-heading-ar);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--ds-font-mono);
 }
