@@ -70,9 +70,9 @@ export function ClientPortfolioPage() {
           client_id: string | null;
           action: { path: string };
         }>;
-      }>('/attention', { params: { limit: 200 } });
+      }>('/attention', { params: { limit: 20, client_id: clientId } });
 
-      return body.data.filter((item) => item.client_id === clientId);
+      return body.data;
     },
     retry: false,
     staleTime: 30_000,
@@ -87,8 +87,7 @@ export function ClientPortfolioPage() {
     void navigate(query === undefined ? to : `${to}?${query}`);
   };
 
-  /* What changed, for this client: the agency's feed, narrowed to the projects this client has. */
-  const projectIds = new Set((data?.projects ?? []).map((project) => project.id));
+  /* What changed, for this client — asked of the server for this client, not filtered from the agency's newest. */
   const changes = useQuery({
     queryKey: ['portfolio', 'client-activity', clientId] as const,
     queryFn: async (): Promise<
@@ -108,7 +107,7 @@ export function ClientPortfolioPage() {
           project_id: string | null;
           at: string;
         }>;
-      }>('/activity', { params: { limit: 100 } });
+      }>('/activity', { params: { limit: 20, client_id: clientId } });
 
       return body.data;
     },
@@ -309,17 +308,12 @@ export function ClientPortfolioPage() {
                     ) : (
                       <ActivityFeed
                         isPending={changes.isPending}
-                        entries={(changes.data ?? [])
-                          .filter(
-                            (row) => row.project_id !== null && projectIds.has(row.project_id),
-                          )
-                          .slice(0, 8)
-                          .map((row) => ({
-                            id: row.id,
-                            actor: row.actor,
-                            summary: row.sentence,
-                            at: row.at,
-                          }))}
+                        entries={(changes.data ?? []).slice(0, 8).map((row) => ({
+                          id: row.id,
+                          actor: row.actor,
+                          summary: row.sentence,
+                          at: row.at,
+                        }))}
                       />
                     )}
                   </CardContent>

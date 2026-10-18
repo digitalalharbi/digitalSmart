@@ -64,7 +64,7 @@ export function Section<T>({
         )}
       </CardHeader>
       <CardContent>
-        {query.isPending ? (
+        {query.isPending && query.fetchStatus !== 'idle' ? (
           <Skeleton className="h-24" />
         ) : query.isError || query.data === undefined ? (
           <p className="text-content-tertiary text-sm">{t('workspace.unavailable')}</p>

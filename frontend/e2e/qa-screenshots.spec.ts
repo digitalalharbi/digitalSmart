@@ -42,24 +42,19 @@ async function settle(page: Page): Promise<void> {
 
 for (const situation of SITUATIONS) {
   test.describe(situation.key, () => {
-    test.use({ viewport: situation.viewport });
+    /*
+     * One browser context per person. Signing a second account in on the same context leaves the first one's session
+     * behind it, and the app (correctly) keeps showing that one.
+     */
+    const people = [...new Set(SURFACES.map((surface) => surface.as ?? ACCOUNTS.owner))];
 
-    test('records every surface', async ({ page }) => {
-      test.setTimeout(600_000);
-      let signedInAs = '';
+    for (const account of people) {
+      test(`records ${account.split('@')[0] ?? account}'s surfaces`, async ({ browser }) => {
+        test.setTimeout(300_000);
+        const context = await browser.newContext({ viewport: situation.viewport });
+        const page = await context.newPage();
 
-      for (const surface of SURFACES) {
-        const account = surface.as ?? ACCOUNTS.owner;
-
-        if (account !== signedInAs) {
-          if (signedInAs !== '') {
-            await page.context().clearCookies();
-          }
-
-          await signIn(page, account);
-          signedInAs = account;
-        }
-
+        await signIn(page, account);
         await page.evaluate(
           ([theme, locale]) => {
             localStorage.setItem(
@@ -70,13 +65,19 @@ for (const situation of SITUATIONS) {
           [situation.theme, situation.locale],
         );
 
-        await page.goto(surface.path);
-        await settle(page);
-        await page.screenshot({
-          path: `test-results/qa/${situation.key}/${surface.name}.png`,
-          fullPage: false,
-        });
-      }
-    });
+        for (const surface of SURFACES.filter(
+          (entry) => (entry.as ?? ACCOUNTS.owner) === account,
+        )) {
+          await page.goto(surface.path);
+          await settle(page);
+          await page.screenshot({
+            path: `test-results/qa/${situation.key}/${surface.name}.png`,
+            fullPage: false,
+          });
+        }
+
+        await context.close();
+      });
+    }
   });
 }

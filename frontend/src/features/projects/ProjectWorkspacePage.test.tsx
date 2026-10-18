@@ -7,6 +7,15 @@ import { renderWithProviders } from '@/test/render';
 import { ProjectWorkspacePage } from './ProjectWorkspacePage';
 
 vi.mock('@/features/background-work', () => ({ BackgroundWork: () => null }));
+vi.mock('@/features/auth', async () => ({
+  ...(await vi.importActual<Record<string, unknown>>('@/features/auth')),
+  useSession: () => ({
+    can: () => true,
+    user: { id: 'me' },
+    isAuthenticated: true,
+    isLoading: false,
+  }),
+}));
 
 const state = vi.hoisted(() => ({ failCampaigns: false }));
 
@@ -18,7 +27,7 @@ vi.mock('@/shared/api/client', async (importOriginal) => {
   return {
     ...original,
     api: {
-      get: (url: string) => {
+      get: (url: string, config?: { params?: Record<string, unknown> }) => {
         if (url === '/projects/p1') {
           return ok({
             data: {
@@ -100,44 +109,49 @@ vi.mock('@/shared/api/client', async (importOriginal) => {
         }
 
         if (url === '/activity') {
+          const rows = [
+            {
+              id: 'a1',
+              sentence: 'Ramadan moved to active',
+              actor: 'Sara',
+              project_id: 'p1',
+              at: '2026-10-14T10:00:00Z',
+            },
+            {
+              id: 'a2',
+              sentence: 'Another project event',
+              actor: 'Omar',
+              project_id: 'other',
+              at: '2026-10-14T11:00:00Z',
+            },
+          ];
+
+          /* The server narrows to the project it was asked about; the page does not filter. */
           return ok({
-            data: [
-              {
-                id: 'a1',
-                sentence: 'Ramadan moved to active',
-                actor: 'Sara',
-                project_id: 'p1',
-                at: '2026-10-14T10:00:00Z',
-              },
-              {
-                id: 'a2',
-                sentence: 'Another project event',
-                actor: 'Omar',
-                project_id: 'other',
-                at: '2026-10-14T11:00:00Z',
-              },
-            ],
+            data: rows.filter((row) => row.project_id === config?.params?.['project_id']),
           });
         }
 
         if (url === '/attention') {
+          const items = [
+            {
+              id: 'x1',
+              message: 'Pause Ramadan Search',
+              severity: 'critical',
+              project_id: 'p1',
+              action: { path: '/campaigns/k1' },
+            },
+            {
+              id: 'x2',
+              message: 'Not ours',
+              severity: 'watch',
+              project_id: 'other',
+              action: { path: '/tasks' },
+            },
+          ];
+
           return ok({
-            data: [
-              {
-                id: 'x1',
-                message: 'Pause Ramadan Search',
-                severity: 'critical',
-                project_id: 'p1',
-                action: { path: '/campaigns/k1' },
-              },
-              {
-                id: 'x2',
-                message: 'Not ours',
-                severity: 'watch',
-                project_id: 'other',
-                action: { path: '/tasks' },
-              },
-            ],
+            data: items.filter((item) => item.project_id === config?.params?.['project_id']),
           });
         }
 

@@ -141,7 +141,7 @@ export const useReadiness = (projectId: string) =>
     },
   });
 
-export const useProjectCampaigns = (projectId: string, limit = 8) =>
+export const useProjectCampaigns = (projectId: string, limit = 8, enabled = true) =>
   useQuery({
     queryKey: ['projects', 'workspace', 'campaigns', projectId, limit] as const,
     queryFn: async (): Promise<CampaignList> => {
@@ -152,6 +152,7 @@ export const useProjectCampaigns = (projectId: string, limit = 8) =>
 
       return { rows: data.data, counts: data.meta.health_counts, total: data.meta.total };
     },
+    enabled,
     staleTime: STALE,
     retry: false,
   });
@@ -163,7 +164,11 @@ export const useProjectCampaigns = (projectId: string, limit = 8) =>
  * answered "no budget" there would be wrong about the thing the reader came to see. The scope travels with
  * the rows so the page never presents a client's money as a project's.
  */
-export const useProjectBudgets = (projectId: string, clientId: string | undefined) =>
+export const useProjectBudgets = (
+  projectId: string,
+  clientId: string | undefined,
+  enabled = true,
+) =>
   useQuery({
     queryKey: ['projects', 'workspace', 'budgets', projectId, clientId ?? ''] as const,
     queryFn: async (): Promise<{ rows: BudgetRow[]; scope: 'project' | 'client' }> => {
@@ -182,12 +187,12 @@ export const useProjectBudgets = (projectId: string, clientId: string | undefine
 
       return { rows: shared.data.data.filter((row) => row.project === null), scope: 'client' };
     },
-    enabled: clientId !== undefined,
+    enabled: enabled && clientId !== undefined,
     staleTime: STALE,
     retry: false,
   });
 
-export const useProjectLeads = (projectId: string) =>
+export const useProjectLeads = (projectId: string, enabled = true) =>
   useQuery({
     queryKey: ['projects', 'workspace', 'leads', projectId] as const,
     queryFn: async (): Promise<LeadFunnel> => {
@@ -197,11 +202,12 @@ export const useProjectLeads = (projectId: string) =>
 
       return data.data.funnel;
     },
+    enabled,
     staleTime: STALE,
     retry: false,
   });
 
-export const useProjectTasks = (projectId: string) =>
+export const useProjectTasks = (projectId: string, enabled = true) =>
   useQuery({
     queryKey: ['projects', 'workspace', 'tasks', projectId] as const,
     queryFn: async (): Promise<{ open: TaskLite[]; overdue: number; total: number }> => {
@@ -217,43 +223,42 @@ export const useProjectTasks = (projectId: string) =>
 
       return { open, overdue: data.data.workload.overdue, total: data.data.workload.open };
     },
+    enabled,
     staleTime: STALE,
     retry: false,
   });
 
-export const useProjectCreative = (projectId: string, clientId: string | undefined) =>
+export const useProjectCreative = (projectId: string, enabled: boolean) =>
   useQuery({
     queryKey: ['projects', 'workspace', 'creative', projectId] as const,
     queryFn: async (): Promise<CreativeLite[]> => {
       const { data } = await api.get<{
         data: { columns: Array<{ requests: CreativeLite[] }> };
-      }>('/creative/board', { params: { client_id: clientId } });
+      }>('/creative/board', { params: { project_id: projectId } });
 
-      return data.data.columns
-        .flatMap((column) => column.requests)
-        .filter((card) => card.project_id === projectId);
+      return data.data.columns.flatMap((column) => column.requests);
     },
-    enabled: clientId !== undefined,
+    enabled,
     staleTime: STALE,
     retry: false,
   });
 
-export const useProjectApprovals = (projectId: string, clientId: string | undefined) =>
+export const useProjectApprovals = (projectId: string, enabled: boolean) =>
   useQuery({
     queryKey: ['projects', 'workspace', 'approvals', projectId] as const,
     queryFn: async (): Promise<ApprovalLite[]> => {
       const { data } = await api.get<{ data: { pending: ApprovalLite[] } }>('/approvals/queue', {
-        params: { client_id: clientId },
+        params: { project_id: projectId },
       });
 
-      return data.data.pending.filter((row) => row.project_id === projectId);
+      return data.data.pending;
     },
-    enabled: clientId !== undefined,
+    enabled,
     staleTime: STALE,
     retry: false,
   });
 
-export const useClientReports = (clientId: string | undefined) =>
+export const useClientReports = (clientId: string | undefined, enabled = true) =>
   useQuery({
     queryKey: ['projects', 'workspace', 'reports', clientId ?? ''] as const,
     queryFn: async (): Promise<ReportLite[]> => {
@@ -263,22 +268,23 @@ export const useClientReports = (clientId: string | undefined) =>
 
       return data.data;
     },
-    enabled: clientId !== undefined,
+    enabled: enabled && clientId !== undefined,
     staleTime: STALE,
     retry: false,
   });
 
-export const useProjectActivity = (projectId: string) =>
+export const useProjectActivity = (projectId: string, enabled = true) =>
   useQuery({
     queryKey: ['projects', 'workspace', 'activity', projectId] as const,
     queryFn: async (): Promise<ActivityRow[]> => {
+      /* Asked of the server for this project, so a quiet one is not lost behind the agency's busy ones. */
       const { data } = await api.get<{ data: ActivityRow[] }>('/activity', {
-        params: { limit: 100 },
+        params: { limit: 20, project_id: projectId },
       });
 
-      /* The feed is the agency's recent events within the reader's scope; this page is one project of it. */
-      return data.data.filter((row) => row.project_id === projectId).slice(0, 20);
+      return data.data;
     },
+    enabled,
     staleTime: STALE,
     retry: false,
   });
@@ -288,10 +294,10 @@ export const useProjectAttention = (projectId: string) =>
     queryKey: ['projects', 'workspace', 'attention', projectId] as const,
     queryFn: async (): Promise<AttentionLite[]> => {
       const { data } = await api.get<{ data: AttentionLite[] }>('/attention', {
-        params: { limit: 200 },
+        params: { limit: 20, project_id: projectId },
       });
 
-      return data.data.filter((item) => item.project_id === projectId);
+      return data.data;
     },
     staleTime: STALE,
     retry: false,

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { formatMinor } from '@/shared/lib/format';
 import { ContextInsight } from '@/features/assistant';
 import { BackgroundWork } from '@/features/background-work';
+import { PERMISSIONS, useSession } from '@/features/auth';
 import { useUiStore } from '@/shared/store/ui-store';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
@@ -80,17 +81,39 @@ export function ProjectWorkspacePage() {
     ? (requested as Tab)
     : 'overview';
 
+  const { can } = useSession();
+  /*
+   * Each area is read only when the reader may read it, and — for the heavy ones — only when its tab is open or
+   * the overview shows it. A role that cannot see leads is not sent to ask for them and told no on every visit.
+   */
+  const onOverview = tab === 'overview';
   const detail = useProjectDetail(projectId);
   const clientId = detail.data?.client.id;
   const readiness = useReadiness(projectId);
   const team = useProjectTeam(projectId);
-  const campaigns = useProjectCampaigns(projectId, tab === 'campaigns' ? 25 : 6);
-  const budgets = useProjectBudgets(projectId, clientId);
-  const leads = useProjectLeads(projectId);
-  const tasks = useProjectTasks(projectId);
-  const creative = useProjectCreative(projectId, clientId);
-  const approvals = useProjectApprovals(projectId, clientId);
-  const reports = useClientReports(clientId);
+  const campaigns = useProjectCampaigns(
+    projectId,
+    tab === 'campaigns' ? 25 : 6,
+    can(PERMISSIONS.analyticsView),
+  );
+  const budgets = useProjectBudgets(projectId, clientId, can(PERMISSIONS.budgetsView));
+  const leads = useProjectLeads(
+    projectId,
+    can(PERMISSIONS.leadsView) && (onOverview || tab === 'leads'),
+  );
+  const tasks = useProjectTasks(
+    projectId,
+    can(PERMISSIONS.tasksView) && (onOverview || tab === 'tasks'),
+  );
+  const creative = useProjectCreative(
+    projectId,
+    can(PERMISSIONS.creativeView) && tab === 'creative',
+  );
+  const approvals = useProjectApprovals(
+    projectId,
+    can(PERMISSIONS.approvalsView) && tab === 'approvals',
+  );
+  const reports = useClientReports(clientId, can(PERMISSIONS.reportsView) && tab === 'reports');
   const activity = useProjectActivity(projectId);
   const attention = useProjectAttention(projectId);
 
