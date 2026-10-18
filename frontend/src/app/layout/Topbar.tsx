@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Languages, Moon, PanelsTopLeft, Search, Sun, X } from 'lucide-react';
+import { Languages, Moon, PanelsTopLeft, Search, Sun } from 'lucide-react';
 import { NotificationBell } from '@/features/notifications';
 import { AccountMenu } from './AccountMenu';
 import { TopNav } from './TopNav';
@@ -10,17 +10,7 @@ import type { Locale } from '@/shared/i18n';
 
 export function Topbar() {
   const { t } = useTranslation();
-  const {
-    theme,
-    locale,
-    setTheme,
-    setLocale,
-    setMobileNavOpen,
-    setPaletteOpen,
-    context,
-    setContext,
-  } = useUiStore();
-  const scope = context.project ?? context.client;
+  const { theme, locale, setTheme, setLocale, setMobileNavOpen, setPaletteOpen } = useUiStore();
   const resolved = resolveTheme(theme);
   const nextLocale: Locale = locale === 'en' ? 'ar' : 'en';
 
@@ -61,24 +51,6 @@ export function Topbar() {
       <div className="flex min-w-0 flex-1 justify-center">
         <TopNav />
       </div>
-
-      {/*
-        The working context, always on screen when it is set. It narrows every surface that reads it, so it is
-        never allowed to be invisible: a silent narrowing is a dashboard that looks complete and is not.
-      */}
-      {scope === null ? null : (
-        <span className="bg-accent-subtle text-content-brand hidden h-10 max-w-48 items-center gap-2 rounded-full ps-4 pe-2 text-sm md:inline-flex">
-          <span className="truncate">{scope.label}</span>
-          <button
-            type="button"
-            aria-label={t('palette.clearContext')}
-            onClick={() => setContext({ client: null, project: null })}
-            className="hover:bg-surface/60 rounded-full p-1"
-          >
-            <X aria-hidden className="size-3.5" />
-          </button>
-        </span>
-      )}
 
       {/* Search, alerts, language and appearance share one white pill, as in the reference. */}
       <div className="bg-surface ms-auto flex h-12 items-center gap-0.5 rounded-full p-1 shadow-xs lg:ms-0">

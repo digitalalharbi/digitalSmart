@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { formatMinor } from '@/shared/lib/format';
+import { formatMinor, formatNumber } from '@/shared/lib/format';
+import { DonutChart, HealthRing } from '@/shared/ui/viz';
 import { ActivityFeed } from '@/shared/ui/activity-feed';
 import { Badge } from '@/shared/ui/badge';
 import { buttonVariants } from '@/shared/ui/button.variants';
@@ -390,5 +391,116 @@ export function NextActions({ items }: { items: AttentionLite[] }) {
         </Row>
       ))}
     </ul>
+  );
+}
+
+/**
+ * Three pictures at the top of a project: how its campaigns are doing, how much of the budget is spent, and what is
+ * waiting on the team. Each is a ring or a figure — the words are in the lists below, for anyone who wants them.
+ */
+export function OverviewRings({
+  health,
+  spent,
+  approved,
+  currency,
+  share,
+  openTasks,
+  overdue,
+  waiting,
+  locale,
+}: {
+  health: Record<string, number> | null;
+  spent: number | null;
+  approved: number;
+  currency: string;
+  share: number | null;
+  openTasks: number | null;
+  overdue: number;
+  waiting: number | null;
+  locale: string;
+}) {
+  const { t } = useTranslation();
+  const counts = {
+    healthy: health?.['healthy'] ?? 0,
+    watch: health?.['watch'] ?? 0,
+    needs_attention: health?.['needs_attention'] ?? 0,
+    critical: health?.['critical'] ?? 0,
+    inactive: health?.['inactive'] ?? 0,
+    insufficient_data: health?.['insufficient_data'] ?? 0,
+  };
+
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>{t('workspace.campaignHealth')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center gap-4">
+          {health === null ? (
+            <Skeleton className="h-24 w-full" />
+          ) : (
+            <HealthRing
+              counts={counts}
+              size={104}
+              thickness={13}
+              label={t('workspace.campaignHealth')}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>{t('workspace.tab.budget')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {approved === 0 ? (
+            <p className="text-content-tertiary text-sm">—</p>
+          ) : (
+            <DonutChart
+              size={104}
+              thickness={13}
+              label={t('workspace.tab.budget')}
+              format={(v) => formatMinor(v, currency, locale)}
+              centre={{ value: share === null ? '—' : `${String(share)}%` }}
+              segments={[
+                {
+                  key: 'spent',
+                  label: t('workspace.spentLabel'),
+                  value: spent ?? 0,
+                  colour: 'var(--ds-accent)',
+                },
+                {
+                  key: 'left',
+                  label: t('workspace.remaining'),
+                  value: Math.max(0, approved - (spent ?? 0)),
+                  colour: 'var(--ds-surface-active)',
+                },
+              ]}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>{t('workspace.tab.work')}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-3 gap-3 text-center">
+          {[
+            [t('workspace.tab.tasks'), openTasks],
+            [t('workspace.overdue'), overdue],
+            [t('workspace.tab.approvals'), waiting],
+          ].map(([label, value]) => (
+            <div key={String(label)} className="flex flex-col gap-1">
+              <span className="ds-numeric text-content text-3xl font-semibold">
+                {value === null ? '—' : formatNumber(Number(value), locale)}
+              </span>
+              <span className="text-content-tertiary text-xs">{label}</span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

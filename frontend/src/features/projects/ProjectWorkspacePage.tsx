@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { formatMinor } from '@/shared/lib/format';
-import { ContextInsight } from '@/features/assistant';
 import { BackgroundWork } from '@/features/background-work';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useUiStore } from '@/shared/store/ui-store';
@@ -36,22 +35,25 @@ import {
   CreativeList,
   LeadsSummary,
   NextActions,
+  OverviewRings,
   ReportsList,
   Section,
   TasksList,
 } from './workspace/Panels';
 
-const TABS = [
-  'overview',
-  'campaigns',
-  'budget',
-  'leads',
-  'creative',
-  'tasks',
-  'approvals',
-  'reports',
-  'activity',
-] as const;
+/*
+ * Six areas, not nine. Tasks and approvals are one question — "what is waiting on us?" — so they are one tab; leads
+ * are a figure on the overview with a link to their own page; the activity feed lives in the panel beside every tab.
+ */
+const TABS = ['overview', 'campaigns', 'budget', 'creative', 'work', 'reports'] as const;
+
+/** Addresses from before the tabs were merged still open the right place. */
+const LEGACY_TAB: Record<string, Tab> = {
+  tasks: 'work',
+  approvals: 'work',
+  leads: 'overview',
+  activity: 'overview',
+};
 
 type Tab = (typeof TABS)[number];
 
@@ -76,10 +78,10 @@ export function ProjectWorkspacePage() {
   const [params, setParams] = useSearchParams();
   const setContext = useUiStore((s) => s.setContext);
 
-  const requested = params.get('tab');
-  const tab: Tab = (TABS as readonly string[]).includes(requested ?? '')
+  const requested = params.get('tab') ?? '';
+  const tab: Tab = (TABS as readonly string[]).includes(requested)
     ? (requested as Tab)
-    : 'overview';
+    : (LEGACY_TAB[requested] ?? 'overview');
 
   const { can } = useSession();
   /*
@@ -97,13 +99,10 @@ export function ProjectWorkspacePage() {
     can(PERMISSIONS.analyticsView),
   );
   const budgets = useProjectBudgets(projectId, clientId, can(PERMISSIONS.budgetsView));
-  const leads = useProjectLeads(
-    projectId,
-    can(PERMISSIONS.leadsView) && (onOverview || tab === 'leads'),
-  );
+  const leads = useProjectLeads(projectId, can(PERMISSIONS.leadsView) && onOverview);
   const tasks = useProjectTasks(
     projectId,
-    can(PERMISSIONS.tasksView) && (onOverview || tab === 'tasks'),
+    can(PERMISSIONS.tasksView) && (onOverview || tab === 'work'),
   );
   const creative = useProjectCreative(
     projectId,
@@ -111,7 +110,7 @@ export function ProjectWorkspacePage() {
   );
   const approvals = useProjectApprovals(
     projectId,
-    can(PERMISSIONS.approvalsView) && tab === 'approvals',
+    can(PERMISSIONS.approvalsView) && (onOverview || tab === 'work'),
   );
   const reports = useClientReports(clientId, can(PERMISSIONS.reportsView) && tab === 'reports');
   const activity = useProjectActivity(projectId);
@@ -307,6 +306,17 @@ export function ProjectWorkspacePage() {
         >
           {tab === 'overview' ? (
             <>
+              <OverviewRings
+                health={campaigns.data?.counts ?? null}
+                spent={unreported ? null : spent}
+                approved={approved}
+                currency={project?.currency ?? 'USD'}
+                share={share}
+                openTasks={tasks.data?.open.length ?? null}
+                overdue={tasks.data?.overdue ?? 0}
+                waiting={approvals.data?.length ?? null}
+                locale={locale}
+              />
               <Card>
                 <CardHeader>
                   <CardTitle>{t('workspace.nextActions')}</CardTitle>
@@ -319,10 +329,6 @@ export function ProjectWorkspacePage() {
                   )}
                 </CardContent>
               </Card>
-              <ContextInsight
-                clientId={clientId ?? null}
-                clientName={project?.client.name ?? null}
-              />
               <div className="grid gap-4 lg:grid-cols-2">
                 <Section
                   query={campaigns}
@@ -331,20 +337,8 @@ export function ProjectWorkspacePage() {
                 >
                   {(data) => <CampaignsList data={data} locale={locale} />}
                 </Section>
-                <Section
-                  query={budgets}
-                  title={t('workspace.tab.budget')}
-                  to={`/projects/${projectId}?tab=budget`}
-                >
-                  {(data) => <BudgetList rows={data.rows} scope={data.scope} locale={locale} />}
-                </Section>
-              </div>
-              <div className="grid gap-4 lg:grid-cols-2">
                 <Section query={leads} title={t('workspace.tab.leads')} to="/leads">
                   {(funnel) => <LeadsSummary funnel={funnel} />}
-                </Section>
-                <Section query={tasks} title={t('workspace.tab.tasks')} to="/tasks">
-                  {(data) => <TasksList data={data} locale={locale} />}
                 </Section>
               </div>
             </>
@@ -359,24 +353,9 @@ export function ProjectWorkspacePage() {
               {(data) => <BudgetList rows={data.rows} scope={data.scope} locale={locale} />}
             </Section>
           ) : null}
-          {tab === 'leads' ? (
-            <Section query={leads} title={t('workspace.tab.leads')} to="/leads">
-              {(funnel) => <LeadsSummary funnel={funnel} />}
-            </Section>
-          ) : null}
           {tab === 'creative' ? (
             <Section query={creative} title={t('workspace.tab.creative')} to="/creative-hub">
               {(rows) => <CreativeList rows={rows} />}
-            </Section>
-          ) : null}
-          {tab === 'tasks' ? (
-            <Section query={tasks} title={t('workspace.tab.tasks')} to="/tasks">
-              {(data) => <TasksList data={data} locale={locale} />}
-            </Section>
-          ) : null}
-          {tab === 'approvals' ? (
-            <Section query={approvals} title={t('workspace.tab.approvals')} to="/approvals">
-              {(rows) => <ApprovalsList rows={rows} />}
             </Section>
           ) : null}
           {tab === 'reports' ? (
@@ -384,15 +363,15 @@ export function ProjectWorkspacePage() {
               {(rows) => <ReportsList rows={rows} />}
             </Section>
           ) : null}
-          {tab === 'activity' ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('workspace.activity')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Activity query={activity} />
-              </CardContent>
-            </Card>
+          {tab === 'work' ? (
+            <>
+              <Section query={tasks} title={t('workspace.tab.tasks')} to="/tasks">
+                {(data) => <TasksList data={data} locale={locale} />}
+              </Section>
+              <Section query={approvals} title={t('workspace.tab.approvals')} to="/approvals">
+                {(rows) => <ApprovalsList rows={rows} />}
+              </Section>
+            </>
           ) : null}
         </div>
 
@@ -458,7 +437,7 @@ export function ProjectWorkspacePage() {
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="bg-surface border-line-subtle min-w-0 rounded-xl border p-3">
+    <div className="bg-surface min-w-0 rounded-3xl p-4 shadow-xs">
       <dt className="ds-overline text-content-tertiary">{label}</dt>
       <dd className="text-content mt-1 min-w-0 text-sm font-medium">{children}</dd>
     </div>
