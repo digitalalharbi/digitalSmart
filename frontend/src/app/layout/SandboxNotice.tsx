@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useSession } from '@/features/auth';
 import { Button } from '@/shared/ui/button';
+import { returnFocus } from '@/shared/ui/return-focus';
 
 /** Per workspace: shortening the notice in one sandbox says nothing about another. */
 const keyFor = (workspaceId: string): string => `digitalsmart.sandbox-notice.${workspaceId}`;
@@ -86,7 +87,10 @@ export function SandboxNotice() {
       <Dialog.Root open={tour !== null} onOpenChange={(open) => (open ? undefined : setTour(null))}>
         <Dialog.Portal>
           <Dialog.Overlay className="bg-overlay animate-in fade-in fixed inset-0 z-40" />
-          <Dialog.Content className="bg-surface fixed start-1/2 top-1/2 z-50 flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-xl p-6 shadow-lg rtl:translate-x-1/2">
+          <Dialog.Content
+            onCloseAutoFocus={returnFocus}
+            className="bg-surface fixed start-1/2 top-1/2 z-50 flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-xl p-6 shadow-lg rtl:translate-x-1/2"
+          >
             <div>
               <p className="text-content-tertiary text-xs tabular-nums">
                 {tour === null ? '' : `${String(tour + 1)} / ${String(STEPS.length)}`}

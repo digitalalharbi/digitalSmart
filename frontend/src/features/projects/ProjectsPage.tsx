@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Plus, Search } from 'lucide-react';
 import { PERMISSIONS, useSession } from '@/features/auth';
@@ -196,7 +197,12 @@ export function ProjectsPage() {
                 <TableRow key={project.id} isInteractive>
                   <TableCell label={t('projects.columns.name')}>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-content font-medium">{project.name}</span>
+                      <Link
+                        to={`/projects/${project.id}`}
+                        className="text-content hover:text-content-brand font-medium hover:underline"
+                      >
+                        {project.name}
+                      </Link>
                       {project.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
                       {project.is_assigned ? (
                         <Badge tone="accent">{t('projects.assigned')}</Badge>

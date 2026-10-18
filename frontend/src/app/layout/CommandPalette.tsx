@@ -3,6 +3,7 @@ import { Pin, PinOff, Search as SearchIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+import { returnFocus } from '@/shared/ui/return-focus';
 import { useSession } from '@/features/auth';
 import {
   usePinMutation,
@@ -121,6 +122,7 @@ export function CommandPalette() {
         <Dialog.Overlay className="bg-overlay animate-in fade-in fixed inset-0 z-40" />
         <Dialog.Content
           aria-describedby={undefined}
+          onCloseAutoFocus={returnFocus}
           className="bg-surface border-line-subtle fixed start-1/2 top-[12vh] z-50 flex max-h-[70dvh] w-[calc(100vw-2rem)] max-w-xl -translate-x-1/2 flex-col overflow-hidden rounded-2xl border shadow-lg rtl:translate-x-1/2"
         >
           <Dialog.Title className="sr-only">{t('palette.title')}</Dialog.Title>

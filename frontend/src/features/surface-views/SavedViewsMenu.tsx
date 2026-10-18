@@ -10,6 +10,7 @@ import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { useDeleteSurfaceView, useSaveSurfaceView, useSurfaceViews } from './api';
 import type { SurfaceFilters, SurfaceKind, SurfaceView, ViewVisibility } from './types';
+import { returnFocus } from '@/shared/ui/return-focus';
 
 type SavedViewsMenuProps = {
   surface: SurfaceKind;
@@ -76,7 +77,10 @@ export function SavedViewsMenu({
 
       <Dialog.Portal>
         <Dialog.Overlay className="bg-overlay animate-in fade-in fixed inset-0 z-40" />
-        <Dialog.Content className="bg-surface fixed start-1/2 top-1/2 z-50 flex max-h-[85vh] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-y-auto rounded-xl p-6 shadow-lg rtl:translate-x-1/2">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="bg-surface fixed start-1/2 top-1/2 z-50 flex max-h-[85vh] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-y-auto rounded-xl p-6 shadow-lg rtl:translate-x-1/2"
+        >
           <div>
             <Dialog.Title className="text-content text-lg font-semibold">
               {t('surfaceViews.title')}

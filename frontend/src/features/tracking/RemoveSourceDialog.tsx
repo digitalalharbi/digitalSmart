@@ -5,6 +5,7 @@ import { Alert } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
 import { useDeleteSourceMutation } from './useTracking';
 import type { MeasurementSource } from './types';
+import { returnFocus } from '@/shared/ui/return-focus';
 
 /**
  * Stop measuring through something, with what that costs stated first.
@@ -45,7 +46,10 @@ export function RemoveSourceDialog({
     >
       <Dialog.Portal>
         <Dialog.Overlay className="bg-overlay animate-in fade-in fixed inset-0 z-40 duration-[var(--ds-duration-fast)]" />
-        <Dialog.Content className="bg-surface animate-in fade-in zoom-in-95 fixed start-1/2 top-1/2 z-50 max-h-[90dvh] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl p-6 shadow-lg duration-[var(--ds-duration-base)] rtl:translate-x-1/2">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="bg-surface animate-in fade-in zoom-in-95 fixed start-1/2 top-1/2 z-50 max-h-[90dvh] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl p-6 shadow-lg duration-[var(--ds-duration-base)] rtl:translate-x-1/2"
+        >
           <Dialog.Title className="text-content text-lg font-semibold">
             {t('tracking.remove.title', { name: source?.name ?? '' })}
           </Dialog.Title>

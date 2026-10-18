@@ -15,6 +15,7 @@ import { EntityPicker } from '@/shared/ui/entity-picker';
 import { useClientsQuery } from '@/features/clients';
 import { useCreateProjectMutation, useUpdateProjectMutation } from './api';
 import type { Project, ProjectPayload } from './types';
+import { returnFocus } from '@/shared/ui/return-focus';
 
 const schema = z
   .object({
@@ -123,7 +124,10 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="bg-overlay animate-in fade-in fixed inset-0 z-40 duration-[var(--ds-duration-fast)]" />
-        <Dialog.Content className="bg-surface animate-in fade-in zoom-in-95 fixed start-1/2 top-1/2 z-50 max-h-[90dvh] w-[calc(100vw-2rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl p-6 shadow-lg duration-[var(--ds-duration-base)] rtl:translate-x-1/2">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="bg-surface animate-in fade-in zoom-in-95 fixed start-1/2 top-1/2 z-50 max-h-[90dvh] w-[calc(100vw-2rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl p-6 shadow-lg duration-[var(--ds-duration-base)] rtl:translate-x-1/2"
+        >
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
               <Dialog.Title className="text-content text-lg font-semibold">

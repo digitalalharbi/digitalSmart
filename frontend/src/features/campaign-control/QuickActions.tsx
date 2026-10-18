@@ -13,6 +13,7 @@ import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
 import type { CampaignRow } from './types';
+import { returnFocus } from '@/shared/ui/return-focus';
 
 /**
  * What can be done to a campaign from its card — and only what this reader may do.
@@ -132,7 +133,10 @@ function TaskDialog({ row, onClose }: { row: CampaignRow; onClose: () => void })
     <Dialog.Root open onOpenChange={(next) => (next ? undefined : onClose())}>
       <Dialog.Portal>
         <Dialog.Overlay className="bg-overlay animate-in fade-in fixed inset-0 z-40" />
-        <Dialog.Content className="bg-surface fixed start-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl p-6 shadow-lg rtl:translate-x-1/2">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="bg-surface fixed start-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl p-6 shadow-lg rtl:translate-x-1/2"
+        >
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <Dialog.Title className="text-content text-lg font-semibold">
@@ -233,7 +237,10 @@ function StatusRequestDialog({
     <Dialog.Root open onOpenChange={(next) => (next ? undefined : onClose())}>
       <Dialog.Portal>
         <Dialog.Overlay className="bg-overlay animate-in fade-in fixed inset-0 z-40" />
-        <Dialog.Content className="bg-surface fixed start-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl p-6 shadow-lg rtl:translate-x-1/2">
+        <Dialog.Content
+          onCloseAutoFocus={returnFocus}
+          className="bg-surface fixed start-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl p-6 shadow-lg rtl:translate-x-1/2"
+        >
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <Dialog.Title className="text-content text-lg font-semibold">
