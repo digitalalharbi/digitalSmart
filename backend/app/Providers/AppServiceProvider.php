@@ -13,6 +13,7 @@ use App\Application\Advertising\Contract\CampaignControlReadModel;
 use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegistryContract;
 use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Agents\Contract\AgentActors;
+use App\Application\Agents\Contract\AgentReadModel;
 use App\Application\Agents\Contract\AgentRunLog;
 use App\Application\Agents\Contract\OperatingRuleRepository;
 use App\Application\Agents\Contract\ProposalHistory;
@@ -151,6 +152,7 @@ use App\Infrastructure\Access\WorkspaceAccessSynchroniser;
 use App\Infrastructure\Advertising\Sandbox\SandboxFixtures;
 use App\Infrastructure\Advertising\SyncAdapterRegistry;
 use App\Infrastructure\Agents\EloquentAgentIdentity;
+use App\Infrastructure\Agents\EloquentAgentReadModel;
 use App\Infrastructure\Agents\EloquentAgentRunLog;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
 use App\Infrastructure\Commerce\CommerceSyncAdapterRegistry;
@@ -406,6 +408,7 @@ final class AppServiceProvider extends ServiceProvider
         ProposalHistory::class => EloquentProposalHistory::class,
         AgentActors::class => EloquentAgentIdentity::class,
         AgentRunLog::class => EloquentAgentRunLog::class,
+        AgentReadModel::class => EloquentAgentReadModel::class,
         ToolCallLog::class => EloquentToolCallLog::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
         ScheduleStore::class => EloquentScheduleStore::class,

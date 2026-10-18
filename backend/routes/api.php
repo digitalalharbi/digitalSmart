@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Interface\Http\Controller\Activity\ActivityController;
 use App\Interface\Http\Controller\Advertising\CampaignControlController;
 use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
+use App\Interface\Http\Controller\Agents\AgentOverviewController;
 use App\Interface\Http\Controller\Agents\McpController;
 use App\Interface\Http\Controller\Agents\McpTokenController;
 use App\Interface\Http\Controller\Agents\OperatingRulesController;
@@ -608,6 +609,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         ->whereUuid('view')->name('surface_views.destroy');
 
     /* digitalSmart's own MCP server, and the tokens an AI client signs in with. */
+    Route::get('agents/overview', [AgentOverviewController::class, 'show'])->name('agents.overview');
+    Route::post('agents/run', [AgentOverviewController::class, 'run'])->middleware('throttle:6,1')->name('agents.run');
     Route::post('mcp', McpController::class)->middleware('throttle:60,1')->name('mcp.rpc');
     Route::get('mcp/tokens', [McpTokenController::class, 'index'])->name('mcp.tokens.index');
     Route::post('mcp/tokens', [McpTokenController::class, 'store'])->name('mcp.tokens.store');

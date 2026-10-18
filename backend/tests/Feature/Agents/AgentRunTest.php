@@ -123,3 +123,23 @@ it('keeps one workspace’s agents out of another’s data', function (): void {
     expect(DB::table('approval_requests')->where('workspace_id', $b->scenario->workspace->getKey())->where('origin', 'agent')->count())->toBe(0)
         ->and(DB::table('agent_runs')->where('workspace_id', $b->scenario->workspace->getKey())->count())->toBe(0);
 });
+
+it('shows administrators the machinery, runs the agents on demand, and shows it to nobody else', function (): void {
+    $w = agentWorld();
+    $manager = $w->scenario->addMember(App\Domain\Access\SystemRole::ProjectManager);
+
+    test()->actingAs($w->scenario->owner)->postJson('/api/agents/run')->assertOk();
+
+    $data = test()->actingAs($w->scenario->owner)->getJson('/api/agents/overview')->assertOk()->json('data');
+
+    expect($data['runs'])->not->toBeEmpty()
+        ->and(array_column($data['tools'], 'name'))->toContain('propose_budget_change')
+        ->and(array_column($data['providers'], 'provider'))->toContain('meta')
+        ->and($data['mcp_endpoint'])->toEndWith('/api/mcp');
+
+    // The administrator's own session is intact after the agents ran as themselves.
+    test()->actingAs($w->scenario->owner)->getJson('/api/portfolio')->assertOk();
+
+    test()->actingAs($manager)->getJson('/api/agents/overview')->assertForbidden();
+    test()->actingAs($manager)->postJson('/api/agents/run')->assertForbidden();
+});
