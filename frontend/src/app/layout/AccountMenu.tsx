@@ -40,7 +40,7 @@ export function AccountMenu() {
       <DropdownMenu.Trigger asChild>
         <Button
           variant="ghost"
-          className="h-12 gap-2.5 rounded-full ps-1.5 pe-3"
+          className="h-12 gap-2.5 rounded-full ps-1.5 pe-1.5 sm:pe-3"
           aria-label={t('account.menu')}
         >
           <span
@@ -55,7 +55,7 @@ export function AccountMenu() {
               {user.active_workspace?.name}
             </span>
           </span>
-          <ChevronsUpDown className="text-content-tertiary" />
+          <ChevronsUpDown className="text-content-tertiary hidden sm:block" />
         </Button>
       </DropdownMenu.Trigger>
 

@@ -20,7 +20,7 @@ export function Topbar() {
      * floating on the workspace with nothing drawn behind them. It is sticky with a soft wash of the workspace
      * colour so content scrolling beneath stays legible without a bar being drawn.
      */
-    <header className="bg-workspace/90 sticky top-0 z-20 flex h-[4.5rem] items-center gap-3 px-[var(--ds-page-gutter)] backdrop-blur-md lg:rounded-t-[var(--ds-radius-workspace)] lg:px-6">
+    <header className="bg-workspace/90 sticky top-0 z-20 flex h-[4.5rem] items-center gap-2 px-3 backdrop-blur-md sm:gap-3 sm:px-[var(--ds-page-gutter)] lg:rounded-t-[var(--ds-radius-workspace)] lg:px-6">
       {/* Below lg the rail is hidden, so this opens the drawer instead. */}
       <Button
         variant="ghost"

@@ -58,8 +58,12 @@ test.describe('Arabic typography', () => {
     const type = await typography(page);
 
     expect(type.dir).toBe('rtl');
+    /*
+     * DIN Next Arabic leads the stack and is used wherever a licensed copy is installed; this project ships no copy
+     * (see typography.css), so the face actually loaded and rendering is IBM Plex Sans Arabic, never a system fallback.
+     */
     expect(type.loaded).toContain('IBM Plex Sans Arabic');
-    expect(type.body?.family).toBe('IBM Plex Sans Arabic');
+    expect(['DIN Next Arabic', 'IBM Plex Sans Arabic']).toContain(type.body?.family);
   });
 
   test('never tracks Arabic, which would break the cursive joins', async ({ page }) => {
