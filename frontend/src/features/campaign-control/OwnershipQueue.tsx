@@ -45,7 +45,7 @@ export function OwnershipQueue() {
   const target = options.some((o) => o.id === projectId) ? projectId : '';
 
   return (
-    <details className="bg-surface border-line-subtle rounded-2xl border p-4" open={needing > 0}>
+    <details className="bg-surface rounded-3xl p-5 shadow-xs">
       <summary className="text-content cursor-pointer text-sm font-semibold">
         {t('campaignControl.ownership.title', { count: needing })}
       </summary>

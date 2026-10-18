@@ -1,4 +1,4 @@
-import { LayoutGrid, Rows3 } from 'lucide-react';
+import { LayoutGrid, Rows3, SlidersHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -11,7 +11,6 @@ import { useProvidersQuery } from '@/features/integrations';
 import { Alert } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
 import { buttonVariants } from '@/shared/ui/button.variants';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { EntityPicker } from '@/shared/ui/entity-picker';
 import { Input } from '@/shared/ui/input';
@@ -27,23 +26,13 @@ import {
 } from '@/shared/ui/table';
 import { PAGE_SIZE } from './api';
 import { CampaignCard, CampaignIdentity, StatusPair, BudgetBar } from './CampaignParts';
-import { HealthDistribution } from '@/shared/ui/health-distribution';
 import { money, resultText } from './text';
 import { SavedViewsMenu } from '@/features/surface-views';
 import { OwnershipQueue } from './OwnershipQueue';
-import { SpendHero } from './SpendHero';
+import { CampaignsHero } from './CampaignsHero';
 import { DEFAULT_FILTERS, PERIODS, fromParams, toParams } from './filters';
 import { useCampaignControl } from './useCampaignControl';
-import { HEALTH_TO_STATE, type ControlFilters, type HealthValue, type SortKey } from './types';
-
-const HEALTH_ORDER: HealthValue[] = [
-  'critical',
-  'needs_attention',
-  'watch',
-  'healthy',
-  'insufficient_data',
-  'inactive',
-];
+import type { ControlFilters, SortKey } from './types';
 
 /**
  * The Campaign Control Center.
@@ -71,6 +60,7 @@ export function CampaignControlPage() {
   };
   const { data, isPending, isError, isFetching } = useCampaignControl(filters);
 
+  const [moreOpen, setMoreOpen] = useState(false);
   const [clientTerm, setClientTerm] = useState('');
   const [projectTerm, setProjectTerm] = useState('');
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
@@ -116,12 +106,6 @@ export function CampaignControlPage() {
     );
   };
 
-  /* The product's own six words, in the reader's language — not the server's English labels. */
-  const healthLabels = Object.fromEntries(
-    HEALTH_ORDER.map((health) => [health, t(`health.${HEALTH_TO_STATE[health]}`)]),
-  ) as Record<HealthValue, string>;
-
-  const counts = data?.meta.health_counts;
   /* "No campaigns yet" and "none match" are different messages, and only the filters tell them apart. */
   const isFiltered =
     filters.client !== null ||
@@ -138,26 +122,8 @@ export function CampaignControlPage() {
     <div className="ds-page">
       <PageHeader
         title={t('campaignControl.title')}
-        description={t('campaignControl.subtitle')}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <div
-              className="bg-surface-sunken flex rounded-lg p-0.5"
-              role="group"
-              aria-label={t('campaignControl.mode.label')}
-            >
-              {(['summary', 'detailed'] as const).map((mode) => (
-                <Button
-                  key={mode}
-                  size="sm"
-                  variant={filters.mode === mode ? 'secondary' : 'ghost'}
-                  aria-pressed={filters.mode === mode}
-                  onClick={() => update({ mode })}
-                >
-                  {t(`campaignControl.mode.${mode}`)}
-                </Button>
-              ))}
-            </div>
             <SavedViewsMenu
               surface="campaign_control"
               current={Object.fromEntries(toParams({ ...filters, offset: 0 }))}
@@ -205,156 +171,141 @@ export function CampaignControlPage() {
         <Alert tone="info">{t('campaignControl.otherWindow', { days: filters.days })}</Alert>
       ) : null}
 
-      <section
-        aria-label={t('campaignControl.summary')}
-        className="grid grid-cols-2 gap-3 lg:grid-cols-5"
-      >
-        {isPending || counts === undefined || data === undefined ? (
-          Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className="h-24" />)
-        ) : (
-          <>
-            <Tile
-              label={t('campaignControl.tile.active')}
-              value={data.meta.active_count}
-              locale={locale}
-            />
-            <Tile
-              label={t('campaignControl.tile.healthy')}
-              value={counts.healthy}
-              locale={locale}
-            />
-            <Tile label={t('campaignControl.tile.watch')} value={counts.watch} locale={locale} />
-            <Tile
-              label={t('campaignControl.tile.attention')}
-              value={counts.needs_attention}
-              locale={locale}
-            />
-            <Tile
-              label={t('campaignControl.tile.critical')}
-              value={counts.critical}
-              locale={locale}
-            />
-          </>
-        )}
-      </section>
+      <CampaignsHero
+        meta={data?.meta}
+        selected={filters.health}
+        onSelect={(health) => update({ health })}
+        showMix={
+          filters.client === null &&
+          filters.project === null &&
+          filters.account === null &&
+          filters.provider === null &&
+          !filters.mine
+        }
+      />
 
-      {data === undefined ? null : <SpendHero meta={data.meta} locale={locale} />}
+      {data?.meta.is_truncated === true ? (
+        <p className="text-content-tertiary text-xs">
+          {t('campaignControl.truncated', { assessed: data.meta.assessed, total: data.meta.total })}
+        </p>
+      ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('campaignControl.distribution')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {counts === undefined ? (
-            <Skeleton className="h-12" />
-          ) : (
-            <>
-              <HealthDistribution
-                counts={counts}
-                selected={filters.health}
-                onSelect={(health) => update({ health })}
-                order={HEALTH_ORDER}
-                labels={healthLabels}
-              />
-              {data?.meta.is_truncated === true ? (
-                <p className="text-content-tertiary mt-3 text-xs">
-                  {t('campaignControl.truncated', {
-                    assessed: data.meta.assessed,
-                    total: data.meta.total,
-                  })}
-                </p>
-              ) : null}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Always: it shows itself only when campaigns are waiting to be placed, and that is not a detail. */}
-      <OwnershipQueue />
-
-      <section aria-label={t('campaignControl.filters')} className="flex flex-wrap items-end gap-3">
-        <div className="min-w-56 flex-1">
-          <label htmlFor="cc-search" className="text-content-secondary text-xs font-medium">
-            {t('campaignControl.search')}
-          </label>
-          <Input
-            id="cc-search"
-            type="search"
-            value={filters.search}
-            placeholder={t('campaignControl.searchPlaceholder')}
-            onChange={(event) => update({ search: event.target.value })}
+      <section aria-label={t('campaignControl.filters')} className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-56 flex-1">
+            <label htmlFor="cc-search" className="text-content-secondary text-xs font-medium">
+              {t('campaignControl.search')}
+            </label>
+            <Input
+              id="cc-search"
+              type="search"
+              value={filters.search}
+              placeholder={t('campaignControl.searchPlaceholder')}
+              onChange={(event) => update({ search: event.target.value })}
+            />
+          </div>
+          <Select
+            label={t('campaignControl.period')}
+            value={filters.days === null ? null : String(filters.days)}
+            onChange={(days) => update({ days: days === null ? null : Number(days) })}
+            options={PERIODS.map((days) => ({
+              value: String(days),
+              label: t('campaignControl.lastDays', { count: days }),
+            }))}
+            any={t('campaignControl.defaultPeriod')}
           />
+          <EntityPicker
+            label={t('campaignControl.client')}
+            clearLabel={t('campaignControl.clear')}
+            value={filters.client}
+            onChange={(o) => {
+              if (o === null) {
+                setContext({ ...context, client: null, project: null });
+              }
+
+              update({ client: o === null ? null : { id: o.id, label: o.label } });
+            }}
+            onSearch={setClientTerm}
+            options={(clients.data?.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
+            isLoading={clients.isFetching}
+          />
+          <Select
+            label={t('campaignControl.provider')}
+            value={filters.provider}
+            onChange={(provider) => update({ provider })}
+            options={(providers.data ?? []).map((p) => ({ value: p.provider, label: p.label }))}
+            any={t('campaignControl.any')}
+          />
+          <Button
+            variant="secondary"
+            aria-expanded={moreOpen}
+            onClick={() => setMoreOpen((open) => !open)}
+            className="self-end"
+          >
+            <SlidersHorizontal />
+            {t('campaignControl.moreFilters')}
+          </Button>
+          <div className="flex gap-1" role="group" aria-label={t('campaignControl.view')}>
+            <Button
+              variant={filters.view === 'cards' ? 'secondary' : 'ghost'}
+              size="icon"
+              aria-pressed={filters.view === 'cards'}
+              aria-label={t('campaignControl.cards')}
+              onClick={() => update({ view: 'cards' })}
+            >
+              <LayoutGrid />
+            </Button>
+            <Button
+              variant={filters.view === 'table' ? 'secondary' : 'ghost'}
+              size="icon"
+              aria-pressed={filters.view === 'table'}
+              aria-label={t('campaignControl.table')}
+              onClick={() => update({ view: 'table' })}
+            >
+              <Rows3 />
+            </Button>
+          </div>
         </div>
-        <EntityPicker
-          label={t('campaignControl.client')}
-          clearLabel={t('campaignControl.clear')}
-          value={filters.client}
-          onChange={(o) => {
-            if (o === null) {
-              setContext({ ...context, client: null, project: null });
-            }
+        {moreOpen ? (
+          <div className="bg-surface flex flex-wrap items-end gap-3 rounded-3xl p-4 shadow-xs">
+            <EntityPicker
+              label={t('campaignControl.project')}
+              clearLabel={t('campaignControl.clear')}
+              value={filters.project}
+              onChange={(o) => {
+                if (o === null) {
+                  setContext({ ...context, project: null });
+                }
 
-            update({ client: o === null ? null : { id: o.id, label: o.label } });
-          }}
-          onSearch={setClientTerm}
-          options={(clients.data?.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
-          isLoading={clients.isFetching}
-        />
-        <EntityPicker
-          label={t('campaignControl.project')}
-          clearLabel={t('campaignControl.clear')}
-          value={filters.project}
-          onChange={(o) => {
-            if (o === null) {
-              setContext({ ...context, project: null });
-            }
-
-            update({ project: o === null ? null : { id: o.id, label: o.label } });
-          }}
-          onSearch={setProjectTerm}
-          options={(projects.data?.data ?? []).map((p) => ({ id: p.id, label: p.name }))}
-          isLoading={projects.isFetching}
-        />
-        <EntityPicker
-          label={t('campaignControl.account')}
-          clearLabel={t('campaignControl.clear')}
-          value={filters.account}
-          onChange={(o) => update({ account: o === null ? null : { id: o.id, label: o.label } })}
-          onSearch={setAccountTerm}
-          options={(accounts.data ?? []).map((a) => ({
-            id: a.id,
-            label: a.label,
-            context: a.context,
-          }))}
-          isLoading={accounts.isFetching}
-        />
-        <Select
-          label={t('campaignControl.period')}
-          value={filters.days === null ? null : String(filters.days)}
-          onChange={(days) => update({ days: days === null ? null : Number(days) })}
-          options={PERIODS.map((days) => ({
-            value: String(days),
-            label: t('campaignControl.lastDays', { count: days }),
-          }))}
-          any={t('campaignControl.defaultPeriod')}
-        />
-        <label className="flex h-9 items-center gap-2 self-end text-sm">
-          <input
-            type="checkbox"
-            checked={filters.mine}
-            onChange={(event) => update({ mine: event.target.checked })}
-          />
-          {t('campaignControl.mine')}
-        </label>
-        <Select
-          label={t('campaignControl.provider')}
-          value={filters.provider}
-          onChange={(provider) => update({ provider })}
-          options={(providers.data ?? []).map((p) => ({ value: p.provider, label: p.label }))}
-          any={t('campaignControl.any')}
-        />
-        {filters.mode === 'detailed' ? (
-          <>
+                update({ project: o === null ? null : { id: o.id, label: o.label } });
+              }}
+              onSearch={setProjectTerm}
+              options={(projects.data?.data ?? []).map((p) => ({ id: p.id, label: p.name }))}
+              isLoading={projects.isFetching}
+            />
+            <EntityPicker
+              label={t('campaignControl.account')}
+              clearLabel={t('campaignControl.clear')}
+              value={filters.account}
+              onChange={(o) =>
+                update({ account: o === null ? null : { id: o.id, label: o.label } })
+              }
+              onSearch={setAccountTerm}
+              options={(accounts.data ?? []).map((a) => ({
+                id: a.id,
+                label: a.label,
+                context: a.context,
+              }))}
+              isLoading={accounts.isFetching}
+            />
+            <label className="flex h-9 items-center gap-2 self-end text-sm">
+              <input
+                type="checkbox"
+                checked={filters.mine}
+                onChange={(event) => update({ mine: event.target.checked })}
+              />
+              {t('campaignControl.mine')}
+            </label>
             {(tags.data ?? []).length === 0 ? null : (
               <Select
                 label={t('campaignControl.tag')}
@@ -390,39 +341,19 @@ export function CampaignControlPage() {
                 label: o.label,
               }))}
               any={t('campaignControl.any')}
+            />{' '}
+            <Select
+              label={t('campaignControl.sort')}
+              value={filters.sort}
+              onChange={(sort) => update({ sort: (sort ?? 'health') as SortKey })}
+              options={(['health', 'spend', 'cost', 'roas', 'name'] as const).map((key) => ({
+                value: key,
+                label: t(`campaignControl.sortBy.${key}`),
+              }))}
+              any={null}
             />
-          </>
+          </div>
         ) : null}
-        <Select
-          label={t('campaignControl.sort')}
-          value={filters.sort}
-          onChange={(sort) => update({ sort: (sort ?? 'health') as SortKey })}
-          options={(['health', 'spend', 'cost', 'roas', 'name'] as const).map((key) => ({
-            value: key,
-            label: t(`campaignControl.sortBy.${key}`),
-          }))}
-          any={null}
-        />
-        <div className="flex gap-1" role="group" aria-label={t('campaignControl.view')}>
-          <Button
-            variant={filters.view === 'cards' ? 'secondary' : 'ghost'}
-            size="icon"
-            aria-pressed={filters.view === 'cards'}
-            aria-label={t('campaignControl.cards')}
-            onClick={() => update({ view: 'cards' })}
-          >
-            <LayoutGrid />
-          </Button>
-          <Button
-            variant={filters.view === 'table' ? 'secondary' : 'ghost'}
-            size="icon"
-            aria-pressed={filters.view === 'table'}
-            aria-label={t('campaignControl.table')}
-            onClick={() => update({ view: 'table' })}
-          >
-            <Rows3 />
-          </Button>
-        </div>
       </section>
 
       {isPending ? (
@@ -531,17 +462,6 @@ export function CampaignControlPage() {
   );
 }
 
-function Tile({ label, value, locale }: { label: string; value: number; locale: string }) {
-  return (
-    <div className="bg-surface border-line-subtle flex flex-col gap-1 rounded-2xl border p-4 shadow-xs">
-      <span className="ds-overline text-content-tertiary">{label}</span>
-      <span className="ds-figure text-content text-3xl">
-        {new Intl.NumberFormat(locale).format(value)}
-      </span>
-    </div>
-  );
-}
-
 function Select({
   label,
   value,
@@ -575,6 +495,9 @@ function Select({
           </option>
         ))}
       </select>
+
+      {/* Shows itself only when campaigns are waiting to be placed; closed, because it is housekeeping, not the picture. */}
+      <OwnershipQueue />
     </div>
   );
 }

@@ -2498,7 +2498,8 @@
     "label": "Insight"
   },
   "campaignControl": {
-    "title": "Campaign Control Center",
+    "moreFilters": "More filters",
+    "title": "Campaigns",
     "subtitle": "Every campaign you may see, across clients, projects and platforms. Worst first.",
     "explore": "Explore performance",
     "summary": "Campaign summary",

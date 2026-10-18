@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import { cn } from '@/shared/lib/cn';
 import { formatPercent } from '@/shared/lib/format';
 import { money, resultText } from './text';
-import { formatRelativeTime } from '@/shared/lib/relative-time';
 import { Badge } from '@/shared/ui/badge';
 import { HealthPill } from '@/shared/ui/health';
 import { Sparkline } from '@/shared/ui/sparkline';
@@ -96,17 +95,7 @@ export function CampaignCard({ row }: { row: CampaignRow }) {
         <CampaignIdentity row={row} />
         <PinButton row={row} />
       </div>
-      <StatusPair row={row} />
-      {row.tags.length === 0 ? null : (
-        <ul className="flex flex-wrap gap-1" aria-label={t('campaignControl.tags')}>
-          {row.tags.map((tag) => (
-            <li key={tag.id}>
-              <Badge tone="neutral">{tag.name}</Badge>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p className="text-content-secondary text-sm">{row.health_reason}</p>
+      <StatusPair row={row} withReason />
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         <div>
@@ -143,11 +132,6 @@ export function CampaignCard({ row }: { row: CampaignRow }) {
         <Sparkline values={row.trend} label={t('campaignControl.trendLabel', { name: row.name })} />
       </div>
 
-      <p className="text-content-tertiary text-xs">
-        {row.last_synced_at === null
-          ? t('campaignControl.neverUpdated')
-          : t('campaignControl.updated', { when: formatRelativeTime(row.last_synced_at, locale) })}
-      </p>
       <QuickActions row={row} />
     </article>
   );
