@@ -46,7 +46,11 @@ function named(base: string): string {
    */
   const attempt = test.info().retry === 0 ? '' : ` r${String(test.info().retry)}`;
 
-  return `E2E ${base} [${test.info().project.name}${attempt}]`;
+  /* `--repeat-each` reruns the same test in the same database; without its index the repeat meets its own record. */
+  const repeat =
+    test.info().repeatEachIndex === 0 ? '' : ` x${String(test.info().repeatEachIndex)}`;
+
+  return `E2E ${base} [${test.info().project.name}${attempt}${repeat}]`;
 }
 
 /*
