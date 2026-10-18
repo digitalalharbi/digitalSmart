@@ -115,7 +115,7 @@ export function BeforeAfter({
     <div className="bg-surface-sunken grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-2xl p-4">
       <div className="flex min-w-0 flex-col">
         <span className="text-content-tertiary text-xs">{beforeLabel}</span>
-        <span className="ds-numeric text-content-secondary truncate text-lg font-semibold">
+        <span className="ds-numeric text-content-secondary text-base font-semibold break-words">
           {before}
         </span>
       </div>
@@ -129,7 +129,7 @@ export function BeforeAfter({
       </span>
       <div className="flex min-w-0 flex-col items-end text-end">
         <span className="text-content-tertiary text-xs">{afterLabel}</span>
-        <span className="ds-numeric text-content truncate text-lg font-semibold">{after}</span>
+        <span className="ds-numeric text-content text-base font-semibold break-words">{after}</span>
       </div>
     </div>
   );

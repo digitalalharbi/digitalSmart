@@ -17,6 +17,7 @@
     "tabs": "Sections in this area"
   },
   "actionCenter": {
+    "waitingFor": "Waiting for someone who can approve this",
     "changeWord": {
       "launch": "Launch",
       "pause": "Pause",

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Megaphone, Palette, Radar, Wallet, X } from 'lucide-react';
 import { useDecideApprovalMutation, type ApprovalRow } from '@/features/approvals';
+import { PERMISSIONS, useSession, type PermissionSlug } from '@/features/auth';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
@@ -37,6 +38,19 @@ const text = (value: unknown): string | null =>
 export function ApprovalDecision({ row, locale }: { row: ApprovalRow; locale: string }) {
   const { t } = useTranslation();
   const decide = useDecideApprovalMutation();
+  const { can } = useSession();
+  /*
+   * The same rule the server applies: deciding needs approvals.decide, and some kinds a second permission — a budget
+   * is signed off by whoever signs off budgets. Someone who cannot decide sees the card, not buttons that would 403.
+   */
+  const second: Partial<Record<ApprovalRow['kind'], PermissionSlug>> = {
+    spend_change: PERMISSIONS.budgetsApprove,
+    campaign_launch: PERMISSIONS.budgetsApprove,
+    creative_publish: PERMISSIONS.creativeApprove,
+    tracking_change: PERMISSIONS.trackingManage,
+  };
+  const extra = second[row.kind];
+  const mayDecide = can(PERMISSIONS.approvalsDecide) && (extra === undefined || can(extra));
   const [changing, setChanging] = useState(false);
   const [note, setNote] = useState('');
 
@@ -191,27 +205,31 @@ export function ApprovalDecision({ row, locale }: { row: ApprovalRow; locale: st
         </>
       }
       actions={
-        <>
-          <Button disabled={decide.isPending} onClick={() => send('approved')}>
-            <Check />
-            {t('actionCenter.approve')}
-          </Button>
-          <Button
-            variant="secondary"
-            disabled={decide.isPending}
-            onClick={() => setChanging((open) => !open)}
-          >
-            {t('actionCenter.change')}
-          </Button>
-          <Button
-            variant="ghost"
-            disabled={decide.isPending}
-            onClick={() => send('declined', t('actionCenter.rejectedReason'))}
-          >
-            <X />
-            {t('actionCenter.reject')}
-          </Button>
-        </>
+        !mayDecide ? (
+          <span className="text-content-tertiary text-sm">{t('actionCenter.waitingFor')}</span>
+        ) : (
+          <>
+            <Button disabled={decide.isPending} onClick={() => send('approved')}>
+              <Check />
+              {t('actionCenter.approve')}
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={decide.isPending}
+              onClick={() => setChanging((open) => !open)}
+            >
+              {t('actionCenter.change')}
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={decide.isPending}
+              onClick={() => send('declined', t('actionCenter.rejectedReason'))}
+            >
+              <X />
+              {t('actionCenter.reject')}
+            </Button>
+          </>
+        )
       }
     />
   );

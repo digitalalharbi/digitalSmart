@@ -30,7 +30,14 @@ export function ActionCenter({ limit }: { limit?: number }) {
   const approvals = useApprovalQueueQuery({}, mayDecide);
   const attention = useAttentionQuery([], 60, 'all');
 
-  const pending = useMemo(() => approvals.data?.pending ?? [], [approvals.data]);
+  /* What an agent prepared comes first: it arrives with its figures and target, ready to decide. */
+  const pending = useMemo(
+    () =>
+      [...(approvals.data?.pending ?? [])].sort(
+        (a, b) => Number(b.origin === 'agent') - Number(a.origin === 'agent'),
+      ),
+    [approvals.data],
+  );
   const found = useMemo(
     () =>
       (attention.data?.data ?? [])

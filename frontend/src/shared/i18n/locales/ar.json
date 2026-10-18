@@ -17,6 +17,7 @@
     "tabs": "أقسام هذا المجال"
   },
   "actionCenter": {
+    "waitingFor": "بانتظار من يملك صلاحية الموافقة",
     "changeWord": {
       "launch": "إطلاق",
       "pause": "إيقاف",
