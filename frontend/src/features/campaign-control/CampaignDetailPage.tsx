@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router';
 import { ContextInsight } from '@/features/assistant';
 import { BackgroundWork } from '@/features/background-work';
 import { api } from '@/shared/api/client';
+import { formatCompact } from '@/shared/lib/format';
 import { formatRelativeTime } from '@/shared/lib/relative-time';
 import { Alert } from '@/shared/ui/alert';
 import { buttonVariants } from '@/shared/ui/button.variants';
@@ -11,7 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { HealthPill } from '@/shared/ui/health';
 import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { Sparkline } from '@/shared/ui/sparkline';
+import { KpiTile } from '@/shared/ui/kpi-tile';
+import { TrendChart } from '@/shared/ui/viz';
 import { BudgetBar } from './CampaignParts';
 import { QuickActions } from './QuickActions';
 import { objectiveName, resultName } from './labels';
@@ -93,6 +95,20 @@ export function CampaignDetailPage() {
     staleTime: 30_000,
   });
 
+  /* One label per day, ending on the day it was last synced, since the series carries no dates of its own. */
+  const trendValues = control.data?.trend ?? [];
+  const syncedAt = row?.last_synced_at ?? null;
+  const dayLabels = trendValues.map((_, index) => {
+    if (syncedAt === null) {
+      return String(index + 1);
+    }
+
+    const day = new Date(syncedAt);
+    day.setUTCDate(day.getUTCDate() - (trendValues.length - 1 - index));
+
+    return day.toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  });
+
   return (
     <div className="ds-page">
       <PageHeader
@@ -132,24 +148,27 @@ export function CampaignDetailPage() {
 
             <section
               aria-label={t('campaignDetail.kpis')}
-              className="grid grid-cols-2 gap-3 lg:grid-cols-5"
+              className="grid grid-cols-2 gap-4 lg:grid-cols-3 2xl:grid-cols-5"
             >
-              <Figure
+              <KpiTile
+                highlight
                 label={t('campaignControl.col.spend')}
                 value={money(row.spend_minor, row.currency, locale)}
               />
-              <Figure label={resultName(t, row)} value={resultText(row, locale)} />
-              <Figure
+              <KpiTile label={resultName(t, row)} value={resultText(row, locale)} />
+              <KpiTile
                 label={t('campaignControl.col.costPerResult')}
                 value={money(row.cost_per_result_minor, row.currency, locale)}
               />
               {row.revenue_minor === null ? null : (
-                <Figure
+                <KpiTile
                   label={t('campaignDetail.revenue')}
                   value={money(row.revenue_minor, row.currency, locale)}
                 />
               )}
-              {row.roas === null ? null : <Figure label="ROAS" value={`${row.roas.toFixed(2)}×`} />}
+              {row.roas === null ? null : (
+                <KpiTile label="ROAS" value={`${row.roas.toFixed(2)}×`} />
+              )}
             </section>
 
             <Card>
@@ -157,16 +176,24 @@ export function CampaignDetailPage() {
                 <CardTitle>{t('campaignDetail.trend')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <Sparkline
-                  stretch
-                  values={control.data?.trend ?? []}
+                <TrendChart
+                  labels={dayLabels}
+                  series={[
+                    {
+                      key: 'spend',
+                      label: t('campaignControl.col.spend'),
+                      values: (control.data?.trend ?? []).map((v) => (v === null ? null : v / 100)),
+                      colour: 'var(--ds-accent)',
+                    },
+                  ]}
+                  format={(v) => formatCompact(v, locale)}
                   label={t('campaignDetail.trendLabel', { name: row.name })}
-                  className="h-32 w-full"
+                  height={220}
                 />
               </CardContent>
             </Card>
 
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4">
               <Card>
                 <CardHeader>
                   <CardTitle>{t('campaignDetail.budget')}</CardTitle>
@@ -175,7 +202,20 @@ export function CampaignDetailPage() {
                   <BudgetBar row={row} />
                 </CardContent>
               </Card>
+            </div>
 
+            <details className="text-sm">
+              <summary className="text-content-secondary cursor-pointer font-medium">
+                {t('integrations.advanced')}
+              </summary>
+              <dl className="text-content-secondary mt-2 grid grid-cols-2 gap-2 text-xs">
+                <dt>{t('campaignDetail.providerStatus')}</dt>
+                <dd className="text-content">{row.provider_status ?? '—'}</dd>
+                <dt>{t('campaignDetail.account')}</dt>
+                <dd className="text-content">{row.external_account.name}</dd>
+                <dt>{t('campaignDetail.objective')}</dt>
+                <dd className="text-content">{objectiveName(t, row)}</dd>
+              </dl>
               <Card>
                 <CardHeader>
                   <CardTitle>{t('campaignDetail.readiness')}</CardTitle>
@@ -202,20 +242,6 @@ export function CampaignDetailPage() {
                   )}
                 </CardContent>
               </Card>
-            </div>
-
-            <details className="text-sm">
-              <summary className="text-content-secondary cursor-pointer font-medium">
-                {t('integrations.advanced')}
-              </summary>
-              <dl className="text-content-secondary mt-2 grid grid-cols-2 gap-2 text-xs">
-                <dt>{t('campaignDetail.providerStatus')}</dt>
-                <dd className="text-content">{row.provider_status ?? '—'}</dd>
-                <dt>{t('campaignDetail.account')}</dt>
-                <dd className="text-content">{row.external_account.name}</dd>
-                <dt>{t('campaignDetail.objective')}</dt>
-                <dd className="text-content">{objectiveName(t, row)}</dd>
-              </dl>
             </details>
           </div>
 
@@ -273,15 +299,6 @@ export function CampaignDetailPage() {
           </aside>
         </div>
       )}
-    </div>
-  );
-}
-
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-surface border-line-subtle flex flex-col gap-1 rounded-2xl border p-4 shadow-xs">
-      <span className="ds-overline text-content-tertiary capitalize">{label}</span>
-      <span className="ds-figure text-content text-2xl">{value}</span>
     </div>
   );
 }
