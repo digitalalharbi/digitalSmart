@@ -11,6 +11,7 @@ use App\Application\Advertising\Contract\CampaignAssignmentRepository;
 use App\Application\Advertising\Contract\CampaignControlReadModel;
 use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegistryContract;
 use App\Application\Advertising\Contract\SyncJournal;
+use App\Application\Agents\Contract\OperatingRuleRepository;
 use App\Application\Analytics\Contract\AnalyticsReadModel;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Attention\Contract\ActorMemberships;
@@ -204,6 +205,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMeasurementSource
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMemberDirectory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMembershipRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentObservedEventWriter;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentOperatingRuleRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentPortalRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
@@ -379,6 +381,7 @@ final class AppServiceProvider extends ServiceProvider
         ExportJobStore::class => EloquentExportJobStore::class,
         SurfaceViewRepository::class => EloquentSurfaceViewRepository::class,
         AutomationRuleRepository::class => EloquentAutomationRuleRepository::class,
+        OperatingRuleRepository::class => EloquentOperatingRuleRepository::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
         ScheduleStore::class => EloquentScheduleStore::class,
         ExportRenderer::class => ReportExportRenderer::class,

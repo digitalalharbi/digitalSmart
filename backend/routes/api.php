@@ -5,11 +5,13 @@ declare(strict_types=1);
 use App\Interface\Http\Controller\Activity\ActivityController;
 use App\Interface\Http\Controller\Advertising\CampaignControlController;
 use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
+use App\Interface\Http\Controller\Agents\OperatingRulesController;
 use App\Interface\Http\Controller\Analytics\AnalyticsController;
 use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
 use App\Interface\Http\Controller\Attention\AttentionController;
 use App\Interface\Http\Controller\Attribution\AttributionController;
 use App\Interface\Http\Controller\Audit\AuditLogController;
+use App\Interface\Http\Controller\Automation\AutomationRuleController;
 use App\Interface\Http\Controller\Benchmark\BenchmarkController;
 use App\Interface\Http\Controller\Budget\BudgetControlController;
 use App\Interface\Http\Controller\Budget\BudgetController;
@@ -53,7 +55,6 @@ use App\Interface\Http\Controller\Reporting\ReportController;
 use App\Interface\Http\Controller\Reporting\SharedReportController;
 use App\Interface\Http\Controller\Search\SearchController;
 use App\Interface\Http\Controller\Shortcuts\ShortcutController;
-use App\Interface\Http\Controller\Automation\AutomationRuleController;
 use App\Interface\Http\Controller\SurfaceView\SurfaceViewController;
 use App\Interface\Http\Controller\System\HealthController;
 use App\Interface\Http\Controller\Tags\TagController;
@@ -602,6 +603,10 @@ Route::middleware(['auth:sanctum', BindActorContext::class])->group(function ():
     Route::post('views/{surface}', [SurfaceViewController::class, 'store'])->name('surface_views.store');
     Route::delete('views/{view}', [SurfaceViewController::class, 'destroy'])
         ->whereUuid('view')->name('surface_views.destroy');
+
+    /* Targets and limits for a client or a project: what good means, and what no agent may cross. */
+    Route::get('operating-rules', [OperatingRulesController::class, 'show'])->name('operating_rules.show');
+    Route::put('operating-rules', [OperatingRulesController::class, 'update'])->name('operating_rules.update');
 
     /* Rules over campaigns: their only outcome is an item in the attention queue. */
     Route::get('automation/rules', [AutomationRuleController::class, 'index'])->name('automation.rules.index');

@@ -120,6 +120,9 @@ enum AuditAction: string
      */
     case TaskAssigned = 'task.assigned';
     case AutomationRuleSaved = 'automation_rule.saved';
+    case OperatingRulesSaved = 'operating_rules.saved';
+    case AgentToolCalled = 'agent.tool_called';
+    case AgentProposed = 'agent.proposed';
     case AutomationRuleDeleted = 'automation_rule.deleted';
     case TaskUpdated = 'task.updated';
 

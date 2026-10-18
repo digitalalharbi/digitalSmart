@@ -412,11 +412,12 @@ final readonly class GoogleAnalyticsMapper
      * A currency metric's decimal string to minor units.
      *
      * GA4 sends currency as a floating-point string. `Money::fromDecimalString` rounds half-up
-     * at two decimal places, which is right for SAR, AED, USD and EUR and wrong for the
-     * zero-exponent currencies such as JPY and KWD — a known limitation of that value object
-     * shared with every advertising mapper, not something introduced here. It is recorded in
-     * docs/MEASUREMENT.md rather than worked around locally, because a second rounding rule
-     * living in one mapper is how two parts of a product come to disagree about an amount.
+     * at whatever place the currency's ISO 4217 exponent names — two for SAR, AED, USD and EUR,
+     * none for JPY and KRW, three for KWD, BHD and OMR — so a property reporting in yen or
+     * dinars converts correctly without this mapper holding a rounding rule of its own. The
+     * table lives in `CurrencyExponent` beside `Money`, shared with every advertising mapper,
+     * because a second rounding rule living in one mapper is how two parts of a product come
+     * to disagree about an amount.
      */
     private function minorUnits(?string $value, ?string $currency): ?int
     {
