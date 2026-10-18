@@ -90,7 +90,7 @@ test('a project workspace has no machine-detectable violation, in each tab', asy
 
   const failures: string[] = [];
 
-  for (const tab of ['Overview', 'Campaigns', 'Budget', 'Creative', 'Tasks', 'Activity']) {
+  for (const tab of ['Overview', 'Campaigns', 'Budget', 'Creative', 'Work', 'Reports']) {
     await page.getByRole('tab', { name: tab }).click();
     await page.waitForLoadState('networkidle').catch(() => undefined);
 

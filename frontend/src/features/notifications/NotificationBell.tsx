@@ -52,7 +52,7 @@ export function NotificationBell() {
         <span
           aria-hidden
           className={cn(
-            'bg-danger text-accent-contrast absolute end-1 top-1 min-w-4 rounded-full px-1',
+            'bg-danger text-content-inverse absolute end-1 top-1 min-w-4 rounded-full px-1',
             'text-[0.625rem] leading-4 font-semibold tabular-nums',
           )}
         >

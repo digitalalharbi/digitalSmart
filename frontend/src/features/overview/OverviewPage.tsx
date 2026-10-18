@@ -21,6 +21,17 @@ export function OverviewPage() {
     <div className="ds-page">
       <PageHeader title={t('overview.title')} />
 
+      {/*
+        Someone whose day is campaigns, projects or budgets sees their own work first — what is theirs to act on —
+        and the agency's picture beneath it. The executive's day *is* the picture, so they get it straight away.
+      */}
+      {can(PERMISSIONS.analyticsView) &&
+      profiles !== undefined &&
+      profiles.primary !== null &&
+      profiles.primary !== 'executive' ? (
+        <HomeSections profile={profiles.primary} />
+      ) : null}
+
       {can(PERMISSIONS.analyticsView) ? (
         <CommandCenter />
       ) : profiles === undefined || profiles.profiles.length === 0 ? (

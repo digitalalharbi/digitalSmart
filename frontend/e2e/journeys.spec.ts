@@ -58,7 +58,7 @@ test.describe('journey B — the project manager', () => {
     await expect(page).toHaveURL(/\/projects\//, SLOW);
     await expect(page.getByRole('tablist', { name: 'Areas of this project' })).toBeVisible(SLOW);
 
-    for (const tab of ['Campaigns', 'Budget', 'Tasks', 'Approvals', 'Reports', 'Activity']) {
+    for (const tab of ['Campaigns', 'Budget', 'Creative', 'Work', 'Reports']) {
       await page.getByRole('tab', { name: tab }).click();
       await expect(page.getByRole('tab', { name: tab })).toHaveAttribute('aria-selected', 'true');
     }

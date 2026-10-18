@@ -59,8 +59,17 @@ export function CampaignControlPage() {
     project: fromUrl.project ?? context.project,
   };
   const { data, isPending, isError, isFetching } = useCampaignControl(filters);
+  /* Open when an address already narrows by one of the extra filters, so nothing in force is hidden. */
+  const [moreOpen, setMoreOpen] = useState(
+    () =>
+      filters.mine ||
+      filters.project !== null ||
+      filters.account !== null ||
+      filters.status !== null ||
+      filters.objective !== null ||
+      filters.tag !== null,
+  );
 
-  const [moreOpen, setMoreOpen] = useState(false);
   const [clientTerm, setClientTerm] = useState('');
   const [projectTerm, setProjectTerm] = useState('');
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });

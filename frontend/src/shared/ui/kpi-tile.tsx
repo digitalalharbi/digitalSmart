@@ -28,7 +28,7 @@ export function KpiTile({
       <span
         className={cn(
           'text-xs font-medium',
-          highlight ? 'text-white/90' : 'text-content-secondary',
+          highlight ? 'text-white' : 'text-content-secondary',
         )}
       >
         {label}
@@ -37,7 +37,7 @@ export function KpiTile({
         {value}
       </span>
       {sub === undefined ? null : (
-        <span className={cn('text-xs', highlight ? 'text-white/85' : 'text-content-tertiary')}>
+        <span className={cn('text-xs', highlight ? 'text-white' : 'text-content-tertiary')}>
           {sub}
         </span>
       )}

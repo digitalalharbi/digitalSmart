@@ -11,9 +11,7 @@ test.describe('campaign control center', () => {
   }) => {
     await page.goto('/campaigns');
 
-    await expect(
-      page.getByRole('heading', { level: 1, name: 'Campaign Control Center' }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Campaigns' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Campaign summary' })).toBeVisible({
       timeout: 30_000,
     });

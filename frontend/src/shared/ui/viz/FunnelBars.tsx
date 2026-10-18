@@ -55,7 +55,7 @@ export function FunnelBars({
                   className="flex h-full items-center rounded-xl px-3 text-sm font-semibold text-white"
                   style={{
                     width: `${String(Math.max(8, (stage.value / top) * 100))}%`,
-                    backgroundColor: `color-mix(in oklab, var(--ds-accent-strong) ${String(100 - index * 12)}%, var(--ds-action))`,
+                    backgroundColor: `color-mix(in oklab, var(--ds-accent-strong) ${String(100 - index * 12)}%, var(--ds-brand-900))`,
                   }}
                 >
                   <span className="ds-numeric">{stage.display}</span>

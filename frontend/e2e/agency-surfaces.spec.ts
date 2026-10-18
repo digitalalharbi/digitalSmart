@@ -39,9 +39,7 @@ test.describe('agency surfaces', () => {
 
   test('saves the control center’s filters as a view, and finds it again', async ({ page }) => {
     await page.goto('/campaigns?q=SANDBOX');
-    await expect(
-      page.getByRole('heading', { level: 1, name: 'Campaign Control Center' }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Campaigns' })).toBeVisible();
 
     const name = `E2E view ${String(Date.now())}`;
 
