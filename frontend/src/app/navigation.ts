@@ -71,6 +71,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'creative.view',
   },
   {
+    path: '/ai-center',
+    labelKey: 'nav.aiCenter',
+    icon: 'Bot',
+    section: 'system',
+    phase: 'Phase 24',
+    // The machinery is for administrators; everybody else sees its results as decisions.
+    permission: 'workspaces.update',
+  },
+  {
     path: '/automation',
     labelKey: 'nav.automation',
     icon: 'Zap',

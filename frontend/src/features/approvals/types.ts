@@ -86,6 +86,13 @@ export type ApprovalRow = {
   rationale: string;
   /** What is being proposed. Free-form by design; a budget change carries `current`, `requested` and `currency`. */
   proposal: Record<string, unknown>;
+  /** A person, or one of the agents — and which. An agent's proposal carries the figures it rests on. */
+  origin: 'person' | 'agent';
+  agent: string | null;
+  evidence: Record<string, unknown> | null;
+  risk: 'low' | 'medium' | 'high' | null;
+  /** After this an agent's proposal lapses: the figures it rested on have moved. */
+  expires_at: string | null;
   state: ApprovalStateValue;
   state_label: string;
   enactment: EnactmentValue;

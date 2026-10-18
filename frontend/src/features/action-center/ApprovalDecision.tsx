@@ -5,7 +5,7 @@ import { useDecideApprovalMutation, type ApprovalRow } from '@/features/approval
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
-import { BeforeAfter, DecisionCard } from '@/shared/ui/decision-card';
+import { AgainstTarget, BeforeAfter, DecisionCard } from '@/shared/ui/decision-card';
 import { Input } from '@/shared/ui/input';
 import { APPROVAL_TYPE, type ActionType } from './kinds';
 
@@ -57,6 +57,21 @@ export function ApprovalDecision({ row, locale }: { row: ApprovalRow; locale: st
   const scope = [row.client_name, row.project_name].filter(Boolean).join(' · ');
   const change = text(proposal['change']);
 
+  const evidence = row.evidence ?? {};
+  const cost = num(evidence['cost_per_result_minor']);
+  const targetCost = num(evidence['target_cpa_minor']);
+  const roas = num(evidence['roas']);
+  const targetRoas = num(evidence['target_roas']);
+  const evidenceCurrency = text(evidence['currency']);
+  const minorMoney = (minor: number) =>
+    evidenceCurrency === null
+      ? new Intl.NumberFormat(locale).format(minor / 100)
+      : new Intl.NumberFormat(locale, {
+          style: 'currency',
+          currency: evidenceCurrency,
+          maximumFractionDigits: 0,
+        }).format(minor / 100);
+
   const visual =
     current !== null && requested !== null ? (
       <BeforeAfter
@@ -66,6 +81,22 @@ export function ApprovalDecision({ row, locale }: { row: ApprovalRow; locale: st
         after={money(requested)}
         difference={`${requested >= current ? '+' : '−'}${money(Math.abs(requested - current))}`}
         positive={requested >= current}
+      />
+    ) : cost !== null && targetCost !== null ? (
+      <AgainstTarget
+        label={t('actionCenter.costPerResult')}
+        value={minorMoney(cost)}
+        target={minorMoney(targetCost)}
+        targetLabel={t('actionCenter.target')}
+        ratio={Math.min(1, targetCost / cost)}
+      />
+    ) : roas !== null && targetRoas !== null ? (
+      <AgainstTarget
+        label="ROAS"
+        value={`${roas.toFixed(2)}×`}
+        target={`${targetRoas.toFixed(2)}×`}
+        targetLabel={t('actionCenter.target')}
+        ratio={roas / targetRoas}
       />
     ) : type === 'creative' ? (
       <div className="bg-surface-sunken text-content-secondary grid aspect-[16/9] place-items-center rounded-2xl text-sm">
@@ -113,6 +144,15 @@ export function ApprovalDecision({ row, locale }: { row: ApprovalRow; locale: st
       tone="attention"
       scope={scope}
       headline={row.title}
+      byline={
+        row.origin === 'agent'
+          ? t('actionCenter.preparedBy', {
+              agent: t(`actionCenter.agents.${row.agent ?? 'assistant'}`, {
+                defaultValue: row.agent ?? '',
+              }),
+            })
+          : undefined
+      }
       details={{ to: `/approvals?open=${row.id}`, label: t('actionCenter.details') }}
       visual={
         <>

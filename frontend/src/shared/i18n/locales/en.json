@@ -17,6 +17,16 @@
     "tabs": "Sections in this area"
   },
   "actionCenter": {
+    "preparedBy": "Prepared by {{agent}}",
+    "costPerResult": "Cost per result",
+    "target": "Target",
+    "agents": {
+      "campaign": "the Campaign agent",
+      "analyst": "the Analyst",
+      "finance": "the Finance agent",
+      "external_ai": "an AI client",
+      "assistant": "the assistant"
+    },
     "launch": "Launch",
     "title": "Today",
     "filter": "Filter by type",
@@ -80,7 +90,88 @@
       "watch": "Watch"
     }
   },
+  "aiCenter": {
+    "title": "MCP & AI",
+    "runNow": "Run agents now",
+    "running": "Running…",
+    "failed": "Could not load.",
+    "agents": "Agents",
+    "never": "Not run yet",
+    "lookedAt": "Looked at",
+    "proposed": "Proposed",
+    "routines": "Routines",
+    "tools": "Tools",
+    "providers": "What platforms can be asked to change",
+    "mcp": "digitalSmart MCP server",
+    "tokenName": "Token name (e.g. Claude)",
+    "newToken": "New token",
+    "copyOnce": "Copy it now — it will not be shown again. It can only reach the MCP endpoint.",
+    "copy": "Copy",
+    "unused": "Never used",
+    "revoke": "Revoke {{name}}",
+    "pause": "Pause/resume",
+    "budget": "Budget",
+    "calls": "{{count}} calls",
+    "calls_other": "{{count}} calls",
+    "refused": "{{count}} refused",
+    "refused_other": "{{count}} refused",
+    "agent": {
+      "analyst": "Analyst + Campaign agent",
+      "finance": "Finance agent"
+    },
+    "status": {
+      "analysing": "Analysing",
+      "preparing": "Preparing",
+      "waiting_approval": "Waiting approval",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "risk": {
+      "read": "Read",
+      "internal": "Internal",
+      "proposal": "Proposal"
+    },
+    "support": {
+      "documented": "Ready",
+      "unverified": "Not verified",
+      "not_supported": "Not available"
+    },
+    "routine": {
+      "sync": "Hourly data sync",
+      "review": "Daily performance review",
+      "guardian": "Budget guardian",
+      "digests": "Digests",
+      "reports": "Scheduled reports"
+    },
+    "schedule": {
+      "hourly": "Hourly",
+      "daily_0845": "Daily 08:45 Riyadh",
+      "two_hours": "Every 2 hours",
+      "daily": "Daily",
+      "weekly": "Weekly"
+    }
+  },
+  "targets": {
+    "title": "Targets and limits",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "failed": "Could not save. Check the figures.",
+    "field": {
+      "target_cpa_minor": "Target cost per result",
+      "target_roas": "Target ROAS",
+      "min_spend_minor": "Spend before judging",
+      "max_daily_budget_minor": "Max daily budget",
+      "max_budget_change_pct": "Max change per proposal"
+    },
+    "source": {
+      "project": "This project",
+      "client": "From the client",
+      "agency_default": "Agency default"
+    }
+  },
   "nav": {
+    "aiCenter": "MCP & AI",
     "automation": "Rules",
     "today": "Today",
     "overview": "Overview",

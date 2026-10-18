@@ -17,6 +17,16 @@
     "tabs": "أقسام هذا المجال"
   },
   "actionCenter": {
+    "preparedBy": "أعدّه {{agent}}",
+    "costPerResult": "تكلفة النتيجة",
+    "target": "الهدف",
+    "agents": {
+      "campaign": "وكيل الحملات",
+      "analyst": "المحلل",
+      "finance": "الوكيل المالي",
+      "external_ai": "عميل ذكاء اصطناعي",
+      "assistant": "المساعد"
+    },
     "launch": "إطلاق",
     "title": "اليوم",
     "filter": "التصفية حسب النوع",
@@ -80,7 +90,88 @@
       "watch": "للمتابعة"
     }
   },
+  "aiCenter": {
+    "title": "MCP والذكاء الاصطناعي",
+    "runNow": "شغّل الوكلاء الآن",
+    "running": "جارٍ التشغيل…",
+    "failed": "تعذّر التحميل.",
+    "agents": "الوكلاء",
+    "never": "لم يعمل بعد",
+    "lookedAt": "فحص",
+    "proposed": "اقترح",
+    "routines": "المهام الدورية",
+    "tools": "الأدوات",
+    "providers": "ما يمكن طلب تغييره في كل منصة",
+    "mcp": "خادم MCP لـ digitalSmart",
+    "tokenName": "اسم الرمز (مثل Claude)",
+    "newToken": "رمز جديد",
+    "copyOnce": "انسخه الآن — لن يظهر مرة أخرى. لا يصل إلا إلى نقطة MCP.",
+    "copy": "نسخ",
+    "unused": "لم يُستخدم",
+    "revoke": "إلغاء {{name}}",
+    "pause": "إيقاف/استئناف",
+    "budget": "الميزانية",
+    "calls": "{{count}} استدعاء",
+    "calls_other": "{{count}} استدعاء",
+    "refused": "{{count}} مرفوض",
+    "refused_other": "{{count}} مرفوض",
+    "agent": {
+      "analyst": "المحلل + وكيل الحملات",
+      "finance": "الوكيل المالي"
+    },
+    "status": {
+      "analysing": "يحلل",
+      "preparing": "يجهّز",
+      "waiting_approval": "بانتظار موافقة",
+      "completed": "مكتمل",
+      "failed": "فشل"
+    },
+    "risk": {
+      "read": "قراءة",
+      "internal": "داخلي",
+      "proposal": "اقتراح"
+    },
+    "support": {
+      "documented": "جاهز",
+      "unverified": "غير متحقق",
+      "not_supported": "غير متاح"
+    },
+    "routine": {
+      "sync": "مزامنة البيانات كل ساعة",
+      "review": "مراجعة الأداء اليومية",
+      "guardian": "حارس الميزانية",
+      "digests": "الملخصات",
+      "reports": "التقارير المجدولة"
+    },
+    "schedule": {
+      "hourly": "كل ساعة",
+      "daily_0845": "يوميًا 08:45 الرياض",
+      "two_hours": "كل ساعتين",
+      "daily": "يوميًا",
+      "weekly": "أسبوعيًا"
+    }
+  },
+  "targets": {
+    "title": "الأهداف والحدود",
+    "edit": "تعديل",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "failed": "تعذّر الحفظ. تحقق من الأرقام.",
+    "field": {
+      "target_cpa_minor": "تكلفة النتيجة المستهدفة",
+      "target_roas": "العائد المستهدف",
+      "min_spend_minor": "الإنفاق قبل الحكم",
+      "max_daily_budget_minor": "أقصى ميزانية يومية",
+      "max_budget_change_pct": "أقصى تغيير في الاقتراح"
+    },
+    "source": {
+      "project": "هذا المشروع",
+      "client": "من العميل",
+      "agency_default": "افتراضي الوكالة"
+    }
+  },
   "nav": {
+    "aiCenter": "MCP والذكاء الاصطناعي",
     "automation": "القواعد",
     "today": "اليوم",
     "overview": "نظرة عامة",

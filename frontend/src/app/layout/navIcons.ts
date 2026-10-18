@@ -1,6 +1,7 @@
 import {
   BadgeCheck,
   Bell,
+  Bot,
   BriefcaseBusiness,
   Building2,
   Calculator,
@@ -44,6 +45,7 @@ import {
 export const NAV_ICONS: Record<string, LucideIcon> = {
   BadgeCheck,
   Bell,
+  Bot,
   BriefcaseBusiness,
   Building2,
   Calculator,

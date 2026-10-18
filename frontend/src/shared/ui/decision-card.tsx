@@ -24,6 +24,7 @@ export function DecisionCard({
   tone = 'neutral',
   scope,
   headline,
+  byline,
   visual,
   actions,
   details,
@@ -36,6 +37,8 @@ export function DecisionCard({
   /** Client and project, already joined. */
   scope?: string | null | undefined;
   headline: string;
+  /** Who prepared it, when it was not a person: "Prepared by the Analyst". */
+  byline?: string | undefined;
   /** The picture of the change: a before/after, a metric against its target, a preview. */
   visual?: ReactNode;
   /** The buttons: the primary first. */
@@ -76,6 +79,12 @@ export function DecisionCard({
         <h3 className="text-content text-base leading-snug font-semibold" dir="auto">
           {headline}
         </h3>
+        {byline === undefined ? null : (
+          <p className="text-content-brand flex items-center gap-1 text-xs font-medium">
+            <span aria-hidden>✦</span>
+            {byline}
+          </p>
+        )}
       </div>
 
       {visual}

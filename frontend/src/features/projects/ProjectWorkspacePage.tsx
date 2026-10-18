@@ -13,6 +13,7 @@ import { HealthPill } from '@/shared/ui/health';
 import type { HealthState } from '@/shared/ui/health.model';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ProjectStatusBadge } from './ProjectStatusBadge';
+import { TargetsCard } from './workspace/TargetsCard';
 import {
   useClientReports,
   useProjectActivity,
@@ -349,9 +350,14 @@ export function ProjectWorkspacePage() {
             </Section>
           ) : null}
           {tab === 'budget' ? (
-            <Section query={budgets} title={t('workspace.tab.budget')} to="/budget-control">
-              {(data) => <BudgetList rows={data.rows} scope={data.scope} locale={locale} />}
-            </Section>
+            <>
+              {project === undefined ? null : (
+                <TargetsCard projectId={project.id} currency={project.currency} />
+              )}
+              <Section query={budgets} title={t('workspace.tab.budget')} to="/budget-control">
+                {(data) => <BudgetList rows={data.rows} scope={data.scope} locale={locale} />}
+              </Section>
+            </>
           ) : null}
           {tab === 'creative' ? (
             <Section query={creative} title={t('workspace.tab.creative')} to="/creative-hub">
