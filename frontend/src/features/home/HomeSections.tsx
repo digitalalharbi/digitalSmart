@@ -206,7 +206,7 @@ export function HomeSections({ profile }: { profile: string }) {
           {portfolio.data === undefined ? (
             <Skeleton className="h-28 w-full" />
           ) : (
-            <KpiGrid data={portfolio.data.kpis} locale={locale} />
+            <KpiGrid drill data={portfolio.data.kpis} locale={locale} />
           )}
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>

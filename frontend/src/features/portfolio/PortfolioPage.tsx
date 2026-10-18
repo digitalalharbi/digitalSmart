@@ -63,7 +63,7 @@ export function PortfolioPage() {
             </Alert>
           ) : null}
 
-          <KpiGrid data={data.kpis} locale={locale} />
+          <KpiGrid drill data={data.kpis} locale={locale} />
 
           <div className="grid gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">

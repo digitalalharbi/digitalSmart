@@ -138,6 +138,16 @@ describe('PortfolioPage', () => {
     );
   });
 
+  it('lets every headline figure lead to the evidence behind it', async () => {
+    await renderWithProviders(<PortfolioPage />);
+
+    const figures = within(screen.getByRole('region', { name: 'Key figures' }));
+
+    expect(figures.getByRole('link', { name: /ROAS/ })).toHaveAttribute('href', '/analytics');
+    expect(figures.getByRole('link', { name: /^Leads/ })).toHaveAttribute('href', '/leads');
+    expect(figures.getAllByRole('link').length).toBe(10);
+  });
+
   it('says how much of the agency the verdicts cover when it is capped', async () => {
     query.mockReturnValue(
       ok(portfolio({ is_truncated: true, assessed: 2000, total_campaigns: 2400 })),

@@ -71,12 +71,34 @@ export function RoasLines({ values }: { values: Roas[] }) {
   );
 }
 
-export function Kpi({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-surface border-line-subtle flex min-w-0 flex-col gap-1.5 rounded-2xl border p-4 shadow-xs">
+export function Kpi({
+  label,
+  children,
+  to,
+}: {
+  label: string;
+  children: React.ReactNode;
+  /** Where the evidence behind this figure lives. A figure with nowhere to go is a figure to take on trust. */
+  to?: string;
+}) {
+  const body = (
+    <>
       <span className="ds-overline text-content-tertiary truncate">{label}</span>
       <span className="ds-figure text-content min-w-0 text-lg sm:text-xl">{children}</span>
-    </div>
+    </>
+  );
+  const card =
+    'bg-surface border-line-subtle flex min-w-0 flex-col gap-1.5 rounded-2xl border p-4 shadow-xs';
+
+  return to === undefined ? (
+    <div className={card}>{body}</div>
+  ) : (
+    <Link
+      to={to}
+      className={`${card} hover:border-line-strong focus-visible:ring-accent/40 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none`}
+    >
+      {body}
+    </Link>
   );
 }
 
@@ -93,7 +115,20 @@ export function Count({ value, locale }: { value: number | null; locale: string 
   );
 }
 
-export function KpiGrid({ data, locale }: { data: Portfolio['kpis']; locale: string }) {
+/**
+ * The agency's headline figures. With `drill`, each is a way into what stands behind it — spend into the campaigns
+ * that spent it, leads into the lead centre, sales into the stores — so no figure on the first screen is a dead end.
+ * Left off on a client's own page, where the module it opens would be the agency's and not that client's.
+ */
+export function KpiGrid({
+  data,
+  locale,
+  drill = false,
+}: {
+  data: Portfolio['kpis'];
+  locale: string;
+  drill?: boolean;
+}) {
   const { t } = useTranslation();
 
   return (
@@ -101,34 +136,34 @@ export function KpiGrid({ data, locale }: { data: Portfolio['kpis']; locale: str
       aria-label={t('portfolio.kpis')}
       className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5"
     >
-      <Kpi label={t('portfolio.kpi.spend')}>
+      <Kpi label={t('portfolio.kpi.spend')} {...(drill ? { to: '/campaigns' } : {})}>
         <MoneyLines compact values={data.spend} locale={locale} />
       </Kpi>
-      <Kpi label={t('portfolio.kpi.revenue')}>
+      <Kpi label={t('portfolio.kpi.revenue')} {...(drill ? { to: '/analytics' } : {})}>
         <MoneyLines compact values={data.platform_revenue} locale={locale} />
       </Kpi>
-      <Kpi label={t('portfolio.kpi.storeRevenue')}>
+      <Kpi label={t('portfolio.kpi.storeRevenue')} {...(drill ? { to: '/commerce' } : {})}>
         <MoneyLines compact values={data.store_revenue} locale={locale} />
       </Kpi>
-      <Kpi label="ROAS">
+      <Kpi label="ROAS" {...(drill ? { to: '/analytics' } : {})}>
         <RoasLines values={data.roas} />
       </Kpi>
-      <Kpi label={t('portfolio.kpi.leads')}>
+      <Kpi label={t('portfolio.kpi.leads')} {...(drill ? { to: '/leads' } : {})}>
         <Count value={data.leads} locale={locale} />
       </Kpi>
-      <Kpi label={t('portfolio.kpi.qualified')}>
+      <Kpi label={t('portfolio.kpi.qualified')} {...(drill ? { to: '/leads' } : {})}>
         <Count value={data.qualified_leads} locale={locale} />
       </Kpi>
-      <Kpi label={t('portfolio.kpi.sales')}>
+      <Kpi label={t('portfolio.kpi.sales')} {...(drill ? { to: '/commerce' } : {})}>
         <Count value={data.sales} locale={locale} />
       </Kpi>
-      <Kpi label={t('portfolio.kpi.clients')}>
+      <Kpi label={t('portfolio.kpi.clients')} {...(drill ? { to: '/clients' } : {})}>
         <Count value={data.active_clients} locale={locale} />
       </Kpi>
-      <Kpi label={t('portfolio.kpi.projects')}>
+      <Kpi label={t('portfolio.kpi.projects')} {...(drill ? { to: '/projects' } : {})}>
         <Count value={data.active_projects} locale={locale} />
       </Kpi>
-      <Kpi label={t('portfolio.kpi.campaigns')}>
+      <Kpi label={t('portfolio.kpi.campaigns')} {...(drill ? { to: '/campaigns' } : {})}>
         <Count value={data.active_campaigns} locale={locale} />
       </Kpi>
     </section>
