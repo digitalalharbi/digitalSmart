@@ -3,6 +3,19 @@
     "name": "digitalSmart",
     "by": "من سمارت كود"
   },
+  "areas": {
+    "overview": "نظرة عامة",
+    "clients": "العملاء والمشاريع",
+    "campaigns": "الحملات",
+    "performance": "الأداء",
+    "leads": "العملاء المحتملون والمبيعات",
+    "creative": "المحتوى والإبداع",
+    "work": "العمل والموافقات",
+    "reports": "التقارير",
+    "integrations": "التكاملات",
+    "settings": "الإعدادات",
+    "tabs": "أقسام هذا المجال"
+  },
   "nav": {
     "overview": "نظرة عامة",
     "projects": "المشاريع",

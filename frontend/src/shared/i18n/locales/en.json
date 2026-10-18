@@ -3,6 +3,19 @@
     "name": "digitalSmart",
     "by": "by Smart Code"
   },
+  "areas": {
+    "overview": "Overview",
+    "clients": "Clients & Projects",
+    "campaigns": "Campaigns",
+    "performance": "Performance",
+    "leads": "Leads & Sales",
+    "creative": "Content & Creative",
+    "work": "Work & Approvals",
+    "reports": "Reports",
+    "integrations": "Integrations",
+    "settings": "Settings",
+    "tabs": "Sections in this area"
+  },
   "nav": {
     "overview": "Overview",
     "projects": "Projects",

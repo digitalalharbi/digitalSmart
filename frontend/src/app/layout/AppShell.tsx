@@ -5,6 +5,7 @@ import { SandboxNotice } from './SandboxNotice';
 import { IconRail } from './IconRail';
 import { CommandPalette } from './CommandPalette';
 import { Topbar } from './Topbar';
+import { AreaTabs } from './AreaTabs';
 
 /**
  * The application frame.
@@ -40,6 +41,7 @@ export function AppShell() {
 
           <main id="main" className="mx-auto w-full max-w-[96rem] min-w-0 flex-1 pt-2">
             <SandboxNotice />
+            <AreaTabs />
             <Outlet />
           </main>
         </div>

@@ -261,18 +261,3 @@ export const NAV_ITEMS: readonly NavItem[] = [
 ];
 
 export const NAV_SECTIONS: readonly NavSection[] = ['work', 'intelligence', 'system'];
-
-/**
- * The destinations on the top navigation pill — the few a person moves between all day. Everything else is on the
- * icon rail. The two sets are disjoint on purpose: a destination reachable from two places is two things to keep in
- * step, and a link that appears twice in one page is a link a screen reader announces twice.
- */
-export const PRIMARY_NAV_PATHS: readonly string[] = [
-  '/',
-  '/portfolio',
-  '/projects',
-  '/clients',
-  '/campaigns',
-  '/analytics',
-  '/reports',
-];
