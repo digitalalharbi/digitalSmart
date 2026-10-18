@@ -78,6 +78,7 @@
     "roadmapTitle": "What comes next",
     "roadmapBody": "Phase 1 delivers identity, workspaces, roles, clients and projects with server-side authorization and audit logging.",
     "performance": "Performance",
+    "mixedCurrency": {"title": "Spend is in several currencies", "description": "Each platform reports in its own currencies, so a single total would be misleading. The figures above are shown per currency; open Analytics and pick one currency or account to chart it."},
     "byPlatform": "Spend by platform",
     "openAnalytics": "Open analytics",
     "noData": {

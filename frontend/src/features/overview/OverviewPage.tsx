@@ -143,7 +143,20 @@ export function OverviewPage() {
                 })}
           </div>
 
-          {data?.is_empty === true ? (
+          {data?.is_empty === false &&
+          data.summary.values.spend?.value === null &&
+          data.summary.values.spend.unavailable_reason !== null ? (
+            /* Spend exists but spans currencies, so no honest total or line can be drawn. Saying "no spend" would be false. */
+            <EmptyState
+              title={t('overview.mixedCurrency.title')}
+              description={t('overview.mixedCurrency.description')}
+              action={
+                <Link to="/analytics" className={buttonVariants({ variant: 'secondary' })}>
+                  {t('overview.openAnalytics')}
+                </Link>
+              }
+            />
+          ) : data?.is_empty === true ? (
             <EmptyState
               title={t('overview.noData.title')}
               description={t('overview.noData.description')}
