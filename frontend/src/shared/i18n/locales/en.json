@@ -2566,7 +2566,8 @@
       "installs": "Installs",
       "purchases": "Purchases",
       "impressions": "Impressions"
-    }
+    },
+    "otherWindow": "Showing health over the last {{days}} days. A campaign’s own page and the daily queue read 28 days, so a verdict can differ."
   },
   "palette": {
     "title": "Search the agency",

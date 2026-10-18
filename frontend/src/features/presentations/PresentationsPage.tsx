@@ -63,12 +63,26 @@ export function PresentationsPage() {
   useEffect(() => {
     const before = () => flushSync(() => setPrinting(true));
     const after = () => setPrinting(false);
+    /*
+     * `afterprint` is not fired everywhere (some mobile and Safari paths skip it), so the print media query is
+     * watched too: leaving print media is the one signal every engine gives, and a deck stuck in all-slides mode
+     * is a rail and a pager that never come back.
+     */
+    const media = window.matchMedia('print');
+    const onMedia = (event: MediaQueryListEvent) => {
+      if (!event.matches) {
+        after();
+      }
+    };
+
     window.addEventListener('beforeprint', before);
     window.addEventListener('afterprint', after);
+    media.addEventListener('change', onMedia);
 
     return () => {
       window.removeEventListener('beforeprint', before);
       window.removeEventListener('afterprint', after);
+      media.removeEventListener('change', onMedia);
     };
   }, []);
 

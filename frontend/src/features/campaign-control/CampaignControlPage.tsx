@@ -200,6 +200,11 @@ export function CampaignControlPage() {
 
       {isError ? <Alert tone="danger">{t('campaignControl.loadFailed')}</Alert> : null}
 
+      {/* Health is judged over the chosen window here; a campaign's own page and the daily queue read 28 days. */}
+      {filters.days !== null && filters.days !== 28 ? (
+        <Alert tone="info">{t('campaignControl.otherWindow', { days: filters.days })}</Alert>
+      ) : null}
+
       <section
         aria-label={t('campaignControl.summary')}
         className="grid grid-cols-2 gap-3 lg:grid-cols-5"

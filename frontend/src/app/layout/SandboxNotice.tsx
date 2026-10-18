@@ -6,7 +6,8 @@ import { Link } from 'react-router';
 import { useSession } from '@/features/auth';
 import { Button } from '@/shared/ui/button';
 
-const KEY = 'digitalsmart.sandbox-notice';
+/** Per workspace: shortening the notice in one sandbox says nothing about another. */
+const keyFor = (workspaceId: string): string => `digitalsmart.sandbox-notice.${workspaceId}`;
 
 /** Where the tour goes, in the order a morning goes. Each is a real page. */
 const STEPS = [
@@ -18,9 +19,9 @@ const STEPS = [
   { key: 'reports', to: '/reports' },
 ] as const;
 
-function readDismissed(): boolean {
+function readDismissed(workspaceId: string): boolean {
   try {
-    return localStorage.getItem(KEY) === 'dismissed';
+    return localStorage.getItem(keyFor(workspaceId)) === 'dismissed';
   } catch {
     return false;
   }
@@ -38,7 +39,8 @@ function readDismissed(): boolean {
 export function SandboxNotice() {
   const { t } = useTranslation();
   const session = useSession();
-  const [dismissed, setDismissed] = useState(readDismissed);
+  const workspaceId = session.user?.active_workspace?.id ?? '';
+  const [dismissed, setDismissed] = useState(() => readDismissed(workspaceId));
   const [tour, setTour] = useState<number | null>(null);
 
   const slug = session.user?.active_workspace?.slug ?? '';
@@ -51,7 +53,7 @@ export function SandboxNotice() {
     setDismissed(true);
 
     try {
-      localStorage.setItem(KEY, 'dismissed');
+      localStorage.setItem(keyFor(workspaceId), 'dismissed');
     } catch {
       /* A browser that will not remember it will show it again, which is the safe direction to fail. */
     }
