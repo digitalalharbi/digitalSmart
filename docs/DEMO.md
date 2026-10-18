@@ -67,8 +67,11 @@ wider than its screen.
 
 - **Not live.** Real provider connections stay `AWAITING_CREDENTIALS`; nothing here calls a platform. Live
   commissioning is a separate, explicit step (`docs/LIVE_COMMISSIONING.md`).
-- **Not a way to change a real campaign.** The only action offered on a campaign is adding a task about it; changing
-  a live status is not offered at all until the approvals flow can carry it out (`docs/PROVIDER_WRITES.md`).
+- **Not a way to change a real campaign.** A campaign card offers three things: add a task about it, open the
+  reports for its client, and — where the platform's write is documented and the campaign's state fits — *ask* for it to be
+  paused or resumed. Asking writes an approval request the server builds from its own records; deciding it and
+  carrying it out are two further acts by two further permissions, and against these sandbox credentials the
+  carry-out is recorded as SANDBOX (`docs/PROVIDER_WRITES.md`).
 - **Not the Smart Code presentation identity.** Decks use a provisional theme until a reference deck is supplied.
 
 ## Known limits
