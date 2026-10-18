@@ -271,6 +271,11 @@
       "description": "يبدأ العميل الجديد كعميل محتمل، ويمكن تفعيله بعد الاتفاق على العمل."
     },
     "card": {
+      "alerts": "{{count}} تنبيه",
+      "alerts_other": "{{count}} تنبيهات",
+      "spend": "الإنفاق",
+      "openWork": "{{count}} مهمة مفتوحة",
+      "openWork_other": "{{count}} مهام مفتوحة",
       "noIndustry": "لا قطاع مسجَّل",
       "contact": "جهة الاتصال",
       "view": "العرض",

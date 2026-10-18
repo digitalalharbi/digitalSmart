@@ -267,6 +267,11 @@
       "description": "A new client starts as a prospect. You can activate it once work is agreed."
     },
     "card": {
+      "alerts": "{{count}} alert",
+      "alerts_other": "{{count}} alerts",
+      "spend": "Spend",
+      "openWork": "{{count}} open task",
+      "openWork_other": "{{count}} open tasks",
       "noIndustry": "No industry recorded",
       "contact": "Contact",
       "view": "View",

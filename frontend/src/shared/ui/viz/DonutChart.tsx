@@ -91,7 +91,12 @@ export function DonutChart({
         </svg>
         {centre === undefined ? null : (
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="ds-numeric text-content text-2xl leading-none font-semibold">
+            <span
+              className={cn(
+                'ds-numeric text-content leading-none font-semibold',
+                size < 100 ? (size < 56 ? 'text-[0.625rem]' : 'text-xs') : 'text-2xl',
+              )}
+            >
               {centre.value}
             </span>
             {centre.caption === undefined ? null : (

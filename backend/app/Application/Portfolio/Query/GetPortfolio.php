@@ -61,6 +61,16 @@ final readonly class GetPortfolio
         $sales = $this->outcomes->sales($workspace, $visible, $from, $to);
         $work = $this->outcomes->openWork($workspace, $visible);
 
+        /*
+         * One client's view carries that client's outcomes and nobody else's. The readers above are workspace-wide,
+         * and summing them unfiltered put the whole agency's leads and store revenue on a single client's page.
+         */
+        if ($clientId !== null) {
+            $only = [$clientId => true];
+            $leads = $leads === null ? null : array_intersect_key($leads, $only);
+            $sales = array_intersect_key($sales, $only);
+        }
+
         $budgetRows = $permissions->has(Permission::BudgetsView) ? ($this->budgets)($clientId) : null;
         $trackingView = $permissions->has(Permission::TrackingView) ? ($this->tracking)($clientId) : null;
 

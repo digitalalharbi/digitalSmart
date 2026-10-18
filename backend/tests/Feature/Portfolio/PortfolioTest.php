@@ -68,7 +68,10 @@ it('opens one client with its projects, and drills down no further than the read
     expect($one['clients'])->toHaveCount(1)
         ->and($one['clients'][0]['id'])->toBe($client)
         ->and($one['projects'])->not->toBeEmpty()
-        ->and(array_column($one['projects'], 'client_id'))->each->toBe($client);
+        ->and(array_column($one['projects'], 'client_id'))->each->toBe($client)
+        // A client's page carries that client's outcomes, not the agency's.
+        ->and($one['kpis']['sales'])->toBe($one['clients'][0]['sales'])
+        ->and($one['kpis']['leads'])->toBe($one['clients'][0]['leads']);
 });
 
 /* A scoped reader: only the clients of projects they are on, and finance is not theirs to see as a zero. */

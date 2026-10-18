@@ -1,30 +1,43 @@
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { AlertTriangle } from 'lucide-react';
+import type { PortfolioClient } from '@/features/portfolio';
 import { formatNumber } from '@/shared/lib/format';
 import { useUiStore } from '@/shared/store/ui-store';
 import { Badge } from '@/shared/ui/badge';
 import { Card, CardContent } from '@/shared/ui/card';
+import { HealthRing } from '@/shared/ui/viz';
 import { ClientRowActions } from './ClientRowActions';
 import { StatusBadge } from './StatusBadge';
 import type { Client } from './types';
 
+function compact(minor: number, currency: string, locale: string): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(minor / 100);
+}
+
 /**
- * One client, as a card.
+ * One client, as a card that answers "how is this account doing?" before it is opened.
  *
- * The grid exists because a client list is a list of *relationships*, and a table of five columns reads like
- * an inventory. What a card can do that a row cannot is give the name room and put the status, the industry
- * and the number of projects where the eye lands after it.
- *
- * **It carries only what the client list actually knows.** The obvious temptation on a card this size is
- * spend, revenue and ROAS — and the clients endpoint returns none of them, because those figures are scoped
- * to a period, a platform and a revenue authority that this screen has not chosen. A card that showed them
- * would be inventing a number or quietly picking a window on the reader's behalf; both are the kind of thing
- * the rest of this product refuses to do.
+ * The whole card is the link to the client; the row menu sits above it. What it carries is the account's picture:
+ * its campaign health as a ring, what it spent, what it produced, and how many things need a person — all from the
+ * portfolio read, so it can never disagree with the page it opens. A client the reader has no performance access to
+ * gets the plain card (name, status, projects) rather than a row of dashes pretending to be data.
  */
 export function ClientCard({
   client,
+  figures,
+  openWork = null,
   onEdit,
 }: {
   client: Client;
+  figures?: PortfolioClient | undefined;
+  /** Open tasks across the client's projects, when the portfolio knows them. */
+  openWork?: number | null;
   onEdit: (client: Client) => void;
 }) {
   const { t } = useTranslation();
@@ -37,6 +50,12 @@ export function ClientCard({
     .map((part) => part.charAt(0).toUpperCase())
     .join('');
 
+  const spend = figures?.spend.slice().sort((a, b) => b.minor - a.minor)[0];
+  const alerts =
+    figures === undefined
+      ? 0
+      : figures.needs_attention + (figures.budget_risks ?? 0) + (figures.tracking_attention ?? 0);
+
   return (
     /*
       A named article, not an anonymous div. A card is a self-contained record, and naming it gives a screen
@@ -45,7 +64,7 @@ export function ClientCard({
     <Card
       role="article"
       aria-label={client.name}
-      className="hover:border-line ease-standard transition-[border-color,box-shadow] duration-[var(--ds-duration-fast)] hover:shadow-sm"
+      className="ease-standard relative transition-shadow duration-[var(--ds-duration-fast)] hover:shadow-md"
     >
       <CardContent className="flex flex-col gap-4 pt-6">
         <div className="flex items-start justify-between gap-3">
@@ -61,29 +80,70 @@ export function ClientCard({
               {initials}
             </span>
             <div className="min-w-0">
-              <p className="text-content truncate font-medium">{client.name}</p>
+              <Link
+                to={`/clients/${client.id}`}
+                className="text-content block truncate font-medium after:absolute after:inset-0 after:content-[''] hover:underline focus-visible:outline-none"
+              >
+                {client.name}
+              </Link>
               <p className="text-content-tertiary truncate text-xs">
                 {client.industry ?? t('clients.card.noIndustry')}
               </p>
             </div>
           </div>
 
-          <ClientRowActions client={client} onEdit={onEdit} />
+          <div className="flex shrink-0 items-center gap-1">
+            {figures === undefined ? null : (
+              <HealthRing
+                counts={figures.campaign_health}
+                size={44}
+                thickness={6}
+                label={t('overview.cc.health.title')}
+              />
+            )}
+            <div className="relative z-10">
+              <ClientRowActions client={client} onEdit={onEdit} />
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={client.status} />
           {client.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
+          {alerts > 0 ? (
+            <Badge tone="warning">
+              <AlertTriangle aria-hidden className="size-3" />
+              {t('clients.card.alerts', { count: alerts })}
+            </Badge>
+          ) : null}
         </div>
 
-        <dl className="border-line-subtle flex items-end justify-between gap-4 border-t pt-4">
+        <dl className="border-line-subtle flex flex-wrap items-end gap-x-5 gap-y-3 border-t pt-4">
           <div>
             <dt className="text-content-tertiary ds-overline">{t('clients.columns.projects')}</dt>
-            <dd className="text-content ds-figure text-2xl">
+            <dd className="text-content ds-numeric text-xl font-semibold">
               {formatNumber(client.project_count, locale)}
             </dd>
           </div>
-          {client.primary_contact_email === null ? null : (
+          {figures === undefined ? null : (
+            <>
+              <div>
+                <dt className="text-content-tertiary ds-overline">{t('clients.card.spend')}</dt>
+                <dd className="text-content ds-numeric text-xl font-semibold">
+                  {spend === undefined ? '—' : compact(spend.minor, spend.currency, locale)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-content-tertiary ds-overline">
+                  {figures.leads === null ? t('overview.cc.kpi.sales') : t('overview.cc.kpi.leads')}
+                </dt>
+                <dd className="text-content ds-numeric text-xl font-semibold">
+                  {formatNumber(figures.leads ?? figures.sales, locale)}
+                </dd>
+              </div>
+            </>
+          )}
+          {figures !== undefined || client.primary_contact_email === null ? null : (
             <div className="min-w-0 text-end">
               <dt className="text-content-tertiary ds-overline">{t('clients.card.contact')}</dt>
               <dd className="text-content-secondary truncate text-sm">
@@ -92,6 +152,11 @@ export function ClientCard({
             </div>
           )}
         </dl>
+        {openWork === null || openWork === 0 ? null : (
+          <p className="text-content-tertiary text-xs">
+            {t('clients.card.openWork', { count: openWork })}
+          </p>
+        )}
       </CardContent>
     </Card>
   );

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Search } from 'lucide-react';
 import { PERMISSIONS, useSession } from '@/features/auth';
+import { usePortfolio } from '@/features/portfolio';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
@@ -47,6 +48,25 @@ export function ClientsPage() {
     [search, statuses, page],
   );
   const { data, isPending, isError, error, isFetching } = useClientsQuery(params);
+
+  /*
+   * The picture each card carries comes from the portfolio read, for readers who may see performance. A role that
+   * may not gets a 403 here, which is not an error on this page: its cards are simply the plain ones.
+   */
+  const portfolio = usePortfolio();
+  const figures = useMemo(
+    () => new Map((portfolio.data?.clients ?? []).map((row) => [row.id, row])),
+    [portfolio.data],
+  );
+  const openWork = useMemo(() => {
+    const totals = new Map<string, number>();
+
+    for (const project of portfolio.data?.projects ?? []) {
+      totals.set(project.client_id, (totals.get(project.client_id) ?? 0) + project.open_work);
+    }
+
+    return totals;
+  }, [portfolio.data]);
 
   const toggleStatus = (status: ClientStatus) => {
     setPage(1);
@@ -191,7 +211,13 @@ export function ClientsPage() {
           {view === 'grid' ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {data.data.map((client) => (
-                <ClientCard key={client.id} client={client} onEdit={openEdit} />
+                <ClientCard
+                  key={client.id}
+                  client={client}
+                  figures={figures.get(client.id)}
+                  openWork={openWork.get(client.id) ?? null}
+                  onEdit={openEdit}
+                />
               ))}
             </div>
           ) : (
