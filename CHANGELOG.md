@@ -4,6 +4,35 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Simplification, the agency command centre, and the agent layer
+
+### Added
+
+- **Shell:** grey page, one rounded workspace, a floating navigation pill with the graphite active state, an icon
+  rail, orange accent with a graphite primary action. Ten areas replace twenty destinations; the top bar is
+  role-aware; each area's pages are tabs inside it. Language-aware fonts (DIN Next Arabic slot, IBM Plex Sans Arabic
+  fallback, JetBrains Mono for diagnostics).
+- **Overview command centre:** eight figures, the spend line, campaign-health ring, top clients, platform mix,
+  lead funnel, what needs you, recent activity. Role homes appear above it for non-executive roles.
+- **Today:** one list of decisions. Approvals are approve / change / reject in one click, with before-and-after or
+  metric-against-target on the card and the agent that prepared it.
+- **Rules:** one-tap templates and when/then cards; the only outcome of a rule is an item on Today.
+- **Clients:** cards carry health rings, spend, results and alerts. **Projects:** six tabs, rings for health,
+  budget and work, and a targets-and-limits card.
+- **Campaigns:** figures, spend line, health ring and platform mix; a short filter bar with more filters.
+- **Chart system:** CampaignsHub chart language — monotone soft lines, dashed grid, 62% rings, 6px bars, card
+  tooltips — shared by the SVG primitives and the ECharts theme; time stays chronological in Arabic.
+- **Agents:** operating rules (targets and limits resolved project → client → default); a tool gateway with nine
+  business-level tools; digitalSmart's own MCP server with `mcp`-only tokens; Analyst, Campaign and Finance agents
+  running as the workspace's own member on routines; budget and status proposals refused in code over limits,
+  as duplicates, or inside a day; proposals expire. Settings → MCP & AI for administrators. See `docs/AGENTS.md`.
+
+### Fixed
+
+- A client's portfolio page carried the whole agency's leads and sales.
+- Closing any state-opened dialog returned focus to the page body.
+- Overview said "no spend recorded" when spend spanned currencies.
+
 ## UX restructure and the sandbox agency
 
 The agency surfaces re-composed around how the work is done, and a realistic demo to prove them against. Ways to

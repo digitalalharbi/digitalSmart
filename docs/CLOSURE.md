@@ -81,6 +81,13 @@ quiet machine, but two earlier runs on a machine under heavy external load saw a
 after reload. One genuine harness fault was found and fixed (names collided under `--repeat-each`); the load-related
 residue was not reproduced and has no confirmed root cause. Treat as open.
 
+**Agent layer — what is not built.** Creative, Leads, Reports and Project-operations agents (their analyses exist
+as product features, not as agents); an outbound MCP gateway to the providers' own MCP servers (the direct adapters
+are the only route); WhatsApp approvals; campaign creation and a cross-platform campaign builder; ad-group / ad
+hierarchy and bulk actions in the Campaigns screen. See `docs/AGENTS.md` for the honest table.
+
+**Shared period comparison** is still not one control across every area.
+
 Nothing internally executable. The production document's own *What is still missing* list is the remainder,
 and every item on it is `BLOCKED_OPERATIONAL_EVIDENCE`: no container images or pipeline, no staging
 environment, no error tracker or metrics backend, no uptime monitor polling the health endpoint, and no host
