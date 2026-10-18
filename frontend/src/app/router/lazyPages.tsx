@@ -148,3 +148,7 @@ export const ProjectSetupPage = lazy(async () => ({
 export const ActionCenterPage = lazy(async () => ({
   default: (await import('@/features/action-center/ActionCenterPage')).ActionCenterPage,
 }));
+
+export const AutomationPage = lazy(async () => ({
+  default: (await import('@/features/automation/AutomationPage')).AutomationPage,
+}));

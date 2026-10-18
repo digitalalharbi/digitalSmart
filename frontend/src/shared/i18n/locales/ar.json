@@ -43,7 +43,45 @@
       "request": "طلب"
     }
   },
+  "automation": {
+    "title": "القواعد",
+    "templates": "فعّلها بنقرة",
+    "yours": "قواعدك",
+    "none": "لا توجد قواعد بعد.",
+    "turnOn": "تفعيل",
+    "on": "مفعّلة",
+    "everywhere": "كل الوكالة",
+    "when": "عندما",
+    "then": "إذن",
+    "above": "أعلى من",
+    "below": "أقل من",
+    "toToday": "أضف إلى اليوم",
+    "toggle": "تشغيل أو إيقاف {{name}}",
+    "remove": "حذف {{name}}",
+    "failed": "تعذّر حفظ القاعدة. حاول مرة أخرى.",
+    "template": {
+      "budgetNear": "اقتراب من حد الميزانية",
+      "roasDrop": "انخفاض العائد",
+      "cpaUp": "ارتفاع تكلفة النتيجة",
+      "noResults": "بلا نتائج",
+      "tracking": "توقف القياس",
+      "adRejected": "إعلان مرفوض",
+      "endDate": "نهاية الحملة",
+      "fatigue": "إرهاق التصميم",
+      "spendSpike": "قفزة في الإنفاق"
+    },
+    "why": {
+      "covered": "يعمل دائمًا",
+      "soon": "غير متاح بعد"
+    },
+    "severity": {
+      "critical": "حرج",
+      "needs_attention": "يحتاج انتباهًا",
+      "watch": "للمتابعة"
+    }
+  },
   "nav": {
+    "automation": "القواعد",
     "today": "اليوم",
     "overview": "نظرة عامة",
     "projects": "المشاريع",

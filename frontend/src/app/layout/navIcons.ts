@@ -26,6 +26,7 @@ import {
   Store,
   Sparkles,
   UserRoundSearch,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -68,6 +69,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   Store,
   Sparkles,
   UserRoundSearch,
+  Zap,
 };
 
 /** What an unknown name renders as. */

@@ -43,7 +43,45 @@
       "request": "Request"
     }
   },
+  "automation": {
+    "title": "Rules",
+    "templates": "One tap to turn on",
+    "yours": "Your rules",
+    "none": "No rules yet.",
+    "turnOn": "Turn on",
+    "on": "On",
+    "everywhere": "Whole agency",
+    "when": "When",
+    "then": "Then",
+    "above": "is above",
+    "below": "is below",
+    "toToday": "Add to Today",
+    "toggle": "Turn {{name}} on or off",
+    "remove": "Delete {{name}}",
+    "failed": "Could not save the rule. Try again.",
+    "template": {
+      "budgetNear": "Budget near limit",
+      "roasDrop": "ROAS drop",
+      "cpaUp": "Cost per result up",
+      "noResults": "No results",
+      "tracking": "Tracking failure",
+      "adRejected": "Ad rejected",
+      "endDate": "Campaign end date",
+      "fatigue": "Creative fatigue",
+      "spendSpike": "Daily spend spike"
+    },
+    "why": {
+      "covered": "Always on",
+      "soon": "Not available yet"
+    },
+    "severity": {
+      "critical": "Critical",
+      "needs_attention": "Needs attention",
+      "watch": "Watch"
+    }
+  },
   "nav": {
+    "automation": "Rules",
     "today": "Today",
     "overview": "Overview",
     "projects": "Projects",

@@ -71,6 +71,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'creative.view',
   },
   {
+    path: '/automation',
+    labelKey: 'nav.automation',
+    icon: 'Zap',
+    section: 'intelligence',
+    phase: 'Phase 20',
+    // Reading rules needs what reading performance needs; writing them is gated again, in the page and on the server.
+    permission: 'analytics.view',
+  },
+  {
     path: '/today',
     labelKey: 'nav.today',
     icon: 'CalendarCheck',

@@ -74,7 +74,7 @@ enum AttentionStream: string
             self::Approvals => '/approvals',
             self::Requests => '/client-requests',
             self::Tasks => '/tasks',
-            self::Automation => '/campaigns/rules',
+            self::Automation => '/automation',
         };
     }
 

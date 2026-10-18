@@ -48,7 +48,7 @@ export const AREAS: readonly Area[] = [
     key: 'campaigns',
     labelKey: 'areas.campaigns',
     icon: 'Megaphone',
-    paths: ['/campaigns', '/media-planner'],
+    paths: ['/campaigns', '/automation', '/media-planner'],
   },
   {
     key: 'performance',
