@@ -30,6 +30,13 @@ final class DemoAgencyCommand extends Command
             return self::FAILURE;
         }
 
+        if ($this->option('fresh') && ! app()->environment(['local', 'testing'])) {
+            /* `--fresh` drops every table. Only a local or test database may be asked to. */
+            $this->components->error('--fresh wipes the database and is only allowed in the local or testing environment.');
+
+            return self::FAILURE;
+        }
+
         if ($this->option('fresh')) {
             $this->components->warn('Rebuilding this local database from scratch.');
             $this->call('migrate:fresh', ['--force' => true]);
@@ -47,6 +54,9 @@ final class DemoAgencyCommand extends Command
 
         /* The summaries each person would have received this morning, so the notification centre is not empty. */
         $workspace = DB::table('workspaces')->where('slug', 'demo-smart-code')->value('id');
+
+        /* Rebuilt every run, so last run's bells are cleared first rather than stacked beneath the new ones. */
+        DB::table('notifications')->where('workspace_id', $workspace)->where('kind', 'digest_ready')->delete();
 
         foreach (DigestKind::values() as $kind) {
             $this->callSilently('digests:build', ['kind' => $kind, '--workspace' => $workspace]);

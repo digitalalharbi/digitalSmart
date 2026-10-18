@@ -317,6 +317,15 @@ final class DemoAgencySeeder extends Seeder
             ->where('slug', 'like', self::TAG.'%')->pluck('id')->all();
 
         if ($clients !== []) {
+            /*
+             * Notifications about what is about to be deleted, found by what they are about rather than by how their
+             * title reads — a notification somebody's real work produced in this workspace is not the seeder's to remove.
+             */
+            foreach (['tasks' => 'task', 'approval_requests' => 'approval', 'client_requests' => 'client_request'] as $table => $subject) {
+                DB::table('notifications')->where('workspace_id', $workspaceId)->where('subject_type', $subject)
+                    ->whereIn('subject_id', DB::table($table)->whereIn('client_id', $clients)->select('id'))->delete();
+            }
+
             $stores = DB::table('stores')->whereIn('client_id', $clients)->pluck('id')->all();
             DB::table('store_orders')->whereIn('store_id', $stores)->delete();
             DB::table('stores')->whereIn('id', $stores)->delete();
@@ -329,7 +338,12 @@ final class DemoAgencySeeder extends Seeder
             DB::table('clients')->whereIn('id', $clients)->delete();
         }
 
-        DB::table('notifications')->where('workspace_id', $workspaceId)->where('title', 'like', '%·%')->delete();
+        /* And whatever those notifications left pointing at nothing — an earlier run's, or one a deleted record left behind. */
+        foreach (['tasks' => 'task', 'approval_requests' => 'approval', 'client_requests' => 'client_request'] as $table => $subject) {
+            DB::table('notifications')->where('workspace_id', $workspaceId)->where('subject_type', $subject)
+                ->whereNotIn('subject_id', DB::table($table)->select('id'))->delete();
+        }
+
     }
 
     /** @return array{owner: string, manager: string, buyer: string, creative: string, finance: string, buyers: list<string>, pms: list<string>, creatives: list<string>, all: list<string>} */
