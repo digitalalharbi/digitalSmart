@@ -56,6 +56,31 @@ centre chooses a window; the budget and lead pages do not compare. A single cont
 slice.
 
 
+**Held files return to the closure queue the moment the parallel work commits:** `AttributionPage`, `MediaPlannerPage`,
+`StoreAnalyticsPage` and the lead panels `LeadWorkPanel`, `PipelineList`, `JourneyPanel`, `BreakdownChart`.
+
+**Server-written English sentences appear in English in Arabic mode.** Reasons, recommendations and some notices are
+composed on the server as prose. The long-term fix is structured reason codes from the API (`code` + parameters) that
+the frontend localises, as it already does for labels; until then those sentences are a known localisation gap. It does
+not block the demo and is not closed.
+
+**Creative previews are shape-based, not the provider's thumbnails.** Uploads are stored attachment-only and never served
+inline by design, and no provider has issued credentials to fetch real creative. Serving demo thumbnails would mean
+inventing provider content or opening an inline-serving path with its own review; neither was done. Remaining product
+work, once a real creative source exists.
+
+**Keyboard access is verified for a defined set, not for everything.** `e2e/keyboard.spec.ts` walks nine surfaces with Tab
+(every stop visible and ringed, no stall), opens the command palette and a campaign task dialog from the keyboard, checks
+focus stays inside and returns on Escape, and moves project tabs with the arrow keys. It found and fixed two real faults:
+Escape dropped focus onto the page body for every dialog opened from state, and a project could be opened only from a row
+menu. Not yet covered: the Lead Kanban by keyboard, Creative Hub board drag alternatives, and the report and presentation
+controls. A screen-reader pass by a person is still outstanding.
+
+**The dashboard builder specs are not proven stable.** Under two workers, repeated runs went 22/22, 66/66 and 24/24 on a
+quiet machine, but two earlier runs on a machine under heavy external load saw a saved dashboard missing from the picker
+after reload. One genuine harness fault was found and fixed (names collided under `--repeat-each`); the load-related
+residue was not reproduced and has no confirmed root cause. Treat as open.
+
 Nothing internally executable. The production document's own *What is still missing* list is the remainder,
 and every item on it is `BLOCKED_OPERATIONAL_EVIDENCE`: no container images or pipeline, no staging
 environment, no error tracker or metrics backend, no uptime monitor polling the health endpoint, and no host

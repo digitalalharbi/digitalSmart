@@ -92,6 +92,8 @@ test.describe('agency surfaces', () => {
     await page.getByLabel('Project name').fill(name);
     await page.getByRole('button', { name: 'Save' }).click();
 
+    /* The agency has well over a page of projects, so the new one is found by name rather than by position. */
+    await page.getByRole('searchbox', { name: 'Search projects' }).fill(name);
     const row = page.getByRole('row', { name: new RegExp(name) });
     await expect(row).toBeVisible({ timeout: 30_000 });
 
