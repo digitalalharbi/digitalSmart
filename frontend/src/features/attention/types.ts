@@ -8,7 +8,7 @@
 export type AttentionSeverityValue = 'critical' | 'needs_attention' | 'watch';
 
 export type AttentionStreamValue =
-  'campaigns' | 'budgets' | 'tracking' | 'approvals' | 'requests' | 'tasks';
+  'campaigns' | 'budgets' | 'tracking' | 'approvals' | 'requests' | 'tasks' | 'automation';
 
 export type AttentionItem = {
   id: string;

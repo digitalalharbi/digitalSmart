@@ -195,6 +195,8 @@ function row(overrides: Partial<ApprovalRow> = {}): ApprovalRow {
     kind: 'spend_change',
     kind_label: 'Change spend',
     title: 'Raise the Ramadan daily budget',
+    rationale: '',
+    proposal: {},
     state: 'pending',
     state_label: 'Waiting for a decision',
     enactment: 'not_required',

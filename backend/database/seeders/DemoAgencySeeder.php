@@ -1367,7 +1367,20 @@ final class DemoAgencySeeder extends Seeder
             }
 
             if ($index % 5 === 0) {
-                $proposal = ['campaign' => $project['name'], 'change' => 'Increase daily budget by 15%'];
+                /*
+                 * What each kind proposes, in the fields a decision card reads: a budget states both figures so the
+                 * decider sees before and after; a creative says what and in which format; a launch says what and for how much.
+                 */
+                $current = 12_000 + ($index % 7) * 2_500;
+                $currency = $project['currency'] ?? 'SAR';
+                $proposal = match ($index % 3) {
+                    0 => [
+                        'campaign' => $project['name'], 'change' => 'Increase daily budget by 15%',
+                        'current' => $current, 'requested' => (int) round($current * 1.15, -2), 'currency' => $currency,
+                    ],
+                    1 => ['campaign' => $project['name'], 'change' => 'Publish the new creative set', 'format' => 'Instagram Story', 'size' => '1080 × 1920'],
+                    default => ['campaign' => $project['name'], 'change' => 'Launch', 'budget' => $current, 'currency' => $currency],
+                };
                 $approvalId = $this->ids->generate();
                 $approvalTitle = ['Raise daily budget — '.$project['name'], 'Publish new creative set', 'Launch '.$project['name']][$index % 3];
 

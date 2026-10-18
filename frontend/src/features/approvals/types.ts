@@ -82,6 +82,10 @@ export type ApprovalRow = {
   kind: ApprovalKindValue;
   kind_label: string;
   title: string;
+  /** Why it was asked for, in the requester's words. Short; the card shows the proposal, this is the detail. */
+  rationale: string;
+  /** What is being proposed. Free-form by design; a budget change carries `current`, `requested` and `currency`. */
+  proposal: Record<string, unknown>;
   state: ApprovalStateValue;
   state_label: string;
   enactment: EnactmentValue;
@@ -120,8 +124,6 @@ export type ApprovalRow = {
 };
 
 export type ApprovalRequest = ApprovalRow & {
-  rationale: string;
-  proposal: Record<string, unknown>;
   decision_reason: string | null;
   withdrawn_reason: string | null;
   enactment_note: string | null;

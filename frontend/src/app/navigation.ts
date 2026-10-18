@@ -71,6 +71,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'creative.view',
   },
   {
+    path: '/today',
+    labelKey: 'nav.today',
+    icon: 'CalendarCheck',
+    section: 'work',
+    phase: 'Phase 20',
+  },
+  {
     path: '/tasks',
     labelKey: 'nav.tasks',
     icon: 'ListChecks',

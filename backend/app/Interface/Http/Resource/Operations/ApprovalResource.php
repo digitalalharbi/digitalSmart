@@ -134,6 +134,12 @@ final readonly class ApprovalResource
             'kind' => $view->kind->value,
             'kind_label' => $view->kind->label(),
             'title' => $view->title,
+            /*
+             * On every row, not only the opened one: a one-decision card has to show what is being proposed, and a
+             * list that made a second request per card to find out would not be one decision.
+             */
+            'rationale' => $view->rationale,
+            'proposal' => $view->proposal,
             'state' => $view->state->value,
             'state_label' => $view->state->label(),
             'enactment' => $view->enactment->value,

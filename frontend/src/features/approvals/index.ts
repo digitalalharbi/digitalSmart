@@ -5,3 +5,5 @@ export { ProposalTable } from './ProposalTable';
 export { RequestApprovalForm } from './RequestApprovalForm';
 export { WaitingChart } from './WaitingChart';
 export type { ApprovalQueue, ApprovalRequest, ApprovalVocabulary } from './types';
+export { useApprovalQueueQuery, useDecideApprovalMutation } from './useApprovals';
+export type { ApprovalRow, ApprovalKindValue } from './types';

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowUpRight } from 'lucide-react';
-import { AttentionPanel } from '@/features/attention';
+import { ActionCenter } from '@/features/action-center';
 import { usePortfolio } from '@/features/portfolio';
 import type { Money, Portfolio } from '@/features/portfolio';
 import { formatCompact, formatNumber } from '@/shared/lib/format';
@@ -11,10 +11,16 @@ import { KpiTile } from '@/shared/ui/kpi-tile';
 import { providerName } from '@/shared/lib/providers';
 import { cn } from '@/shared/lib/cn';
 import { ActivityFeed } from '@/shared/ui/activity-feed';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { DonutChart, FunnelBars, HEALTH_COLOUR, RankingBars, TrendChart } from '@/shared/ui/viz';
+import {
+  ChartCard,
+  DonutChart,
+  FunnelBars,
+  HEALTH_COLOUR,
+  RankingBars,
+  TrendChart,
+} from '@/shared/ui/viz';
 import { useAgencyActivity, useSpendTrend } from './useOverviewData';
 
 /*
@@ -43,23 +49,6 @@ function dominantCurrency(portfolio: Portfolio): string {
   }
 
   return [...totals.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'USD';
-}
-
-function SectionTitle({ title, to, action }: { title: string; to?: string; action?: string }) {
-  return (
-    <CardHeader className="flex-row items-center justify-between gap-3 pb-3">
-      <CardTitle>{title}</CardTitle>
-      {to === undefined || action === undefined ? null : (
-        <Link
-          to={to}
-          className="text-content-secondary hover:text-content inline-flex items-center gap-1 text-sm"
-        >
-          {action}
-          <ArrowUpRight aria-hidden className="size-4 rtl:-scale-x-100" />
-        </Link>
-      )}
-    </CardHeader>
-  );
 }
 
 /**
@@ -238,165 +227,154 @@ export function CommandCenter() {
 
       {/* One dominant picture, and health beside it. */}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <Card>
-          <SectionTitle
-            title={t('overview.cc.hero.title')}
-            to="/analytics"
-            action={t('overview.openAnalytics')}
-          />
-          <CardContent>
-            {series === undefined || labels.length === 0 ? (
-              trend.isPending ? (
-                <Skeleton className="h-56 rounded-2xl" />
-              ) : (
-                <EmptyState title={t('overview.noData.title')} description="" />
-              )
+        <ChartCard
+          title={t('overview.cc.hero.title')}
+          to="/analytics"
+          actionLabel={t('overview.openAnalytics')}
+        >
+          {series === undefined || labels.length === 0 ? (
+            trend.isPending ? (
+              <Skeleton className="h-56 rounded-2xl" />
             ) : (
-              <TrendChart
-                labels={labels}
-                series={[
-                  {
-                    key: 'spend',
-                    label: t('overview.cc.kpi.spend'),
-                    values: series.points.map((v) => (v === null ? null : v / 100)),
-                    colour: 'var(--ds-accent)',
-                  },
-                ]}
-                format={(v) => formatCompact(v, locale)}
-                label={t('overview.cc.hero.title')}
-                height={280}
-              />
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <SectionTitle
-            title={t('overview.cc.health.title')}
-            to="/campaigns"
-            action={t('overview.cc.openCampaigns')}
-          />
-          <CardContent>
-            <DonutChart
-              segments={healthSegments}
-              centre={{
-                value: formatNumber(healthTotal, locale),
-                caption: t('overview.cc.health.centre'),
-              }}
-              label={t('overview.cc.health.title')}
-              className="sm:flex-col xl:flex-col"
+              <EmptyState title={t('overview.noData.title')} description="" />
+            )
+          ) : (
+            <TrendChart
+              labels={labels}
+              series={[
+                {
+                  key: 'spend',
+                  label: t('overview.cc.kpi.spend'),
+                  values: series.points.map((v) => (v === null ? null : v / 100)),
+                  colour: 'var(--ds-accent)',
+                },
+              ]}
+              format={(v) => formatCompact(v, locale)}
+              label={t('overview.cc.hero.title')}
+              height={280}
             />
-          </CardContent>
-        </Card>
+          )}
+        </ChartCard>
+
+        <ChartCard
+          title={t('overview.cc.health.title')}
+          to="/campaigns"
+          actionLabel={t('overview.cc.openCampaigns')}
+        >
+          <DonutChart
+            segments={healthSegments}
+            centre={{
+              value: formatNumber(healthTotal, locale),
+              caption: t('overview.cc.health.centre'),
+            }}
+            label={t('overview.cc.health.title')}
+            className="sm:flex-col xl:flex-col"
+          />
+        </ChartCard>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-        <Card>
-          <SectionTitle
-            title={t('overview.cc.ranking.title')}
-            to="/clients"
-            action={t('overview.cc.openClients')}
-          />
-          <CardContent>
-            {ranked.length === 0 ? (
-              <p className="text-content-tertiary text-sm">{t('overview.cc.ranking.none')}</p>
-            ) : (
-              <RankingBars
-                label={t('overview.cc.ranking.title')}
-                rows={ranked.map(({ client, spend }) => ({
-                  key: client.id,
-                  label: client.name,
-                  value: spend,
-                  display: compactMoney(spend, currency, locale),
-                  to: `/clients/${client.id}`,
-                  hint: [
-                    t('overview.cc.ranking.projects', { count: client.projects }),
-                    client.needs_attention > 0
-                      ? t('overview.cc.ranking.attention', { count: client.needs_attention })
-                      : null,
-                  ]
-                    .filter((part) => part !== null)
-                    .join(' · '),
-                }))}
-              />
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <SectionTitle
-            title={t('overview.cc.platforms.title')}
-            to="/analytics"
-            action={t('overview.openAnalytics')}
-          />
-          <CardContent>
-            {mix.length === 0 ? (
-              <p className="text-content-tertiary text-sm">{t('overview.cc.ranking.none')}</p>
-            ) : (
-              <DonutChart
-                segments={mix.map((row, index) => ({
-                  key: row.provider,
-                  label: providerName(row.provider),
-                  value: row.spend,
-                  colour: MIX_COLOURS[index % MIX_COLOURS.length] ?? 'var(--ds-accent)',
-                }))}
-                format={(v) => `${String(Math.round((v / mixTotal) * 100))}%`}
-                centre={{ value: formatCompact(mixTotal / 100, locale), caption: currency }}
-                label={t('overview.cc.platforms.title')}
-                className="sm:flex-col xl:flex-col"
-              />
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <SectionTitle title={t('overview.cc.funnel.title')} to="/leads" action={t('nav.leads')} />
-          <CardContent>
-            <FunnelBars
-              label={t('overview.cc.funnel.title')}
-              notTracked={t('overview.cc.kpi.notTracked')}
-              stages={[
-                {
-                  key: 'leads',
-                  label: t('overview.cc.funnel.leads'),
-                  value: k.leads,
-                  display: formatNumber(k.leads ?? 0, locale),
-                },
-                {
-                  key: 'qualified',
-                  label: t('overview.cc.funnel.qualified'),
-                  value: k.qualified_leads,
-                  display: formatNumber(k.qualified_leads ?? 0, locale),
-                },
-              ]}
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-2">
-        <Card>
-          <SectionTitle title={t('overview.cc.attention.title')} />
-          <CardContent>
-            <AttentionPanel compact limit={5} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <SectionTitle title={t('overview.cc.activity.title')} />
-          <CardContent>
-            <ActivityFeed
-              isPending={activity.isPending}
-              limit={6}
-              entries={(activity.data ?? []).map((row) => ({
-                id: row.id,
-                actor: row.actor,
-                summary: row.sentence,
-                at: row.at,
+        <ChartCard
+          title={t('overview.cc.ranking.title')}
+          to="/clients"
+          actionLabel={t('overview.cc.openClients')}
+        >
+          {ranked.length === 0 ? (
+            <p className="text-content-tertiary text-sm">{t('overview.cc.ranking.none')}</p>
+          ) : (
+            <RankingBars
+              label={t('overview.cc.ranking.title')}
+              rows={ranked.map(({ client, spend }) => ({
+                key: client.id,
+                label: client.name,
+                value: spend,
+                display: compactMoney(spend, currency, locale),
+                to: `/clients/${client.id}`,
+                hint: [
+                  t('overview.cc.ranking.projects', { count: client.projects }),
+                  client.needs_attention > 0
+                    ? t('overview.cc.ranking.attention', { count: client.needs_attention })
+                    : null,
+                ]
+                  .filter((part) => part !== null)
+                  .join(' · '),
               }))}
             />
-          </CardContent>
-        </Card>
+          )}
+        </ChartCard>
+
+        <ChartCard
+          title={t('overview.cc.platforms.title')}
+          to="/analytics"
+          actionLabel={t('overview.openAnalytics')}
+        >
+          {mix.length === 0 ? (
+            <p className="text-content-tertiary text-sm">{t('overview.cc.ranking.none')}</p>
+          ) : (
+            <DonutChart
+              segments={mix.map((row, index) => ({
+                key: row.provider,
+                label: providerName(row.provider),
+                value: row.spend,
+                colour: MIX_COLOURS[index % MIX_COLOURS.length] ?? 'var(--ds-accent)',
+              }))}
+              format={(v) => `${String(Math.round((v / mixTotal) * 100))}%`}
+              centre={{ value: formatCompact(mixTotal / 100, locale), caption: currency }}
+              label={t('overview.cc.platforms.title')}
+              className="sm:flex-col xl:flex-col"
+            />
+          )}
+        </ChartCard>
+
+        <ChartCard title={t('overview.cc.funnel.title')} to="/leads" actionLabel={t('nav.leads')}>
+          <FunnelBars
+            label={t('overview.cc.funnel.title')}
+            notTracked={t('overview.cc.kpi.notTracked')}
+            stages={[
+              {
+                key: 'leads',
+                label: t('overview.cc.funnel.leads'),
+                value: k.leads,
+                display: formatNumber(k.leads ?? 0, locale),
+              },
+              {
+                key: 'qualified',
+                label: t('overview.cc.funnel.qualified'),
+                value: k.qualified_leads,
+                display: formatNumber(k.qualified_leads ?? 0, locale),
+              },
+            ]}
+          />
+        </ChartCard>
+      </div>
+
+      <section aria-label={t('overview.cc.attention.title')} className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-content text-lg font-semibold">{t('overview.cc.attention.title')}</h2>
+          <Link
+            to="/today"
+            className="text-content-secondary hover:text-content inline-flex items-center gap-1 text-sm"
+          >
+            {t('actionCenter.title')}
+            <ArrowUpRight aria-hidden className="size-4 rtl:-scale-x-100" />
+          </Link>
+        </div>
+        <ActionCenter limit={6} />
+      </section>
+
+      <div className="grid gap-4">
+        <ChartCard title={t('overview.cc.activity.title')}>
+          <ActivityFeed
+            isPending={activity.isPending}
+            limit={6}
+            entries={(activity.data ?? []).map((row) => ({
+              id: row.id,
+              actor: row.actor,
+              summary: row.sentence,
+              at: row.at,
+            }))}
+          />
+        </ChartCard>
       </div>
     </div>
   );

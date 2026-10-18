@@ -61,7 +61,7 @@ export const AREAS: readonly Area[] = [
     key: 'work',
     labelKey: 'areas.work',
     icon: 'ListChecks',
-    paths: ['/tasks', '/approvals', '/client-requests'],
+    paths: ['/today', '/tasks', '/approvals', '/client-requests'],
   },
   {
     key: 'finance',

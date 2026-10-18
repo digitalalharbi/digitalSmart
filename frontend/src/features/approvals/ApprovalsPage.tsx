@@ -59,7 +59,10 @@ export function ApprovalsPage() {
   const [clientTerm, setClientTerm] = useState('');
   const clientId = client?.id ?? null;
   const [spendOnly, setSpendOnly] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+  /* `?open=` is how a decision card's Details link lands on the request it came from. */
+  const [selected, setSelected] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get('open'),
+  );
   const [asking, setAsking] = useState(false);
 
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
