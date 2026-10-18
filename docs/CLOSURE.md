@@ -32,6 +32,7 @@ Three blocker codes, and nothing else is allowed to stand in for them:
 | **AI assistant** | Complete contract, built and tested against documented-shape fixtures, with the caveats stated before any answer | `tests/Feature/Intelligence`, `e2e/assistant.spec.ts` | Fixtures only | `BLOCKED_EXTERNAL_CREDENTIALS` — a model API key | **CLOSED** except the live call |
 | **Presentations** | Complete. PowerPoint is a real download; the PDF comes from the browser and the page says why | `tests/Feature/Presentation`, `e2e/presentations.spec.ts` | — | — | **CLOSED** |
 | **Administration** — workspace, people, roles, permissions, audit | Complete. Onboarding to first login, forced password choice, suspension, removal with release, role change, project access, and the audit trail behind all of it | `tests/Feature/{Workspace,Identity,Audit}`, `e2e/administration.spec.ts` | Login throttling and per-bucket rate limits active | — | **CLOSED** |
+| **Agency UX and the sandbox agency** — role homes, campaign control, project and client workspaces, creative desk, reports and decks, administration, `demo:agency` | Complete for every surface this session owns: one composition per role, summary / detailed modes, context sidebars, background work, digests, contextual assistant, a six-step tour and a sandbox notice on every demo screen. Where a platform's write is documented the card can *ask* for a pause or resume; it never performs one | `tests/Feature/{Demo,Advertising,Portfolio,Creative,Digest,Workspace}`, `e2e/{journeys,dead-controls,responsive,accessibility-surfaces}.spec.ts` (the first two need `E2E_AGENCY=1`), `docs/DEMO.md` | Measured against sixty sandbox clients: every agency endpoint 40–230 ms warm; axe clean in light/English and dark/Arabic; no surface wider than a phone | — | **CLOSED** except the three surfaces in the next paragraph |
 
 ## Two absences, recorded rather than implied
 
@@ -44,6 +45,16 @@ honest interim is an owner setting a member's password out of band, and `docs/SE
 reasoning rather than half-building a token nobody can deliver.
 
 ## What is not closed
+
+**Held by another working session, not by a missing decision.** The attribution family, the media planner and the
+store-analytics page still carry uncommitted money-formatting work from a parallel session, and so do four lead
+sub-panels. Their hundred-client pickers, the commerce analytics-first recomposition and the media-planner visuals are
+waiting for that work to be committed — editing around it would collide with it.
+
+**Period comparison is not yet one shared control.** Analytics, reports and the dashboards offer it; the control
+centre chooses a window; the budget and lead pages do not compare. A single control across all of them is the next
+slice.
+
 
 Nothing internally executable. The production document's own *What is still missing* list is the remainder,
 and every item on it is `BLOCKED_OPERATIONAL_EVIDENCE`: no container images or pipeline, no staging
