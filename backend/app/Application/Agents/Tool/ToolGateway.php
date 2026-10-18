@@ -92,7 +92,12 @@ final readonly class ToolGateway
             return $this->refusal('invalid_input', $problem);
         }
 
-        if ($this->log->countSince($workspaceId, $userId, $tool, $this->clock->now()->modify('-1 minute')) >= $definition->callsPerMinute) {
+        /*
+         * The rate limit is for people and outside clients. An internal agent is limited by what it is allowed to do —
+         * the caps and the duplicate and cooldown checks — and a limit that silently starved a routine would read as
+         * "nothing to report".
+         */
+        if ($channel !== 'agent' && $this->log->countSince($workspaceId, $userId, $tool, $this->clock->now()->modify('-1 minute')) >= $definition->callsPerMinute) {
             $finish('refused', 'rate_limited');
 
             return $this->refusal('rate_limited', 'Too many calls to this tool. Try again in a minute.');

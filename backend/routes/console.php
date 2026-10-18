@@ -75,3 +75,13 @@ Schedule::command('exports:prune')->dailyAt('04:00')->withoutOverlapping()->runI
 
 /* Hourly: schedules carry an hour, so the finest useful grain is one hour. */
 Schedule::command('reports:run-schedules')->hourly()->withoutOverlapping()->runInBackground();
+
+/*
+ * The routines. Agents propose and never decide, so running them often costs a person nothing but a card.
+ *
+ * The daily performance review runs before the working day in the agency's own time zone, so the Today list is
+ * ready when people sit down. The budget guardian looks every two hours. Expiry rides on both: a proposal nobody
+ * decided stops asking once the figures it rested on have moved.
+ */
+Schedule::command('agents:run analyst')->dailyAt('08:45')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();
+Schedule::command('agents:run finance')->everyTwoHours()->withoutOverlapping()->runInBackground();

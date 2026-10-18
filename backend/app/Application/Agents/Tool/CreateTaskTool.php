@@ -4,20 +4,27 @@ declare(strict_types=1);
 
 namespace App\Application\Agents\Tool;
 
+use App\Application\Agents\Contract\ProposalHistory;
 use App\Application\Agents\Contract\ToolHandler;
 use App\Application\Agents\DTO\ToolDefinition;
 use App\Application\Operations\Command\OpenTask;
 use App\Application\Operations\DTO\TaskInput;
+use App\Application\Shared\Contract\ActorContext;
 use App\Domain\Access\Permission;
+use App\Domain\Agents\ActionRefused;
 use App\Domain\Operations\TaskPriority;
 
 /** Put a task on the board. Internal and reversible, so it needs no approval — it is what routine follow-up is made of. */
 final readonly class CreateTaskTool implements ToolHandler
 {
-    public function __construct(private OpenTask $open) {}
+    public function __construct(private OpenTask $open, private ProposalHistory $history, private ActorContext $actor, private ToolCaller $caller) {}
 
     public function __invoke(array $input): array
     {
+        if ($this->caller->channel === 'agent' && $this->history->hasOpenTask($this->actor->workspaceId()->value, mb_substr((string) $input['title'], 0, 160))) {
+            throw new ActionRefused('That reminder is already on the board.', 'duplicate_task');
+        }
+
         $task = ($this->open)(new TaskInput(
             title: mb_substr((string) $input['title'], 0, 160),
             priority: TaskPriority::Normal,

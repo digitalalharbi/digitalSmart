@@ -26,6 +26,7 @@ final readonly class ListCampaignsTool implements ToolHandler
                 health: $health === null ? [] : [$health],
             ),
             (int) ($input['limit'] ?? 20),
+            (int) ($input['offset'] ?? 0),
         );
 
         return [
@@ -48,6 +49,7 @@ final readonly class ListCampaignsTool implements ToolHandler
                 'project_id' => ['type' => 'string', 'format' => 'uuid', 'description' => 'Only this project.'],
                 'health' => ['type' => 'string', 'enum' => CampaignHealth::values(), 'description' => 'Only campaigns in this health state.'],
                 'limit' => ['type' => 'integer', 'min' => 1, 'max' => 50, 'description' => 'How many to return (default 20).'],
+                'offset' => ['type' => 'integer', 'min' => 0, 'max' => 5000, 'description' => 'Skip this many, to read the next page.'],
             ],
         );
     }

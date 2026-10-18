@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Application\Agents\Agent\AgentOrchestrator;
 use App\Application\Analytics\DTO\AnalyticsFilters;
 use App\Application\Portal\Command\EnablePortal;
 use App\Application\Portal\Command\SetPortalModules;
@@ -196,6 +197,7 @@ final class DemoAgencySeeder extends Seeder
             $this->stores($workspaceId, $clients, $campaigns, $conversions['orders']);
             $this->work($workspaceId, $clients, $projects, $people);
             $this->tracking($workspaceId, $clients);
+            $this->operatingRules($workspaceId, $clients, $campaigns);
 
             foreach (['clients', 'projects', 'external_accounts', 'project_integration_bindings', 'campaigns', 'daily_metrics', 'budgets', 'leads', 'stores', 'store_orders', 'tasks', 'measurement_sources', 'observed_event_counts'] as $table) {
                 DB::statement('analyze '.$table);
@@ -203,6 +205,10 @@ final class DemoAgencySeeder extends Seeder
         });
 
         $this->reportsAndPortals($workspaceId);
+
+        /* The agents look, as they would on their morning routine — through the same gateway, proposing only. */
+        $ran = app(AgentOrchestrator::class)->run('all', $workspaceId);
+        $this->command?->info(sprintf('Agents looked and raised %d proposal(s) for a person to decide.', $ran['proposed']));
 
         $this->command?->info('Demo agency ready. Sign in with any demo address and the password "password".');
         $this->command?->warn('Every figure is a SANDBOX fixture, not real spend and not live provider data.');
@@ -301,6 +307,68 @@ final class DemoAgencySeeder extends Seeder
     }
 
     /** Remove what an earlier run created, and only that. */
+    /**
+     * Each client's own targets, derived from how it has actually performed — a CPA a little above its average and a
+     * return a little under — so some campaigns sit outside them and the agents have something honest to say. A
+     * client with no revenue gets no return target: the product does not invent one.
+     *
+     * @param  list<array<string, mixed>>  $clients
+     * @param  list<array<string, mixed>>  $campaigns
+     */
+    private function operatingRules(string $workspaceId, array $clients, array $campaigns): void
+    {
+        $owner = [];
+
+        foreach ($campaigns as $campaign) {
+            $owner[(string) $campaign['id']] = (string) $campaign['client_id'];
+        }
+
+        $totals = [];
+
+        foreach (DB::table('daily_metrics')->where('workspace_id', $workspaceId)->where('entity_type', 'campaign')
+            ->selectRaw('campaign_id, sum(spend_minor) as spend, sum(conversions) as conv, sum(revenue_minor) as revenue')
+            ->groupBy('campaign_id')->get() as $row) {
+            $client = $owner[(string) $row->campaign_id] ?? null;
+
+            if ($client === null) {
+                continue;
+            }
+
+            $totals[$client]['spend'] = ($totals[$client]['spend'] ?? 0) + (int) $row->spend;
+            $totals[$client]['conv'] = ($totals[$client]['conv'] ?? 0) + (float) $row->conv;
+            $totals[$client]['revenue'] = ($totals[$client]['revenue'] ?? 0) + (int) $row->revenue;
+        }
+
+        $rows = [];
+        $now = now();
+
+        foreach ($clients as $i => $client) {
+            $t = $totals[(string) $client['id']] ?? null;
+
+            if ($t === null || $t['spend'] <= 0) {
+                continue;
+            }
+
+            $rows[] = [
+                'id' => $this->ids->generate(),
+                'workspace_id' => $workspaceId,
+                'client_id' => $client['id'],
+                'project_id' => null,
+                'primary_kpi' => $t['revenue'] > 0 ? 'roas' : 'cpa',
+                'target_cpa_minor' => $t['conv'] > 0 ? (int) round($t['spend'] / $t['conv'] * 1.15) : null,
+                'target_roas' => $t['revenue'] > 0 ? round($t['revenue'] / $t['spend'] * 0.9, 2) : null,
+                'max_budget_change_pct' => $i % 2 === 0 ? 25 : null,
+                'revenue_authority' => $t['revenue'] > 0 ? 'platform_reported' : null,
+                'forbidden_terms' => '[]',
+                'important_dates' => '[]',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        $this->insert('operating_rules', $rows);
+    }
+
     private function clear(string $workspaceId): void
     {
         $accounts = DB::table('external_accounts')->where('workspace_id', $workspaceId)
@@ -337,6 +405,10 @@ final class DemoAgencySeeder extends Seeder
             DB::table('projects')->whereIn('client_id', $clients)->delete();
             DB::table('clients')->whereIn('id', $clients)->delete();
         }
+
+        /* The demo workspace's own agent history goes with the rest, so a re-run starts from an honest morning. */
+        DB::table('agent_runs')->where('workspace_id', $workspaceId)->delete();
+        DB::table('agent_tool_calls')->where('workspace_id', $workspaceId)->delete();
 
         /* And whatever those notifications left pointing at nothing — an earlier run's, or one a deleted record left behind. */
         foreach (['tasks' => 'task', 'approval_requests' => 'approval', 'client_requests' => 'client_request'] as $table => $subject) {

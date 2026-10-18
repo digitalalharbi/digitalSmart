@@ -15,6 +15,7 @@ use App\Interface\Console\CommissionProvider;
 use App\Interface\Console\DemoAgencyCommand;
 use App\Interface\Console\PruneExportsCommand;
 use App\Interface\Console\ReadStores;
+use App\Interface\Console\RunAgentsCommand;
 use App\Interface\Console\RunReportSchedulesCommand;
 use App\Interface\Console\SyncAccessCatalogue;
 use App\Interface\Console\SyncAdvertisingData;
@@ -50,6 +51,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         BuildDigestsCommand::class,
+        RunAgentsCommand::class,
         CommissionProvider::class,
         DemoAgencyCommand::class,
         PruneExportsCommand::class,

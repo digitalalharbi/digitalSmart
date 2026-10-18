@@ -12,6 +12,8 @@ use App\Application\Advertising\Contract\CampaignAssignmentRepository;
 use App\Application\Advertising\Contract\CampaignControlReadModel;
 use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegistryContract;
 use App\Application\Advertising\Contract\SyncJournal;
+use App\Application\Agents\Contract\AgentActors;
+use App\Application\Agents\Contract\AgentRunLog;
 use App\Application\Agents\Contract\OperatingRuleRepository;
 use App\Application\Agents\Contract\ProposalHistory;
 use App\Application\Agents\Contract\ToolCallLog;
@@ -148,6 +150,8 @@ use App\Infrastructure\Access\RequestActorContext;
 use App\Infrastructure\Access\WorkspaceAccessSynchroniser;
 use App\Infrastructure\Advertising\Sandbox\SandboxFixtures;
 use App\Infrastructure\Advertising\SyncAdapterRegistry;
+use App\Infrastructure\Agents\EloquentAgentIdentity;
+use App\Infrastructure\Agents\EloquentAgentRunLog;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
 use App\Infrastructure\Commerce\CommerceSyncAdapterRegistry;
 use App\Infrastructure\Commerce\Sandbox\CommerceFixtures;
@@ -400,6 +404,8 @@ final class AppServiceProvider extends ServiceProvider
         AutomationRuleRepository::class => EloquentAutomationRuleRepository::class,
         OperatingRuleRepository::class => EloquentOperatingRuleRepository::class,
         ProposalHistory::class => EloquentProposalHistory::class,
+        AgentActors::class => EloquentAgentIdentity::class,
+        AgentRunLog::class => EloquentAgentRunLog::class,
         ToolCallLog::class => EloquentToolCallLog::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
         ScheduleStore::class => EloquentScheduleStore::class,

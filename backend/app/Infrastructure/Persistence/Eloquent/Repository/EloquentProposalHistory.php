@@ -26,6 +26,15 @@ final readonly class EloquentProposalHistory implements ProposalHistory
             ->exists();
     }
 
+    public function hasOpenTask(string $workspaceId, string $title): bool
+    {
+        return DB::table('tasks')
+            ->where('workspace_id', $workspaceId)
+            ->where('title', $title)
+            ->whereNotIn('state', ['done', 'cancelled'])
+            ->exists();
+    }
+
     private function base(string $workspaceId, ApprovalKind $kind, string $externalCampaignId): Builder
     {
         return DB::table('approval_requests')
