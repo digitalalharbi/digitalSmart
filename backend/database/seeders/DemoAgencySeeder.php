@@ -191,6 +191,7 @@ final class DemoAgencySeeder extends Seeder
             $this->bindings($workspaceId, $projects, $accounts);
             $campaigns = $this->campaigns($workspaceId, $accounts, $projects);
             $conversions = $this->metrics($workspaceId, $campaigns);
+            $this->hierarchy($workspaceId, $campaigns);
 
             $this->budgets($workspaceId, $clients, $campaigns, $people['finance'], $conversions['spend']);
             $this->leads($workspaceId, $clients, $campaigns, $people, $conversions['leads']);
@@ -308,6 +309,119 @@ final class DemoAgencySeeder extends Seeder
 
     /** Remove what an earlier run created, and only that. */
     /**
+     * Ad groups, ads and creatives under the busiest campaigns, with their own daily figures.
+     *
+     * Each campaign's real daily rows are split across two ad groups and two ads apiece, so the hierarchy always adds
+     * up to the campaign above it. Every fifth campaign has one ad that is tiring — its click-through falls and its
+     * frequency climbs over the last week — which is what the Creative agent is there to notice. Creatives point at
+     * local DEMO artwork under `/demo-creatives`; nothing pretends to be a platform's own preview.
+     *
+     * @param  list<array<string, mixed>>  $campaigns
+     */
+    private function hierarchy(string $workspaceId, array $campaigns): void
+    {
+        $chosen = array_slice(array_values(array_filter($campaigns, static fn (array $c): bool => $c['status'] === 'active')), 0, 150);
+        $now = now();
+        $groups = $ads = $creatives = [];
+        $metricRows = [];
+        $design = 0;
+
+        foreach ($chosen as $n => $campaign) {
+            $tiring = $n % 5 === 0;
+            $daily = DB::table('daily_metrics')->where('entity_type', 'campaign')->where('campaign_id', $campaign['id'])
+                ->orderBy('date')->get(['date', 'spend_minor', 'revenue_minor', 'impressions', 'reach', 'clicks', 'conversions']);
+
+            foreach ([['Prospecting', 0.6], ['Retargeting', 0.4]] as $g => [$groupName, $groupShare]) {
+                $groupId = $this->ids->generate();
+                $groups[] = [
+                    'id' => $groupId, 'workspace_id' => $workspaceId, 'campaign_id' => $campaign['id'], 'external_account_id' => $campaign['account_id'],
+                    'provider' => $campaign['provider'], 'external_id' => self::TAG.'ag-'.$campaign['id'].'-'.$g, 'name' => $groupName,
+                    'status' => 'active', 'raw_status' => 'ACTIVE', 'optimization_goal' => $campaign['objective'],
+                    'budget_mode' => $g === 0 ? 'daily' : 'inherited', 'budget_minor' => $g === 0 ? (int) round($campaign['budget'] * $groupShare) : null,
+                    'currency' => $campaign['currency'], 'targeting' => json_encode(['summary' => $g === 0 ? 'Broad, 18–44, KSA' : 'Site visitors, 30 days'], JSON_THROW_ON_ERROR),
+                    'metadata' => '{}', 'synced_at' => $now, 'created_at' => $now, 'updated_at' => $now,
+                ];
+
+                foreach ([['A', 0.55], ['B', 0.45]] as $a => [$variant, $adShare]) {
+                    $design = $design % 12 + 1;
+                    $creativeId = $this->ids->generate();
+                    $adId = $this->ids->generate();
+                    $fatigued = $tiring && $g === 0 && $a === 0;
+
+                    $creatives[] = [
+                        'id' => $creativeId, 'workspace_id' => $workspaceId, 'external_account_id' => $campaign['account_id'],
+                        'provider' => $campaign['provider'], 'external_id' => self::TAG.'cr-'.$adId, 'name' => $campaign['programme'].' — '.$variant,
+                        'format' => $design % 3 === 0 ? 'video' : 'image', 'title' => $campaign['programme'], 'body' => 'DEMO creative for the sandbox agency.',
+                        'call_to_action' => 'Learn more', 'thumbnail_url' => sprintf('/demo-creatives/creative-%02d.svg', $design),
+                        'preview_url' => sprintf('/demo-creatives/creative-%02d.svg', $design),
+                        'metadata' => '{"demo":true}', 'synced_at' => $now, 'created_at' => $now, 'updated_at' => $now,
+                    ];
+                    $ads[] = [
+                        'id' => $adId, 'workspace_id' => $workspaceId, 'campaign_id' => $campaign['id'], 'ad_group_id' => $groupId,
+                        'external_account_id' => $campaign['account_id'], 'creative_id' => $creativeId, 'provider' => $campaign['provider'],
+                        'external_id' => self::TAG.'ad-'.$adId, 'name' => $groupName.' — '.$variant, 'status' => 'active', 'raw_status' => 'ACTIVE',
+                        'metadata' => '{}', 'synced_at' => $now, 'created_at' => $now, 'updated_at' => $now,
+                    ];
+
+                    $days = count($daily);
+
+                    foreach ($daily as $d => $day) {
+                        $share = $groupShare * $adShare;
+                        /* The tiring ad: the last week's clicks fall away and the same people see it more often. */
+                        $tired = $fatigued && $d >= $days - 7 ? 1 - 0.09 * ($d - ($days - 8)) : 1.0;
+                        $impressions = (int) round(((int) $day->impressions) * $share);
+                        $reach = (int) round(((int) $day->reach) * $share * ($fatigued && $d >= $days - 7 ? 0.55 : 1.0));
+
+                        foreach (['ad_group' => $groupId, 'ad' => $adId] as $type => $entity) {
+                            if ($type === 'ad_group' && $a === 1) {
+                                continue;
+                            }
+
+                            $scale = $type === 'ad_group' ? $groupShare : $share;
+                            $metricRows[] = [
+                                'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'external_account_id' => $campaign['account_id'],
+                                'provider' => $campaign['provider'], 'entity_type' => $type, 'entity_id' => $entity, 'external_entity_id' => $entity,
+                                'campaign_id' => $campaign['id'], 'ad_group_id' => $groupId, 'ad_id' => $type === 'ad' ? $adId : null,
+                                'date' => $day->date, 'account_timezone' => 'Asia/Riyadh', 'currency' => $campaign['currency'],
+                                'spend_minor' => $day->spend_minor === null ? null : (int) round(((int) $day->spend_minor) * $scale),
+                                'revenue_minor' => $day->revenue_minor === null ? null : (int) round(((int) $day->revenue_minor) * $scale * ($type === 'ad' ? $tired : 1)),
+                                'impressions' => $type === 'ad' ? $impressions : (int) round(((int) $day->impressions) * $scale),
+                                'reach' => $type === 'ad' ? min($reach, $impressions) : (int) round(((int) $day->reach) * $scale),
+                                'clicks' => (int) round(((int) $day->clicks) * $scale * ($type === 'ad' ? $tired : 1)),
+                                'conversions' => round(((float) $day->conversions) * $scale * ($type === 'ad' ? $tired : 1), 4),
+                                'source' => 'sandbox', 'metadata' => '{}', 'synced_at' => $now, 'created_at' => $now, 'updated_at' => $now,
+                            ];
+                        }
+
+                        if (count($metricRows) >= self::CHUNK) {
+                            $this->insertHierarchy($groups, $creatives, $ads, $metricRows);
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->insertHierarchy($groups, $creatives, $ads, $metricRows);
+    }
+
+    /**
+     * Parents before children, and empty the buffers.
+     *
+     * @param  list<array<string, mixed>>  $groups
+     * @param  list<array<string, mixed>>  $creatives
+     * @param  list<array<string, mixed>>  $ads
+     * @param  list<array<string, mixed>>  $metrics
+     */
+    private function insertHierarchy(array &$groups, array &$creatives, array &$ads, array &$metrics): void
+    {
+        $this->insert('ad_groups', $groups);
+        $this->insert('creatives', $creatives);
+        $this->insert('ads', $ads);
+        $this->insert('daily_metrics', $metrics);
+        $groups = $creatives = $ads = $metrics = [];
+    }
+
+    /**
      * Each client's own targets, derived from how it has actually performed — a CPA a little above its average and a
      * return a little under — so some campaigns sit outside them and the agents have something honest to say. A
      * client with no revenue gets no return target: the product does not invent one.
@@ -376,6 +490,7 @@ final class DemoAgencySeeder extends Seeder
 
         if ($accounts !== []) {
             DB::table('daily_metrics')->whereIn('external_account_id', $accounts)->delete();
+            DB::table('creatives')->whereIn('external_account_id', $accounts)->delete();
             DB::table('campaigns')->whereIn('external_account_id', $accounts)->delete();
             DB::table('project_integration_bindings')->whereIn('external_account_id', $accounts)->delete();
             DB::table('external_accounts')->whereIn('id', $accounts)->delete();

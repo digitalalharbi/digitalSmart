@@ -15,6 +15,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { KpiTile } from '@/shared/ui/kpi-tile';
 import { TrendChart } from '@/shared/ui/viz';
 import { BudgetBar } from './CampaignParts';
+import { Hierarchy } from './Hierarchy';
 import { QuickActions } from './QuickActions';
 import { objectiveName, resultName } from './labels';
 import { money, resultText } from './text';
@@ -199,6 +200,15 @@ export function CampaignDetailPage() {
                   label={t('campaignDetail.trendLabel', { name: row.name })}
                   height={220}
                 />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('hierarchy.title')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Hierarchy campaignId={row.id} defaultOpen />
               </CardContent>
             </Card>
 

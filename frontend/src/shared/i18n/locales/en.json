@@ -226,6 +226,18 @@
     "PROJECT_NEEDS_ACTION": "{{count}} items need action.",
     "REPORT_DUE": "Report due: {{title}}"
   },
+  "hierarchy": {
+    "toggle": "Ad groups and ads",
+    "title": "Ad groups and ads",
+    "none": "No ad groups reported.",
+    "groups": "Ad groups",
+    "daily": "{{amount}}/day",
+    "pause": "Pause",
+    "notDocumented": "Not available for this level yet",
+    "ctr": "CTR {{value}}%",
+    "frequency": "freq. {{value}}",
+    "tiring": "Tiring"
+  },
   "nav": {
     "aiCenter": "MCP & AI",
     "automation": "Rules",

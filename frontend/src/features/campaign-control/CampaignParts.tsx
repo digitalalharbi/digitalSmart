@@ -10,6 +10,7 @@ import { ProviderLogo } from '@/features/integrations';
 import { Pin, PinOff } from 'lucide-react';
 import { usePinMutation, useShortcutsQuery } from '@/features/search';
 import { resultName, statusName } from './labels';
+import { Hierarchy } from './Hierarchy';
 import { QuickActions } from './QuickActions';
 import { reasonText } from '@/shared/lib/reason';
 import { HEALTH_TO_STATE, type CampaignRow } from './types';
@@ -143,6 +144,7 @@ export function CampaignCard({ row }: { row: CampaignRow }) {
         <Sparkline values={row.trend} label={t('campaignControl.trendLabel', { name: row.name })} />
       </div>
 
+      <Hierarchy campaignId={row.id} />
       <QuickActions row={row} />
     </article>
   );

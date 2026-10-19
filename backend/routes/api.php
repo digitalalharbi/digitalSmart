@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Interface\Http\Controller\Activity\ActivityController;
 use App\Interface\Http\Controller\Advertising\CampaignControlController;
+use App\Interface\Http\Controller\Advertising\CampaignHierarchyController;
 use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
 use App\Interface\Http\Controller\Agents\AgentOverviewController;
 use App\Interface\Http\Controller\Agents\McpController;
@@ -832,6 +833,9 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      */
     Route::get('campaigns/control', [CampaignControlController::class, 'index'])
         ->name('campaigns.control.index');
+
+    Route::get('campaigns/{campaign}/hierarchy', CampaignHierarchyController::class)
+        ->whereUuid('campaign')->name('campaigns.hierarchy');
 
     /* Ask for a pause or a resume. Writes an approval request; it never touches the platform. */
     Route::post('campaigns/{campaign}/status-request', [CampaignControlController::class, 'requestStatusChange'])

@@ -226,6 +226,18 @@
     "PROJECT_NEEDS_ACTION": "{{count}} عناصر تحتاج إجراء.",
     "REPORT_DUE": "تقرير مستحق: {{title}}"
   },
+  "hierarchy": {
+    "toggle": "المجموعات والإعلانات",
+    "title": "المجموعات والإعلانات",
+    "none": "لا توجد مجموعات.",
+    "groups": "المجموعات الإعلانية",
+    "daily": "{{amount}}/يوم",
+    "pause": "إيقاف",
+    "notDocumented": "غير متاح لهذا المستوى بعد",
+    "ctr": "نسبة النقر {{value}}%",
+    "frequency": "التكرار {{value}}",
+    "tiring": "مُرهَق"
+  },
   "nav": {
     "aiCenter": "MCP والذكاء الاصطناعي",
     "automation": "القواعد",

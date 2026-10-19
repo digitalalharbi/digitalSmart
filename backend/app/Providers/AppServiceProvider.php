@@ -10,6 +10,7 @@ use App\Application\Advertising\Command\RequestCampaignStatusChange as RequestSt
 use App\Application\Advertising\Contract\AdvertisingStore;
 use App\Application\Advertising\Contract\CampaignAssignmentRepository;
 use App\Application\Advertising\Contract\CampaignControlReadModel;
+use App\Application\Advertising\Contract\CampaignHierarchyReadModel;
 use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegistryContract;
 use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Agents\Contract\AgentActors;
@@ -188,6 +189,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBenchmarkReadModel
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetControlReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentBudgetSpendReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentCampaignControlReadModel;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentCampaignHierarchyReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientIndustryDirectory;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientVisibility;
@@ -407,6 +409,7 @@ final class AppServiceProvider extends ServiceProvider
         OperatingRuleRepository::class => EloquentOperatingRuleRepository::class,
         ProposalHistory::class => EloquentProposalHistory::class,
         AgentActors::class => EloquentAgentIdentity::class,
+        CampaignHierarchyReadModel::class => EloquentCampaignHierarchyReadModel::class,
         AgentRunLog::class => EloquentAgentRunLog::class,
         AgentReadModel::class => EloquentAgentReadModel::class,
         ToolCallLog::class => EloquentToolCallLog::class,
