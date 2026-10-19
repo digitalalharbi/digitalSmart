@@ -1118,6 +1118,11 @@
       "failed": "That did not save. Nothing has changed.",
       "open": "Manage access",
       "listLabel": "People on this project"
+    },
+    "card": {
+      "schedule": "Schedule",
+      "campaigns": "Campaigns",
+      "work": "Open work"
     }
   },
   "administration": {

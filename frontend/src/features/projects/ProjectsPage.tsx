@@ -22,7 +22,9 @@ import {
 } from '@/shared/ui/table';
 import { LoadingRegion } from '@/shared/ui/loading-region';
 import { PageHeader } from '@/shared/ui/page-header';
+import { usePortfolio } from '@/features/portfolio';
 import { useProjectsQuery } from './api';
+import { ProjectCard } from './ProjectCard';
 import { ProjectFormDialog } from './ProjectFormDialog';
 import { ProjectPeopleDialog } from './ProjectPeopleDialog';
 import { ProjectRowActions } from './ProjectRowActions';
@@ -42,6 +44,14 @@ export function ProjectsPage() {
   const [editing, setEditing] = useState<Project | undefined>(undefined);
   const [managingPeople, setManagingPeople] = useState<Project | null>(null);
   const [isFormOpen, setFormOpen] = useState(false);
+  const [view, setView] = useState<'grid' | 'table'>('grid');
+  const [now] = useState(() => Date.now());
+  /* A reader who may not see performance gets plain cards: a 403 here is not an error on this page. */
+  const portfolio = usePortfolio();
+  const figures = useMemo(
+    () => new Map((portfolio.data?.projects ?? []).map((p) => [p.id, p] as const)),
+    [portfolio.data],
+  );
 
   const params = useMemo(
     () => ({ search, status: statuses, page, per_page: PER_PAGE }),
@@ -114,6 +124,20 @@ export function ProjectsPage() {
           />
         </div>
 
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('clients.card.view')}>
+          {(['grid', 'table'] as const).map((option) => (
+            <Button
+              key={option}
+              size="sm"
+              variant={view === option ? 'subtle' : 'ghost'}
+              aria-pressed={view === option}
+              onClick={() => setView(option)}
+            >
+              {t(`clients.card.${option}`)}
+            </Button>
+          ))}
+        </div>
+
         <div
           className="flex flex-wrap gap-1.5"
           role="group"
@@ -179,83 +203,101 @@ export function ProjectsPage() {
 
       {data && data.data.length > 0 ? (
         <>
-          <DataTable label={t('nav.projects')} minWidth="52rem">
-            <TableHead>
-              <TableRow>
-                <TableHeader>{t('projects.columns.name')}</TableHeader>
-                <TableHeader>{t('projects.columns.client')}</TableHeader>
-                <TableHeader>{t('projects.columns.status')}</TableHeader>
-                <TableHeader>{t('projects.columns.schedule')}</TableHeader>
-                <TableHeader align="end">{t('projects.columns.members')}</TableHeader>
-                <TableHeader align="end">
-                  <span className="sr-only">{t('projects.columns.actions')}</span>
-                </TableHeader>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+          {view === 'grid' ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {data.data.map((project) => (
-                <TableRow key={project.id} isInteractive>
-                  <TableCell label={t('projects.columns.name')}>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Link
-                        to={`/projects/${project.id}`}
-                        className="text-content hover:text-content-brand font-medium hover:underline"
-                      >
-                        {project.name}
-                      </Link>
-                      {project.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
-                      {project.is_assigned ? (
-                        <Badge tone="accent">{t('projects.assigned')}</Badge>
-                      ) : null}
-                    </div>
-                    <span className="text-content-tertiary ds-numeric text-xs">
-                      {project.currency}
-                    </span>
-                  </TableCell>
-                  <TableCell
-                    label={t('projects.columns.client')}
-                    className="text-content-secondary"
-                  >
-                    {project.client.name}
-                  </TableCell>
-                  <TableCell label={t('projects.columns.status')}>
-                    <ProjectStatusBadge status={project.status} />
-                  </TableCell>
-                  <TableCell
-                    label={t('projects.columns.schedule')}
-                    className="text-content-secondary text-xs"
-                    isNumeric
-                  >
-                    {project.starts_on ?? '—'} → {project.ends_on ?? '—'}
-                  </TableCell>
-                  <TableCell label={t('projects.columns.members')} align="end" isNumeric>
-                    {/*
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  figures={figures.get(project.id)}
+                  now={now}
+                  onEdit={(value) => {
+                    setEditing(value);
+                    setFormOpen(true);
+                  }}
+                  onPeople={setManagingPeople}
+                />
+              ))}
+            </div>
+          ) : (
+            <DataTable label={t('nav.projects')} minWidth="52rem">
+              <TableHead>
+                <TableRow>
+                  <TableHeader>{t('projects.columns.name')}</TableHeader>
+                  <TableHeader>{t('projects.columns.client')}</TableHeader>
+                  <TableHeader>{t('projects.columns.status')}</TableHeader>
+                  <TableHeader>{t('projects.columns.schedule')}</TableHeader>
+                  <TableHeader align="end">{t('projects.columns.members')}</TableHeader>
+                  <TableHeader align="end">
+                    <span className="sr-only">{t('projects.columns.actions')}</span>
+                  </TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.data.map((project) => (
+                  <TableRow key={project.id} isInteractive>
+                    <TableCell label={t('projects.columns.name')}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Link
+                          to={`/projects/${project.id}`}
+                          className="text-content hover:text-content-brand font-medium hover:underline"
+                        >
+                          {project.name}
+                        </Link>
+                        {project.is_demo ? <Badge tone="warning">{t('status.demo')}</Badge> : null}
+                        {project.is_assigned ? (
+                          <Badge tone="accent">{t('projects.assigned')}</Badge>
+                        ) : null}
+                      </div>
+                      <span className="text-content-tertiary ds-numeric text-xs">
+                        {project.currency}
+                      </span>
+                    </TableCell>
+                    <TableCell
+                      label={t('projects.columns.client')}
+                      className="text-content-secondary"
+                    >
+                      {project.client.name}
+                    </TableCell>
+                    <TableCell label={t('projects.columns.status')}>
+                      <ProjectStatusBadge status={project.status} />
+                    </TableCell>
+                    <TableCell
+                      label={t('projects.columns.schedule')}
+                      className="text-content-secondary text-xs"
+                      isNumeric
+                    >
+                      {project.starts_on ?? '—'} → {project.ends_on ?? '—'}
+                    </TableCell>
+                    <TableCell label={t('projects.columns.members')} align="end" isNumeric>
+                      {/*
                       The count was the whole of this column and there was no way to change it — so the number
                       that decides who can see a client's work was read-only. It is a button now, because the
                       answer to "who can see this" is the thing somebody came to this page to change.
                     */}
-                    <button
-                      type="button"
-                      onClick={() => setManagingPeople(project)}
-                      className="text-content-brand hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ds-focus-ring)] focus-visible:outline-none"
-                      aria-label={t('projects.people.open')}
-                    >
-                      {formatNumber(project.member_count, locale)}
-                    </button>
-                  </TableCell>
-                  <TableCell align="end">
-                    <ProjectRowActions
-                      project={project}
-                      onEdit={(value) => {
-                        setEditing(value);
-                        setFormOpen(true);
-                      }}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </DataTable>
+                      <button
+                        type="button"
+                        onClick={() => setManagingPeople(project)}
+                        className="text-content-brand hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ds-focus-ring)] focus-visible:outline-none"
+                        aria-label={t('projects.people.open')}
+                      >
+                        {formatNumber(project.member_count, locale)}
+                      </button>
+                    </TableCell>
+                    <TableCell align="end">
+                      <ProjectRowActions
+                        project={project}
+                        onEdit={(value) => {
+                          setEditing(value);
+                          setFormOpen(true);
+                        }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </DataTable>
+          )}
 
           {data.meta.last_page > 1 ? (
             <nav
