@@ -78,7 +78,14 @@ test('shows the agents as workers and the routines with their next run', async (
 const runRules = (): void => {
   execSync('php artisan automation:run --force', {
     cwd: fileURLToPath(new URL('../../backend', import.meta.url)),
-    env: { ...process.env, DB_DATABASE: process.env['E2E_DB'] ?? 'digitalsmart_e2e' },
+    /*
+     * `scripts/e2e.sh` serves a database of its own and names it in E2E_DB; CI serves the one in `.env`. The command
+     * must read the database the API is serving.
+     */
+    env:
+      process.env['E2E_DB'] === undefined
+        ? process.env
+        : { ...process.env, DB_DATABASE: process.env['E2E_DB'] },
     stdio: 'pipe',
   });
 };
