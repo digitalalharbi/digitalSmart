@@ -13,23 +13,28 @@ request / issue → branch → implementation → tests → PR → CI green → 
 2. Implement. Stage **only the files you changed, by path** — another session works in the same folder (below).
 3. Run the gate (see "CI" below) and paste the real counts into the PR.
 4. Push the branch. Open a PR from `.github/pull_request_template.md` and answer every section.
-5. Review, then merge on GitHub (squash or merge commit — a merge on GitHub is not a push to `main`).
+5. Review, then merge on GitHub. A merge on GitHub is not a push to `main`. Where the merge queue is
+   enabled, merging adds the pull request to the queue: it is rebuilt on top of `main` plus anything queued
+   ahead of it, and lands only if the checks are green against that combination.
 6. `git fetch origin` — that is the state for the next piece of work.
 
 ## Protection of main
 
+The repository became public on 2026-10-19 (`docs/CI_STATUS.md`), which made rulesets free, so protection
+moved from the honour system to the server the same day.
+
 | Layer | State |
 |---|---|
-| Server-side branch protection / rulesets | **Not available**: GitHub answers *"Upgrade to GitHub Pro or make this repository public to enable this feature"* (HTTP 403, checked 2026-10-19). A paid upgrade is excluded by the no-fees rule. |
-| Local `pre-push` hook | **Active** — `.githooks/pre-push` refuses any push to `main` and runs the governance guard. Enable per clone with `git config core.hooksPath .githooks`. |
+| Ruleset `main protection` (id 25378817) | **Active.** Pull request required; `Governance`, `Backend` and `Frontend` required and the branch must be up to date; review threads resolved; no force-push; no deletion. |
+| Bypass | Repository admin, `always`. Deliberate: the emergency procedure below is a documented path, and a rule with no bypass would make it an untruth. |
+| Local `pre-push` hook | **Active, and still the only thing standing between the owner and an accidental direct push**, because the ruleset bypasses for an admin. `.githooks/pre-push` refuses any push to `main` and runs the governance guard. Enable per clone with `git config core.hooksPath .githooks`. |
 | Rule in `CLAUDE.md` | **Binding** on every session |
-
-If the owner makes the repository public (`docs/CI_STATUS.md`, option C), protection is enabled the same day:
-require a pull request, require the `governance`, `backend` and `frontend` checks, no force-push, no deletion.
 
 ## CI
 
-See `docs/CI_STATUS.md`. While GitHub Actions cannot run, "CI green" in a PR means the local gate output pasted in it.
+GitHub Actions runs. "CI green" in a pull request now means the three required checks are green on GitHub,
+and a reviewer can see it rather than take a pasted figure on trust. The full local gate is still run before
+opening a pull request, because the server does not run the end-to-end suite on every push.
 
 ## Working alongside another session
 
