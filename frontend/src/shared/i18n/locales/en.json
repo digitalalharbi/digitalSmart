@@ -838,7 +838,9 @@
     "next": "Next",
     "remove": "Remove",
     "clear": "Clear",
-    "info": "More information"
+    "info": "More information",
+    "more": "More",
+    "less": "Less"
   },
   "overview": {
     "title": "Overview",

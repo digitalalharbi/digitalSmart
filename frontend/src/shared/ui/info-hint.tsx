@@ -11,7 +11,16 @@ import { cn } from '@/shared/lib/cn';
  * screen reader gets it as the button's description either way — the text is always in the page, only the pixels are
  * saved.
  */
-export function InfoHint({ text, className }: { text: string; className?: string | undefined }) {
+export function InfoHint({
+  text,
+  className,
+  align = 'start',
+}: {
+  text: string;
+  className?: string | undefined;
+  /** Which edge the bubble hangs from — `end` for a hint in a card's far corner, so it opens inward. */
+  align?: 'start' | 'end';
+}) {
   const { t } = useTranslation();
   const id = useId();
 
@@ -28,7 +37,10 @@ export function InfoHint({ text, className }: { text: string; className?: string
       <span
         id={id}
         role="tooltip"
-        className="bg-surface border-line-subtle text-content-secondary invisible absolute start-0 top-full z-30 mt-1 w-72 max-w-[80vw] rounded-2xl border p-3 text-sm font-normal opacity-0 shadow-lg transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100"
+        className={cn(
+          'bg-surface border-line-subtle text-content-secondary invisible absolute top-full z-30 mt-1 w-72 max-w-[80vw] rounded-2xl border p-3 text-sm font-normal opacity-0 shadow-lg transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100',
+          align === 'end' ? 'end-0' : 'start-0',
+        )}
       >
         {text}
       </span>
