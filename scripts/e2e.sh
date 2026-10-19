@@ -11,6 +11,10 @@
 
 set -euo pipefail
 
+# A full disk fails this suite for reasons unrelated to the code (PostgreSQL stops answering). Override with
+# MIN_FREE_GB=<n> only knowingly.
+bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-disk.sh" "${MIN_FREE_GB:-10}"
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 E2E_DB="${E2E_DB:-digitalsmart_e2e}"
 API_PORT="${API_PORT:-8011}"
