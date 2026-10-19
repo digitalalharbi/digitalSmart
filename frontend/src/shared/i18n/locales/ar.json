@@ -325,7 +325,17 @@
       "UNCHANGED": "القيمة نفسها",
       "DUPLICATE_TASK": "المهمة مفتوحة مسبقًا",
       "AWAITING_CREDENTIALS": "المنصة غير مربوطة بعد",
-      "PROVIDER_WRITE_UNVERIFIED": "غير موثّق على هذه المنصة"
+      "PROVIDER_WRITE_UNVERIFIED": "غير موثّق على هذه المنصة",
+      "COOLING_DOWN": "اتُّخذ قرار بشأنها خلال اليوم الأخير",
+      "BUDGET_UNCHANGED": "القيمة كما هي",
+      "BUDGET_NOT_DAILY": "ليست ميزانية يومية",
+      "ABOVE_CEILING": "أعلى من حد ميزانية المشروع",
+      "CHANGE_TOO_LARGE": "التغيير أكبر من المسموح",
+      "NO_TARGET": "الحملة غير موجودة",
+      "FORBIDDEN": "غير مسموح",
+      "NOT_FOUND": "الحملة غير موجودة",
+      "FAILED": "تعذّر رفع المقترح",
+      "other": "رُفض بفحص أمان"
     },
     "status": {
       "paused": "متوقفة",
@@ -542,6 +552,11 @@
       "refused_few": "رُفضت {{count}}",
       "refused_many": "رُفضت {{count}}",
       "refused_other": "رُفضت {{count}}"
+    },
+    "actPlain": {
+      "propose_budget_cut": "خفض الميزانية",
+      "propose_budget_increase": "رفع الميزانية",
+      "propose_bid_change": "تغيير المزايدة"
     }
   },
   "aiCenter": {

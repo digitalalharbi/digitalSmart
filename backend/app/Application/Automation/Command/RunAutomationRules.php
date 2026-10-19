@@ -241,8 +241,9 @@ final readonly class RunAutomationRules
         $code = (string) ($outcome['error']['code'] ?? 'failed');
 
         return match ($code) {
-            'provider_not_documented', 'not_daily', 'no_daily_budget' => ['unsupported', strtoupper($code), $after, null],
-            'already_proposed', 'cooldown', 'duplicate_task', 'unchanged' => ['no_change', strtoupper($code), $after, null],
+            'provider_not_documented', 'not_daily', 'budget_not_daily', 'no_daily_budget' => ['unsupported', strtoupper($code), $after, null],
+            /* A campaign decided on within the last day is the gateway's cooldown, not a failure of the rule. */
+            'already_proposed', 'cooldown', 'cooling_down', 'duplicate_task', 'unchanged', 'budget_unchanged' => ['no_change', strtoupper($code), $after, null],
             default => ['failed', strtoupper($code), $after, null],
         };
     }

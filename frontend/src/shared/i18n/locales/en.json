@@ -301,7 +301,17 @@
       "UNCHANGED": "Already at that value",
       "DUPLICATE_TASK": "Task already open",
       "AWAITING_CREDENTIALS": "Platform not connected yet",
-      "PROVIDER_WRITE_UNVERIFIED": "Not verified on this platform"
+      "PROVIDER_WRITE_UNVERIFIED": "Not verified on this platform",
+      "COOLING_DOWN": "Decided on within the last day",
+      "BUDGET_UNCHANGED": "Already at that value",
+      "BUDGET_NOT_DAILY": "Not a daily budget",
+      "ABOVE_CEILING": "Above the project’s budget limit",
+      "CHANGE_TOO_LARGE": "Change larger than allowed",
+      "NO_TARGET": "Campaign not found",
+      "FORBIDDEN": "Not permitted",
+      "NOT_FOUND": "Campaign not found",
+      "FAILED": "The proposal could not be raised",
+      "other": "Refused by a safety check"
     },
     "status": {
       "paused": "Paused",
@@ -478,6 +488,11 @@
       "setMode": "Set {{mode}}",
       "refused_one": "{{count}} refused",
       "refused_other": "{{count}} refused"
+    },
+    "actPlain": {
+      "propose_budget_cut": "Decrease budget",
+      "propose_budget_increase": "Increase budget",
+      "propose_bid_change": "Change bid"
     }
   },
   "aiCenter": {

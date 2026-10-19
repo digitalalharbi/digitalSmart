@@ -197,7 +197,7 @@ export function ActionHistoryPage() {
                     ['NOTIFIED', 'COOLDOWN', 'CONFLICT'].includes(row.reason_code) ? null : (
                       <span className="text-content-tertiary text-xs">
                         {t(`automation.reason.${row.reason_code}`, {
-                          defaultValue: row.reason_code,
+                          defaultValue: t('automation.reason.other'),
                         })}
                       </span>
                     )}

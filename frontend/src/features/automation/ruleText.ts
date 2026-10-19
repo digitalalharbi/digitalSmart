@@ -108,7 +108,10 @@ export function actionText(
   action: RuleAction | 'notify',
   pct: number | null,
 ): string {
-  return t(`automation.act.${action}`, { pct: pct ?? 0 });
+  // A budget or bid action recorded without its percentage is named, not shown as "−0%".
+  if (pct === null && action.startsWith('propose_b')) return t(`automation.actPlain.${action}`);
+
+  return t(`automation.act.${action}`, { pct });
 }
 
 /** A moment as a person reads it in a log: "19 Oct 2026, 08:45" — Western digits in both languages, like the rest of the product. */

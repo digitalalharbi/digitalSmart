@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { TFunction } from 'i18next';
-import { conditionParts, limitText } from './ruleText';
+import { actionText, conditionParts, limitText } from './ruleText';
 
 const t = ((key: string) => key.split('.').pop() ?? key) as unknown as TFunction;
 
@@ -23,5 +23,14 @@ describe('rule text', () => {
       name: 'not_delivering',
       comparison: null,
     });
+  });
+
+  it('names a budget action recorded without its percentage instead of showing −0%', () => {
+    const full = ((key: string) => key) as unknown as TFunction;
+    expect(actionText(full, 'propose_budget_cut', null)).toBe(
+      'automation.actPlain.propose_budget_cut',
+    );
+    expect(actionText(full, 'propose_budget_cut', 20)).toBe('automation.act.propose_budget_cut');
+    expect(actionText(full, 'propose_pause', null)).toBe('automation.act.propose_pause');
   });
 });
