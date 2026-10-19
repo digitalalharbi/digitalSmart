@@ -306,6 +306,11 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
     {
         return DB::table('daily_metrics as m')
             ->whereColumn('m.campaign_id', 'c.id')
+            /*
+             * The campaign's own rows only. Its ad groups and ads carry the same `campaign_id` and report the same
+             * money again one level down; summing every level counted each riyal two or three times.
+             */
+            ->where('m.entity_type', 'campaign')
             ->whereBetween('m.date', [$from->format('Y-m-d'), $to->format('Y-m-d')])
             ->selectRaw('sum(m.spend_minor) as spend_minor')
             ->selectRaw('sum(m.revenue_minor) as revenue_minor')
