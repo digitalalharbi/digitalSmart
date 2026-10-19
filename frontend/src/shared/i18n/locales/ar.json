@@ -104,7 +104,11 @@
       "pauseNoSale": "إيقاف الحملات بلا مبيعات",
       "cpaSpike": "قفزة في تكلفة النتيجة",
       "noPurchases": "لا مشتريات",
-      "cplSpike": "قفزة تكلفة العميل المحتمل"
+      "cplSpike": "قفزة تكلفة العميل المحتمل",
+      "cutWeakAdSets": "إيقاف المجموعات الضعيفة",
+      "scaleWinningAdSets": "توسيع المجموعات الرابحة",
+      "pauseFatiguedAds": "إيقاف الإعلانات المُرهَقة",
+      "pauseZeroConversionAds": "إيقاف الإعلانات بلا تحويلات"
     },
     "severity": {
       "critical": "حرج",
@@ -156,7 +160,6 @@
       "mode": "الوضع",
       "schedule": "الجدولة",
       "campaigns": "الحملات (اختياري)",
-      "levelsSoon": "المجموعات الإعلانية والإعلانات: غير متاحة بعد",
       "metric": "المقياس",
       "operator": "الاتجاه",
       "removeCondition": "حذف الشرط",
@@ -186,7 +189,15 @@
       "onlyWhen": "احكم فقط عندما",
       "minSpend": "الإنفاق ≥",
       "minAge": "العمر ≥ (يوم)",
-      "minResults": "النتائج ≥"
+      "minResults": "النتائج ≥",
+      "level": "الحكم والتنفيذ على",
+      "levelOwnFigures": "تُقاس {{level}} بأرقامها الخاصة — لا بأرقام حملتها.",
+      "levelScoped_zero": "لم يُختر شيء من عرض الحملة.",
+      "levelScoped_one": "مقصورة على عنصر واحد اختير من عرض الحملة.",
+      "levelScoped_two": "مقصورة على عنصرين اختيرا من عرض الحملة.",
+      "levelScoped_few": "مقصورة على {{count}} عناصر اختيرت من عرض الحملة.",
+      "levelScoped_many": "مقصورة على {{count}} عنصرًا اختيرت من عرض الحملة.",
+      "levelScoped_other": "مقصورة على {{count}} عنصر اختيرت من عرض الحملة."
     },
     "covered": {
       "tracking": "مفعّلة دائمًا — فحوص التتبع",
@@ -226,7 +237,9 @@
       "anyStatus": "مفعّلة ومتوقفة",
       "anyMode": "كل الأوضاع",
       "anyPlatform": "كل المنصات",
-      "anyResult": "كل النتائج"
+      "anyResult": "كل النتائج",
+      "level": "المستوى",
+      "anyLevel": "أي مستوى"
     },
     "off": "متوقفة",
     "col": {
@@ -335,7 +348,9 @@
       "FORBIDDEN": "غير مسموح",
       "NOT_FOUND": "الحملة غير موجودة",
       "FAILED": "تعذّر رفع المقترح",
-      "other": "رُفض بفحص أمان"
+      "other": "رُفض بفحص أمان",
+      "WRONG_STATE": "ليست في حالة تسمح بهذا التغيير",
+      "LEVEL_MISMATCH": "القاعدة تحكم على مستوى آخر"
     },
     "status": {
       "paused": "متوقفة",
@@ -492,7 +507,9 @@
       "wouldAct": "ستُنفَّذ",
       "insufficient": "بيانات غير كافية",
       "skipped": "ستُتخطّى",
-      "nothingChanged": "اختبار فقط — لم يُغيَّر أو يُقترح شيء."
+      "nothingChanged": "اختبار فقط — لم يُغيَّر أو يُقترح شيء.",
+      "byLevel_ad_group": "{{groups}} مجموعة إعلانية في {{campaigns}} حملة",
+      "byLevel_ad": "{{ads}} إعلان في {{groups}} مجموعة إعلانية ضمن {{campaigns}} حملة"
     },
     "skip": {
       "unsupported_zero": "لا شيء",
@@ -557,6 +574,14 @@
       "propose_budget_cut": "خفض الميزانية",
       "propose_budget_increase": "رفع الميزانية",
       "propose_bid_change": "تغيير المزايدة"
+    },
+    "level": {
+      "campaign": "حملة",
+      "ad_group": "مجموعة إعلانية",
+      "ad": "إعلان",
+      "campaign_plural": "الحملات",
+      "ad_group_plural": "المجموعات الإعلانية",
+      "ad_plural": "الإعلانات"
     }
   },
   "aiCenter": {
@@ -790,7 +815,45 @@
     "notDocumented": "غير متاح لهذا المستوى بعد",
     "ctr": "نسبة النقر {{value}}%",
     "frequency": "التكرار {{value}}",
-    "tiring": "مُرهَق"
+    "tiring": "مُرهَق",
+    "askPause": "طلب الإيقاف",
+    "askResume": "طلب الاستئناف",
+    "notOffered": "لا توثّق هذه المنصة هذا التغيير على هذا المستوى.",
+    "choose": "اختيار {{name}}",
+    "paused": "متوقفة",
+    "adsIn": "الإعلانات في {{name}}",
+    "creatives": "الإبداعات",
+    "usedBy_zero": "لا يستخدمه أي إعلان",
+    "usedBy_one": "يستخدمه إعلان واحد",
+    "usedBy_two": "يستخدمه إعلانان",
+    "usedBy_few": "يستخدمه {{count}} إعلانات",
+    "usedBy_many": "يستخدمه {{count}} إعلانًا",
+    "usedBy_other": "يستخدمه {{count}} إعلان",
+    "bulk": {
+      "title": "تنفيذ على المختار",
+      "action": "الإجراء",
+      "request_pause": "طلب الإيقاف",
+      "request_resume": "طلب الاستئناف",
+      "create_task": "إنشاء مهمة",
+      "add_to_rule": "إضافة إلى قاعدة",
+      "tag": "وسم",
+      "rule": "القاعدة",
+      "why": "السبب (جملة واحدة)",
+      "apply": "تطبيق",
+      "result": "{{done}} نُفّذ · {{refused}} رُفض",
+      "chosen_ad_group_zero": "لم يُختر شيء",
+      "chosen_ad_group_one": "مجموعة إعلانية واحدة مختارة",
+      "chosen_ad_group_two": "مجموعتان إعلانيتان مختارة",
+      "chosen_ad_group_few": "{{count}} مجموعات إعلانية مختارة",
+      "chosen_ad_group_many": "{{count}} مجموعة إعلانية مختارة",
+      "chosen_ad_group_other": "{{count}} مجموعة إعلانية مختارة",
+      "chosen_ad_zero": "لم يُختر شيء",
+      "chosen_ad_one": "إعلان واحد مختار",
+      "chosen_ad_two": "إعلانان مختاران",
+      "chosen_ad_few": "{{count}} إعلانات مختارة",
+      "chosen_ad_many": "{{count}} إعلانًا مختارة",
+      "chosen_ad_other": "{{count}} إعلان مختارة"
+    }
   },
   "nav": {
     "aiCenter": "MCP والذكاء الاصطناعي",
@@ -4115,5 +4178,40 @@
       "previous_year": "مقابل الفترة نفسها العام الماضي",
       "none": "بلا مقارنة"
     }
+  },
+  "readiness": {
+    "title": "ما تسمح كل منصة لهذا المنتج بتغييره",
+    "lead": "مقروء من توثيق كل منصة نفسها، مستوى بمستوى. التغيير الموثّق جرى من أوله إلى آخره ببيانات اعتماد تجريبية؛ ولا تُعلَن درجة حيّة إلا بعد رحلة حقيقية.",
+    "failed": "تعذّر تحميل مصفوفة الجاهزية.",
+    "platform": "المنصة",
+    "level": "المستوى",
+    "change": {
+      "pause": "إيقاف",
+      "resume": "استئناف",
+      "budget": "الميزانية اليومية",
+      "bid": "المزايدة"
+    },
+    "credentials": {
+      "none": "لا اتصال",
+      "sandbox": "اتصال تجريبي",
+      "real": "بيانات اعتماد حقيقية مخزّنة"
+    },
+    "mcp": {
+      "documented": "خادم MCP الرسمي يوثّق الكتابة — لا يُستخدم لها",
+      "planned": "خادم MCP الرسمي للقراءة فقط",
+      "none": "خادم MCP الرسمي للقراءة فقط"
+    },
+    "state": {
+      "code_verified": "متحقَّق برمجيًا",
+      "sandbox_verified": "متحقَّق تجريبيًا",
+      "awaiting_credentials": "بانتظار بيانات الاعتماد",
+      "live_read_verified": "قراءة حيّة متحقَّقة",
+      "live_write_verified": "كتابة حيّة متحقَّقة"
+    },
+    "support": {
+      "not_offered": "غير متاح",
+      "not_wired": "موثّق · غير موصول"
+    },
+    "ladder": "متحقَّق برمجيًا ← متحقَّق تجريبيًا ← بانتظار بيانات الاعتماد ← قراءة حيّة ← كتابة حيّة. لا شيء هنا حيّ بعد. فُحص في {{date}}."
   }
 }

@@ -16,9 +16,11 @@ import { useCapabilities, useCreateRule, useSimulate, useUpdateRule } from './ap
 import { actionText, conditionParts } from './ruleText';
 import {
   DEFAULT_OPERATOR,
+  LEVELS,
   NO_THRESHOLD,
   PCT_ACTIONS,
   type CapabilityState,
+  type EntityLevel,
   type Operator,
   type RuleAction,
   type RuleCondition,
@@ -114,6 +116,7 @@ export function RuleBuilder({
     })),
   );
   const [campaignTerm, setCampaignTerm] = useState('');
+  const [level, setLevel] = useState<EntityLevel>(initial.object_level ?? 'campaign');
   const [rows, setRows] = useState<Row[]>(rowsOf(initial));
   const [logic, setLogic] = useState<'all' | 'any'>(initial.logic ?? 'all');
   const [windowDays, setWindowDays] = useState(initial.window_days ?? 7);
@@ -178,6 +181,10 @@ export function RuleBuilder({
       project_id: project?.id ?? null,
       providers: platforms,
       campaign_ids: campaigns.map((c) => c.id),
+      object_level: level,
+      /* An ad-group or ad scope is set from the campaign hierarchy ("Add to rule") and kept as it was. */
+      ad_group_ids: level === 'campaign' ? [] : (initial.ad_group_ids ?? []),
+      ad_ids: level === 'ad' ? (initial.ad_ids ?? []) : [],
       schedule,
       schedule_time: schedule === 'daily' ? time : null,
       timezone: 'Asia/Riyadh',
@@ -196,15 +203,40 @@ export function RuleBuilder({
     ) &&
     mode !== 'auto';
 
-  const scoped = (capabilities.data ?? []).filter(
-    (c) => platforms.length === 0 || platforms.includes(c.provider),
-  );
+  const scoped = (capabilities.data ?? [])
+    .filter((c) => platforms.length === 0 || platforms.includes(c.provider))
+    .map((c) => ({
+      label: c.label,
+      ...(c.levels[level] ?? { metrics: c.metrics, actions: c.actions }),
+    }));
+  /* Only what this level has: no week-on-week cost below a campaign, no budget on an ad. */
+  const metricsHere =
+    scoped.length === 0
+      ? METRICS
+      : METRICS.filter((m) => scoped.some((c) => c.metrics.includes(m)));
+  const actionsHere =
+    scoped.length === 0
+      ? ACTIONS
+      : ACTIONS.filter((a) => scoped.some((c) => c.actions[a] !== undefined));
+  const changeLevel = (next: EntityLevel) => {
+    setLevel(next);
+    const caps = (capabilities.data ?? []).map((c) => c.levels[next]);
+    if (caps.length === 0) return;
+    setRows((all) =>
+      all.map((r) =>
+        caps.some((c) => c.metrics.includes(r.metric))
+          ? r
+          : { ...r, metric: 'spend', operator: DEFAULT_OPERATOR.spend },
+      ),
+    );
+    if (!caps.some((c) => c.actions[action] !== undefined)) setAction('alert');
+  };
   /** Platforms in scope, grouped by what they would say to this action — so nothing is promised that will not happen. */
   const statesOf = (a: RuleAction) => {
     const groups: Partial<Record<CapabilityState, string[]>> = {};
 
     for (const c of scoped) {
-      const state = c.actions[a];
+      const state = c.actions[a] ?? 'unsupported';
 
       if (state !== 'supported') (groups[state] ??= []).push(c.label);
     }
@@ -213,7 +245,7 @@ export function RuleBuilder({
   };
   /* A bid change is wired on no platform: it is shown so it can be named, and cannot be chosen. */
   const nowhere = (a: RuleAction) =>
-    scoped.length > 0 && scoped.every((c) => c.actions[a] === 'unsupported');
+    scoped.length > 0 && scoped.every((c) => (c.actions[a] ?? 'unsupported') === 'unsupported');
   const save = ruleId === undefined ? create : update;
   const setRow = (index: number, patch: Partial<Row>) =>
     setRows((all) => all.map((r, i) => (i === index ? { ...r, ...patch } : r)));
@@ -340,10 +372,44 @@ export function RuleBuilder({
               ))}
             </ul>
           )}
-          <p className="text-content-tertiary flex items-center gap-1.5 text-xs">
-            <CircleSlash aria-hidden className="size-3" />
-            {t('automation.builder.levelsSoon')}
-          </p>
+          <div
+            role="group"
+            aria-label={t('automation.builder.level')}
+            className="flex flex-col gap-1.5"
+          >
+            <span className="text-content-tertiary text-xs">{t('automation.builder.level')}</span>
+            <div className="flex flex-wrap gap-1.5">
+              {LEVELS.map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  aria-pressed={level === l}
+                  onClick={() => changeLevel(l)}
+                  className={cn(
+                    'rounded-full px-3 py-1.5 text-xs font-semibold',
+                    level === l
+                      ? 'bg-action text-action-contrast'
+                      : 'bg-surface-sunken text-content-secondary',
+                  )}
+                >
+                  {t(`automation.level.${l}_plural`)}
+                </button>
+              ))}
+            </div>
+            {level === 'campaign' ? null : (
+              <p className="text-content-tertiary flex items-center gap-1.5 text-xs">
+                <CircleSlash aria-hidden className="size-3" />
+                {t('automation.builder.levelOwnFigures', {
+                  level: t(`automation.level.${level}_plural`),
+                })}
+                {(level === 'ad' ? initial.ad_ids : initial.ad_group_ids)?.length
+                  ? ` ${t('automation.builder.levelScoped', {
+                      count: (level === 'ad' ? initial.ad_ids : initial.ad_group_ids)?.length ?? 0,
+                    })}`
+                  : ''}
+              </p>
+            )}
+          </div>
         </Step>
 
         <Step n={2} title={t('automation.builder.conditions')}>
@@ -361,7 +427,10 @@ export function RuleBuilder({
                   setRow(index, { metric, operator: DEFAULT_OPERATOR[metric] });
                 }}
               >
-                {METRICS.map((m) => (
+                {(metricsHere.includes(row.metric)
+                  ? metricsHere
+                  : [row.metric, ...metricsHere]
+                ).map((m) => (
                   <option key={m} value={m}>
                     {t(`automation.short.${m}`)}
                   </option>
@@ -498,7 +567,7 @@ export function RuleBuilder({
 
         <Step n={3} title={t('automation.builder.action')}>
           <div className="grid gap-2 sm:grid-cols-2">
-            {ACTIONS.map((a) => {
+            {actionsHere.map((a) => {
               const states = statesOf(a);
 
               return (
@@ -675,6 +744,15 @@ export function RuleBuilder({
                 </div>
               ))}
             </dl>
+            {simulate.data.level === 'campaign' ? null : (
+              <p className="text-content-secondary text-xs">
+                {t(`automation.dry.byLevel_${simulate.data.level}`, {
+                  ads: simulate.data.matched_by_level.ad,
+                  groups: simulate.data.matched_by_level.ad_group,
+                  campaigns: simulate.data.matched_by_level.campaign,
+                })}
+              </p>
+            )}
             {Object.keys(simulate.data.skipped).length === 0 ? null : (
               <ul className="flex flex-wrap gap-1.5" aria-label={t('automation.dry.skipped')}>
                 {Object.entries(simulate.data.skipped).map(([reason, count]) => (
@@ -690,11 +768,18 @@ export function RuleBuilder({
             <ul className="flex flex-col gap-1.5">
               {simulate.data.objects.slice(0, 8).map((o) => (
                 <li
-                  key={o.campaign_id}
+                  key={o.entity_id}
                   className="bg-surface-sunken flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs"
                 >
-                  <span className="min-w-0 truncate" dir="auto">
-                    {o.campaign}
+                  <span className="flex min-w-0 flex-col">
+                    <span className="truncate" dir="auto">
+                      {o.name}
+                    </span>
+                    {o.parent === null ? null : (
+                      <span className="text-content-tertiary truncate" dir="auto">
+                        {o.parent}
+                      </span>
+                    )}
                   </span>
                   <span
                     className={cn(

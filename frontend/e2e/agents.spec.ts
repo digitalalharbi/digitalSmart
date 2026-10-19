@@ -45,7 +45,7 @@ test('the weekly briefs are on Reports, per currency, with the days they cover',
   await expect(briefs.getByText(/days reported/).first()).toBeVisible();
 });
 
-test('a campaign opens into its ad groups and ads, and their writes are shown as unavailable', async ({
+test('a campaign opens into its ad groups and ads, and what can be asked at each level', async ({
   page,
 }) => {
   await signIn(page, ACCOUNTS.owner);
@@ -55,9 +55,10 @@ test('a campaign opens into its ad groups and ads, and their writes are shown as
   await card.getByRole('button', { name: 'Ad groups and ads' }).click();
   const groups = card.getByRole('list', { name: 'Ad groups' });
   await expect(groups).toBeVisible(SLOW);
+  // Asking is offered where the campaign's platform documents the change at that level — a request, never a change.
   await expect(
-    groups.getByRole('button', { name: /Pause — Not available/ }).first(),
-  ).toBeDisabled();
+    groups.getByRole('button', { name: /^Ask to (pause|resume)/ }).first(),
+  ).toBeVisible();
 });
 
 test('a rule that opens tasks needs trust 3, and level 4 cannot be chosen', async ({ page }) => {

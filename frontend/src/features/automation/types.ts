@@ -33,6 +33,10 @@ export type ExecutionResult =
   | 'unsupported'
   | 'cooldown'
   | 'conflict';
+/** What a rule judges and acts on. An ad group is a Meta ad set, a Snapchat ad squad, an X line item. */
+export type EntityLevel = 'campaign' | 'ad_group' | 'ad';
+export const LEVELS: EntityLevel[] = ['campaign', 'ad_group', 'ad'];
+
 export type CapabilityState = 'supported' | 'awaiting_credentials' | 'unverified' | 'unsupported';
 /** 0 watch · 1 alert · 2 propose (default) · 3 act internally. 4 — changing a platform unasked — is not available. */
 export type TrustLevel = 0 | 1 | 2 | 3;
@@ -102,7 +106,9 @@ export type Rule = {
   providers: string[];
   account_ids: string[];
   campaign_ids: string[];
-  object_level: 'campaign' | 'ad_group' | 'ad';
+  ad_group_ids: string[];
+  ad_ids: string[];
+  object_level: EntityLevel;
   schedule: RuleSchedule;
   schedule_time: string | null;
   timezone: string;
@@ -134,7 +140,9 @@ export type RuleDraft = {
   providers?: string[];
   account_ids?: string[];
   campaign_ids?: string[];
-  object_level?: 'campaign';
+  ad_group_ids?: string[];
+  ad_ids?: string[];
+  object_level?: EntityLevel;
   schedule?: RuleSchedule;
   schedule_time?: string | null;
   timezone?: string;
@@ -161,7 +169,8 @@ export type Execution = {
   client: { id: string; name: string } | null;
   project: { id: string; name: string } | null;
   provider: string | null;
-  object: { level: string; label: string; campaign_id: string | null };
+  /** The entity by name, and what it sits under by name — no ids for a person to read. */
+  object: { level: EntityLevel; label: string; parent: string | null; campaign_id: string | null };
   action: RuleAction | 'notify';
   before: Record<string, number | string | null>;
   after: Record<string, number | string | boolean | null>;
@@ -179,14 +188,22 @@ export type ChangeEntry = {
 };
 
 export type Simulation = {
+  level: EntityLevel;
   matched: number;
+  /** What matched at the rule's level and above: an ad rule's matches name their ad groups and campaigns. */
+  matched_by_level: Record<EntityLevel, number>;
   looked_at: number;
   insufficient: number;
   would_act: number;
   skipped: Record<string, number>;
   objects: Array<{
+    level: EntityLevel;
+    entity_id: string;
+    name: string;
+    parent: string | null;
     campaign_id: string;
     campaign: string;
+    ad_group_id: string | null;
     provider: string;
     client: string | null;
     project: string | null;
@@ -205,7 +222,12 @@ export type Capability = {
   label: string;
   credentials: 'connected' | 'awaiting_credentials';
   metrics: RuleMetric[];
-  actions: Record<RuleAction, CapabilityState>;
+  actions: Partial<Record<RuleAction, CapabilityState>>;
+  /** Each level on its own: the figures it has and the changes its platform documents there. */
+  levels: Record<
+    EntityLevel,
+    { metrics: RuleMetric[]; actions: Partial<Record<RuleAction, CapabilityState>> }
+  >;
 };
 
 /** The whole rule as a draft — so changing one switch never quietly resets its action or trust. */
@@ -234,6 +256,9 @@ export function draftOf(rule: Rule): RuleDraft {
     providers: rule.providers,
     account_ids: rule.account_ids,
     campaign_ids: rule.campaign_ids,
+    ad_group_ids: rule.ad_group_ids,
+    ad_ids: rule.ad_ids,
+    object_level: rule.object_level,
     schedule: rule.schedule,
     schedule_time: rule.schedule_time,
     timezone: rule.timezone,

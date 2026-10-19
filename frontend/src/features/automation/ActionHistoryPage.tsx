@@ -16,7 +16,7 @@ import {
 } from '@/shared/ui/table';
 import { useActionHistory } from './api';
 import { actionText, when } from './ruleText';
-import type { Execution, ExecutionResult } from './types';
+import { LEVELS, type Execution, type ExecutionResult } from './types';
 
 const RESULT_TONE: Record<ExecutionResult, string> = {
   completed: 'bg-success-surface text-success',
@@ -51,10 +51,12 @@ export function ActionHistoryPage() {
   const [params] = useSearchParams();
   const [days, setDays] = useState(30);
   const [result, setResult] = useState<string>('all');
+  const [level, setLevel] = useState<string>('all');
   const history = useActionHistory({
     days,
     rule_id: params.get('rule'),
     result: result === 'all' ? null : result,
+    level: level === 'all' ? null : level,
   });
 
   return (
@@ -70,6 +72,19 @@ export function ActionHistoryPage() {
           {[1, 7, 30, 90].map((d) => (
             <option key={d} value={d}>
               {t('automation.lastDays', { count: d })}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label={t('automation.filter.level')}
+          value={level}
+          onChange={(e) => setLevel(e.target.value)}
+          className="bg-surface text-content-secondary h-10 rounded-full px-3 text-sm shadow-xs"
+        >
+          <option value="all">{t('automation.filter.anyLevel')}</option>
+          {LEVELS.map((l) => (
+            <option key={l} value={l}>
+              {t(`automation.level.${l}_plural`)}
             </option>
           ))}
         </select>
@@ -156,19 +171,29 @@ export function ActionHistoryPage() {
                   </span>
                 </TableCell>
                 <TableCell>
-                  {row.object.campaign_id === null ? (
-                    <span className="text-sm" dir="auto">
-                      {row.object.label}
+                  <span className="flex min-w-0 flex-col">
+                    <span className="text-content-tertiary text-xs">
+                      {t(`automation.level.${row.object.level}`)}
                     </span>
-                  ) : (
-                    <Link
-                      to={`/campaigns/${row.object.campaign_id}`}
-                      className="text-content text-sm hover:underline"
-                      dir="auto"
-                    >
-                      {row.object.label}
-                    </Link>
-                  )}
+                    {row.object.campaign_id === null ? (
+                      <span className="text-sm" dir="auto">
+                        {row.object.label}
+                      </span>
+                    ) : (
+                      <Link
+                        to={`/campaigns/${row.object.campaign_id}`}
+                        className="text-content text-sm hover:underline"
+                        dir="auto"
+                      >
+                        {row.object.label}
+                      </Link>
+                    )}
+                    {row.object.parent === null ? null : (
+                      <span className="text-content-tertiary truncate text-xs" dir="auto">
+                        {row.object.parent}
+                      </span>
+                    )}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <span className="text-sm">{actionText(t, row.action, null)}</span>

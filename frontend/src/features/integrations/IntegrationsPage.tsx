@@ -10,6 +10,7 @@ import { AccountBindingPanel } from './AccountBindingPanel';
 import { AccountQueuePanel } from './AccountQueuePanel';
 import { ConnectionsPanel } from './ConnectionsPanel';
 import { ProviderCard } from './ProviderCard';
+import { ReadinessPanel } from './ReadinessPanel';
 import type { ProviderRow } from './types';
 import { useProvidersQuery } from './api';
 
@@ -135,6 +136,10 @@ export function IntegrationsPage() {
 
           <section className="border-line-subtle border-t pt-8">
             <AccountQueuePanel />
+          </section>
+
+          <section className="border-line-subtle border-t pt-8">
+            <ReadinessPanel />
           </section>
 
           <section className="border-line-subtle border-t pt-8">
