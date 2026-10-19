@@ -26,6 +26,16 @@ export type ProviderRow = {
   status_write: 'documented' | 'unverified' | 'not_supported';
   budget_write: 'documented' | 'unverified' | 'not_supported';
   connected: boolean;
+  /** The platform's own MCP server, as its official documentation describes it. */
+  mcp: {
+    trust: 'official' | 'none';
+    endpoint: string | null;
+    reads: boolean;
+    writes: 'documented' | 'planned' | 'none';
+    source: string | null;
+  };
+  read_route: 'mcp' | 'direct_api' | 'unavailable';
+  write_route: 'mcp' | 'direct_api' | 'unavailable';
 };
 
 export type AgentOverview = {

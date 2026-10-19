@@ -232,7 +232,14 @@
       "save": "Save",
       "remove": "Remove key",
       "note": "Figures, targets and forecasts are always calculated by digitalSmart. Models only write and sort words around them, and nothing a model returns can approve or change anything."
-    }
+    },
+    "mcpNone": "No official MCP",
+    "mcpOfficial": {
+      "none": "Official MCP · read-only",
+      "planned": "Official MCP · read-only (writes planned)",
+      "documented": "Official MCP · read & write"
+    },
+    "mcpRouting": "Platform MCP servers are listed from each platform's own documentation (checked 19 Oct 2026). Changes always go through the platform's direct API, where they are confirmed by reading them back."
   },
   "targets": {
     "title": "Targets and limits",

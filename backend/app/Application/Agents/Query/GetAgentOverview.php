@@ -11,7 +11,9 @@ use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Domain\Access\Permission;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderCategory;
+use App\Domain\Integration\ProviderMcp;
 use App\Domain\Integration\WriteOperation;
+use App\Domain\Integration\WriteSupport;
 
 /**
  * The administrator's view of the machinery: agents' last runs, the routines, the tools and their use, and what
@@ -62,6 +64,10 @@ final readonly class GetAgentOverview
                 'status_write' => $p->writeSupport(WriteOperation::PauseCampaign)->value,
                 'budget_write' => $p->writeSupport(WriteOperation::SetCampaignDailyBudget)->value,
                 'connected' => in_array($p->value, $connected, true),
+                /* No workspace connects a platform's MCP server yet, so reads go direct and writes go direct or nowhere. */
+                'mcp' => ProviderMcp::of($p),
+                'read_route' => ProviderMcp::route($p, 'read', false, false)['route'],
+                'write_route' => ProviderMcp::route($p, 'write', false, $p->writeSupport(WriteOperation::PauseCampaign) === WriteSupport::Documented)['route'],
             ], array_filter(Provider::cases(), static fn (Provider $p): bool => $p->category() === ProviderCategory::Advertising))),
             'routines' => [
                 ['key' => 'sync', 'schedule' => 'hourly', 'last_run' => $this->agents->lastSync($workspaceId)],

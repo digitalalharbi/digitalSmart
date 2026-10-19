@@ -214,10 +214,25 @@ export function AiCenterPage() {
                       >
                         {t('aiCenter.budget')} · {t(`aiCenter.support.${p.budget_write}`)}
                       </span>
+                      {p.mcp.source === null ? (
+                        <span className="bg-surface-sunken text-content-tertiary rounded-full px-2 py-0.5 font-medium">
+                          {t('aiCenter.mcpNone')}
+                        </span>
+                      ) : (
+                        <a
+                          href={p.mcp.source}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="bg-accent-subtle text-content-brand rounded-full px-2 py-0.5 font-medium"
+                        >
+                          {t(`aiCenter.mcpOfficial.${p.mcp.writes}`)}
+                        </a>
+                      )}
                     </span>
                   </li>
                 ))}
               </ul>
+              <p className="text-content-tertiary text-xs">{t('aiCenter.mcpRouting')}</p>
             </ChartCard>
 
             <ChartCard title={t('aiCenter.mcp')}>

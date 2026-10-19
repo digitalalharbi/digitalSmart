@@ -19,6 +19,7 @@ use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Integration\Exception\WriteRefused;
 use App\Domain\Integration\Provider;
+use App\Domain\Integration\ProviderMcp;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use App\Domain\Integration\WriteOperation;
 use App\Domain\Integration\WriteOutcome;
@@ -101,7 +102,12 @@ final readonly class CarryOutApproval
 
         $support = $target->provider->writeSupport($operation);
 
-        if (! $support->allowsAttempt()) {
+        /*
+         * The execution route: a write goes through the platform's direct API, where its documentation was read and
+         * where the change is confirmed by reading it back — never through a platform's MCP server, whatever that
+         * server's documentation offers, until a read-back exists on that path too. See `ProviderMcp`.
+         */
+        if (! $support->allowsAttempt() || ProviderMcp::route($target->provider, 'write', false, true)['route'] !== 'direct_api') {
             throw WriteRefused::providerNotDocumented($target->provider, $support);
         }
 
