@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EChartsCoreOption } from 'echarts/core';
 import { formatNumber } from '@/shared/lib/format';
+import { InfoHint } from '@/shared/ui/info-hint';
 import { Alert } from '@/shared/ui/alert';
 import {
   barSeries,
@@ -130,10 +131,18 @@ export function WaitingChart({ load, ages }: WaitingChartProps) {
               : 'info'
           }
         >
-          {t('approvals.chart.outstandingWarning', {
-            count: load.outstanding,
-            days: load.oldest_outstanding_days ?? 0,
-          })}
+          <span className="flex flex-wrap items-center gap-1 font-medium">
+            {t('approvals.chart.outstandingShort', {
+              count: load.outstanding,
+              days: load.oldest_outstanding_days ?? 0,
+            })}
+            <InfoHint
+              text={t('approvals.chart.outstandingWarning', {
+                count: load.outstanding,
+                days: load.oldest_outstanding_days ?? 0,
+              })}
+            />
+          </span>
         </Alert>
       ) : null}
 

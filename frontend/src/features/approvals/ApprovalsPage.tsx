@@ -10,6 +10,7 @@ import { formatNumber, formatRate } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
+import { ProgressRing } from '@/shared/ui/viz';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
@@ -224,7 +225,31 @@ export function ApprovalsPage() {
             ))}
           </section>
 
-          <p className="text-content-tertiary text-sm">
+          {/* The two rates as rings; the sentence stays in the page for a screen reader. */}
+          <div className="flex flex-wrap gap-4" aria-hidden="true">
+            {(
+              [
+                ['approved', load.approval_rate],
+                ['carriedOut', load.carried_out_rate],
+              ] as const
+            ).map(([key, rate]) => (
+              <div
+                key={key}
+                className="bg-surface flex items-center gap-3 rounded-2xl px-4 py-3 shadow-xs"
+              >
+                <ProgressRing
+                  value={rate === null ? 0 : rate * 100}
+                  tone={key === 'carriedOut' && rate !== null && rate < 0.8 ? 'watch' : 'good'}
+                  size={52}
+                  centre={rate === null ? '—' : formatRate(rate, locale)}
+                  label={t(`approvals.rate.${key}`)}
+                />
+                <span className="text-content-secondary text-sm">{t(`approvals.rate.${key}`)}</span>
+              </div>
+            ))}
+          </div>
+
+          <p className="sr-only">
             {/*
               Both rates are null until their denominator exists, and both say so in words rather than printing
               nought percent. An approval rate of 100% is also published deliberately: it says the process is a

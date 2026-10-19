@@ -2581,7 +2581,8 @@
       "outstandingWarning": "{{count}} approved change has not been carried out, the oldest approved {{days}} days ago. Until somebody records making it, nothing has changed on the platform.",
       "outstandingWarning_other": "{{count}} approved changes have not been carried out, the oldest approved {{days}} days ago. Until somebody records making them, nothing has changed on the platforms.",
       "emptyTitle": "Nothing waiting",
-      "emptyBody": "No request is waiting for a decision and no approved change is waiting to be made."
+      "emptyBody": "No request is waiting for a decision and no approved change is waiting to be made.",
+      "outstandingShort": "{{count}} approved, not done · oldest {{days}}d"
     },
     "kinds": {
       "title": "What is waiting for a decision",
@@ -2660,7 +2661,11 @@
       "removeField": "Remove this field",
       "submit": "Send for approval"
     },
-    "raise": "Raise a request"
+    "raise": "Raise a request",
+    "rate": {
+      "approved": "Approved",
+      "carriedOut": "Carried out"
+    }
   },
   "notifications": {
     "title": "Notifications",
