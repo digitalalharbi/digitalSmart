@@ -38,7 +38,8 @@ export function InfoHint({
         id={id}
         role="tooltip"
         className={cn(
-          'bg-surface border-line-subtle text-content-secondary invisible absolute top-full z-30 mt-1 w-72 max-w-[80vw] rounded-2xl border p-3 text-sm font-normal opacity-0 shadow-lg transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100',
+          /* `hidden`, not `invisible`: an invisible box still takes room, and one near the screen edge widened the page. */
+          'bg-surface border-line-subtle text-content-secondary absolute top-full z-30 mt-1 hidden w-72 max-w-[min(18rem,calc(100vw-2rem))] rounded-2xl border p-3 text-sm font-normal shadow-lg group-focus-within:block group-hover:block',
           align === 'end' ? 'end-0' : 'start-0',
         )}
       >

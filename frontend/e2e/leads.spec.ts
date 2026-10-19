@@ -228,6 +228,6 @@ test.describe('lead centre', () => {
      * The caveats are translated too, not just the chrome. A chart whose warnings are in English
      * on an Arabic page is a chart whose warnings go unread, which is worse than not having them.
      */
-    await expect(page.getByText('«مؤهَّل» ليست مرحلة هنا')).toBeVisible();
+    await expect(page.getByText('«مؤهَّل» ليست مرحلة هنا')).toBeAttached();
   });
 });

@@ -94,7 +94,13 @@ export function DonutChart({
             <span
               className={cn(
                 'ds-numeric text-content leading-none font-extrabold',
-                size < 100 ? (size < 56 ? 'text-[0.625rem]' : 'text-xs') : 'text-2xl',
+                size < 140
+                  ? size < 100
+                    ? size < 56
+                      ? 'text-[0.625rem]'
+                      : 'text-xs'
+                    : 'text-lg'
+                  : 'text-2xl',
               )}
             >
               {centre.value}

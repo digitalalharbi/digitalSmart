@@ -37,8 +37,15 @@ test.describe('creative hub', () => {
      * The honest headline of this phase. The placements with no recorded requirement are the ones an agency's
      * work goes out on unchecked, and the reason is a fact about the platforms.
      */
-    await expect(coverage).toBeVisible({ timeout: 30_000 });
+    await expect(coverage).toBeAttached({ timeout: 30_000 });
     await expect(page.getByText(/snapchat · story_ad_preview_image/)).toBeVisible();
+
+    // The reason is a hint on the card's title: out of the way, and one hover from being read.
+    await page
+      .getByRole('heading', { name: 'What can be checked' })
+      .getByRole('button', { name: 'More information' })
+      .hover();
+    await expect(coverage).toBeVisible();
   });
 
   test('shows a failing check with both numbers', async ({ page }) => {

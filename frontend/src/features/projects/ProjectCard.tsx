@@ -99,12 +99,9 @@ export function ProjectCard({
               tone={late ? 'bad' : 'brand'}
               label={t('projects.card.schedule')}
             />
-            <div
-              className="text-content-tertiary ds-numeric flex justify-between text-xs"
-              dir="ltr"
-            >
-              <span>{project.starts_on}</span>
-              <span>{project.ends_on}</span>
+            <div className="text-content-tertiary ds-numeric flex justify-between text-xs">
+              <bdi dir="ltr">{project.starts_on}</bdi>
+              <bdi dir="ltr">{project.ends_on}</bdi>
             </div>
           </div>
         )}

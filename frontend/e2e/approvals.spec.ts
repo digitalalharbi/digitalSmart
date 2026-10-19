@@ -74,7 +74,8 @@ test.describe('approvals', () => {
      */
     await expect(summary.getByText('Approved, not yet done')).toBeVisible();
     await expect(summary.getByText('Nothing has changed yet')).toBeVisible();
-    await expect(page.getByText(/the oldest approved 9 days ago/)).toBeVisible();
+    // The age is on the short warning; the full sentence is its hint, in the page for anyone who asks.
+    await expect(page.getByText(/oldest 9d/)).toBeVisible();
   });
 
   test('keeps the decision queue and the enactment queue apart', async ({ page }) => {
