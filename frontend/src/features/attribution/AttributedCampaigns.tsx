@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EChartsCoreOption } from 'echarts/core';
-import { formatCompact, formatNumber } from '@/shared/lib/format';
+import { formatCompact, formatMinor, formatNumber } from '@/shared/lib/format';
+import { fromMinor } from '@/shared/lib/money';
 import { Badge } from '@/shared/ui/badge';
 import {
   barSeries,
@@ -11,7 +12,6 @@ import {
   readChartPalette,
   seriesColour,
 } from '@/shared/ui/chart';
-import { formatMinor } from './money';
 import type { AttributionAnswer } from './types';
 
 type AttributedCampaignsProps = {
@@ -85,7 +85,7 @@ export function AttributedCampaigns({ answer }: AttributedCampaignsProps) {
         axisLabel: {
           color: palette.axisLabel,
           fontSize: 11,
-          formatter: (value: number) => formatCompact(value / 100, locale),
+          formatter: (value: number) => formatCompact(fromMinor(value, currency), locale),
         },
       },
       yAxis: {
@@ -128,7 +128,7 @@ export function AttributedCampaigns({ answer }: AttributedCampaignsProps) {
         },
       ],
     };
-  }, [answer.rows, isRtl, locale, t]);
+  }, [answer.rows, currency, isRtl, locale, t]);
 
   return (
     <ChartFrame

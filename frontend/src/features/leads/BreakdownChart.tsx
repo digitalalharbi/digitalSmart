@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EChartsCoreOption } from 'echarts/core';
-import { formatNumber, formatRate } from '@/shared/lib/format';
+import { formatMinor, formatNumber, formatRate } from '@/shared/lib/format';
 import { Badge } from '@/shared/ui/badge';
 import {
   barSeries,
@@ -12,7 +12,6 @@ import {
   readChartPalette,
   seriesColour,
 } from '@/shared/ui/chart';
-import { formatMinor } from './money';
 
 /** A row of either breakdown, reduced to what a chart and a table both need. */
 export type BreakdownRow = {

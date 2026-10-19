@@ -4,10 +4,10 @@ import {
   BreakdownTable,
   CustomerMixPanel,
   RevenueChart,
-  formatMinor,
   summaryMetrics,
   type RevenueSourceValue,
 } from '@/features/commerce';
+import { formatMinor } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
