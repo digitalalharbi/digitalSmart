@@ -25,7 +25,7 @@ final readonly class RunAgentsNow
         private ActorContextBinder $binder,
     ) {}
 
-    /** @return array{workspaces: int, proposed: int, failed: int} */
+    /** @return array{workspaces: int, proposed: int, findings: int, failed: int} */
     public function __invoke(): array
     {
         $this->guard->ensure(Permission::WorkspacesUpdate);

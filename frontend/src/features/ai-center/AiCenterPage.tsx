@@ -1,3 +1,4 @@
+import { AskAgents } from '@/features/agents';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bot, Copy, KeyRound, Play, Trash2 } from 'lucide-react';
@@ -76,55 +77,70 @@ export function AiCenterPage() {
         <Skeleton className="h-64 rounded-3xl" />
       ) : (
         <>
-          <section aria-label={t('aiCenter.agents')} className="grid gap-4 md:grid-cols-3">
-            {(['analyst', 'finance'] as const).map((agent) => {
-              const last = lastByAgent.get(agent);
+          <AskAgents />
 
-              return (
-                <ChartCard key={agent} title={t(`aiCenter.agent.${agent}`)}>
-                  <div className="flex items-center gap-3">
-                    <span className="bg-accent-subtle text-content-brand grid size-10 place-items-center rounded-full">
-                      <Bot aria-hidden className="size-5" />
-                    </span>
-                    {last === undefined ? (
-                      <span className="text-content-tertiary text-sm">{t('aiCenter.never')}</span>
-                    ) : (
-                      <span className="flex flex-col gap-1">
-                        <span
-                          className={cn(
-                            'w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                            STATUS_TONE[last.status],
-                          )}
-                        >
-                          {t(`aiCenter.status.${last.status}`)}
-                        </span>
-                        <span className="text-content-tertiary text-xs">
-                          {formatRelativeTime(last.started_at, i18n.language)}
-                        </span>
+          <section
+            aria-label={t('aiCenter.agents')}
+            className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+          >
+            {(['analyst', 'finance', 'creative', 'leads', 'reports', 'operations'] as const).map(
+              (agent) => {
+                const last = lastByAgent.get(agent);
+                /* A specialist leaves findings rather than proposals; its card counts what it still sees. */
+                const specialist = agent !== 'analyst' && agent !== 'finance';
+                const findings =
+                  typeof last?.summary['findings'] === 'number' ? last.summary['findings'] : 0;
+
+                return (
+                  <ChartCard key={agent} title={t(`aiCenter.agent.${agent}`)}>
+                    <div className="flex items-center gap-3">
+                      <span className="bg-accent-subtle text-content-brand grid size-10 place-items-center rounded-full">
+                        <Bot aria-hidden className="size-5" />
                       </span>
+                      {last === undefined ? (
+                        <span className="text-content-tertiary text-sm">{t('aiCenter.never')}</span>
+                      ) : (
+                        <span className="flex flex-col gap-1">
+                          <span
+                            className={cn(
+                              'w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                              STATUS_TONE[last.status],
+                            )}
+                          >
+                            {t(`aiCenter.status.${last.status}`)}
+                          </span>
+                          <span className="text-content-tertiary text-xs">
+                            {formatRelativeTime(last.started_at, i18n.language)}
+                          </span>
+                        </span>
+                      )}
+                    </div>
+                    {last === undefined ? null : (
+                      <dl className="grid grid-cols-2 gap-3">
+                        <div>
+                          <dt className="text-content-tertiary text-xs">
+                            {t('aiCenter.lookedAt')}
+                          </dt>
+                          <dd className="ds-numeric text-content text-2xl font-semibold">
+                            {last.looked_at}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-content-tertiary text-xs">
+                            {specialist ? t('aiCenter.findings') : t('aiCenter.proposed')}
+                          </dt>
+                          <dd className="ds-numeric text-content text-2xl font-semibold">
+                            {specialist ? findings : last.proposed}
+                          </dd>
+                        </div>
+                      </dl>
                     )}
-                  </div>
-                  {last === undefined ? null : (
-                    <dl className="grid grid-cols-2 gap-3">
-                      <div>
-                        <dt className="text-content-tertiary text-xs">{t('aiCenter.lookedAt')}</dt>
-                        <dd className="ds-numeric text-content text-2xl font-semibold">
-                          {last.looked_at}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-content-tertiary text-xs">{t('aiCenter.proposed')}</dt>
-                        <dd className="ds-numeric text-content text-2xl font-semibold">
-                          {last.proposed}
-                        </dd>
-                      </div>
-                    </dl>
-                  )}
-                </ChartCard>
-              );
-            })}
+                  </ChartCard>
+                );
+              },
+            )}
 
-            <ChartCard title={t('aiCenter.routines')}>
+            <ChartCard title={t('aiCenter.routines')} className="md:col-span-2">
               <ul className="flex flex-col gap-2 text-sm">
                 {data.routines.map((routine) => (
                   <li key={routine.key} className="flex items-center justify-between gap-3">

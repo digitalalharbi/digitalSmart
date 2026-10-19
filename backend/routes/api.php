@@ -6,6 +6,7 @@ use App\Interface\Http\Controller\Activity\ActivityController;
 use App\Interface\Http\Controller\Advertising\CampaignControlController;
 use App\Interface\Http\Controller\Advertising\CampaignHierarchyController;
 use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
+use App\Interface\Http\Controller\Agents\AgentFindingsController;
 use App\Interface\Http\Controller\Agents\AgentOverviewController;
 use App\Interface\Http\Controller\Agents\McpController;
 use App\Interface\Http\Controller\Agents\McpTokenController;
@@ -612,6 +613,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     /* digitalSmart's own MCP server, and the tokens an AI client signs in with. */
     Route::get('agents/overview', [AgentOverviewController::class, 'show'])->name('agents.overview');
     Route::post('agents/run', [AgentOverviewController::class, 'run'])->middleware('throttle:6,1')->name('agents.run');
+    Route::get('agents/findings', [AgentFindingsController::class, 'index'])->name('agents.findings');
+    Route::post('agents/ask', [AgentFindingsController::class, 'ask'])->middleware('throttle:6,1')->name('agents.ask');
     Route::post('mcp', McpController::class)->middleware('throttle:60,1')->name('mcp.rpc');
     Route::get('mcp/tokens', [McpTokenController::class, 'index'])->name('mcp.tokens.index');
     Route::post('mcp/tokens', [McpTokenController::class, 'store'])->name('mcp.tokens.store');

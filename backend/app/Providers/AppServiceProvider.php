@@ -16,6 +16,7 @@ use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Agents\Contract\AgentActors;
 use App\Application\Agents\Contract\AgentReadModel;
 use App\Application\Agents\Contract\AgentRunLog;
+use App\Application\Agents\Contract\FindingLog;
 use App\Application\Agents\Contract\OperatingRuleRepository;
 use App\Application\Agents\Contract\ProposalHistory;
 use App\Application\Agents\Contract\ToolCallLog;
@@ -25,6 +26,9 @@ use App\Application\Agents\Tool\GetBudgetStatusTool;
 use App\Application\Agents\Tool\GetCampaignTool;
 use App\Application\Agents\Tool\GetOperatingRulesTool;
 use App\Application\Agents\Tool\ListCampaignsTool;
+use App\Application\Agents\Tool\GetLeadQualityTool;
+use App\Application\Agents\Tool\ListAdSignalsTool;
+use App\Application\Agents\Tool\ListClientsTool;
 use App\Application\Agents\Tool\ProposeBudgetChangeTool;
 use App\Application\Agents\Tool\ProposeStatusChangeTool;
 use App\Application\Agents\Tool\StatusEvidence;
@@ -36,6 +40,7 @@ use App\Application\Attention\Contract\ActorMemberships;
 use App\Application\Attention\Contract\AttentionSource;
 use App\Application\Attention\Query\GetAttentionQueue;
 use App\Application\Attention\Source\ApprovalAttentionSource;
+use App\Application\Attention\Source\AgentAttentionSource;
 use App\Application\Attention\Source\AutomationAttentionSource;
 use App\Application\Attention\Source\BudgetAttentionSource;
 use App\Application\Attention\Source\CampaignAttentionSource;
@@ -155,6 +160,7 @@ use App\Infrastructure\Advertising\SyncAdapterRegistry;
 use App\Infrastructure\Agents\EloquentAgentIdentity;
 use App\Infrastructure\Agents\EloquentAgentReadModel;
 use App\Infrastructure\Agents\EloquentAgentRunLog;
+use App\Infrastructure\Agents\EloquentFindingLog;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
 use App\Infrastructure\Commerce\CommerceSyncAdapterRegistry;
 use App\Infrastructure\Commerce\Sandbox\CommerceFixtures;
@@ -287,6 +293,7 @@ final class AppServiceProvider extends ServiceProvider
     private const ATTENTION_SOURCES = [
         CampaignAttentionSource::class,
         AutomationAttentionSource::class,
+        AgentAttentionSource::class,
         BudgetAttentionSource::class,
         TrackingAttentionSource::class,
         ApprovalAttentionSource::class,
@@ -411,6 +418,7 @@ final class AppServiceProvider extends ServiceProvider
         AgentActors::class => EloquentAgentIdentity::class,
         CampaignHierarchyReadModel::class => EloquentCampaignHierarchyReadModel::class,
         AgentRunLog::class => EloquentAgentRunLog::class,
+        FindingLog::class => EloquentFindingLog::class,
         AgentReadModel::class => EloquentAgentReadModel::class,
         ToolCallLog::class => EloquentToolCallLog::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
@@ -511,6 +519,9 @@ final class AppServiceProvider extends ServiceProvider
                 new ProposeStatusChangeTool($app->make(RequestStatusChangeUseCase::class), $app->make(StatusEvidence::class), $app->make(ToolCaller::class), WriteOperation::PauseCampaign),
                 new ProposeStatusChangeTool($app->make(RequestStatusChangeUseCase::class), $app->make(StatusEvidence::class), $app->make(ToolCaller::class), WriteOperation::ResumeCampaign),
                 $app->make(ProposeBudgetChangeTool::class),
+                $app->make(ListAdSignalsTool::class),
+                $app->make(ListClientsTool::class),
+                $app->make(GetLeadQualityTool::class),
             ],
             $app->make(ActorContext::class),
             $app->make(ToolCallLog::class),

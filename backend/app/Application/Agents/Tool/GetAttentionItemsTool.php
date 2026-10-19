@@ -26,6 +26,9 @@ final readonly class GetAttentionItemsTool implements ToolHandler
                 'entity' => $i->entityLabel,
                 'client' => $i->clientName,
                 'project' => $i->projectName,
+                'project_id' => $i->projectId,
+                'reason_code' => $i->reasonCode,
+                'reason_params' => $i->reasonParams,
             ], $queue->items),
         ];
     }

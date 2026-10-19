@@ -32,7 +32,11 @@
       "analyst": "المحلل",
       "finance": "الوكيل المالي",
       "external_ai": "عميل ذكاء اصطناعي",
-      "assistant": "المساعد"
+      "assistant": "المساعد",
+      "creative": "وكيل الإبداع",
+      "leads": "وكيل العملاء المحتملين",
+      "reports": "وكيل التقارير",
+      "operations": "وكيل العمليات"
     },
     "launch": "إطلاق",
     "title": "اليوم",
@@ -57,7 +61,9 @@
       "creative": "تصميم",
       "tracking": "قياس",
       "task": "مهمة",
-      "request": "طلب"
+      "request": "طلب",
+      "lead": "العملاء المحتملون",
+      "report": "تقرير"
     }
   },
   "automation": {
@@ -124,7 +130,11 @@
     "refused_other": "{{count}} مرفوض",
     "agent": {
       "analyst": "المحلل + وكيل الحملات",
-      "finance": "الوكيل المالي"
+      "finance": "الوكيل المالي",
+      "creative": "وكيل الإبداع",
+      "leads": "وكيل العملاء المحتملين",
+      "reports": "وكيل التقارير",
+      "operations": "عمليات المشاريع"
     },
     "status": {
       "analysing": "يحلل",
@@ -148,15 +158,24 @@
       "review": "مراجعة الأداء اليومية",
       "guardian": "حارس الميزانية",
       "digests": "الملخصات",
-      "reports": "التقارير المجدولة"
+      "reports": "التقارير المجدولة",
+      "creative_review": "مراجعة الإبداع",
+      "lead_review": "مراجعة جودة العملاء المحتملين",
+      "weekly_briefs": "الملخصات الأسبوعية للعملاء",
+      "project_ops": "مراجعة عمليات المشاريع"
     },
     "schedule": {
       "hourly": "كل ساعة",
       "daily_0845": "يوميًا 08:45 الرياض",
       "two_hours": "كل ساعتين",
       "daily": "يوميًا",
-      "weekly": "أسبوعيًا"
-    }
+      "weekly": "أسبوعيًا",
+      "sun_wed_0900": "الأحد والأربعاء 09:00 الرياض",
+      "daily_1000": "يوميًا 10:00 الرياض",
+      "thu_1400": "الخميس 14:00 الرياض",
+      "daily_0830": "يوميًا 08:30 الرياض"
+    },
+    "findings": "ملاحظات مفتوحة"
   },
   "targets": {
     "title": "الأهداف والحدود",
@@ -224,7 +243,43 @@
     "LEADS_DECLINE": "العملاء المحتملون انخفضوا {{drop}}%.",
     "LEADS_LOW_QUALITY": "جودة منخفضة: {{rate}}% مؤهلون.",
     "PROJECT_NEEDS_ACTION": "{{count}} عناصر تحتاج إجراء.",
-    "REPORT_DUE": "تقرير مستحق: {{title}}"
+    "REPORT_DUE": "تقرير مستحق: {{title}}",
+    "REPORT_READY": "الملخص الأسبوعي جاهز: {{title}}",
+    "REPORTS_READY": "الملخصات الأسبوعية جاهزة لـ {{count}} عميل.",
+    "CREATIVE_FATIGUE_MORE": "{{count}} إعلانات مُرهَقة — طُلبت بدائل.",
+    "LEADS_DECLINE_MORE": "العملاء المحتملون في تراجع لدى {{count}} عملاء.",
+    "LEADS_LOW_QUALITY_MORE": "جودة العملاء المحتملين منخفضة لدى {{count}} عملاء."
+  },
+  "agentFindings": {
+    "winner": "الأفضل في الحملة",
+    "ctrBefore": "نسبة النقر قبل",
+    "ctrNow": "نسبة النقر هذا الأسبوع",
+    "openBrief": "فتح الموجز",
+    "openCampaign": "الحملة",
+    "fortnightBefore": "الأسبوعان السابقان",
+    "lastFortnight": "آخر أسبوعين",
+    "leads": "العملاء المحتملون",
+    "qualified": "مؤهلون",
+    "won": "مبيعات",
+    "openLeads": "فتح العملاء المحتملين",
+    "openProject": "فتح المشروع",
+    "briefs": "الملخصات الأسبوعية",
+    "fewer": "عرض أقل",
+    "allBriefs": "عرض الكل ({{count}})",
+    "coverage": "{{days}} يومًا مُبلّغًا · {{sources}}",
+    "spend": "الإنفاق",
+    "results": "النتائج",
+    "revenue": "الإيراد",
+    "roas": "العائد على الإنفاق",
+    "notReported": "غير مُبلّغ",
+    "best": "الأفضل: {{name}}",
+    "worst": "الأضعف: {{name}}",
+    "ask": "اسأل الوكلاء",
+    "askPlaceholder": "مثال: أي إعلانات أُرهقت؟",
+    "askButton": "اسأل",
+    "askedAgents": "أجاب: {{agents}}",
+    "askNothing": "لا شيء يستدعي الانتباه حاليًا.",
+    "askFailed": "تعذّر على الوكلاء الإجابة. حاول مجددًا."
   },
   "hierarchy": {
     "toggle": "المجموعات والإعلانات",
@@ -2757,7 +2812,8 @@
       "approvals": "الموافقات",
       "requests": "الطلبات",
       "tasks": "المهام",
-      "automation": "القواعد"
+      "automation": "القواعد",
+      "agents": "الوكلاء"
     }
   },
   "activity": {

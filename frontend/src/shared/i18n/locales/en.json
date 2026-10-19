@@ -32,7 +32,11 @@
       "analyst": "the Analyst",
       "finance": "the Finance agent",
       "external_ai": "an AI client",
-      "assistant": "the assistant"
+      "assistant": "the assistant",
+      "creative": "the Creative agent",
+      "leads": "the Leads agent",
+      "reports": "the Reports agent",
+      "operations": "the Operations agent"
     },
     "launch": "Launch",
     "title": "Today",
@@ -57,7 +61,9 @@
       "creative": "Creative",
       "tracking": "Tracking",
       "task": "Task",
-      "request": "Request"
+      "request": "Request",
+      "lead": "Leads",
+      "report": "Report"
     }
   },
   "automation": {
@@ -124,7 +130,11 @@
     "refused_other": "{{count}} refused",
     "agent": {
       "analyst": "Analyst + Campaign agent",
-      "finance": "Finance agent"
+      "finance": "Finance agent",
+      "creative": "Creative agent",
+      "leads": "Leads agent",
+      "reports": "Reports agent",
+      "operations": "Project operations"
     },
     "status": {
       "analysing": "Analysing",
@@ -148,15 +158,24 @@
       "review": "Daily performance review",
       "guardian": "Budget guardian",
       "digests": "Digests",
-      "reports": "Scheduled reports"
+      "reports": "Scheduled reports",
+      "creative_review": "Creative review",
+      "lead_review": "Lead quality review",
+      "weekly_briefs": "Weekly client briefs",
+      "project_ops": "Project operations review"
     },
     "schedule": {
       "hourly": "Hourly",
       "daily_0845": "Daily 08:45 Riyadh",
       "two_hours": "Every 2 hours",
       "daily": "Daily",
-      "weekly": "Weekly"
-    }
+      "weekly": "Weekly",
+      "sun_wed_0900": "Sun & Wed 09:00 Riyadh",
+      "daily_1000": "Daily 10:00 Riyadh",
+      "thu_1400": "Thu 14:00 Riyadh",
+      "daily_0830": "Daily 08:30 Riyadh"
+    },
+    "findings": "Open findings"
   },
   "targets": {
     "title": "Targets and limits",
@@ -224,7 +243,43 @@
     "LEADS_DECLINE": "Leads down {{drop}}% vs previous period.",
     "LEADS_LOW_QUALITY": "Low lead quality: {{rate}}% qualified.",
     "PROJECT_NEEDS_ACTION": "{{count}} items need action.",
-    "REPORT_DUE": "Report due: {{title}}"
+    "REPORT_DUE": "Report due: {{title}}",
+    "REPORT_READY": "Weekly brief ready: {{title}}",
+    "REPORTS_READY": "Weekly briefs ready for {{count}} clients.",
+    "CREATIVE_FATIGUE_MORE": "{{count}} ads are tiring — replacements asked for.",
+    "LEADS_DECLINE_MORE": "Leads are falling for {{count}} clients.",
+    "LEADS_LOW_QUALITY_MORE": "Lead quality is low for {{count}} clients."
+  },
+  "agentFindings": {
+    "winner": "Best in campaign",
+    "ctrBefore": "CTR before",
+    "ctrNow": "CTR this week",
+    "openBrief": "Open the brief",
+    "openCampaign": "Campaign",
+    "fortnightBefore": "Fortnight before",
+    "lastFortnight": "Last fortnight",
+    "leads": "Leads",
+    "qualified": "Qualified",
+    "won": "Sales",
+    "openLeads": "Open leads",
+    "openProject": "Open project",
+    "briefs": "Weekly briefs",
+    "fewer": "Show fewer",
+    "allBriefs": "Show all {{count}}",
+    "coverage": "{{days}} days reported · {{sources}}",
+    "spend": "Spend",
+    "results": "Results",
+    "revenue": "Revenue",
+    "roas": "ROAS",
+    "notReported": "Not reported",
+    "best": "Best: {{name}}",
+    "worst": "Weakest: {{name}}",
+    "ask": "Ask the agents",
+    "askPlaceholder": "e.g. Which creatives are tiring? / أي إعلانات أُرهقت؟",
+    "askButton": "Ask",
+    "askedAgents": "Answered by {{agents}}",
+    "askNothing": "Nothing found for that right now.",
+    "askFailed": "The agents could not answer. Try again."
   },
   "hierarchy": {
     "toggle": "Ad groups and ads",
@@ -2710,7 +2765,8 @@
       "approvals": "Approvals",
       "requests": "Requests",
       "tasks": "Tasks",
-      "automation": "Rules"
+      "automation": "Rules",
+      "agents": "Agents"
     }
   },
   "activity": {

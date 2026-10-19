@@ -85,3 +85,9 @@ Schedule::command('reports:run-schedules')->hourly()->withoutOverlapping()->runI
  */
 Schedule::command('agents:run analyst')->dailyAt('08:45')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();
 Schedule::command('agents:run finance')->everyTwoHours()->withoutOverlapping()->runInBackground();
+/* Creative review twice a week, before the Sunday and Wednesday stand-ups. */
+Schedule::command('agents:run creative')->days([0, 3])->at('09:00')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();
+Schedule::command('agents:run leads')->dailyAt('10:00')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();
+/* The weekly client brief, ready to review on Thursday afternoon before the weekend. */
+Schedule::command('agents:run reports')->weeklyOn(4, '14:00')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();
+Schedule::command('agents:run operations')->dailyAt('08:30')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();

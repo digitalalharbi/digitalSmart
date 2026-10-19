@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Megaphone, Palette, Radar, Wallet, X } from 'lucide-react';
+import {
+  Check,
+  FileChartColumn,
+  Megaphone,
+  Palette,
+  Radar,
+  UserRoundSearch,
+  Wallet,
+  X,
+} from 'lucide-react';
 import { useDecideApprovalMutation, type ApprovalRow } from '@/features/approvals';
 import { PERMISSIONS, useSession, type PermissionSlug } from '@/features/auth';
 import { ApiError } from '@/shared/api/client';
@@ -17,6 +26,8 @@ const ICON: Record<ActionType, React.ReactNode> = {
   tracking: <Radar />,
   task: <Check />,
   request: <Check />,
+  lead: <UserRoundSearch />,
+  report: <FileChartColumn />,
 };
 
 const num = (value: unknown): number | null =>

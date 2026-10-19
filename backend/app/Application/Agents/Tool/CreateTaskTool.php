@@ -28,6 +28,7 @@ final readonly class CreateTaskTool implements ToolHandler
         $task = ($this->open)(new TaskInput(
             title: mb_substr((string) $input['title'], 0, 160),
             priority: TaskPriority::Normal,
+            description: isset($input['description']) ? mb_substr((string) $input['description'], 0, 2000) : null,
             projectId: isset($input['project_id']) ? (string) $input['project_id'] : null,
         ));
 
@@ -45,6 +46,7 @@ final readonly class CreateTaskTool implements ToolHandler
             requiresApproval: false,
             properties: [
                 'title' => ['type' => 'string', 'description' => 'What needs doing.'],
+                'description' => ['type' => 'string', 'description' => 'The brief: what was seen and what is asked for.'],
                 'project_id' => ['type' => 'string', 'format' => 'uuid', 'description' => 'The project it belongs to.'],
             ],
             required: ['title'],

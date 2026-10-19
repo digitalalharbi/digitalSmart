@@ -11,6 +11,7 @@ import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { PageHeader } from '@/shared/ui/page-header';
+import { WeeklyBriefs } from '@/features/agents';
 import { EntityPicker } from '@/shared/ui/entity-picker';
 import { csvUrl, xlsxUrl } from './api';
 import { ExportsPanel } from './ExportsPanel';
@@ -128,6 +129,8 @@ export function ReportsPage() {
           isLoading={clients.isFetching}
         />
       </header>
+
+      <WeeklyBriefs clientId={client?.id ?? null} />
 
       {error === null ? null : <Alert tone="danger">{error}</Alert>}
       {reports.isError ? <Alert tone="danger">{t('reports.loadFailed')}</Alert> : null}

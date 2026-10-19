@@ -24,7 +24,7 @@ final readonly class CampaignAgent
 
     /**
      * @param  list<Finding>  $findings
-     * @return array{proposed: int, tasks: int, refused: array<string, int>, by_tool: array<string, int>}
+     * @return array{proposed: int, tasks: int, refused: array<string, int>, by_tool: array<string, int>, pausing: list<string>}
      */
     public function act(array $findings, ToolGateway $tools, string $agent, int $limit = 8): array
     {
@@ -34,6 +34,7 @@ final readonly class CampaignAgent
         $tasks = 0;
         $refused = [];
         $byTool = [];
+        $pausing = [];
 
         foreach (array_slice($findings, 0, $limit) as $finding) {
             $reason = $this->reason($finding);
@@ -58,6 +59,10 @@ final readonly class CampaignAgent
             }
 
             if ($outcome['ok']) {
+                if ($tool === 'propose_pause_campaign') {
+                    $pausing[] = $finding->campaignId;
+                }
+
                 $proposed++;
                 $byTool[$tool] = ($byTool[$tool] ?? 0) + 1;
             } else {
@@ -81,7 +86,7 @@ final readonly class CampaignAgent
             }
         }
 
-        return ['proposed' => $proposed, 'tasks' => $tasks, 'refused' => $refused, 'by_tool' => $byTool];
+        return ['proposed' => $proposed, 'tasks' => $tasks, 'refused' => $refused, 'by_tool' => $byTool, 'pausing' => $pausing];
     }
 
     private function reason(Finding $f): string
