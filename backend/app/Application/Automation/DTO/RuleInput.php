@@ -58,6 +58,10 @@ final readonly class RuleInput
         public ?float $minSpend = null,
         public ?int $minAgeDays = null,
         public ?float $minConversions = null,
+        /** @var list<string> Ad groups in scope, for an ad-group or ad rule; empty is every one the rest allows. */
+        public array $adGroupIds = [],
+        /** @var list<string> Ads in scope, for an ad rule; empty is every one the rest allows. */
+        public array $adIds = [],
     ) {}
 
     /** A saved rule as input again, with some fields changed — so a bulk change goes through the same validation as an edit. */
@@ -93,6 +97,8 @@ final readonly class RuleInput
             minSpend: $r->minSpend,
             minAgeDays: $r->minAgeDays,
             minConversions: $r->minConversions,
+            adGroupIds: $r->adGroupIds,
+            adIds: $r->adIds,
         );
     }
 }

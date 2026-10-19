@@ -91,27 +91,27 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
         return $this->find($workspaceId, $id) ?? throw new LogicException('A rule that was just changed could not be read back.');
     }
 
-    public function observe(string $ruleId, array $campaignIds, string $today): array
+    public function observe(string $ruleId, array $entities, string $today): array
     {
         $streaks = [];
 
-        foreach ($campaignIds as $campaignId) {
+        foreach ($entities as $entityId => $campaignId) {
             DB::statement(
-                'INSERT INTO automation_rule_streaks (rule_id, campaign_id, first_seen_on, last_seen_on) VALUES (?, ?, ?, ?)
-                 ON CONFLICT (rule_id, campaign_id) DO UPDATE SET
+                'INSERT INTO automation_rule_streaks (rule_id, entity_id, campaign_id, first_seen_on, last_seen_on) VALUES (?, ?, ?, ?, ?)
+                 ON CONFLICT (rule_id, entity_id) DO UPDATE SET
                    first_seen_on = CASE WHEN automation_rule_streaks.last_seen_on < (?::date - 1) THEN EXCLUDED.first_seen_on ELSE automation_rule_streaks.first_seen_on END,
                    acted_at = CASE WHEN automation_rule_streaks.last_seen_on < (?::date - 1) THEN NULL ELSE automation_rule_streaks.acted_at END,
                    last_seen_on = EXCLUDED.last_seen_on',
-                [$ruleId, $campaignId, $today, $today, $today, $today],
+                [$ruleId, (string) $entityId, $campaignId, $today, $today, $today, $today],
             );
         }
 
-        /* A campaign the rule no longer holds for starts again from nothing next time. */
+        /* An entity the rule no longer holds for starts again from nothing next time. */
         $gone = DB::table('automation_rule_streaks')->where('rule_id', $ruleId);
-        ($campaignIds === [] ? $gone : $gone->whereNotIn('campaign_id', $campaignIds))->delete();
+        ($entities === [] ? $gone : $gone->whereNotIn('entity_id', array_map('strval', array_keys($entities))))->delete();
 
         foreach (DB::table('automation_rule_streaks')->where('rule_id', $ruleId)->get() as $row) {
-            $streaks[(string) $row->campaign_id] = [
+            $streaks[(string) $row->entity_id] = [
                 'days' => (int) (new DateTimeImmutable((string) $row->last_seen_on))->diff(new DateTimeImmutable((string) $row->first_seen_on))->days + 1,
                 'acted' => $row->acted_at !== null,
             ];
@@ -125,15 +125,15 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
         $out = [];
 
         foreach (DB::table('automation_rule_streaks')->where('rule_id', $ruleId)->get() as $row) {
-            $out[(string) $row->campaign_id] = (int) (new DateTimeImmutable((string) $row->last_seen_on))->diff(new DateTimeImmutable((string) $row->first_seen_on))->days + 1;
+            $out[(string) $row->entity_id] = (int) (new DateTimeImmutable((string) $row->last_seen_on))->diff(new DateTimeImmutable((string) $row->first_seen_on))->days + 1;
         }
 
         return $out;
     }
 
-    public function markActed(string $ruleId, string $campaignId): void
+    public function markActed(string $ruleId, string $entityId): void
     {
-        DB::table('automation_rule_streaks')->where(['rule_id' => $ruleId, 'campaign_id' => $campaignId])->update(['acted_at' => $this->clock->now()]);
+        DB::table('automation_rule_streaks')->where(['rule_id' => $ruleId, 'entity_id' => $entityId])->update(['acted_at' => $this->clock->now()]);
     }
 
     public function delete(string $workspaceId, string $id): void
@@ -155,7 +155,7 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             ->leftJoin('clients as c', 'c.id', '=', 'r.client_id')
             ->leftJoin('projects as p', 'p.id', '=', 'r.project_id')
             ->leftJoin('users as u', 'u.id', '=', 'r.created_by')
-            ->select(['r.id', 'r.name', 'r.metric', 'r.operator', 'r.threshold', 'r.window_days', 'r.severity', 'r.is_active', 'r.client_id', 'c.name as client_name', 'r.project_id', 'p.name as project_name', 'u.name as author_name', 'r.conditions', 'r.for_days', 'r.action', 'r.action_pct', 'r.trust_level', 'r.mode', 'r.logic', 'r.providers', 'r.external_account_ids', 'r.campaign_ids', 'r.object_level', 'r.schedule', 'r.schedule_time', 'r.timezone', 'r.cooldown_hours', 'r.last_run_at', 'r.last_result', 'r.min_spend', 'r.min_age_days', 'r.min_conversions'])
+            ->select(['r.id', 'r.name', 'r.metric', 'r.operator', 'r.threshold', 'r.window_days', 'r.severity', 'r.is_active', 'r.client_id', 'c.name as client_name', 'r.project_id', 'p.name as project_name', 'u.name as author_name', 'r.conditions', 'r.for_days', 'r.action', 'r.action_pct', 'r.trust_level', 'r.mode', 'r.logic', 'r.providers', 'r.external_account_ids', 'r.campaign_ids', 'r.object_level', 'r.schedule', 'r.schedule_time', 'r.timezone', 'r.cooldown_hours', 'r.last_run_at', 'r.last_result', 'r.min_spend', 'r.min_age_days', 'r.min_conversions', 'r.ad_group_ids', 'r.ad_ids'])
             ->whereNull('r.archived_at');
     }
 
@@ -187,6 +187,8 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             'providers' => json_encode(array_values($input->providers), JSON_THROW_ON_ERROR),
             'external_account_ids' => json_encode(array_values($input->accountIds), JSON_THROW_ON_ERROR),
             'campaign_ids' => json_encode(array_values($input->campaignIds), JSON_THROW_ON_ERROR),
+            'ad_group_ids' => json_encode(array_values($input->adGroupIds), JSON_THROW_ON_ERROR),
+            'ad_ids' => json_encode(array_values($input->adIds), JSON_THROW_ON_ERROR),
             'object_level' => $input->objectLevel,
             'schedule' => $input->schedule->value,
             'schedule_time' => $input->schedule === RuleSchedule::Daily ? ($input->scheduleTime ?? '08:00') : null,
@@ -224,6 +226,8 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             providers: $this->strings($r->providers ?? '[]'),
             accountIds: $this->strings($r->external_account_ids ?? '[]'),
             campaignIds: $this->strings($r->campaign_ids ?? '[]'),
+            adGroupIds: $this->strings($r->ad_group_ids ?? '[]'),
+            adIds: $this->strings($r->ad_ids ?? '[]'),
             objectLevel: (string) ($r->object_level ?? 'campaign'),
             schedule: RuleSchedule::tryFrom((string) ($r->schedule ?? 'hourly')) ?? RuleSchedule::Hourly,
             scheduleTime: isset($r->schedule_time) ? (string) $r->schedule_time : null,

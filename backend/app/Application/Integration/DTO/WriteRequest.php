@@ -30,5 +30,12 @@ final readonly class WriteRequest
         public ?int $dailyBudgetMinor = null,
         /** The account's currency, which some providers require alongside the amount. */
         public ?string $currency = null,
+        /** The id of what is changed — the campaign itself, or the ad group or ad the operation's level names. */
+        public ?string $externalEntityId = null,
     ) {}
+
+    public function entityId(): string
+    {
+        return $this->externalEntityId ?? $this->externalCampaignId;
+    }
 }

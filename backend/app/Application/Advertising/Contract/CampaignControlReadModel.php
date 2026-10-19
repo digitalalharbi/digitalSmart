@@ -6,6 +6,8 @@ namespace App\Application\Advertising\Contract;
 
 use App\Application\Advertising\DTO\CampaignControlFilter;
 use App\Application\Advertising\DTO\CampaignVitalsRow;
+use App\Application\Advertising\DTO\EntityControlRow;
+use App\Domain\Advertising\AdEntityType;
 use DateTimeImmutable;
 
 /**
@@ -60,6 +62,36 @@ interface CampaignControlReadModel
      * @return array{name: string, provider: string, status: string, currency: string|null, external_campaign_id: string, external_account_id: string, client_id: string|null, project_id: string|null}|null
      */
     public function writeTarget(string $workspaceId, ?array $visibleProjectIds, string $campaignId): ?array;
+
+    /**
+     * Ad groups or ads under the campaigns the filter selects, each with the figures of **its own** metric rows over
+     * the window — never its children's or its parent's. Ordered by spend, capped.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @param  list<string>  $adGroupIds  narrow to these ad groups (and, for ads, to the ads in them); [] = all
+     * @param  list<string>  $adIds  narrow to these ads; [] = all
+     * @return list<EntityControlRow>
+     */
+    public function entities(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        CampaignControlFilter $filter,
+        AdEntityType $level,
+        array $adGroupIds,
+        array $adIds,
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+        int $cap,
+    ): array;
+
+    /**
+     * What a proposal about one ad group or ad has to name: its provider, account and own external id, its parent
+     * campaign's, and its status — or null when it is not visible to the reader.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return array{name: string, provider: string, status: string, currency: string|null, budget_minor: int|null, budget_mode: string, campaign_id: string, campaign_name: string, external_campaign_id: string, external_entity_id: string, external_account_id: string, client_id: string|null, project_id: string|null}|null
+     */
+    public function entityWriteTarget(string $workspaceId, ?array $visibleProjectIds, AdEntityType $level, string $entityId): ?array;
 
     /**
      * How many campaigns match the filter before the cap is applied.

@@ -134,18 +134,20 @@ describe('the surface tells a reader whether it can be carried out', function ()
         expect($request['carry_out_blocked_because'])->toContain('does not name a platform campaign');
     });
 
-    it('says a provider it has not verified cannot be', function (): void {
+    it('says a change the platform does not document at that level cannot be', function (): void {
         $setup = writeScenario();
 
         $request = test()->actingAs($setup['scenario']->owner)
             ->postJson('/api/approvals', [
                 'kind' => 'campaign_pause',
-                'title' => 'Pause the TikTok campaign',
+                'title' => 'Pause the promoted tweet',
                 'rationale' => 'It has run over target all week.',
                 'proposal' => [
-                    'provider' => 'tiktok',
-                    'external_account_id' => '7000000000',
-                    'external_campaign_id' => '1800000000',
+                    'level' => 'ad',
+                    'provider' => 'x',
+                    'external_account_id' => '18ce54d4x5t',
+                    'external_campaign_id' => '8wku2',
+                    'external_ad_id' => '1efwlo',
                 ],
                 'client_id' => (string) $setup['client']->getKey(),
             ])
@@ -153,11 +155,11 @@ describe('the surface tells a reader whether it can be carried out', function ()
             ->json('data');
 
         /*
-         * TikTok's own documentation could not be read from here. Third-party libraries describe the endpoint,
-         * which is not the provider saying so — and a guess is a guess against a live campaign.
+         * X pauses a campaign and a line item, and says a promoted tweet cannot be updated at all — support at one
+         * level is not support at another.
          */
         expect($request['can_be_carried_out_here'])->toBeFalse();
-        expect($request['carry_out_blocked_because'])->toContain('provider\'s own');
+        expect($request['carry_out_blocked_because'])->toContain('does not offer');
     });
 
     it('says a documented one can be', function (): void {

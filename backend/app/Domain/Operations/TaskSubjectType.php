@@ -33,6 +33,11 @@ enum TaskSubjectType: string
     /** Work a client asked for. The link that keeps an intake queue from becoming a second task board. */
     case ClientRequest = 'client_request';
 
+    /** One level below a campaign — what an ad-group rule proposes to change. */
+    case AdGroup = 'ad_group';
+
+    case Ad = 'ad';
+
     /** The table the subject's label is read from. */
     public function table(): string
     {
@@ -43,6 +48,8 @@ enum TaskSubjectType: string
             self::Budget => 'budgets',
             self::Project => 'projects',
             self::ClientRequest => 'client_requests',
+            self::AdGroup => 'ad_groups',
+            self::Ad => 'ads',
         };
     }
 
@@ -57,7 +64,7 @@ enum TaskSubjectType: string
         return match ($this) {
             // A brief and a client's request are called titles; everything else here is called a name.
             self::CreativeRequest, self::ClientRequest => 'title',
-            self::Budget, self::Project, self::Campaign, self::Lead => 'name',
+            self::Budget, self::Project, self::Campaign, self::Lead, self::AdGroup, self::Ad => 'name',
         };
     }
 
@@ -70,6 +77,8 @@ enum TaskSubjectType: string
             self::Budget => 'Budget',
             self::Project => 'Project',
             self::ClientRequest => 'Client request',
+            self::AdGroup => 'Ad group',
+            self::Ad => 'Ad',
         };
     }
 
@@ -83,6 +92,7 @@ enum TaskSubjectType: string
             self::Budget => '/media-planner',
             self::Project => '/projects/'.$id,
             self::ClientRequest => '/client-requests',
+            self::AdGroup, self::Ad => '/campaigns',
         };
     }
 

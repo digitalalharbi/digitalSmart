@@ -15,10 +15,12 @@ use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
+use App\Domain\Advertising\AdEntityType;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Automation\Exception\RuleNotAllowed;
 use App\Domain\Automation\RuleAction;
+use App\Domain\Automation\RuleMetric;
 use App\Domain\Automation\RuleMode;
 use App\Domain\Automation\TrustLevel;
 use App\Domain\Dashboard\Exception\NameAlreadyUsed;
@@ -86,20 +88,50 @@ final readonly class SaveRule
          * platforms must name at least one that can take its action (documented and connected, or awaiting a
          * connection that would make it so). A rule over every platform is checked campaign by campaign instead.
          */
+        $level = AdEntityType::tryFrom($input->objectLevel);
+
+        if ($level === null || $level === AdEntityType::Account) {
+            throw new RuleNotAllowed('A rule judges campaigns, ad groups or ads.');
+        }
+
         if ($input->mode !== RuleMode::Monitor && $input->action === RuleAction::ProposeBidChange) {
             throw new RuleNotAllowed('Bid changes are not supported on any platform yet. Choose another action or Monitor.');
         }
 
-        if ($input->mode !== RuleMode::Monitor && $input->providers !== [] && $input->action->writeOperation() !== null) {
-            $able = array_filter($input->providers, fn (string $p): bool => in_array($this->capability->of($input->action, $p, $workspaceId), ['supported', 'awaiting_credentials'], true));
-
-            if ($able === []) {
-                throw new RuleNotAllowed('None of this rule\'s platforms supports that action.');
+        /* Every level judges only figures it has, and offers only changes it can hold — an ad has no budget. */
+        foreach ([$input->metric, ...array_map(static fn (array $c): RuleMetric => $c['metric'], $input->conditions)] as $metric) {
+            if (! $metric->availableAt($level)) {
+                throw new RuleNotAllowed(sprintf('%s is not available for %s.', $metric->label(), self::plural($level)));
             }
         }
 
-        if ($input->objectLevel !== 'campaign') {
-            throw new RuleNotAllowed('Rules act on campaigns. Ad-group and ad rules are not available yet.');
+        if (! $input->action->availableAt($level)) {
+            throw new RuleNotAllowed(sprintf('That action is not available for %s.', self::plural($level)));
+        }
+
+        if ($input->mode !== RuleMode::Monitor && $input->providers !== [] && $input->action->writeOperation($level) !== null) {
+            $able = array_filter($input->providers, fn (string $p): bool => in_array($this->capability->of($input->action, $p, $workspaceId, $level), ['supported', 'awaiting_credentials'], true));
+
+            if ($able === []) {
+                throw new RuleNotAllowed(sprintf('None of this rule\'s platforms supports that action on %s.', self::plural($level)));
+            }
+        }
+
+        /* An ad-group or ad scope names only what a campaign rule cannot reach, and only what its author can see. */
+        if ($level === AdEntityType::Campaign && ($input->adGroupIds !== [] || $input->adIds !== [])) {
+            throw new RuleNotAllowed('A campaign rule is scoped to campaigns, not to ad groups or ads.');
+        }
+
+        if ($level === AdEntityType::AdGroup && $input->adIds !== []) {
+            throw new RuleNotAllowed('An ad-group rule is scoped to ad groups, not to ads.');
+        }
+
+        foreach ([[AdEntityType::AdGroup, $input->adGroupIds], [AdEntityType::Ad, $input->adIds]] as [$scopeLevel, $ids]) {
+            foreach ($ids as $entityId) {
+                if ($this->campaigns->entityWriteTarget($workspaceId, $this->visibility->visibleProjectIds(), $scopeLevel, $entityId) === null) {
+                    throw ResourceNotFound::of($scopeLevel === AdEntityType::Ad ? 'Ad' : 'Ad group');
+                }
+            }
         }
 
         if ($input->action->needsPct() && ($input->actionPct === null || $input->actionPct < 1 || $input->actionPct > 50)) {
@@ -155,7 +187,7 @@ final readonly class SaveRule
                 ...array_map(static fn (array $c): array => ['metric' => $c['metric']->value, 'operator' => ($c['operator'] ?? $c['metric']->breachedWhen())->value, 'threshold' => $c['threshold']], $r->conditions),
             ], 'window_days' => $r->windowDays],
             'action' => ['action' => $r->action->value, 'pct' => $r->actionPct],
-            'scope' => ['client' => $r->clientId, 'project' => $r->projectId, 'platforms' => $r->providers, 'accounts' => $r->accountIds, 'campaigns' => $r->campaignIds, 'level' => $r->objectLevel],
+            'scope' => ['client' => $r->clientId, 'project' => $r->projectId, 'platforms' => $r->providers, 'accounts' => $r->accountIds, 'campaigns' => $r->campaignIds, 'ad_groups' => $r->adGroupIds, 'ads' => $r->adIds, 'level' => $r->objectLevel],
         ];
     }
 
@@ -185,5 +217,14 @@ final readonly class SaveRule
         }
 
         return $kinds === [] ? ['edited'] : $kinds;
+    }
+
+    private static function plural(AdEntityType $level): string
+    {
+        return match ($level) {
+            AdEntityType::AdGroup => 'ad groups',
+            AdEntityType::Ad => 'ads',
+            default => 'campaigns',
+        };
     }
 }

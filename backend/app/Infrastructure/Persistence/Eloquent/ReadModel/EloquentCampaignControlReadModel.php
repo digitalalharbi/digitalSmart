@@ -7,6 +7,8 @@ namespace App\Infrastructure\Persistence\Eloquent\ReadModel;
 use App\Application\Advertising\Contract\CampaignControlReadModel;
 use App\Application\Advertising\DTO\CampaignControlFilter;
 use App\Application\Advertising\DTO\CampaignVitalsRow;
+use App\Application\Advertising\DTO\EntityControlRow;
+use App\Domain\Advertising\AdEntityType;
 use App\Domain\Advertising\CampaignObjective;
 use App\Domain\Advertising\CampaignOwnership;
 use App\Domain\Advertising\CampaignVitals;
@@ -97,6 +99,119 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
         ];
     }
 
+    public function entities(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        CampaignControlFilter $filter,
+        AdEntityType $level,
+        array $adGroupIds,
+        array $adIds,
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+        int $cap,
+    ): array {
+        if (! in_array($level, [AdEntityType::AdGroup, AdEntityType::Ad], true)) {
+            return [];
+        }
+
+        $query = $this->entityBase($workspaceId, $visibleProjectIds, $filter, $level, $adGroupIds, $adIds)
+            ->leftJoinLateral($this->entityWindow($level, $from, $to), 'cur')
+            ->addSelect([
+                'cur.spend_minor as cur_spend',
+                'cur.revenue_minor as cur_revenue',
+                'cur.results as cur_results',
+                'cur.impressions as cur_impressions',
+                'cur.clicks as cur_clicks',
+                'cur.reported_days as cur_days',
+            ])
+            ->orderByRaw('cur.spend_minor desc nulls last')
+            ->orderBy('e_id')
+            ->limit($cap);
+
+        /** @var list<stdClass> $rows */
+        $rows = $query->get()->all();
+
+        return array_map(function (stdClass $row) use ($level): EntityControlRow {
+            $objective = CampaignObjective::from((string) $row->objective);
+            $status = EntityStatus::from((string) $row->e_status);
+
+            return EntityControlRow::fromSums(
+                level: $level,
+                id: (string) $row->e_id,
+                name: (string) $row->e_name,
+                campaignId: (string) $row->campaign_id,
+                campaignName: (string) $row->campaign_name,
+                adGroupId: $this->nullableString($row->g_id),
+                adGroupName: $this->nullableString($row->g_name),
+                provider: (string) $row->provider,
+                externalAccountId: (string) $row->external_account_id,
+                status: $status,
+                objective: $objective,
+                projectId: $this->nullableString($row->project_id),
+                clientId: $this->nullableString($row->client_id),
+                currency: $this->nullableString($row->e_currency) ?? $this->nullableString($row->currency),
+                budgetMinor: $this->nullableInt($row->e_budget_minor),
+                budgetMode: (string) ($row->e_budget_mode ?? 'unknown'),
+                vitals: new CampaignVitals(
+                    status: $status,
+                    objective: $objective,
+                    reportedDays: (int) ($row->cur_days ?? 0),
+                    spendMinor: $this->nullableInt($row->cur_spend),
+                    results: is_numeric($row->cur_results) ? (float) $row->cur_results : null,
+                    revenueMinor: $this->nullableInt($row->cur_revenue),
+                    previousSpendMinor: null,
+                    previousResults: null,
+                    lastSyncedAt: null,
+                    impressions: $this->nullableInt($row->cur_impressions),
+                    clicks: $this->nullableInt($row->cur_clicks),
+                ),
+                startedAt: $this->toDate($row->e_starts_at),
+                endsAt: $this->toDate($row->e_ends_at),
+                creativeId: $this->nullableString($row->creative_id),
+                clientName: $this->nullableString($row->client_name),
+                projectName: $this->nullableString($row->project_name),
+            );
+        }, $rows);
+    }
+
+    public function entityWriteTarget(string $workspaceId, ?array $visibleProjectIds, AdEntityType $level, string $entityId): ?array
+    {
+        if (! in_array($level, [AdEntityType::AdGroup, AdEntityType::Ad], true)) {
+            return null;
+        }
+
+        $row = $this->entityBase(
+            $workspaceId,
+            $visibleProjectIds,
+            new CampaignControlFilter,
+            $level,
+            $level === AdEntityType::AdGroup ? [$entityId] : [],
+            $level === AdEntityType::Ad ? [$entityId] : [],
+        )
+            ->addSelect(['c.external_id as campaign_external_id', 'ea.external_id as account_external_id'])
+            ->first();
+
+        if ($row === null) {
+            return null;
+        }
+
+        return [
+            'name' => (string) $row->e_name,
+            'provider' => (string) $row->provider,
+            'status' => (string) $row->e_status,
+            'currency' => $this->nullableString($row->e_currency) ?? $this->nullableString($row->currency),
+            'budget_minor' => $this->nullableInt($row->e_budget_minor),
+            'budget_mode' => (string) ($row->e_budget_mode ?? 'unknown'),
+            'campaign_id' => (string) $row->campaign_id,
+            'campaign_name' => (string) $row->campaign_name,
+            'external_campaign_id' => (string) $row->campaign_external_id,
+            'external_entity_id' => (string) $row->e_external_id,
+            'external_account_id' => (string) $row->account_external_id,
+            'client_id' => $this->nullableString($row->client_id),
+            'project_id' => $this->nullableString($row->project_id),
+        ];
+    }
+
     public function spendByDay(string $workspaceId, array $campaignIds, DateTimeImmutable $from, DateTimeImmutable $to): array
     {
         if ($campaignIds === []) {
@@ -178,6 +293,77 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
         CampaignControlFilter $filter,
     ): int {
         return $this->base($workspaceId, $visibleProjectIds, $filter)->count();
+    }
+
+    /**
+     * The campaigns base — the same visibility, project resolution and filters as the Campaigns screen — with the ad
+     * groups (and, for ads, the ads) under each.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @param  list<string>  $adGroupIds
+     * @param  list<string>  $adIds
+     */
+    private function entityBase(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        CampaignControlFilter $filter,
+        AdEntityType $level,
+        array $adGroupIds,
+        array $adIds,
+    ): Builder {
+        $query = $this->base($workspaceId, $visibleProjectIds, $filter)
+            ->join('ad_groups as g', 'g.campaign_id', '=', 'c.id')
+            ->when($adGroupIds !== [], static fn (Builder $q): Builder => $q->whereIn('g.id', $adGroupIds))
+            ->addSelect(['g.id as g_id', 'g.name as g_name']);
+
+        if ($level === AdEntityType::AdGroup) {
+            return $query->addSelect([
+                'g.id as e_id',
+                'g.name as e_name',
+                'g.status as e_status',
+                'g.external_id as e_external_id',
+                'g.budget_minor as e_budget_minor',
+                'g.budget_mode as e_budget_mode',
+                'g.currency as e_currency',
+                DB::raw('coalesce(g.starts_at, g.provider_created_at) as e_starts_at'),
+                'g.ends_at as e_ends_at',
+                DB::raw('null::uuid as creative_id'),
+            ]);
+        }
+
+        return $query->join('ads as a', 'a.ad_group_id', '=', 'g.id')
+            ->when($adIds !== [], static fn (Builder $q): Builder => $q->whereIn('a.id', $adIds))
+            ->addSelect([
+                'a.id as e_id',
+                'a.name as e_name',
+                'a.status as e_status',
+                'a.external_id as e_external_id',
+                /* An ad has no budget of its own on any platform this product reads: it spends its parent's. */
+                DB::raw('null::bigint as e_budget_minor'),
+                DB::raw("'unknown' as e_budget_mode"),
+                'g.currency as e_currency',
+                'a.provider_created_at as e_starts_at',
+                DB::raw('null::timestamptz as e_ends_at'),
+                'a.creative_id',
+            ]);
+    }
+
+    /**
+     * One window of an ad group's or an ad's own rows. Keyed by `entity_type` *and* `entity_id`: the campaign's rows
+     * and the other level's rows share the campaign id and report the same money again.
+     */
+    private function entityWindow(AdEntityType $level, DateTimeImmutable $from, DateTimeImmutable $to): Builder
+    {
+        return DB::table('daily_metrics as m')
+            ->where('m.entity_type', $level->value)
+            ->whereColumn('m.entity_id', $level === AdEntityType::AdGroup ? 'g.id' : 'a.id')
+            ->whereBetween('m.date', [$from->format('Y-m-d'), $to->format('Y-m-d')])
+            ->selectRaw('sum(m.spend_minor) as spend_minor')
+            ->selectRaw('sum(m.revenue_minor) as revenue_minor')
+            ->selectRaw('sum(m.impressions) as impressions')
+            ->selectRaw('sum(m.clicks) as clicks')
+            ->selectRaw('count(distinct m.date) as reported_days')
+            ->selectRaw($this->resultExpression().' as results');
     }
 
     /**

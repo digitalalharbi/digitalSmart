@@ -51,6 +51,23 @@ final class InvalidApprovalRequest extends RuntimeException
         );
     }
 
+    /** A change the platform's documentation does not describe at this level — in the platform's words where it said so. */
+    public static function notAtThisLevel(string $because): self
+    {
+        return new self($because, 'provider_not_documented');
+    }
+
+    /** An ad group or ad that is not in a state the change makes sense for. */
+    public static function wrongEntityState(string $noun, bool $pausing): self
+    {
+        return new self(
+            $pausing
+                ? sprintf('That %s is not running, so there is nothing to pause.', $noun)
+                : sprintf('That %s is not paused, so there is nothing to resume.', $noun),
+            'wrong_state',
+        );
+    }
+
     public static function wrongState(bool $pausing): self
     {
         return new self(

@@ -8,7 +8,6 @@ use App\Application\Integration\Contract\ProviderWriter;
 use App\Application\Integration\DTO\WriteRequest;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Integration\WriteFailure;
-use App\Domain\Integration\WriteOperation;
 use App\Domain\Integration\WriteOutcome;
 
 /**
@@ -63,7 +62,7 @@ final readonly class SandboxCampaignWriter implements ProviderWriter
             );
         }
 
-        if ($request->operation === WriteOperation::SetCampaignDailyBudget) {
+        if ($request->operation->isBudget()) {
             $amount = $request->dailyBudgetMinor;
 
             if ($amount === null || $amount <= 0) {
@@ -82,16 +81,16 @@ final readonly class SandboxCampaignWriter implements ProviderWriter
                 $request->provider,
                 sprintf('daily_budget=%d', $amount),
                 MetricSource::Sandbox,
-                providerRequestId: 'sandbox-'.substr(sha1($request->externalCampaignId.$amount), 0, 12),
+                providerRequestId: 'sandbox-'.substr(sha1($request->entityId().$amount), 0, 12),
             );
         }
 
         return WriteOutcome::confirmed(
             $request->operation,
             $request->provider,
-            $request->operation === WriteOperation::PauseCampaign ? 'PAUSED' : 'ACTIVE',
+            $request->operation->isPause() ? 'PAUSED' : 'ACTIVE',
             MetricSource::Sandbox,
-            providerRequestId: 'sandbox-'.substr(sha1($request->externalCampaignId), 0, 12),
+            providerRequestId: 'sandbox-'.substr(sha1($request->entityId()), 0, 12),
         );
     }
 }

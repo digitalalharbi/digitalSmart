@@ -6,6 +6,7 @@ namespace App\Application\Attention\Source;
 
 use App\Application\Advertising\DTO\CampaignControlFilter;
 use App\Application\Advertising\DTO\CampaignControlRow;
+use App\Application\Advertising\DTO\EntityControlRow;
 use App\Application\Advertising\Query\GetCampaignControl;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Attention\Contract\AttentionSource;
@@ -15,6 +16,7 @@ use App\Application\Automation\DTO\RuleView;
 use App\Application\Automation\RuleEvaluator;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
+use App\Domain\Advertising\AdEntityType;
 use App\Domain\Attention\AttentionSeverity;
 use App\Domain\Attention\AttentionStream;
 use App\Domain\Automation\RuleSeverity;
@@ -64,25 +66,28 @@ final readonly class AutomationAttentionSource implements AttentionSource
                 continue;
             }
 
-            $assessment = $this->campaigns->assessAll($this->scope($rule), $rule->windowDays);
+            /* Judged at the rule's own level: an ad-group rule reads ad groups, each on its own rows. */
+            $rows = $rule->level() === AdEntityType::Campaign
+                ? array_map(
+                    static fn (CampaignControlRow $row): EntityControlRow => EntityControlRow::fromCampaign($row),
+                    $this->campaigns->assessAll($this->scope($rule), $rule->windowDays)['rows'],
+                )
+                : $this->campaigns->assessEntities($rule->level(), $this->scope($rule), $rule->adGroupIds, $rule->adIds, $rule->windowDays);
             /* "For three days" is read from what the routine has observed, not guessed from one window. */
             $streaks = $rule->forDays > 1 ? $this->rules->streaks($rule->id) : [];
             $found = 0;
 
-            /** @var list<CampaignControlRow> $rows */
-            $rows = $assessment['rows'];
-
             foreach ($rows as $row) {
                 $breach = RuleEvaluator::breach($rule, $row, $today);
 
-                if ($breach === null || ($rule->forDays > 1 && ($streaks[$row->campaignId] ?? 0) < $rule->forDays)) {
+                if ($breach === null || ($rule->forDays > 1 && ($streaks[$row->id] ?? 0) < $rule->forDays)) {
                     continue;
                 }
 
                 [$message, $code, $params] = $breach;
 
                 $items[] = new AttentionItem(
-                    id: sprintf('rule:%s:%s', $rule->id, $row->campaignId),
+                    id: sprintf('rule:%s:%s', $rule->id, $row->id),
                     stream: AttentionStream::Automation,
                     severity: match ($rule->severity) {
                         RuleSeverity::Critical => AttentionSeverity::Critical,
@@ -90,8 +95,8 @@ final readonly class AutomationAttentionSource implements AttentionSource
                         RuleSeverity::Watch => AttentionSeverity::Watch,
                     },
                     message: $message,
-                    entityKind: 'Campaign',
-                    entityLabel: $row->campaignName,
+                    entityKind: $row->level->label(),
+                    entityLabel: $row->parentLabel() === null ? $row->name : $row->parentLabel().' › '.$row->name,
                     owner: false,
                     since: null,
                     clientId: $row->clientId,

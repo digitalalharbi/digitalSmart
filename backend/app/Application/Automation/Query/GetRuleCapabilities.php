@@ -9,6 +9,7 @@ use App\Application\Automation\RuleCapability;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Domain\Access\Permission;
+use App\Domain\Advertising\AdEntityType;
 use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMetric;
 use App\Domain\Integration\Provider;
@@ -32,7 +33,7 @@ final readonly class GetRuleCapabilities
         private RuleCapability $capability,
     ) {}
 
-    /** @return list<array{provider: string, label: string, credentials: string, metrics: list<string>, actions: array<string, string>}> supported · awaiting_credentials · unverified · unsupported */
+    /** @return list<array{provider: string, label: string, credentials: string, metrics: list<string>, actions: array<string, string>, levels: array<string, array{metrics: list<string>, actions: array<string, string>}>}> supported · awaiting_credentials · unverified · unsupported */
     public function __invoke(): array
     {
         $this->guard->ensure(Permission::AnalyticsView);
@@ -45,18 +46,34 @@ final readonly class GetRuleCapabilities
                 continue;
             }
 
-            $actions = [];
+            $levels = [];
 
-            foreach (RuleAction::cases() as $action) {
-                $actions[$action->value] = $this->capability->of($action, $provider->value, $this->actor->workspaceId()->value);
+            foreach ([AdEntityType::Campaign, AdEntityType::AdGroup, AdEntityType::Ad] as $level) {
+                $actions = [];
+
+                foreach (RuleAction::cases() as $action) {
+                    if ($action->availableAt($level)) {
+                        $actions[$action->value] = $this->capability->of($action, $provider->value, $this->actor->workspaceId()->value, $level);
+                    }
+                }
+
+                $levels[$level->value] = [
+                    'metrics' => array_values(array_map(
+                        static fn (RuleMetric $m): string => $m->value,
+                        array_filter(RuleMetric::cases(), static fn (RuleMetric $m): bool => $m->availableAt($level)),
+                    )),
+                    'actions' => $actions,
+                ];
             }
 
             $out[] = [
                 'provider' => $provider->value,
                 'label' => $provider->label(),
                 'credentials' => in_array($provider->value, $connected, true) ? 'connected' : 'awaiting_credentials',
-                'metrics' => RuleMetric::values(),
-                'actions' => $actions,
+                /* The campaign level, as before; `levels` carries each level on its own. */
+                'metrics' => $levels[AdEntityType::Campaign->value]['metrics'] ?? [],
+                'actions' => $levels[AdEntityType::Campaign->value]['actions'] ?? [],
+                'levels' => $levels,
             ];
         }
 

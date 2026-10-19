@@ -153,13 +153,7 @@ final readonly class ApprovalView
      */
     public function carryOutBlockedBecause(): ?string
     {
-        $operation = null;
-
-        foreach (WriteOperation::cases() as $candidate) {
-            if ($candidate->authorisedBy() === $this->kind) {
-                $operation = $candidate;
-            }
-        }
+        $operation = WriteOperation::forApproval($this->kind, $this->proposal);
 
         if ($operation === null) {
             return $this->kind->enactmentBlockedBecause();

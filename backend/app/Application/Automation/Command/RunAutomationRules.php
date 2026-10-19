@@ -6,6 +6,7 @@ namespace App\Application\Automation\Command;
 
 use App\Application\Advertising\DTO\CampaignControlFilter;
 use App\Application\Advertising\DTO\CampaignControlRow;
+use App\Application\Advertising\DTO\EntityControlRow;
 use App\Application\Advertising\Query\GetCampaignControl;
 use App\Application\Agents\Contract\AgentActors;
 use App\Application\Agents\Contract\AgentRunLog;
@@ -18,6 +19,7 @@ use App\Application\Automation\RuleEvaluator;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\Clock;
+use App\Domain\Advertising\AdEntityType;
 use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMode;
 use App\Domain\Identity\UserId;
@@ -29,18 +31,20 @@ use Throwable;
  * The rules routine. Every fifteen minutes; each rule decides whether it is due (continuous, hourly, or daily at a
  * time in its own time zone).
  *
- * For a due rule: read the campaigns in its scope (client, project, platform, account, campaign) with the same query
- * the Campaigns screen runs; evaluate its conditions (AND / OR); keep how long it has held for each campaign; and
- * once it has held for as many days as it asks, act **as its mode allows**:
+ * For a due rule: read what it judges at its level — campaigns with the same query the Campaigns screen runs, or the
+ * ad groups or ads under them, each on its own metric rows — within its scope (client, project, platform, account,
+ * campaign, ad group, ad); evaluate its conditions (AND / OR); keep how long it has held for each entity; and once it
+ * has held for as many days as it asks, act **as its mode allows**:
  *
  * - Monitor — the card on Today and a "completed · notified" line in the history. Nothing is proposed.
  * - Recommend — a proposal through the tool gateway, as the workspace's agent identity: approval, the project's
  *   budget limit, no stacking and the day's cooldown all apply. Recorded as "waiting approval".
  * - Auto — not reachable: a rule cannot be saved in Auto until the owner authorises it (`RuleMode`).
  *
- * Before acting: the rule's own cooldown on that campaign; a conflicting move by another rule (one raised the budget,
- * this would cut it) — the later rule stands down; and the platform's capability — an action whose write is not
- * documented, or a bid change (verified nowhere), is recorded as "unsupported" with the reason, never attempted.
+ * Before acting: the rule's own cooldown on that entity; a conflicting move by another rule on the same entity (one
+ * raised the budget, this would cut it) — the later rule stands down; and the platform's capability at that level —
+ * an action whose write the platform does not document there, or a bid change (wired nowhere), is recorded as
+ * "unsupported" with the reason, never attempted.
  * Nothing here changes a platform.
  */
 final readonly class RunAutomationRules
@@ -111,6 +115,31 @@ final readonly class RunAutomationRules
     }
 
     /**
+     * What the rule judges, at its level, within its scope — shared with the dry run so the two cannot disagree.
+     *
+     * @return list<EntityControlRow>
+     */
+    public static function subjects(GetCampaignControl $campaigns, RuleView $rule): array
+    {
+        $filter = new CampaignControlFilter(
+            clientIds: $rule->clientId === null ? [] : [$rule->clientId],
+            projectIds: $rule->projectId === null ? [] : [$rule->projectId],
+            providers: $rule->providers,
+            externalAccountIds: $rule->accountIds,
+            campaignIds: $rule->campaignIds,
+        );
+
+        if ($rule->level() === AdEntityType::Campaign) {
+            return array_map(
+                static fn (CampaignControlRow $row): EntityControlRow => EntityControlRow::fromCampaign($row),
+                $campaigns->assessAll($filter, $rule->windowDays)['rows'],
+            );
+        }
+
+        return $campaigns->assessEntities($rule->level(), $filter, $rule->adGroupIds, $rule->adIds, $rule->windowDays);
+    }
+
+    /**
      * @param  array{rules: int, acted: int, refused: array<string, int>}  $done
      * @return array<string, int|string>
      */
@@ -123,36 +152,43 @@ final readonly class RunAutomationRules
             $evaluation = RuleEvaluator::evaluate($rule, $row, $today);
 
             if ($evaluation['holds']) {
-                $hits[$row->campaignId] = [$row, $evaluation];
+                $hits[$row->id] = [$row, $evaluation];
             }
         }
 
-        $streaks = $this->rules->observe($rule->id, array_keys($hits), $today->format('Y-m-d'));
+        $streaks = $this->rules->observe(
+            $rule->id,
+            array_map(static fn (array $hit): string => $hit[0]->campaignId, $hits),
+            $today->format('Y-m-d'),
+        );
         $result = ['matched' => count($hits), 'completed' => 0, 'waiting_approval' => 0, 'no_change' => 0, 'unsupported' => 0, 'failed' => 0, 'cooldown' => 0, 'conflict' => 0];
         $acted = 0;
 
-        foreach ($hits as $campaignId => [$row, $evaluation]) {
-            $streak = $streaks[$campaignId] ?? ['days' => 0, 'acted' => true];
+        foreach ($hits as $entityId => [$row, $evaluation]) {
+            $entityId = (string) $entityId;
+            $streak = $streaks[$entityId] ?? ['days' => 0, 'acted' => true];
 
             if ($streak['acted'] || $streak['days'] < $rule->forDays || $acted >= self::ACTIONS_PER_RULE) {
                 continue;
             }
 
-            /* Inside its cooldown on this campaign: recorded once for the streak, as what it is, and nothing is done. */
-            $cooling = $this->executions->lastActedAt($rule->id, $campaignId, $today->modify(sprintf('-%d hours', $rule->cooldownHours))) !== null;
+            /* Inside its cooldown on this entity: recorded once for the streak, as what it is, and nothing is done. */
+            $cooling = $this->executions->lastActedAt($rule->id, $entityId, $today->modify(sprintf('-%d hours', $rule->cooldownHours))) !== null;
 
             [$outcome, $reason, $after, $approval] = $cooling
                 ? ['cooldown', 'COOLDOWN', [], null]
                 : $this->act($rule, $row, $evaluation, $streak['days'], $today);
-            $this->rules->markActed($rule->id, $campaignId);
+            $this->rules->markActed($rule->id, $entityId);
             $this->executions->record($workspace, [
                 'rule_id' => $rule->id,
-                'campaign_id' => $campaignId,
+                'campaign_id' => $row->campaignId,
+                'entity_id' => $entityId,
+                'parent_label' => $row->parentLabel(),
                 'client_id' => $row->clientId,
                 'project_id' => $row->projectId,
                 'provider' => $row->provider,
-                'object_level' => 'campaign',
-                'object_label' => $row->campaignName,
+                'object_level' => $row->level->value,
+                'object_label' => $row->name,
                 'action' => $rule->mode === RuleMode::Monitor ? 'notify' : $rule->action->value,
                 'before' => [...$evaluation['values'], 'daily_budget' => $row->budgetMinor === null ? null : $row->budgetMinor / 100, 'status' => $row->status->value, 'currency' => $row->currency],
                 'after' => $after,
@@ -174,29 +210,23 @@ final readonly class RunAutomationRules
         return $result;
     }
 
-    /** @return list<CampaignControlRow> */
+    /** @return list<EntityControlRow> */
     private function scope(RuleView $rule): array
     {
-        return $this->campaigns->assessAll(new CampaignControlFilter(
-            clientIds: $rule->clientId === null ? [] : [$rule->clientId],
-            projectIds: $rule->projectId === null ? [] : [$rule->projectId],
-            providers: $rule->providers,
-            externalAccountIds: $rule->accountIds,
-            campaignIds: $rule->campaignIds,
-        ), $rule->windowDays)['rows'];
+        return self::subjects($this->campaigns, $rule);
     }
 
     /**
      * @param  array{values: array<string, float|int|null>, first: array{0: string, 1: string, 2: array<string, int|string|float>}|null}  $evaluation
      * @return array{0: 'completed'|'waiting_approval'|'no_change'|'unsupported'|'failed'|'conflict', 1: string|null, 2: array<string, mixed>, 3: string|null}
      */
-    private function act(RuleView $rule, CampaignControlRow $row, array $evaluation, int $days, DateTimeImmutable $now): array
+    private function act(RuleView $rule, EntityControlRow $row, array $evaluation, int $days, DateTimeImmutable $now): array
     {
         if ($rule->mode === RuleMode::Monitor || $rule->action === RuleAction::Alert) {
             return ['completed', 'NOTIFIED', ['notified' => true], null];
         }
 
-        $capability = $this->capability->of($rule->action, $row->provider, $this->actor->workspaceId()->value);
+        $capability = $this->capability->of($rule->action, $row->provider, $this->actor->workspaceId()->value, $row->level);
 
         if ($capability !== 'supported') {
             return ['unsupported', match (true) {
@@ -208,7 +238,7 @@ final readonly class RunAutomationRules
         }
 
         $opposite = self::OPPOSITE[$rule->action->value] ?? [];
-        $rival = $this->executions->conflicting($rule->id, $row->campaignId, $opposite, $now->modify(sprintf('-%d hours', $rule->cooldownHours)));
+        $rival = $this->executions->conflicting($rule->id, $row->id, $opposite, $now->modify(sprintf('-%d hours', $rule->cooldownHours)));
 
         if ($rival !== null) {
             return ['conflict', 'CONFLICT', ['conflicts_with' => $rival], null];
@@ -217,12 +247,19 @@ final readonly class RunAutomationRules
         $reason = sprintf('Rule "%s": %s Held for %d day(s).', $rule->name, (string) ($evaluation['first'][0] ?? ''), $days);
         $after = [];
 
+        $campaign = $row->level === AdEntityType::Campaign;
+        $entity = ['level' => $row->level->value, 'entity_id' => $row->id, 'reason' => $reason];
+
         $outcome = match ($rule->action) {
-            RuleAction::ProposePause => $this->tools->call('propose_pause_campaign', ['campaign_id' => $row->campaignId, 'reason' => $reason], 'agent', 'automation'),
-            RuleAction::ProposeResume => $this->tools->call('propose_resume_campaign', ['campaign_id' => $row->campaignId, 'reason' => $reason], 'agent', 'automation'),
+            RuleAction::ProposePause => $campaign
+                ? $this->tools->call('propose_pause_campaign', ['campaign_id' => $row->campaignId, 'reason' => $reason], 'agent', 'automation')
+                : $this->tools->call('propose_entity_change', [...$entity, 'change' => 'pause'], 'agent', 'automation'),
+            RuleAction::ProposeResume => $campaign
+                ? $this->tools->call('propose_resume_campaign', ['campaign_id' => $row->campaignId, 'reason' => $reason], 'agent', 'automation')
+                : $this->tools->call('propose_entity_change', [...$entity, 'change' => 'resume'], 'agent', 'automation'),
             RuleAction::ProposeBudgetCut, RuleAction::ProposeBudgetIncrease => $this->budget($rule, $row, $reason, $after),
             default => $this->tools->call('create_task', [
-                'title' => sprintf('%s — %s', $rule->name, $row->campaignName),
+                'title' => sprintf('%s — %s', $rule->name, $row->parentLabel() === null ? $row->name : $row->parentLabel().' › '.$row->name),
                 'description' => $reason,
                 ...($row->projectId === null ? [] : ['project_id' => $row->projectId]),
             ], 'agent', 'automation'),
@@ -252,7 +289,7 @@ final readonly class RunAutomationRules
      * @param  array<string, mixed>  $after
      * @return array{ok: bool, data?: array<string, mixed>, error?: array{code: string, message: string}}
      */
-    private function budget(RuleView $rule, CampaignControlRow $row, string $reason, array &$after): array
+    private function budget(RuleView $rule, EntityControlRow $row, string $reason, array &$after): array
     {
         if ($row->budgetMinor === null || $row->budgetMinor <= 0) {
             return ['ok' => false, 'error' => ['code' => 'no_daily_budget', 'message' => 'No daily budget to change.']];
@@ -262,6 +299,8 @@ final readonly class RunAutomationRules
         $new = (int) round($row->budgetMinor * (100 + $sign * (int) $rule->actionPct) / 100);
         $after = ['daily_budget' => $new / 100];
 
-        return $this->tools->call('propose_budget_change', ['campaign_id' => $row->campaignId, 'daily_budget_minor' => $new, 'reason' => $reason], 'agent', 'automation');
+        return $row->level === AdEntityType::Campaign
+            ? $this->tools->call('propose_budget_change', ['campaign_id' => $row->campaignId, 'daily_budget_minor' => $new, 'reason' => $reason], 'agent', 'automation')
+            : $this->tools->call('propose_entity_change', ['level' => $row->level->value, 'entity_id' => $row->id, 'change' => 'budget', 'daily_budget_minor' => $new, 'reason' => $reason], 'agent', 'automation');
     }
 }
