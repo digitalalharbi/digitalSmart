@@ -119,7 +119,6 @@ export function ReadinessPanel() {
                             ? t(`readiness.state.${cell.state ?? 'code_verified'}`)
                             : t(`readiness.support.${cell.support}`)}
                         </span>
-                        <span className="sr-only">{detail}</span>
                       </TableCell>
                     );
                   })}
@@ -132,6 +131,35 @@ export function ReadinessPanel() {
       <p className="text-content-tertiary text-xs">
         {t('readiness.ladder', { date: query.data?.[0]?.checked_on ?? '' })}
       </p>
+
+      {/* The endpoints and fields behind each cell: for whoever is commissioning a provider, not for the page. */}
+      <details className="bg-surface rounded-2xl p-4 shadow-xs">
+        <summary className="text-content-secondary cursor-pointer text-sm font-semibold">
+          {t('integrations.advanced')}
+        </summary>
+        <ul className="mt-3 flex flex-col gap-1.5 text-xs">
+          {(query.data ?? []).flatMap((p) =>
+            LEVELS.flatMap((level) =>
+              CHANGES.map((change) => {
+                const cell = p.levels[level].changes[change];
+                const detail = cell.reference ?? cell.field ?? cell.because ?? '';
+
+                return detail === '' ? null : (
+                  <li key={`${p.provider}-${level}-${change}`} className="text-content-secondary">
+                    <span className="text-content font-medium">
+                      {p.label} · {t(`automation.level.${level}`)} ·{' '}
+                      {t(`readiness.change.${change}`)}
+                    </span>{' '}
+                    <span dir="ltr" className="ds-numeric">
+                      {detail}
+                    </span>
+                  </li>
+                );
+              }),
+            ),
+          )}
+        </ul>
+      </details>
     </div>
   );
 }

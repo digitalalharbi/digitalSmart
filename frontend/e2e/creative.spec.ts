@@ -40,11 +40,11 @@ test.describe('creative hub', () => {
     await expect(coverage).toBeAttached({ timeout: 30_000 });
     await expect(page.getByText(/snapchat · story_ad_preview_image/)).toBeVisible();
 
-    // The reason is a hint on the card's title: out of the way, and one hover from being read.
+    // The reason is a hint on the card's title: out of the way, and one focus (or hover) from being read.
     await page
       .getByRole('heading', { name: 'What can be checked' })
       .getByRole('button', { name: 'More information' })
-      .hover();
+      .focus();
     await expect(coverage).toBeVisible();
   });
 
