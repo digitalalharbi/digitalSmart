@@ -128,6 +128,8 @@ enum AuditAction: string
     case AutomationRuleDeleted = 'automation_rule.deleted';
     case TaskUpdated = 'task.updated';
 
+    /* A blueprint became paused drafts with launch requests — no platform was called. */
+    case CampaignDraftsCreated = 'campaign_drafts.created';
     case ApprovalRequested = 'approval.requested';
     case ApprovalDecided = 'approval.decided';
     case ApprovalAmended = 'approval.amended';

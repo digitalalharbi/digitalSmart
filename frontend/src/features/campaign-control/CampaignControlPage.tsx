@@ -1,4 +1,4 @@
-import { LayoutGrid, Rows3, SlidersHorizontal } from 'lucide-react';
+import { LayoutGrid, Plus, Rows3, SlidersHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -131,6 +131,12 @@ export function CampaignControlPage() {
     <div className="ds-page">
       <PageHeader
         title={t('campaignControl.title')}
+        primaryAction={
+          <Link to="/campaigns/new" className={buttonVariants({ variant: 'primary' })}>
+            <Plus aria-hidden className="size-4" />
+            {t('builder.cta_new')}
+          </Link>
+        }
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <SavedViewsMenu

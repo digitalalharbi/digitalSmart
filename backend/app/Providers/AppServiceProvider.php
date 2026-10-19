@@ -16,7 +16,9 @@ use App\Application\Advertising\Contract\SyncJournal;
 use App\Application\Agents\Contract\AgentActors;
 use App\Application\Agents\Contract\AgentReadModel;
 use App\Application\Agents\Contract\AgentRunLog;
+use App\Application\Advertising\Contract\CampaignDraftRepository;
 use App\Application\Agents\Contract\FindingLog;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCampaignDraftRepository;
 use App\Application\Intelligence\Contract\ModelCredentialStore;
 use App\Application\Intelligence\Contract\ModelRouter;
 use App\Infrastructure\Intelligence\ConfiguredModelRouter;
@@ -431,6 +433,7 @@ final class AppServiceProvider extends ServiceProvider
         FindingLog::class => EloquentFindingLog::class,
         ApprovalLinkRepository::class => EloquentApprovalLinkRepository::class,
         ModelCredentialStore::class => EloquentModelCredentialStore::class,
+        CampaignDraftRepository::class => EloquentCampaignDraftRepository::class,
         AgentReadModel::class => EloquentAgentReadModel::class,
         ToolCallLog::class => EloquentToolCallLog::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
