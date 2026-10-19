@@ -13,7 +13,7 @@ request / issue → branch → implementation → tests → PR → CI green → 
 2. Implement. Stage **only the files you changed, by path** — another session works in the same folder (below).
 3. Run the gate (see "CI" below) and paste the real counts into the PR.
 4. Push the branch. Open a PR from `.github/pull_request_template.md` and answer every section.
-5. Review, then merge on GitHub. A merge on GitHub is not a push to `main`. Where the merge queue is
+5. Review, then merge on GitHub — a merge to `main` deploys to production automatically (`docs/DEPLOYMENT.md`). A merge on GitHub is not a push to `main`. Where the merge queue is
    enabled, merging adds the pull request to the queue: it is rebuilt on top of `main` plus anything queued
    ahead of it, and lands only if the checks are green against that combination.
 6. `git fetch origin` — that is the state for the next piece of work.

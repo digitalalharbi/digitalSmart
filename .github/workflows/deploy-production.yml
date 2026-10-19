@@ -1,0 +1,94 @@
+name: Deploy Production
+
+# Push-based: GitHub → SSH → the production server. Only main, only after a merge — main is protected and every
+# change reached it through a pull request with the required checks green. Never from a pull request or a branch.
+on:
+  push:
+    branches: [main]
+  # A manual re-deploy of main (for example after the server's shared/.env changed). Refused for any other ref.
+  workflow_dispatch:
+
+# One production deploy at a time. A newer main waits for the running one rather than cancelling it mid-migration;
+# GitHub keeps only the newest pending run, so an older queued deploy is superseded by the newer commit.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  # Until the owner sets the repository variable PRODUCTION_ENABLED=true (after the server and the production
+  # environment's secrets exist), this is the only job that runs: it says so, and records no deployment.
+  awaiting:
+    name: Production server not configured
+    if: github.ref == 'refs/heads/main' && vars.PRODUCTION_ENABLED != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - run: |
+          {
+            echo "### AWAITING_SERVER_ACCESS"
+            echo "No production server is configured, so nothing was deployed and no deployment was recorded."
+            echo "See docs/DEPLOYMENT.md for the values the owner provides, then set PRODUCTION_ENABLED=true."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy main to production
+    if: github.ref == 'refs/heads/main' && vars.PRODUCTION_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # The environment carries the deployment secrets and the visible deployment history.
+    environment:
+      name: production
+    env:
+      # Infrastructure secrets only (docs/DEPLOYMENT.md). Provider, runtime and model credentials live in the server's
+      # shared/.env and never pass through GitHub.
+      PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
+      PRODUCTION_USER: ${{ secrets.PRODUCTION_USER }}
+      PRODUCTION_PORT: ${{ secrets.PRODUCTION_PORT }}
+      PRODUCTION_PATH: ${{ secrets.PRODUCTION_PATH }}
+      PRODUCTION_KNOWN_HOSTS: ${{ secrets.PRODUCTION_KNOWN_HOSTS }}
+    steps:
+      - name: The environment is complete
+        # Enabled but incomplete is a configuration error, and fails loudly rather than skipping quietly.
+        run: |
+          for name in PRODUCTION_HOST PRODUCTION_USER PRODUCTION_PATH PRODUCTION_KNOWN_HOSTS; do
+            [ -n "${!name}" ] || { echo "::error::$name is not set in the production environment"; exit 1; }
+          done
+
+      - uses: actions/checkout@v4
+
+      - name: Establish SSH
+        env:
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          [ -n "$PRODUCTION_SSH_KEY" ] || { echo "::error::PRODUCTION_SSH_KEY is not set in the production environment"; exit 1; }
+          install -m 700 -d ~/.ssh
+          # The key is written to a file only readable by the runner user, never echoed; GitHub masks it in logs.
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > ~/.ssh/production
+          chmod 600 ~/.ssh/production
+          # Pinned host key: a server that cannot prove it is ours is refused, never trusted on first sight.
+          printf '%s\n' "$PRODUCTION_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy ${{ github.sha }}
+        run: |
+          started=$(date -u +%s)
+          ssh -i ~/.ssh/production -p "${PRODUCTION_PORT:-22}" -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$PRODUCTION_USER@$PRODUCTION_HOST" \
+            "DEPLOY_ROOT='$PRODUCTION_PATH' bash -s -- '$GITHUB_SHA'" < scripts/deploy/remote-entry.sh
+          {
+            echo "### Deployed"
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Commit | \`$GITHUB_SHA\` |"
+            echo "| Trigger | ${{ github.event_name }} by ${{ github.actor }} |"
+            echo "| Finished | $(date -u +%Y-%m-%dT%H:%M:%SZ) |"
+            echo "| Duration | $(( $(date -u +%s) - started ))s |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the key
+        if: always()
+        run: rm -f ~/.ssh/production

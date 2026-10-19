@@ -1,8 +1,8 @@
 # digitalSmart — session bootstrap
 
-**`origin/main` on `https://github.com/digitalalharbi/digitalSmart` is the single source of truth.**
-Not a local branch, not a worktree, not anything said in an earlier conversation or remembered from one. Where memory
-and Git disagree, Git is right and memory is stale.
+**`origin/main` on `https://github.com/digitalalharbi/digitalSmart` is the single source of truth.** The repository
+is public. Not a local branch, not a worktree, not anything said in an earlier conversation or remembered from one.
+Where memory and Git disagree, Git is right and memory is stale.
 
 ## Start of every session
 
@@ -16,57 +16,72 @@ Then read, in this order — they are the project's own record and they outrank 
 
 - @docs/RESUME_STATE.md — the live state, under **START HERE**
 - @docs/CHANGE_MANAGEMENT.md — how a change gets from a request to `main`, and the emergency path
-- @docs/EXECUTION_POLICY.md — where development runs, and what GitHub may and may not do
-- @docs/CI_STATUS.md — whether CI runs today, and what stands in for it when it does not
+- @docs/EXECUTION_POLICY.md — where development runs, what GitHub may do, and the secret policy
+- @docs/CI_STATUS.md — what CI runs and what is required
+- @docs/DEPLOYMENT.md — how `main` reaches production, rollback, and disk space
 - @CHANGELOG.md — what has landed
 - @docs/ROADMAP.md, @docs/ARCHITECTURE.md, @docs/AGENTS.md — the product and how it is built
 
 Work from what those say. If a document contradicts the code, the code is the fact and the document is a defect.
 
-## Execution policy — owner decision, 2026-10-19
+## The pipeline
+
+```
+Claude Code → branch → pull request → required CI → merge to main → Deploy Production (GitHub Actions → SSH)
+            → health check → live
+```
+
+- **`main` is protected by an active ruleset**: changes arrive only through a pull request; the `Governance`,
+  `Backend` and `Frontend` checks are required and the branch must be up to date with `main`; no force-push, no
+  deletion. The local `.githooks/pre-push` (enable with `git config core.hooksPath .githooks`) also refuses a push
+  to `main`.
+- **`main` means reviewed, CI-green and deployable.** Nothing experimental lands there.
+- **GitHub Actions is active** (public repository). CI must be green before a merge — never bypass it.
+- **A merge to `main` deploys to production** (`.github/workflows/deploy-production.yml`); never a branch, never a
+  pull request. Until the server exists the workflow reports `AWAITING_SERVER_ACCESS` — see `docs/DEPLOYMENT.md`.
+
+## Execution policy — owner decisions, 2026-10-19
 
 **ALL PRODUCT DEVELOPMENT HAPPENS FROM A CLAUDE CODE SESSION ON THE OWNER'S MACHINE.**
 
-**GitHub is source control, CI and deployment only. GitHub never invokes Claude or Anthropic — for anything.**
+**GitHub is source control, CI and deployment only. GitHub never invokes Claude, Anthropic or any other model.**
 
-**No fees.** Nothing in this repository may cause a charge to the owner's GitHub or Anthropic accounts:
+- No `.github/workflows/claude.yml`, no autopilot, no scheduled workflow, no `anthropics/claude-code-action`, no
+  `ANTHROPIC_API_KEY`, no call to a model API — in any workflow.
+- No paid GitHub feature is switched on to make something work.
 
-- No `.github/workflows/claude.yml`, no autopilot, no scheduled workflow that develops, reviews or writes code.
-- No `anthropics/claude-code-action`, no `ANTHROPIC_API_KEY`, and **no `secrets.` reference in any workflow at all**.
-- No paid GitHub feature is switched on to make something work (no plan upgrade, no paid minutes, no paid runners).
+**Secrets.** No secret **value** may exist in a repository file, a workflow literal, a commit, a log or a document.
+GitHub Actions **encrypted secrets are allowed for deployment infrastructure only** — `PRODUCTION_HOST`,
+`PRODUCTION_USER`, `PRODUCTION_SSH_KEY`, `PRODUCTION_PORT`, `PRODUCTION_PATH`, `PRODUCTION_KNOWN_HOSTS` — in the
+`production` environment, referenced only from `deploy-production.yml`. Provider, runtime and model credentials stay in
+the production server's environment, never in GitHub.
 
-`scripts/governance/no-paid-model.sh` fails the build if any workflow regains a model action, a model key, a
-secret reference, a `schedule` trigger, a file named like an autopilot or `claude*.yml`, or a call to a model API —
-and asserts that `ci.yml` still has its jobs, so the rule cannot be met by breaking CI. It runs as the first CI job
-and in the local `pre-push` hook; `scripts/governance/test-no-paid-model.sh` proves it fails on each thing it forbids.
+`scripts/governance/no-paid-model.sh` enforces all of this as the first CI job and in the pre-push hook: model
+paths, unapproved or misplaced secret references, dynamic secret reads, key- and token-shaped values in any tracked
+file, schedules, a deploy that could run from anything but `main`, destructive database commands in deploy files,
+and CI losing its jobs. `scripts/governance/test-no-paid-model.sh` proves it fails on each (21 cases).
 
 ## How work reaches main
 
-Every change — human or agent — takes the same path:
-
 ```
-request / issue → branch → implementation → tests → PR → CI green → review → merge
+git fetch origin → branch from origin/main → bounded slice → tests → commit → push branch → PR → CI → fix on the branch
+→ merge when green → production deploys from main
 ```
 
-- Branch names: `claude/<issue-number>-<short-slug>`, or `feat/…` · `fix/…` · `chore/…` when the change did not
-  start from an issue.
-- **`git fetch origin` first, always**, and branch from the freshest `origin/main`.
-- **No direct push to `main`.** The local `pre-push` hook (`.githooks/pre-push`, enabled with
-  `git config core.hooksPath .githooks`) refuses it. Server-side protection is not available on this private
-  repository's plan — see `docs/CI_STATUS.md`; until it is, the hook and this rule are the protection.
-- A PR fills in `.github/pull_request_template.md` honestly. "CI green" means the CI decided in
-  `docs/CI_STATUS.md` — while GitHub Actions cannot run, the full local gate output pasted into the PR.
+- Branch names: `feature/<scope>`, `fix/<scope>`, `chore/<scope>`, or `claude/<issue>-<slug>`.
+- **One session, one branch, one worktree.** Concurrent sessions never share a mutable branch, and the main working
+  tree is not shared scratch space: `git worktree add ../<name> -b <branch> origin/main`.
+- Stage **only files you changed, by explicit path** — never `git add .`, `-A` or a whole directory. Before every
+  commit: `git status --short` and `git diff --cached --name-only`. Never reset, restore, stash or reformat another
+  session's files; format only the files you changed.
+- A PR answers every section of `.github/pull_request_template.md`.
+- No session leaves valid work only in an uncommitted working tree: commit it to its branch and push.
 - After every merge: `git fetch origin`, and take that as the state for the next piece of work.
 
-## Committing alongside another session
+## Before heavy work
 
-Another Claude Code session works in this same folder and leaves its own uncommitted files. Therefore:
-
-- Stage **only files you changed, by explicit path**. Never `git add .`, `git add -A`, or a whole directory.
-- Before every commit: `git status --short`, then `git diff --cached --name-only` — unstage anything that is not yours.
-- Never reset, checkout, restore, stash or reformat another session's files. Do not run Pint or Prettier over a
-  directory that contains them; format the files you changed, by path.
-- After each completed slice of work: commit your files, push your branch, open or update its PR.
+`scripts/check-disk.sh` (10 GB by default) runs before E2E; the production deploy refuses to start below 2 GB. Low
+disk is an operational blocker — investigate read-only, and delete nothing without knowing what it is.
 
 ## Status vocabulary — use it exactly
 
@@ -76,10 +91,11 @@ Another Claude Code session works in this same folder and leaves its own uncommi
 | `IMPLEMENTED_NOT_VERIFIED` | Written, not yet proven. Not done |
 | `AWAITING_CREDENTIALS` | Complete. Supply the credential and it runs |
 | `AWAITING_MODEL_CREDENTIALS` | Complete. Supply a model key and it runs; the deterministic path runs meanwhile |
+| `AWAITING_SERVER_ACCESS` | Complete. Supply the production server and it deploys |
 | `BLOCKED_EXTERNAL` | Waiting on something only the owner or a provider can supply |
 | `LIVE_VERIFIED` | Real credentials **and** a real round trip **and** the result visible in the product |
 
-Never write `LIVE_VERIFIED` without that external evidence.
+Never write `LIVE_VERIFIED` — or "deployed" — without that external evidence.
 
 ---
 
