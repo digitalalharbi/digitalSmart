@@ -1,7 +1,7 @@
 import { Clock } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatNumber } from '@/shared/lib/format';
+import { formatMinor, formatNumber } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -11,7 +11,6 @@ import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { ScrollRegion } from '@/shared/ui/scroll-region';
-import { formatMinor } from './money';
 import type { Lead, LeadStage } from './types';
 
 type PipelineListProps = {

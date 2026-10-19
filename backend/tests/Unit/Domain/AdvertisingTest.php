@@ -8,6 +8,7 @@ use App\Domain\Advertising\MetricSource;
 use App\Domain\Advertising\ProviderErrorCategory;
 use App\Domain\Advertising\SyncKind;
 use App\Domain\Advertising\SyncStatus;
+use App\Domain\Advertising\ValueObject\CurrencyExponent;
 use App\Domain\Advertising\ValueObject\MetricSet;
 use App\Domain\Advertising\ValueObject\Money;
 use App\Domain\Integration\Credentials;
@@ -40,9 +41,7 @@ describe('money', function (): void {
             ->and(Money::of(5, 'SAR')->toDecimal())->toBe('0.05')
             ->and(Money::of(100_000, 'SAR')->toDecimal())->toBe('1000.00')
             ->and(Money::of(-250, 'SAR')->toDecimal())->toBe('-2.50')
-            ->and(Money::of(0, 'SAR')->toDecimal())->toBe('0.00')
-            // Currencies with no minor unit, such as JPY.
-            ->and(Money::of(1_500, 'JPY')->toDecimal(0))->toBe('1500');
+            ->and(Money::of(0, 'SAR')->toDecimal())->toBe('0.00');
     });
 
     it('reads Google and X micros', function (): void {
@@ -57,10 +56,125 @@ describe('money', function (): void {
             ->and(Money::fromDecimalString('90', 'SAR')->minorUnits)->toBe(9_000);
     });
 
+    it('takes the minor unit from the currency rather than assuming two decimals', function (): void {
+        /*
+         * The bug this guards: "1200" in yen is 1200 minor units, not 120000. A
+         * two-decimal constant bills a Tokyo client a hundred times their spend,
+         * and under-reports a Kuwaiti one by a thousand.
+         */
+        expect(Money::fromDecimalString('1200', 'JPY')->minorUnits)->toBe(1_200)
+            ->and(Money::fromDecimalString('1.234', 'KWD')->minorUnits)->toBe(1_234)
+            ->and(Money::fromDecimalString('1234.56', 'SAR')->minorUnits)->toBe(123_456);
+
+        expect(Money::of(1_200, 'JPY')->toDecimal())->toBe('1200')
+            ->and(Money::of(1_234, 'KWD')->toDecimal())->toBe('1.234')
+            ->and(Money::of(123_456, 'SAR')->toDecimal())->toBe('1234.56');
+    });
+
+    it('round-trips a decimal string through both directions for each exponent', function (string $amount, string $currency): void {
+        // What goes in comes back out: the two conversions agree on where the point is.
+        expect(Money::fromDecimalString($amount, $currency)->toDecimal())->toBe($amount);
+    })->with([
+        'zero-exponent, JPY' => ['1200', 'JPY'],
+        'zero-exponent, JPY single unit' => ['7', 'JPY'],
+        'three-exponent, KWD' => ['1.234', 'KWD'],
+        'three-exponent, KWD sub-unit' => ['0.005', 'KWD'],
+        'two-exponent, SAR' => ['1234.56', 'SAR'],
+        'two-exponent, SAR sub-unit' => ['0.07', 'SAR'],
+    ]);
+
+    it('scales micros by the currency too', function (): void {
+        /*
+         * A micro is a millionth of the *major* unit whatever the currency, so the
+         * divisor is however many micros make one minor unit — 10^6 for yen, 10^3
+         * for a dinar, 10^4 for a riyal.
+         */
+        expect(Money::fromMicros(1_200_000_000, 'JPY')->minorUnits)->toBe(1_200)
+            ->and(Money::fromMicros(1_234_000, 'KWD')->minorUnits)->toBe(1_234)
+            ->and(Money::fromMicros(1_234_560_000, 'SAR')->minorUnits)->toBe(123_456);
+
+        // And round-trips back to the major amount the provider reported.
+        expect(Money::fromMicros(1_200_000_000, 'JPY')->toDecimal())->toBe('1200')
+            ->and(Money::fromMicros(1_234_000, 'KWD')->toDecimal())->toBe('1.234')
+            ->and(Money::fromMicros(1_234_560_000, 'SAR')->toDecimal())->toBe('1234.56');
+    });
+
+    it('still honours a scale the caller names', function (): void {
+        /*
+         * A provider that reports a fixed precision regardless of currency can say
+         * so; the currency table is the default, not a rule the caller cannot
+         * override.
+         */
+        expect(Money::fromDecimalString('12.34', 'JPY', 2)->minorUnits)->toBe(1_234)
+            ->and(Money::of(1_234, 'JPY')->toDecimal(2))->toBe('12.34')
+            ->and(Money::fromMicros(1_250_000, 'JPY', 2)->minorUnits)->toBe(125)
+            ->and(Money::of(1_500, 'JPY')->toDecimal(0))->toBe('1500');
+    });
+
+    it('treats an unlisted currency as two decimals rather than refusing it', function (): void {
+        /*
+         * Most of the world is two, so an unrecognised code converts on that
+         * assumption instead of failing a sync over a figure we can still read.
+         */
+        expect(Money::fromDecimalString('1.00', 'ZZZ')->minorUnits)->toBe(100)
+            ->and(Money::of(100, 'ZZZ')->toDecimal())->toBe('1.00');
+    });
+
+    it('reads the currency case-insensitively when choosing the exponent', function (): void {
+        // The code arrives from a provider's JSON, not from us.
+        expect(Money::fromDecimalString('1200', 'jpy')->minorUnits)->toBe(1_200)
+            ->and(Money::fromDecimalString('1.234', ' kwd ')->minorUnits)->toBe(1_234);
+    });
+
+    it('keeps a negative amount exact at its own exponent', function (): void {
+        expect(Money::of(-1_234, 'KWD')->toDecimal())->toBe('-1.234')
+            ->and(Money::of(-1_200, 'JPY')->toDecimal())->toBe('-1200')
+            ->and(Money::of(-250, 'SAR')->toDecimal())->toBe('-2.50');
+    });
+
     it('refuses to add two currencies', function (): void {
         // Silently summing SAR and USD is how a report becomes fiction.
         expect(fn (): Money => Money::of(100, 'SAR')->plus(Money::of(100, 'USD')))
             ->toThrow(CurrencyMismatch::class);
+    });
+
+    it('scales the float escape hatch by the currency as well', function (): void {
+        // Leaving this one method on a fixed two would put the bug straight back.
+        expect(Money::of(1_200, 'JPY')->toFloat())->toBe(1200.0)
+            ->and(Money::of(1_234, 'KWD')->toFloat())->toBe(1.234)
+            ->and(Money::of(123_456, 'SAR')->toFloat())->toBe(1234.56);
+    });
+});
+
+describe('currency exponents', function (): void {
+    it('knows the exponent a currency actually uses', function (int $expected, string $currency): void {
+        expect(CurrencyExponent::for($currency))->toBe($expected);
+    })->with([
+        // The Gulf, which is this product's own market.
+        'SAR' => [2, 'SAR'],
+        'AED' => [2, 'AED'],
+        'KWD' => [3, 'KWD'],
+        'BHD' => [3, 'BHD'],
+        'OMR' => [3, 'OMR'],
+        'TND' => [3, 'TND'],
+        'JOD' => [3, 'JOD'],
+        // Zero-exponent currencies a client might report in.
+        'JPY' => [0, 'JPY'],
+        'KRW' => [0, 'KRW'],
+        'ISK' => [0, 'ISK'],
+        'VND' => [0, 'VND'],
+        // The common two.
+        'USD' => [2, 'USD'],
+        'EUR' => [2, 'EUR'],
+        // Unlisted falls back rather than failing.
+        'an unknown code' => [2, 'ZZZ'],
+    ]);
+
+    it('normalises the code it is given', function (): void {
+        // Providers send 'jpy', ' KWD ' and worse.
+        expect(CurrencyExponent::for('jpy'))->toBe(0)
+            ->and(CurrencyExponent::for(' kwd '))->toBe(3)
+            ->and(CurrencyExponent::for('Sar'))->toBe(2);
     });
 });
 

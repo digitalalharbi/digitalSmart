@@ -172,6 +172,14 @@ no question behind it; every question this product asks is per day.
 A value with no currency is a number with no unit, and the first thing anyone would do with it
 is add it to another one — so a database CHECK constraint refuses it.
 
+**How many minor units make a major one comes from the currency, not from a constant.** The
+`Money` value object reads the ISO 4217 exponent out of `CurrencyExponent` beside it: two for
+SAR, AED, USD and EUR, none for JPY and KRW, three for KWD, BHD, OMR and TND. A code the table
+does not list is treated as two, which is right for most of the world and is the honest answer
+for an unrecognised currency — better than refusing a sync over a figure that can still be
+converted. The same table serves every advertising and commerce mapper, so a dinar means the
+same thing in a GA4 row and a Google Ads row.
+
 Every row carries a source label (`SYNCED`, `PARTIAL`, `SANDBOX`, …) rather than the run
 carrying it, so a query spanning a sampled day and a complete one can see that from the rows it
 touched without joining back to a sync journal.
@@ -192,11 +200,6 @@ A mapping with a null source matches on name alone, which is what "from any sour
   [GOOGLE_ANALYTICS.md](GOOGLE_ANALYTICS.md). The commerce adapters (Phases 11–13) are what will
   add orders. Both are still BLOCKED_EXTERNAL for live credentials, so a real workspace's honest
   answer today remains `never_synced`.
-- **Money is rounded at two decimal places**, through the `Money` value object shared with every
-  advertising mapper. Correct for SAR, AED, USD and EUR; wrong for zero-exponent currencies (JPY)
-  and three-exponent ones (KWD, BHD, OMR). Recorded here rather than worked around in one mapper,
-  because a second rounding rule in one place is how two parts of a product come to disagree
-  about an amount.
 - **No identity resolution.** Sessions, touchpoints and identity confidence are Phase 16.
 - **No deduplication across sources.** A purchase in GA4 and the same purchase in Salla are
   two observations of one sale, and merging them is Phase 14's job, under an explicit

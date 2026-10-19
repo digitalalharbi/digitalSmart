@@ -476,7 +476,11 @@ Three things about that shape are load-bearing:
   deduplicated by the platform, so it cannot be added across 4 entities". Clients
   must render a gap, never a zero.
 - **Money stays in minor units** all the way to the browser (`is_minor_units`),
-  so nothing rounds in transit, and `currency` says how to format it.
+  so nothing rounds in transit, and `currency` says both how to label it *and* how
+  far to divide it: the scale is that currency's ISO 4217 exponent, not a hundred.
+  A JPY figure is already whole, a KWD figure is thousandths. The table is
+  `CurrencyExponent` on the server and `shared/lib/money` in the browser, and a
+  test holds the two together.
 - **`source`** is one of `live`, `synced`, `stale`, `partial`, `sandbox`,
   `manual`, `estimated`. The response carries it per figure *and* once for the
   whole surface, taken from the weakest row involved, so a chart and its scorecard

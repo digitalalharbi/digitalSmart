@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/shared/ui/alert';
 import { Card, CardContent } from '@/shared/ui/card';
-import { formatNumber } from '@/shared/lib/format';
-import { formatMinor } from './money';
+import { formatMinor, formatNumber } from '@/shared/lib/format';
 import type { CustomerMix } from './types';
 
 /**

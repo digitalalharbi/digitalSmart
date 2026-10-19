@@ -7,7 +7,7 @@ export { StoreAnalyticsPage } from './StoreAnalyticsPage';
 export { BreakdownTable } from './BreakdownTable';
 export { CustomerMixPanel } from './CustomerMixPanel';
 export { RevenueChart } from './RevenueChart';
-export { formatMinor, summaryMetrics } from './money';
+export { summaryMetrics } from './money';
 export type {
   CustomerMix,
   DailyRevenuePoint,

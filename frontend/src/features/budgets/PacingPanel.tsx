@@ -6,7 +6,7 @@ import { Badge } from '@/shared/ui/badge';
 import { Card } from '@/shared/ui/card';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { SourceBadge } from '@/shared/ui/source-badge';
-import { formatCurrency, formatPercent } from '@/shared/lib/format';
+import { formatCurrency, formatMinor, formatPercent } from '@/shared/lib/format';
 import { cn } from '@/shared/lib/cn';
 import { ChartFrame } from '@/shared/ui/chart';
 import { pacingOption, pacingSeries } from './pacingChart';
@@ -128,14 +128,14 @@ export function PacingPanel({ pacing }: { pacing: PacingPayload }) {
         <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Figure
             label={t('budgets.pacing.figures.budget')}
-            value={formatCurrency(pacing.budget.amount_minor / 100, currency, locale)}
+            value={formatMinor(pacing.budget.amount_minor, currency, locale)}
           />
           <Figure
             label={t('budgets.pacing.figures.spent')}
             value={
               pacing.spend.minor_units === null
                 ? '—'
-                : formatCurrency(pacing.spend.minor_units / 100, currency, locale)
+                : formatMinor(pacing.spend.minor_units, currency, locale)
             }
             /*
              * Only when the panel is not already saying it. The same sentence in a banner
@@ -152,7 +152,7 @@ export function PacingPanel({ pacing }: { pacing: PacingPayload }) {
             value={
               pacing.pacing === null
                 ? '—'
-                : formatCurrency(pacing.pacing.expected_minor / 100, currency, locale)
+                : formatMinor(pacing.pacing.expected_minor, currency, locale)
             }
             note={
               pacing.pacing === null
@@ -167,7 +167,7 @@ export function PacingPanel({ pacing }: { pacing: PacingPayload }) {
             value={
               pacing.pacing?.projected_minor == null
                 ? '—'
-                : formatCurrency(pacing.pacing.projected_minor / 100, currency, locale)
+                : formatMinor(pacing.pacing.projected_minor, currency, locale)
             }
             note={
               pacing.pacing?.projected_minor == null
@@ -233,11 +233,11 @@ export function PacingPanel({ pacing }: { pacing: PacingPayload }) {
                 option={option}
                 height={260}
                 ariaLabel={t('budgets.pacing.chart.description', {
-                  budget: formatCurrency(pacing.budget.amount_minor / 100, currency, locale),
+                  budget: formatMinor(pacing.budget.amount_minor, currency, locale),
                   spent:
                     pacing.spend.minor_units === null
                       ? t('budgets.pacing.chart.spendUnknown')
-                      : formatCurrency(pacing.spend.minor_units / 100, currency, locale),
+                      : formatMinor(pacing.spend.minor_units, currency, locale),
                 })}
               />
             </Suspense>
@@ -294,13 +294,13 @@ function AllocationRow({ row, locale }: { row: AllocationPacingPayload; locale: 
       </td>
       <td className="text-content-secondary px-4 py-2">{row.level_label}</td>
       <td className="text-content px-4 py-2 text-end tabular-nums">
-        {formatCurrency(row.amount_minor / 100, row.currency, locale)}
+        {formatMinor(row.amount_minor, row.currency, locale)}
       </td>
       <td className="px-4 py-2 text-end tabular-nums">
         {spend === null ? (
           <span className="text-content-tertiary">—</span>
         ) : (
-          formatCurrency(spend / 100, row.currency, locale)
+          formatMinor(spend, row.currency, locale)
         )}
       </td>
       <td className="px-4 py-2 text-end tabular-nums">
@@ -308,7 +308,7 @@ function AllocationRow({ row, locale }: { row: AllocationPacingPayload; locale: 
           <span className="text-content-tertiary">—</span>
         ) : (
           <span className={row.pacing.variance_minor > 0 ? 'text-danger' : 'text-content'}>
-            {formatCurrency(row.pacing.variance_minor / 100, row.currency, locale)}
+            {formatMinor(row.pacing.variance_minor, row.currency, locale)}
           </span>
         )}
       </td>

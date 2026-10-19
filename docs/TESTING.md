@@ -247,7 +247,10 @@ the one above it cannot catch what it catches.
 
 - **Unit, against real shapes.** `shared/metrics/format.test.ts` and
   `charts.test.ts` assert the rules that make a chart honest: a null renders as an
-  em dash and never a zero; minor units divide exactly once; a gap in a series stays
+  em dash and never a zero; minor units divide exactly once, by the currency's own ISO
+  exponent rather than by a hundred — `shared/lib/money.test.ts` covers JPY, KWD and SAR
+  in both directions and checks the table against the backend's `CurrencyExponent.php`,
+  so the two stacks cannot drift apart unnoticed; a gap in a series stays
   `null` with `connectNulls: false`; the whole chart mirrors in Arabic, axis side
   included.
 - **Component.** `MetricCard` is asserted to show the server's
