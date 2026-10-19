@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Application\Agents\Agent\AgentOrchestrator;
-use App\Application\Automation\Command\RunAutomationRules;
 use App\Application\Analytics\DTO\AnalyticsFilters;
+use App\Application\Automation\Command\RunAutomationRules;
 use App\Application\Portal\Command\EnablePortal;
 use App\Application\Portal\Command\SetPortalModules;
 use App\Application\Reporting\Command\SaveReport;

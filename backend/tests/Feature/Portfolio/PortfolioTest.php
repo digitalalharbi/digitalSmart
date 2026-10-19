@@ -111,7 +111,7 @@ it('is not available to a client user at all', function (): void {
 });
 
 it('reads the shared period it is given, and says which window it used', function (): void {
-    $w = Tests\Support\SyncedWorkspace::with([App\Domain\Integration\Provider::Meta->value => 'act_sandbox_1001']);
+    $w = SyncedWorkspace::with([Provider::Meta->value => 'act_sandbox_1001']);
 
     $week = test()->actingAs($w->scenario->owner)->getJson('/api/portfolio?days=7')->assertOk()->json('data.window');
     $quarter = test()->actingAs($w->scenario->owner)->getJson('/api/portfolio?days=90')->assertOk()->json('data.window');

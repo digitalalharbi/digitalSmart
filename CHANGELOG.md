@@ -4,6 +4,40 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The business layer: specialist agents, rules that propose, one-time approvals, cross-platform drafts
+
+### Added
+
+- **Specialist agents.** Creative (tiring ads → brief task with the drop, frequency and the strongest sibling ad),
+  Leads (leads, qualified and sales kept apart; fortnight decline; low qualification of reached leads), Reports
+  (weekly brief per client from real figures, per currency, revenue only where reported) and Project operations
+  (one card per project that has piled up). Findings are stored, refreshed each run and resolved when no longer
+  seen; Today shows them as picture-first cards with the agent that prepared them.
+- **Orchestrator:** fixed order with conflict resolution (a pause proposal outranks a creative refresh), intent
+  routing in English and Arabic, and *Ask the agents* answered in the asker's own scope.
+- **Model routing:** strong model for narrative and planning, fast model for routing and summaries; a workspace's
+  own key, encrypted, last four only; `AWAITING_MODEL_CREDENTIALS` without one. A routing model may only name agents.
+- **Campaign hierarchy:** a campaign opens into ad groups and ads with creative previews, click-through trend and
+  frequency; ad-group and ad writes are shown disabled with the reason.
+- **Rules:** WHEN … AND … FOR n days THEN alert / propose pause / propose a budget cut / open a task, with a trust
+  level per rule (0 watch · 1 alert · 2 propose · 3 also open tasks; 4 refused). New metrics: rejected, ends within.
+  `automation:run` hourly; proposals go through the same limits and approval as everyone else's.
+- **One-time approval links** for WhatsApp and email: keyed hash, one person, one approval, expiry, single use, POST
+  only, permission and proposal re-read when pressed. Delivery is `awaiting_credentials` until a provider is set.
+- **Cross-platform builder:** one blueprint, each platform's own objective, field-by-field supported / partial /
+  unsupported, paused drafts and a launch request each. No platform is called.
+- **Bulk actions** on Campaigns: ask to pause/resume, ask to change daily budget, open tasks — per campaign through
+  its own use case.
+- **Shared period** (7/30/90 days and comparison) across Overview, Campaigns, Performance and Leads.
+- **Provider MCP registry** from each platform's own documentation (checked 2026-10-19); writes never route through
+  MCP — the direct API with read-back is the only write path.
+- **Demo:** SANDBOX creative artwork, ad groups and ads, a lead-quality problem, four rules, every agent's output.
+
+### Not built
+
+- Live WhatsApp/email delivery, live platform MCP connections, model calls without a key, campaign creation on a
+  platform, ad-group/ad writes. The commerce surfaces read their own period until the money/format work there lands.
+
 ## Simplification, the agency command centre, and the agent layer
 
 ### Added
