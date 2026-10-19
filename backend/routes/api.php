@@ -646,6 +646,11 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
 
     /* Rules over campaigns: their only outcome is an item in the attention queue. */
     Route::get('automation/rules', [AutomationRuleController::class, 'index'])->name('automation.rules.index');
+    Route::post('automation/rules/simulate', [AutomationRuleController::class, 'simulate'])->middleware('throttle:20,1')->name('automation.rules.simulate');
+    Route::get('automation/summary', [AutomationRuleController::class, 'summary'])->name('automation.summary');
+    Route::get('automation/history', [AutomationRuleController::class, 'history'])->name('automation.history');
+    Route::get('automation/changes', [AutomationRuleController::class, 'changeLog'])->name('automation.changes');
+    Route::get('automation/capabilities', [AutomationRuleController::class, 'capabilities'])->name('automation.capabilities');
     Route::post('automation/rules', [AutomationRuleController::class, 'store'])->name('automation.rules.store');
     Route::put('automation/rules/{rule}', [AutomationRuleController::class, 'update'])
         ->whereUuid('rule')->name('automation.rules.update');

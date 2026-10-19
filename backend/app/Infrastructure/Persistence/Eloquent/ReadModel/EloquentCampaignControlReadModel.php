@@ -54,6 +54,8 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
                 'cur.spend_minor as cur_spend',
                 'cur.revenue_minor as cur_revenue',
                 'cur.results as cur_results',
+                'cur.impressions as cur_impressions',
+                'cur.clicks as cur_clicks',
                 'cur.reported_days as cur_days',
                 'prev.spend_minor as prev_spend',
                 'prev.results as prev_results',
@@ -232,6 +234,8 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
                 'c.budget_minor',
                 'c.budget_mode',
                 'c.ends_at',
+                'c.starts_at',
+                'c.provider_created_at',
                 'c.currency',
                 'c.synced_at',
                 'c.project_id as assigned_project_id',
@@ -314,6 +318,8 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
             ->whereBetween('m.date', [$from->format('Y-m-d'), $to->format('Y-m-d')])
             ->selectRaw('sum(m.spend_minor) as spend_minor')
             ->selectRaw('sum(m.revenue_minor) as revenue_minor')
+            ->selectRaw('sum(m.impressions) as impressions')
+            ->selectRaw('sum(m.clicks) as clicks')
             ->selectRaw('count(distinct m.date) as reported_days')
             ->selectRaw($this->resultExpression().' as results');
     }
@@ -380,9 +386,13 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
                 previousSpendMinor: $this->nullableInt($row->prev_spend),
                 previousResults: $this->nullableFloat($row->prev_results),
                 lastSyncedAt: $syncedAt,
+                impressions: $this->nullableInt($row->cur_impressions ?? null),
+                clicks: $this->nullableInt($row->cur_clicks ?? null),
             ),
             lastSyncedAt: $syncedAt,
             endsAt: is_string($row->ends_at ?? null) ? new DateTimeImmutable($row->ends_at) : null,
+            startedAt: is_string($row->starts_at ?? null) ? new DateTimeImmutable($row->starts_at)
+                : (is_string($row->provider_created_at ?? null) ? new DateTimeImmutable($row->provider_created_at) : null),
         );
     }
 

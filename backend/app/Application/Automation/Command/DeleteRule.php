@@ -37,7 +37,8 @@ final readonly class DeleteRule
             action: AuditAction::AutomationRuleDeleted,
             auditableType: 'automation_rule',
             auditableId: $id,
-            summary: sprintf('Deleted the rule "%s"', $rule->name),
+            summary: sprintf('Archived the rule "%s"', $rule->name),
+            changes: ['kinds' => ['archived'], 'before' => SaveRule::shape($rule), 'after' => null],
         ));
     }
 }

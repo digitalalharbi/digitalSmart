@@ -33,5 +33,6 @@ final readonly class CampaignVitalsRow
         public CampaignVitals $vitals,
         public ?DateTimeImmutable $lastSyncedAt,
         public ?DateTimeImmutable $endsAt = null,
+        public ?DateTimeImmutable $startedAt = null,
     ) {}
 }

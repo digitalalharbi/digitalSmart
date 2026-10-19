@@ -11,7 +11,9 @@ use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMetric;
+use App\Domain\Automation\RuleMode;
 use App\Domain\Automation\RuleOperator;
+use App\Domain\Automation\RuleSchedule;
 use App\Domain\Automation\RuleSeverity;
 use App\Domain\Automation\TrustLevel;
 use DateTimeImmutable;
@@ -136,7 +138,15 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
 
     public function delete(string $workspaceId, string $id): void
     {
-        DB::table('automation_rules')->where(['workspace_id' => $workspaceId, 'id' => $id])->delete();
+        /* Archived, not deleted: its history and change log stay readable. */
+        DB::table('automation_rules')->where(['workspace_id' => $workspaceId, 'id' => $id])
+            ->update(['archived_at' => $this->clock->now(), 'is_active' => false, 'name' => DB::raw("name || ' · archived ' || left(id::text, 8)")]);
+    }
+
+    public function recordRun(string $ruleId, array $result): void
+    {
+        DB::table('automation_rules')->where('id', $ruleId)
+            ->update(['last_run_at' => $this->clock->now(), 'last_result' => json_encode($result, JSON_THROW_ON_ERROR)]);
     }
 
     private function base(): Builder
@@ -145,7 +155,8 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             ->leftJoin('clients as c', 'c.id', '=', 'r.client_id')
             ->leftJoin('projects as p', 'p.id', '=', 'r.project_id')
             ->leftJoin('users as u', 'u.id', '=', 'r.created_by')
-            ->select(['r.id', 'r.name', 'r.metric', 'r.operator', 'r.threshold', 'r.window_days', 'r.severity', 'r.is_active', 'r.client_id', 'c.name as client_name', 'r.project_id', 'p.name as project_name', 'u.name as author_name', 'r.conditions', 'r.for_days', 'r.action', 'r.action_pct', 'r.trust_level']);
+            ->select(['r.id', 'r.name', 'r.metric', 'r.operator', 'r.threshold', 'r.window_days', 'r.severity', 'r.is_active', 'r.client_id', 'c.name as client_name', 'r.project_id', 'p.name as project_name', 'u.name as author_name', 'r.conditions', 'r.for_days', 'r.action', 'r.action_pct', 'r.trust_level', 'r.mode', 'r.logic', 'r.providers', 'r.external_account_ids', 'r.campaign_ids', 'r.object_level', 'r.schedule', 'r.schedule_time', 'r.timezone', 'r.cooldown_hours', 'r.last_run_at', 'r.last_result'])
+            ->whereNull('r.archived_at');
     }
 
     /** @return array<string, mixed> */
@@ -154,7 +165,7 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
         return [
             'name' => $input->name,
             'metric' => $input->metric->value,
-            'operator' => $input->metric->breachedWhen()->value,
+            'operator' => ($input->operator ?? $input->metric->breachedWhen())->value,
             'threshold' => $input->metric->needsThreshold() ? $input->threshold : null,
             'window_days' => $input->windowDays,
             'severity' => $input->severity->value,
@@ -165,11 +176,22 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             'conditions' => json_encode(array_map(static fn (array $c): array => [
                 'metric' => $c['metric']->value,
                 'threshold' => $c['metric']->needsThreshold() ? $c['threshold'] : null,
+                'operator' => ($c['operator'] ?? $c['metric']->breachedWhen())->value,
             ], $input->conditions), JSON_THROW_ON_ERROR),
             'for_days' => $input->forDays,
             'action' => $input->action->value,
-            'action_pct' => $input->action === RuleAction::ProposeBudgetCut ? $input->actionPct : null,
+            'action_pct' => $input->action->needsPct() ? $input->actionPct : null,
             'trust_level' => $input->trustLevel->value,
+            'mode' => $input->mode->value,
+            'logic' => $input->logic,
+            'providers' => json_encode(array_values($input->providers), JSON_THROW_ON_ERROR),
+            'external_account_ids' => json_encode(array_values($input->accountIds), JSON_THROW_ON_ERROR),
+            'campaign_ids' => json_encode(array_values($input->campaignIds), JSON_THROW_ON_ERROR),
+            'object_level' => $input->objectLevel,
+            'schedule' => $input->schedule->value,
+            'schedule_time' => $input->schedule === RuleSchedule::Daily ? ($input->scheduleTime ?? '08:00') : null,
+            'timezone' => $input->timezone,
+            'cooldown_hours' => $input->cooldownHours,
         ];
     }
 
@@ -194,10 +216,30 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             action: RuleAction::tryFrom((string) ($r->action ?? 'alert')) ?? RuleAction::Alert,
             actionPct: isset($r->action_pct) ? (int) $r->action_pct : null,
             trustLevel: TrustLevel::tryFrom((int) ($r->trust_level ?? 2)) ?? TrustLevel::Propose,
+            mode: RuleMode::tryFrom((string) ($r->mode ?? 'recommend')) ?? RuleMode::Recommend,
+            logic: ($r->logic ?? 'all') === 'any' ? 'any' : 'all',
+            providers: $this->strings($r->providers ?? '[]'),
+            accountIds: $this->strings($r->external_account_ids ?? '[]'),
+            campaignIds: $this->strings($r->campaign_ids ?? '[]'),
+            objectLevel: (string) ($r->object_level ?? 'campaign'),
+            schedule: RuleSchedule::tryFrom((string) ($r->schedule ?? 'hourly')) ?? RuleSchedule::Hourly,
+            scheduleTime: isset($r->schedule_time) ? (string) $r->schedule_time : null,
+            timezone: (string) ($r->timezone ?? 'Asia/Riyadh'),
+            cooldownHours: (int) ($r->cooldown_hours ?? 24),
+            lastRunAt: isset($r->last_run_at) ? new DateTimeImmutable((string) $r->last_run_at) : null,
+            lastResult: isset($r->last_result) && is_string($r->last_result) ? (array) json_decode($r->last_result, true) : null,
         );
     }
 
-    /** @return list<array{metric: RuleMetric, threshold: float|null}> */
+    /** @return list<string> */
+    private function strings(mixed $json): array
+    {
+        $rows = is_string($json) ? json_decode($json, true) : null;
+
+        return array_values(array_filter(is_array($rows) ? $rows : [], 'is_string'));
+    }
+
+    /** @return list<array{metric: RuleMetric, threshold: float|null, operator: RuleOperator}> */
     private function conditions(mixed $json): array
     {
         $rows = is_string($json) ? json_decode($json, true) : null;
@@ -207,7 +249,11 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             $metric = is_array($row) ? RuleMetric::tryFrom((string) ($row['metric'] ?? '')) : null;
 
             if ($metric !== null) {
-                $out[] = ['metric' => $metric, 'threshold' => isset($row['threshold']) && is_numeric($row['threshold']) ? (float) $row['threshold'] : null];
+                $out[] = [
+                    'metric' => $metric,
+                    'threshold' => isset($row['threshold']) && is_numeric($row['threshold']) ? (float) $row['threshold'] : null,
+                    'operator' => RuleOperator::tryFrom((string) ($row['operator'] ?? '')) ?? $metric->breachedWhen(),
+                ];
             }
         }
 

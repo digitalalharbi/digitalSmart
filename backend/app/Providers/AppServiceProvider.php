@@ -51,6 +51,7 @@ use App\Application\Attention\Source\TrackingAttentionSource;
 use App\Application\Attribution\Contract\AttributionReadModel;
 use App\Application\Audit\Contract\AuditReadModel;
 use App\Application\Automation\Contract\AutomationRuleRepository;
+use App\Application\Automation\Contract\RuleExecutionLog;
 use App\Application\Benchmark\Contract\ClientIndustryDirectory;
 use App\Application\Budget\Contract\BenchmarkReadModel;
 use App\Application\Budget\Contract\BudgetControlReadModel;
@@ -253,6 +254,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProposalHistory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentReportRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentRuleExecutionLog;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentShortcutStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentStoreDirectory;
@@ -431,6 +433,7 @@ final class AppServiceProvider extends ServiceProvider
         CampaignHierarchyReadModel::class => EloquentCampaignHierarchyReadModel::class,
         AgentRunLog::class => EloquentAgentRunLog::class,
         FindingLog::class => EloquentFindingLog::class,
+        RuleExecutionLog::class => EloquentRuleExecutionLog::class,
         ApprovalLinkRepository::class => EloquentApprovalLinkRepository::class,
         ModelCredentialStore::class => EloquentModelCredentialStore::class,
         CampaignDraftRepository::class => EloquentCampaignDraftRepository::class,

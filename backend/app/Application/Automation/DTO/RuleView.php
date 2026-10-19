@@ -6,9 +6,12 @@ namespace App\Application\Automation\DTO;
 
 use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMetric;
+use App\Domain\Automation\RuleMode;
 use App\Domain\Automation\RuleOperator;
+use App\Domain\Automation\RuleSchedule;
 use App\Domain\Automation\RuleSeverity;
 use App\Domain\Automation\TrustLevel;
+use DateTimeImmutable;
 
 final readonly class RuleView
 {
@@ -29,7 +32,7 @@ final readonly class RuleView
         /**
          * Further conditions that must all hold as well (AND). Each is a metric and, where it takes one, a limit.
          *
-         * @var list<array{metric: RuleMetric, threshold: float|null}>
+         * @var list<array{metric: RuleMetric, threshold: float|null, operator?: RuleOperator}>
          */
         public array $conditions = [],
         /** How many days in a row it must hold before the action runs. One means the first time it is seen. */
@@ -38,5 +41,25 @@ final readonly class RuleView
         /** For a budget-cut proposal: by how much, in percent. */
         public ?int $actionPct = null,
         public TrustLevel $trustLevel = TrustLevel::Propose,
+        /** How it goes when it holds: monitor, recommend (default) or auto (refused until authorised). */
+        public RuleMode $mode = RuleMode::Recommend,
+        /** `all` (AND) or `any` (OR) across the first condition and the further ones. */
+        public string $logic = 'all',
+        /** @var list<string> Platforms in scope; empty is every platform. */
+        public array $providers = [],
+        /** @var list<string> Ad accounts (external account ids) in scope; empty is every account. */
+        public array $accountIds = [],
+        /** @var list<string> Campaigns in scope; empty is every campaign the rest of the scope allows. */
+        public array $campaignIds = [],
+        public string $objectLevel = 'campaign',
+        public RuleSchedule $schedule = RuleSchedule::Hourly,
+        /** HH:MM in `timezone`, for a daily rule. */
+        public ?string $scheduleTime = null,
+        public string $timezone = 'Asia/Riyadh',
+        /** After acting on an object, the rule leaves it alone this long. */
+        public int $cooldownHours = 24,
+        public ?DateTimeImmutable $lastRunAt = null,
+        /** @var array<string, mixed>|null */
+        public ?array $lastResult = null,
     ) {}
 }

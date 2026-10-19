@@ -90,6 +90,6 @@ Schedule::command('agents:run creative')->days([0, 3])->at('09:00')->timezone('A
 Schedule::command('agents:run leads')->dailyAt('10:00')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();
 /* The weekly client brief, ready to review on Thursday afternoon before the weekend. */
 Schedule::command('agents:run reports')->weeklyOn(4, '14:00')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();
-/* The rules: streaks and, within each rule's trust, its proposals or tasks. */
-Schedule::command('automation:run')->hourlyAt(20)->withoutOverlapping()->runInBackground();
+/* The rules: every fifteen minutes; each rule decides whether it is due (continuous, hourly, daily in its time zone). */
+Schedule::command('automation:run')->everyFifteenMinutes()->withoutOverlapping()->runInBackground();
 Schedule::command('agents:run operations')->dailyAt('08:30')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();
