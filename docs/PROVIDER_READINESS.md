@@ -70,12 +70,40 @@ Every write goes through the direct API, where the change is read back to confir
   product's ad group. Campaign-level writes now name `/adCampaignGroups`.
 - **X cannot pause an ad**, whatever it lets a campaign or line item do.
 
+## Commissioning matrix
+
+Every cell below is `SANDBOX_VERIFIED` unless it says otherwise; the rung after it is `AWAITING_CREDENTIALS` for every
+provider. **No cell is `LIVE_READ_VERIFIED` or `LIVE_WRITE_VERIFIED`** — no live credential exists here, and a live
+rung needs a real round trip seen in the product.
+
+| Platform | Entity | READ | PAUSE | RESUME | BUDGET | BID |
+|---|---|---|---|---|---|---|
+| Meta | Campaign / Ad set / Ad | sandbox | sandbox | sandbox | sandbox · sandbox · — | — · unsupported · — |
+| Google Ads | Campaign / Ad group / Ad | sandbox | sandbox | sandbox | sandbox · not offered · — | — · unsupported · — |
+| TikTok | Campaign / Ad group / Ad | sandbox | sandbox | sandbox | sandbox · sandbox · — | — · unsupported · — |
+| Snapchat | Campaign / Ad squad / Ad | sandbox | sandbox | sandbox | sandbox · sandbox · — | — · unsupported · — |
+| X | Campaign / Line item / Promoted tweet | sandbox | sandbox · sandbox · **not offered** | same | sandbox · sandbox (LINE_ITEM only) · — | — · unsupported · — |
+| LinkedIn | Campaign group / Campaign / Creative | sandbox | sandbox | sandbox | sandbox · sandbox · — | — · unsupported · — |
+
+"—" is a change the platform does not offer at that level. **Bid is `UNSUPPORTED_IN_DIGITALSMART`** wherever the platform
+documents one (the ad group): no bid write exists, so no rule, request or button offers it.
+
+## Closed on 2026-10-19, from current official documentation
+
+| Gap | Verdict | Evidence |
+|---|---|---|
+| Google Ads: `status` and `CampaignBudget.amount_micros` mutability | **VERIFIED** (campaign status, budget amount); ad-group and ad status inferred from the same convention | v26 (released 2026-10-14) RPC reference marks read-only fields "Output only." and set-once ones "Immutable."; `Campaign.status` and `CampaignBudget.amount_micros` carry neither. Update goes through `updateMask` (`rest/common/mutate`). The field-reference pages have no "updatable" attribute. |
+| Google Ads: an official example changing `amount_micros` | **UNVERIFIED** | The budget guides only set it on create; no official update sample was found. Budget support rests on the field reference and the generic mutate contract. |
+| TikTok: campaign status endpoint | **VERIFIED** | `POST /open_api/v1.3/campaign/status/update/` — `advertiser_id`, `campaign_ids` (1–20), `operation_status` DELETE / DISABLE / ENABLE. (The earlier reference named `/campaign/update/`; corrected.) |
+| TikTok: upgraded Smart+ | **VERIFIED, and different** | Smart+ has its own endpoints: `/smart_plus/campaign/status/update/` (same fields) and `/smart_plus/campaign/update/` (`budget`; `budget_auto_adjust_strategy`; `current_budget` returned). The manual endpoints are **not** claimed for Smart+ campaigns. From 2027-01-01 non-Search Sales / App / Lead Gen campaigns can no longer be created on the manual flow. Smart+ writes are **`UNSUPPORTED_IN_DIGITALSMART`** until implemented; Smart+ ad-group budgets and per-level status pages were not read. An allow-list requirement was seen in a search result only — **UNVERIFIED**. |
+| X: official MCP server | **VERIFIED: none for the Ads API** | `docs.x.com/tools/mcp`: XMCP (local, X API v2 tools, no advertising) and a docs-search server. No Ads API server. |
+
 ## Still not verified
 
-- Google Ads: the field reference's mutability flags (the guides and samples were read).
-- TikTok: the campaign status page itself (the endpoint is confirmed through `/campaign/update/` and the MCP tool list);
-  the Smart+ write endpoints.
-- Whether X publishes an official MCP server.
+- Google Ads: ad-group and ad status mutability was inferred from the marker convention, not read on those pages; an
+  official budget-update sample was not found.
+- TikTok: Smart+ ad-group budget and per-level status pages; the allow-list requirement for Smart+.
+- Manual-campaign `/campaign/update/` budget fields were not re-read in this pass.
 
 ## Production
 

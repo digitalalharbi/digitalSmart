@@ -387,3 +387,61 @@ describe('the campaign hierarchy', function (): void {
         expect(DB::table('taggings')->where('tag_id', $tag)->pluck('entity_type')->sort()->values()->all())->toBe(['ad', 'ad_group']);
     });
 });
+
+describe('the same guarantees at every level', function (): void {
+    it('judges nothing below an ad group\'s or an ad\'s minimum data, and says so', function (): void {
+        $w = entityWorld();
+
+        foreach (['ad_group', 'ad'] as $level) {
+            $plain = entityDryRun($w, ['object_level' => $level, 'providers' => ['meta'], 'action' => 'alert']);
+            $strict = entityDryRun($w, ['object_level' => $level, 'providers' => ['meta'], 'action' => 'alert', 'min_spend' => 100_000_000]);
+
+            expect($plain['matched'])->toBeGreaterThan(0)
+                ->and($strict['matched'])->toBe(0)
+                ->and($strict['insufficient'])->toBe($plain['looked_at']);
+        }
+    });
+
+    it('waits out its cooldown per entity, recording it once', function (): void {
+        $w = entityWorld();
+
+        foreach (['ad_group', 'ad'] as $level) {
+            $rule = entityRule($w, ['object_level' => $level, 'providers' => ['meta'], 'action' => 'propose_pause', 'cooldown_hours' => 24]);
+            entityRun();
+
+            $acted = DB::table('automation_rule_executions')->where('rule_id', $rule['id'])->where('result', 'waiting_approval')->pluck('entity_id')->all();
+            expect($acted)->not->toBeEmpty();
+
+            DB::table('automation_rule_streaks')->where('rule_id', $rule['id'])->update(['acted_at' => null, 'first_seen_on' => now()->subDays(3)->toDateString()]);
+            $proposals = DB::table('approval_requests')->count();
+            entityRun();
+            entityRun();
+
+            $cooling = DB::table('automation_rule_executions')->where('rule_id', $rule['id'])->where('result', 'cooldown')->whereIn('entity_id', $acted)->get();
+            expect($cooling)->toHaveCount(count($acted))
+                ->and($cooling->pluck('reason_code')->unique()->all())->toBe(['COOLDOWN'])
+                ->and(DB::table('approval_requests')->count())->toBe($proposals);
+        }
+    });
+
+    it('stands down when another rule moved the same ad group the other way', function (): void {
+        $w = entityWorld();
+        $group = entityFirst(DB::table('ad_groups')->where(['provider' => 'meta', 'status' => 'active']));
+        DB::table('ad_groups')->where('id', $group->id)->update(['budget_mode' => 'daily', 'budget_minor' => 10_000]);
+
+        $raise = entityRule($w, ['object_level' => 'ad_group', 'ad_group_ids' => [$group->id], 'action' => 'propose_budget_increase', 'action_pct' => 10]);
+        entityRun();
+        expect(DB::table('automation_rule_executions')->where(['rule_id' => $raise['id'], 'entity_id' => $group->id])->value('result'))->toBe('waiting_approval');
+
+        $cut = entityRule($w, ['object_level' => 'ad_group', 'ad_group_ids' => [$group->id], 'action' => 'propose_budget_cut', 'action_pct' => 10]);
+        entityRun();
+
+        $trim = entityFirst(DB::table('automation_rule_executions')->where(['rule_id' => $cut['id'], 'entity_id' => $group->id]));
+        expect($trim->result)->toBe('conflict')->and($trim->reason_code)->toBe('CONFLICT');
+
+        // A rule on the same ad group's campaign is a different entity: it is not blocked by the ad group's proposal.
+        $campaign = entityRule($w, ['object_level' => 'campaign', 'campaign_ids' => [$group->campaign_id], 'action' => 'propose_pause']);
+        entityRun();
+        expect(DB::table('automation_rule_executions')->where('rule_id', $campaign['id'])->value('result'))->not->toBe('conflict');
+    });
+});
