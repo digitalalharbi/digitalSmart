@@ -47,6 +47,7 @@ use App\Interface\Http\Controller\Measurement\AgencyTrackingController;
 use App\Interface\Http\Controller\Measurement\MeasurementController;
 use App\Interface\Http\Controller\Notifications\NotificationController;
 use App\Interface\Http\Controller\Operations\ApprovalController;
+use App\Interface\Http\Controller\Operations\ApprovalLinkController;
 use App\Interface\Http\Controller\Operations\ClientRequestController;
 use App\Interface\Http\Controller\Operations\TaskController;
 use App\Interface\Http\Controller\Portal\ClientPortalController;
@@ -119,6 +120,15 @@ Route::post('webhooks/stores/{provider}', StoreWebhookController::class)
 Route::post('auth/login', [SessionController::class, 'store'])
     ->middleware('throttle:auth')
     ->name('auth.login');
+
+/*
+ * Deciding an approval from a one-time WhatsApp or email link, with no session: the link is the credential, and it
+ * names one person, one approval, expires and works once. POST only — a preview robot's GET decides nothing.
+ */
+Route::post('approval-links/{token}', [ApprovalLinkController::class, 'use'])
+    ->where('token', '[A-Za-z0-9_-]{43}')
+    ->middleware('throttle:10,1')
+    ->name('approval-links.use');
 
 /*
  * Reading a report through a shared link, with no account.
@@ -550,6 +560,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         ->whereUuid('approval')->name('approvals.decide');
     Route::post('approvals/{approval}/withdrawal', [ApprovalController::class, 'withdraw'])
         ->whereUuid('approval')->name('approvals.withdraw');
+    Route::post('approvals/{approval}/links', [ApprovalLinkController::class, 'issue'])
+        ->whereUuid('approval')->middleware('throttle:6,1')->name('approvals.links');
     /*
      * Its own route, because approval is not execution. This records a person saying they made the change, with
      * no claim that the product verified it.

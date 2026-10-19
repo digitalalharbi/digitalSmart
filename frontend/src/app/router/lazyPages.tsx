@@ -84,6 +84,9 @@ export const ReportsPage = lazy(async () => ({
  * reason to the rest: not to keep the charting engine out of the first paint, but to keep the signed-in
  * application out of a page that a client opens from an email.
  */
+export const ApprovalLinkPage = lazy(async () => ({
+  default: (await import('@/features/approvals/ApprovalLinkPage')).ApprovalLinkPage,
+}));
 export const SharedReportPage = lazy(async () => ({
   default: (await import('@/features/reports/SharedReportPage')).SharedReportPage,
 }));

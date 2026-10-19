@@ -24,10 +24,10 @@ use App\Application\Agents\Tool\CreateTaskTool;
 use App\Application\Agents\Tool\GetAttentionItemsTool;
 use App\Application\Agents\Tool\GetBudgetStatusTool;
 use App\Application\Agents\Tool\GetCampaignTool;
-use App\Application\Agents\Tool\GetOperatingRulesTool;
-use App\Application\Agents\Tool\ListCampaignsTool;
 use App\Application\Agents\Tool\GetLeadQualityTool;
+use App\Application\Agents\Tool\GetOperatingRulesTool;
 use App\Application\Agents\Tool\ListAdSignalsTool;
+use App\Application\Agents\Tool\ListCampaignsTool;
 use App\Application\Agents\Tool\ListClientsTool;
 use App\Application\Agents\Tool\ProposeBudgetChangeTool;
 use App\Application\Agents\Tool\ProposeStatusChangeTool;
@@ -39,8 +39,8 @@ use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Attention\Contract\ActorMemberships;
 use App\Application\Attention\Contract\AttentionSource;
 use App\Application\Attention\Query\GetAttentionQueue;
-use App\Application\Attention\Source\ApprovalAttentionSource;
 use App\Application\Attention\Source\AgentAttentionSource;
+use App\Application\Attention\Source\ApprovalAttentionSource;
 use App\Application\Attention\Source\AutomationAttentionSource;
 use App\Application\Attention\Source\BudgetAttentionSource;
 use App\Application\Attention\Source\CampaignAttentionSource;
@@ -109,6 +109,10 @@ use App\Application\Measurement\Contract\TagContainerReadAdapter;
 use App\Application\Notifications\Contract\NotificationBroadcaster;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\Contract\RecipientResolver;
+use App\Application\Operations\Command\IssueApprovalLink;
+use App\Application\Operations\Command\UseApprovalLink;
+use App\Application\Operations\Contract\ApprovalLinkDelivery;
+use App\Application\Operations\Contract\ApprovalLinkRepository;
 use App\Application\Operations\Contract\ApprovalRepository;
 use App\Application\Operations\Contract\AttachmentStore;
 use App\Application\Operations\Contract\BoardSignaller;
@@ -185,6 +189,8 @@ use App\Infrastructure\Notifications\EloquentNotificationStore;
 use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
 use App\Infrastructure\Operations\BroadcastBoardSignaller;
+use App\Infrastructure\Operations\ChannelApprovalLinkDelivery;
+use App\Infrastructure\Operations\EloquentApprovalLinkRepository;
 use App\Infrastructure\Operations\LocalAttachmentStore;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentActivityReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentActorMemberships;
@@ -419,6 +425,7 @@ final class AppServiceProvider extends ServiceProvider
         CampaignHierarchyReadModel::class => EloquentCampaignHierarchyReadModel::class,
         AgentRunLog::class => EloquentAgentRunLog::class,
         FindingLog::class => EloquentFindingLog::class,
+        ApprovalLinkRepository::class => EloquentApprovalLinkRepository::class,
         AgentReadModel::class => EloquentAgentReadModel::class,
         ToolCallLog::class => EloquentToolCallLog::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
@@ -488,6 +495,15 @@ final class AppServiceProvider extends ServiceProvider
         foreach (self::BINDINGS as $abstract => $concrete) {
             $this->app->bind($abstract, $concrete);
         }
+
+        /* One-time approval links: keyed by the application key, sent to the SPA's own origin, delivered honestly. */
+        $this->app->bind(ApprovalLinkDelivery::class, static fn (): ApprovalLinkDelivery => new ChannelApprovalLinkDelivery(
+            logInDevelopment: app()->environment('local', 'testing'),
+            whatsAppToken: is_string(config('services.whatsapp.token')) ? config('services.whatsapp.token') : null,
+            mailer: is_string(config('mail.default')) ? config('mail.default') : null,
+        ));
+        $this->app->when([IssueApprovalLink::class, UseApprovalLink::class])->needs('$appKey')->give(static fn (): string => (string) config('app.key'));
+        $this->app->when(IssueApprovalLink::class)->needs('$baseUrl')->give(static fn (): string => (string) config('app.frontend_url'));
 
         $this->registerActorContext();
 

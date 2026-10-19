@@ -139,13 +139,18 @@ it('keeps leads, qualified leads and sales apart, and says when volume falls and
 
     runAgent($w, 'leads');
 
-    $found = DB::table('agent_findings')->where('agent', 'leads')->where('subject_id', $client)->whereNull('resolved_at')->get()->keyBy('code');
+    $found = DB::table('agent_findings')->where('agent', 'leads')->where('subject_id', $client)->whereNull('resolved_at')->get();
+    $byCode = [];
+    foreach ($found as $row) {
+        $byCode[(string) $row->code] = ['params' => json_decode((string) $row->params, true), 'evidence' => json_decode((string) $row->evidence, true)];
+    }
+    ksort($byCode);
 
-    expect($found->keys()->sort()->values()->all())->toBe(['LEADS_DECLINE', 'LEADS_LOW_QUALITY'])
-        ->and(json_decode((string) $found['LEADS_DECLINE']->params, true))->toBe(['drop' => 60])
-        ->and(json_decode((string) $found['LEADS_LOW_QUALITY']->params, true))->toBe(['rate' => 8]);
+    expect(array_keys($byCode))->toBe(['LEADS_DECLINE', 'LEADS_LOW_QUALITY'])
+        ->and($byCode['LEADS_DECLINE']['params'])->toBe(['drop' => 60])
+        ->and($byCode['LEADS_LOW_QUALITY']['params'])->toBe(['rate' => 8]);
 
-    $evidence = json_decode((string) $found['LEADS_DECLINE']->evidence, true);
+    $evidence = $byCode['LEADS_DECLINE']['evidence'];
     expect($evidence)->toMatchArray(['leads' => 12, 'reached' => 12, 'qualified' => 1, 'won' => 0, 'leads_before' => 30]);
 });
 
@@ -156,7 +161,7 @@ it('writes a weekly brief from real figures only, per currency, and shows the br
     $briefs = DB::table('agent_findings')->where('agent', 'reports')->whereNull('resolved_at')->get();
     expect($briefs)->not->toBeEmpty();
 
-    $evidence = json_decode((string) $briefs[0]->evidence, true);
+    $evidence = json_decode((string) $briefs->firstOrFail()->evidence, true);
     expect($evidence)->toHaveKeys(['campaigns', 'reported_days', 'sources', 'totals', 'health'])
         ->and(array_keys($evidence['totals'])[0])->toMatch('/^[A-Z]{3}$/');
 
@@ -205,9 +210,8 @@ it('routes a question to the agents that own it, and acts on no words in it', fu
 
 it('lists the new tools to an MCP client with their permissions and no write among them', function (): void {
     $w = specialistWorld();
-    $tools = collect(test()->actingAs($w->scenario->owner)->postJson('/api/mcp', ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list'])->assertOk()->json('result.tools'))->keyBy('name');
+    /** @var list<array{name: string}> $listed */
+    $listed = test()->actingAs($w->scenario->owner)->postJson('/api/mcp', ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list'])->assertOk()->json('result.tools');
 
-    expect($tools->has('list_ad_signals'))->toBeTrue()
-        ->and($tools->has('get_lead_quality'))->toBeTrue()
-        ->and($tools->has('list_clients'))->toBeTrue();
+    expect(array_column($listed, 'name'))->toContain('list_ad_signals', 'get_lead_quality', 'list_clients');
 });

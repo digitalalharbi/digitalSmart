@@ -281,6 +281,22 @@
     "askNothing": "Nothing found for that right now.",
     "askFailed": "The agents could not answer. Try again."
   },
+  "approvalLink": {
+    "title": "A decision is waiting for you",
+    "body": "Open digitalSmart to see the full proposal, or decide here. This link works once.",
+    "approve": "Approve",
+    "decline": "Decline",
+    "once": "Your permission and the proposal are checked again when you press.",
+    "approved": "Approved",
+    "declined": "Declined",
+    "refused": "This link can't be used",
+    "refusedBody": "It may have expired, been used already, or the proposal changed. Open the approval in digitalSmart instead.",
+    "send": "Send me a one-time link",
+    "sendWhatsApp": "WhatsApp",
+    "sendEmail": "Email",
+    "sent": "Link sent — it expires in 30 minutes.",
+    "awaiting": "This channel isn't connected yet; no link was sent."
+  },
   "hierarchy": {
     "toggle": "Ad groups and ads",
     "title": "Ad groups and ads",

@@ -130,6 +130,10 @@ enum AuditAction: string
     case ApprovalDecided = 'approval.decided';
     case ApprovalAmended = 'approval.amended';
     case ApprovalWithdrawn = 'approval.withdrawn';
+    /* A one-time link to decide an approval was sent to one person — never the link itself. */
+    case ApprovalLinkIssued = 'approval.link_issued';
+    /* A one-time link was used, or refused: expired, already used, changed proposal, permission gone. */
+    case ApprovalLinkUsed = 'approval.link_used';
     /*
      * Its own action, and the one this module exists for: approval is not execution. The entry records that a
      * person says they made the change, with no claim that the product verified it.

@@ -1,3 +1,4 @@
+import { SendApprovalLink } from './SendApprovalLink';
 import { ArrowUpRight, Ban, Link2Off, TriangleAlert, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -342,6 +343,7 @@ export function ApprovalDetail({
                 <Button variant="secondary" size="sm" onClick={() => setPending('declined')}>
                   {t('approvals.detail.decline')}
                 </Button>
+                <SendApprovalLink approvalId={request.id} />
               </>
             ) : null}
 
