@@ -44,9 +44,9 @@ final class ProviderEntityWrites
             'resume_ad' => 'AdGroupAdService.MutateAdGroupAds, status=ENABLED, update_mask=status',
         ],
         'tiktok' => [
-            'pause_campaign' => 'POST /v1.3/campaign/update/ (operation_status=DISABLE); /campaign/status/update/ named in TikTok\'s MCP tool list',
-            'resume_campaign' => 'POST /v1.3/campaign/update/ (operation_status=ENABLE)',
-            'set_campaign_daily_budget' => 'POST /v1.3/campaign/update/ with budget — at least 105% of what has already been spent',
+            'pause_campaign' => 'POST /v1.3/campaign/status/update/ with operation_status=DISABLE (up to 20 campaign_ids) — manual campaigns; an upgraded Smart+ campaign has its own /smart_plus/campaign/status/update/, not wired here',
+            'resume_campaign' => 'POST /v1.3/campaign/status/update/ with operation_status=ENABLE — manual campaigns, as above',
+            'set_campaign_daily_budget' => 'POST /v1.3/campaign/update/ with budget — manual campaigns; at least 105% of what has already been spent',
             'pause_ad_group' => 'POST /v1.3/adgroup/status/update/ with operation_status=DISABLE (up to 20 ids; not for Reach & Frequency ad groups)',
             'resume_ad_group' => 'POST /v1.3/adgroup/status/update/ with operation_status=ENABLE',
             'set_ad_group_daily_budget' => 'POST /v1.3/adgroup/budget/update/ — a scheduled_budget takes effect around 00:00 the next day in the account\'s time zone; at least 105% of spend',

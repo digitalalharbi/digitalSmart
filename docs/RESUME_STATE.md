@@ -16,6 +16,7 @@ disagree, Git is right.
 | CI | **Runs and is required.** Public repository; `Governance`, `Backend`, `Frontend` required and up to date; E2E runs in CI. #3 (money/format work) and #2 (public CI, ruleset, merge queue) merged 2026-10-19 — `main` green. |
 | Deployment | **Pipeline built, `AWAITING_SERVER_ACCESS`** — `docs/DEPLOYMENT.md`. Environment `production` exists (protected branches only), no secrets yet. |
 | Protection of `main` | **Server-side ruleset `main protection` active** (id 25378817): PR required, `Governance`/`Backend`/`Frontend` required and up to date, no force-push, no deletion. Admin bypass kept so the documented emergency push stays real, which is why the local `pre-push` hook is still the guard against the owner's own slip. |
+| Entity-level rules | **VERIFIED by CI** (#9, main `65e48d0`): ad-group and ad rules on their own metric rows, capability provider × level × change, dry run, history, bulk, hierarchy, readiness UI. Live reads/writes `AWAITING_CREDENTIALS`; bids `UNSUPPORTED_IN_DIGITALSMART`. |
 | Agents & Automation | Rules = control, Agents = reasoning, Approvals = governance, Execution = provider mutation, Routines = schedule, Action history = evidence, Change log = configuration history. Auto refused; bid wired nowhere. Rules at campaign, ad-group and ad level, each on its own rows; capability provider × level × change (`docs/PROVIDER_READINESS.md`). |
 | Sessions | Each session works on its own branch and worktree; the shared folder is not scratch space. |
 
@@ -31,6 +32,8 @@ disagree, Git is right.
    names (`docs/DEPLOYMENT.md`); then the `production` environment's secrets and `PRODUCTION_ENABLED=true`.
 2. Free disk space (≈2 GB free on 2026-10-19; `scripts/check-disk.sh` needs 10 GB) and rerun desktop, agency and
    mobile-Safari E2E. Mobile Safari is not verified until it completes.
-3. Agents & Automation: campaign level merged (#7, #8); ad-group and ad level with the provider readiness matrix on
-   `feat/entity-level-rules`. Next: live reads and writes, provider by provider, once credentials exist
-   (`docs/PROVIDER_READINESS.md`).
+3. Agents & Automation is closed at campaign, ad-group and ad level (#7, #8, #9 — main green at `65e48d0`, E2E on
+   Chromium and mobile Safari included). Next, in this order, with no new architecture phase before the first:
+   A. provider live-read commissioning readiness; B. live-write commissioning readiness; C. the cross-platform
+   campaign blueprint (created `PAUSED` or draft, never spending by accident); D. the production server
+   (`AWAITING_SERVER_ACCESS`); E. credential connection. Matrix and gaps: `docs/PROVIDER_READINESS.md`.

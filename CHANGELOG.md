@@ -27,6 +27,21 @@ All notable changes to digitalSmart are recorded here. Format follows
 - **Testing an unsaved pause or budget rule could fail with a server error**: the conflict check compared the draft's
   placeholder id with a UUID column.
 
+### Closed provider gaps (official documentation, 2026-10-19)
+
+- **TikTok campaign status** is `/campaign/status/update/` (the earlier reference named `/campaign/update/`).
+- **TikTok upgraded Smart+ has its own endpoints** (`/smart_plus/campaign/...`); the manual endpoints are not claimed
+  for it, and Smart+ writes are `UNSUPPORTED_IN_DIGITALSMART` until implemented.
+- **X has no official MCP server for the Ads API** (XMCP covers API v2 only).
+- Google Ads campaign status and budget amount are updatable per the v26 reference; an official budget-update sample
+  and the ad-group and ad status mutability pages remain `UNVERIFIED`.
+- A per-provider, per-level commissioning matrix with an explicit state in every cell: `docs/PROVIDER_READINESS.md`.
+
+### Tests
+
+- Entity-level sufficiency, cooldown and conflict prevention are asserted at ad-group and ad level, not inferred from
+  the campaign tests.
+
 ### Changed
 
 - TikTok and X are recorded per level from their own documentation instead of "unverified"; X documents no way to
