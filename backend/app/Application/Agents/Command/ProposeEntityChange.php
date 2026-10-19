@@ -48,7 +48,7 @@ final readonly class ProposeEntityChange
     ) {}
 
     /** @param  'pause'|'resume'|'budget'  $change */
-    public function __invoke(AdEntityType $level, string $entityId, string $change, ?int $newDailyMinor, string $reason, ProposalOrigin $origin): ApprovalView
+    public function __invoke(AdEntityType $level, string $entityId, string $change, ?int $newDailyMinor, string $reason, ?ProposalOrigin $origin = null): ApprovalView
     {
         $workspaceId = $this->actor->workspaceId()->value;
         $now = $this->clock->now();
@@ -77,8 +77,9 @@ final readonly class ProposeEntityChange
             'campaign' => $target['campaign_name'],
             $level === AdEntityType::Ad ? 'ad' : 'ad_group' => $target['name'],
         ];
-        $evidence = $origin->evidence;
-        $risk = $origin->risk;
+        /* A person asking is recorded as theirs, with no agent's evidence; the limits are the same whoever asks. */
+        $evidence = $origin?->evidence;
+        $risk = $origin?->risk;
         $noun = $level === AdEntityType::Ad ? 'ad' : 'ad group';
 
         if ($change === 'budget') {
@@ -111,7 +112,7 @@ final readonly class ProposeEntityChange
                 'currency' => $target['currency'] ?? '',
                 'daily_budget_minor' => $newDailyMinor,
             ];
-            $evidence += ['current_daily_minor' => $current, 'proposed_daily_minor' => $newDailyMinor, 'change_pct' => $changePct, 'limit_pct' => $rules->maxBudgetChangePct, 'limit_source' => $rules->sourceOf('max_budget_change_pct')];
+            $evidence = ($evidence ?? []) + ['current_daily_minor' => $current, 'proposed_daily_minor' => $newDailyMinor, 'change_pct' => $changePct, 'limit_pct' => $rules->maxBudgetChangePct, 'limit_source' => $rules->sourceOf('max_budget_change_pct')];
             $risk = $changePct <= 10 ? 'low' : ($changePct <= 20 ? 'medium' : 'high');
         } else {
             $status = EntityStatus::tryFrom($target['status']);
@@ -144,11 +145,11 @@ final readonly class ProposeEntityChange
             projectId: $target['project_id'],
             subjectType: $level === AdEntityType::Ad ? TaskSubjectType::Ad : TaskSubjectType::AdGroup,
             subjectId: $entityId,
-            origin: 'agent',
-            agent: $origin->agent,
+            origin: $origin === null ? 'person' : 'agent',
+            agent: $origin?->agent,
             evidence: $evidence,
             risk: $risk,
-            expiresAt: $origin->expiresAt,
+            expiresAt: $origin?->expiresAt,
         ));
     }
 }

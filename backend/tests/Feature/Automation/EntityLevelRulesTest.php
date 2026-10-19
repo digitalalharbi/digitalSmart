@@ -188,6 +188,9 @@ describe('entity rules', function (): void {
         /** @var list<array<string, mixed>> $entries */
         $entries = test()->actingAs($w->scenario->owner)->getJson('/api/automation/history')->assertOk()->json('data');
         $history = array_values(array_filter($entries, static fn (array $e): bool => $e['approval_id'] === $row->approval_id))[0];
+        $onlyAds = test()->actingAs($w->scenario->owner)->getJson('/api/automation/history?level=ad')->assertOk()->json('data');
+        expect(array_unique(array_column(array_column($onlyAds, 'object'), 'level')))->toBe(['ad']);
+
         expect($history['object']['level'])->toBe('ad')
             ->and($history['object']['label'])->toBe(DB::table('ads')->where('id', $row->entity_id)->value('name'))
             ->and($history['object']['parent'])->toContain(' › ');
@@ -281,5 +284,106 @@ describe('entity rules', function (): void {
 
         expect($dry['objects'])->not->toBeEmpty()
             ->and(array_unique(array_column($dry['objects'], 'ad_group_id')))->toBe([$group->id]);
+    });
+});
+
+describe('the campaign hierarchy', function (): void {
+    it('opens a campaign into ad groups, ads and the creatives they run, with what can be asked at each level', function (): void {
+        $w = entityWorld();
+        $campaign = (string) DB::table('ads')->where('provider', 'meta')->whereNotNull('creative_id')->value('campaign_id');
+
+        $data = test()->actingAs($w->scenario->owner)->getJson("/api/campaigns/{$campaign}/hierarchy")->assertOk()->json('data');
+
+        expect($data['groups'])->not->toBeEmpty()
+            ->and($data['writes']['ad_group']['pause']['support'])->toBe('documented')
+            ->and($data['writes']['ad']['pause']['support'])->toBe('documented')
+            // An ad has no budget to ask about.
+            ->and($data['writes']['ad'])->not->toHaveKey('budget');
+
+        // Each creative once, linked from the ads that run it — the platform's own creative, never a copy.
+        expect($data['creatives'])->not->toBeEmpty();
+        $ads = array_merge(...array_map(static fn (array $g): array => $g['ads'], $data['groups']));
+        foreach ($data['creatives'] as $creative) {
+            $using = array_filter($ads, static fn (array $ad): bool => ($ad['creative']['id'] ?? null) === $creative['id']);
+            expect($creative['ads'])->toBe(count($using));
+        }
+        expect(count(array_unique(array_column($data['creatives'], 'id'))))->toBe(count($data['creatives']));
+    });
+
+    it('says, in the platform\'s words, what cannot be asked of an X promoted tweet', function (): void {
+        $w = entityWorld();
+        $campaign = (string) DB::table('ads')->where('provider', 'x')->value('campaign_id');
+
+        $writes = test()->actingAs($w->scenario->owner)->getJson("/api/campaigns/{$campaign}/hierarchy")->assertOk()->json('data.writes');
+
+        expect($writes['ad_group']['pause']['support'])->toBe('documented')
+            ->and($writes['ad']['pause']['support'])->toBe('not_offered')
+            ->and($writes['ad']['pause']['because'])->toContain('promoted Tweet');
+    });
+
+    it('lets a person ask to pause one ad, and refuses what makes no sense at that level', function (): void {
+        $w = entityWorld();
+        $ad = entityFirst(DB::table('ads')->where(['provider' => 'meta', 'status' => 'active']));
+        $tweet = (string) DB::table('ads')->where('provider', 'x')->value('id');
+
+        $request = test()->actingAs($w->scenario->owner)
+            ->postJson("/api/campaigns/entities/ad/{$ad->id}/status-request", ['action' => 'pause', 'reason' => 'This ad is tired.'])
+            ->assertCreated()->json('data');
+
+        expect($request['proposal']['level'])->toBe('ad')
+            ->and($request['proposal']['external_ad_id'])->toBe($ad->external_id)
+            ->and($request['origin'])->toBe('person');
+
+        test()->actingAs($w->scenario->owner)
+            ->postJson("/api/campaigns/entities/ad/{$ad->id}/status-request", ['action' => 'resume', 'reason' => 'Turn it on.'])
+            ->assertUnprocessable()->assertJsonPath('code', 'wrong_state');
+
+        test()->actingAs($w->scenario->owner)
+            ->postJson("/api/campaigns/entities/ad/{$tweet}/status-request", ['action' => 'pause', 'reason' => 'Stop it.'])
+            ->assertUnprocessable()->assertJsonPath('code', 'provider_not_documented');
+    });
+
+    it('acts on many ad groups at once — each through its own use case, each refusal named', function (): void {
+        $w = entityWorld();
+        $groups = DB::table('ad_groups')->where('provider', 'meta')->pluck('id')->map(static fn ($id): string => (string) $id)->all();
+        $x = (string) DB::table('ad_groups')->where('provider', 'x')->value('id');
+
+        $tasks = test()->actingAs($w->scenario->owner)->postJson('/api/campaigns/entities/bulk', [
+            'level' => 'ad_group', 'ids' => $groups, 'action' => 'create_task', 'reason' => 'Review the audience',
+        ])->assertOk()->json('data');
+        expect($tasks['done'])->toBe(count($groups))
+            ->and(DB::table('tasks')->where('subject_type', 'ad_group')->count())->toBe(count($groups));
+
+        $pause = test()->actingAs($w->scenario->owner)->postJson('/api/campaigns/entities/bulk', [
+            'level' => 'ad_group', 'ids' => [...$groups, $x, (string) Str::uuid()], 'action' => 'request_pause', 'reason' => 'Over target all week',
+        ])->assertOk()->json('data');
+        $codes = array_column($pause['results'], 'code', 'id');
+        expect($codes[array_key_last($codes)])->toBe('not_found')
+            ->and($pause['done'])->toBeGreaterThan(0);
+
+        $rule = entityRule($w, ['object_level' => 'ad_group', 'action' => 'alert']);
+        test()->actingAs($w->scenario->owner)->postJson('/api/campaigns/entities/bulk', [
+            'level' => 'ad_group', 'ids' => array_slice($groups, 0, 2), 'action' => 'add_to_rule', 'rule_id' => $rule['id'],
+        ])->assertOk();
+        expect(json_decode((string) DB::table('automation_rules')->where('id', $rule['id'])->value('ad_group_ids'), true))->toEqualCanonicalizing(array_slice($groups, 0, 2));
+
+        // A rule judges one level: ads cannot join an ad-group rule.
+        $ad = (string) DB::table('ads')->where('provider', 'meta')->value('id');
+        $mismatch = test()->actingAs($w->scenario->owner)->postJson('/api/campaigns/entities/bulk', [
+            'level' => 'ad', 'ids' => [$ad], 'action' => 'add_to_rule', 'rule_id' => $rule['id'],
+        ])->assertOk()->json('data');
+        expect($mismatch['results'][0]['code'])->toBe('level_mismatch');
+    });
+
+    it('tags ad groups and ads like campaigns', function (): void {
+        $w = entityWorld();
+        $tag = (string) test()->actingAs($w->scenario->owner)->postJson('/api/tags', ['name' => 'Ramadan test'])->assertCreated()->json('data.id');
+        $group = (string) DB::table('ad_groups')->where('provider', 'meta')->value('id');
+        $ad = (string) DB::table('ads')->where('provider', 'meta')->value('id');
+
+        test()->actingAs($w->scenario->owner)->postJson("/api/tags/{$tag}/entities/ad_group", ['ids' => [$group]])->assertOk();
+        test()->actingAs($w->scenario->owner)->putJson("/api/tags/{$tag}/entities/ad/{$ad}")->assertSuccessful();
+
+        expect(DB::table('taggings')->where('tag_id', $tag)->pluck('entity_type')->sort()->values()->all())->toBe(['ad', 'ad_group']);
     });
 });

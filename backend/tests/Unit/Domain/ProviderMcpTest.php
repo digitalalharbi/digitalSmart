@@ -15,7 +15,7 @@ it('records only platforms whose own documentation describes an MCP server, each
 
         expect($mcp['trust'])->toBe('official')
             ->and($mcp['source'])->toStartWith('https://')
-            ->and(parse_url((string) $mcp['source'], PHP_URL_HOST))->toBeIn(['developers.google.com', 'developers.snap.com', 'developers.facebook.com', 'ads.tiktok.com']);
+            ->and(parse_url((string) $mcp['source'], PHP_URL_HOST))->toBeIn(['developers.google.com', 'developers.snap.com', 'developers.facebook.com', 'business-api.tiktok.com']);
     }
 
     foreach ([Provider::LinkedIn, Provider::X, Provider::OpenAI] as $provider) {

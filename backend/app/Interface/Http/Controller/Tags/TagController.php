@@ -28,7 +28,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class TagController extends Controller
 {
-    private const array TYPES = ['client', 'project', 'campaign'];
+    private const array TYPES = ['client', 'project', 'campaign', 'ad_group', 'ad'];
 
     public function __construct(
         private readonly TagStore $tags,

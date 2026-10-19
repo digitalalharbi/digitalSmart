@@ -65,7 +65,7 @@ final readonly class EloquentCampaignHierarchyReadModel implements CampaignHiera
             ->groupBy('a.id', 'cr.id')
             ->orderBy('a.name')
             ->selectRaw('a.id, a.ad_group_id, a.campaign_id, a.name, a.status, a.provider,
-                cr.name as creative_name, cr.format as creative_format, cr.thumbnail_url, cr.title as creative_title,
+                cr.id as creative_id, cr.name as creative_name, cr.format as creative_format, cr.thumbnail_url, cr.title as creative_title,
                 sum(m.spend_minor) as spend_minor, sum(m.conversions) as conversions,
                 sum(case when m.date >= ? then m.clicks end) as clicks_now,
                 sum(case when m.date >= ? then m.impressions end) as impressions_now,
@@ -83,6 +83,7 @@ final readonly class EloquentCampaignHierarchyReadModel implements CampaignHiera
             'status' => (string) $r->status,
             'provider' => (string) $r->provider,
             'creative' => $r->creative_name === null ? null : [
+                'id' => (string) $r->creative_id,
                 'name' => (string) $r->creative_name,
                 'format' => (string) $r->creative_format,
                 'title' => $r->creative_title,

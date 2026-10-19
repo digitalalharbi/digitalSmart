@@ -13,7 +13,9 @@ it('opens a campaign into its ad groups and ads, with figures, signals and same-
     $data = test()->actingAs($w->scenario->owner)->getJson("/api/campaigns/{$campaign}/hierarchy")->assertOk()->json('data');
 
     expect($data['groups'])->not->toBeEmpty()
-        ->and($data['writes'])->toBe(['ad_group' => 'not_documented', 'ad' => 'not_documented']);
+        // What a person may ask for one level down, on this campaign's own platform — documented there, per level.
+        ->and($data['writes']['ad_group']['pause']['support'])->toBe('documented')
+        ->and($data['writes']['ad'])->not->toHaveKey('budget');
 
     /** @var list<array{ads: list<array{creative: array{thumbnail_url: string|null}|null}>}> $groups */
     $groups = $data['groups'];

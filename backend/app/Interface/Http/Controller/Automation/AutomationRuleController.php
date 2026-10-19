@@ -77,6 +77,10 @@ final class AutomationRuleController extends Controller
             $filters[$key] = is_string($value) && $value !== '' ? $value : null;
         }
 
+        /* Campaigns, ad groups or ads — `level` on the wire, the entity's level in the history. */
+        $level = $request->query('level');
+        $filters['object_level'] = in_array($level, ['campaign', 'ad_group', 'ad'], true) ? $level : null;
+
         return response()->json(['data' => $center->history($filters, $this->days($request))]);
     }
 

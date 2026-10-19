@@ -102,6 +102,8 @@ final readonly class EloquentSearchReadModel implements SearchReadModel
                 'client' => $this->clients($workspaceId, $visibleProjectIds),
                 'project' => $this->projects($workspaceId, $visibleProjectIds),
                 'campaign' => $this->campaigns($workspaceId, $visibleProjectIds),
+                /* Looked up only — never offered in global search, where a thousand ads would drown every campaign. */
+                'ad_group', 'ad' => $this->entities($type, $workspaceId, $visibleProjectIds),
                 default => null,
             };
 
@@ -171,6 +173,19 @@ final readonly class EloquentSearchReadModel implements SearchReadModel
         $this->boundTo($q, 'a.id', $visible);
 
         return $q->selectRaw("'campaign' as type, c.name as label, a.name as context, '/campaigns' as path, c.id::text as id");
+    }
+
+    /** @param list<string>|null $visible */
+    private function entities(string $type, string $workspaceId, ?array $visible): Builder
+    {
+        $q = DB::table($type === 'ad' ? 'ads as e' : 'ad_groups as e')
+            ->join('campaigns as c', 'c.id', '=', 'e.campaign_id')
+            ->join('external_accounts as a', 'a.id', '=', 'e.external_account_id')
+            ->where('e.workspace_id', $workspaceId);
+
+        $this->boundTo($q, 'a.id', $visible);
+
+        return $q->selectRaw("'{$type}' as type, e.name as label, c.name as context, '/campaigns' as path, e.id::text as id");
     }
 
     /** @param list<string>|null $visible */

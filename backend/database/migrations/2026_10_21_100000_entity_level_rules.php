@@ -53,10 +53,18 @@ return new class extends Migration
                 implode("','", TaskSubjectType::values()),
             ));
         }
+
+        /* An ad group or an ad can carry an internal tag, like a campaign. */
+        DB::statement('ALTER TABLE taggings DROP CONSTRAINT taggings_type_check');
+        DB::statement("ALTER TABLE taggings ADD CONSTRAINT taggings_type_check CHECK (entity_type IN ('client','project','campaign','ad_group','ad'))");
     }
 
     public function down(): void
     {
+        DB::table('taggings')->whereIn('entity_type', ['ad_group', 'ad'])->delete();
+        DB::statement('ALTER TABLE taggings DROP CONSTRAINT taggings_type_check');
+        DB::statement("ALTER TABLE taggings ADD CONSTRAINT taggings_type_check CHECK (entity_type IN ('client','project','campaign'))");
+
         $narrow = array_values(array_diff(TaskSubjectType::values(), ['ad_group', 'ad']));
 
         foreach (['tasks', 'approval_requests'] as $table) {
