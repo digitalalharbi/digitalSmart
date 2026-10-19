@@ -3,7 +3,7 @@ import { Bell, Trash2, Zap } from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 import { useDeleteRule, useUpdateRule } from './api';
-import type { Rule } from './types';
+import { draftOf, type Rule, type RuleCondition } from './types';
 
 const SEVERITY_TONE = {
   critical: 'bg-danger-surface text-danger',
@@ -17,14 +17,7 @@ export function RuleCard({ rule }: { rule: Rule }) {
   const update = useUpdateRule();
   const remove = useDeleteRule();
 
-  const limit =
-    rule.threshold === null
-      ? null
-      : rule.metric === 'budget_used'
-        ? `${String(rule.threshold)}%`
-        : rule.metric === 'roas'
-          ? `${String(rule.threshold)}×`
-          : String(rule.threshold);
+  const limit = limitOf(rule);
 
   const scope = rule.project?.name ?? rule.client?.name ?? t('automation.everywhere');
 
@@ -49,16 +42,7 @@ export function RuleCard({ rule }: { rule: Rule }) {
           onClick={() =>
             update.mutate({
               id: rule.id,
-              draft: {
-                name: rule.name,
-                metric: rule.metric,
-                threshold: rule.threshold,
-                window_days: rule.window_days,
-                severity: rule.severity,
-                client_id: rule.client?.id ?? null,
-                project_id: rule.project?.id ?? null,
-                is_active: !rule.is_active,
-              },
+              draft: { ...draftOf(rule), is_active: !rule.is_active },
             })
           }
           className={cn(
@@ -98,13 +82,41 @@ export function RuleCard({ rule }: { rule: Rule }) {
             )}
           </span>
         </div>
+        {rule.conditions.map((condition, index) => (
+          <div key={index} className="bg-surface-sunken flex items-center gap-3 rounded-2xl p-3">
+            <span className="text-content-tertiary text-xs font-semibold">
+              {t('automation.and')}
+            </span>
+            <span className="text-content text-sm font-medium">
+              {condition.metric_label}
+              {condition.threshold === null ? null : (
+                <>
+                  {' '}
+                  <span className="ds-numeric font-semibold">{limitOf(condition)}</span>
+                </>
+              )}
+            </span>
+          </div>
+        ))}
+        {rule.for_days > 1 ? (
+          <div className="bg-surface-sunken flex items-center gap-3 rounded-2xl p-3">
+            <span className="text-content-tertiary text-xs font-semibold">
+              {t('automation.for')}
+            </span>
+            <span className="text-content text-sm font-medium">
+              {t('automation.days', { count: rule.for_days })}
+            </span>
+          </div>
+        ) : null}
         <div className="bg-surface-sunken flex items-center gap-3 rounded-2xl p-3">
           <span className="text-content-tertiary text-xs font-semibold">
             {t('automation.then')}
           </span>
-          <span className="flex items-center gap-2 text-sm font-medium">
+          <span className="flex flex-wrap items-center gap-2 text-sm font-medium">
             <Bell aria-hidden className="size-4" />
-            {t('automation.toToday')}
+            {rule.action === 'alert'
+              ? t('automation.toToday')
+              : t(`automation.action.${rule.action}`, { pct: rule.action_pct ?? 0 })}
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-xs font-semibold',
@@ -117,7 +129,11 @@ export function RuleCard({ rule }: { rule: Rule }) {
         </div>
       </div>
 
-      <footer className="mt-auto flex justify-end">
+      <footer className="mt-auto flex items-center justify-between gap-2">
+        <span className="text-content-tertiary text-xs">
+          {t('automation.trust.label', { level: rule.trust_level })} ·{' '}
+          {t(`automation.trust.${rule.trust_level}`)}
+        </span>
         <Button
           variant="ghost"
           size="sm"
@@ -130,6 +146,18 @@ export function RuleCard({ rule }: { rule: Rule }) {
       </footer>
     </article>
   );
+}
+
+/** The limit as a person says it: 90%, 2×, 3 days, 100. */
+function limitOf(rule: {
+  metric: Rule['metric'];
+  threshold: RuleCondition['threshold'];
+}): string | null {
+  if (rule.threshold === null) return null;
+  if (rule.metric === 'budget_used') return `${String(rule.threshold)}%`;
+  if (rule.metric === 'roas') return `${String(rule.threshold)}×`;
+
+  return String(rule.threshold);
 }
 
 export function RuleIcon() {

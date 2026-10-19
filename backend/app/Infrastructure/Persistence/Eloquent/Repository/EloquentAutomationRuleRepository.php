@@ -9,9 +9,12 @@ use App\Application\Automation\DTO\RuleInput;
 use App\Application\Automation\DTO\RuleView;
 use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Contract\IdentifierGenerator;
+use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMetric;
 use App\Domain\Automation\RuleOperator;
 use App\Domain\Automation\RuleSeverity;
+use App\Domain\Automation\TrustLevel;
+use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -86,6 +89,50 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
         return $this->find($workspaceId, $id) ?? throw new LogicException('A rule that was just changed could not be read back.');
     }
 
+    public function observe(string $ruleId, array $campaignIds, string $today): array
+    {
+        $streaks = [];
+
+        foreach ($campaignIds as $campaignId) {
+            DB::statement(
+                'INSERT INTO automation_rule_streaks (rule_id, campaign_id, first_seen_on, last_seen_on) VALUES (?, ?, ?, ?)
+                 ON CONFLICT (rule_id, campaign_id) DO UPDATE SET
+                   first_seen_on = CASE WHEN automation_rule_streaks.last_seen_on < (?::date - 1) THEN EXCLUDED.first_seen_on ELSE automation_rule_streaks.first_seen_on END,
+                   acted_at = CASE WHEN automation_rule_streaks.last_seen_on < (?::date - 1) THEN NULL ELSE automation_rule_streaks.acted_at END,
+                   last_seen_on = EXCLUDED.last_seen_on',
+                [$ruleId, $campaignId, $today, $today, $today, $today],
+            );
+        }
+
+        /* A campaign the rule no longer holds for starts again from nothing next time. */
+        DB::table('automation_rule_streaks')->where('rule_id', $ruleId)->whereNotIn('campaign_id', $campaignIds === [] ? [''] : $campaignIds)->delete();
+
+        foreach (DB::table('automation_rule_streaks')->where('rule_id', $ruleId)->get() as $row) {
+            $streaks[(string) $row->campaign_id] = [
+                'days' => (int) (new DateTimeImmutable((string) $row->last_seen_on))->diff(new DateTimeImmutable((string) $row->first_seen_on))->days + 1,
+                'acted' => $row->acted_at !== null,
+            ];
+        }
+
+        return $streaks;
+    }
+
+    public function streaks(string $ruleId): array
+    {
+        $out = [];
+
+        foreach (DB::table('automation_rule_streaks')->where('rule_id', $ruleId)->get() as $row) {
+            $out[(string) $row->campaign_id] = (int) (new DateTimeImmutable((string) $row->last_seen_on))->diff(new DateTimeImmutable((string) $row->first_seen_on))->days + 1;
+        }
+
+        return $out;
+    }
+
+    public function markActed(string $ruleId, string $campaignId): void
+    {
+        DB::table('automation_rule_streaks')->where(['rule_id' => $ruleId, 'campaign_id' => $campaignId])->update(['acted_at' => $this->clock->now()]);
+    }
+
     public function delete(string $workspaceId, string $id): void
     {
         DB::table('automation_rules')->where(['workspace_id' => $workspaceId, 'id' => $id])->delete();
@@ -97,7 +144,7 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             ->leftJoin('clients as c', 'c.id', '=', 'r.client_id')
             ->leftJoin('projects as p', 'p.id', '=', 'r.project_id')
             ->leftJoin('users as u', 'u.id', '=', 'r.created_by')
-            ->select(['r.id', 'r.name', 'r.metric', 'r.operator', 'r.threshold', 'r.window_days', 'r.severity', 'r.is_active', 'r.client_id', 'c.name as client_name', 'r.project_id', 'p.name as project_name', 'u.name as author_name']);
+            ->select(['r.id', 'r.name', 'r.metric', 'r.operator', 'r.threshold', 'r.window_days', 'r.severity', 'r.is_active', 'r.client_id', 'c.name as client_name', 'r.project_id', 'p.name as project_name', 'u.name as author_name', 'r.conditions', 'r.for_days', 'r.action', 'r.action_pct', 'r.trust_level']);
     }
 
     /** @return array<string, mixed> */
@@ -114,6 +161,14 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             /* A rule on a project belongs to its client already; storing both would be two answers to one question. */
             'client_id' => $input->projectId === null ? $input->clientId : null,
             'project_id' => $input->projectId,
+            'conditions' => json_encode(array_map(static fn (array $c): array => [
+                'metric' => $c['metric']->value,
+                'threshold' => $c['metric']->needsThreshold() ? $c['threshold'] : null,
+            ], $input->conditions), JSON_THROW_ON_ERROR),
+            'for_days' => $input->forDays,
+            'action' => $input->action->value,
+            'action_pct' => $input->action === RuleAction::ProposeBudgetCut ? $input->actionPct : null,
+            'trust_level' => $input->trustLevel->value,
         ];
     }
 
@@ -133,6 +188,28 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             projectId: isset($r->project_id) ? (string) $r->project_id : null,
             projectName: isset($r->project_name) ? (string) $r->project_name : null,
             authorName: isset($r->author_name) ? (string) $r->author_name : null,
+            conditions: $this->conditions($r->conditions ?? '[]'),
+            forDays: (int) ($r->for_days ?? 1),
+            action: RuleAction::tryFrom((string) ($r->action ?? 'alert')) ?? RuleAction::Alert,
+            actionPct: isset($r->action_pct) ? (int) $r->action_pct : null,
+            trustLevel: TrustLevel::tryFrom((int) ($r->trust_level ?? 2)) ?? TrustLevel::Propose,
         );
+    }
+
+    /** @return list<array{metric: RuleMetric, threshold: float|null}> */
+    private function conditions(mixed $json): array
+    {
+        $rows = is_string($json) ? json_decode($json, true) : null;
+        $out = [];
+
+        foreach (is_array($rows) ? $rows : [] as $row) {
+            $metric = is_array($row) ? RuleMetric::tryFrom((string) ($row['metric'] ?? '')) : null;
+
+            if ($metric !== null) {
+                $out[] = ['metric' => $metric, 'threshold' => isset($row['threshold']) && is_numeric($row['threshold']) ? (float) $row['threshold'] : null];
+            }
+        }
+
+        return $out;
     }
 }

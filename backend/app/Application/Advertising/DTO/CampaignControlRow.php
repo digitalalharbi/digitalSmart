@@ -64,6 +64,8 @@ final readonly class CampaignControlRow
         public string $healthReasonCode = 'CAMPAIGN_UNKNOWN',
         /** @var array<string, int|string> */
         public array $healthReasonParams = [],
+        /** When the platform says the campaign stops, where it has an end date at all. */
+        public ?DateTimeImmutable $endsAt = null,
     ) {}
 
     /** @param list<int|null> $trend */
@@ -76,7 +78,7 @@ final readonly class CampaignControlRow
             $this->clientName, $this->currency, $this->budgetMinor, $this->spendMinor, $this->results,
             $this->resultLabel, $this->costPerResultMinor, $this->revenueMinor, $this->roas,
             $this->reportedDays, $this->lastSyncedAt, $this->budgetUtilisation, $trend,
-            $this->healthReasonCode, $this->healthReasonParams,
+            $this->healthReasonCode, $this->healthReasonParams, $this->endsAt,
         );
     }
 }

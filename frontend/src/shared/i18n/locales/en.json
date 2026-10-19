@@ -91,16 +91,55 @@
       "adRejected": "Ad rejected",
       "endDate": "Campaign end date",
       "fatigue": "Creative fatigue",
-      "spendSpike": "Daily spend spike"
-    },
-    "why": {
-      "covered": "Always on",
-      "soon": "Not available yet"
+      "spendSpike": "Daily spend spike",
+      "cplUp": "Cost per lead up",
+      "overspend": "Overspend",
+      "noLeads": "No leads",
+      "noSales": "No sales",
+      "pauseLosers": "Pause losers (cost up and ROAS under 1)"
     },
     "severity": {
       "critical": "Critical",
       "needs_attention": "Needs attention",
       "watch": "Watch"
+    },
+    "newRule": "New rule",
+    "and": "And",
+    "for": "For",
+    "days_one": "{{count}} day in a row",
+    "days_other": "{{count}} days in a row",
+    "action": {
+      "propose_pause": "Propose a pause",
+      "propose_budget_cut": "Propose −{{pct}}% daily budget",
+      "task": "Open a task"
+    },
+    "trust": {
+      "title": "Trust",
+      "label": "Level {{level}}",
+      "0": "Watch only",
+      "1": "Alert",
+      "2": "Propose, a person approves",
+      "3": "Also open tasks",
+      "4": "Change platforms unasked — not available"
+    },
+    "metric": {
+      "cost_per_result": "Cost per result above",
+      "roas": "ROAS below",
+      "budget_used": "Daily budget used above (%)",
+      "no_results": "Spending with no results",
+      "rejected": "Rejected by the platform",
+      "ends_within": "Ends within (days)"
+    },
+    "builder": {
+      "name": "Rule name",
+      "limit": "Limit",
+      "nothingElse": "Nothing else",
+      "cut": "Cut by",
+      "save": "Save rule"
+    },
+    "covered": {
+      "tracking": "Always on — tracking checks",
+      "creative": "Watched by the Creative agent"
     }
   },
   "aiCenter": {
@@ -266,7 +305,9 @@
     "REPORTS_READY": "Weekly briefs ready for {{count}} clients.",
     "CREATIVE_FATIGUE_MORE": "{{count}} ads are tiring — replacements asked for.",
     "LEADS_DECLINE_MORE": "Leads are falling for {{count}} clients.",
-    "LEADS_LOW_QUALITY_MORE": "Lead quality is low for {{count}} clients."
+    "LEADS_LOW_QUALITY_MORE": "Lead quality is low for {{count}} clients.",
+    "RULE_REJECTED": "{{rule}}: rejected by the platform.",
+    "RULE_ENDS_SOON": "{{rule}}: ends in {{days}} days."
   },
   "agentFindings": {
     "winner": "Best in campaign",

@@ -27,4 +27,22 @@ interface AutomationRuleRepository
     public function update(string $workspaceId, string $id, RuleInput $input): RuleView;
 
     public function delete(string $workspaceId, string $id): void;
+
+    /**
+     * Record that the rule holds today for these campaigns (and no longer for any other), and return how many days
+     * in a row it has held for each, and whether its action has already run in this streak.
+     *
+     * @param  list<string>  $campaignIds
+     * @return array<string, array{days: int, acted: bool}>
+     */
+    public function observe(string $ruleId, array $campaignIds, string $today): array;
+
+    /**
+     * Days in a row the rule has held, per campaign, as last observed.
+     *
+     * @return array<string, int>
+     */
+    public function streaks(string $ruleId): array;
+
+    public function markActed(string $ruleId, string $campaignId): void;
 }

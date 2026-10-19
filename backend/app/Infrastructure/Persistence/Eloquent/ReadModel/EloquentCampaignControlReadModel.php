@@ -231,6 +231,7 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
                 'c.objective',
                 'c.budget_minor',
                 'c.budget_mode',
+                'c.ends_at',
                 'c.currency',
                 'c.synced_at',
                 'c.project_id as assigned_project_id',
@@ -376,6 +377,7 @@ final readonly class EloquentCampaignControlReadModel implements CampaignControl
                 lastSyncedAt: $syncedAt,
             ),
             lastSyncedAt: $syncedAt,
+            endsAt: is_string($row->ends_at ?? null) ? new DateTimeImmutable($row->ends_at) : null,
         );
     }
 

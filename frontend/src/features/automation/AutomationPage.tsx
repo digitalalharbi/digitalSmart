@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Zap } from 'lucide-react';
 import { PERMISSIONS, useSession } from '@/features/auth';
@@ -8,7 +9,8 @@ import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { useCreateRule, useRulesQuery } from './api';
 import { RuleCard } from './RuleCard';
-import { TEMPLATES, UNAVAILABLE, draftFrom } from './templates';
+import { RuleBuilder } from './RuleBuilder';
+import { COVERED, TEMPLATES, draftFrom } from './templates';
 
 /**
  * Rules: tell the system what to watch for, and it puts what it finds on the Today list.
@@ -31,10 +33,23 @@ export function AutomationPage() {
   };
   const scoped = context.project?.label ?? context.client?.label ?? null;
   const taken = new Set((rules.data ?? []).map((rule) => rule.name));
+  const [building, setBuilding] = useState(false);
 
   return (
     <div className="ds-page">
-      <PageHeader title={t('automation.title')} />
+      <PageHeader
+        title={t('automation.title')}
+        primaryAction={
+          mayWrite ? (
+            <Button onClick={() => setBuilding((open) => !open)}>
+              <Plus />
+              {t('automation.newRule')}
+            </Button>
+          ) : undefined
+        }
+      />
+
+      {building ? <RuleBuilder scope={scope} onDone={() => setBuilding(false)} /> : null}
 
       {create.isError ? <Alert tone="danger">{t('automation.failed')}</Alert> : null}
 
@@ -61,6 +76,14 @@ export function AutomationPage() {
                   <Zap aria-hidden className="size-4" />
                 </span>
                 <p className="text-content font-semibold">{name}</p>
+                <p className="text-content-tertiary text-xs">
+                  {template.action === undefined || template.action === 'alert'
+                    ? t('automation.toToday')
+                    : t(`automation.action.${template.action}`, { pct: template.actionPct ?? 0 })}
+                  {template.forDays !== undefined && template.forDays > 1
+                    ? ` · ${t('automation.days', { count: template.forDays })}`
+                    : ''}
+                </p>
                 <Button
                   className="mt-auto"
                   variant={on ? 'secondary' : 'primary'}
@@ -79,13 +102,13 @@ export function AutomationPage() {
               </li>
             );
           })}
-          {UNAVAILABLE.map((item) => (
+          {COVERED.map((item) => (
             <li
               key={item.key}
               className="bg-surface-sunken text-content-tertiary flex flex-col gap-2 rounded-3xl p-5"
             >
               <p className="font-semibold">{t(`automation.template.${item.key}`)}</p>
-              <p className="text-xs">{t(`automation.why.${item.why}`)}</p>
+              <p className="text-xs">{t(`automation.covered.${item.by}`)}</p>
             </li>
           ))}
         </ul>

@@ -15,6 +15,9 @@ use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Automation\Exception\RuleNotAllowed;
+use App\Domain\Automation\RuleAction;
+use App\Domain\Automation\TrustLevel;
 use App\Domain\Dashboard\Exception\NameAlreadyUsed;
 
 /**
@@ -52,6 +55,27 @@ final readonly class SaveRule
             }
         }
 
+        /*
+         * Trust is given, never assumed. A rule whose action needs more than it was given is refused, not raised;
+         * level 4 — changing a platform without approval — cannot be given at all; and level 3, which opens work
+         * without asking, is a workspace administrator's decision.
+         */
+        if (! $input->trustLevel->isAvailable()) {
+            throw new RuleNotAllowed('Changing a platform without a person\'s approval is not available. The highest level is 3.');
+        }
+
+        if (! $input->trustLevel->allows($input->action)) {
+            throw new RuleNotAllowed(sprintf('That action needs trust level %d or above; this rule has %d.', $input->action->minimumTrust()->value, $input->trustLevel->value));
+        }
+
+        if ($input->trustLevel->value >= TrustLevel::ActInternally->value) {
+            $this->guard->ensure(Permission::WorkspacesUpdate);
+        }
+
+        if ($input->action === RuleAction::ProposeBudgetCut && ($input->actionPct === null || $input->actionPct < 1 || $input->actionPct > 50)) {
+            throw new RuleNotAllowed('A budget-cut proposal names a cut between 1% and 50%.');
+        }
+
         if ($this->rules->nameTaken($workspaceId, $input->name, $id)) {
             throw NameAlreadyUsed::byARule($input->name);
         }
@@ -67,7 +91,7 @@ final readonly class SaveRule
             auditableType: 'automation_rule',
             auditableId: $saved->id,
             summary: sprintf('%s the rule "%s"', $id === null ? 'Created' : 'Changed', $saved->name),
-            changes: ['metric' => $saved->metric->value, 'threshold' => $saved->threshold, 'active' => $saved->isActive],
+            changes: ['metric' => $saved->metric->value, 'threshold' => $saved->threshold, 'active' => $saved->isActive, 'conditions' => count($saved->conditions), 'for_days' => $saved->forDays, 'action' => $saved->action->value, 'trust_level' => $saved->trustLevel->value],
         ));
 
         return $saved;

@@ -241,6 +241,7 @@ final readonly class GetCampaignControl
             budgetUtilisation: $this->utilisation($row),
             healthReasonCode: $verdict->code,
             healthReasonParams: $verdict->params,
+            endsAt: $row->endsAt,
         );
     }
 }

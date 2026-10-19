@@ -32,5 +32,6 @@ final readonly class CampaignVitalsRow
         public string $budgetMode,
         public CampaignVitals $vitals,
         public ?DateTimeImmutable $lastSyncedAt,
+        public ?DateTimeImmutable $endsAt = null,
     ) {}
 }

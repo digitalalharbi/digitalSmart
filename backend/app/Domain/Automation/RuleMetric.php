@@ -20,6 +20,10 @@ enum RuleMetric: string
     case BudgetUsed = 'budget_used';
     /** Spend with no results at all in the window. Takes no threshold: it is true or it is not. */
     case NoResults = 'no_results';
+    /** The platform rejected the campaign. Takes no threshold. */
+    case Rejected = 'rejected';
+    /** Days until the platform's own end date; a problem at or below the threshold. */
+    case EndsWithin = 'ends_within';
 
     public function label(): string
     {
@@ -28,6 +32,8 @@ enum RuleMetric: string
             self::Roas => 'ROAS',
             self::BudgetUsed => 'Daily budget used',
             self::NoResults => 'Spending with no results',
+            self::Rejected => 'Rejected by the platform',
+            self::EndsWithin => 'Days until it ends',
         };
     }
 
@@ -36,14 +42,14 @@ enum RuleMetric: string
     {
         return match ($this) {
             self::CostPerResult, self::BudgetUsed => RuleOperator::Above,
-            self::Roas => RuleOperator::Below,
-            self::NoResults => RuleOperator::Above,
+            self::Roas, self::EndsWithin => RuleOperator::Below,
+            self::NoResults, self::Rejected => RuleOperator::Above,
         };
     }
 
     public function needsThreshold(): bool
     {
-        return $this !== self::NoResults;
+        return $this !== self::NoResults && $this !== self::Rejected;
     }
 
     /** @return list<string> */
