@@ -155,6 +155,18 @@ export const ActionCenterPage = lazy(async () => ({
   default: (await import('@/features/action-center/ActionCenterPage')).ActionCenterPage,
 }));
 
+export const AutomationAgentsPage = lazy(async () => ({
+  default: (await import('@/features/automation/AgentsPage')).AgentsPage,
+}));
+export const AutomationRoutinesPage = lazy(async () => ({
+  default: (await import('@/features/automation/RoutinesPage')).RoutinesPage,
+}));
+export const AutomationHistoryPage = lazy(async () => ({
+  default: (await import('@/features/automation/ActionHistoryPage')).ActionHistoryPage,
+}));
+export const AutomationChangeLogPage = lazy(async () => ({
+  default: (await import('@/features/automation/ChangeLogPage')).ChangeLogPage,
+}));
 export const AutomationPage = lazy(async () => ({
   default: (await import('@/features/automation/AutomationPage')).AutomationPage,
 }));

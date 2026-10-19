@@ -2,7 +2,7 @@ import { NAV_ITEMS, type NavItem } from '@/app/navigation';
 import type { HomeProfileKey } from '@/features/home';
 
 /**
- * The product's ten areas.
+ * The product's eleven areas.
  *
  * The product used to offer twenty-odd destinations side by side, and a person had to know which module answered
  * which question. Each area now answers exactly one question, and the destinations that used to be top-level
@@ -15,6 +15,7 @@ export type AreaKey =
   | 'overview'
   | 'clients'
   | 'campaigns'
+  | 'automation'
   | 'performance'
   | 'finance'
   | 'creative'
@@ -48,7 +49,20 @@ export const AREAS: readonly Area[] = [
     key: 'campaigns',
     labelKey: 'areas.campaigns',
     icon: 'Megaphone',
-    paths: ['/campaigns', '/automation', '/media-planner'],
+    paths: ['/campaigns', '/media-planner'],
+  },
+  /* Rules are control, agents are reasoning, approvals are governance — the automation operating centre. */
+  {
+    key: 'automation',
+    labelKey: 'areas.automation',
+    icon: 'Bot',
+    paths: [
+      '/automation',
+      '/automation/agents',
+      '/automation/routines',
+      '/automation/history',
+      '/automation/changes',
+    ],
   },
   {
     key: 'performance',
@@ -89,9 +103,9 @@ export const AREAS: readonly Area[] = [
  * locked out of an area they have the permission for — the top bar is just the part that is relevant all day.
  */
 export const ROLE_AREAS: Record<HomeProfileKey, readonly AreaKey[]> = {
-  executive: ['overview', 'clients', 'performance', 'reports', 'finance'],
-  media_buyer: ['overview', 'campaigns', 'performance', 'creative', 'work'],
-  project_manager: ['overview', 'clients', 'work', 'reports'],
+  executive: ['overview', 'clients', 'performance', 'automation', 'reports', 'finance'],
+  media_buyer: ['overview', 'campaigns', 'automation', 'performance', 'work'],
+  project_manager: ['overview', 'clients', 'automation', 'work', 'reports'],
   finance: ['overview', 'finance', 'clients', 'reports'],
   creative: ['overview', 'creative', 'work'],
 };
@@ -100,6 +114,7 @@ const DEFAULT_TOP: readonly AreaKey[] = [
   'overview',
   'clients',
   'campaigns',
+  'automation',
   'performance',
   'reports',
 ];
