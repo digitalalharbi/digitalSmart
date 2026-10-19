@@ -10,6 +10,7 @@ use App\Domain\Advertising\CampaignHealth;
 use App\Domain\Advertising\CampaignObjective;
 use App\Domain\Advertising\EntityStatus;
 use DateTimeInterface;
+use stdClass;
 
 final readonly class CampaignControlResource
 {
@@ -42,6 +43,8 @@ final readonly class CampaignControlResource
             'health' => $row->health->value,
             'health_label' => $row->health->label(),
             'health_reason' => $row->healthReason,
+            'health_reason_code' => $row->healthReasonCode,
+            'health_reason_params' => $row->healthReasonParams === [] ? new stdClass : $row->healthReasonParams,
             'needs_attention' => $row->health->needsAttention(),
 
             'objective' => $row->objective->value,

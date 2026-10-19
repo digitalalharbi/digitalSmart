@@ -18,6 +18,7 @@ import { BudgetBar } from './CampaignParts';
 import { QuickActions } from './QuickActions';
 import { objectiveName, resultName } from './labels';
 import { money, resultText } from './text';
+import { reasonText } from '@/shared/lib/reason';
 import { HEALTH_TO_STATE, type CampaignControlPage, type CampaignRow } from './types';
 
 type Readiness = {
@@ -136,7 +137,15 @@ export function CampaignDetailPage() {
           <div className="flex min-w-0 flex-col gap-4">
             <div className="flex flex-wrap items-center gap-3">
               <HealthPill state={HEALTH_TO_STATE[row.health]} />
-              <span className="text-content-secondary text-sm">{row.health_reason}</span>
+              <span className="text-content-secondary text-sm">
+                {reasonText(
+                  t,
+                  row.health_reason_code === undefined
+                    ? null
+                    : { code: row.health_reason_code, params: row.health_reason_params ?? {} },
+                  row.health_reason,
+                )}
+              </span>
               {row.last_synced_at === null ? null : (
                 <span className="text-content-tertiary text-xs">
                   {t('campaignDetail.updated', {

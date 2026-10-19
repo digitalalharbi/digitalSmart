@@ -11,6 +11,7 @@ import { Pin, PinOff } from 'lucide-react';
 import { usePinMutation, useShortcutsQuery } from '@/features/search';
 import { resultName, statusName } from './labels';
 import { QuickActions } from './QuickActions';
+import { reasonText } from '@/shared/lib/reason';
 import { HEALTH_TO_STATE, type CampaignRow } from './types';
 
 /** Average daily spend against a daily budget, as a bar plus the figure beside it. */
@@ -74,7 +75,17 @@ export function StatusPair({
     <span className="flex flex-wrap items-center gap-1.5">
       <HealthPill
         state={HEALTH_TO_STATE[row.health]}
-        detail={withReason ? row.health_reason : undefined}
+        detail={
+          withReason
+            ? reasonText(
+                t,
+                row.health_reason_code === undefined
+                  ? null
+                  : { code: row.health_reason_code, params: row.health_reason_params ?? {} },
+                row.health_reason,
+              )
+            : undefined
+        }
       />
       {/* The platform's word, beside ours — rule 11. They disagree exactly when it matters. */}
       <Badge tone="neutral">{statusName(t, row)}</Badge>

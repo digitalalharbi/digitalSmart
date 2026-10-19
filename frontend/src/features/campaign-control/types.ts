@@ -31,6 +31,9 @@ export type CampaignRow = {
   health: HealthValue;
   health_label: string;
   health_reason: string;
+  /** The reason as a code the interface translates; `health_reason` is the English fallback. */
+  health_reason_code?: string;
+  health_reason_params?: Record<string, string | number>;
   needs_attention: boolean;
   objective: string;
   objective_label: string;

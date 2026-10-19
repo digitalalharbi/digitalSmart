@@ -43,5 +43,12 @@ final readonly class AttentionItem
         public ?string $clientName,
         public ?string $projectId,
         public ?string $projectName,
+        /**
+         * The finding as a code and its values, where the module that found it has one — so the interface writes
+         * the sentence in the reader's language. Null means only the English `message` exists for it yet.
+         */
+        public ?string $reasonCode = null,
+        /** @var array<string, int|string|float> */
+        public array $reasonParams = [],
     ) {}
 }

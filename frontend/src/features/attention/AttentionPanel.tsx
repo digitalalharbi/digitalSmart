@@ -10,6 +10,7 @@ import type { AttentionItem as ListItem } from '@/shared/ui/attention.model';
 import { Badge } from '@/shared/ui/badge';
 import { PageSection } from '@/shared/ui/page-header';
 import { useAttentionQuery } from './useAttention';
+import { reasonText } from '@/shared/lib/reason';
 import type {
   AttentionAudience,
   AttentionItem,
@@ -189,7 +190,7 @@ function toListItem(item: AttentionItem, t: TFunction): ListItem {
   return {
     id: item.id,
     severity: SEVERITY[item.severity],
-    message: item.message,
+    message: reasonText(t, item.reason, item.message),
     entity: { kind: item.entity.kind, label: item.entity.label },
     ...('owner' in item ? { owner: item.owner ?? null } : {}),
     since: item.since,

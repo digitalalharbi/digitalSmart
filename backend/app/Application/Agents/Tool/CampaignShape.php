@@ -19,6 +19,8 @@ final class CampaignShape
             'status' => $row->status->value,
             'health' => $row->health->value,
             'health_reason' => $row->healthReason,
+            'health_reason_code' => $row->healthReasonCode,
+            'health_reason_params' => $row->healthReasonParams,
             'client' => $row->clientName,
             'client_id' => $row->clientId,
             'project' => $row->projectName,

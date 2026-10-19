@@ -14,5 +14,5 @@ export function compactMoney(minor: number, currency: string, _locale: string): 
     maximumFractionDigits: 1,
   })
     .format(minor / 100)
-    .replace(/ /g, ' ');
+    .replace(/\u00a0/g, ' ');
 }

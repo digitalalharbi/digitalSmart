@@ -39,6 +39,8 @@ final readonly class StatusEvidence
             evidence: [
                 'health' => $row->health->value,
                 'health_reason' => $row->healthReason,
+                'health_reason_code' => $row->healthReasonCode,
+                'health_reason_params' => $row->healthReasonParams,
                 'currency' => $row->currency,
                 'spend_minor' => $row->spendMinor,
                 'results' => $row->results,

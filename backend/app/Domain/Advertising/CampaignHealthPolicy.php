@@ -64,6 +64,7 @@ final readonly class CampaignHealthPolicy
             return new CampaignVerdict(
                 CampaignHealth::Critical,
                 'Running, but no figures have arrived for two days. The numbers below are out of date.',
+                'CAMPAIGN_STALE',
             );
         }
 
@@ -75,6 +76,8 @@ final readonly class CampaignHealthPolicy
                     $vitals->reportedDays,
                     $vitals->reportedDays === 1 ? 'day' : 'days',
                 ),
+                'CAMPAIGN_TOO_EARLY',
+                ['days' => $vitals->reportedDays],
             );
         }
 
@@ -87,6 +90,7 @@ final readonly class CampaignHealthPolicy
             return new CampaignVerdict(
                 CampaignHealth::Critical,
                 'Spending, and nothing has been recorded against it in this period.',
+                'CAMPAIGN_SPEND_NO_RESULTS',
             );
         }
 
@@ -96,6 +100,8 @@ final readonly class CampaignHealthPolicy
             return new CampaignVerdict(
                 CampaignHealth::NeedsAttention,
                 sprintf('Each result is costing %d%% more than last period.', (int) round($costChange * 100)),
+                'CAMPAIGN_COST_RISE',
+                ['pct' => (int) round($costChange * 100)],
             );
         }
 
@@ -103,6 +109,8 @@ final readonly class CampaignHealthPolicy
             return new CampaignVerdict(
                 CampaignHealth::Watch,
                 sprintf('Each result is costing %d%% more than last period.', (int) round($costChange * 100)),
+                'CAMPAIGN_COST_RISE',
+                ['pct' => (int) round($costChange * 100)],
             );
         }
 
@@ -112,10 +120,12 @@ final readonly class CampaignHealthPolicy
             return new CampaignVerdict(
                 CampaignHealth::Watch,
                 sprintf('Spending %d%% less than last period.', (int) round($deliveryDrop * 100)),
+                'CAMPAIGN_DELIVERY_DROP',
+                ['pct' => (int) round($deliveryDrop * 100)],
             );
         }
 
-        return new CampaignVerdict(CampaignHealth::Healthy, 'Delivering in line with last period.');
+        return new CampaignVerdict(CampaignHealth::Healthy, 'Delivering in line with last period.', 'CAMPAIGN_HEALTHY');
     }
 
     /**
@@ -132,15 +142,18 @@ final readonly class CampaignHealthPolicy
             EntityStatus::Rejected => new CampaignVerdict(
                 CampaignHealth::Critical,
                 'The platform rejected this campaign. It is not running.',
+                'CAMPAIGN_REJECTED',
             ),
             EntityStatus::NotDelivering => new CampaignVerdict(
                 CampaignHealth::Critical,
                 'Active, and the platform is not delivering it.',
+                'CAMPAIGN_NOT_DELIVERING',
             ),
             /* Normal, and brief. Worth seeing on a list; not worth waking anybody. */
             EntityStatus::InReview => new CampaignVerdict(
                 CampaignHealth::Watch,
                 'Waiting for the platform to review it.',
+                'CAMPAIGN_IN_REVIEW',
             ),
             /*
              * The platform has not told us. Not healthy — nothing has been established — and not a
@@ -149,6 +162,7 @@ final readonly class CampaignHealthPolicy
             EntityStatus::Unknown => new CampaignVerdict(
                 CampaignHealth::InsufficientData,
                 'The platform has not reported this campaign’s state.',
+                'CAMPAIGN_STATE_UNKNOWN',
             ),
             EntityStatus::Paused,
             EntityStatus::Completed,
@@ -156,6 +170,8 @@ final readonly class CampaignHealthPolicy
             EntityStatus::Removed => new CampaignVerdict(
                 CampaignHealth::Inactive,
                 sprintf('%s. Nothing to act on.', $status->label()),
+                'CAMPAIGN_INACTIVE',
+                ['status' => $status->value],
             ),
         };
     }

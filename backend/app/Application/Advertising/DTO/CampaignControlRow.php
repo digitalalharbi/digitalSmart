@@ -60,6 +60,10 @@ final readonly class CampaignControlRow
         public ?float $budgetUtilisation = null,
         /** Spend per day for the last fourteen days, oldest first. A null day is "not reported", never zero. */
         public array $trend = [],
+        /** The health reason as a translatable code and its values — see `CampaignVerdict`. */
+        public string $healthReasonCode = 'CAMPAIGN_UNKNOWN',
+        /** @var array<string, int|string> */
+        public array $healthReasonParams = [],
     ) {}
 
     /** @param list<int|null> $trend */
@@ -72,6 +76,7 @@ final readonly class CampaignControlRow
             $this->clientName, $this->currency, $this->budgetMinor, $this->spendMinor, $this->results,
             $this->resultLabel, $this->costPerResultMinor, $this->revenueMinor, $this->roas,
             $this->reportedDays, $this->lastSyncedAt, $this->budgetUtilisation, $trend,
+            $this->healthReasonCode, $this->healthReasonParams,
         );
     }
 }

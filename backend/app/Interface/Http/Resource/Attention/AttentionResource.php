@@ -9,6 +9,7 @@ use App\Application\Attention\DTO\AttentionQueue;
 use App\Domain\Attention\AttentionSeverity;
 use App\Domain\Attention\AttentionStream;
 use DateTimeInterface;
+use stdClass;
 
 final readonly class AttentionResource
 {
@@ -22,6 +23,8 @@ final readonly class AttentionResource
             'severity' => $item->severity->value,
             'severity_label' => $item->severity->label(),
             'message' => $item->message,
+            /* The interface writes the sentence from these, in the reader's language; `message` is the English fallback. */
+            'reason' => $item->reasonCode === null ? null : ['code' => $item->reasonCode, 'params' => $item->reasonParams === [] ? new stdClass : $item->reasonParams],
             'entity' => [
                 'kind' => $item->entityKind,
                 'label' => $item->entityLabel,

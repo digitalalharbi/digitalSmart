@@ -55,6 +55,8 @@ final readonly class TrackingAttentionSource implements AttentionSource
                 clientName: null,
                 projectId: null,
                 projectName: null,
+                reasonCode: 'TRACKING_'.strtoupper($issue->code),
+                reasonParams: $issue->subject === null ? [] : ['subject' => $issue->subject],
             );
         }
 

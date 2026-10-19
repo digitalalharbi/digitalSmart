@@ -4,6 +4,7 @@ import { Megaphone, Radar, Wallet, ListChecks, Inbox } from 'lucide-react';
 import type { AttentionItem } from '@/features/attention';
 import { buttonVariants } from '@/shared/ui/button.variants';
 import { DecisionCard, type Tone } from '@/shared/ui/decision-card';
+import { reasonText } from '@/shared/lib/reason';
 import { STREAM_TYPE, type ActionType } from './kinds';
 
 const ICON: Record<string, React.ReactNode> = {
@@ -36,7 +37,7 @@ export function AttentionDecision({ item }: { item: AttentionItem }) {
       type={t(`actionCenter.type.${type}`)}
       tone={TONE[item.severity]}
       scope={[item.client_name, item.project_name].filter(Boolean).join(' · ')}
-      headline={item.message}
+      headline={reasonText(t, item.reason, item.message)}
       details={undefined}
       actions={
         <Link to={item.action.path} className={buttonVariants({ variant: 'primary' })}>

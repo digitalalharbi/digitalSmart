@@ -17,5 +17,13 @@ final readonly class CampaignVerdict
         public CampaignHealth $health,
         /** Business language. No column names, no thresholds, no provider codes. */
         public string $reason,
+        /**
+         * The same finding as a code an interface can translate — `CAMPAIGN_COST_RISE` with `{pct: 34}` — so an
+         * Arabic screen never shows the server's English sentence. The sentence stays for logs and the API's
+         * English readers.
+         */
+        public string $code = 'CAMPAIGN_UNKNOWN',
+        /** @var array<string, int|string> */
+        public array $params = [],
     ) {}
 }

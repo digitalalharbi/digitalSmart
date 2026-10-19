@@ -69,6 +69,8 @@ final readonly class TaskAttentionSource implements AttentionSource
                 clientName: $task->clientName,
                 projectId: $task->projectId,
                 projectName: $task->projectName,
+                reasonCode: 'TASK_OVERDUE',
+                reasonParams: ['title' => $task->title],
             );
         }
 

@@ -239,6 +239,8 @@ final readonly class GetCampaignControl
             reportedDays: $row->vitals->reportedDays,
             lastSyncedAt: $row->lastSyncedAt,
             budgetUtilisation: $this->utilisation($row),
+            healthReasonCode: $verdict->code,
+            healthReasonParams: $verdict->params,
         );
     }
 }

@@ -18,6 +18,8 @@ export type AttentionItem = {
   severity_label: string;
   /** One sentence, already written by the module that found it. Never re-phrased here. */
   message: string;
+  /** The finding as a code and values; the interface writes the sentence. `message` is the English fallback. */
+  reason?: { code: string; params: Record<string, string | number> } | null;
   entity: { kind: string; label: string };
   /**
    * Who holds it.

@@ -60,6 +60,8 @@ final readonly class CampaignAttentionSource implements AttentionSource
                 clientName: $row->clientName,
                 projectId: $row->projectId,
                 projectName: $row->projectName,
+                reasonCode: $row->healthReasonCode,
+                reasonParams: $row->healthReasonParams,
             ),
             $page->rows,
         );

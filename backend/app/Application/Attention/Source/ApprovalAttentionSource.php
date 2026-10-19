@@ -55,6 +55,7 @@ final readonly class ApprovalAttentionSource implements AttentionSource
                 $approval,
                 $age === ApprovalAge::Stale ? AttentionSeverity::Critical : AttentionSeverity::NeedsAttention,
                 sprintf('Waiting for a decision: %s', $approval->title),
+                'APPROVAL_WAITING',
             );
         }
 
@@ -67,6 +68,7 @@ final readonly class ApprovalAttentionSource implements AttentionSource
                     ? AttentionSeverity::Critical
                     : AttentionSeverity::NeedsAttention,
                 sprintf('Approved, and not yet carried out: %s', $approval->title),
+                'APPROVAL_NOT_CARRIED_OUT',
             );
         }
 
@@ -77,8 +79,11 @@ final readonly class ApprovalAttentionSource implements AttentionSource
         ApprovalView $approval,
         AttentionSeverity $severity,
         string $message,
+        string $code,
     ): AttentionItem {
         return new AttentionItem(
+            reasonCode: $code,
+            reasonParams: ['title' => $approval->title],
             id: 'approval:'.$approval->id,
             stream: AttentionStream::Approvals,
             severity: $severity,

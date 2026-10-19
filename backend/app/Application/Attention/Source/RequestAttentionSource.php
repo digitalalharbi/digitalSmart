@@ -84,6 +84,7 @@ final readonly class RequestAttentionSource implements AttentionSource
                 $request,
                 AttentionSeverity::Critical,
                 sprintf('Past the date promised to the client: %s', $request->title),
+                'REQUEST_OVERDUE',
             );
         }
 
@@ -92,6 +93,7 @@ final readonly class RequestAttentionSource implements AttentionSource
                 $request,
                 AttentionSeverity::NeedsAttention,
                 sprintf('Still unanswered: %s', $request->title),
+                'REQUEST_UNANSWERED',
             );
         }
 
@@ -102,8 +104,11 @@ final readonly class RequestAttentionSource implements AttentionSource
         ClientRequestView $request,
         AttentionSeverity $severity,
         string $message,
+        string $code,
     ): AttentionItem {
         return new AttentionItem(
+            reasonCode: $code,
+            reasonParams: ['title' => $request->title],
             id: 'request:'.$request->id,
             stream: AttentionStream::Requests,
             severity: $severity,

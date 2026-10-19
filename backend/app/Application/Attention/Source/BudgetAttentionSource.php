@@ -79,6 +79,7 @@ final readonly class BudgetAttentionSource implements AttentionSource
             clientName: $row->clientName,
             projectId: $row->projectId,
             projectName: $row->projectName,
+            reasonCode: 'BUDGET_'.strtoupper($risk),
         );
     }
 }
