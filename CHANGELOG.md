@@ -4,6 +4,81 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## CI that actually runs, and protection a server enforces
+
+The owner chose option C from `docs/CI_STATUS.md`: the repository is public, which is what makes both
+GitHub Actions and rulesets free. Everything below followed the same day.
+
+### Changed
+
+- **The repository is public.** The history was scanned first rather than afterwards: 261 commits, no
+  `.env`, no private key, no `APP_KEY`, no provider token — only `.env.example` files and a 1×1 PNG test
+  fixture. Every stored credential in this installation is the literal `sandbox`, so there was never a live
+  secret to leak. The cost is stated plainly in `docs/CI_STATUS.md`: the code, the documents and the whole
+  history are now readable, indexable and forkable by anyone.
+- **`ci.yml` gains a `merge_group` trigger**, so the checks run against the combination a merge queue
+  actually builds — the pull request on top of `main` and whatever is queued ahead of it.
+
+### Added
+
+- **Ruleset `main protection` (id 25378817), active.** Pull request required, the branch must be up to date,
+  review threads resolved, no force-push, no deletion. It is the thing GitHub refused with *"Upgrade to
+  GitHub Pro or make this repository public"* four hours earlier.
+- **`Governance` is a required check**, which CampaignsHub's equivalent ruleset does not have. The no-fees
+  rule is the one a careless commit breaks silently, so it is enforced by the server rather than by manners.
+- **The admin bypass is deliberate, and recorded as such.** `docs/CHANGE_MANAGEMENT.md` documents an
+  emergency direct push to `main`; a rule with no bypass would make that procedure an untruth. The
+  consequence is stated rather than left flattering: against the owner's own account the ruleset yields, so
+  `.githooks/pre-push` is still the only thing standing between them and an accidental direct push.
+
+### Not copied, with the reason
+
+- **`merge-queue.yml`.** CampaignsHub's runs on `schedule: '*/15 * * * *'` and reads
+  `secrets.MERGE_QUEUE_TOKEN`. `scripts/governance/no-paid-model.sh` refuses both, so copying it verbatim
+  would fail the `governance` job — which every other job waits on — and take CI down in the name of
+  improving it. Stripped of the schedule and the secret it is five kilobytes of shell doing what the
+  platform does natively and serially. GitHub's own merge queue is used instead.
+- **`deploy-production.yml`.** Four `secrets.` references, and no host for them to point at.
+  `BLOCKED_EXTERNAL`: a hosting account. Recorded in `docs/PRODUCTION.md` rather than half-built, including
+  the decision it would force — the no-secrets rule was written against *model* keys and would need the
+  owner's word to admit a deploy credential.
+- **`claude.yml` and `campaignshub-autopilot.yml`.** The paid model path the owner excluded on 2026-10-19.
+  The guard fails on a workflow merely *named* like either.
+
+### Found the moment CI could speak again
+
+- **`Frontend` is red on `main`, and has been invisibly.** `src/shared/lib/money.test.ts` reads the
+  backend's `CurrencyExponent.php` with `?raw` — deliberately, because a currency-exponent table copied into
+  two stacks with nothing comparing them is a table that drifts, and a drifted exponent misreports a
+  client's spend by a factor of ten. Vite denies reads above the package root; the allow-list that permits
+  it lives in `frontend/vite.config.ts`, which is in **another session's uncommitted work**. Half the change
+  is on `main` and half is not. Not fixed here — those files are not this session's to stage — but it now
+  blocks every merge, so it is the first item in `docs/RESUME_STATE.md`.
+- **`Backend` — 2055 passed, 1 failed**, and the cause was established before anything was edited.
+  `AgencyScaleTest > it keeps the agency views within their stated query budget` reported
+  `/api/attention used 18 statements` against a budget of 17.
+
+  Not a regression and not an N+1. The invariance test beside it — the one asserting the count does not
+  grow with the agency — **passed**, so the extra statements are constant. A probe dumping all eighteen
+  showed why: 3 for authentication and permissions, then 2 campaigns, 3 budgets, 2 tracking, 4 approvals,
+  1 requests, 1 tasks — 16, exactly the figure the budget of 17 was set against on 2026-10-15 when the
+  queue was halved — plus **one query each** from two streams added afterwards and never accounted for:
+  `operating_rules` (Automation, 2026-10-18) and `agent_findings` (Agents, 2026-10-19).
+
+  The budget is now **19**: the measured 18 plus the +1 slack this entry adopted when it was halved,
+  rather than the +2 the rest of the file uses, so a third stream added without thought still fails here.
+  The three approval reads were checked rather than assumed to be duplication — they ask three different
+  questions (awaiting decision by age, approved and awaiting a hand, recently settled), each with its own
+  filter and ordering, and all three predate the budget.
+
+  The stale prose went with it: two comments still said the queue consults *six* modules, and
+  `docs/AGENCY_SCALE.md` said six streams and 17 statements. The millisecond figure in that table is
+  marked as **not** re-measured rather than quietly carried over, because a number nobody has taken again
+  is worth less than one that says when it was taken.
+
+- This is the argument for the whole change, made by accident on its first run: both defects had been
+  sitting on `main` behind a CI that failed in four seconds without executing a step.
+
 ## Governance: one source of truth, one path to main, no fees
 
 ### Added

@@ -1,18 +1,11 @@
+import { currencyExponent } from '@/shared/lib/money';
 import type { MetricSourceValue, MetricValue } from '@/shared/metrics';
 import type { StoreRevenueSummary } from './types';
 
-/**
- * Money for an inline sentence.
- *
- * Divides by a hundred exactly once, here, so nothing rounds twice on its way to a reader.
+/*
+ * Money formatting is not here: it is `formatMinor` in `@/shared/lib/format`, which reads
+ * the minor-unit scale from the currency rather than assuming a hundred.
  */
-export function formatMinor(minor: number, currency: string, locale: string): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
-}
 
 /** An inclusive window of the last `days` days, as the API takes it. */
 export function windowFor(days: number): { from: string; until: string } {
@@ -55,7 +48,8 @@ function summaryMetric(options: {
     label: options.label,
     value: options.value,
     format: options.format,
-    precision: options.format === 'currency' ? 2 : 0,
+    // The currency's own decimals, not a constant: none for a yen, three for a dinar.
+    precision: options.format === 'currency' ? currencyExponent(options.currency) : 0,
     is_minor_units: options.isMinorUnits ?? false,
     currency: options.currency ?? null,
     source: options.source,

@@ -1,11 +1,10 @@
 import { AlertTriangle, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { formatNumber, formatRate } from '@/shared/lib/format';
+import { formatMinor, formatNumber, formatRate } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Card, CardContent } from '@/shared/ui/card';
 import { cn } from '@/shared/lib/cn';
-import { formatMinor } from './money';
 import type { AttributionCoverage } from './types';
 
 type CoverageMeterProps = {

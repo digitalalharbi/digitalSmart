@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  # The merge queue builds each pull request on top of main *and* the ones queued ahead of it,
+  # then merges only if that combined result is green. Without this trigger the checks never run
+  # on the combination, so every queued entry would sit waiting for a status that cannot arrive.
+  merge_group:
 
 # A superseded run on the same branch is wasted compute.
 concurrency:

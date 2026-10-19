@@ -210,14 +210,14 @@ project/property pair outright, so a tight retry loop is how a workspace locks i
 `403 PERMISSION_DENIED` means the connected user cannot read the property, and `401
 UNAUTHENTICATED` means the token needs refreshing; neither should be retried as-is.
 
-## Known limitation
+## Currency precision
 
-Revenue is converted through the shared `Money` value object, which rounds at two decimal
-places. That is correct for SAR, AED, USD and EUR and **wrong for zero-exponent currencies such
-as JPY and three-exponent ones such as KWD**. It is a limitation of that value object shared with
-every advertising mapper rather than something introduced here, and it is recorded rather than
-worked around locally — a second rounding rule living in one mapper is how two parts of a product
-come to disagree about an amount.
+Revenue is converted through the shared `Money` value object, which rounds at the place the
+currency's ISO 4217 exponent names: two for SAR, AED, USD and EUR, **none for JPY and KRW, three
+for KWD, BHD and OMR**. A property reporting in yen or dinars therefore converts correctly, and
+the mapper holds no rounding rule of its own — the table lives in `CurrencyExponent` beside
+`Money` and is shared with every advertising mapper, because a second rounding rule living in one
+mapper is how two parts of a product come to disagree about an amount.
 
 ## Tests
 

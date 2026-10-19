@@ -148,7 +148,7 @@ it('issues the same number of statements over a bigger agency: the campaign cont
 });
 
 /*
- * The attention queue consults six modules, so its statement count is the sum of six. What must not
+ * The attention queue consults eight modules, so its statement count is the sum of eight. What must not
  * change is that the sum does not grow with the agency — each module answers in a fixed number of
  * queries however much work it finds.
  */
@@ -255,9 +255,13 @@ it('issues the same number of statements over a bigger agency: the analytics bre
  * it is a decision somebody makes rather than a drift nobody notices.
  *
  * The budgets are the measured cost plus two: enough slack that an extra authorisation read does not
- * fail the suite, tight enough that a join replaced by a loop does. Measured at the time of writing:
+ * fail the suite, tight enough that a join replaced by a loop does. Measured when first written:
  * ownership 5, control 5, analytics 6, clients 5, projects 5, attention 29 — each returning real rows,
  * which the assertions below check, because a 200 over an empty result set would pass any budget.
+ *
+ * Those figures are the originals and have not all been re-measured since; where one is re-measured the
+ * date is recorded beside it, as on the attention entry below. A figure nobody has taken again is worth
+ * less than one that says when it was taken.
  */
 it('keeps the agency views within their stated query budget', function (): void {
     seedAgency(clients: 12, accounts: 24, campaigns: 60);
@@ -267,12 +271,21 @@ it('keeps the agency views within their stated query budget', function (): void 
         '/api/campaigns/ownership?limit=50' => 7,
         '/api/campaigns/control?limit=50' => 8,
         /*
-         * Much larger than the rest, and deliberately so: the attention queue consults six modules and
-         * pays each one's existing read rather than duplicating their rules into a seventh query. The
+         * Much larger than the rest, and deliberately so: the attention queue consults eight modules and
+         * pays each one's existing read rather than duplicating their rules into a ninth query. The
          * count is flat with agency size — the test above proves that — and the number is written here so
          * that narrowing a source to the queue's own question shows up as a change somebody made.
+         *
+         * Re-measured 2026-10-19: 18 statements. It was 16 under six streams, and the budget stood at 17
+         * until two streams were added without it being revised — Automation on 2026-10-18 and Agents on
+         * 2026-10-19 — each issuing exactly one query (`operating_rules`, `agent_findings`). The rise is
+         * therefore two new readers, not a loop: the invariance test above still passes, which is the
+         * assertion that would fail if the cost had started growing with the agency.
+         *
+         * 19 rather than 20 keeps this entry at the +1 it adopted when the queue was halved, rather than
+         * the +2 the rest of the file uses. A third stream added without thought should still show up here.
          */
-        '/api/attention' => 17,
+        '/api/attention' => 19,
         '/api/budgets/control' => 9,
         '/api/portfolio' => 18,
         '/api/search?q=Scale' => 8,

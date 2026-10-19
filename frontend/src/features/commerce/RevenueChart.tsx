@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Chart } from '@/shared/ui/chart/Chart';
-import { formatMinor } from './money';
+import { formatMinor } from '@/shared/lib/format';
+import { fromMinor } from '@/shared/lib/money';
 import type { DailyRevenuePoint } from './types';
 
 /**
@@ -33,8 +34,8 @@ export function RevenueChart({
   }
 
   const dates = points.map((point) => point.date);
-  const net = points.map((point) => point.net_revenue_minor / 100);
-  const refunded = points.map((point) => point.refunded_minor / 100);
+  const net = points.map((point) => fromMinor(point.net_revenue_minor, currency));
+  const refunded = points.map((point) => fromMinor(point.refunded_minor, currency));
   const hasRefunds = refunded.some((value) => value > 0);
 
   return (

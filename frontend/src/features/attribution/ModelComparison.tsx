@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EChartsCoreOption } from 'echarts/core';
-import { formatCompact, formatNumber, formatRate } from '@/shared/lib/format';
+import { formatCompact, formatMinor, formatNumber, formatRate } from '@/shared/lib/format';
+import { fromMinor } from '@/shared/lib/money';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import {
@@ -13,7 +14,6 @@ import {
   readChartPalette,
   seriesColour,
 } from '@/shared/ui/chart';
-import { formatMinor } from './money';
 import type { AttributionComparison, AttributionModelInfo } from './types';
 
 type ModelComparisonProps = {
@@ -49,6 +49,13 @@ export function ModelComparison({ comparison, models }: ModelComparisonProps) {
     const palette = readChartPalette();
     const base = baseOption({ locale, isRtl }, palette);
     const ordered = [...comparison.campaigns].reverse();
+    /*
+     * One axis, so one currency. A scale is only meaningful if every bar on it is in the
+     * same unit, and the server withholds any figure it cannot name a single currency
+     * for — so the first named currency is the axis's, and it decides how many minor
+     * units make a major one.
+     */
+    const currency = ordered.find((row) => row.currency !== null)?.currency ?? null;
 
     return {
       ...base,
@@ -98,7 +105,7 @@ export function ModelComparison({ comparison, models }: ModelComparisonProps) {
         axisLabel: {
           color: palette.axisLabel,
           fontSize: 11,
-          formatter: (value: number) => formatCompact(value / 100, locale),
+          formatter: (value: number) => formatCompact(fromMinor(value, currency), locale),
         },
       },
       yAxis: {
