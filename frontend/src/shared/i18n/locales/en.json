@@ -3563,5 +3563,24 @@
     "back": "Back",
     "next": "Next",
     "cta_new": "New campaign"
+  },
+  "bulk": {
+    "title": "Bulk action",
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected",
+    "action": "Action",
+    "change": "Change",
+    "reason": "Why (shown to whoever approves)",
+    "go": "Apply to all",
+    "result": "{{done}} done, {{refused}} refused",
+    "clear": "Clear selection",
+    "select": "Select {{name}}",
+    "selectPage": "Select all on this page",
+    "actions": {
+      "request_pause": "Ask to pause",
+      "request_resume": "Ask to resume",
+      "request_budget_change": "Ask to change daily budget",
+      "create_task": "Open a task for each"
+    }
   }
 }

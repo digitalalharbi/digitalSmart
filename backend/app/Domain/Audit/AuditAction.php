@@ -130,6 +130,8 @@ enum AuditAction: string
 
     /* A blueprint became paused drafts with launch requests — no platform was called. */
     case CampaignDraftsCreated = 'campaign_drafts.created';
+    /* One action asked for many campaigns at once; each went through its own use case. */
+    case CampaignBulkAction = 'campaign.bulk_action';
     case ApprovalRequested = 'approval.requested';
     case ApprovalDecided = 'approval.decided';
     case ApprovalAmended = 'approval.amended';

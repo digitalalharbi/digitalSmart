@@ -3649,5 +3649,28 @@
     "back": "السابق",
     "next": "التالي",
     "cta_new": "حملة جديدة"
+  },
+  "bulk": {
+    "title": "إجراء جماعي",
+    "selected_zero": "لا شيء محدد",
+    "selected_one": "محدد واحد",
+    "selected_two": "محددان",
+    "selected_few": "{{count}} محددة",
+    "selected_many": "{{count}} محددًا",
+    "selected_other": "{{count}} محدد",
+    "action": "الإجراء",
+    "change": "التغيير",
+    "reason": "السبب (يظهر لمن يوافق)",
+    "go": "تطبيق على الكل",
+    "result": "نُفّذ {{done}}، ورُفض {{refused}}",
+    "clear": "إلغاء التحديد",
+    "select": "تحديد {{name}}",
+    "selectPage": "تحديد كل ما في الصفحة",
+    "actions": {
+      "request_pause": "طلب إيقاف",
+      "request_resume": "طلب استئناف",
+      "request_budget_change": "طلب تغيير الميزانية اليومية",
+      "create_task": "فتح مهمة لكل حملة"
+    }
   }
 }

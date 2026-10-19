@@ -29,6 +29,7 @@ import { CampaignCard, CampaignIdentity, StatusPair, BudgetBar } from './Campaig
 import { money, resultText } from './text';
 import { SavedViewsMenu } from '@/features/surface-views';
 import { OwnershipQueue } from './OwnershipQueue';
+import { BulkBar } from './BulkBar';
 import { CampaignsHero } from './CampaignsHero';
 import { DEFAULT_FILTERS, PERIODS, fromParams, toParams } from './filters';
 import { useCampaignControl } from './useCampaignControl';
@@ -71,6 +72,20 @@ export function CampaignControlPage() {
   );
 
   const [clientTerm, setClientTerm] = useState('');
+  /* Ticked campaigns for a bulk action. Ids only, so a re-fetch never carries a stale row into a request. */
+  const [chosen, setChosen] = useState<Set<string>>(new Set());
+  const toggle = (id: string) =>
+    setChosen((current) => {
+      const next = new Set(current);
+
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+
+      return next;
+    });
   const [projectTerm, setProjectTerm] = useState('');
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const projects = useProjectsQuery({ search: projectTerm, per_page: 8 });
@@ -398,7 +413,11 @@ export function CampaignControlPage() {
         <ul aria-busy={isFetching} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {data.data.map((row) => (
             <li key={row.id}>
-              <CampaignCard row={row} />
+              <CampaignCard
+                row={row}
+                selected={chosen.has(row.id)}
+                onToggle={() => toggle(row.id)}
+              />
             </li>
           ))}
         </ul>
@@ -406,6 +425,19 @@ export function CampaignControlPage() {
         <DataTable label={t('campaignControl.title')} minWidth="64rem">
           <TableHead>
             <TableRow>
+              <TableHeader>
+                <input
+                  type="checkbox"
+                  aria-label={t('bulk.selectPage')}
+                  className="accent-action size-4"
+                  checked={data.data.length > 0 && data.data.every((row) => chosen.has(row.id))}
+                  onChange={(e) =>
+                    setChosen(
+                      e.target.checked ? new Set(data.data.map((row) => row.id)) : new Set(),
+                    )
+                  }
+                />
+              </TableHeader>
               <TableHeader>{t('campaignControl.col.campaign')}</TableHeader>
               <TableHeader>{t('campaignControl.col.health')}</TableHeader>
               <TableHeader align="end">{t('campaignControl.col.spend')}</TableHeader>
@@ -418,6 +450,15 @@ export function CampaignControlPage() {
           <TableBody>
             {data.data.map((row) => (
               <TableRow key={row.id}>
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    aria-label={t('bulk.select', { name: row.name })}
+                    className="accent-action size-4"
+                    checked={chosen.has(row.id)}
+                    onChange={() => toggle(row.id)}
+                  />
+                </TableCell>
                 <TableCell>
                   <CampaignIdentity row={row} />
                 </TableCell>
@@ -443,6 +484,10 @@ export function CampaignControlPage() {
             ))}
           </TableBody>
         </DataTable>
+      )}
+
+      {chosen.size === 0 ? null : (
+        <BulkBar ids={[...chosen]} onClear={() => setChosen(new Set())} />
       )}
 
       {data !== undefined && data.meta.matched > PAGE_SIZE ? (

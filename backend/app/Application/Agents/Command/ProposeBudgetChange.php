@@ -49,7 +49,7 @@ final readonly class ProposeBudgetChange
         private Clock $clock,
     ) {}
 
-    public function __invoke(string $campaignId, int $newDailyMinor, string $reason, string $agent): ApprovalView
+    public function __invoke(string $campaignId, int $newDailyMinor, string $reason, string $agent, bool $byPerson = false): ApprovalView
     {
         $workspaceId = $this->actor->workspaceId()->value;
         $now = $this->clock->now();
@@ -127,8 +127,9 @@ final readonly class ProposeBudgetChange
             projectId: $target['project_id'],
             subjectType: TaskSubjectType::Campaign,
             subjectId: $campaignId,
-            origin: 'agent',
-            agent: $agent,
+            /* The same limits whoever asks; a person's bulk request is recorded as theirs, not an agent's. */
+            origin: $byPerson ? 'person' : 'agent',
+            agent: $byPerson ? null : $agent,
             evidence: [
                 'current_daily_minor' => $current,
                 'proposed_daily_minor' => $newDailyMinor,

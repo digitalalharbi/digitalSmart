@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Interface\Http\Controller\Activity\ActivityController;
 use App\Interface\Http\Controller\Advertising\CampaignBlueprintController;
+use App\Interface\Http\Controller\Advertising\CampaignBulkController;
 use App\Interface\Http\Controller\Advertising\CampaignControlController;
 use App\Interface\Http\Controller\Advertising\CampaignHierarchyController;
 use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
@@ -627,6 +628,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     /* digitalSmart's own MCP server, and the tokens an AI client signs in with. */
     Route::get('agents/overview', [AgentOverviewController::class, 'show'])->name('agents.overview');
     Route::post('agents/run', [AgentOverviewController::class, 'run'])->middleware('throttle:6,1')->name('agents.run');
+    Route::post('campaigns/bulk', CampaignBulkController::class)->middleware('throttle:10,1')->name('campaigns.bulk');
     Route::post('campaign-blueprints/preview', [CampaignBlueprintController::class, 'preview'])->name('blueprints.preview');
     Route::post('campaign-blueprints/drafts', [CampaignBlueprintController::class, 'drafts'])->middleware('throttle:10,1')->name('blueprints.drafts');
     Route::get('agents/findings', [AgentFindingsController::class, 'index'])->name('agents.findings');

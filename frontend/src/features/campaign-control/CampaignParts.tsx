@@ -94,7 +94,15 @@ export function StatusPair({
   );
 }
 
-export function CampaignCard({ row }: { row: CampaignRow }) {
+export function CampaignCard({
+  row,
+  selected,
+  onToggle,
+}: {
+  row: CampaignRow;
+  selected?: boolean;
+  onToggle?: () => void;
+}) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
 
@@ -104,6 +112,15 @@ export function CampaignCard({ row }: { row: CampaignRow }) {
       className="bg-surface border-line-subtle flex flex-col gap-3 rounded-2xl border p-4 shadow-xs"
     >
       <div className="flex items-start justify-between gap-2">
+        {onToggle === undefined ? null : (
+          <input
+            type="checkbox"
+            checked={selected === true}
+            onChange={onToggle}
+            aria-label={t('bulk.select', { name: row.name })}
+            className="accent-action mt-1 size-4 shrink-0"
+          />
+        )}
         <CampaignIdentity row={row} />
         <PinButton row={row} />
       </div>
