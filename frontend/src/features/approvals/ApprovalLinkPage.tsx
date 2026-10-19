@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, ShieldAlert, XCircle } from 'lucide-react';
-import { api } from '@/shared/api/client';
+import { api, ensureCsrfCookie } from '@/shared/api/client';
 import { Button } from '@/shared/ui/button';
 
 type Outcome = { state: 'approved' | 'declined'; title: string };
@@ -19,6 +19,12 @@ export function ApprovalLinkPage() {
   const { token = '' } = useParams();
   const decide = useMutation({
     mutationFn: async (decision: 'approve' | 'reject'): Promise<Outcome> => {
+      /*
+       * The person opening a link from WhatsApp or email is usually signed out, so there is no CSRF cookie yet —
+       * and a 419 would be taken for an expired session and sent to the sign-in screen, which is exactly where a
+       * one-time link must not send anybody. Fetch the cookie first; the link itself is still the only credential.
+       */
+      await ensureCsrfCookie();
       const { data } = await api.post<{ data: Outcome }>(`/approval-links/${token}`, { decision });
 
       return data.data;

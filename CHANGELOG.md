@@ -79,6 +79,28 @@ GitHub Actions and rulesets free. Everything below followed the same day.
 - This is the argument for the whole change, made by accident on its first run: both defects had been
   sitting on `main` behind a CI that failed in four seconds without executing a step.
 
+## Production deployment pipeline and the corrected secret policy
+
+### Added
+
+- `.github/workflows/deploy-production.yml` — a merge to `main` deploys over SSH (GitHub → server, never polling);
+  one deploy at a time; `production` environment; pinned host key; `AWAITING_SERVER_ACCESS` until a server exists.
+- `scripts/deploy/` — release-based deploy: build beside the live release, migrate forward only and stop on failure,
+  cache, atomic `current` switch, reload FPM / Horizon / queue / Reverb where configured, health on `/api/health`,
+  the frontend, Horizon and boot; switch back on an unhealthy result; `deployments.log`. Never `migrate:fresh`,
+  `db:wipe`, `db:seed` or `demo:agency`.
+- `scripts/check-disk.sh` — 10 GB before E2E; the deploy refuses below 2 GB.
+- `docs/DEPLOYMENT.md` — layout, first-time setup, secrets, history, rollback (application vs database), disk.
+
+### Changed
+
+- Secret policy: no secret value in any file, literal, commit, log or document; encrypted `PRODUCTION_*` secrets
+  allowed for deployment infrastructure only, in `deploy-production.yml` only. The guard scans every tracked file
+  for keys and tokens, refuses unapproved, misplaced and dynamic secret reads, a deploy from anything but `main`,
+  and destructive database commands in deploy files (21 cases).
+- `CLAUDE.md` reflects reality: public repository, ruleset on `main`, Actions active, one session per branch and
+  worktree, the disk threshold.
+
 ## Governance: one source of truth, one path to main, no fees
 
 ### Added
