@@ -1,17 +1,9 @@
-/**
- * Money for an inline sentence.
- *
- * Divides by a hundred exactly once, here, so nothing rounds twice on its way to a reader. The
- * currency is required rather than defaulted: the attribution layer withholds any total it cannot name
- * a currency for, precisely so this function is never asked to guess.
+/*
+ * Money formatting is not here: it is `formatMinor` in `@/shared/lib/format`, which reads
+ * the minor-unit scale from the currency rather than assuming a hundred. Four features
+ * kept their own copy of it, all four assuming two decimals, which reported a yen a
+ * hundredfold over and a dinar a thousandfold.
  */
-export function formatMinor(minor: number, currency: string, locale: string): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
-}
 
 /** An inclusive window of the last `days` days, as the API takes it. */
 export function windowFor(days: number): { from: string; until: string } {

@@ -14,10 +14,10 @@ import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Textarea } from '@/shared/ui/textarea';
-import { formatCurrency } from '@/shared/lib/format';
+import { formatCurrency, formatMinor } from '@/shared/lib/format';
+import { toDecimal } from '@/shared/lib/money';
 import { cn } from '@/shared/lib/cn';
 import { AllocationEditor } from './AllocationEditor';
-import { toDecimal } from './money';
 import { PacingPanel } from './PacingPanel';
 import {
   useApproveBudget,
@@ -115,7 +115,7 @@ export function MediaPlannerPage() {
       name: payload.name,
       period_start: payload.period_start,
       period_end: payload.period_end,
-      amount: toDecimal(payload.amount_minor),
+      amount: toDecimal(payload.amount_minor, payload.currency),
       currency: payload.currency,
       notes: payload.notes ?? null,
     });
@@ -294,7 +294,7 @@ export function MediaPlannerPage() {
                   {t('mediaPlanner.detail.period', {
                     from: budget.period_start,
                     to: budget.period_end,
-                    amount: formatCurrency(budget.amount_minor / 100, budget.currency, locale),
+                    amount: formatMinor(budget.amount_minor, budget.currency, locale),
                   })}
                 </p>
                 {budget.approved_by_name === null ? null : (
@@ -443,8 +443,8 @@ function AllocationSummary({ budget, locale }: { budget: BudgetPayload; locale: 
     <div className="flex flex-col gap-3">
       <p className="text-content-secondary text-sm">
         {t('budgets.allocations.allocatedOf', {
-          allocated: formatCurrency(budget.allocated_minor / 100, budget.currency, locale),
-          budget: formatCurrency(budget.amount_minor / 100, budget.currency, locale),
+          allocated: formatMinor(budget.allocated_minor, budget.currency, locale),
+          budget: formatMinor(budget.amount_minor, budget.currency, locale),
         })}
       </p>
       <ul className="flex flex-col gap-2">
@@ -470,7 +470,7 @@ function SummaryNode({
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <span className="text-content">{allocation.label}</span>
         <span className="text-content-secondary tabular-nums">
-          {formatCurrency(allocation.amount_minor / 100, allocation.currency, locale)}
+          {formatMinor(allocation.amount_minor, allocation.currency, locale)}
         </span>
       </div>
       {allocation.children.length === 0 ? null : (
@@ -610,7 +610,7 @@ function toDraftNode(allocation: AllocationPayload): AllocationDraft {
     level: allocation.level,
     provider: allocation.provider,
     label: allocation.label,
-    amount: toDecimal(allocation.amount_minor),
+    amount: toDecimal(allocation.amount_minor, allocation.currency),
     campaign_id: allocation.campaign_id,
     ad_group_id: allocation.ad_group_id,
     children: allocation.children.map(toDraftNode),

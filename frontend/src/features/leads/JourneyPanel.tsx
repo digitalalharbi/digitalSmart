@@ -1,12 +1,11 @@
 import { Info, MessageSquare, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { formatNumber } from '@/shared/lib/format';
+import { formatMinor, formatNumber } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { formatMinor } from './money';
 import type { Journey, Touchpoint } from './types';
 
 type JourneyPanelProps = {

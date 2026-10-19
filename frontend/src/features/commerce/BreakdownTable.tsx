@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/shared/ui/badge';
 import { Card } from '@/shared/ui/card';
-import { formatMinor } from './money';
+import { formatMinor } from '@/shared/lib/format';
 import type { RevenueBreakdownRow } from './types';
 
 /**

@@ -5,9 +5,10 @@ import { useProvidersQuery } from '@/features/integrations';
 import { Button } from '@/shared/ui/button';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { Input } from '@/shared/ui/input';
-import { formatCurrency } from '@/shared/lib/format';
+import { formatMinor } from '@/shared/lib/format';
+import { toMinor } from '@/shared/lib/money';
 import { cn } from '@/shared/lib/cn';
-import { sumMinor, toMinor } from './money';
+import { sumMinor } from './money';
 import type { AllocationDraft, AllocationLevelValue } from './types';
 
 const CHILD_LEVEL: Record<AllocationLevelValue, AllocationLevelValue | null> = {
@@ -71,7 +72,7 @@ export function AllocationEditor({
 }: AllocationEditorProps) {
   const { t } = useTranslation();
   const providers = useAllocatableProviders();
-  const allocated = sumMinor(allocations);
+  const allocated = sumMinor(allocations, currency);
   const remainder = budgetMinor - allocated;
 
   const addPlatform = () => {
@@ -96,8 +97,8 @@ export function AllocationEditor({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-content-secondary text-sm">
           {t('budgets.allocations.allocatedOf', {
-            allocated: formatCurrency(allocated / 100, currency, locale),
-            budget: formatCurrency(budgetMinor / 100, currency, locale),
+            allocated: formatMinor(allocated, currency, locale),
+            budget: formatMinor(budgetMinor, currency, locale),
           })}
         </p>
         <p
@@ -108,10 +109,10 @@ export function AllocationEditor({
         >
           {remainder < 0
             ? t('budgets.allocations.over', {
-                amount: formatCurrency(Math.abs(remainder) / 100, currency, locale),
+                amount: formatMinor(Math.abs(remainder), currency, locale),
               })
             : t('budgets.allocations.unallocated', {
-                amount: formatCurrency(remainder / 100, currency, locale),
+                amount: formatMinor(remainder, currency, locale),
               })}
         </p>
       </div>
@@ -167,8 +168,8 @@ function Node({
 }) {
   const { t } = useTranslation();
   const childLevel = CHILD_LEVEL[allocation.level];
-  const own = toMinor(allocation.amount);
-  const childTotal = sumMinor(allocation.children);
+  const own = toMinor(allocation.amount, currency);
+  const childTotal = sumMinor(allocation.children, currency);
   const remainder = own - childTotal;
 
   const addChild = () => {
@@ -278,10 +279,10 @@ function Node({
           >
             {remainder < 0
               ? t('budgets.allocations.childrenOver', {
-                  amount: formatCurrency(Math.abs(remainder) / 100, currency, locale),
+                  amount: formatMinor(Math.abs(remainder), currency, locale),
                 })
               : t('budgets.allocations.childrenUnallocated', {
-                  amount: formatCurrency(remainder / 100, currency, locale),
+                  amount: formatMinor(remainder, currency, locale),
                 })}
           </p>
           <ul className="ms-4 flex flex-col gap-3">

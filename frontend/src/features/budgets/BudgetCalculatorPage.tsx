@@ -12,7 +12,7 @@ import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { SourceBadge } from '@/shared/ui/source-badge';
-import { formatCurrency, formatNumber } from '@/shared/lib/format';
+import { formatMinor, formatNumber } from '@/shared/lib/format';
 import { cn } from '@/shared/lib/cn';
 import { useForecastQuery } from './useBudgets';
 import type { ConfidenceValue, ForecastInput, ForecastPayload, ProjectionPayload } from './types';
@@ -238,15 +238,11 @@ function ForecastCard({ forecast, locale }: { forecast: ForecastPayload; locale:
             {forecast.projection.required_budget_minor !== null ? (
               <Figure
                 label={t('budgetCalculator.figures.requiredBudget')}
-                value={formatCurrency(
-                  forecast.projection.required_budget_minor / 100,
-                  currency,
-                  locale,
-                )}
+                value={formatMinor(forecast.projection.required_budget_minor, currency, locale)}
                 band={band(
                   forecast.projection.required_budget_low_minor,
                   forecast.projection.required_budget_high_minor,
-                  (value) => formatCurrency(value / 100, currency, locale),
+                  (value) => formatMinor(value, currency, locale),
                 )}
               />
             ) : null}

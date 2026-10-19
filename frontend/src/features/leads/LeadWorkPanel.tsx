@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
-import { formatMinor } from './money';
+import { formatMinor } from '@/shared/lib/format';
+import { toMinor } from '@/shared/lib/money';
 import type { Lead, LeadOwnerCandidate } from './types';
 
 type LeadWorkPanelProps = {
@@ -135,8 +136,14 @@ export function LeadWorkPanel({
                     return;
                   }
 
-                  /* Entered in major units, stored in minor: the server counts in minor everywhere. */
-                  onSetValue(Math.round(parsed * 100), lead.currency ?? currency);
+                  /*
+                   * Entered in major units, stored in minor: the server counts in minor
+                   * everywhere. How many minor units that is comes from the currency —
+                   * a yen has none and a dinar has a thousand.
+                   */
+                  const valueCurrency = lead.currency ?? currency;
+
+                  onSetValue(toMinor(parsed, valueCurrency), valueCurrency);
                   setAmount('');
                 }}
               >

@@ -15,7 +15,8 @@ import { CustomerMixPanel } from './CustomerMixPanel';
 import { RevenueChart } from './RevenueChart';
 import { StoresPanel } from './StoresPanel';
 import { useStoreAnalyticsQuery } from './useCommerce';
-import { formatMinor, summaryMetrics, windowFor } from './money';
+import { formatMinor } from '@/shared/lib/format';
+import { summaryMetrics, windowFor } from './money';
 import type { RevenueSourceValue } from './types';
 
 /**

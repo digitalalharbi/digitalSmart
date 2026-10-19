@@ -30,6 +30,20 @@ const PROXY = {
   agent: new Agent({ keepAlive: false }),
 } as const;
 
+/*
+ * Under Vitest only, files above this package may be read.
+ *
+ * `src/shared/lib/money.test.ts` checks the frontend's currency-exponent table against
+ * the backend's `CurrencyExponent.php`, which is the whole point of that test: a table
+ * copied into two stacks that nothing compares is a table that drifts, and a drifted
+ * exponent misreports a client's spend by a factor of ten.
+ *
+ * Scoped to the test runner deliberately. Widening the dev server's own allow-list would
+ * let any page it serves read the repository, `backend/.env` included, which is exactly
+ * what Vite's default restriction is for.
+ */
+const FS = process.env.VITEST === undefined ? {} : { fs: { allow: ['..'] } };
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -50,6 +64,7 @@ export default defineConfig({
       '/sanctum': { target: API_TARGET, ...PROXY },
       '/broadcasting': { target: API_TARGET, ...PROXY },
     },
+    ...FS,
   },
   // The preview server mirrors dev, so end-to-end tests can run against the
   // built artifact — what actually ships — rather than the dev transform

@@ -223,11 +223,26 @@ who sees only a dash assumes the product is broken.
 
 `.ds-numeric` applies tabular figures, so a column aligns on the decimal in both
 scripts. Money crosses the wire in **minor units** and is divided once, at the
-formatter, to two decimals — including above a thousand. These figures get
-reconciled against a platform's invoice, and a column where 840.25 keeps its cents
-while 12,500.00 does not is both inconsistent to scan and short of the precision
-someone is checking. Dense tiles that cannot afford the width use `formatCompact`,
-which is an explicit choice rather than a silent threshold.
+formatter — `formatMinor` in `shared/lib/format` — to every decimal the currency
+has, including above a thousand. These figures get reconciled against a platform's
+invoice, and a column where 840.25 keeps its cents while 12,500.00 does not is both
+inconsistent to scan and short of the precision someone is checking. Dense tiles
+that cannot afford the width use `formatCompact`, which is an explicit choice
+rather than a silent threshold.
+
+**How many decimals is a property of the currency, never a constant.**
+`shared/lib/money` reads the ISO 4217 exponent for the code beside the figure —
+none for JPY, KRW and ISK, two for SAR, AED, USD and EUR, three for KWD, BHD, OMR
+and TND — mirroring the server's `CurrencyExponent`, which is the scale the amount
+was stored with. The hard-coded hundred this replaced showed a yen at a hundredth
+of its value and a dinar at a thousandth, on figures a client is billed for.
+
+The scale is deliberately **not** read from `Intl.NumberFormat`. Its digit counts
+are CLDR's cash-display convention rather than the ISO exponent, the two disagree
+for eighteen currencies — IQD worst of all, where CLDR says none and ISO publishes
+three — and they move with the reader's browser version. So Intl renders the
+figure and the table divides it, and `money.test.ts` checks the table against the
+server's so the two cannot drift.
 
 A change is coloured by whether it is **good**, which the server decides from the
 metric's own direction: CPA falling 20% is green, spend falling 20% is not. The

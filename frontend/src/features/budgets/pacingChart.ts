@@ -1,5 +1,6 @@
 import type { EChartsCoreOption } from 'echarts/core';
 import { formatCompact } from '@/shared/lib/format';
+import { fromMinor } from '@/shared/lib/money';
 import { readChartPalette } from '@/shared/ui/chart/theme';
 import type { PacingFigures } from './types';
 
@@ -68,10 +69,10 @@ export function pacingSeries(
       return null;
     }
 
-    return cumulative / 100;
+    return fromMinor(cumulative, pacing.currency);
   });
 
-  const budgetMajor = pacing.budget_minor / 100;
+  const budgetMajor = fromMinor(pacing.budget_minor, pacing.currency);
 
   return {
     dates,
@@ -89,7 +90,7 @@ export function pacingOption(
 ): EChartsCoreOption {
   const palette = readChartPalette();
   const { dates, actual, evenPace } = pacingSeries(daily, pacing, periodStart, periodEnd);
-  const budgetMajor = pacing.budget_minor / 100;
+  const budgetMajor = fromMinor(pacing.budget_minor, pacing.currency);
 
   return {
     // Actual and plan, two deliberately distinct series colours.
