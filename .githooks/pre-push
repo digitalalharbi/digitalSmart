@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Local protection for main — the server-side kind is not available on this private repository's plan
+# (docs/CI_STATUS.md). Enable once per clone:  git config core.hooksPath .githooks
+#
+# 1. No push to main. Work reaches main through a branch, a pull request and a merge (CLAUDE.md).
+# 2. No workflow that can invoke a model, hold a secret or run on a schedule (scripts/governance/no-paid-model.sh).
+#
+# The owner's emergency override is `git push --no-verify`, and it is recorded afterwards in
+# docs/CHANGE_MANAGEMENT.md §Emergency.
+set -euo pipefail
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "✗ Direct push to main refused. Push a branch and open a pull request (CLAUDE.md, 'How work reaches main')." >&2
+    exit 1
+  fi
+done
+
+ROOT="$(git rev-parse --show-toplevel)"
+bash "$ROOT/scripts/governance/no-paid-model.sh" >&2

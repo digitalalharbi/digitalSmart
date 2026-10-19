@@ -4,6 +4,61 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Governance: one source of truth, one path to main, no fees
+
+### Added
+
+- `CLAUDE.md` **session bootstrap**: `origin/main` is the single source of truth; every session starts with
+  `git fetch origin`, `git log --oneline -10 origin/main`, `git status`, then `docs/RESUME_STATE.md`.
+- **Path to main**: request → branch → tests → PR → CI → review → merge; branch names `claude/<n>-<slug>`,
+  `feat/…`, `fix/…`, `chore/…`; no direct push to `main` (`.githooks/pre-push`).
+- **No-fees execution policy** (owner decision): GitHub never invokes a model; no `claude.yml`, no autopilot, no
+  `anthropics/claude-code-action`, no `ANTHROPIC_API_KEY`, no secrets, no schedules in any workflow.
+  `scripts/governance/no-paid-model.sh` enforces it as the first CI job and in the pre-push hook;
+  `test-no-paid-model.sh` proves it fails on each forbidden thing.
+- `.github/pull_request_template.md` and issue templates (bug, improvement, integration activation).
+- `docs/RESUME_STATE.md`, `docs/CHANGE_MANAGEMENT.md`, `docs/EXECUTION_POLICY.md`, `docs/CI_STATUS.md`.
+
+### Known
+
+- GitHub Actions does not start on this private repository (account billing state, verified), and server-side
+  branch protection is unavailable on the plan while private. Three free options are evaluated in
+  `docs/CI_STATUS.md`; the owner decides.
+
+## The business layer: specialist agents, rules that propose, one-time approvals, cross-platform drafts
+
+### Added
+
+- **Specialist agents.** Creative (tiring ads → brief task with the drop, frequency and the strongest sibling ad),
+  Leads (leads, qualified and sales kept apart; fortnight decline; low qualification of reached leads), Reports
+  (weekly brief per client from real figures, per currency, revenue only where reported) and Project operations
+  (one card per project that has piled up). Findings are stored, refreshed each run and resolved when no longer
+  seen; Today shows them as picture-first cards with the agent that prepared them.
+- **Orchestrator:** fixed order with conflict resolution (a pause proposal outranks a creative refresh), intent
+  routing in English and Arabic, and *Ask the agents* answered in the asker's own scope.
+- **Model routing:** strong model for narrative and planning, fast model for routing and summaries; a workspace's
+  own key, encrypted, last four only; `AWAITING_MODEL_CREDENTIALS` without one. A routing model may only name agents.
+- **Campaign hierarchy:** a campaign opens into ad groups and ads with creative previews, click-through trend and
+  frequency; ad-group and ad writes are shown disabled with the reason.
+- **Rules:** WHEN … AND … FOR n days THEN alert / propose pause / propose a budget cut / open a task, with a trust
+  level per rule (0 watch · 1 alert · 2 propose · 3 also open tasks; 4 refused). New metrics: rejected, ends within.
+  `automation:run` hourly; proposals go through the same limits and approval as everyone else's.
+- **One-time approval links** for WhatsApp and email: keyed hash, one person, one approval, expiry, single use, POST
+  only, permission and proposal re-read when pressed. Delivery is `awaiting_credentials` until a provider is set.
+- **Cross-platform builder:** one blueprint, each platform's own objective, field-by-field supported / partial /
+  unsupported, paused drafts and a launch request each. No platform is called.
+- **Bulk actions** on Campaigns: ask to pause/resume, ask to change daily budget, open tasks — per campaign through
+  its own use case.
+- **Shared period** (7/30/90 days and comparison) across Overview, Campaigns, Performance and Leads.
+- **Provider MCP registry** from each platform's own documentation (checked 2026-10-19); writes never route through
+  MCP — the direct API with read-back is the only write path.
+- **Demo:** SANDBOX creative artwork, ad groups and ads, a lead-quality problem, four rules, every agent's output.
+
+### Not built
+
+- Live WhatsApp/email delivery, live platform MCP connections, model calls without a key, campaign creation on a
+  platform, ad-group/ad writes. The commerce surfaces read their own period until the money/format work there lands.
+
 ## Simplification, the agency command centre, and the agent layer
 
 ### Added

@@ -1,0 +1,32 @@
+name: Improvement
+description: Something works, and should work better or do more.
+title: "[Improvement] "
+labels: ["improvement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the outcome you want. The implementation is a decision for the change itself.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve
+      description: Who runs into it, how often, and what it costs them today.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What should be true afterwards
+      description: Written so somebody else could tell whether it happened.
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Does it need any of these?
+      options:
+        - label: A provider credential or approval only the owner can obtain
+        - label: A change to live spend, status or targeting (it will go through approval)
+        - label: A model key (it will run deterministically without one)
+        - label: A paid service — not allowed without an owner decision

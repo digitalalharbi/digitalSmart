@@ -26,10 +26,7 @@ export function KpiTile({
   const body = (
     <>
       <span
-        className={cn(
-          'text-xs font-medium',
-          highlight ? 'text-white' : 'text-content-secondary',
-        )}
+        className={cn('text-xs font-medium', highlight ? 'text-white' : 'text-content-secondary')}
       >
         {label}
       </span>
