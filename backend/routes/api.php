@@ -8,6 +8,7 @@ use App\Interface\Http\Controller\Advertising\CampaignHierarchyController;
 use App\Interface\Http\Controller\Advertising\CampaignOwnershipController;
 use App\Interface\Http\Controller\Agents\AgentFindingsController;
 use App\Interface\Http\Controller\Agents\AgentOverviewController;
+use App\Interface\Http\Controller\Agents\ModelRoutingController;
 use App\Interface\Http\Controller\Agents\McpController;
 use App\Interface\Http\Controller\Agents\McpTokenController;
 use App\Interface\Http\Controller\Agents\OperatingRulesController;
@@ -627,6 +628,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::post('agents/run', [AgentOverviewController::class, 'run'])->middleware('throttle:6,1')->name('agents.run');
     Route::get('agents/findings', [AgentFindingsController::class, 'index'])->name('agents.findings');
     Route::post('agents/ask', [AgentFindingsController::class, 'ask'])->middleware('throttle:6,1')->name('agents.ask');
+    Route::get('agents/models', [ModelRoutingController::class, 'show'])->name('agents.models');
+    Route::put('agents/models', [ModelRoutingController::class, 'update'])->middleware('throttle:10,1')->name('agents.models.update');
     Route::post('mcp', McpController::class)->middleware('throttle:60,1')->name('mcp.rpc');
     Route::get('mcp/tokens', [McpTokenController::class, 'index'])->name('mcp.tokens.index');
     Route::post('mcp/tokens', [McpTokenController::class, 'store'])->name('mcp.tokens.store');

@@ -175,7 +175,25 @@
       "thu_1400": "Thu 14:00 Riyadh",
       "daily_0830": "Daily 08:30 Riyadh"
     },
-    "findings": "Open findings"
+    "findings": "Open findings",
+    "models": {
+      "title": "Models",
+      "purpose": {
+        "narrative": "Summaries and explanations",
+        "planning": "Plans and briefs",
+        "routing": "Routing questions",
+        "summary": "One-line card summaries"
+      },
+      "state": {
+        "READY": "Ready",
+        "AWAITING_MODEL_CREDENTIALS": "Awaiting key"
+      },
+      "key": "Workspace model key",
+      "keySet": "Key set (…{{last4}}) — paste a new one to replace",
+      "save": "Save",
+      "remove": "Remove key",
+      "note": "Figures, targets and forecasts are always calculated by digitalSmart. Models only write and sort words around them, and nothing a model returns can approve or change anything."
+    }
   },
   "targets": {
     "title": "Targets and limits",

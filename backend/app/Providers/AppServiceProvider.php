@@ -17,6 +17,10 @@ use App\Application\Agents\Contract\AgentActors;
 use App\Application\Agents\Contract\AgentReadModel;
 use App\Application\Agents\Contract\AgentRunLog;
 use App\Application\Agents\Contract\FindingLog;
+use App\Application\Intelligence\Contract\ModelCredentialStore;
+use App\Application\Intelligence\Contract\ModelRouter;
+use App\Infrastructure\Intelligence\ConfiguredModelRouter;
+use App\Infrastructure\Intelligence\EloquentModelCredentialStore;
 use App\Application\Agents\Contract\OperatingRuleRepository;
 use App\Application\Agents\Contract\ProposalHistory;
 use App\Application\Agents\Contract\ToolCallLog;
@@ -426,6 +430,7 @@ final class AppServiceProvider extends ServiceProvider
         AgentRunLog::class => EloquentAgentRunLog::class,
         FindingLog::class => EloquentFindingLog::class,
         ApprovalLinkRepository::class => EloquentApprovalLinkRepository::class,
+        ModelCredentialStore::class => EloquentModelCredentialStore::class,
         AgentReadModel::class => EloquentAgentReadModel::class,
         ToolCallLog::class => EloquentToolCallLog::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
@@ -639,6 +644,12 @@ final class AppServiceProvider extends ServiceProvider
             $app->make(Narrator::class),
             $app->make(FigureScanner::class),
             $app->make(AuthorizationGuard::class),
+        ));
+
+        $this->app->bind(ModelRouter::class, static fn ($app): ModelRouter => new ConfiguredModelRouter(
+            $app->make(HttpFactory::class),
+            $app->make(ModelCredentialStore::class),
+            (array) config('digitalsmart.intelligence', []),
         ));
 
         $this->app->singleton(LanguageModel::class, function ($app): LanguageModel {

@@ -84,6 +84,9 @@ return [
         'api_key' => env('ANTHROPIC_API_KEY'),
         'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com'),
         'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-5-5'),
+        /* Model-purpose routing: prose a client or director reads goes to the strong model; labels to the fast one. */
+        'strong_model' => env('ANTHROPIC_STRONG_MODEL', 'claude-opus-5-5'),
+        'fast_model' => env('ANTHROPIC_FAST_MODEL', 'claude-haiku-5-5'),
         'max_tokens' => (int) env('ANTHROPIC_MAX_TOKENS', 1024),
         /*
          * Short. The findings are already on screen by the time this is called in anger, so a model that takes

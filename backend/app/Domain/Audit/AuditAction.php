@@ -30,6 +30,8 @@ enum AuditAction: string
     case ProjectMemberRemoved = 'project.member_removed';
 
     case IntegrationConnected = 'integration.connected';
+    /* The workspace's own language-model key or model names changed — recorded as a change, never the key. */
+    case ModelCredentialsUpdated = 'model_credentials.updated';
     case IntegrationCredentialsUpdated = 'integration.credentials_updated';
     case IntegrationDisconnected = 'integration.disconnected';
     case IntegrationAccountsDiscovered = 'integration.accounts_discovered';

@@ -7,6 +7,7 @@ namespace App\Application\Agents\Command;
 use App\Application\Agents\Agent\AgentOrchestrator;
 use App\Application\Agents\Agent\AgentRouter;
 use App\Application\Agents\Query\GetAgentFindings;
+use App\Application\Intelligence\Contract\ModelRouter;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Domain\Access\Permission;
@@ -26,14 +27,21 @@ final readonly class AskAgents
         private GetAgentFindings $findings,
         private AuthorizationGuard $guard,
         private ActorContext $actor,
+        private ModelRouter $models,
     ) {}
 
-    /** @return array{agents: list<string>, proposed: int, findings: list<array<string, mixed>>} */
+    /** @return array{agents: list<string>, routed_by: string, proposed: int, findings: list<array<string, mixed>>} */
     public function __invoke(string $question): array
     {
         $this->guard->ensure(Permission::AnalyticsView);
 
-        $chosen = AgentRouter::route(mb_substr($question, 0, 500));
+        /*
+         * The fast model picks from the agent names and nothing else; without a key, or when its answer names no
+         * agent, the deterministic word router decides. Either way the question itself is never executed.
+         */
+        $question = mb_substr($question, 0, 500);
+        $byModel = $this->models->chooseAgents($question, AgentRouter::AGENTS, $this->actor->workspaceId()->value);
+        $chosen = $byModel ?? AgentRouter::route($question);
         $result = $this->agents->run($chosen, $this->actor->workspaceId()->value);
         $specialists = array_values(array_intersect($chosen, ['creative', 'leads', 'reports', 'operations']));
 
@@ -42,6 +50,6 @@ final readonly class AskAgents
             static fn (array $f): bool => in_array($f['agent'], $specialists, true),
         ));
 
-        return ['agents' => $chosen, 'proposed' => $result['proposed'], 'findings' => array_slice($found, 0, 30)];
+        return ['agents' => $chosen, 'routed_by' => $byModel === null ? 'rules' : 'model', 'proposed' => $result['proposed'], 'findings' => array_slice($found, 0, 30)];
     }
 }

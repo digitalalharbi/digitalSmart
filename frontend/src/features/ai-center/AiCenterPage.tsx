@@ -1,4 +1,5 @@
 import { AskAgents } from '@/features/agents';
+import { ModelRouting } from './ModelRouting';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bot, Copy, KeyRound, Play, Trash2 } from 'lucide-react';
@@ -153,6 +154,8 @@ export function AiCenterPage() {
               </ul>
             </ChartCard>
           </section>
+
+          <ModelRouting />
 
           <ChartCard title={t('aiCenter.tools')}>
             <ul className="divide-line-subtle flex flex-col divide-y">

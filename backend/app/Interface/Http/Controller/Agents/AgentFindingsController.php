@@ -28,6 +28,7 @@ final class AgentFindingsController
 
         return new JsonResponse(['data' => [
             'agents' => $answer['agents'],
+            'routed_by' => $answer['routed_by'],
             'proposed' => $answer['proposed'],
             'findings' => array_map(self::shape(...), $answer['findings']),
         ]]);
