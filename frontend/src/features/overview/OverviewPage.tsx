@@ -3,6 +3,7 @@ import { PERMISSIONS, useSession } from '@/features/auth';
 import { AttentionPanel } from '@/features/attention';
 import { HomeSections, useHomeProfiles } from '@/features/home';
 import { PageHeader } from '@/shared/ui/page-header';
+import { PeriodControl } from '@/shared/ui/period-control';
 import { CommandCenter } from './CommandCenter';
 
 /**
@@ -19,7 +20,7 @@ export function OverviewPage() {
 
   return (
     <div className="ds-page">
-      <PageHeader title={t('overview.title')} />
+      <PageHeader title={t('overview.title')} actions={<PeriodControl />} />
 
       {/*
         Someone whose day is campaigns, projects or budgets sees their own work first — what is theirs to act on —

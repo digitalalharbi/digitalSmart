@@ -41,7 +41,7 @@ final readonly class GetPortfolio
     ) {}
 
     /** @return array<string, mixed> */
-    public function __invoke(?string $clientId = null): array
+    public function __invoke(?string $clientId = null, ?int $days = null): array
     {
         $this->guard->ensure(Permission::AnalyticsView);
 
@@ -50,7 +50,8 @@ final readonly class GetPortfolio
         $visible = $this->visibility->visibleProjectIds();
 
         $filter = new CampaignControlFilter(clientIds: $clientId === null ? [] : [$clientId]);
-        $assessment = $this->campaigns->assessAll($filter);
+        /* The shared period, where it is one the campaign read knows; otherwise its default. The window is published. */
+        $assessment = $this->campaigns->assessAll($filter, $days);
         $from = $assessment['from'];
         $to = $assessment['to'];
         /** @var list<CampaignControlRow> $rows */

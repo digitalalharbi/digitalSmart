@@ -454,8 +454,13 @@
         "budgets": "{{count}} ميزانية"
       },
       "hero": {
-        "title": "الإنفاق خلال آخر 28 يومًا",
-        "view": "عرض البيانات"
+        "view": "عرض البيانات",
+        "title_zero": "الإنفاق، آخر {{count}} يوم",
+        "title_one": "الإنفاق، آخر يوم",
+        "title_two": "الإنفاق، آخر يومين",
+        "title_few": "الإنفاق، آخر {{count}} أيام",
+        "title_many": "الإنفاق، آخر {{count}} يومًا",
+        "title_other": "الإنفاق، آخر {{count}} يوم"
       },
       "health": {
         "title": "صحة الحملات",
@@ -3064,7 +3069,13 @@
       "purchases": "المشتريات",
       "impressions": "مرات الظهور"
     },
-    "otherWindow": "تُعرض الصحة على آخر {{days}} يومًا. صفحة الحملة نفسها والقائمة اليومية تقرآن 28 يومًا، لذا قد يختلف الحكم."
+    "otherWindow": "تُعرض الصحة على آخر {{days}} يومًا. صفحة الحملة نفسها والقائمة اليومية تقرآن 28 يومًا، لذا قد يختلف الحكم.",
+    "sharedPeriod_zero": "الفترة المشتركة ({{count}} يوم)",
+    "sharedPeriod_one": "الفترة المشتركة (يوم)",
+    "sharedPeriod_two": "الفترة المشتركة (يومان)",
+    "sharedPeriod_few": "الفترة المشتركة ({{count}} أيام)",
+    "sharedPeriod_many": "الفترة المشتركة ({{count}} يومًا)",
+    "sharedPeriod_other": "الفترة المشتركة ({{count}} يوم)"
   },
   "palette": {
     "title": "البحث في الوكالة",
@@ -3671,6 +3682,21 @@
       "request_resume": "طلب استئناف",
       "request_budget_change": "طلب تغيير الميزانية اليومية",
       "create_task": "فتح مهمة لكل حملة"
+    }
+  },
+  "period": {
+    "label": "الفترة",
+    "days_zero": "{{count}} يوم",
+    "days_one": "يوم",
+    "days_two": "يومان",
+    "days_few": "{{count}} أيام",
+    "days_many": "{{count}} يومًا",
+    "days_other": "{{count}} يوم",
+    "compare": "المقارنة مع",
+    "vs": {
+      "previous_period": "مقابل الفترة السابقة",
+      "previous_year": "مقابل الفترة نفسها العام الماضي",
+      "none": "بلا مقارنة"
     }
   }
 }

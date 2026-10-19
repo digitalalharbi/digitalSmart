@@ -109,3 +109,18 @@ it('is not available to a client user at all', function (): void {
     test()->actingAs($viewer)->getJson('/api/portfolio')->assertForbidden();
     test()->actingAs($viewer)->getJson("/api/portfolio/clients/{$client}")->assertForbidden();
 });
+
+it('reads the shared period it is given, and says which window it used', function (): void {
+    $w = Tests\Support\SyncedWorkspace::with([App\Domain\Integration\Provider::Meta->value => 'act_sandbox_1001']);
+
+    $week = test()->actingAs($w->scenario->owner)->getJson('/api/portfolio?days=7')->assertOk()->json('data.window');
+    $quarter = test()->actingAs($w->scenario->owner)->getJson('/api/portfolio?days=90')->assertOk()->json('data.window');
+    $odd = test()->actingAs($w->scenario->owner)->getJson('/api/portfolio?days=13')->assertOk()->json('data.window');
+
+    $span = static fn (array $window): int => (int) (new DateTimeImmutable($window['to']))->diff(new DateTimeImmutable($window['from']))->days + 1;
+
+    expect($span($week))->toBe(7)
+        ->and($span($quarter))->toBe(90)
+        // A window the campaign read does not know falls back to its default rather than being invented.
+        ->and($span($odd))->toBe(28);
+});

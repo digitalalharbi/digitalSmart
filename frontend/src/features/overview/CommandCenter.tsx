@@ -1,3 +1,4 @@
+import { useUiStore } from '@/shared/store/ui-store';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -65,6 +66,7 @@ export function CommandCenter() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const portfolio = usePortfolio();
+  const periodDays = useUiStore((state) => state.period.days);
   const trend = useSpendTrend();
   const activity = useAgencyActivity();
   const [chosen, setChosen] = useState<string | null>(null);
@@ -228,7 +230,7 @@ export function CommandCenter() {
       {/* One dominant picture, and health beside it. */}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <ChartCard
-          title={t('overview.cc.hero.title')}
+          title={t('overview.cc.hero.title', { count: periodDays })}
           to="/analytics"
           actionLabel={t('overview.openAnalytics')}
         >
@@ -250,7 +252,7 @@ export function CommandCenter() {
                 },
               ]}
               format={(v) => formatCompact(v, locale)}
-              label={t('overview.cc.hero.title')}
+              label={t('overview.cc.hero.title', { count: periodDays })}
               height={280}
             />
           )}

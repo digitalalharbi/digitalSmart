@@ -59,7 +59,11 @@ export function CampaignControlPage() {
     client: fromUrl.client ?? context.client,
     project: fromUrl.project ?? context.project,
   };
-  const { data, isPending, isError, isFetching } = useCampaignControl(filters);
+  /* No period in the address: the shared period every analytical page reads. A link with `days` keeps its own. */
+  const sharedDays = useUiStore((state) => state.period.days);
+  const { data, isPending, isError, isFetching } = useCampaignControl(
+    filters.days === null ? { ...filters, days: sharedDays } : filters,
+  );
   /* Open when an address already narrows by one of the extra filters, so nothing in force is hidden. */
   const [moreOpen, setMoreOpen] = useState(
     () =>
@@ -197,8 +201,10 @@ export function CampaignControlPage() {
       {isError ? <Alert tone="danger">{t('campaignControl.loadFailed')}</Alert> : null}
 
       {/* Health is judged over the chosen window here; a campaign's own page and the daily queue read 28 days. */}
-      {filters.days !== null && filters.days !== 28 ? (
-        <Alert tone="info">{t('campaignControl.otherWindow', { days: filters.days })}</Alert>
+      {(filters.days ?? sharedDays) !== 28 ? (
+        <Alert tone="info">
+          {t('campaignControl.otherWindow', { days: filters.days ?? sharedDays })}
+        </Alert>
       ) : null}
 
       <CampaignsHero
@@ -242,7 +248,7 @@ export function CampaignControlPage() {
               value: String(days),
               label: t('campaignControl.lastDays', { count: days }),
             }))}
-            any={t('campaignControl.defaultPeriod')}
+            any={t('campaignControl.sharedPeriod', { count: sharedDays })}
           />
           <EntityPicker
             label={t('campaignControl.client')}

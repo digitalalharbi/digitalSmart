@@ -450,8 +450,9 @@
         "budgets": "{{count}} budgets"
       },
       "hero": {
-        "title": "Spend, last 28 days",
-        "view": "View data"
+        "view": "View data",
+        "title_one": "Spend, last {{count}} day",
+        "title_other": "Spend, last {{count}} days"
       },
       "health": {
         "title": "Campaign health",
@@ -3009,7 +3010,9 @@
       "purchases": "Purchases",
       "impressions": "Impressions"
     },
-    "otherWindow": "Showing health over the last {{days}} days. A campaign’s own page and the daily queue read 28 days, so a verdict can differ."
+    "otherWindow": "Showing health over the last {{days}} days. A campaign’s own page and the daily queue read 28 days, so a verdict can differ.",
+    "sharedPeriod_one": "Shared period ({{count}} day)",
+    "sharedPeriod_other": "Shared period ({{count}} days)"
   },
   "palette": {
     "title": "Search the agency",
@@ -3581,6 +3584,17 @@
       "request_resume": "Ask to resume",
       "request_budget_change": "Ask to change daily budget",
       "create_task": "Open a task for each"
+    }
+  },
+  "period": {
+    "label": "Period",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "compare": "Compare with",
+    "vs": {
+      "previous_period": "vs previous period",
+      "previous_year": "vs same period last year",
+      "none": "No comparison"
     }
   }
 }

@@ -27,8 +27,15 @@ export type WorkContext = {
   project: { id: string; label: string } | null;
 };
 
+/** The reading window every analytical surface shares: one choice, made once, read the same everywhere. */
+export type PeriodDays = 7 | 30 | 90;
+export type PeriodCompare = 'previous_period' | 'previous_year' | 'none';
+export type Period = { days: PeriodDays; compare: PeriodCompare };
+
 type UiState = {
   context: WorkContext;
+  period: Period;
+  setPeriod: (period: Period) => void;
   setContext: (context: WorkContext) => void;
   isPaletteOpen: boolean;
   setPaletteOpen: (open: boolean) => void;
@@ -72,6 +79,8 @@ export const useUiStore = create<UiState>()(
     (set) => ({
       context: { client: null, project: null },
       setContext: (context) => set({ context }),
+      period: { days: 30, compare: 'previous_period' },
+      setPeriod: (period) => set({ period }),
       isPaletteOpen: false,
       setPaletteOpen: (open) => set({ isPaletteOpen: open }),
       theme: 'system',
@@ -103,6 +112,8 @@ export const useUiStore = create<UiState>()(
          * asking again tomorrow would be asking them to tell us about their eyesight daily.
          */
         chartTexture: state.chartTexture,
+        /* Persisted: a reader who looks at a month looks at a month tomorrow too. Shown on every page that uses it. */
+        period: state.period,
       }),
     },
   ),

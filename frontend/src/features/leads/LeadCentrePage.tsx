@@ -61,7 +61,12 @@ export function LeadCentrePage() {
   const { t, i18n } = useTranslation();
   const { can } = useSession();
 
-  const [days, setDays] = useState<(typeof PERIODS)[number]>(30);
+  /* The shared period: the same 7, 30 or 90 days every analytical page reads. */
+  const days = useUiStore((state) => state.period.days);
+  const setSharedPeriod = useUiStore((state) => state.setPeriod);
+  const sharedPeriod = useUiStore((state) => state.period);
+  const setDays = (value: (typeof PERIODS)[number]) =>
+    setSharedPeriod({ ...sharedPeriod, days: value });
   /* Start from the working context; the pickers then override it for this visit. */
   const { context } = useUiStore();
   const [client, setClient] = useState<{ id: string; label: string } | null>(context.client);

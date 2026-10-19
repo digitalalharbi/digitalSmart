@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/shared/api/client';
+import { useUiStore } from '@/shared/store/ui-store';
 import type { CampaignControlPayload } from '@/features/campaign-control';
 
 /**
@@ -7,11 +8,13 @@ import type { CampaignControlPayload } from '@/features/campaign-control';
  * (per currency, never added across them), and the latest changes across the agency.
  */
 export function useSpendTrend() {
+  const days = useUiStore((state) => state.period.days);
+
   return useQuery({
-    queryKey: ['overview', 'spend-trend'] as const,
+    queryKey: ['overview', 'spend-trend', days] as const,
     queryFn: async (): Promise<CampaignControlPayload['meta']> => {
       const { data } = await api.get<CampaignControlPayload>('/campaigns/control', {
-        params: { limit: 1, days: 28 },
+        params: { limit: 1, days },
       });
 
       return data.meta;

@@ -44,7 +44,7 @@ final readonly class GetCampaignControl
     public const int WINDOW_DAYS = 28;
 
     /** The periods a reader may choose. Anything else is the default, so a typo cannot ask for a year. */
-    public const array WINDOWS = [7, 14, 28, 56, 90];
+    public const array WINDOWS = [7, 14, 28, 30, 56, 90];
 
     private const int PER_PAGE = 50;
 

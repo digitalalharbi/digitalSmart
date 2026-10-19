@@ -47,8 +47,27 @@ export function AnalyticsPage() {
   const locale = useUiStore((state) => state.locale);
   const isRtl = locale === 'ar';
 
-  const [preset, setPreset] = useState<DatePreset>('28d');
-  const [comparison, setComparison] = useState<ComparisonMode>('previous_period');
+  /*
+   * The shared period: 7, 30 or 90 days and its comparison come from — and go back to — the one choice every
+   * analytical page reads. A preset only this page offers (this month, last month, 14 or 28 days) stays local.
+   */
+  const period = useUiStore((state) => state.period);
+  const setPeriod = useUiStore((state) => state.setPeriod);
+  const [localPreset, setLocalPreset] = useState<DatePreset | null>(null);
+  const preset: DatePreset =
+    localPreset ?? ({ 7: '7d', 30: '30d', 90: '90d' } as const)[period.days];
+  const comparison: ComparisonMode = period.compare;
+  const setPreset = (next: DatePreset) => {
+    const shared = ({ '7d': 7, '30d': 30, '90d': 90 } as const)[next as '7d' | '30d' | '90d'];
+
+    if (shared === undefined) {
+      setLocalPreset(next);
+    } else {
+      setLocalPreset(null);
+      setPeriod({ ...period, days: shared });
+    }
+  };
+  const setComparison = (next: ComparisonMode) => setPeriod({ ...period, compare: next });
   const [dimension, setDimension] = useState<DimensionValue>('campaign');
   const [providers, setProviders] = useState<string[]>([]);
   // Which metric the trend chart plots. Clicking a scorecard tile changes it,

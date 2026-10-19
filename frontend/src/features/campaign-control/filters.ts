@@ -8,7 +8,7 @@ const HEALTH: HealthValue[] = [
   'inactive',
   'insufficient_data',
 ];
-export const PERIODS = [7, 14, 28, 56, 90] as const;
+export const PERIODS = [7, 14, 28, 30, 56, 90] as const;
 const SORTS: SortKey[] = ['health', 'spend', 'name', 'cost', 'roas'];
 
 export const DEFAULT_FILTERS: ControlFilters = {
