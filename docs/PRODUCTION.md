@@ -5,7 +5,7 @@ stops being true.
 
 Two deliberate omissions first, so nothing here reads as more than it is:
 
-- **No deployment has happened.** There is no hosting account, no domain, no TLS certificate and no secret
+- **No deployment has happened** (the pipeline exists — `docs/DEPLOYMENT.md` — the server does not). There is no hosting account, no domain, no TLS certificate and no secret
   store attached to this repository, so everything below is the procedure and the configuration rather than a
   record of a running system. Where a step needs a credential only the company holds, it says so.
 - **No production figure is quoted.** The load numbers in this document were measured on a development server
@@ -216,14 +216,11 @@ cache built at boot is a cache built once per instance instead of once per relea
 Named rather than implied, because a production document that lists only what exists is the one somebody
 trusts by mistake:
 
-- **No container images and no deploy pipeline.** `docker-compose.yml` runs the datastores for development
-  only, and ADR 0004 records why the applications run on the host here. CampaignsHub's
-  `deploy-production.yml` was examined on 2026-10-19 and deliberately not copied: it reads
-  `secrets.VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` and `VPS_PORT`, and `scripts/governance/no-paid-model.sh`
-  refuses any secret reference in any workflow. The refusal is not what blocks this, though — there is no
-  host for those secrets to point at, so an adapted version would be a workflow that could never run.
-  `BLOCKED_EXTERNAL`: a hosting account. Once one exists the decision to revisit is the no-secrets rule,
-  which was written against *model* keys and would need the owner's word to admit a deploy credential.
+- **A deploy pipeline, but no host.** `.github/workflows/deploy-production.yml` and `scripts/deploy/` are built and
+  guarded (push to `main` → SSH → release-based deploy → migrate forward → reload → health → switch back on failure);
+  see `docs/DEPLOYMENT.md`. No container images: ADR 0004 records why the applications run on the host.
+  `AWAITING_SERVER_ACCESS`: a server, its SSH user, port, deploy path, host key, web-server arrangement and process
+  names — then `PRODUCTION_ENABLED=true`.
 - **No staging environment**, which is why no figure in this document is a production figure.
 - **No error tracker and no metrics backend.** Logs are structured and carry the request id; nothing ships
   them anywhere, and the wiring is **not** already in place — the earlier version of this line implied it was.

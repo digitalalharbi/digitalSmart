@@ -51,12 +51,13 @@ It requires the `merge_group` trigger in `ci.yml`: the queue builds each pull re
 the entries ahead of it, and gates the merge on checks run against **that** combination. The trigger must be
 on `main` **before** the rule is enabled, or every queued entry waits for a status that cannot arrive.
 
-## Deployment is not part of this
+## Deployment
 
-`deploy-production.yml` was **not** copied. It reads `secrets.VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` and
-`VPS_PORT`, which the governance guard refuses — and digitalSmart has no host to deploy to, so an adapted
-version would be a workflow that could never run. `BLOCKED_EXTERNAL`: a hosting account.
-See `docs/PRODUCTION.md`, "What is still missing".
+`.github/workflows/deploy-production.yml` deploys `main` to production over SSH after every merge — see
+`docs/DEPLOYMENT.md`. It is not CampaignsHub's copied: it uses only the approved infrastructure secrets
+(`PRODUCTION_*`, in the `production` environment), which the governance guard now admits **only in that file**,
+and reports `AWAITING_SERVER_ACCESS` until a server exists. The secret policy was corrected by the owner on
+2026-10-19: no secret *value* anywhere; encrypted deployment-infrastructure secrets allowed.
 
 ## The options that were not taken
 
