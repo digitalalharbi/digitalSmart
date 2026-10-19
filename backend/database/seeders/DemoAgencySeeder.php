@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Application\Agents\Agent\AgentOrchestrator;
+use App\Application\Automation\Command\RunAutomationRules;
 use App\Application\Analytics\DTO\AnalyticsFilters;
 use App\Application\Portal\Command\EnablePortal;
 use App\Application\Portal\Command\SetPortalModules;
@@ -199,6 +200,8 @@ final class DemoAgencySeeder extends Seeder
             $this->work($workspaceId, $clients, $projects, $people);
             $this->tracking($workspaceId, $clients);
             $this->operatingRules($workspaceId, $clients, $campaigns);
+            $this->leadQualityIssue($workspaceId, $clients);
+            $this->automationRules($workspaceId, $people['owner']);
 
             foreach (['clients', 'projects', 'external_accounts', 'project_integration_bindings', 'campaigns', 'daily_metrics', 'budgets', 'leads', 'stores', 'store_orders', 'tasks', 'measurement_sources', 'observed_event_counts'] as $table) {
                 DB::statement('analyze '.$table);
@@ -209,7 +212,19 @@ final class DemoAgencySeeder extends Seeder
 
         /* The agents look, as they would on their morning routine — through the same gateway, proposing only. */
         $ran = app(AgentOrchestrator::class)->run('all', $workspaceId);
-        $this->command?->info(sprintf('Agents looked and raised %d proposal(s) for a person to decide.', $ran['proposed']));
+        $this->command?->info(sprintf('Agents looked: %d proposal(s) for a person to decide, %d finding(s) on Today.', $ran['proposed'], $ran['findings']));
+
+        /*
+         * The rules routine, twice: once to start each rule's streak, and — with the streaks dated back to when the
+         * fixtures began breaching — once more so a rule that waits two days has something to propose.
+         */
+        $rules = app(RunAutomationRules::class);
+        $rules($workspaceId);
+        DB::table('automation_rule_streaks')
+            ->whereIn('rule_id', DB::table('automation_rules')->where('workspace_id', $workspaceId)->where('name', 'like', 'SANDBOX%')->select('id'))
+            ->update(['first_seen_on' => now()->subDays(3)->toDateString(), 'acted_at' => null]);
+        $acted = $rules($workspaceId);
+        $this->command?->info(sprintf('Rules raised %d proposal(s) or task(s).', $acted['acted']));
 
         $this->command?->info('Demo agency ready. Sign in with any demo address and the password "password".');
         $this->command?->warn('Every figure is a SANDBOX fixture, not real spend and not live provider data.');
@@ -483,6 +498,64 @@ final class DemoAgencySeeder extends Seeder
         $this->insert('operating_rules', $rows);
     }
 
+    /**
+     * One lead client whose leads stopped qualifying: plenty reached in the last fortnight, almost none qualified, and
+     * fewer of them than the fortnight before — what the Leads agent exists to notice. SANDBOX people, SANDBOX phones.
+     *
+     * @param  list<array<string, mixed>>  $clients
+     */
+    private function leadQualityIssue(string $workspaceId, array $clients): void
+    {
+        $client = $clients[1] ?? $clients[0] ?? null;
+
+        if ($client === null) {
+            return;
+        }
+
+        $rows = [];
+        $now = now();
+
+        for ($i = 0; $i < 60; $i++) {
+            $recent = $i < 16;
+            $received = (new DateTimeImmutable('today'))->modify(sprintf('-%d days', $recent ? 1 + $i % 12 : 15 + $i % 12))->setTime(10, $i % 60);
+            $stage = $recent ? ($i === 0 ? 'qualified' : 'disqualified') : ($i % 3 === 0 ? 'qualified' : 'contacted');
+
+            $rows[] = [
+                'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'client_id' => $client['id'], 'project_id' => null,
+                'source_kind' => 'form_submission', 'source_detail' => 'SANDBOX — Lead form (broad audience)',
+                'name' => self::FIRST[$i % count(self::FIRST)].' '.self::LAST[$i % count(self::LAST)],
+                'stage' => $stage, 'disqualified_reason' => $stage === 'disqualified' ? 'not_interested' : null,
+                'attribution_evidence' => 'utm_parameters', 'utm_source' => 'paid', 'utm_medium' => 'cpc', 'utm_campaign' => 'SANDBOX — Broad lead form',
+                'received_at' => $received, 'first_contacted_at' => $received->modify('+3 hours'),
+                'qualified_at' => $stage === 'qualified' ? $received->modify('+1 day') : null,
+                'closed_at' => $stage === 'disqualified' ? $received->modify('+1 day') : null,
+                'created_at' => $now, 'updated_at' => $now,
+            ];
+        }
+
+        $this->insert('leads', $rows);
+    }
+
+    /** The agency's rules, as a team would set them up on day one: two that propose, two that alert. */
+    private function automationRules(string $workspaceId, string $ownerId): void
+    {
+        $now = now();
+        $rule = fn (string $name, string $metric, ?float $threshold, int $window, string $severity, int $forDays, string $action, ?int $pct, int $trust): array => [
+            'id' => $this->ids->generate(), 'workspace_id' => $workspaceId, 'created_by' => $ownerId, 'client_id' => null, 'project_id' => null,
+            'name' => 'SANDBOX · '.$name, 'metric' => $metric, 'operator' => in_array($metric, ['roas', 'ends_within'], true) ? 'below' : 'above',
+            'threshold' => $threshold, 'window_days' => $window, 'severity' => $severity, 'is_active' => true,
+            'conditions' => '[]', 'for_days' => $forDays, 'action' => $action, 'action_pct' => $pct, 'trust_level' => $trust,
+            'created_at' => $now, 'updated_at' => $now,
+        ];
+
+        $this->insert('automation_rules', [
+            $rule('ROAS drop', 'roas', 1.0, 7, 'needs_attention', 2, 'propose_budget_cut', 15, 2),
+            $rule('No results', 'no_results', null, 7, 'critical', 2, 'propose_pause', null, 2),
+            $rule('Budget near limit', 'budget_used', 95.0, 7, 'needs_attention', 1, 'alert', null, 1),
+            $rule('Campaign ends soon', 'ends_within', 3.0, 7, 'watch', 1, 'alert', null, 1),
+        ]);
+    }
+
     private function clear(string $workspaceId): void
     {
         $accounts = DB::table('external_accounts')->where('workspace_id', $workspaceId)
@@ -522,6 +595,8 @@ final class DemoAgencySeeder extends Seeder
         }
 
         /* The demo workspace's own agent history goes with the rest, so a re-run starts from an honest morning. */
+        DB::table('agent_findings')->where('workspace_id', $workspaceId)->delete();
+        DB::table('automation_rules')->where('workspace_id', $workspaceId)->where('name', 'like', 'SANDBOX%')->delete();
         DB::table('agent_runs')->where('workspace_id', $workspaceId)->delete();
         DB::table('agent_tool_calls')->where('workspace_id', $workspaceId)->delete();
 

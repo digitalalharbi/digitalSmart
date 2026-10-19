@@ -102,3 +102,17 @@ it('watches silently at trust 0 — streaks are kept, nothing is shown', functio
     expect(ruleItems($w))->toBe([])
         ->and(DB::table('automation_rule_streaks')->where('rule_id', $rule['id'])->count())->toBeGreaterThan(0);
 });
+
+it('ends every streak when a rule stops holding for all campaigns', function (): void {
+    $w = engineWorld();
+    $rule = makeRule($w, ['name' => 'Briefly true']);
+
+    test()->artisan('automation:run', ['--workspace' => $w->workspaceId()])->assertSuccessful();
+    expect(DB::table('automation_rule_streaks')->where('rule_id', $rule['id'])->count())->toBeGreaterThan(0);
+
+    DB::table('automation_rules')->where('id', $rule['id'])->update(['threshold' => 999999999]);
+    test()->artisan('automation:run', ['--workspace' => $w->workspaceId()])->assertSuccessful();
+
+    expect(DB::table('automation_rule_streaks')->where('rule_id', $rule['id'])->count())->toBe(0)
+        ->and(DB::table('agent_runs')->where('agent', 'automation')->where('status', 'failed')->count())->toBe(0);
+});

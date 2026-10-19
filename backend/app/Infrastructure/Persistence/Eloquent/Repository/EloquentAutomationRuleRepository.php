@@ -105,7 +105,8 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
         }
 
         /* A campaign the rule no longer holds for starts again from nothing next time. */
-        DB::table('automation_rule_streaks')->where('rule_id', $ruleId)->whereNotIn('campaign_id', $campaignIds === [] ? [''] : $campaignIds)->delete();
+        $gone = DB::table('automation_rule_streaks')->where('rule_id', $ruleId);
+        ($campaignIds === [] ? $gone : $gone->whereNotIn('campaign_id', $campaignIds))->delete();
 
         foreach (DB::table('automation_rule_streaks')->where('rule_id', $ruleId)->get() as $row) {
             $streaks[(string) $row->campaign_id] = [

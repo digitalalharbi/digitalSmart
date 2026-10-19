@@ -36,7 +36,8 @@
       "creative": "the Creative agent",
       "leads": "the Leads agent",
       "reports": "the Reports agent",
-      "operations": "the Operations agent"
+      "operations": "the Operations agent",
+      "automation": "your rules"
     },
     "launch": "Launch",
     "title": "Today",
