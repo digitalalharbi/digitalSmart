@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { formatNumber } from '@/shared/lib/format';
-import { Alert } from '@/shared/ui/alert';
+import { InfoHint } from '@/shared/ui/info-hint';
 import { Badge } from '@/shared/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Skeleton } from '@/shared/ui/skeleton';
@@ -29,17 +29,15 @@ export function SpecCoverage({ specs, isLoading }: SpecCoverageProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('creative.coverage.title')}</CardTitle>
+        <CardTitle className="flex items-center gap-1">
+          {t('creative.coverage.title')}
+          {/* Why most placements say "no spec recorded" — read once, so it sits behind the hint, still in the page. */}
+          <InfoHint text={t('creative.coverage.why')} />
+        </CardTitle>
         <CardDescription>{t('creative.coverage.subtitle')}</CardDescription>
       </CardHeader>
 
       <CardContent className="flex flex-col gap-3">
-        {/*
-          Said first, because a reader who skims the list below will otherwise conclude that these are the only
-          placements that exist rather than the only ones with a recorded requirement.
-        */}
-        <Alert tone="info">{t('creative.coverage.why')}</Alert>
-
         {isLoading ? (
           <Skeleton className="h-20 w-full" />
         ) : (

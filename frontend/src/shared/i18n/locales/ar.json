@@ -1984,6 +1984,24 @@
       "crm": "إدارة العملاء",
       "website": "الموقع",
       "manual": "إدخال يدوي"
+    },
+    "issueKind": {
+      "no_source": "لا مصدر",
+      "never_synced": "لم تُقرأ بعد",
+      "stale_sync": "قديمة",
+      "no_recent_events": "بلا أحداث",
+      "primary_conversion_unseen": "التحويل الرئيسي غير ظاهر",
+      "unmapped_event": "حدث غير مربوط",
+      "no_primary_conversion": "لا تحويل رئيسي",
+      "purchase_without_value": "شراء بلا قيمة",
+      "duplicate_mapping": "ربط مكرر",
+      "container_never_published": "لم تُنشر قط",
+      "container_unpublished_changes": "تغييرات غير منشورة",
+      "tag_paused": "وسم متوقف",
+      "tag_without_trigger": "وسم بلا مشغّل",
+      "tag_trigger_missing": "المشغّل مفقود",
+      "measurement_id_not_in_container": "معرّف قياس خاطئ",
+      "intent_signal_as_conversion": "نية محسوبة كتحويل"
     }
   },
   "commerce": {

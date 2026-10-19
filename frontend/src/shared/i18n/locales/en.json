@@ -1865,6 +1865,24 @@
       "crm": "CRM",
       "website": "Website",
       "manual": "Entered by hand"
+    },
+    "issueKind": {
+      "no_source": "No source",
+      "never_synced": "Not read yet",
+      "stale_sync": "Out of date",
+      "no_recent_events": "No events",
+      "primary_conversion_unseen": "Main conversion unseen",
+      "unmapped_event": "Unmapped event",
+      "no_primary_conversion": "No main conversion",
+      "purchase_without_value": "Purchase without value",
+      "duplicate_mapping": "Duplicate mapping",
+      "container_never_published": "Never published",
+      "container_unpublished_changes": "Unpublished changes",
+      "tag_paused": "Tag paused",
+      "tag_without_trigger": "Tag without trigger",
+      "tag_trigger_missing": "Trigger missing",
+      "measurement_id_not_in_container": "Wrong measurement ID",
+      "intent_signal_as_conversion": "Intent counted as conversion"
     }
   },
   "commerce": {
