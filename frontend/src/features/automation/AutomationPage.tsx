@@ -29,6 +29,7 @@ import {
   useUpdateRule,
 } from './api';
 import { RuleBuilder } from './RuleBuilder';
+import { RuleCard } from './RuleCard';
 import { actionText, ruleConditionParts } from './ruleText';
 import { COVERED, TEMPLATES, draftFrom } from './templates';
 import { LEVELS } from './types';
@@ -73,6 +74,7 @@ export function AutomationPage() {
   const [mode, setMode] = useState<'all' | RuleMode>('all');
   const [platform, setPlatform] = useState('all');
   const [builder, setBuilder] = useState<{ draft: RuleDraft; rule?: Rule } | null>(null);
+  const [view, setView] = useState<'cards' | 'table'>('cards');
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const bulk = useBulkRules();
   const pick = (id: string) =>
@@ -231,6 +233,19 @@ export function AutomationPage() {
               ),
             ]}
           />
+          <div className="flex gap-1.5" role="group" aria-label={t('clients.card.view')}>
+            {(['cards', 'table'] as const).map((option) => (
+              <Button
+                key={option}
+                size="sm"
+                variant={view === option ? 'subtle' : 'ghost'}
+                aria-pressed={view === option}
+                onClick={() => setView(option)}
+              >
+                {t(`clients.card.${option === 'cards' ? 'grid' : 'table'}`)}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {rules.isError ? <Alert tone="danger">{t('automation.failed')}</Alert> : null}
@@ -240,6 +255,28 @@ export function AutomationPage() {
           <p className="text-content-tertiary bg-surface rounded-2xl p-6 text-sm">
             {t('automation.none')}
           </p>
+        ) : view === 'cards' ? (
+          <ul className="grid gap-3 xl:grid-cols-2" aria-label={t('automation.rules')}>
+            {shown.map((rule) => (
+              <li key={rule.id} className="contents">
+                <RuleCard
+                  rule={rule}
+                  picked={picked.has(rule.id)}
+                  mayWrite={mayWrite}
+                  busy={update.isPending || remove.isPending}
+                  onPick={() => pick(rule.id)}
+                  onToggle={() =>
+                    update.mutate({
+                      id: rule.id,
+                      draft: { ...draftOf(rule), is_active: !rule.is_active },
+                    })
+                  }
+                  onEdit={() => setBuilder({ draft: draftOf(rule), rule })}
+                  onRemove={() => remove.mutate(rule.id)}
+                />
+              </li>
+            ))}
+          </ul>
         ) : (
           <DataTable label={t('automation.rules')} minWidth="72rem">
             <TableHead>

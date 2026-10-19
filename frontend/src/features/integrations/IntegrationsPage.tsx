@@ -4,6 +4,7 @@ import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { LoadingRegion } from '@/shared/ui/loading-region';
+import { InfoHint } from '@/shared/ui/info-hint';
 import { PageHeader } from '@/shared/ui/page-header';
 import { useProjectsQuery } from '@/features/projects';
 import { AccountBindingPanel } from './AccountBindingPanel';
@@ -72,16 +73,38 @@ export function IntegrationsPage() {
       <PageHeader title={t('nav.integrations')} description={t('integrations.subtitle')} />
 
       {/*
-        Said once, plainly, at the top: nothing here is connected yet, and the
-        reason is an external approval rather than unfinished work.
+        The state of every platform at a glance: how many are connected, how many run on sandbox credentials, how many
+        wait on a provider's approval. The reason they wait is behind the ⓘ — it is a fact about the provider, not
+        something to re-read on every visit.
       */}
-      {blockedCount > 0 ? (
-        <Alert tone="info">
-          <p className="font-medium">{t('integrations.awaitingAccessTitle')}</p>
-          <p className="mt-1 text-sm">
-            {t('integrations.awaitingAccessBody', { count: blockedCount })}
-          </p>
-        </Alert>
+      {providers ? (
+        <ul className="flex flex-wrap gap-3" aria-label={t('integrations.summary')}>
+          {(
+            [
+              [
+                'connected',
+                providers.filter((p) => p.status === 'connected' && !p.is_sandbox).length,
+                'var(--ds-success-500)',
+              ],
+              ['sandbox', providers.filter((p) => p.is_sandbox).length, 'var(--ds-accent)'],
+              ['waiting', blockedCount, 'var(--ds-warning-500)'],
+            ] as const
+          ).map(([key, count, dot]) => (
+            <li
+              key={key}
+              className="bg-surface flex items-center gap-3 rounded-2xl px-4 py-3 shadow-xs"
+            >
+              <span aria-hidden className="size-2.5 rounded-full" style={{ background: dot }} />
+              <span className="ds-numeric text-content text-2xl font-semibold">{count}</span>
+              <span className="text-content-secondary text-sm">
+                {t(`integrations.state.${key}`)}
+              </span>
+              {key === 'waiting' && count > 0 ? (
+                <InfoHint text={t('integrations.awaitingAccessBody', { count })} />
+              ) : null}
+            </li>
+          ))}
+        </ul>
       ) : null}
 
       {isPending ? (

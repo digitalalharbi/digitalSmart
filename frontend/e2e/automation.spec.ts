@@ -35,7 +35,7 @@ test('makes a rule from a template, refuses Auto, switches it off, and logs who 
   await drawer.getByRole('button', { name: 'Save rule' }).click();
   await expect(drawer).toBeHidden(SLOW);
 
-  const row = page.getByRole('row').filter({ hasText: name });
+  const row = page.getByRole('article', { name });
   await expect(row).toBeVisible(SLOW);
   await expect(row.getByText('Recommend')).toBeVisible();
   await expect(row.getByText('Budget −20%')).toBeVisible();

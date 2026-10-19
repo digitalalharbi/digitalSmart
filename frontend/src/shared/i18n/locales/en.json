@@ -834,7 +834,8 @@
     "previous": "Previous",
     "next": "Next",
     "remove": "Remove",
-    "clear": "Clear"
+    "clear": "Clear",
+    "info": "More information"
   },
   "overview": {
     "title": "Overview",
@@ -1314,7 +1315,13 @@
       "read": "Read history",
       "queued": "History from {{from}} to {{until}} is queued. It runs after live syncs, so current figures are never held up."
     },
-    "advanced": "Advanced"
+    "advanced": "Advanced",
+    "summary": "Platform status",
+    "state": {
+      "connected": "Connected",
+      "sandbox": "Sandbox",
+      "waiting": "Awaiting access"
+    }
   },
   "analytics": {
     "subtitle": "Performance across every platform a project is bound to.",

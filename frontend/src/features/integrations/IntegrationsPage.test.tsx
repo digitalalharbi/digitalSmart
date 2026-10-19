@@ -117,7 +117,9 @@ describe('IntegrationsPage', () => {
   it('explains that an unconnected provider is waiting on the provider, not on us', async () => {
     await renderWithProviders(<IntegrationsPage />);
 
-    expect(screen.getByText('Waiting on provider access')).toBeInTheDocument();
+    // A count, not a paragraph: how many wait. The reason is one hover away and always in the page.
+    const strip = screen.getByRole('list', { name: 'Platform status' });
+    expect(within(strip).getByText('Awaiting access')).toBeInTheDocument();
     expect(screen.getByText(/account-owner action, not a setting here/)).toBeInTheDocument();
   });
 
@@ -134,7 +136,7 @@ describe('IntegrationsPage', () => {
 
     expect(await screen.findByText('Sandbox credentials')).toBeInTheDocument();
     /* Beside the status, not instead of it: the connection is real, the account behind it is not. */
-    expect(screen.getByText('Connected')).toBeInTheDocument();
+    expect(screen.getAllByText('Connected').length).toBeGreaterThan(0);
   });
 
   it('says nothing of the sort when the credentials are real', async () => {
@@ -143,7 +145,7 @@ describe('IntegrationsPage', () => {
     );
     await renderWithProviders(<IntegrationsPage />);
 
-    expect(await screen.findByText('Connected')).toBeInTheDocument();
+    expect((await screen.findAllByText('Connected')).length).toBeGreaterThan(0);
     expect(screen.queryByText('Sandbox credentials')).not.toBeInTheDocument();
   });
 
