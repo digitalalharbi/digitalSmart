@@ -1,5 +1,32 @@
 # Agents, tools and MCP
 
+## Agents & Automation — automation-first (owner correction, 2026-10-19)
+
+**Rules = control. Agents = reasoning. Approvals = governance. Execution = provider action.** Chat is secondary.
+
+The area **Agents & Automation** (`/automation`) has five tabs:
+
+| Tab | What it is |
+|---|---|
+| Rules | Summary cards (all actions, turn on, turn off, budget, bid, failed, inactive 30 days — each vs the previous period), filters, and one row per rule: on/off, name, scope, conditions as short lines, action, object, mode, last run, last result. Templates open a pre-filled builder. |
+| Agents | Seven worker cards (status, role, open recommendations, success rate, routines, last run); a card opens its recent findings. *Ask an agent* is a secondary action. |
+| Routines | Every schedule with its agent, last run, last result and next run in Riyadh time. |
+| Action history | Every action a rule took or was refused — time, rule, client, project, platform, object, action, before, after, result (completed · waiting approval · no change required · failed · unsupported) and the reason. |
+| Change log | Who changed which rule, what (created, enabled, disabled, mode, schedule, conditions, action, scope, archived), when. |
+
+**Rule engine** (`RunAutomationRules`, every 15 minutes): scope (client, project, platform, ad account, campaign);
+conditions with a direction each, combined AND / OR; metrics spend, ROAS, CPA, results, CTR, CPC, CPM, days since
+start, budget used, cost change, spending with no results, not delivering, rejected, ends within; *for n days*;
+schedule continuous / hourly / daily at a time in a time zone; cooldown per rule × campaign; a rule stands down
+rather than undo another rule's opposite move (`CONFLICT`); dry run on a saved rule or a draft, writing nothing.
+
+**Modes**: *Monitor* shows the finding and proposes nothing. *Recommend* (default) raises a proposal through the
+tool gateway — approval, the project's budget limit, no stacking, cooldown, audit. *Auto* is shown and refused
+(`AUTO_NOT_AUTHORISED`) — the database cannot store it — until the owner authorises auto-execution **and** the
+platform's write is documented. Bid changes are `unsupported` everywhere; an action whose platform write is not
+documented is recorded `unsupported`, never attempted. Ad-group and ad level rules are not available yet.
+
+
 digitalSmart's agent layer is built so that **AI works inside controlled business workflows**: agents observe,
 compare and *propose*; people decide; the product controls permissions, limits, provider access, execution and audit.
 
