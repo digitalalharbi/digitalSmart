@@ -34,10 +34,12 @@ final class RuleEvaluator
      * Every condition's figure and verdict, and whether the rule holds — for the dry run, the history's "before"
      * values, and the routine.
      *
-     * @return array{holds: bool, values: array<string, float|int|null>, met: array<string, bool>, first: array{0: string, 1: string, 2: array<string, int|string|float>}|null}
+     * @return array{holds: bool, sufficient: bool, values: array<string, float|int|null>, met: array<string, bool>, first: array{0: string, 1: string, 2: array<string, int|string|float>}|null}
      */
     public static function evaluate(RuleView $rule, CampaignControlRow $row, DateTimeImmutable $today): array
     {
+        $sufficient = self::sufficient($rule, $row, $today);
+
         $conditions = [['metric' => $rule->metric, 'threshold' => $rule->threshold, 'operator' => $rule->operator], ...array_map(
             static fn (array $c): array => ['metric' => $c['metric'], 'threshold' => $c['threshold'], 'operator' => $c['operator'] ?? $c['metric']->breachedWhen()],
             $rule->conditions,
@@ -52,14 +54,36 @@ final class RuleEvaluator
             $met[$c['metric']->value] = self::meets($c['metric'], $c['operator'], $c['threshold'], $value, $row, $rule->action === RuleAction::ProposeResume);
         }
 
-        $holds = $rule->logic === 'any' ? in_array(true, $met, true) : ! in_array(false, $met, true);
+        $holds = $sufficient && ($rule->logic === 'any' ? in_array(true, $met, true) : ! in_array(false, $met, true));
 
         return [
             'holds' => $holds,
+            'sufficient' => $sufficient,
             'values' => $values,
             'met' => $met,
             'first' => $holds ? self::sentence($rule, $conditions[0], $values[$conditions[0]['metric']->value] ?? null, $row) : null,
         ];
+    }
+
+    /**
+     * Enough data to judge? A campaign below the rule's minimum spend, age or results is not judged — however its
+     * figures look. A missing figure counts as not enough.
+     */
+    public static function sufficient(RuleView $rule, CampaignControlRow $row, DateTimeImmutable $today): bool
+    {
+        if ($rule->minSpend !== null && ($row->spendMinor === null || $row->spendMinor / 100 < $rule->minSpend)) {
+            return false;
+        }
+
+        if ($rule->minAgeDays !== null) {
+            $age = self::value(RuleMetric::CampaignAge, $row, $today);
+
+            if ($age === null || $age < $rule->minAgeDays) {
+                return false;
+            }
+        }
+
+        return $rule->minConversions === null || ($row->results !== null && $row->results >= $rule->minConversions);
     }
 
     /** The figure a metric reads for this campaign, in the unit a person states the limit in; null when unreported. */

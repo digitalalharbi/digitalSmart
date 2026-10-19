@@ -54,5 +54,45 @@ final readonly class RuleInput
         public string $timezone = 'Asia/Riyadh',
         /** After acting on an object, the rule leaves it alone this long. */
         public int $cooldownHours = 24,
+        /** Data sufficiency: a campaign below any of these is not judged at all — "insufficient data", no action. */
+        public ?float $minSpend = null,
+        public ?int $minAgeDays = null,
+        public ?float $minConversions = null,
     ) {}
+
+    /** A saved rule as input again, with some fields changed — so a bulk change goes through the same validation as an edit. */
+    public static function fromView(RuleView $r, ?bool $isActive = null, ?RuleMode $mode = null): self
+    {
+        $mode ??= $r->mode;
+
+        return new self(
+            name: $r->name,
+            metric: $r->metric,
+            threshold: $r->threshold,
+            windowDays: $r->windowDays,
+            severity: $r->severity,
+            isActive: $isActive ?? $r->isActive,
+            clientId: $r->clientId,
+            projectId: $r->projectId,
+            conditions: $r->conditions,
+            forDays: $r->forDays,
+            action: $r->action,
+            actionPct: $r->actionPct,
+            trustLevel: $mode === $r->mode ? $r->trustLevel : $mode->trust($r->action),
+            mode: $mode,
+            logic: $r->logic,
+            operator: $r->operator,
+            providers: $r->providers,
+            accountIds: $r->accountIds,
+            campaignIds: $r->campaignIds,
+            objectLevel: $r->objectLevel,
+            schedule: $r->schedule,
+            scheduleTime: $r->scheduleTime,
+            timezone: $r->timezone,
+            cooldownHours: $r->cooldownHours,
+            minSpend: $r->minSpend,
+            minAgeDays: $r->minAgeDays,
+            minConversions: $r->minConversions,
+        );
+    }
 }

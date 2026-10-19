@@ -44,6 +44,9 @@ final readonly class GetAgentsStatus
         'guardian' => ['run' => 'finance', 'every' => 120],
         'creative_review' => ['run' => 'creative', 'at' => '09:00', 'days' => [0, 3]],
         'weekly_briefs' => ['run' => 'reports', 'at' => '14:00', 'days' => [4]],
+        'tracking_review' => ['run' => 'tracking', 'at' => '07:30'],
+        /* The executive digest: the 1st of each month at 08:00 UTC (11:00 Riyadh), from routes/console.php. */
+        'monthly_executive' => ['run' => 'digest', 'at' => '11:00', 'month_day' => 1],
     ];
 
     private const string ZONE = 'Asia/Riyadh';
@@ -106,7 +109,7 @@ final readonly class GetAgentsStatus
             $routines[] = [
                 'routine' => $key,
                 'agent' => $def['run'],
-                'schedule' => isset($def['every']) ? ['every_minutes' => $def['every']] : ['at' => $def['at'], 'days' => $def['days'] ?? null, 'timezone' => self::ZONE],
+                'schedule' => isset($def['every']) ? ['every_minutes' => $def['every']] : ['at' => $def['at'], 'days' => $def['days'] ?? null, 'month_day' => $def['month_day'] ?? null, 'timezone' => self::ZONE],
                 'last_run' => $last['started_at'] ?? null,
                 'last_status' => $last['status'] ?? null,
                 'next_run' => $this->next($def, $now)->format(DATE_ATOM),
@@ -116,7 +119,7 @@ final readonly class GetAgentsStatus
         return ['agents' => $agents, 'routines' => $routines];
     }
 
-    /** @param array{every?: int, at?: string, days?: list<int>} $def */
+    /** @param array{every?: int, at?: string, days?: list<int>, month_day?: int} $def */
     private function next(array $def, DateTimeImmutable $now): DateTimeImmutable
     {
         if (isset($def['every'])) {
@@ -128,10 +131,12 @@ final readonly class GetAgentsStatus
         $local = $now->setTimezone(new DateTimeZone(self::ZONE));
         [$hour, $minute] = array_map('intval', explode(':', $def['at'] ?? '08:00'));
 
-        for ($i = 0; $i <= 7; $i++) {
+        for ($i = 0; $i <= 31; $i++) {
             $slot = $local->modify(sprintf('+%d days', $i))->setTime($hour, $minute);
 
-            if ($slot > $local && (! isset($def['days']) || in_array((int) $slot->format('w'), $def['days'], true))) {
+            if ($slot > $local
+                && (! isset($def['days']) || in_array((int) $slot->format('w'), $def['days'], true))
+                && (! isset($def['month_day']) || (int) $slot->format('j') === $def['month_day'])) {
                 return $slot;
             }
         }

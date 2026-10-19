@@ -9,6 +9,7 @@ use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Automation\Contract\AutomationRuleRepository;
 use App\Application\Automation\DTO\RuleInput;
 use App\Application\Automation\DTO\RuleView;
+use App\Application\Automation\RuleCapability;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -17,6 +18,7 @@ use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Automation\Exception\RuleNotAllowed;
+use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMode;
 use App\Domain\Automation\TrustLevel;
 use App\Domain\Dashboard\Exception\NameAlreadyUsed;
@@ -38,6 +40,7 @@ final readonly class SaveRule
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private CampaignControlReadModel $campaigns,
+        private RuleCapability $capability,
     ) {}
 
     public function __invoke(RuleInput $input, ?string $id = null): RuleView
@@ -76,6 +79,23 @@ final readonly class SaveRule
         /* Monitor takes no action at all — it shows what the rule would do — so any action may be named there. */
         if ($input->mode !== RuleMode::Monitor && ! $input->trustLevel->allows($input->action)) {
             throw new RuleNotAllowed(sprintf('That action needs trust level %d or above; this rule has %d.', $input->action->minimumTrust()->value, $input->trustLevel->value));
+        }
+
+        /*
+         * Never promise what no platform will do. A bid change is wired on no platform; and a rule that names its
+         * platforms must name at least one that can take its action (documented and connected, or awaiting a
+         * connection that would make it so). A rule over every platform is checked campaign by campaign instead.
+         */
+        if ($input->mode !== RuleMode::Monitor && $input->action === RuleAction::ProposeBidChange) {
+            throw new RuleNotAllowed('Bid changes are not supported on any platform yet. Choose another action or Monitor.');
+        }
+
+        if ($input->mode !== RuleMode::Monitor && $input->providers !== [] && $input->action->writeOperation() !== null) {
+            $able = array_filter($input->providers, fn (string $p): bool => in_array($this->capability->of($input->action, $p, $workspaceId), ['supported', 'awaiting_credentials'], true));
+
+            if ($able === []) {
+                throw new RuleNotAllowed('None of this rule\'s platforms supports that action.');
+            }
         }
 
         if ($input->objectLevel !== 'campaign') {

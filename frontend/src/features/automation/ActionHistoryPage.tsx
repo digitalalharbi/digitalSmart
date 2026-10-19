@@ -24,6 +24,8 @@ const RESULT_TONE: Record<ExecutionResult, string> = {
   no_change: 'bg-surface-sunken text-content-secondary',
   failed: 'bg-danger-surface text-danger',
   unsupported: 'bg-warning-surface text-warning',
+  cooldown: 'bg-surface-sunken text-content-secondary',
+  conflict: 'bg-warning-surface text-warning',
 };
 
 /** One value before or after, the way a person reads it: a budget with its currency, a status word, a figure. */
@@ -78,13 +80,21 @@ export function ActionHistoryPage() {
           className="bg-surface text-content-secondary h-10 rounded-full px-3 text-sm shadow-xs"
         >
           <option value="all">{t('automation.filter.anyResult')}</option>
-          {(['completed', 'waiting_approval', 'no_change', 'failed', 'unsupported'] as const).map(
-            (r) => (
-              <option key={r} value={r}>
-                {t(`automation.result.${r}`)}
-              </option>
-            ),
-          )}
+          {(
+            [
+              'completed',
+              'waiting_approval',
+              'no_change',
+              'failed',
+              'unsupported',
+              'cooldown',
+              'conflict',
+            ] as const
+          ).map((r) => (
+            <option key={r} value={r}>
+              {t(`automation.result.${r}`)}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -183,7 +193,8 @@ export function ActionHistoryPage() {
                     >
                       {t(`automation.result.${row.result}`)}
                     </span>
-                    {row.reason_code === null || row.reason_code === 'NOTIFIED' ? null : (
+                    {row.reason_code === null ||
+                    ['NOTIFIED', 'COOLDOWN', 'CONFLICT'].includes(row.reason_code) ? null : (
                       <span className="text-content-tertiary text-xs">
                         {t(`automation.reason.${row.reason_code}`, {
                           defaultValue: row.reason_code,

@@ -13,7 +13,7 @@ namespace App\Application\Agents\Agent;
  */
 final class AgentRouter
 {
-    public const array AGENTS = ['analyst', 'finance', 'creative', 'leads', 'reports', 'operations'];
+    public const array AGENTS = ['analyst', 'finance', 'creative', 'leads', 'reports', 'operations', 'tracking'];
 
     /** @var array<string, list<string>> */
     private const array WORDS = [
@@ -22,6 +22,7 @@ final class AgentRouter
         'reports' => ['report', 'weekly', 'monthly', 'summary', 'brief', 'تقرير', 'أسبوعي', 'شهري', 'ملخص'],
         'finance' => ['budget', 'spend', 'overspend', 'pacing', 'money', 'ميزانية', 'إنفاق', 'صرف'],
         'operations' => ['project', 'blocked', 'overdue', 'task', 'مشروع', 'متأخر', 'مهام', 'مهمة'],
+        'tracking' => ['tracking', 'pixel', 'conversion api', 'gtm', 'tag', 'تتبع', 'التتبع', 'بكسل'],
         'analyst' => ['campaign', 'cpa', 'roas', 'cost', 'performance', 'حملة', 'حملات', 'أداء', 'تكلفة', 'عائد'],
     ];
 

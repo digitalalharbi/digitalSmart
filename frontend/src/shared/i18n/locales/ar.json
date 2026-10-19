@@ -103,7 +103,8 @@
       "cutLosers": "خفض الخاسرة",
       "pauseNoSale": "إيقاف الحملات بلا مبيعات",
       "cpaSpike": "قفزة في تكلفة النتيجة",
-      "noPurchases": "لا مشتريات"
+      "noPurchases": "لا مشتريات",
+      "cplSpike": "قفزة تكلفة العميل المحتمل"
     },
     "severity": {
       "critical": "حرج",
@@ -180,7 +181,12 @@
       "summary": "القاعدة",
       "dryRun": "تشغيل تجريبي",
       "dryRunResult": "ستنفّذ على {{matched}} من {{total}} حملة الآن",
-      "savedCampaign": "حملة {{id}}…"
+      "savedCampaign": "حملة {{id}}…",
+      "testNow": "اختبر الآن",
+      "onlyWhen": "احكم فقط عندما",
+      "minSpend": "الإنفاق ≥",
+      "minAge": "العمر ≥ (يوم)",
+      "minResults": "النتائج ≥"
     },
     "covered": {
       "tracking": "مفعّلة دائمًا — فحوص التتبع",
@@ -280,9 +286,9 @@
       "notify": "تنبيه",
       "propose_pause": "إيقاف",
       "propose_resume": "استئناف",
-      "propose_budget_cut": "خفض الميزانية {{pct}}%",
-      "propose_budget_increase": "رفع الميزانية {{pct}}%",
-      "propose_bid_change": "تعديل المزايدة {{pct}}%",
+      "propose_budget_cut": "الميزانية −{{pct}}%",
+      "propose_budget_increase": "الميزانية +{{pct}}%",
+      "propose_bid_change": "المزايدة ±{{pct}}%",
       "task": "إنشاء مهمة"
     },
     "notRunYet": "لم تُشغَّل بعد",
@@ -304,7 +310,9 @@
       "waiting_approval": "بانتظار الموافقة",
       "no_change": "لا يلزم تغيير",
       "failed": "فشل",
-      "unsupported": "غير مدعوم"
+      "unsupported": "غير مدعوم",
+      "cooldown": "فترة التهدئة",
+      "conflict": "تعارض مُنع"
     },
     "reason": {
       "BID_WRITE_NOT_VERIFIED": "لا توجد منصة موثّق فيها تعديل المزايدة",
@@ -315,7 +323,9 @@
       "NO_DAILY_BUDGET": "لا توجد ميزانية يومية",
       "NOT_DAILY": "ليست ميزانية يومية",
       "UNCHANGED": "القيمة نفسها",
-      "DUPLICATE_TASK": "المهمة مفتوحة مسبقًا"
+      "DUPLICATE_TASK": "المهمة مفتوحة مسبقًا",
+      "AWAITING_CREDENTIALS": "المنصة غير مربوطة بعد",
+      "PROVIDER_WRITE_UNVERIFIED": "غير موثّق على هذه المنصة"
     },
     "status": {
       "paused": "متوقفة",
@@ -367,7 +377,6 @@
     "campaignCount_other": "{{count}} حملة",
     "edit": "تعديل {{name}}",
     "useTemplate": "استخدم القالب",
-    "notSupportedOn": "غير مدعوم على {{platforms}}",
     "supported": "مدعوم",
     "notSupported": "غير مدعوم",
     "askAgent": "اسأل وكيلًا",
@@ -426,7 +435,9 @@
       "lead_review": "مراجعة جودة العملاء المحتملين",
       "guardian": "حارس الميزانية",
       "creative_review": "مراجعة الإبداع",
-      "weekly_briefs": "الملخصات الأسبوعية للعملاء"
+      "weekly_briefs": "الملخصات الأسبوعية للعملاء",
+      "tracking_review": "مراجعة التتبع",
+      "monthly_executive": "المراجعة التنفيذية الشهرية"
     },
     "runner": {
       "automation": "محرّك القواعد",
@@ -435,7 +446,9 @@
       "creative": "وكيل الإبداع",
       "leads": "وكيل العملاء المحتملين",
       "reports": "وكيل التقارير",
-      "operations": "عمليات المشاريع"
+      "operations": "عمليات المشاريع",
+      "tracking": "مراجعة التتبع",
+      "digest": "الملخص التنفيذي"
     },
     "every_zero": "كل {{count}} دقيقة",
     "every_one": "كل دقيقة",
@@ -456,6 +469,79 @@
       "thu": "الخميس",
       "fri": "الجمعة",
       "sat": "السبت"
+    },
+    "monthly": "شهريًا، اليوم {{day}}",
+    "capability": {
+      "unsupported": "غير مدعوم على {{platforms}}",
+      "awaiting_credentials": "بانتظار الربط على {{platforms}}",
+      "unverified": "غير موثّق على {{platforms}}",
+      "supported": "مدعوم"
+    },
+    "dry": {
+      "matched": "مطابقة",
+      "wouldAct": "ستُنفَّذ",
+      "insufficient": "بيانات غير كافية",
+      "skipped": "ستُتخطّى",
+      "nothingChanged": "اختبار فقط — لم يُغيَّر أو يُقترح شيء."
+    },
+    "skip": {
+      "unsupported_zero": "لا شيء",
+      "unsupported_one": "واحدة غير مدعومة",
+      "unsupported_two": "اثنتان غير مدعومتين",
+      "unsupported_few": "{{count}} غير مدعومة",
+      "unsupported_many": "{{count}} غير مدعومة",
+      "unsupported_other": "{{count}} غير مدعومة",
+      "awaiting_credentials_zero": "لا شيء",
+      "awaiting_credentials_one": "واحدة بانتظار الربط",
+      "awaiting_credentials_two": "اثنتان بانتظار الربط",
+      "awaiting_credentials_few": "{{count}} بانتظار الربط",
+      "awaiting_credentials_many": "{{count}} بانتظار الربط",
+      "awaiting_credentials_other": "{{count}} بانتظار الربط",
+      "unverified_zero": "لا شيء",
+      "unverified_one": "واحدة غير موثّقة",
+      "unverified_two": "اثنتان غير موثّقتين",
+      "unverified_few": "{{count}} غير موثّقة",
+      "unverified_many": "{{count}} غير موثّقة",
+      "unverified_other": "{{count}} غير موثّقة",
+      "cooldown_zero": "لا شيء",
+      "cooldown_one": "واحدة في التهدئة",
+      "cooldown_two": "اثنتان في التهدئة",
+      "cooldown_few": "{{count}} في التهدئة",
+      "cooldown_many": "{{count}} في التهدئة",
+      "cooldown_other": "{{count}} في التهدئة",
+      "conflict_zero": "لا شيء",
+      "conflict_one": "تعارض واحد مُنع",
+      "conflict_two": "تعارضان مُنعا",
+      "conflict_few": "{{count}} تعارضات مُنعت",
+      "conflict_many": "{{count}} تعارضًا مُنع",
+      "conflict_other": "{{count}} تعارض مُنع",
+      "no_daily_budget_zero": "لا شيء",
+      "no_daily_budget_one": "واحدة بلا ميزانية يومية",
+      "no_daily_budget_two": "اثنتان بلا ميزانية يومية",
+      "no_daily_budget_few": "{{count}} بلا ميزانية يومية",
+      "no_daily_budget_many": "{{count}} بلا ميزانية يومية",
+      "no_daily_budget_other": "{{count}} بلا ميزانية يومية"
+    },
+    "bulk": {
+      "title": "إجراءات جماعية على القواعد",
+      "selectAll": "تحديد كل القواعد",
+      "select": "تحديد {{name}}",
+      "selected_zero": "لا شيء محدد",
+      "selected_one": "قاعدة واحدة",
+      "selected_two": "قاعدتان",
+      "selected_few": "{{count}} قواعد",
+      "selected_many": "{{count}} قاعدة",
+      "selected_other": "{{count}} قاعدة",
+      "enable": "تفعيل",
+      "disable": "إيقاف",
+      "archive": "أرشفة",
+      "setMode": "تعيين {{mode}}",
+      "refused_zero": "لم يُرفض شيء",
+      "refused_one": "رُفضت واحدة",
+      "refused_two": "رُفضت اثنتان",
+      "refused_few": "رُفضت {{count}}",
+      "refused_many": "رُفضت {{count}}",
+      "refused_other": "رُفضت {{count}}"
     }
   },
   "aiCenter": {

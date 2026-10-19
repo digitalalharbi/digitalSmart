@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Http\Controller\Automation;
 
+use App\Application\Automation\Command\BulkRules;
 use App\Application\Automation\Command\DeleteRule;
 use App\Application\Automation\Command\SaveRule;
 use App\Application\Automation\DTO\RuleInput;
@@ -84,6 +85,20 @@ final class AutomationRuleController extends Controller
         return response()->json(['data' => $center->changeLog($this->days($request))]);
     }
 
+    public function bulk(Request $request, BulkRules $bulk): JsonResponse
+    {
+        /** @var array{ids: list<string>, operation: 'enable'|'disable'|'archive'|'mode', mode?: string} $v */
+        $v = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:'.BulkRules::MAX],
+            'ids.*' => ['uuid'],
+            'operation' => ['required', 'in:enable,disable,archive,mode'],
+            /* Auto is not offered in bulk; a single save refuses it anyway. */
+            'mode' => ['required_if:operation,mode', 'in:monitor,recommend'],
+        ]);
+
+        return response()->json(['data' => $bulk($v['ids'], $v['operation'], isset($v['mode']) ? RuleMode::from($v['mode']) : null)]);
+    }
+
     public function capabilities(GetRuleCapabilities $capabilities): JsonResponse
     {
         return response()->json(['data' => $capabilities()]);
@@ -136,6 +151,9 @@ final class AutomationRuleController extends Controller
             'schedule_time' => ['sometimes', 'nullable', 'date_format:H:i'],
             'timezone' => ['sometimes', 'string', 'max:64'],
             'cooldown_hours' => ['sometimes', 'integer', 'min:1', 'max:720'],
+            'min_spend' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:100000000'],
+            'min_age_days' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:365'],
+            'min_conversions' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:1000000'],
         ]);
 
         $metric = RuleMetric::from((string) $v['metric']);
@@ -195,6 +213,9 @@ final class AutomationRuleController extends Controller
             scheduleTime: isset($v['schedule_time']) ? (string) $v['schedule_time'] : null,
             timezone: (string) ($v['timezone'] ?? 'Asia/Riyadh'),
             cooldownHours: (int) ($v['cooldown_hours'] ?? 24),
+            minSpend: isset($v['min_spend']) ? (float) $v['min_spend'] : null,
+            minAgeDays: isset($v['min_age_days']) ? (int) $v['min_age_days'] : null,
+            minConversions: isset($v['min_conversions']) ? (float) $v['min_conversions'] : null,
         );
     }
 
@@ -229,6 +250,9 @@ final class AutomationRuleController extends Controller
             'schedule_time' => $r->scheduleTime,
             'timezone' => $r->timezone,
             'cooldown_hours' => $r->cooldownHours,
+            'min_spend' => $r->minSpend,
+            'min_age_days' => $r->minAgeDays,
+            'min_conversions' => $r->minConversions,
             'last_run_at' => $r->lastRunAt?->format(DATE_ATOM),
             'last_result' => $r->lastResult,
         ];

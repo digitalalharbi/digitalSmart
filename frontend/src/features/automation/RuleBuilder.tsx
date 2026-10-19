@@ -18,6 +18,7 @@ import {
   DEFAULT_OPERATOR,
   NO_THRESHOLD,
   PCT_ACTIONS,
+  type CapabilityState,
   type Operator,
   type RuleAction,
   type RuleCondition,
@@ -123,6 +124,15 @@ export function RuleBuilder({
   const [schedule, setSchedule] = useState<RuleSchedule>(initial.schedule ?? 'hourly');
   const [time, setTime] = useState(initial.schedule_time ?? '08:00');
   const [cooldown, setCooldown] = useState(initial.cooldown_hours ?? 24);
+  const [minSpend, setMinSpend] = useState(
+    initial.min_spend == null ? '' : String(initial.min_spend),
+  );
+  const [minAge, setMinAge] = useState(
+    initial.min_age_days == null ? '' : String(initial.min_age_days),
+  );
+  const [minResults, setMinResults] = useState(
+    initial.min_conversions == null ? '' : String(initial.min_conversions),
+  );
 
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const projects = useProjectsQuery({
@@ -172,6 +182,9 @@ export function RuleBuilder({
       schedule_time: schedule === 'daily' ? time : null,
       timezone: 'Asia/Riyadh',
       cooldown_hours: cooldown,
+      min_spend: minSpend === '' ? null : Number(minSpend),
+      min_age_days: minAge === '' ? null : Number(minAge),
+      min_conversions: minResults === '' ? null : Number(minResults),
     };
   };
 
@@ -186,8 +199,21 @@ export function RuleBuilder({
   const scoped = (capabilities.data ?? []).filter(
     (c) => platforms.length === 0 || platforms.includes(c.provider),
   );
-  const unsupportedOn = (a: RuleAction) =>
-    scoped.filter((c) => c.actions[a] === 'unsupported').map((c) => c.label);
+  /** Platforms in scope, grouped by what they would say to this action — so nothing is promised that will not happen. */
+  const statesOf = (a: RuleAction) => {
+    const groups: Partial<Record<CapabilityState, string[]>> = {};
+
+    for (const c of scoped) {
+      const state = c.actions[a];
+
+      if (state !== 'supported') (groups[state] ??= []).push(c.label);
+    }
+
+    return groups;
+  };
+  /* A bid change is wired on no platform: it is shown so it can be named, and cannot be chosen. */
+  const nowhere = (a: RuleAction) =>
+    scoped.length > 0 && scoped.every((c) => c.actions[a] === 'unsupported');
   const save = ruleId === undefined ? create : update;
   const setRow = (index: number, patch: Partial<Row>) =>
     setRows((all) => all.map((r, i) => (i === index ? { ...r, ...patch } : r)));
@@ -217,7 +243,7 @@ export function RuleBuilder({
             disabled={!valid || simulate.isPending}
             onClick={() => simulate.mutate(draft())}
           >
-            {t('automation.builder.dryRun')}
+            {t('automation.builder.testNow')}
           </Button>
         </div>
       }
@@ -439,21 +465,51 @@ export function RuleBuilder({
               ))}
             </select>
           </div>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-content-tertiary text-xs">
+              {t('automation.builder.onlyWhen')}
+            </span>
+            <Input
+              className="w-28"
+              inputMode="decimal"
+              placeholder={t('automation.builder.minSpend')}
+              aria-label={t('automation.builder.minSpend')}
+              value={minSpend}
+              onChange={(e) => setMinSpend(e.target.value)}
+            />
+            <Input
+              className="w-24"
+              inputMode="numeric"
+              placeholder={t('automation.builder.minAge')}
+              aria-label={t('automation.builder.minAge')}
+              value={minAge}
+              onChange={(e) => setMinAge(e.target.value)}
+            />
+            <Input
+              className="w-28"
+              inputMode="decimal"
+              placeholder={t('automation.builder.minResults')}
+              aria-label={t('automation.builder.minResults')}
+              value={minResults}
+              onChange={(e) => setMinResults(e.target.value)}
+            />
+          </div>
         </Step>
 
         <Step n={3} title={t('automation.builder.action')}>
           <div className="grid gap-2 sm:grid-cols-2">
             {ACTIONS.map((a) => {
-              const unsupported = unsupportedOn(a);
+              const states = statesOf(a);
 
               return (
                 <button
                   key={a}
                   type="button"
                   aria-pressed={action === a}
+                  disabled={nowhere(a)}
                   onClick={() => setAction(a)}
                   className={cn(
-                    'flex flex-col items-start gap-0.5 rounded-2xl p-3 text-start text-sm',
+                    'flex flex-col items-start gap-0.5 rounded-2xl p-3 text-start text-sm disabled:cursor-not-allowed disabled:opacity-60',
                     action === a
                       ? 'bg-action text-action-contrast'
                       : 'bg-surface-sunken text-content',
@@ -462,10 +518,19 @@ export function RuleBuilder({
                   <span className="font-semibold">
                     {actionText(t, a, PCT_ACTIONS.has(a) ? pct : null)}
                   </span>
-                  {unsupported.length === 0 ? null : (
-                    <span className={cn('text-xs', action === a ? 'opacity-80' : 'text-warning')}>
-                      {t('automation.notSupportedOn', { platforms: unsupported.join(', ') })}
-                    </span>
+                  {nowhere(a) ? (
+                    <span className="text-xs">{t('automation.notSupported')}</span>
+                  ) : (
+                    (Object.entries(states) as Array<[CapabilityState, string[]]>).map(
+                      ([state, labels]) => (
+                        <span
+                          key={state}
+                          className={cn('text-xs', action === a ? 'opacity-80' : 'text-warning')}
+                        >
+                          {t(`automation.capability.${state}`, { platforms: labels.join(', ') })}
+                        </span>
+                      ),
+                    )
                   )}
                 </button>
               );
@@ -595,13 +660,33 @@ export function RuleBuilder({
 
         {save.isError ? <Alert tone="danger">{t('automation.failed')}</Alert> : null}
         {simulate.data === undefined ? null : (
-          <section aria-label={t('automation.builder.dryRun')} className="flex flex-col gap-2">
-            <p className="text-content text-sm font-semibold">
-              {t('automation.builder.dryRunResult', {
-                matched: simulate.data.matched,
-                total: simulate.data.looked_at,
-              })}
-            </p>
+          <section aria-label={t('automation.builder.testNow')} className="flex flex-col gap-2">
+            <dl className="grid grid-cols-3 gap-2 text-center">
+              {(
+                [
+                  ['matched', simulate.data.matched],
+                  ['wouldAct', simulate.data.would_act],
+                  ['insufficient', simulate.data.insufficient],
+                ] as const
+              ).map(([key, value]) => (
+                <div key={key} className="bg-surface-sunken rounded-xl p-2">
+                  <dt className="text-content-tertiary text-xs">{t(`automation.dry.${key}`)}</dt>
+                  <dd className="ds-numeric text-content text-lg font-semibold">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            {Object.keys(simulate.data.skipped).length === 0 ? null : (
+              <ul className="flex flex-wrap gap-1.5" aria-label={t('automation.dry.skipped')}>
+                {Object.entries(simulate.data.skipped).map(([reason, count]) => (
+                  <li
+                    key={reason}
+                    className="bg-warning-surface text-warning rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  >
+                    {t(`automation.skip.${reason}`, { count })}
+                  </li>
+                ))}
+              </ul>
+            )}
             <ul className="flex flex-col gap-1.5">
               {simulate.data.objects.slice(0, 8).map((o) => (
                 <li
@@ -614,16 +699,21 @@ export function RuleBuilder({
                   <span
                     className={cn(
                       'shrink-0 font-semibold',
-                      o.capability === 'supported' ? 'text-success' : 'text-warning',
+                      o.outcome === 'would_act' ? 'text-success' : 'text-warning',
                     )}
                   >
-                    {o.capability === 'supported'
-                      ? t('automation.supported')
-                      : t('automation.notSupported')}
+                    {o.outcome === 'would_act'
+                      ? actionText(
+                          t,
+                          o.action as RuleAction | 'notify',
+                          PCT_ACTIONS.has(action) ? pct : null,
+                        )
+                      : t(`automation.skip.${o.outcome}`, { count: 1 })}
                   </span>
                 </li>
               ))}
             </ul>
+            <p className="text-content-tertiary text-xs">{t('automation.dry.nothingChanged')}</p>
           </section>
         )}
       </div>

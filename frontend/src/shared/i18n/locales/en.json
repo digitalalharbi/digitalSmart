@@ -103,7 +103,8 @@
       "cutLosers": "Cut losers",
       "pauseNoSale": "Pause no-sale campaigns",
       "cpaSpike": "CPA spike",
-      "noPurchases": "No purchases"
+      "noPurchases": "No purchases",
+      "cplSpike": "CPL spike"
     },
     "severity": {
       "critical": "Critical",
@@ -168,7 +169,12 @@
       "summary": "The rule",
       "dryRun": "Dry run",
       "dryRunResult": "Would act on {{matched}} of {{total}} campaigns now",
-      "savedCampaign": "Campaign {{id}}…"
+      "savedCampaign": "Campaign {{id}}…",
+      "testNow": "Test now",
+      "onlyWhen": "Judge only when",
+      "minSpend": "Spend ≥",
+      "minAge": "Age ≥ (d)",
+      "minResults": "Results ≥"
     },
     "covered": {
       "tracking": "Always on — tracking checks",
@@ -264,9 +270,9 @@
       "notify": "Notify",
       "propose_pause": "Pause",
       "propose_resume": "Resume",
-      "propose_budget_cut": "Decrease budget {{pct}}%",
-      "propose_budget_increase": "Increase budget {{pct}}%",
-      "propose_bid_change": "Adjust bid {{pct}}%",
+      "propose_budget_cut": "Budget −{{pct}}%",
+      "propose_budget_increase": "Budget +{{pct}}%",
+      "propose_bid_change": "Bid ±{{pct}}%",
       "task": "Create task"
     },
     "notRunYet": "Hasn't run yet",
@@ -280,7 +286,9 @@
       "waiting_approval": "Waiting approval",
       "no_change": "No change required",
       "failed": "Failed",
-      "unsupported": "Unsupported"
+      "unsupported": "Unsupported",
+      "cooldown": "Cooldown active",
+      "conflict": "Conflict prevented"
     },
     "reason": {
       "BID_WRITE_NOT_VERIFIED": "No platform's bid change is verified",
@@ -291,7 +299,9 @@
       "NO_DAILY_BUDGET": "No daily budget to change",
       "NOT_DAILY": "Not a daily budget",
       "UNCHANGED": "Already at that value",
-      "DUPLICATE_TASK": "Task already open"
+      "DUPLICATE_TASK": "Task already open",
+      "AWAITING_CREDENTIALS": "Platform not connected yet",
+      "PROVIDER_WRITE_UNVERIFIED": "Not verified on this platform"
     },
     "status": {
       "paused": "Paused",
@@ -339,7 +349,6 @@
     "campaignCount_other": "{{count}} campaigns",
     "edit": "Edit {{name}}",
     "useTemplate": "Use template",
-    "notSupportedOn": "Not supported on {{platforms}}",
     "supported": "Supported",
     "notSupported": "Not supported",
     "askAgent": "Ask an agent",
@@ -398,7 +407,9 @@
       "lead_review": "Lead quality review",
       "guardian": "Budget guardian",
       "creative_review": "Creative review",
-      "weekly_briefs": "Weekly client briefs"
+      "weekly_briefs": "Weekly client briefs",
+      "tracking_review": "Tracking review",
+      "monthly_executive": "Monthly executive review"
     },
     "runner": {
       "automation": "Rules engine",
@@ -407,7 +418,9 @@
       "creative": "Creative agent",
       "leads": "Leads agent",
       "reports": "Reports agent",
-      "operations": "Project operations"
+      "operations": "Project operations",
+      "tracking": "Tracking review",
+      "digest": "Executive digest"
     },
     "every_one": "Every {{count}} minute",
     "every_other": "Every {{count}} minutes",
@@ -424,6 +437,47 @@
       "thu": "Thu",
       "fri": "Fri",
       "sat": "Sat"
+    },
+    "monthly": "Monthly, day {{day}}",
+    "capability": {
+      "unsupported": "Not supported on {{platforms}}",
+      "awaiting_credentials": "Awaiting credentials on {{platforms}}",
+      "unverified": "Unverified on {{platforms}}",
+      "supported": "Supported"
+    },
+    "dry": {
+      "matched": "Matched",
+      "wouldAct": "Would act",
+      "insufficient": "Insufficient data",
+      "skipped": "Would skip",
+      "nothingChanged": "Test only — nothing was changed or proposed."
+    },
+    "skip": {
+      "unsupported_one": "{{count}} not supported",
+      "unsupported_other": "{{count}} not supported",
+      "awaiting_credentials_one": "{{count}} awaiting credentials",
+      "awaiting_credentials_other": "{{count}} awaiting credentials",
+      "unverified_one": "{{count}} unverified",
+      "unverified_other": "{{count}} unverified",
+      "cooldown_one": "{{count}} in cooldown",
+      "cooldown_other": "{{count}} in cooldown",
+      "conflict_one": "{{count}} conflict prevented",
+      "conflict_other": "{{count}} conflicts prevented",
+      "no_daily_budget_one": "{{count}} no daily budget",
+      "no_daily_budget_other": "{{count}} no daily budget"
+    },
+    "bulk": {
+      "title": "Bulk rule actions",
+      "selectAll": "Select all rules",
+      "select": "Select {{name}}",
+      "selected_one": "{{count}} selected",
+      "selected_other": "{{count}} selected",
+      "enable": "Enable",
+      "disable": "Disable",
+      "archive": "Archive",
+      "setMode": "Set {{mode}}",
+      "refused_one": "{{count}} refused",
+      "refused_other": "{{count}} refused"
     }
   },
   "aiCenter": {

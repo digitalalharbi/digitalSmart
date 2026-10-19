@@ -21,7 +21,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/ui/table';
-import { useAutomationSummary, useDeleteRule, useRulesQuery, useUpdateRule } from './api';
+import {
+  useAutomationSummary,
+  useBulkRules,
+  useDeleteRule,
+  useRulesQuery,
+  useUpdateRule,
+} from './api';
 import { RuleBuilder } from './RuleBuilder';
 import { actionText, ruleConditionParts } from './ruleText';
 import { COVERED, TEMPLATES, draftFrom } from './templates';
@@ -66,6 +72,17 @@ export function AutomationPage() {
   const [mode, setMode] = useState<'all' | RuleMode>('all');
   const [platform, setPlatform] = useState('all');
   const [builder, setBuilder] = useState<{ draft: RuleDraft; rule?: Rule } | null>(null);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const bulk = useBulkRules();
+  const pick = (id: string) =>
+    setPicked((now) => {
+      const next = new Set(now);
+
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+
+      return next;
+    });
 
   const rules = useRulesQuery();
   const summary = useAutomationSummary(days);
@@ -226,6 +243,19 @@ export function AutomationPage() {
           <DataTable label={t('automation.rules')} minWidth="72rem">
             <TableHead>
               <TableRow>
+                {mayWrite ? (
+                  <TableHeader>
+                    <input
+                      type="checkbox"
+                      aria-label={t('automation.bulk.selectAll')}
+                      className="accent-action size-4"
+                      checked={shown.length > 0 && shown.every((r) => picked.has(r.id))}
+                      onChange={(e) =>
+                        setPicked(e.target.checked ? new Set(shown.map((r) => r.id)) : new Set())
+                      }
+                    />
+                  </TableHeader>
+                ) : null}
                 <TableHeader>{t('automation.col.onOff')}</TableHeader>
                 <TableHeader>{t('automation.col.name')}</TableHeader>
                 <TableHeader>{t('automation.col.scope')}</TableHeader>
@@ -242,6 +272,17 @@ export function AutomationPage() {
             <TableBody>
               {shown.map((rule) => (
                 <TableRow key={rule.id}>
+                  {mayWrite ? (
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        aria-label={t('automation.bulk.select', { name: rule.name })}
+                        className="accent-action size-4"
+                        checked={picked.has(rule.id)}
+                        onChange={() => pick(rule.id)}
+                      />
+                    </TableCell>
+                  ) : null}
                   <TableCell>
                     <button
                       type="button"
@@ -372,6 +413,49 @@ export function AutomationPage() {
           </DataTable>
         )}
       </section>
+
+      {picked.size === 0 ? null : (
+        <div
+          role="region"
+          aria-label={t('automation.bulk.title')}
+          className="bg-action text-action-contrast sticky bottom-4 z-20 flex flex-wrap items-center gap-2 rounded-3xl p-3 shadow-lg"
+        >
+          <span className="ds-numeric px-2 text-sm font-semibold">
+            {t('automation.bulk.selected', { count: picked.size })}
+          </span>
+          {(
+            [
+              ['enable', undefined],
+              ['disable', undefined],
+              ['mode', 'monitor'],
+              ['mode', 'recommend'],
+              ['archive', undefined],
+            ] as const
+          ).map(([operation, mode]) => (
+            <Button
+              key={`${operation}-${mode ?? ''}`}
+              variant="secondary"
+              size="sm"
+              disabled={bulk.isPending}
+              onClick={() =>
+                bulk.mutate(
+                  { ids: [...picked], operation, ...(mode === undefined ? {} : { mode }) },
+                  { onSuccess: () => setPicked(new Set()) },
+                )
+              }
+            >
+              {mode === undefined
+                ? t(`automation.bulk.${operation}`)
+                : t('automation.bulk.setMode', { mode: t(`automation.mode.${mode}`) })}
+            </Button>
+          ))}
+          {bulk.data !== undefined && bulk.data.refused > 0 ? (
+            <span role="status" className="text-xs">
+              {t('automation.bulk.refused', { count: bulk.data.refused })}
+            </span>
+          ) : null}
+        </div>
+      )}
 
       <section aria-label={t('automation.templates')} className="flex flex-col gap-3">
         <h2 className="text-content text-base font-semibold">{t('automation.templates')}</h2>

@@ -114,7 +114,13 @@ export type AgentStatus = {
 export type RoutineStatus = {
   routine: string;
   agent: string;
-  schedule: { every_minutes?: number; at?: string; days?: number[] | null; timezone?: string };
+  schedule: {
+    every_minutes?: number;
+    at?: string;
+    days?: number[] | null;
+    month_day?: number | null;
+    timezone?: string;
+  };
   last_run: string | null;
   last_status: string | null;
   next_run: string;
@@ -130,5 +136,27 @@ export function useAgentsStatus() {
         )
       ).data.data,
     staleTime: 30_000,
+  });
+}
+
+export type BulkResult = {
+  done: number;
+  refused: number;
+  results: Array<{ id: string; ok: boolean; reason: string | null }>;
+};
+
+export function useBulkRules() {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (body: {
+      ids: string[];
+      operation: 'enable' | 'disable' | 'archive' | 'mode';
+      mode?: 'monitor' | 'recommend';
+    }): Promise<BulkResult> =>
+      (await api.post<{ data: BulkResult }>('/automation/rules/bulk', body)).data.data,
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['automation'] });
+    },
   });
 }

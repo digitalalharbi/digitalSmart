@@ -15,10 +15,20 @@ export function RoutinesPage() {
   const { t, i18n } = useTranslation();
   const status = useAgentsStatus();
 
-  const schedule = (r: RoutineStatus) =>
-    r.schedule.every_minutes !== undefined
-      ? t('automation.every', { count: r.schedule.every_minutes })
-      : `${r.schedule.days ? r.schedule.days.map((d) => t(`automation.day.${DAY[d]!}`)).join(' · ') + ' ' : t('automation.daily') + ' '}${r.schedule.at ?? ''} ${t('automation.riyadh')}`;
+  const schedule = (r: RoutineStatus) => {
+    if (r.schedule.every_minutes !== undefined) {
+      return t('automation.every', { count: r.schedule.every_minutes });
+    }
+
+    const when =
+      r.schedule.month_day != null
+        ? t('automation.monthly', { day: r.schedule.month_day })
+        : r.schedule.days
+          ? r.schedule.days.map((d) => t(`automation.day.${DAY[d]!}`)).join(' · ')
+          : t('automation.daily');
+
+    return `${when} ${r.schedule.at ?? ''} ${t('automation.riyadh')}`;
+  };
 
   return (
     <div className="ds-page">

@@ -92,4 +92,6 @@ Schedule::command('agents:run leads')->dailyAt('10:00')->timezone('Asia/Riyadh')
 Schedule::command('agents:run reports')->weeklyOn(4, '14:00')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();
 /* The rules: every fifteen minutes; each rule decides whether it is due (continuous, hourly, daily in its time zone). */
 Schedule::command('automation:run')->everyFifteenMinutes()->withoutOverlapping()->runInBackground();
+/* The tracking review: every measurement source checked each morning before the performance review. */
+Schedule::command('agents:run tracking')->dailyAt('07:30')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();
 Schedule::command('agents:run operations')->dailyAt('08:30')->timezone('Asia/Riyadh')->withoutOverlapping()->runInBackground();

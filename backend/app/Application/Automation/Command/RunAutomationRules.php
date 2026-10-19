@@ -13,14 +13,14 @@ use App\Application\Agents\Tool\ToolGateway;
 use App\Application\Automation\Contract\AutomationRuleRepository;
 use App\Application\Automation\Contract\RuleExecutionLog;
 use App\Application\Automation\DTO\RuleView;
+use App\Application\Automation\RuleCapability;
 use App\Application\Automation\RuleEvaluator;
+use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMode;
 use App\Domain\Identity\UserId;
-use App\Domain\Integration\Provider;
-use App\Domain\Integration\WriteSupport;
 use App\Domain\Workspace\WorkspaceId;
 use DateTimeImmutable;
 use Throwable;
@@ -45,15 +45,15 @@ use Throwable;
  */
 final readonly class RunAutomationRules
 {
-    private const int ACTIONS_PER_RULE = 10;
-
     /** Opposite moves, so two rules never undo each other inside a cooldown. */
-    private const array OPPOSITE = [
+    public const array OPPOSITE = [
         'propose_pause' => ['propose_resume', 'propose_budget_increase'],
         'propose_resume' => ['propose_pause', 'propose_budget_cut'],
         'propose_budget_cut' => ['propose_budget_increase', 'propose_resume'],
         'propose_budget_increase' => ['propose_budget_cut', 'propose_pause'],
     ];
+
+    private const int ACTIONS_PER_RULE = 10;
 
     public function __construct(
         private AutomationRuleRepository $rules,
@@ -64,6 +64,8 @@ final readonly class RunAutomationRules
         private ActorContextBinder $binder,
         private ToolGateway $tools,
         private Clock $clock,
+        private RuleCapability $capability,
+        private ActorContext $actor,
     ) {}
 
     /** @return array{workspaces: int, rules: int, acted: int, refused: int} */
@@ -126,7 +128,7 @@ final readonly class RunAutomationRules
         }
 
         $streaks = $this->rules->observe($rule->id, array_keys($hits), $today->format('Y-m-d'));
-        $result = ['matched' => count($hits), 'completed' => 0, 'waiting_approval' => 0, 'no_change' => 0, 'unsupported' => 0, 'failed' => 0, 'cooling' => 0];
+        $result = ['matched' => count($hits), 'completed' => 0, 'waiting_approval' => 0, 'no_change' => 0, 'unsupported' => 0, 'failed' => 0, 'cooldown' => 0, 'conflict' => 0];
         $acted = 0;
 
         foreach ($hits as $campaignId => [$row, $evaluation]) {
@@ -136,13 +138,12 @@ final readonly class RunAutomationRules
                 continue;
             }
 
-            if ($this->executions->lastActedAt($rule->id, $campaignId, $today->modify(sprintf('-%d hours', $rule->cooldownHours))) !== null) {
-                $result['cooling']++;
+            /* Inside its cooldown on this campaign: recorded once for the streak, as what it is, and nothing is done. */
+            $cooling = $this->executions->lastActedAt($rule->id, $campaignId, $today->modify(sprintf('-%d hours', $rule->cooldownHours))) !== null;
 
-                continue;
-            }
-
-            [$outcome, $reason, $after, $approval] = $this->act($rule, $row, $evaluation, $streak['days'], $today);
+            [$outcome, $reason, $after, $approval] = $cooling
+                ? ['cooldown', 'COOLDOWN', [], null]
+                : $this->act($rule, $row, $evaluation, $streak['days'], $today);
             $this->rules->markActed($rule->id, $campaignId);
             $this->executions->record($workspace, [
                 'rule_id' => $rule->id,
@@ -187,7 +188,7 @@ final readonly class RunAutomationRules
 
     /**
      * @param  array{values: array<string, float|int|null>, first: array{0: string, 1: string, 2: array<string, int|string|float>}|null}  $evaluation
-     * @return array{0: string, 1: string|null, 2: array<string, mixed>, 3: string|null}
+     * @return array{0: 'completed'|'waiting_approval'|'no_change'|'unsupported'|'failed'|'conflict', 1: string|null, 2: array<string, mixed>, 3: string|null}
      */
     private function act(RuleView $rule, CampaignControlRow $row, array $evaluation, int $days, DateTimeImmutable $now): array
     {
@@ -195,22 +196,22 @@ final readonly class RunAutomationRules
             return ['completed', 'NOTIFIED', ['notified' => true], null];
         }
 
-        if ($rule->action === RuleAction::ProposeBidChange) {
-            return ['unsupported', 'BID_WRITE_NOT_VERIFIED', [], null];
-        }
+        $capability = $this->capability->of($rule->action, $row->provider, $this->actor->workspaceId()->value);
 
-        $operation = $rule->action->writeOperation();
-        $provider = Provider::tryFrom($row->provider);
-
-        if ($operation !== null && ($provider === null || $provider->writeSupport($operation) !== WriteSupport::Documented)) {
-            return ['unsupported', 'PROVIDER_WRITE_NOT_DOCUMENTED', [], null];
+        if ($capability !== 'supported') {
+            return ['unsupported', match (true) {
+                $rule->action === RuleAction::ProposeBidChange => 'BID_WRITE_NOT_VERIFIED',
+                $capability === 'awaiting_credentials' => 'AWAITING_CREDENTIALS',
+                $capability === 'unverified' => 'PROVIDER_WRITE_UNVERIFIED',
+                default => 'PROVIDER_WRITE_NOT_DOCUMENTED',
+            }, [], null];
         }
 
         $opposite = self::OPPOSITE[$rule->action->value] ?? [];
         $rival = $this->executions->conflicting($rule->id, $row->campaignId, $opposite, $now->modify(sprintf('-%d hours', $rule->cooldownHours)));
 
         if ($rival !== null) {
-            return ['no_change', 'CONFLICT', ['conflicts_with' => $rival], null];
+            return ['conflict', 'CONFLICT', ['conflicts_with' => $rival], null];
         }
 
         $reason = sprintf('Rule "%s": %s Held for %d day(s).', $rule->name, (string) ($evaluation['first'][0] ?? ''), $days);

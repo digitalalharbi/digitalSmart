@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Automation\Query;
 
 use App\Application\Agents\Contract\AgentReadModel;
+use App\Application\Automation\RuleCapability;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Domain\Access\Permission;
@@ -12,7 +13,6 @@ use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMetric;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderCategory;
-use App\Domain\Integration\WriteSupport;
 
 /**
  * What a rule may watch and do on each platform — shown in the builder so an action a platform cannot take reads
@@ -29,9 +29,10 @@ final readonly class GetRuleCapabilities
         private AgentReadModel $agents,
         private AuthorizationGuard $guard,
         private ActorContext $actor,
+        private RuleCapability $capability,
     ) {}
 
-    /** @return list<array{provider: string, label: string, credentials: string, metrics: list<string>, actions: array<string, string>}> */
+    /** @return list<array{provider: string, label: string, credentials: string, metrics: list<string>, actions: array<string, string>}> supported · awaiting_credentials · unverified · unsupported */
     public function __invoke(): array
     {
         $this->guard->ensure(Permission::AnalyticsView);
@@ -47,12 +48,7 @@ final readonly class GetRuleCapabilities
             $actions = [];
 
             foreach (RuleAction::cases() as $action) {
-                $operation = $action->writeOperation();
-                $actions[$action->value] = match (true) {
-                    $action === RuleAction::ProposeBidChange => 'unsupported',
-                    $operation === null => 'supported',
-                    default => $provider->writeSupport($operation) === WriteSupport::Documented ? 'supported' : 'unsupported',
-                };
+                $actions[$action->value] = $this->capability->of($action, $provider->value, $this->actor->workspaceId()->value);
             }
 
             $out[] = [

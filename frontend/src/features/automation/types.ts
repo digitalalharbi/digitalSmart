@@ -26,7 +26,14 @@ export type RuleMode = 'monitor' | 'recommend' | 'auto';
 export type RuleSchedule = 'continuous' | 'hourly' | 'daily';
 export type Operator = 'above' | 'below';
 export type ExecutionResult =
-  'completed' | 'no_change' | 'waiting_approval' | 'failed' | 'unsupported';
+  | 'completed'
+  | 'no_change'
+  | 'waiting_approval'
+  | 'failed'
+  | 'unsupported'
+  | 'cooldown'
+  | 'conflict';
+export type CapabilityState = 'supported' | 'awaiting_credentials' | 'unverified' | 'unsupported';
 /** 0 watch · 1 alert · 2 propose (default) · 3 act internally. 4 — changing a platform unasked — is not available. */
 export type TrustLevel = 0 | 1 | 2 | 3;
 
@@ -101,7 +108,10 @@ export type Rule = {
   timezone: string;
   cooldown_hours: number;
   last_run_at: string | null;
-  last_result: Partial<Record<ExecutionResult | 'matched' | 'cooling', number>> | null;
+  last_result: Partial<Record<ExecutionResult | 'matched', number>> | null;
+  min_spend: number | null;
+  min_age_days: number | null;
+  min_conversions: number | null;
 };
 
 export type RuleDraft = {
@@ -129,6 +139,9 @@ export type RuleDraft = {
   schedule_time?: string | null;
   timezone?: string;
   cooldown_hours?: number;
+  min_spend?: number | null;
+  min_age_days?: number | null;
+  min_conversions?: number | null;
 };
 
 export type SummaryCard = { now: number; before: number };
@@ -168,6 +181,9 @@ export type ChangeEntry = {
 export type Simulation = {
   matched: number;
   looked_at: number;
+  insufficient: number;
+  would_act: number;
+  skipped: Record<string, number>;
   objects: Array<{
     campaign_id: string;
     campaign: string;
@@ -179,7 +195,8 @@ export type Simulation = {
     action: string;
     before: Record<string, number | string | null>;
     after: Record<string, number | string | null>;
-    capability: string;
+    capability: CapabilityState;
+    outcome: string;
   }>;
 };
 
@@ -188,7 +205,7 @@ export type Capability = {
   label: string;
   credentials: 'connected' | 'awaiting_credentials';
   metrics: RuleMetric[];
-  actions: Record<RuleAction, 'supported' | 'unsupported'>;
+  actions: Record<RuleAction, CapabilityState>;
 };
 
 /** The whole rule as a draft — so changing one switch never quietly resets its action or trust. */
@@ -221,5 +238,8 @@ export function draftOf(rule: Rule): RuleDraft {
     schedule_time: rule.schedule_time,
     timezone: rule.timezone,
     cooldown_hours: rule.cooldown_hours,
+    min_spend: rule.min_spend,
+    min_age_days: rule.min_age_days,
+    min_conversions: rule.min_conversions,
   };
 }
