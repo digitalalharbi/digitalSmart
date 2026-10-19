@@ -57,7 +57,7 @@ There is no PARTIAL, GAP or NOT ASSESSED left in this document. One item is reco
 |---|---|---|---|
 | 10 | Campaign Control Center | **MET** | `GET /api/campaigns/control` + `CampaignControlPage`: filters on client, project, provider, status, objective, health, tag and search; sort; cards or table; state in the address bar; saved views; pins; tags inherited from project and client. |
 | 11 | Normalized business campaign health, separate from provider status | **MET** | `CampaignHealth` (six words) computed by `CampaignHealthPolicy`; the platform's own status ships beside it; every verdict carries a sentence. |
-| 12 | Agency-wide attention queue | **MET** | `GET /api/attention`: six streams, membership per stream by permission, severity counts, scope published, failed streams named; narrows to *my clients* / *my projects* (`AttentionAudience`) and says that it is narrowed. |
+| 12 | Agency-wide attention queue | **MET** | `GET /api/attention`: eight streams, membership per stream by permission, severity counts, scope published, failed streams named; narrows to *my clients* / *my projects* (`AttentionAudience`) and says that it is narrowed. |
 
 ## 13–15 · Portfolio and workspace
 
@@ -275,7 +275,7 @@ defaults: **100 clients, 230 projects, 300 external accounts, 2,000 campaigns, 1
 | Campaign Control Center, 50 rows, 2,000 campaigns assessed | 341 ms | 7 |
 | Campaign Control Center, filtered by health | 198 ms | 5 |
 | Campaign ownership queue, 50 rows | 105 ms | 5 |
-| Attention queue, all six streams | 282 ms | 17 |
+| Attention queue, all eight streams | 282 ms † | 18 † |
 | Agency portfolio | 285 ms | 16 |
 | Client portfolio | 122 ms | 16 |
 | Budget control (67 budgets) | 58 ms | 6 |
@@ -292,6 +292,11 @@ defaults: **100 clients, 230 projects, 300 external accounts, 2,000 campaigns, 1
 | Analytics breakdown by provider | 355 ms | 6 |
 | Analytics breakdown by campaign, 25 rows | 328 ms | 7 |
 | Clients / projects, 25 per page | 11 ms / 8 ms | 5 / 5 |
+
+† The attention row was taken under six streams. Automation (2026-10-18) and Agents (2026-10-19) each added
+exactly one query, re-measured on 2026-10-19 as **18 statements**; the invariance test is what lets that count
+be carried from the test fixture to full scale. The millisecond figure is the original and has **not** been
+re-taken, so read it as a six-stream number.
 
 Read these as a baseline from one laptop, not as a pass mark: compare runs on one machine. The fixture is
 deterministic — a seeded walk, not `random_int` — so two runs are comparable.

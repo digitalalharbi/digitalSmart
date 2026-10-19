@@ -54,8 +54,30 @@ GitHub Actions and rulesets free. Everything below followed the same day.
   it lives in `frontend/vite.config.ts`, which is in **another session's uncommitted work**. Half the change
   is on `main` and half is not. Not fixed here — those files are not this session's to stage — but it now
   blocks every merge, so it is the first item in `docs/RESUME_STATE.md`.
-- This is the argument for the whole change, made by accident on its first run: the defect had been sitting
-  on `main` behind a CI that failed in four seconds without executing a step.
+- **`Backend` — 2055 passed, 1 failed**, and the cause was established before anything was edited.
+  `AgencyScaleTest > it keeps the agency views within their stated query budget` reported
+  `/api/attention used 18 statements` against a budget of 17.
+
+  Not a regression and not an N+1. The invariance test beside it — the one asserting the count does not
+  grow with the agency — **passed**, so the extra statements are constant. A probe dumping all eighteen
+  showed why: 3 for authentication and permissions, then 2 campaigns, 3 budgets, 2 tracking, 4 approvals,
+  1 requests, 1 tasks — 16, exactly the figure the budget of 17 was set against on 2026-10-15 when the
+  queue was halved — plus **one query each** from two streams added afterwards and never accounted for:
+  `operating_rules` (Automation, 2026-10-18) and `agent_findings` (Agents, 2026-10-19).
+
+  The budget is now **19**: the measured 18 plus the +1 slack this entry adopted when it was halved,
+  rather than the +2 the rest of the file uses, so a third stream added without thought still fails here.
+  The three approval reads were checked rather than assumed to be duplication — they ask three different
+  questions (awaiting decision by age, approved and awaiting a hand, recently settled), each with its own
+  filter and ordering, and all three predate the budget.
+
+  The stale prose went with it: two comments still said the queue consults *six* modules, and
+  `docs/AGENCY_SCALE.md` said six streams and 17 statements. The millisecond figure in that table is
+  marked as **not** re-measured rather than quietly carried over, because a number nobody has taken again
+  is worth less than one that says when it was taken.
+
+- This is the argument for the whole change, made by accident on its first run: both defects had been
+  sitting on `main` behind a CI that failed in four seconds without executing a step.
 
 ## Governance: one source of truth, one path to main, no fees
 
