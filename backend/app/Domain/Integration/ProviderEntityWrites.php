@@ -131,7 +131,7 @@ final class ProviderEntityWrites
     {
         $reference = self::DOCUMENTED[$provider->value][$operation->value] ?? null;
 
-        return $reference === null ? null : sprintf('%s — %s', $reference, self::API[$provider->value]);
+        return $reference === null ? null : sprintf('%s — %s', $reference, self::API[$provider->value] ?? $provider->label());
     }
 
     /** Why a platform cannot take a change at a level, in its own words where it said so. */

@@ -21,11 +21,11 @@ interface RuleExecutionLog
 
     /**
      * Whether another rule moved this object the opposite way since `$since` — the second rule then stands down
-     * rather than undo the first.
+     * rather than undo the first. A null rule is a draft in a dry run, for which every rule is another.
      *
      * @param  list<string>  $opposite
      */
-    public function conflicting(string $ruleId, string $entityId, array $opposite, DateTimeImmutable $since): ?string;
+    public function conflicting(?string $ruleId, string $entityId, array $opposite, DateTimeImmutable $since): ?string;
 
     /**
      * @param  list<string>|null  $visibleProjectIds

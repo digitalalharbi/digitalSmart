@@ -180,7 +180,7 @@ final readonly class SimulateRule
 
         $opposite = RunAutomationRules::OPPOSITE[$rule->action->value] ?? [];
 
-        return $this->executions->conflicting($rule->id, $row->id, $opposite, $now->modify(sprintf('-%d hours', $rule->cooldownHours))) === null
+        return $this->executions->conflicting($rule->id === 'draft' ? null : $rule->id, $row->id, $opposite, $now->modify(sprintf('-%d hours', $rule->cooldownHours))) === null
             ? 'would_act'
             : 'conflict';
     }

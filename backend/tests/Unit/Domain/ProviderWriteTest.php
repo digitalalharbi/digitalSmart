@@ -34,7 +34,8 @@ describe('write support', function (): void {
         foreach ([Provider::Meta, Provider::Snapchat, Provider::TikTok, Provider::LinkedIn] as $provider) {
             foreach (WriteOperation::cases() as $operation) {
                 expect($provider->writeSupport($operation))->toBe(WriteSupport::Documented);
-                expect($provider->writeReference($operation))->toBeString()->not->toBe('');
+                expect($provider->writeReference($operation))->toBeString();
+                expect((string) $provider->writeReference($operation))->not->toBe('');
             }
         }
     });

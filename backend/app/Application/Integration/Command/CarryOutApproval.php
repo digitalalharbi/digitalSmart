@@ -139,6 +139,9 @@ final readonly class CarryOutApproval
         $this->record(AuditAction::ProviderWriteAttempted, $approval, $operation, $target->provider, [
             'external_account_id' => $target->externalAccountId,
             'external_campaign_id' => $target->externalCampaignId,
+            /* The entity actually changed — the campaign itself, or the ad group or ad the operation's level names. */
+            'level' => $operation->level()->value,
+            'external_entity_id' => $target->externalEntityId,
             'daily_budget_minor' => $target->dailyBudgetMinor,
             'reference' => $target->provider->writeReference($operation),
         ]);

@@ -26,8 +26,11 @@ final class ProviderMcp
             Provider::Snapchat => ['trust' => 'official', 'endpoint' => 'https://mcp.snapchat.com/ads', 'reads' => true, 'writes' => 'planned', 'source' => 'https://developers.snap.com/marketing-api/Ads-MCP/Introduction'],
             /* Meta-hosted; "Create and edit ads, ad sets, and campaigns." */
             Provider::Meta => ['trust' => 'official', 'endpoint' => 'https://mcp.facebook.com/ads', 'reads' => true, 'writes' => 'documented', 'source' => 'https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-overview'],
-            /* TikTok for Business MCP server; tools include create campaign, pause ad group, budget changes. */
-            Provider::TikTok => ['trust' => 'official', 'endpoint' => 'https://business-api.tiktok.com/open_mcp/tt-ads-mcp-layer', 'reads' => true, 'writes' => 'documented', 'source' => 'https://ads.tiktok.com/resources/help/article/about-tiktok-for-business-mcp-server'],
+            /*
+             * TikTok for Business MCP server: its "Available tools" page lists about 400 tools wrapping the API,
+             * writes included — campaign_status_update, adgroup_status_update, adgroup_budget_update, ad_status_update.
+             */
+            Provider::TikTok => ['trust' => 'official', 'endpoint' => 'https://business-api.tiktok.com/open_mcp/tt-ads-mcp-layer', 'reads' => true, 'writes' => 'documented', 'source' => 'https://business-api.tiktok.com/portal/docs/available-tools-in-tiktok-for-business-mcp-server/v1.3'],
             default => ['trust' => 'none', 'endpoint' => null, 'reads' => false, 'writes' => 'none', 'source' => null],
         };
     }

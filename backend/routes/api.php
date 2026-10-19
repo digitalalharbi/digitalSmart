@@ -784,6 +784,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])
         ->name('integrations.providers.index');
+    Route::get('integrations/readiness', [ProviderController::class, 'readiness'])
+        ->name('integrations.readiness');
     Route::put('integrations/providers/{provider}', [ProviderController::class, 'configure'])
         ->name('integrations.providers.configure');
     Route::post('integrations/providers/{provider}/discover', [ProviderController::class, 'discover'])

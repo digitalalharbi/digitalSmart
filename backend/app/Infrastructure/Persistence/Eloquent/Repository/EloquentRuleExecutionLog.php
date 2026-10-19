@@ -39,7 +39,7 @@ final readonly class EloquentRuleExecutionLog implements RuleExecutionLog
         return is_string($at) ? new DateTimeImmutable($at) : null;
     }
 
-    public function conflicting(string $ruleId, string $entityId, array $opposite, DateTimeImmutable $since): ?string
+    public function conflicting(?string $ruleId, string $entityId, array $opposite, DateTimeImmutable $since): ?string
     {
         if ($opposite === []) {
             return null;
@@ -48,7 +48,8 @@ final readonly class EloquentRuleExecutionLog implements RuleExecutionLog
         $other = DB::table('automation_rule_executions as e')
             ->join('automation_rules as r', 'r.id', '=', 'e.rule_id')
             ->where('e.entity_id', $entityId)
-            ->where('e.rule_id', '!=', $ruleId)
+            /* A draft has no id yet: every rule that acted is another rule. */
+            ->when($ruleId !== null, static fn ($q) => $q->where('e.rule_id', '!=', $ruleId))
             ->whereIn('e.action', $opposite)
             ->whereIn('e.result', ['completed', 'waiting_approval'])
             ->where('e.created_at', '>=', $since)
