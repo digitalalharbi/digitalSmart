@@ -8,12 +8,22 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import { formatMinor, formatPercent } from '@/shared/lib/format';
+
+function formatCompactMinor(minor: number, currency: string, locale: string): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(minor / 100);
+}
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { ProgressBar, ProgressRing } from '@/shared/ui/viz';
 import {
   DataTable,
   TableBody,
@@ -162,58 +172,64 @@ export function BudgetControlPage() {
         aria-label={t('budgetControl.totals')}
         className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
       >
-        {(data?.meta.totals ?? []).map((total) => (
-          <div
-            key={total.currency}
-            className="bg-surface border-line-subtle rounded-2xl border p-4 shadow-xs"
-          >
-            <p className="ds-overline text-content-tertiary">{total.currency}</p>
-            <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
-              <dt className="text-content-tertiary">{t('budgetControl.approved')}</dt>
-              <dd className="ds-numeric text-end">
-                {formatMinor(total.approved_minor, total.currency, locale)}
-              </dd>
-              <dt className="text-content-tertiary">{t('budgetControl.allocated')}</dt>
-              <dd className="ds-numeric text-end">
-                {formatMinor(total.allocated_minor, total.currency, locale)}
-              </dd>
-              <dt className="text-content-tertiary">{t('budgetControl.spent')}</dt>
-              <dd className="ds-numeric text-end">
-                {formatMinor(total.spent_minor, total.currency, locale)}
-                {total.unreported > 0 ? <span className="text-content-tertiary"> *</span> : null}
-              </dd>
-              <dt className="text-content-tertiary">{t('budgetControl.remaining')}</dt>
-              <dd
-                className={`ds-numeric text-end ${total.approved_minor - total.spent_minor < 0 ? 'text-danger' : ''}`}
-              >
-                {formatMinor(total.approved_minor - total.spent_minor, total.currency, locale)}
-              </dd>
-            </dl>
+        {(data?.meta.totals ?? []).map((total) => {
+          const remaining = total.approved_minor - total.spent_minor;
+
+          return (
             <div
-              role="progressbar"
-              aria-label={t('budgetControl.used', { currency: total.currency })}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.min(
-                100,
-                Math.round((total.spent_minor / Math.max(total.approved_minor, 1)) * 100),
-              )}
-              className="bg-surface-sunken mt-3 h-2 overflow-hidden rounded-full"
+              key={total.currency}
+              className="bg-surface border-line-subtle rounded-2xl border p-4 shadow-xs"
             >
-              <div
-                className={`h-full rounded-full ${total.spent_minor > total.approved_minor ? 'bg-danger' : 'bg-accent'}`}
-                style={{
-                  width: `${String(Math.min(100, (total.spent_minor / Math.max(total.approved_minor, 1)) * 100))}%`,
-                }}
-              />
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="ds-overline text-content-tertiary">
+                    {t('budgetControl.remaining')}
+                  </p>
+                  <p
+                    className={`ds-numeric text-2xl font-semibold ${remaining < 0 ? 'text-danger' : 'text-content'}`}
+                  >
+                    {formatMinor(remaining, total.currency, locale)}
+                  </p>
+                  <p className="ds-overline text-content-tertiary mt-1">{total.currency}</p>
+                </div>
+                <ProgressRing
+                  value={total.spent_minor}
+                  max={Math.max(total.approved_minor, 1)}
+                  tone={total.spent_minor > total.approved_minor ? 'bad' : 'brand'}
+                  size={64}
+                  label={t('budgetControl.used', { currency: total.currency })}
+                />
+              </div>
+              {/* Three figures, each its own small tile — the part of the budget, not a row of a list. */}
+              <dl className="mt-4 grid grid-cols-3 gap-2">
+                {(
+                  [
+                    ['approved', total.approved_minor],
+                    ['allocated', total.allocated_minor],
+                    ['spent', total.spent_minor],
+                  ] as const
+                ).map(([key, minor]) => (
+                  <div key={key} className="bg-surface-sunken min-w-0 rounded-xl p-2.5">
+                    <dt className="text-content-tertiary truncate text-xs">
+                      {t(`budgetControl.${key}`)}
+                    </dt>
+                    <dd className="ds-numeric text-content truncate text-sm font-semibold">
+                      {formatCompactMinor(minor, total.currency, locale)}
+                      {key === 'spent' && total.unreported > 0 ? (
+                        <span className="text-content-tertiary"> *</span>
+                      ) : null}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              {total.unreported > 0 ? (
+                <p className="text-content-tertiary mt-2 text-xs">
+                  {t('budgetControl.unreported', { count: total.unreported })}
+                </p>
+              ) : null}
             </div>
-            {total.unreported > 0 ? (
-              <p className="text-content-tertiary mt-2 text-xs">
-                {t('budgetControl.unreported', { count: total.unreported })}
-              </p>
-            ) : null}
-          </div>
-        ))}
+          );
+        })}
       </section>
 
       {showBreakdown ? null : (
@@ -224,32 +240,65 @@ export function BudgetControlPage() {
           ) : (data?.data ?? []).filter((row) => row.risks.length > 0).length === 0 ? (
             <p className="text-content-tertiary text-sm">{t('budgetControl.noneAtRisk')}</p>
           ) : (
-            <ul className="bg-surface border-line-subtle divide-line-subtle divide-y rounded-2xl border">
+            <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {(data?.data ?? [])
                 .filter((row) => row.risks.length > 0)
                 .slice(0, 6)
-                .map((row) => (
-                  <li
-                    key={row.id}
-                    className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
-                  >
-                    <span className="flex min-w-0 flex-col">
-                      <span className="text-content truncate text-sm font-medium" dir="auto">
-                        {row.name}
+                .map((row) => {
+                  const spent = row.spent_minor;
+                  const over = spent !== null && spent > row.approved_minor;
+
+                  return (
+                    <li
+                      key={row.id}
+                      className="bg-surface flex flex-col gap-3 rounded-3xl p-4 shadow-xs"
+                    >
+                      <span className="flex min-w-0 flex-col">
+                        <span className="text-content truncate text-sm font-semibold" dir="auto">
+                          {row.name}
+                        </span>
+                        <span className="text-content-tertiary truncate text-xs" dir="auto">
+                          {[row.client.name, row.project?.name].filter(Boolean).join(' · ')}
+                        </span>
                       </span>
-                      <span className="text-content-tertiary truncate text-xs" dir="auto">
-                        {[row.client.name, row.project?.name].filter(Boolean).join(' · ')}
+                      {spent === null ? null : (
+                        <div className="flex flex-col gap-1.5">
+                          {/* The bar is the budget; the tick is where an even pace would be today. */}
+                          <ProgressBar
+                            value={spent}
+                            max={Math.max(row.approved_minor, 1)}
+                            marker={row.pacing?.expected_minor}
+                            tone={
+                              over
+                                ? 'bad'
+                                : row.risks.some((r) => r.risk === 'overspend')
+                                  ? 'bad'
+                                  : 'watch'
+                            }
+                            label={t('budgetControl.spent')}
+                            height={10}
+                          />
+                          <span
+                            className="ds-numeric text-content-secondary flex justify-between text-xs"
+                            dir="ltr"
+                          >
+                            <span>{formatCompactMinor(spent, row.currency, locale)}</span>
+                            <span>
+                              {formatCompactMinor(row.approved_minor, row.currency, locale)}
+                            </span>
+                          </span>
+                        </div>
+                      )}
+                      <span className="flex flex-wrap gap-1">
+                        {row.risks.map((r) => (
+                          <Badge key={r.risk} tone={r.risk === 'overspend' ? 'danger' : 'warning'}>
+                            {r.label}
+                          </Badge>
+                        ))}
                       </span>
-                    </span>
-                    <span className="flex flex-wrap gap-1">
-                      {row.risks.map((r) => (
-                        <Badge key={r.risk} tone={r.risk === 'overspend' ? 'danger' : 'warning'}>
-                          {r.label}
-                        </Badge>
-                      ))}
-                    </span>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
             </ul>
           )}
         </section>

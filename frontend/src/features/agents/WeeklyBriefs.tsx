@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { compactMoney } from '@/shared/lib/compact-money';
 import { formatNumber } from '@/shared/lib/format';
@@ -70,18 +71,51 @@ function Brief({ brief }: { brief: AgentFinding }) {
   const best = str(e['best']);
   const worst = str(e['worst']);
 
+  const initials = brief.subject.label
+    .replace(/^DEMO\s+—\s+/u, '')
+    .split(/\s+/u)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('');
+
   return (
-    <article className="bg-surface flex h-full flex-col gap-3 rounded-3xl p-5 shadow-xs">
-      <header className="flex flex-col gap-0.5">
-        <h3 className="text-content truncate text-base font-semibold" dir="auto">
-          {brief.subject.label}
-        </h3>
-        <p className="text-content-tertiary text-xs">
-          {t('agentFindings.coverage', {
-            days: days === null ? '—' : formatNumber(days, locale),
-            sources: sources.map((s) => providerName(s)).join(' · '),
-          })}
-        </p>
+    <article
+      aria-label={brief.subject.label}
+      className="bg-surface flex h-full flex-col gap-4 rounded-3xl p-5 shadow-xs"
+    >
+      {/* The cover: who it is for, how much it covers, which platforms it drew on — as marks, not a sentence. */}
+      <header className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="bg-accent-subtle text-content-brand grid size-10 shrink-0 place-items-center rounded-2xl text-sm font-semibold"
+        >
+          {initials}
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-content truncate text-base font-semibold" dir="auto">
+            {brief.subject.label}
+          </h3>
+          <ul
+            className="mt-1 flex flex-wrap items-center gap-1"
+            aria-label={t('agentFindings.coverage', {
+              days: days === null ? '—' : formatNumber(days, locale),
+              sources: sources.map((s) => providerName(s)).join(' · '),
+            })}
+          >
+            <li className="bg-surface-sunken text-content-secondary ds-numeric rounded-full px-2 py-0.5 text-xs font-semibold">
+              {days === null ? '—' : formatNumber(days, locale)}
+              {t('agentFindings.daysShort')}
+            </li>
+            {sources.map((s) => (
+              <li
+                key={s}
+                className="bg-surface-sunken text-content-tertiary rounded-full px-2 py-0.5 text-xs"
+              >
+                {providerName(s)}
+              </li>
+            ))}
+          </ul>
+        </div>
       </header>
 
       {totals.map(([currency, raw]) => {
@@ -114,11 +148,26 @@ function Brief({ brief }: { brief: AgentFinding }) {
       })}
 
       {best === null && worst === null ? null : (
-        <p className="text-content-secondary text-xs" dir="auto">
-          {best === null ? null : t('agentFindings.best', { name: best })}
-          {best !== null && worst !== null ? ' · ' : null}
-          {worst === null ? null : t('agentFindings.worst', { name: worst })}
-        </p>
+        <ul className="flex flex-col gap-1.5">
+          {best === null ? null : (
+            <li className="bg-success-surface text-success flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-medium">
+              <TrendingUp aria-hidden className="size-4 shrink-0" />
+              <span className="sr-only">{t('agentFindings.bestLabel')}</span>
+              <span className="truncate" dir="auto">
+                {best}
+              </span>
+            </li>
+          )}
+          {worst === null ? null : (
+            <li className="bg-danger-surface text-danger flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-medium">
+              <TrendingDown aria-hidden className="size-4 shrink-0" />
+              <span className="sr-only">{t('agentFindings.worstLabel')}</span>
+              <span className="truncate" dir="auto">
+                {worst}
+              </span>
+            </li>
+          )}
+        </ul>
       )}
     </article>
   );

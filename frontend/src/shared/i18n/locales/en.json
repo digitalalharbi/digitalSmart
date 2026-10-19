@@ -719,7 +719,10 @@
     "askButton": "Ask",
     "askedAgents": "Answered by {{agents}}",
     "askNothing": "Nothing found for that right now.",
-    "askFailed": "The agents could not answer. Try again."
+    "askFailed": "The agents could not answer. Try again.",
+    "daysShort": "d",
+    "bestLabel": "Best",
+    "worstLabel": "Weakest"
   },
   "approvalLink": {
     "title": "A decision is waiting for you",

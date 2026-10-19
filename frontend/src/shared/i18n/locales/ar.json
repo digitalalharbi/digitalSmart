@@ -787,7 +787,10 @@
     "askButton": "اسأل",
     "askedAgents": "أجاب: {{agents}}",
     "askNothing": "لا شيء يستدعي الانتباه حاليًا.",
-    "askFailed": "تعذّر على الوكلاء الإجابة. حاول مجددًا."
+    "askFailed": "تعذّر على الوكلاء الإجابة. حاول مجددًا.",
+    "daysShort": " يوم",
+    "bestLabel": "الأفضل",
+    "worstLabel": "الأضعف"
   },
   "approvalLink": {
     "title": "قرار بانتظارك",
