@@ -196,4 +196,4 @@ cd "$ROOT/frontend"
 # from a previous run points at a user that no longer exists. Cleared here rather than trusted.
 rm -rf test-results/.sessions
 
-VITE_DEV_PORT="$WEB_PORT" E2E_BASE_URL="http://127.0.0.1:$WEB_PORT" npx playwright test "$@"
+E2E_DB="$E2E_DB" VITE_DEV_PORT="$WEB_PORT" E2E_BASE_URL="http://127.0.0.1:$WEB_PORT" npx playwright test "$@"

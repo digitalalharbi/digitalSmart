@@ -1,92 +1,131 @@
-import type { RuleAction, RuleCondition, RuleDraft, RuleMetric, TrustLevel } from './types';
+import type { Operator, RuleAction, RuleCondition, RuleDraft, RuleMetric, RuleMode } from './types';
 
 /**
- * Ready-made rules, one tap each.
- *
- * Only what the product can really watch is offered as a switch. Tracking failures and creative fatigue are watched
- * already — by the tracking checks and the Creative agent — and are listed as such rather than duplicated. Every
- * template that acts does so as a proposal a person approves (trust 2); none changes a platform.
+ * Ready rules, one click to start: each opens the builder filled in, to adjust and save — never a rule switched on
+ * blind. Thresholds are in each campaign's own currency. Creative fatigue and tracking failures are watched by the
+ * Creative agent and the tracking checks, and are listed as such rather than duplicated.
  */
 export type Template = {
   key: string;
   metric: RuleMetric;
-  /** The default limit, in the unit the metric uses: money in the campaign's currency, ROAS as a ratio, percent, days. */
+  operator?: Operator;
   threshold: number | null;
-  windowDays: number;
-  severity: 'watch' | 'needs_attention' | 'critical';
   conditions?: RuleCondition[];
+  windowDays: number;
   forDays?: number;
-  action?: RuleAction;
+  action: RuleAction;
   actionPct?: number;
-  trust?: TrustLevel;
+  mode?: RuleMode;
+  severity: 'watch' | 'needs_attention' | 'critical';
 };
 
 export const TEMPLATES: Template[] = [
   {
-    key: 'roasDrop',
-    metric: 'roas',
-    threshold: 2,
+    key: 'scaleWinners',
+    metric: 'spend',
+    threshold: 150,
+    conditions: [
+      { metric: 'roas', operator: 'above', threshold: 4 },
+      { metric: 'campaign_age', operator: 'above', threshold: 2 },
+    ],
     windowDays: 7,
-    severity: 'needs_attention',
-    forDays: 2,
-    action: 'propose_budget_cut',
-    actionPct: 15,
+    action: 'propose_budget_increase',
+    actionPct: 20,
+    severity: 'watch',
   },
   {
-    key: 'cpaUp',
-    metric: 'cost_per_result',
-    threshold: 100,
+    key: 'cutLosers',
+    metric: 'spend',
+    threshold: 500,
+    conditions: [
+      { metric: 'roas', operator: 'below', threshold: 3 },
+      { metric: 'campaign_age', operator: 'above', threshold: 2 },
+    ],
     windowDays: 7,
-    severity: 'needs_attention',
-    forDays: 3,
     action: 'propose_budget_cut',
-    actionPct: 15,
+    actionPct: 20,
+    severity: 'needs_attention',
   },
   {
-    key: 'cplUp',
-    metric: 'cost_per_result',
-    threshold: 50,
+    key: 'pauseNoSale',
+    metric: 'spend',
+    threshold: 1000,
+    conditions: [{ metric: 'conversions', operator: 'below', threshold: 1 }],
     windowDays: 7,
-    severity: 'needs_attention',
-    forDays: 3,
+    action: 'propose_pause',
+    severity: 'critical',
   },
   {
     key: 'budgetNear',
     metric: 'budget_used',
     threshold: 90,
     windowDays: 7,
+    action: 'alert',
+    mode: 'monitor',
     severity: 'needs_attention',
   },
-  { key: 'overspend', metric: 'budget_used', threshold: 110, windowDays: 3, severity: 'critical' },
-  { key: 'spendSpike', metric: 'budget_used', threshold: 130, windowDays: 1, severity: 'critical' },
+  {
+    key: 'cpaSpike',
+    metric: 'cost_change',
+    threshold: 30,
+    windowDays: 7,
+    forDays: 2,
+    action: 'propose_budget_cut',
+    actionPct: 15,
+    severity: 'needs_attention',
+  },
+  {
+    key: 'roasDrop',
+    metric: 'roas',
+    threshold: 2,
+    windowDays: 7,
+    forDays: 2,
+    action: 'propose_budget_cut',
+    actionPct: 15,
+    severity: 'needs_attention',
+  },
   {
     key: 'noLeads',
     metric: 'no_results',
     threshold: null,
     windowDays: 3,
-    severity: 'critical',
     forDays: 2,
     action: 'propose_pause',
-  },
-  { key: 'noSales', metric: 'no_results', threshold: null, windowDays: 7, severity: 'critical' },
-  { key: 'adRejected', metric: 'rejected', threshold: null, windowDays: 7, severity: 'critical' },
-  { key: 'endDate', metric: 'ends_within', threshold: 3, windowDays: 7, severity: 'watch' },
-  {
-    key: 'pauseLosers',
-    metric: 'cost_per_result',
-    threshold: 150,
-    windowDays: 7,
     severity: 'critical',
-    conditions: [{ metric: 'roas', threshold: 1 }],
-    forDays: 3,
-    action: 'propose_pause',
+  },
+  {
+    key: 'noPurchases',
+    metric: 'no_results',
+    threshold: null,
+    windowDays: 7,
+    action: 'alert',
+    mode: 'monitor',
+    severity: 'critical',
+  },
+  {
+    key: 'endDate',
+    metric: 'ends_within',
+    threshold: 3,
+    windowDays: 7,
+    action: 'alert',
+    mode: 'monitor',
+    severity: 'watch',
+  },
+  {
+    key: 'spendSpike',
+    metric: 'budget_used',
+    threshold: 130,
+    windowDays: 1,
+    action: 'alert',
+    mode: 'monitor',
+    severity: 'critical',
   },
 ];
 
-/** Watched elsewhere already; listed so the page is the whole picture. */
+/** Watched elsewhere already; listed so the set is the whole picture. */
 export const COVERED: Array<{ key: string; by: 'tracking' | 'creative' }> = [
-  { key: 'tracking', by: 'tracking' },
   { key: 'fatigue', by: 'creative' },
+  { key: 'tracking', by: 'tracking' },
 ];
 
 export function draftFrom(
@@ -97,15 +136,20 @@ export function draftFrom(
   return {
     name,
     metric: template.metric,
+    ...(template.operator === undefined ? {} : { operator: template.operator }),
     threshold: template.threshold,
     window_days: template.windowDays,
     severity: template.severity,
     is_active: true,
     conditions: template.conditions ?? [],
+    logic: 'all',
     for_days: template.forDays ?? 1,
-    action: template.action ?? 'alert',
-    action_pct: template.action === 'propose_budget_cut' ? (template.actionPct ?? 15) : null,
-    trust_level: template.trust ?? 2,
+    action: template.action,
+    action_pct: template.actionPct ?? null,
+    mode: template.mode ?? (template.action === 'alert' ? 'monitor' : 'recommend'),
+    schedule: 'hourly',
+    timezone: 'Asia/Riyadh',
+    cooldown_hours: 24,
     ...scope,
   };
 }

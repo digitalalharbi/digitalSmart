@@ -14,7 +14,8 @@
     "reports": "Reports",
     "integrations": "Integrations",
     "settings": "Settings",
-    "tabs": "Sections in this area"
+    "tabs": "Sections in this area",
+    "automation": "Agents & Automation"
   },
   "actionCenter": {
     "waitingFor": "Waiting for someone who can approve this",
@@ -90,14 +91,20 @@
       "noResults": "No results",
       "tracking": "Tracking failure",
       "adRejected": "Ad rejected",
-      "endDate": "Campaign end date",
+      "endDate": "End-date control",
       "fatigue": "Creative fatigue",
       "spendSpike": "Daily spend spike",
       "cplUp": "Cost per lead up",
       "overspend": "Overspend",
       "noLeads": "No leads",
       "noSales": "No sales",
-      "pauseLosers": "Pause losers (cost up and ROAS under 1)"
+      "pauseLosers": "Pause losers (cost up and ROAS under 1)",
+      "scaleWinners": "Scale winners",
+      "cutLosers": "Cut losers",
+      "pauseNoSale": "Pause no-sale campaigns",
+      "cpaSpike": "CPA spike",
+      "noPurchases": "No purchases",
+      "cplSpike": "CPL spike"
     },
     "severity": {
       "critical": "Critical",
@@ -136,11 +143,356 @@
       "limit": "Limit",
       "nothingElse": "Nothing else",
       "cut": "Cut by",
-      "save": "Save rule"
+      "save": "Save rule",
+      "title": "New rule",
+      "edit": "Edit rule",
+      "scope": "Scope",
+      "conditions": "Conditions",
+      "action": "Action",
+      "mode": "Mode",
+      "schedule": "Schedule",
+      "campaigns": "Campaigns (optional)",
+      "levelsSoon": "Ad groups and ads: not available yet",
+      "metric": "Metric",
+      "operator": "Direction",
+      "removeCondition": "Remove condition",
+      "addCondition": "Add condition",
+      "logic": "How conditions combine",
+      "window": "Measured over",
+      "lastDays_one": "last {{count}} day",
+      "lastDays_other": "last {{count}} days",
+      "time": "Time",
+      "riyadh": "Riyadh time",
+      "cooldown": "Cooldown",
+      "hours_one": "{{count}} hour",
+      "hours_other": "{{count}} hours",
+      "summary": "The rule",
+      "dryRun": "Dry run",
+      "dryRunResult": "Would act on {{matched}} of {{total}} campaigns now",
+      "savedCampaign": "Campaign {{id}}…",
+      "testNow": "Test now",
+      "onlyWhen": "Judge only when",
+      "minSpend": "Spend ≥",
+      "minAge": "Age ≥ (d)",
+      "minResults": "Results ≥"
     },
     "covered": {
       "tracking": "Always on — tracking checks",
       "creative": "Watched by the Creative agent"
+    },
+    "rules": "Rules",
+    "summary": "Rules summary",
+    "agents": "Agents",
+    "routinesTab": "Routines",
+    "history": "Action history",
+    "changeLog": "Change log",
+    "lastDays_one": "Last {{count}} day",
+    "lastDays_other": "Last {{count}} days",
+    "vsBefore": "vs previous",
+    "ofActive": "of {{count}} active",
+    "cards": {
+      "all": "All rule actions",
+      "turn_on": "Turn on",
+      "turn_off": "Turn off",
+      "budget": "Budget adjustments",
+      "bid": "Bid adjustments",
+      "failed": "Failed actions",
+      "inactive": "Inactive 30 days"
+    },
+    "filter": {
+      "period": "Period",
+      "client": "Client",
+      "project": "Project",
+      "platform": "Platform",
+      "status": "Status",
+      "mode": "Mode",
+      "search": "Search rule name",
+      "anyStatus": "On and off",
+      "anyMode": "Any mode",
+      "anyPlatform": "All platforms",
+      "anyResult": "Any result"
+    },
+    "off": "Off",
+    "col": {
+      "onOff": "On / off",
+      "name": "Rule name",
+      "scope": "Scope",
+      "conditions": "Conditions",
+      "action": "Action",
+      "object": "Object",
+      "mode": "Mode",
+      "lastRun": "Last run",
+      "lastResult": "Last result",
+      "edit": "Edit"
+    },
+    "object": {
+      "campaign": "Campaigns",
+      "ad_group": "Ad groups",
+      "ad": "Ads"
+    },
+    "mode": {
+      "monitor": "Monitor",
+      "recommend": "Recommend",
+      "auto": "Auto"
+    },
+    "modeHint": {
+      "monitor": "Shows it on Today. Proposes nothing.",
+      "recommend": "Proposes the change; a person approves.",
+      "auto": "Not authorised for this workspace."
+    },
+    "schedule": {
+      "continuous": "Always (every 15 min)",
+      "hourly": "Hourly",
+      "daily": "Daily"
+    },
+    "logic": {
+      "all": "And",
+      "any": "Or"
+    },
+    "short": {
+      "spend": "Spend",
+      "roas": "ROAS",
+      "cost_per_result": "CPA",
+      "conversions": "Results",
+      "ctr": "CTR",
+      "cpc": "CPC",
+      "cpm": "CPM",
+      "campaign_age": "Age",
+      "budget_used": "Budget used",
+      "cost_change": "CPA change",
+      "no_results": "Spending, no results",
+      "not_delivering": "Not delivering",
+      "rejected": "Rejected",
+      "ends_within": "Ends in"
+    },
+    "act": {
+      "alert": "Notify",
+      "notify": "Notify",
+      "propose_pause": "Pause",
+      "propose_resume": "Resume",
+      "propose_budget_cut": "Budget −{{pct}}%",
+      "propose_budget_increase": "Budget +{{pct}}%",
+      "propose_bid_change": "Bid ±{{pct}}%",
+      "task": "Create task"
+    },
+    "notRunYet": "Hasn't run yet",
+    "result": {
+      "acted_one": "{{count}} action",
+      "acted_other": "{{count}} actions",
+      "noChange": "No change required",
+      "unable_one": "{{count}} unable to change",
+      "unable_other": "{{count}} unable to change",
+      "completed": "Completed",
+      "waiting_approval": "Waiting approval",
+      "no_change": "No change required",
+      "failed": "Failed",
+      "unsupported": "Unsupported",
+      "cooldown": "Cooldown active",
+      "conflict": "Conflict prevented"
+    },
+    "reason": {
+      "BID_WRITE_NOT_VERIFIED": "No platform's bid change is verified",
+      "PROVIDER_WRITE_NOT_DOCUMENTED": "Not supported on this platform",
+      "CONFLICT": "Another rule moved it the other way",
+      "COOLDOWN": "In cooldown",
+      "ALREADY_PROPOSED": "A proposal is already waiting",
+      "NO_DAILY_BUDGET": "No daily budget to change",
+      "NOT_DAILY": "Not a daily budget",
+      "UNCHANGED": "Already at that value",
+      "DUPLICATE_TASK": "Task already open",
+      "AWAITING_CREDENTIALS": "Platform not connected yet",
+      "PROVIDER_WRITE_UNVERIFIED": "Not verified on this platform",
+      "COOLING_DOWN": "Decided on within the last day",
+      "BUDGET_UNCHANGED": "Already at that value",
+      "BUDGET_NOT_DAILY": "Not a daily budget",
+      "ABOVE_CEILING": "Above the project’s budget limit",
+      "CHANGE_TOO_LARGE": "Change larger than allowed",
+      "NO_TARGET": "Campaign not found",
+      "FORBIDDEN": "Not permitted",
+      "NOT_FOUND": "Campaign not found",
+      "FAILED": "The proposal could not be raised",
+      "other": "Refused by a safety check"
+    },
+    "status": {
+      "paused": "Paused",
+      "active": "Active",
+      "rejected": "Rejected",
+      "not_delivering": "Not delivering"
+    },
+    "hcol": {
+      "time": "Time",
+      "rule": "Rule",
+      "client": "Client",
+      "project": "Project",
+      "platform": "Platform",
+      "object": "Object",
+      "action": "Action",
+      "before": "Before",
+      "after": "After",
+      "result": "Result"
+    },
+    "ccol": {
+      "when": "When",
+      "who": "Who",
+      "rule": "Rule",
+      "what": "What changed"
+    },
+    "change": {
+      "created": "Rule created",
+      "edited": "Rule edited",
+      "enabled": "Rule enabled",
+      "disabled": "Rule disabled",
+      "archived": "Rule archived",
+      "mode_changed": "Mode changed",
+      "schedule_changed": "Schedule changed",
+      "conditions_changed": "Conditions changed",
+      "action_changed": "Action changed",
+      "scope_changed": "Scope changed",
+      "name_changed": "Renamed"
+    },
+    "noHistory": "No rule has acted in this period.",
+    "noChanges": "No rule changed in this period.",
+    "someone": "Someone",
+    "archivedRule": "Archived rule",
+    "openApproval": "Open the approval",
+    "campaignCount_one": "{{count}} campaign",
+    "campaignCount_other": "{{count}} campaigns",
+    "edit": "Edit {{name}}",
+    "useTemplate": "Use template",
+    "supported": "Supported",
+    "notSupported": "Not supported",
+    "askAgent": "Ask an agent",
+    "openRecs": "Open",
+    "successRate": "Success",
+    "routinesCount": "Routines",
+    "lastRan": "Last ran {{when}}",
+    "recentFindings": "Recent findings",
+    "noFindings": "Nothing open right now.",
+    "agentStatus": {
+      "active": "Active",
+      "failing": "Failing",
+      "never": "Not run yet"
+    },
+    "runStatus": {
+      "completed": "Completed",
+      "waiting_approval": "Waiting approval",
+      "failed": "Failed",
+      "analysing": "Running",
+      "preparing": "Running"
+    },
+    "agent": {
+      "analyst": {
+        "name": "Analyst",
+        "role": "Reads every campaign against its project's targets."
+      },
+      "campaign": {
+        "name": "Campaign agent",
+        "role": "Turns findings into pause and budget proposals."
+      },
+      "finance": {
+        "name": "Finance agent",
+        "role": "Watches budgets for overspend and pacing."
+      },
+      "creative": {
+        "name": "Creative agent",
+        "role": "Finds tiring ads and asks for replacements."
+      },
+      "leads": {
+        "name": "Leads agent",
+        "role": "Tracks lead volume and quality by client."
+      },
+      "reports": {
+        "name": "Reports agent",
+        "role": "Prepares each client's weekly brief."
+      },
+      "operations": {
+        "name": "Project operations",
+        "role": "Groups each project's backlog into one card."
+      }
+    },
+    "routine": {
+      "rules": "Rules evaluation",
+      "review": "Daily performance review",
+      "project_ops": "Project operations review",
+      "lead_review": "Lead quality review",
+      "guardian": "Budget guardian",
+      "creative_review": "Creative review",
+      "weekly_briefs": "Weekly client briefs",
+      "tracking_review": "Tracking review",
+      "monthly_executive": "Monthly executive review"
+    },
+    "runner": {
+      "automation": "Rules engine",
+      "analyst": "Analyst + Campaign agent",
+      "finance": "Finance agent",
+      "creative": "Creative agent",
+      "leads": "Leads agent",
+      "reports": "Reports agent",
+      "operations": "Project operations",
+      "tracking": "Tracking review",
+      "digest": "Executive digest"
+    },
+    "every_one": "Every {{count}} minute",
+    "every_other": "Every {{count}} minutes",
+    "daily": "Daily",
+    "riyadh": "Riyadh",
+    "agentLabel": "Agent",
+    "lastRun": "Last run",
+    "nextRun": "Next run",
+    "day": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
+    "monthly": "Monthly, day {{day}}",
+    "capability": {
+      "unsupported": "Not supported on {{platforms}}",
+      "awaiting_credentials": "Awaiting credentials on {{platforms}}",
+      "unverified": "Unverified on {{platforms}}",
+      "supported": "Supported"
+    },
+    "dry": {
+      "matched": "Matched",
+      "wouldAct": "Would act",
+      "insufficient": "Insufficient data",
+      "skipped": "Would skip",
+      "nothingChanged": "Test only — nothing was changed or proposed."
+    },
+    "skip": {
+      "unsupported_one": "{{count}} not supported",
+      "unsupported_other": "{{count}} not supported",
+      "awaiting_credentials_one": "{{count}} awaiting credentials",
+      "awaiting_credentials_other": "{{count}} awaiting credentials",
+      "unverified_one": "{{count}} unverified",
+      "unverified_other": "{{count}} unverified",
+      "cooldown_one": "{{count}} in cooldown",
+      "cooldown_other": "{{count}} in cooldown",
+      "conflict_one": "{{count}} conflict prevented",
+      "conflict_other": "{{count}} conflicts prevented",
+      "no_daily_budget_one": "{{count}} no daily budget",
+      "no_daily_budget_other": "{{count}} no daily budget"
+    },
+    "bulk": {
+      "title": "Bulk rule actions",
+      "selectAll": "Select all rules",
+      "select": "Select {{name}}",
+      "selected_one": "{{count}} selected",
+      "selected_other": "{{count}} selected",
+      "enable": "Enable",
+      "disable": "Disable",
+      "archive": "Archive",
+      "setMode": "Set {{mode}}",
+      "refused_one": "{{count}} refused",
+      "refused_other": "{{count}} refused"
+    },
+    "actPlain": {
+      "propose_budget_cut": "Decrease budget",
+      "propose_budget_increase": "Increase budget",
+      "propose_bid_change": "Change bid"
     }
   },
   "aiCenter": {
@@ -410,7 +762,11 @@
     "requests": "Requests",
     "portfolio": "Portfolio",
     "budgetControl": "Budget control",
-    "stores": "Stores"
+    "stores": "Stores",
+    "automationAgents": "Agents",
+    "automationRoutines": "Routines",
+    "automationHistory": "Action history",
+    "automationChanges": "Change log"
   },
   "actions": {
     "search": "Search",

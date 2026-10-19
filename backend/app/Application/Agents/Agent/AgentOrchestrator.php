@@ -45,6 +45,7 @@ final readonly class AgentOrchestrator
         private ReportsAgent $reports,
         private ProjectOperationsAgent $operations,
         private FindingLog $findings,
+        private TrackingReview $tracking,
     ) {}
 
     /**
@@ -68,6 +69,10 @@ final readonly class AgentOrchestrator
                 if (in_array('analyst', $agents, true)) {
                     [$proposed, $pausing] = $this->analysis($workspace);
                     $totals['proposed'] += $proposed;
+                }
+
+                if (in_array('tracking', $agents, true)) {
+                    $this->stage($workspace, 'tracking', fn (): array => $this->tracking->act());
                 }
 
                 if (in_array('finance', $agents, true)) {

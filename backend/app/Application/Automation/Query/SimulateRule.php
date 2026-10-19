@@ -7,16 +7,19 @@ namespace App\Application\Automation\Query;
 use App\Application\Advertising\DTO\CampaignControlFilter;
 use App\Application\Advertising\DTO\CampaignControlRow;
 use App\Application\Advertising\Query\GetCampaignControl;
+use App\Application\Automation\Command\RunAutomationRules;
+use App\Application\Automation\Contract\RuleExecutionLog;
 use App\Application\Automation\DTO\RuleInput;
 use App\Application\Automation\DTO\RuleView;
+use App\Application\Automation\RuleCapability;
 use App\Application\Automation\RuleEvaluator;
+use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Access\Permission;
 use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMode;
-use App\Domain\Integration\Provider;
-use App\Domain\Integration\WriteSupport;
+use DateTimeImmutable;
 
 /**
  * A dry run: which campaigns a rule — saved or still a draft — would act on right now, with every condition's figure,
@@ -31,9 +34,14 @@ final readonly class SimulateRule
         private GetCampaignControl $campaigns,
         private AuthorizationGuard $guard,
         private Clock $clock,
+        private RuleCapability $capability,
+        private RuleExecutionLog $executions,
+        private ActorContext $actor,
     ) {}
 
-    /** @return array{matched: int, looked_at: int, objects: list<array<string, mixed>>} */
+    /**
+     * @return array{matched: int, looked_at: int, insufficient: int, would_act: int, skipped: array<string, int>, objects: list<array<string, mixed>>}
+     */
     public function __invoke(RuleInput $input): array
     {
         $this->guard->ensure(Permission::AnalyticsView);
@@ -49,12 +57,26 @@ final readonly class SimulateRule
         ), $rule->windowDays)['rows'];
 
         $objects = [];
+        $insufficient = 0;
+        $skipped = [];
 
         foreach ($rows as $row) {
             $evaluation = RuleEvaluator::evaluate($rule, $row, $today);
 
+            if (! $evaluation['sufficient']) {
+                $insufficient++;
+
+                continue;
+            }
+
             if (! $evaluation['holds']) {
                 continue;
+            }
+
+            $verdict = $this->verdict($rule, $row, $today);
+
+            if ($verdict !== 'would_act') {
+                $skipped[$verdict] = ($skipped[$verdict] ?? 0) + 1;
             }
 
             $objects[] = [
@@ -68,11 +90,19 @@ final readonly class SimulateRule
                 'action' => $rule->mode === RuleMode::Monitor ? 'notify' : $rule->action->value,
                 'before' => ['daily_budget' => $row->budgetMinor === null ? null : $row->budgetMinor / 100, 'status' => $row->status->value],
                 'after' => self::after($rule, $row),
-                'capability' => self::capability($rule, $row),
+                'capability' => $rule->mode === RuleMode::Monitor ? 'supported' : $this->capability->of($rule->action, $row->provider, $this->actor->workspaceId()->value),
+                'outcome' => $verdict,
             ];
         }
 
-        return ['matched' => count($objects), 'looked_at' => count($rows), 'objects' => array_slice($objects, 0, 100)];
+        return [
+            'matched' => count($objects),
+            'looked_at' => count($rows),
+            'insufficient' => $insufficient,
+            'would_act' => count(array_filter($objects, static fn (array $o): bool => $o['outcome'] === 'would_act')),
+            'skipped' => $skipped,
+            'objects' => array_slice($objects, 0, 100),
+        ];
     }
 
     public static function view(RuleInput $input, string $id = 'draft'): RuleView
@@ -106,7 +136,45 @@ final readonly class SimulateRule
             scheduleTime: $input->scheduleTime,
             timezone: $input->timezone,
             cooldownHours: $input->cooldownHours,
+            minSpend: $input->minSpend,
+            minAgeDays: $input->minAgeDays,
+            minConversions: $input->minConversions,
         );
+    }
+
+    /**
+     * What the routine would do with this campaign right now, without doing it: act, or skip it and why — the
+     * platform cannot take it, the rule is in its cooldown here, another rule moved it the other way, no daily budget.
+     */
+    private function verdict(RuleView $rule, CampaignControlRow $row, DateTimeImmutable $now): string
+    {
+        if ($rule->mode === RuleMode::Monitor || in_array($rule->action, [RuleAction::Alert, RuleAction::Task], true)) {
+            return 'would_act';
+        }
+
+        $capability = $this->capability->of($rule->action, $row->provider, $this->actor->workspaceId()->value);
+
+        if ($capability !== 'supported') {
+            return $capability;
+        }
+
+        if (in_array($rule->action, [RuleAction::ProposeBudgetCut, RuleAction::ProposeBudgetIncrease], true) && ($row->budgetMinor === null || $row->budgetMinor <= 0)) {
+            return 'no_daily_budget';
+        }
+
+        if ($rule->id !== 'draft') {
+            $since = $now->modify(sprintf('-%d hours', $rule->cooldownHours));
+
+            if ($this->executions->lastActedAt($rule->id, $row->campaignId, $since) !== null) {
+                return 'cooldown';
+            }
+        }
+
+        $opposite = RunAutomationRules::OPPOSITE[$rule->action->value] ?? [];
+
+        return $this->executions->conflicting($rule->id, $row->campaignId, $opposite, $now->modify(sprintf('-%d hours', $rule->cooldownHours))) === null
+            ? 'would_act'
+            : 'conflict';
     }
 
     /** @return array<string, mixed> */
@@ -124,28 +192,5 @@ final readonly class SimulateRule
             ],
             default => [],
         };
-    }
-
-    /** supported · unsupported (with the reason) — the same verdict the routine would reach before acting. */
-    private static function capability(RuleView $rule, CampaignControlRow $row): string
-    {
-        if ($rule->mode === RuleMode::Monitor || in_array($rule->action, [RuleAction::Alert, RuleAction::Task], true)) {
-            return 'supported';
-        }
-
-        if ($rule->action === RuleAction::ProposeBidChange) {
-            return 'unsupported:BID_WRITE_NOT_VERIFIED';
-        }
-
-        if (in_array($rule->action, [RuleAction::ProposeBudgetCut, RuleAction::ProposeBudgetIncrease], true) && ($row->budgetMinor === null || $row->budgetMinor <= 0)) {
-            return 'unsupported:NO_DAILY_BUDGET';
-        }
-
-        $operation = $rule->action->writeOperation();
-        $provider = Provider::tryFrom($row->provider);
-
-        return $operation !== null && $provider !== null && $provider->writeSupport($operation) === WriteSupport::Documented
-            ? 'supported'
-            : 'unsupported:PROVIDER_WRITE_NOT_DOCUMENTED';
     }
 }

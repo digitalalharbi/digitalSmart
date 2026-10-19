@@ -155,7 +155,7 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             ->leftJoin('clients as c', 'c.id', '=', 'r.client_id')
             ->leftJoin('projects as p', 'p.id', '=', 'r.project_id')
             ->leftJoin('users as u', 'u.id', '=', 'r.created_by')
-            ->select(['r.id', 'r.name', 'r.metric', 'r.operator', 'r.threshold', 'r.window_days', 'r.severity', 'r.is_active', 'r.client_id', 'c.name as client_name', 'r.project_id', 'p.name as project_name', 'u.name as author_name', 'r.conditions', 'r.for_days', 'r.action', 'r.action_pct', 'r.trust_level', 'r.mode', 'r.logic', 'r.providers', 'r.external_account_ids', 'r.campaign_ids', 'r.object_level', 'r.schedule', 'r.schedule_time', 'r.timezone', 'r.cooldown_hours', 'r.last_run_at', 'r.last_result'])
+            ->select(['r.id', 'r.name', 'r.metric', 'r.operator', 'r.threshold', 'r.window_days', 'r.severity', 'r.is_active', 'r.client_id', 'c.name as client_name', 'r.project_id', 'p.name as project_name', 'u.name as author_name', 'r.conditions', 'r.for_days', 'r.action', 'r.action_pct', 'r.trust_level', 'r.mode', 'r.logic', 'r.providers', 'r.external_account_ids', 'r.campaign_ids', 'r.object_level', 'r.schedule', 'r.schedule_time', 'r.timezone', 'r.cooldown_hours', 'r.last_run_at', 'r.last_result', 'r.min_spend', 'r.min_age_days', 'r.min_conversions'])
             ->whereNull('r.archived_at');
     }
 
@@ -192,6 +192,9 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             'schedule_time' => $input->schedule === RuleSchedule::Daily ? ($input->scheduleTime ?? '08:00') : null,
             'timezone' => $input->timezone,
             'cooldown_hours' => $input->cooldownHours,
+            'min_spend' => $input->minSpend,
+            'min_age_days' => $input->minAgeDays,
+            'min_conversions' => $input->minConversions,
         ];
     }
 
@@ -226,6 +229,9 @@ final readonly class EloquentAutomationRuleRepository implements AutomationRuleR
             scheduleTime: isset($r->schedule_time) ? (string) $r->schedule_time : null,
             timezone: (string) ($r->timezone ?? 'Asia/Riyadh'),
             cooldownHours: (int) ($r->cooldown_hours ?? 24),
+            minSpend: isset($r->min_spend) ? (float) $r->min_spend : null,
+            minAgeDays: isset($r->min_age_days) ? (int) $r->min_age_days : null,
+            minConversions: isset($r->min_conversions) ? (float) $r->min_conversions : null,
             lastRunAt: isset($r->last_run_at) ? new DateTimeImmutable((string) $r->last_run_at) : null,
             lastResult: isset($r->last_result) && is_string($r->last_result) ? (array) json_decode($r->last_result, true) : null,
         );

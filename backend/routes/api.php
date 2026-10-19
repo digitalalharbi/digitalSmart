@@ -627,6 +627,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
 
     /* digitalSmart's own MCP server, and the tokens an AI client signs in with. */
     Route::get('agents/overview', [AgentOverviewController::class, 'show'])->name('agents.overview');
+    Route::get('agents/status', [AgentOverviewController::class, 'status'])->name('agents.status');
     Route::post('agents/run', [AgentOverviewController::class, 'run'])->middleware('throttle:6,1')->name('agents.run');
     Route::post('campaigns/bulk', CampaignBulkController::class)->middleware('throttle:10,1')->name('campaigns.bulk');
     Route::post('campaign-blueprints/preview', [CampaignBlueprintController::class, 'preview'])->name('blueprints.preview');
@@ -646,6 +647,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
 
     /* Rules over campaigns: their only outcome is an item in the attention queue. */
     Route::get('automation/rules', [AutomationRuleController::class, 'index'])->name('automation.rules.index');
+    Route::post('automation/rules/bulk', [AutomationRuleController::class, 'bulk'])->middleware('throttle:20,1')->name('automation.rules.bulk');
     Route::post('automation/rules/simulate', [AutomationRuleController::class, 'simulate'])->middleware('throttle:20,1')->name('automation.rules.simulate');
     Route::get('automation/summary', [AutomationRuleController::class, 'summary'])->name('automation.summary');
     Route::get('automation/history', [AutomationRuleController::class, 'history'])->name('automation.history');

@@ -16,4 +16,12 @@ interface AgentReadModel
 
     /** @return list<string> provider slugs with a connection in this workspace */
     public function connectedProviders(string $workspaceId): array;
+
+    /**
+     * Pending proposals each agent prepared, in the reader's projects (null: every project).
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return array<string, int> agent => pending proposals
+     */
+    public function openProposals(string $workspaceId, ?array $visibleProjectIds): array;
 }

@@ -58,6 +58,10 @@ final readonly class RuleView
         public string $timezone = 'Asia/Riyadh',
         /** After acting on an object, the rule leaves it alone this long. */
         public int $cooldownHours = 24,
+        /** Data sufficiency: a campaign below any of these is not judged at all — "insufficient data", no action. */
+        public ?float $minSpend = null,
+        public ?int $minAgeDays = null,
+        public ?float $minConversions = null,
         public ?DateTimeImmutable $lastRunAt = null,
         /** @var array<string, mixed>|null */
         public ?array $lastResult = null,

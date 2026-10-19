@@ -16,6 +16,7 @@ disagree, Git is right.
 | CI | **Runs and is required.** Public repository; `Governance`, `Backend`, `Frontend` required and up to date; E2E runs in CI. #3 (money/format work) and #2 (public CI, ruleset, merge queue) merged 2026-10-19 — `main` green. |
 | Deployment | **Pipeline built, `AWAITING_SERVER_ACCESS`** — `docs/DEPLOYMENT.md`. Environment `production` exists (protected branches only), no secrets yet. |
 | Protection of `main` | **Server-side ruleset `main protection` active** (id 25378817): PR required, `Governance`/`Backend`/`Frontend` required and up to date, no force-push, no deletion. Admin bypass kept so the documented emergency push stays real, which is why the local `pre-push` hook is still the guard against the owner's own slip. |
+| Agents & Automation | Rules = control, Agents = reasoning, Approvals = governance, Execution = provider mutation, Routines = schedule, Action history = evidence, Change log = configuration history. Auto refused; bid unsupported; campaign scope only. |
 | Sessions | Each session works on its own branch and worktree; the shared folder is not scratch space. |
 
 ### Last verified gates (local)
@@ -30,5 +31,5 @@ disagree, Git is right.
    names (`docs/DEPLOYMENT.md`); then the `production` environment's secrets and `PRODUCTION_ENABLED=true`.
 2. Free disk space (≈2 GB free on 2026-10-19; `scripts/check-disk.sh` needs 10 GB) and rerun desktop, agency and
    mobile-Safari E2E. Mobile Safari is not verified until it completes.
-3. Agents & Automation area (owner correction, 2026-10-19): rules dashboard, visual builder, modes, scheduling,
-   action history, change log, agents and routines tabs — automation-first, chat secondary.
+3. Agents & Automation (#7 engine merged; #8 area and finish): see `docs/AGENTS.md`. Next engine expansion: rules
+   at ad-group and ad level.

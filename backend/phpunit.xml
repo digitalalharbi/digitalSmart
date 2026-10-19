@@ -43,8 +43,13 @@
             and is the better answer once creating per-worker databases is part
             of the local setup. (A double hyphen cannot appear in an XML
             comment, which is why that flag is described rather than written.)
+
+            2G since 2026-10-19: at about 2,100 tests the 1G limit was
+            exhausted on CI in the same way, in an Operations upload test that
+            had not changed. The GitHub runner has 7G; the parallel run above
+            is still the real answer.
         -->
-        <ini name="memory_limit" value="1G"/>
+        <ini name="memory_limit" value="2G"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

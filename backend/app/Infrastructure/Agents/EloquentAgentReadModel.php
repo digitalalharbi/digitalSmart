@@ -25,6 +25,24 @@ final readonly class EloquentAgentReadModel implements AgentReadModel
         ], DB::table('agent_runs')->where('workspace_id', $workspaceId)->orderByDesc('started_at')->limit($limit)->get()->all()));
     }
 
+    public function openProposals(string $workspaceId, ?array $visibleProjectIds): array
+    {
+        $query = DB::table('approval_requests')->where('workspace_id', $workspaceId)
+            ->where('state', 'pending')->whereNotNull('agent');
+
+        if ($visibleProjectIds !== null) {
+            $visibleProjectIds === [] ? $query->whereRaw('false') : $query->whereIn('project_id', $visibleProjectIds);
+        }
+
+        $out = [];
+
+        foreach ($query->selectRaw('agent, count(*) as n')->groupBy('agent')->get() as $row) {
+            $out[(string) $row->agent] = (int) $row->n;
+        }
+
+        return $out;
+    }
+
     public function toolCounts(string $workspaceId): array
     {
         $out = [];

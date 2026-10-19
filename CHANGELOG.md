@@ -4,6 +4,38 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Agents & Automation: rules that control, agents that reason, people who decide
+
+The owner's correction: agents are automation-first, not chat-first. `docs/AGENTS.md` carries the model — Rules
+(deterministic control), Agents (analysis and reasoning), Approvals (governance), Execution (provider mutation),
+Routines (scheduled operation), Action history (execution evidence), Change log (rule configuration history).
+
+### Added
+
+- **The area `/automation`** with Rules, Agents, Routines, Action history and Change log tabs. Rules has seven
+  summary cards, filters, a table with conditions in short lines (`Spend > 500 SAR · ROAS < 3x → Budget −20%`) and
+  templates (Scale winners, Cut losers, Pause no-sale, Budget near limit, ROAS drop, CPA spike, CPL spike, No leads,
+  No purchases, Creative fatigue, Tracking failure, Spend spike) that open a pre-filled builder.
+- **The builder**: scope → conditions (AND / OR, each with its own direction) → action → mode → schedule, with
+  each platform's capability under the action and *Test now* — a dry run that writes nothing.
+- **Modes** Monitor, Recommend (default) and Auto — Auto is shown, refused and cannot be stored.
+- **Capability states** `supported` / `awaiting_credentials` / `unverified` / `unsupported`, checked on save, in the
+  dry run and before every action. Bid changes are refused on save.
+- **Data sufficiency** (minimum spend, age, results), **cooldown** and **conflict prevented** as recorded results,
+  **bulk** enable / disable / archive / mode, rule counts in the **digest**.
+- **Agents tab** — seven worker cards; **Routines tab** — seven routines including the new Tracking review and
+  Monthly executive review, next run in Riyadh time.
+
+### Fixed
+
+- **A campaign's spend was counted two to three times** wherever ad-group and ad rows existed beside its own
+  (#6). Each consumer of the shared aggregate — portfolio, rule dry run, agents' campaign tool — now has a
+  regression test that fails without the fix.
+
+### Not yet
+
+- Rules at ad-group and ad level: the next engine expansion. The builder offers campaign scope only.
+
 ## CI that actually runs, and protection a server enforces
 
 The owner chose option C from `docs/CI_STATUS.md`: the repository is public, which is what makes both

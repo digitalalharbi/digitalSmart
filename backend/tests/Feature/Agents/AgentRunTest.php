@@ -143,3 +143,25 @@ it('shows administrators the machinery, runs the agents on demand, and shows it 
     test()->actingAs($manager)->getJson('/api/agents/overview')->assertForbidden();
     test()->actingAs($manager)->postJson('/api/agents/run')->assertForbidden();
 });
+
+it('shows every agent as a worker — role, last run, success rate, open recommendations — and every routine with its next run', function (): void {
+    $w = agentWorld();
+    test()->artisan('agents:run', ['--workspace' => $w->scenario->workspace->getKey()])->assertSuccessful();
+
+    $status = test()->actingAs($w->scenario->owner)->getJson('/api/agents/status')->assertOk()->json('data');
+    $agents = array_column($status['agents'], null, 'agent');
+    $routines = array_column($status['routines'], null, 'routine');
+
+    expect(array_keys($agents))->toBe(['analyst', 'campaign', 'finance', 'creative', 'leads', 'reports', 'operations'])
+        ->and($agents['finance']['last_run'])->not->toBeNull()
+        ->and($agents['finance']['success_rate'])->toBe(100)
+        ->and($routines['weekly_briefs']['schedule'])->toBe(['at' => '14:00', 'days' => [4], 'month_day' => null, 'timezone' => 'Asia/Riyadh'])
+        ->and(array_keys($routines))->toContain('tracking_review', 'monthly_executive')
+        ->and((new DateTimeImmutable($routines['monthly_executive']['next_run']))->setTimezone(new DateTimeZone('Asia/Riyadh'))->format('j H:i'))->toBe('1 11:00')
+        // Thursday 14:00 in Riyadh, whatever day it is now.
+        ->and((new DateTimeImmutable($routines['weekly_briefs']['next_run']))->setTimezone(new DateTimeZone('Asia/Riyadh'))->format('w H:i'))->toBe('4 14:00')
+        ->and(new DateTimeImmutable($routines['rules']['next_run']))->toBeGreaterThan(new DateTimeImmutable('-1 minute'));
+
+    // Not an administrator's screen: a media buyer reads it too.
+    test()->actingAs($w->scenario->addMember(App\Domain\Access\SystemRole::MediaBuyer))->getJson('/api/agents/status')->assertOk();
+});

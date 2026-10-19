@@ -1,5 +1,75 @@
 # Agents, tools and MCP
 
+## Agents & Automation — automation-first (owner correction, 2026-10-19)
+
+The operating model, in seven parts, each with one job:
+
+| Part | Job | Where |
+|---|---|---|
+| **Rules** | Deterministic control: the same figures give the same verdict, every time | `RunAutomationRules`, `RuleEvaluator` |
+| **Agents** | Analysis and reasoning over the agency's data — scheduled workers that find, compare and propose. Not chatbots: *Ask an agent* is a secondary action on a worker card | `app/Application/Agents/Agent/*` |
+| **Approvals** | Governance: a person decides every proposal that would move money or delivery | the tool gateway and Today |
+| **Execution** | Provider mutation, only where that platform's write is documented and credentials exist | provider adapters |
+| **Routines** | Scheduled operation: when each agent runs | `routes/console.php`, `GetAgentsStatus` |
+| **Action history** | Execution evidence: what each rule did or was refused, with before and after | `automation_rule_executions` |
+| **Change log** | Rule configuration history: who changed which rule, what, when | `audit_logs` |
+
+The area **Agents & Automation** (`/automation`) has five tabs:
+
+| Tab | What it is |
+|---|---|
+| Rules | Summary cards (all actions, turn on, turn off, budget, bid, failed, inactive 30 days — each vs the previous period), filters, and one row per rule: on/off, name, scope, conditions as short lines, action, object, mode, last run, last result. Templates open a pre-filled builder. |
+| Agents | Seven worker cards (status, role, open recommendations, success rate, routines, last run); a card opens its recent findings. *Ask an agent* is a secondary action. |
+| Routines | Every schedule with its agent, last run, last result and next run in Riyadh time. |
+| Action history | Every action a rule took or was refused — time, rule, client, project, platform, object, action, before, after, result (completed · waiting approval · no change required · failed · unsupported) and the reason. |
+| Change log | Who changed which rule, what (created, enabled, disabled, mode, schedule, conditions, action, scope, archived), when. |
+
+**Rule engine** (`RunAutomationRules`, every 15 minutes): scope (client, project, platform, ad account, campaign);
+conditions with a direction each, combined AND / OR; metrics spend, ROAS, CPA, results, CTR, CPC, CPM, days since
+start, budget used, cost change, spending with no results, not delivering, rejected, ends within; *for n days*;
+schedule continuous / hourly / daily at a time in a time zone; cooldown per rule × campaign; a rule stands down
+rather than undo another rule's opposite move (`CONFLICT`); dry run on a saved rule or a draft, writing nothing.
+
+**Modes**: *Monitor* shows the finding and proposes nothing. *Recommend* (default) raises a proposal through the
+tool gateway — approval, the project's budget limit, no stacking, cooldown, audit. *Auto* is shown and refused
+(`AUTO_NOT_AUTHORISED`) — the database cannot store it — until the owner authorises auto-execution **and** the
+platform's write is documented. Bid changes are `unsupported` everywhere; an action whose platform write is not
+documented is recorded `unsupported`, never attempted.
+
+**Capability, per action × platform** (`RuleCapability`, checked on save, in the dry run and before every action):
+`supported` (write documented, credentials present) · `awaiting_credentials` (documented, no credentials) ·
+`unverified` (the write exists but its current reference has not been read) · `unsupported` (bid changes; anything
+undocumented). The builder shows each platform's state under the action; a rule whose every chosen platform is
+unable is refused on save, and a bid change is refused outright.
+
+**Data sufficiency.** A rule may require a minimum spend, campaign age and number of results before it judges a
+campaign; one below them is *insufficient data* — counted in the dry run, never acted on.
+
+**Results.** Completed · No change required · Waiting approval · Failed · Unsupported · **Cooldown** (the same rule
+acted on this campaign inside its cooldown — recorded once, shown as *Cooldown active*) · **Conflict prevented**
+(another rule moved this campaign the opposite way inside the cooldown; the row names it). No raw payloads.
+
+**Dry run ("Test now")** on a draft or a saved rule: how many campaigns were looked at, matched, would be acted
+on, lacked data, and skipped with the reason (unsupported, cooldown, conflict, awaiting credentials). It writes nothing.
+
+**Bulk**: enable, disable, archive, change mode — each rule through its own save, each change in the change log.
+Bulk can never set Auto.
+
+**Where the results surface**: proposals land in Today through the same approval gateway as every other proposal;
+the daily digest carries counts — triggered, executed, waiting approval, failed — never one message per evaluation.
+
+**Routines** (Riyadh time): Daily performance review, Budget guardian, Tracking review (07:30), Lead quality review,
+Creative review, Weekly client report, Monthly executive review (1st of the month, 11:00).
+
+**Metric truth.** A campaign's figures are its campaign-level rows only; its ad groups and ads report the same money
+again. `CampaignFiguresLevelTest` pins the aggregate, `CampaignAggregateConsumersTest` pins the portfolio, the rule
+dry run and the agents' campaign tool.
+
+**Next expansion — ad group and ad level.** The scope stops at campaign today. Rules on ad groups and ads need the
+same aggregate per level and each platform's write at that level; until then the builder offers campaign scope only
+rather than a level it cannot judge.
+
+
 digitalSmart's agent layer is built so that **AI works inside controlled business workflows**: agents observe,
 compare and *propose*; people decide; the product controls permissions, limits, provider access, execution and audit.
 
