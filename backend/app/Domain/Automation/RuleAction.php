@@ -42,14 +42,31 @@ enum RuleAction: string
         return in_array($this, [self::ProposeBudgetCut, self::ProposeBudgetIncrease, self::ProposeBidChange], true);
     }
 
-    /** The platform write this action would ask for, or null for an action that writes nothing to a platform. */
-    public function writeOperation(): ?\App\Domain\Integration\WriteOperation
+    /**
+     * The platform write this action would ask for at a level, or null where it writes nothing to a platform — or
+     * where that level has no such change (an ad has no budget). Bid changes map to nothing: no bid write is wired.
+     */
+    public function writeOperation(\App\Domain\Advertising\AdEntityType $level = \App\Domain\Advertising\AdEntityType::Campaign): ?\App\Domain\Integration\WriteOperation
     {
         return match ($this) {
-            self::ProposePause => \App\Domain\Integration\WriteOperation::PauseCampaign,
-            self::ProposeResume => \App\Domain\Integration\WriteOperation::ResumeCampaign,
-            self::ProposeBudgetCut, self::ProposeBudgetIncrease => \App\Domain\Integration\WriteOperation::SetCampaignDailyBudget,
+            self::ProposePause => \App\Domain\Integration\WriteOperation::at($level, 'pause'),
+            self::ProposeResume => \App\Domain\Integration\WriteOperation::at($level, 'resume'),
+            self::ProposeBudgetCut, self::ProposeBudgetIncrease => \App\Domain\Integration\WriteOperation::at($level, 'budget'),
             default => null,
+        };
+    }
+
+    /**
+     * Whether the action means anything at a level. Notify and a task, everywhere; pause and resume, everywhere;
+     * a budget change only where the entity can hold a budget (campaign, ad group); a bid only on an ad group, where
+     * platforms keep it — and refused there too, until a bid write is wired.
+     */
+    public function availableAt(\App\Domain\Advertising\AdEntityType $level): bool
+    {
+        return match ($this) {
+            self::ProposeBudgetCut, self::ProposeBudgetIncrease => $level !== \App\Domain\Advertising\AdEntityType::Ad,
+            self::ProposeBidChange => $level === \App\Domain\Advertising\AdEntityType::AdGroup,
+            default => true,
         };
     }
 

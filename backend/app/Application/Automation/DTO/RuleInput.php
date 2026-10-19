@@ -58,10 +58,18 @@ final readonly class RuleInput
         public ?float $minSpend = null,
         public ?int $minAgeDays = null,
         public ?float $minConversions = null,
+        /** @var list<string> Ad groups in scope, for an ad-group or ad rule; empty is every one the rest allows. */
+        public array $adGroupIds = [],
+        /** @var list<string> Ads in scope, for an ad rule; empty is every one the rest allows. */
+        public array $adIds = [],
     ) {}
 
     /** A saved rule as input again, with some fields changed — so a bulk change goes through the same validation as an edit. */
-    public static function fromView(RuleView $r, ?bool $isActive = null, ?RuleMode $mode = null): self
+    /**
+     * @param  list<string>|null  $adGroupIds  replaces the rule's ad-group scope when given
+     * @param  list<string>|null  $adIds  replaces the rule's ad scope when given
+     */
+    public static function fromView(RuleView $r, ?bool $isActive = null, ?RuleMode $mode = null, ?array $adGroupIds = null, ?array $adIds = null): self
     {
         $mode ??= $r->mode;
 
@@ -93,6 +101,8 @@ final readonly class RuleInput
             minSpend: $r->minSpend,
             minAgeDays: $r->minAgeDays,
             minConversions: $r->minConversions,
+            adGroupIds: $adGroupIds ?? $r->adGroupIds,
+            adIds: $adIds ?? $r->adIds,
         );
     }
 }

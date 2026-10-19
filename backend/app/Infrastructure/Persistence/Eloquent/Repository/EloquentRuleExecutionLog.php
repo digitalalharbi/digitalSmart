@@ -28,10 +28,10 @@ final readonly class EloquentRuleExecutionLog implements RuleExecutionLog
         ]);
     }
 
-    public function lastActedAt(string $ruleId, string $campaignId, DateTimeImmutable $since): ?DateTimeImmutable
+    public function lastActedAt(string $ruleId, string $entityId, DateTimeImmutable $since): ?DateTimeImmutable
     {
         $at = DB::table('automation_rule_executions')
-            ->where(['rule_id' => $ruleId, 'campaign_id' => $campaignId])
+            ->where(['rule_id' => $ruleId, 'entity_id' => $entityId])
             ->where('created_at', '>=', $since)
             ->whereIn('result', ['completed', 'waiting_approval'])
             ->max('created_at');
@@ -39,7 +39,7 @@ final readonly class EloquentRuleExecutionLog implements RuleExecutionLog
         return is_string($at) ? new DateTimeImmutable($at) : null;
     }
 
-    public function conflicting(string $ruleId, string $campaignId, array $opposite, DateTimeImmutable $since): ?string
+    public function conflicting(?string $ruleId, string $entityId, array $opposite, DateTimeImmutable $since): ?string
     {
         if ($opposite === []) {
             return null;
@@ -47,8 +47,9 @@ final readonly class EloquentRuleExecutionLog implements RuleExecutionLog
 
         $other = DB::table('automation_rule_executions as e')
             ->join('automation_rules as r', 'r.id', '=', 'e.rule_id')
-            ->where('e.campaign_id', $campaignId)
-            ->where('e.rule_id', '!=', $ruleId)
+            ->where('e.entity_id', $entityId)
+            /* A draft has no id yet: every rule that acted is another rule. */
+            ->when($ruleId !== null, static fn ($q) => $q->where('e.rule_id', '!=', $ruleId))
             ->whereIn('e.action', $opposite)
             ->whereIn('e.result', ['completed', 'waiting_approval'])
             ->where('e.created_at', '>=', $since)
@@ -66,7 +67,7 @@ final readonly class EloquentRuleExecutionLog implements RuleExecutionLog
             ->leftJoin('projects as p', 'p.id', '=', 'e.project_id')
             ->where('e.created_at', '>=', $from);
 
-        foreach (['rule_id', 'result', 'provider', 'client_id', 'project_id'] as $key) {
+        foreach (['rule_id', 'result', 'provider', 'client_id', 'project_id', 'object_level'] as $key) {
             if (($filters[$key] ?? null) !== null) {
                 $query->where('e.'.$key, $filters[$key]);
             }
@@ -79,7 +80,8 @@ final readonly class EloquentRuleExecutionLog implements RuleExecutionLog
             'client' => $r->client_id === null ? null : ['id' => (string) $r->client_id, 'name' => (string) $r->client_name],
             'project' => $r->project_id === null ? null : ['id' => (string) $r->project_id, 'name' => (string) $r->project_name],
             'provider' => $r->provider,
-            'object' => ['level' => (string) $r->object_level, 'label' => (string) $r->object_label, 'campaign_id' => $r->campaign_id],
+            /* The entity by name and its parent by name — no raw ids in what a person reads; the id is a link target. */
+            'object' => ['level' => (string) $r->object_level, 'label' => (string) $r->object_label, 'parent' => $r->parent_label, 'campaign_id' => $r->campaign_id],
             'action' => (string) $r->action,
             'before' => json_decode((string) $r->before, true),
             'after' => json_decode((string) $r->after, true),

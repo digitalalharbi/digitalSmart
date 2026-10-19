@@ -91,6 +91,20 @@ enum RuleMetric: string
      * metric is available wherever that platform's figures are synced, and `null` (not judged) where a figure is not
      * reported for a campaign.
      */
+    /**
+     * Whether an entity at this level has the figure at all. A week-on-week cost judgement exists for a campaign only;
+     * an ad has no budget and no end date of its own. A metric a level does not have is not offered there, and is
+     * never judged there — it is not a zero.
+     */
+    public function availableAt(\App\Domain\Advertising\AdEntityType $level): bool
+    {
+        return match ($this) {
+            self::CostChange => $level === \App\Domain\Advertising\AdEntityType::Campaign,
+            self::BudgetUsed, self::EndsWithin => $level !== \App\Domain\Advertising\AdEntityType::Ad,
+            default => true,
+        };
+    }
+
     public function needsImpressions(): bool
     {
         return in_array($this, [self::Ctr, self::Cpm], true);

@@ -65,5 +65,15 @@ final readonly class RuleView
         public ?DateTimeImmutable $lastRunAt = null,
         /** @var array<string, mixed>|null */
         public ?array $lastResult = null,
+        /** @var list<string> Ad groups in scope; empty is every one the rest of the scope allows. */
+        public array $adGroupIds = [],
+        /** @var list<string> Ads in scope; empty is every one the rest of the scope allows. */
+        public array $adIds = [],
     ) {}
+
+    /** The level the rule judges and acts on. */
+    public function level(): \App\Domain\Advertising\AdEntityType
+    {
+        return \App\Domain\Advertising\AdEntityType::tryFrom($this->objectLevel) ?? \App\Domain\Advertising\AdEntityType::Campaign;
+    }
 }

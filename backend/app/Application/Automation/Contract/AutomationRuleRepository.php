@@ -32,19 +32,19 @@ interface AutomationRuleRepository
      * Record that the rule holds today for these campaigns (and no longer for any other), and return how many days
      * in a row it has held for each, and whether its action has already run in this streak.
      *
-     * @param  list<string>  $campaignIds
-     * @return array<string, array{days: int, acted: bool}>
+     * @param  array<string, string>  $entities  the entities it holds for today, each with its campaign
+     * @return array<string, array{days: int, acted: bool}> per entity
      */
-    public function observe(string $ruleId, array $campaignIds, string $today): array;
+    public function observe(string $ruleId, array $entities, string $today): array;
 
     /**
-     * Days in a row the rule has held, per campaign, as last observed.
+     * Days in a row the rule has held, per entity, as last observed.
      *
      * @return array<string, int>
      */
     public function streaks(string $ruleId): array;
 
-    public function markActed(string $ruleId, string $campaignId): void;
+    public function markActed(string $ruleId, string $entityId): void;
 
     /**
      * When the rule last ran and what it came to — matched, acted, refused — for the rules table.

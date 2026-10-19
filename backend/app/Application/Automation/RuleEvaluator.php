@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Automation;
 
-use App\Application\Advertising\DTO\CampaignControlRow;
+use App\Application\Advertising\DTO\EntityControlRow;
 use App\Application\Automation\DTO\RuleView;
 use App\Domain\Advertising\EntityStatus;
 use App\Domain\Automation\RuleAction;
@@ -13,7 +13,8 @@ use App\Domain\Automation\RuleOperator;
 use DateTimeImmutable;
 
 /**
- * Whether a rule holds for one campaign, over the same figures the Campaigns screen shows.
+ * Whether a rule holds for one campaign, ad group or ad — over that entity's own figures: a campaign's are the
+ * Campaigns screen's, an ad group's and an ad's are their own metric rows, never summed with another level's.
  *
  * Every condition is a metric, a direction and (where it takes one) a limit; they combine with AND (`all`) or OR
  * (`any`). A figure the platform did not report is not judged — a missing CTR is not a low CTR — so a condition on
@@ -23,7 +24,7 @@ use DateTimeImmutable;
 final class RuleEvaluator
 {
     /** @return array{0: string, 1: string, 2: array<string, int|string|float>}|null */
-    public static function breach(RuleView $rule, CampaignControlRow $row, DateTimeImmutable $today): ?array
+    public static function breach(RuleView $rule, EntityControlRow $row, DateTimeImmutable $today): ?array
     {
         $result = self::evaluate($rule, $row, $today);
 
@@ -36,7 +37,7 @@ final class RuleEvaluator
      *
      * @return array{holds: bool, sufficient: bool, values: array<string, float|int|null>, met: array<string, bool>, first: array{0: string, 1: string, 2: array<string, int|string|float>}|null}
      */
-    public static function evaluate(RuleView $rule, CampaignControlRow $row, DateTimeImmutable $today): array
+    public static function evaluate(RuleView $rule, EntityControlRow $row, DateTimeImmutable $today): array
     {
         $sufficient = self::sufficient($rule, $row, $today);
 
@@ -69,7 +70,7 @@ final class RuleEvaluator
      * Enough data to judge? A campaign below the rule's minimum spend, age or results is not judged — however its
      * figures look. A missing figure counts as not enough.
      */
-    public static function sufficient(RuleView $rule, CampaignControlRow $row, DateTimeImmutable $today): bool
+    public static function sufficient(RuleView $rule, EntityControlRow $row, DateTimeImmutable $today): bool
     {
         if ($rule->minSpend !== null && ($row->spendMinor === null || $row->spendMinor / 100 < $rule->minSpend)) {
             return false;
@@ -86,9 +87,16 @@ final class RuleEvaluator
         return $rule->minConversions === null || ($row->results !== null && $row->results >= $rule->minConversions);
     }
 
-    /** The figure a metric reads for this campaign, in the unit a person states the limit in; null when unreported. */
-    public static function value(RuleMetric $metric, CampaignControlRow $row, DateTimeImmutable $today): float|int|null
+    /**
+     * The figure a metric reads for this entity, in the unit a person states the limit in; null when unreported — and
+     * null for a metric its level does not have ({@see RuleMetric::availableAt()}), so it is never judged there.
+     */
+    public static function value(RuleMetric $metric, EntityControlRow $row, DateTimeImmutable $today): float|int|null
     {
+        if (! $metric->availableAt($row->level)) {
+            return null;
+        }
+
         $spend = $row->spendMinor === null ? null : $row->spendMinor / 100;
 
         return match ($metric) {
@@ -110,7 +118,7 @@ final class RuleEvaluator
     }
 
     /** A resume rule judges paused campaigns — that is what it is for; every other rule judges live ones. */
-    private static function meets(RuleMetric $metric, RuleOperator $operator, ?float $limit, float|int|null $value, CampaignControlRow $row, bool $forResume = false): bool
+    private static function meets(RuleMetric $metric, RuleOperator $operator, ?float $limit, float|int|null $value, EntityControlRow $row, bool $forResume = false): bool
     {
         if ($metric === RuleMetric::Rejected) {
             return $value === 1;
@@ -150,7 +158,7 @@ final class RuleEvaluator
      * @param  array{metric: RuleMetric, threshold: float|null, operator: RuleOperator}  $c
      * @return array{0: string, 1: string, 2: array<string, int|string|float>}
      */
-    private static function sentence(RuleView $rule, array $c, float|int|null $value, CampaignControlRow $row): array
+    private static function sentence(RuleView $rule, array $c, float|int|null $value, EntityControlRow $row): array
     {
         $name = $rule->name;
         $currency = $row->currency ?? '';

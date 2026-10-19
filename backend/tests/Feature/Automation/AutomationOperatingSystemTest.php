@@ -119,8 +119,10 @@ it('never promises a bid change: refused on save, and named unsupported in the d
     $refused = osRule($w, ['action' => 'propose_bid_change', 'action_pct' => 10], 422);
     expect(DB::table('automation_rules')->count())->toBe(0)->and($refused)->toBe([]);
 
-    // A rule naming only platforms that cannot take its action is refused too.
-    osRule($w, ['action' => 'propose_pause', 'providers' => ['tiktok', 'x']], 422);
+    // A rule naming only platforms that cannot take its action at its level is refused too: X documents no way to
+    // pause a promoted tweet, whatever it lets a campaign do.
+    osRule($w, ['action' => 'propose_pause', 'object_level' => 'ad', 'providers' => ['x']], 422);
+    osRule($w, ['action' => 'propose_pause', 'object_level' => 'campaign', 'providers' => ['x']]);
 });
 
 it('waits out its cooldown, and stands down when another rule moved the same campaign the other way', function (): void {
@@ -200,8 +202,10 @@ it('says which actions each platform supports, and which await credentials', fun
     $by = array_column(test()->actingAs($w->scenario->owner)->getJson('/api/automation/capabilities')->assertOk()->json('data'), null, 'provider');
 
     expect($by['meta']['actions']['propose_pause'])->toBe('supported')
-        ->and($by['meta']['actions']['propose_bid_change'])->toBe('unsupported')
-        ->and($by['tiktok']['actions']['propose_budget_cut'])->toBe('unverified')
+        // A bid lives on an ad group, and is wired nowhere: offered at no other level, unsupported there.
+        ->and($by['meta']['actions'])->not->toHaveKey('propose_bid_change')
+        ->and($by['meta']['levels']['ad_group']['actions']['propose_bid_change'])->toBe('unsupported')
+        ->and($by['tiktok']['actions']['propose_budget_cut'])->toBe('awaiting_credentials')
         ->and($by['meta']['credentials'])->toBe('connected')
         ->and($by['linkedin']['credentials'])->toBe('awaiting_credentials');
 });
@@ -220,15 +224,23 @@ it('judges nothing without enough data, and says so in the dry run', function ()
         ->and($strict['insufficient'])->toBe($strict['looked_at']);
 });
 
-it('names each platform\'s capability honestly: supported, awaiting credentials, unverified, unsupported', function (): void {
+it('names each platform\'s capability honestly, per level: supported, awaiting credentials, unsupported', function (): void {
     $w = osWorld();
     $by = array_column(test()->actingAs($w->scenario->owner)->getJson('/api/automation/capabilities')->assertOk()->json('data'), null, 'provider');
 
     expect($by['meta']['actions']['propose_pause'])->toBe('supported')
         ->and($by['google_ads']['actions']['propose_pause'])->toBe('awaiting_credentials')
-        ->and($by['tiktok']['actions']['propose_pause'])->toBe('unverified')
-        ->and($by['meta']['actions']['propose_bid_change'])->toBe('unsupported')
-        ->and($by['meta']['actions']['alert'])->toBe('supported');
+        ->and($by['tiktok']['actions']['propose_pause'])->toBe('awaiting_credentials')
+        ->and($by['meta']['actions']['alert'])->toBe('supported')
+        // Never inferred across levels: Meta budgets an ad set; Google budgets no ad group; nobody budgets an ad.
+        ->and($by['meta']['levels']['ad_group']['actions']['propose_budget_cut'])->toBe('supported')
+        ->and($by['google_ads']['levels']['ad_group']['actions']['propose_budget_cut'])->toBe('unsupported')
+        ->and($by['meta']['levels']['ad']['actions'])->not->toHaveKey('propose_budget_cut')
+        ->and($by['x']['levels']['campaign']['actions']['propose_pause'])->toBe('awaiting_credentials')
+        ->and($by['x']['levels']['ad']['actions']['propose_pause'])->toBe('unsupported')
+        // A level offers only the figures it has: no week-on-week cost below a campaign, no budget on an ad.
+        ->and($by['meta']['levels']['ad_group']['metrics'])->not->toContain('cost_change')
+        ->and($by['meta']['levels']['ad']['metrics'])->not->toContain('budget_used');
 });
 
 it('enables, disables, archives and changes mode in bulk — each rule through its own save, each change in the log', function (): void {

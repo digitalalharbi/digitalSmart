@@ -4,6 +4,34 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Rules at ad-group and ad level, and a provider readiness matrix
+
+### Added
+
+- **Rules judge campaigns, ad groups or ads**, each on its own metric rows. Builder level choice; metrics and actions
+  limited to what a level has; scope by ad groups and ads (set from the campaign view); entity templates.
+- **Provider × level × change** capability, read in each platform's own documentation (`docs/PROVIDER_READINESS.md`),
+  with the readiness ladder CODE_VERIFIED → SANDBOX_VERIFIED → AWAITING_CREDENTIALS → LIVE_READ_VERIFIED →
+  LIVE_WRITE_VERIFIED. Every documented change runs against sandbox credentials in the tests; nothing is live.
+- **Ad-group and ad proposals** through the same approval and carry-out gates (`ProposeEntityChange`,
+  `propose_entity_change` tool), keyed per level.
+- **The hierarchy**: ask per ad group or ad, bulk across them (asks, tasks, rule scope, tags), a creatives branch.
+- **Action history** by entity: type, name, parent; a level filter. Dry run counts by level.
+- `GET /api/integrations/readiness`, `POST /api/campaigns/entities/{level}/{id}/status-request`,
+  `POST /api/campaigns/entities/bulk`.
+
+### Fixed
+
+- **LinkedIn's campaign-level write named the level below.** It pointed at `/adCampaigns` (LinkedIn's campaign — this
+  product's ad group); campaign writes now name `/adCampaignGroups`.
+- **Testing an unsaved pause or budget rule could fail with a server error**: the conflict check compared the draft's
+  placeholder id with a UUID column.
+
+### Changed
+
+- TikTok and X are recorded per level from their own documentation instead of "unverified"; X documents no way to
+  pause or resume a promoted tweet.
+
 ## Agents & Automation: rules that control, agents that reason, people who decide
 
 The owner's correction: agents are automation-first, not chat-first. `docs/AGENTS.md` carries the model — Rules

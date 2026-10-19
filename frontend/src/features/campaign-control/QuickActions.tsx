@@ -85,7 +85,11 @@ export function QuickActions({ row }: { row: CampaignRow }) {
       )}
       {open ? <TaskDialog row={row} onClose={() => setOpen(false)} /> : null}
       {asking && ask !== null ? (
-        <StatusRequestDialog row={row} action={ask} onClose={() => setAsking(false)} />
+        <StatusRequestDialog
+          target={{ path: `/campaigns/${row.id}/status-request`, name: row.name }}
+          action={ask}
+          onClose={() => setAsking(false)}
+        />
       ) : null}
     </div>
   );
@@ -200,12 +204,13 @@ function TaskDialog({ row, onClose }: { row: CampaignRow; onClose: () => void })
  * what happens next, because "Pause" on a campaign card that only filed a request would otherwise be read as having
  * paused it.
  */
-function StatusRequestDialog({
-  row,
+export function StatusRequestDialog({
+  target,
   action,
   onClose,
 }: {
-  row: CampaignRow;
+  /** The campaign — or one ad group or ad, at its own level — and where its request is filed. */
+  target: { path: string; name: string };
   action: 'pause' | 'resume';
   onClose: () => void;
 }) {
@@ -215,12 +220,13 @@ function StatusRequestDialog({
 
   const send = useMutation({
     mutationFn: async () => {
-      await api.post(`/campaigns/${row.id}/status-request`, { action, reason: reason.trim() });
+      await api.post(target.path, { action, reason: reason.trim() });
     },
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['approvals'] }),
         queryClient.invalidateQueries({ queryKey: ['attention'] }),
+        queryClient.invalidateQueries({ queryKey: ['campaign-hierarchy'] }),
       ]);
     },
   });
@@ -251,7 +257,7 @@ function StatusRequestDialog({
                 )}
               </Dialog.Title>
               <Dialog.Description className="text-content-secondary mt-1 text-sm" dir="auto">
-                {row.name}
+                {target.name}
               </Dialog.Description>
             </div>
             <Dialog.Close asChild>

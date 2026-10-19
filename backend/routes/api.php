@@ -784,6 +784,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])
         ->name('integrations.providers.index');
+    Route::get('integrations/readiness', [ProviderController::class, 'readiness'])
+        ->name('integrations.readiness');
     Route::put('integrations/providers/{provider}', [ProviderController::class, 'configure'])
         ->name('integrations.providers.configure');
     Route::post('integrations/providers/{provider}/discover', [ProviderController::class, 'discover'])
@@ -870,6 +872,11 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     /* Ask for a pause or a resume. Writes an approval request; it never touches the platform. */
     Route::post('campaigns/{campaign}/status-request', [CampaignControlController::class, 'requestStatusChange'])
         ->whereUuid('campaign')->name('campaigns.status_request');
+    /* The same, one or two levels down: an ad group or an ad, at its own level. */
+    Route::post('campaigns/entities/{level}/{entity}/status-request', [CampaignControlController::class, 'requestEntityChange'])
+        ->where('level', 'ad_group|ad')->whereUuid('entity')->name('campaigns.entities.status_request');
+    Route::post('campaigns/entities/bulk', [CampaignControlController::class, 'bulkEntities'])
+        ->middleware('throttle:10,1')->name('campaigns.entities.bulk');
     Route::post('campaigns/project', [CampaignOwnershipController::class, 'assignMany'])
         ->name('campaigns.ownership.assign_many');
     Route::get('campaigns/ownership', [CampaignOwnershipController::class, 'index'])

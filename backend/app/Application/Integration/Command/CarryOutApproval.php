@@ -128,6 +128,7 @@ final readonly class CarryOutApproval
             externalCampaignId: $target->externalCampaignId,
             dailyBudgetMinor: $target->dailyBudgetMinor,
             currency: $target->currency,
+            externalEntityId: $target->externalEntityId,
         );
 
         /*
@@ -138,6 +139,9 @@ final readonly class CarryOutApproval
         $this->record(AuditAction::ProviderWriteAttempted, $approval, $operation, $target->provider, [
             'external_account_id' => $target->externalAccountId,
             'external_campaign_id' => $target->externalCampaignId,
+            /* The entity actually changed — the campaign itself, or the ad group or ad the operation's level names. */
+            'level' => $operation->level()->value,
+            'external_entity_id' => $target->externalEntityId,
             'daily_budget_minor' => $target->dailyBudgetMinor,
             'reference' => $target->provider->writeReference($operation),
         ]);
@@ -192,19 +196,14 @@ final readonly class CarryOutApproval
     /**
      * The operation this approval authorises.
      *
-     * Derived from the kind, and from the proposal only where the kind is ambiguous: a campaign pause is a pause,
-     * a spend change is a budget change, and a launch is a resume. A proposal field naming the operation would be
-     * a second source of truth that the approval's own kind could contradict.
+     * Derived from the kind — a pause is a pause, a spend change is a budget change, a launch is a resume — and the
+     * proposal's level, which says whether it is the campaign, an ad group or an ad. A proposal field naming the
+     * operation itself would be a second source of truth that the approval's own kind could contradict.
      */
     private function operationFor(ApprovalView $approval): WriteOperation
     {
-        foreach (WriteOperation::cases() as $operation) {
-            if ($operation->authorisedBy() === $approval->kind) {
-                return $operation;
-            }
-        }
-
-        throw WriteRefused::kindNotExecutable($approval->kind);
+        return WriteOperation::forApproval($approval->kind, $approval->proposal)
+            ?? throw WriteRefused::kindNotExecutable($approval->kind);
     }
 
     /** @param  array<string, mixed>  $changes */

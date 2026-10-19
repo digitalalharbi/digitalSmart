@@ -104,7 +104,11 @@
       "pauseNoSale": "Pause no-sale campaigns",
       "cpaSpike": "CPA spike",
       "noPurchases": "No purchases",
-      "cplSpike": "CPL spike"
+      "cplSpike": "CPL spike",
+      "cutWeakAdSets": "Cut weak ad sets",
+      "scaleWinningAdSets": "Scale winning ad sets",
+      "pauseFatiguedAds": "Pause fatigued ads",
+      "pauseZeroConversionAds": "Pause zero-conversion ads"
     },
     "severity": {
       "critical": "Critical",
@@ -152,7 +156,6 @@
       "mode": "Mode",
       "schedule": "Schedule",
       "campaigns": "Campaigns (optional)",
-      "levelsSoon": "Ad groups and ads: not available yet",
       "metric": "Metric",
       "operator": "Direction",
       "removeCondition": "Remove condition",
@@ -174,7 +177,11 @@
       "onlyWhen": "Judge only when",
       "minSpend": "Spend ≥",
       "minAge": "Age ≥ (d)",
-      "minResults": "Results ≥"
+      "minResults": "Results ≥",
+      "level": "Judge and act on",
+      "levelOwnFigures": "{{level}} are judged on their own figures — never their campaign's.",
+      "levelScoped_one": "Limited to {{count}} chosen from the campaign view.",
+      "levelScoped_other": "Limited to {{count}} chosen from the campaign view."
     },
     "covered": {
       "tracking": "Always on — tracking checks",
@@ -210,7 +217,9 @@
       "anyStatus": "On and off",
       "anyMode": "Any mode",
       "anyPlatform": "All platforms",
-      "anyResult": "Any result"
+      "anyResult": "Any result",
+      "level": "Level",
+      "anyLevel": "Any level"
     },
     "off": "Off",
     "col": {
@@ -311,7 +320,9 @@
       "FORBIDDEN": "Not permitted",
       "NOT_FOUND": "Campaign not found",
       "FAILED": "The proposal could not be raised",
-      "other": "Refused by a safety check"
+      "other": "Refused by a safety check",
+      "WRONG_STATE": "Not in a state for that change",
+      "LEVEL_MISMATCH": "The rule judges another level"
     },
     "status": {
       "paused": "Paused",
@@ -460,7 +471,9 @@
       "wouldAct": "Would act",
       "insufficient": "Insufficient data",
       "skipped": "Would skip",
-      "nothingChanged": "Test only — nothing was changed or proposed."
+      "nothingChanged": "Test only — nothing was changed or proposed.",
+      "byLevel_ad_group": "{{groups}} ad groups across {{campaigns}} campaigns",
+      "byLevel_ad": "{{ads}} ads in {{groups}} ad groups across {{campaigns}} campaigns"
     },
     "skip": {
       "unsupported_one": "{{count}} not supported",
@@ -493,6 +506,14 @@
       "propose_budget_cut": "Decrease budget",
       "propose_budget_increase": "Increase budget",
       "propose_bid_change": "Change bid"
+    },
+    "level": {
+      "campaign": "Campaign",
+      "ad_group": "Ad group",
+      "ad": "Ad",
+      "campaign_plural": "Campaigns",
+      "ad_group_plural": "Ad groups",
+      "ad_plural": "Ads"
     }
   },
   "aiCenter": {
@@ -726,7 +747,33 @@
     "notDocumented": "Not available for this level yet",
     "ctr": "CTR {{value}}%",
     "frequency": "freq. {{value}}",
-    "tiring": "Tiring"
+    "tiring": "Tiring",
+    "askPause": "Ask to pause",
+    "askResume": "Ask to resume",
+    "notOffered": "This platform does not document that change at this level.",
+    "choose": "Choose {{name}}",
+    "paused": "Paused",
+    "adsIn": "Ads in {{name}}",
+    "creatives": "Creatives",
+    "usedBy_one": "Used by {{count}} ad",
+    "usedBy_other": "Used by {{count}} ads",
+    "bulk": {
+      "title": "Act on the chosen",
+      "chosen_ad_group_one": "{{count}} ad group chosen",
+      "chosen_ad_group_other": "{{count}} ad groups chosen",
+      "chosen_ad_one": "{{count}} ad chosen",
+      "chosen_ad_other": "{{count}} ads chosen",
+      "action": "What to do",
+      "request_pause": "Ask to pause",
+      "request_resume": "Ask to resume",
+      "create_task": "Create a task",
+      "add_to_rule": "Add to a rule",
+      "tag": "Tag",
+      "rule": "Rule",
+      "why": "Why (one sentence)",
+      "apply": "Apply",
+      "result": "{{done}} done · {{refused}} refused"
+    }
   },
   "nav": {
     "aiCenter": "MCP & AI",
@@ -3953,5 +4000,40 @@
       "previous_year": "vs same period last year",
       "none": "No comparison"
     }
+  },
+  "readiness": {
+    "title": "What each platform lets this product change",
+    "lead": "Read in each platform’s own documentation, level by level. A documented change has run end to end against sandbox credentials; a live rung is claimed only after a real round trip.",
+    "failed": "The readiness matrix could not be loaded.",
+    "platform": "Platform",
+    "level": "Level",
+    "change": {
+      "pause": "Pause",
+      "resume": "Resume",
+      "budget": "Daily budget",
+      "bid": "Bid"
+    },
+    "credentials": {
+      "none": "No connection",
+      "sandbox": "Sandbox connection",
+      "real": "Real credentials stored"
+    },
+    "mcp": {
+      "documented": "Official MCP documents writes — not used for writes",
+      "planned": "Official MCP is read-only",
+      "none": "Official MCP is read-only"
+    },
+    "state": {
+      "code_verified": "Code verified",
+      "sandbox_verified": "Sandbox verified",
+      "awaiting_credentials": "Awaiting credentials",
+      "live_read_verified": "Live read verified",
+      "live_write_verified": "Live write verified"
+    },
+    "support": {
+      "not_offered": "Not offered",
+      "not_wired": "Documented · not wired"
+    },
+    "ladder": "Code verified → sandbox verified → awaiting credentials → live read → live write. Nothing here is live yet. Checked {{date}}."
   }
 }

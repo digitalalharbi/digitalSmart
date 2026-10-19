@@ -226,3 +226,47 @@ test('recommends and waits for a person, and an opposite rule stands down', asyn
     operation: 'archive',
   });
 });
+
+test('judges ad groups and ads on their own figures, offering only what each level has', async ({
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.owner);
+  await page.goto('/automation');
+
+  // Templates come by level; an ad template opens the builder at the ad level.
+  const ads = page.getByRole('heading', { level: 3, name: 'Ads' });
+  await expect(ads).toBeVisible(SLOW);
+  await page.getByRole('button', { name: 'Use template' }).nth(-2).click();
+  const drawer = page.getByRole('dialog');
+  await expect(drawer.getByRole('button', { name: 'Ads', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  // An ad has no budget: no budget action, no budget-used figure.
+  await expect(drawer.getByRole('button', { name: /^Budget/ })).toHaveCount(0);
+  await expect(
+    drawer.getByRole('combobox', { name: 'Metric' }).first().locator('option[value="budget_used"]'),
+  ).toHaveCount(0);
+
+  await drawer.getByRole('button', { name: 'Test now' }).click();
+  const result = drawer.getByRole('region', { name: 'Test now' });
+  await expect(result.getByText('Test only — nothing was changed or proposed.')).toBeVisible(SLOW);
+  await expect(result.getByText(/ads in \d+ ad groups across \d+ campaigns/)).toBeVisible();
+
+  // Switching to ad groups brings budgets back.
+  await drawer.getByRole('button', { name: 'Ad groups', exact: true }).click();
+  await expect(drawer.getByRole('button', { name: /^Budget/ }).first()).toBeVisible();
+});
+
+test('shows, per platform and level, what this product may change and how far it is proven', async ({
+  page,
+}) => {
+  await signIn(page, ACCOUNTS.owner);
+  await page.goto('/integrations');
+
+  const matrix = page.getByRole('table', { name: 'What each platform lets this product change' });
+  await expect(matrix).toBeVisible(SLOW);
+  await expect(matrix.getByText('Sandbox verified').first()).toBeVisible();
+  await expect(matrix.getByText('Documented · not wired').first()).toBeVisible();
+  await expect(matrix.getByText('Live write verified')).toHaveCount(0);
+});

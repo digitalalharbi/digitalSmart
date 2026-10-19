@@ -31,6 +31,7 @@ import {
 import { RuleBuilder } from './RuleBuilder';
 import { actionText, ruleConditionParts } from './ruleText';
 import { COVERED, TEMPLATES, draftFrom } from './templates';
+import { LEVELS } from './types';
 import { draftOf, type Rule, type RuleDraft, type RuleMode } from './types';
 
 const MODE_TONE: Record<RuleMode, string> = {
@@ -459,46 +460,63 @@ export function AutomationPage() {
 
       <section aria-label={t('automation.templates')} className="flex flex-col gap-3">
         <h2 className="text-content text-base font-semibold">{t('automation.templates')}</h2>
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {TEMPLATES.map((template) => (
-            <li
-              key={template.key}
-              className="bg-surface flex flex-col gap-2 rounded-2xl p-4 shadow-xs"
-            >
-              <span className="text-content flex items-center gap-2 text-sm font-semibold">
-                <Zap aria-hidden className="text-content-brand size-4" />
-                {t(`automation.template.${template.key}`)}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="mt-auto self-start"
-                disabled={!mayWrite}
-                onClick={() =>
-                  setBuilder({
-                    draft: draftFrom(template, t(`automation.template.${template.key}`), scope),
-                  })
-                }
-              >
-                {t('automation.useTemplate')}
-              </Button>
-            </li>
-          ))}
-          {COVERED.map((c) => (
-            <li
-              key={c.key}
-              className="bg-surface-sunken text-content-tertiary flex flex-col gap-1 rounded-2xl p-4"
-            >
-              <span className="text-sm font-semibold">{t(`automation.template.${c.key}`)}</span>
-              <Link
-                to={c.by === 'creative' ? '/automation/agents' : '/tracking'}
-                className="text-xs underline"
-              >
-                {t(`automation.covered.${c.by}`)}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {LEVELS.map((level) => (
+          <div key={level} className="flex flex-col gap-2">
+            <h3 className="text-content-secondary text-sm font-semibold">
+              {t(`automation.level.${level}_plural`)}
+            </h3>
+            <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {TEMPLATES.filter((template) => (template.level ?? 'campaign') === level).map(
+                (template) => (
+                  <li
+                    key={template.key}
+                    className="bg-surface flex flex-col gap-2 rounded-2xl p-4 shadow-xs"
+                  >
+                    <span className="text-content flex items-center gap-2 text-sm font-semibold">
+                      <Zap aria-hidden className="text-content-brand size-4" />
+                      {t(`automation.template.${template.key}`)}
+                    </span>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="mt-auto self-start"
+                      disabled={!mayWrite}
+                      onClick={() =>
+                        setBuilder({
+                          draft: draftFrom(
+                            template,
+                            t(`automation.template.${template.key}`),
+                            scope,
+                          ),
+                        })
+                      }
+                    >
+                      {t('automation.useTemplate')}
+                    </Button>
+                  </li>
+                ),
+              )}
+              {level !== 'campaign'
+                ? null
+                : COVERED.map((c) => (
+                    <li
+                      key={c.key}
+                      className="bg-surface-sunken text-content-tertiary flex flex-col gap-1 rounded-2xl p-4"
+                    >
+                      <span className="text-sm font-semibold">
+                        {t(`automation.template.${c.key}`)}
+                      </span>
+                      <Link
+                        to={c.by === 'creative' ? '/automation/agents' : '/tracking'}
+                        className="text-xs underline"
+                      >
+                        {t(`automation.covered.${c.by}`)}
+                      </Link>
+                    </li>
+                  ))}
+            </ul>
+          </div>
+        ))}
       </section>
 
       {builder === null ? null : (

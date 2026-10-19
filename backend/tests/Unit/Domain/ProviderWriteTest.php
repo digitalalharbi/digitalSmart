@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Domain\Advertising\AdEntityType;
 use App\Domain\Integration\Provider;
+use App\Domain\Integration\ProviderEntityWrites;
 use App\Domain\Integration\WriteFailure;
 use App\Domain\Integration\WriteOperation;
 use App\Domain\Integration\WriteSupport;
@@ -24,34 +26,55 @@ use App\Domain\Operations\ApprovalKind;
 */
 
 describe('write support', function (): void {
-    it('attempts only what was read in a provider\'s own documentation', function (): void {
+    it('attempts only what was read in a provider\'s own documentation, at that operation\'s level', function (): void {
         /*
-         * Meta, Google Ads, Snapchat and LinkedIn: each operation was read in the provider's own current
-         * documentation, and `writeReference()` records the endpoint and the fields.
+         * Every campaign-level change and every ad-group and ad status change the six platforms' own documentation
+         * describes — each with the endpoint and fields that were read.
          */
-        foreach ([Provider::Meta, Provider::GoogleAds, Provider::Snapchat, Provider::LinkedIn] as $provider) {
+        foreach ([Provider::Meta, Provider::Snapchat, Provider::TikTok, Provider::LinkedIn] as $provider) {
             foreach (WriteOperation::cases() as $operation) {
                 expect($provider->writeSupport($operation))->toBe(WriteSupport::Documented);
                 expect($provider->writeReference($operation))->toBeString();
-                expect($provider->writeReference($operation))->not->toBe('');
+                expect((string) $provider->writeReference($operation))->not->toBe('');
             }
         }
     });
 
-    it('refuses a provider whose documentation could not be read', function (): void {
-        /*
-         * TikTok publishes its Business API through a portal that serves no readable content to a fetcher, and
-         * X's developer documentation was not reachable. Both operations are described in third-party libraries,
-         * which is not the provider saying so — and a guess here is a guess against a live campaign.
-         */
-        foreach ([Provider::TikTok, Provider::X] as $provider) {
-            foreach (WriteOperation::cases() as $operation) {
-                expect($provider->writeSupport($operation))->toBe(WriteSupport::Unverified);
-                expect($provider->writeSupport($operation)->allowsAttempt())->toBeFalse();
-                /* No reference, because nothing was read. */
-                expect($provider->writeReference($operation))->toBeNull();
-            }
+    it('never infers support at one level from another', function (): void {
+        // Google Ads keeps budgets on a campaign budget resource: a campaign has one, an ad group has none.
+        expect(Provider::GoogleAds->writeSupport(WriteOperation::SetCampaignDailyBudget))->toBe(WriteSupport::Documented)
+            ->and(Provider::GoogleAds->writeSupport(WriteOperation::SetAdGroupDailyBudget))->toBe(WriteSupport::NotSupported)
+            ->and(Provider::GoogleAds->writeSupport(WriteOperation::PauseAd))->toBe(WriteSupport::Documented);
+
+        // X pauses a campaign and a line item, and says a promoted tweet cannot be updated at all.
+        expect(Provider::X->writeSupport(WriteOperation::PauseCampaign))->toBe(WriteSupport::Documented)
+            ->and(Provider::X->writeSupport(WriteOperation::PauseAdGroup))->toBe(WriteSupport::Documented)
+            ->and(Provider::X->writeSupport(WriteOperation::PauseAd))->toBe(WriteSupport::NotSupported)
+            ->and(Provider::X->writeReference(WriteOperation::PauseAd))->toBeNull()
+            ->and(ProviderEntityWrites::notOffered(Provider::X, WriteOperation::PauseAd))->toContain('promoted Tweet');
+
+        // No platform keeps a budget on an ad, so there is no such operation to ask about.
+        expect(WriteOperation::at(AdEntityType::Ad, 'budget'))->toBeNull();
+    });
+
+    it('writes to the level a person approved: a LinkedIn campaign is this product\'s ad group', function (): void {
+        expect(Provider::LinkedIn->writeReference(WriteOperation::PauseCampaign))->toContain('adCampaignGroups')
+            ->and(Provider::LinkedIn->writeReference(WriteOperation::PauseAdGroup))->toContain('/adCampaigns/')
+            ->and(Provider::LinkedIn->writeReference(WriteOperation::PauseAd))->toContain('creatives');
+    });
+
+    it('records each platform\'s bid field on the ad group, and offers it nowhere', function (): void {
+        foreach ([Provider::Meta, Provider::GoogleAds, Provider::TikTok, Provider::Snapchat, Provider::X, Provider::LinkedIn] as $provider) {
+            expect(ProviderEntityWrites::bid($provider, AdEntityType::AdGroup))->toBeString()
+                ->and(ProviderEntityWrites::bid($provider, AdEntityType::Campaign))->toBeNull();
         }
+    });
+
+    it('reads the operation an approval authorises from its kind and its level', function (): void {
+        expect(WriteOperation::forApproval(ApprovalKind::CampaignPause, []))->toBe(WriteOperation::PauseCampaign)
+            ->and(WriteOperation::forApproval(ApprovalKind::CampaignPause, ['level' => 'ad']))->toBe(WriteOperation::PauseAd)
+            ->and(WriteOperation::forApproval(ApprovalKind::SpendChange, ['level' => 'ad_group']))->toBe(WriteOperation::SetAdGroupDailyBudget)
+            ->and(WriteOperation::forApproval(ApprovalKind::SpendChange, ['level' => 'ad']))->toBeNull();
     });
 
     it('writes to no analytics property, tag container or store', function (): void {

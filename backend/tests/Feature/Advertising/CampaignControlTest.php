@@ -257,9 +257,9 @@ it('offers to ask for a pause or a resume only where the platform’s write is d
     controlProject($scenario, $accounts[0]['id']);
     metricsFor($scenario, controlCampaign($scenario, $accounts[0]['id'], 'Running One'), days: 28);
     metricsFor($scenario, controlCampaign($scenario, $accounts[0]['id'], 'Stopped One', status: 'paused'), days: 28);
-    $tiktok = controlCampaign($scenario, $accounts[0]['id'], 'Elsewhere One');
-    $tiktok->forceFill(['provider' => 'tiktok'])->save();
-    metricsFor($scenario, $tiktok, days: 28);
+    $elsewhere = controlCampaign($scenario, $accounts[0]['id'], 'Elsewhere One');
+    $elsewhere->forceFill(['provider' => 'openai'])->save();
+    metricsFor($scenario, $elsewhere, days: 28);
 
     /** @var list<array<string, mixed>> $data */
     $data = $this->actingAs($scenario->owner)->getJson('/api/campaigns/control')->assertOk()->json('data');
@@ -268,7 +268,7 @@ it('offers to ask for a pause or a resume only where the platform’s write is d
     // Offered as a request, never as an action: the word is the state's, the control is the server's.
     expect($rows['Running One']['status_action'])->toBe('pause')
         ->and($rows['Stopped One']['status_action'])->toBe('resume')
-        // TikTok's write is `unverified`, so a control that could only be refused is not offered.
+        // ChatGPT Ads publishes no API to write through, so a control that could only be refused is not offered.
         ->and($rows['Elsewhere One']['status_action'])->toBeNull();
 });
 
@@ -300,7 +300,7 @@ it('refuses to ask for what makes no sense, in words', function (): void {
     $running = controlCampaign($scenario, $accounts[0]['id'], 'Running One');
     metricsFor($scenario, $running, days: 28);
     $elsewhere = controlCampaign($scenario, $accounts[0]['id'], 'Elsewhere One');
-    $elsewhere->forceFill(['provider' => 'tiktok'])->save();
+    $elsewhere->forceFill(['provider' => 'openai'])->save();
     metricsFor($scenario, $elsewhere, days: 28);
 
     $this->actingAs($scenario->owner)

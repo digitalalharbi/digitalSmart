@@ -11,11 +11,11 @@ use DateTimeImmutable;
 interface ProposalHistory
 {
     /** Whether a request of this kind for this platform campaign is waiting for a decision. */
-    public function hasPending(string $workspaceId, ApprovalKind $kind, string $externalCampaignId): bool;
+    public function hasPending(string $workspaceId, ApprovalKind $kind, string $externalCampaignId, string $level = 'campaign'): bool;
 
     /** Whether a task with exactly this title is still open — so a routine never piles up the same reminder. */
     public function hasOpenTask(string $workspaceId, string $title): bool;
 
     /** Whether one of this kind was raised since then, in any state but withdrawn. */
-    public function hasSince(string $workspaceId, ApprovalKind $kind, string $externalCampaignId, DateTimeImmutable $since): bool;
+    public function hasSince(string $workspaceId, ApprovalKind $kind, string $externalCampaignId, DateTimeImmutable $since, string $level = 'campaign'): bool;
 }

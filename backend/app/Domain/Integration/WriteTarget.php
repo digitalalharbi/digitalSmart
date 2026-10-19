@@ -28,6 +28,8 @@ final readonly class WriteTarget
         public string $externalCampaignId,
         public ?int $dailyBudgetMinor,
         public ?string $currency,
+        /** The id of the thing being changed: the campaign, the ad group or the ad — the operation's own level. */
+        public string $externalEntityId,
     ) {}
 
     /**
@@ -38,14 +40,34 @@ final readonly class WriteTarget
         $provider = Provider::tryFrom(self::text($proposal, 'provider') ?? '');
         $account = self::text($proposal, 'external_account_id');
         $campaign = self::text($proposal, 'external_campaign_id');
+        $level = $operation->level();
 
         if ($provider === null || $account === null || $campaign === null) {
             return null;
         }
 
+        /*
+         * An ad-group or ad change names that entity by its own id, and states its level. A proposal naming only the
+         * campaign cannot pause one ad in it — and one naming an ad while saying it is about the campaign is a
+         * request nobody could read correctly.
+         */
+        if (($proposal['level'] ?? 'campaign') !== $level->value) {
+            return null;
+        }
+
+        $entity = match ($level) {
+            \App\Domain\Advertising\AdEntityType::AdGroup => self::text($proposal, 'external_ad_group_id'),
+            \App\Domain\Advertising\AdEntityType::Ad => self::text($proposal, 'external_ad_id'),
+            default => $campaign,
+        };
+
+        if ($entity === null) {
+            return null;
+        }
+
         $budget = self::integer($proposal, 'daily_budget_minor');
 
-        if ($operation === WriteOperation::SetCampaignDailyBudget) {
+        if ($operation->isBudget()) {
             /*
              * A budget change with no amount is not a budget change. Refused rather than defaulted: there is no
              * sensible default for what a client spends, and the one somebody would reach for — the current
@@ -65,7 +87,7 @@ final readonly class WriteTarget
             }
         }
 
-        return new self($provider, $account, $campaign, $budget, self::text($proposal, 'currency'));
+        return new self($provider, $account, $campaign, $budget, self::text($proposal, 'currency'), $entity);
     }
 
     /** @param  array<string, mixed>  $proposal */

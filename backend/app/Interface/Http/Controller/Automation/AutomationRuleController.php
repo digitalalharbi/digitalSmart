@@ -77,6 +77,10 @@ final class AutomationRuleController extends Controller
             $filters[$key] = is_string($value) && $value !== '' ? $value : null;
         }
 
+        /* Campaigns, ad groups or ads — `level` on the wire, the entity's level in the history. */
+        $level = $request->query('level');
+        $filters['object_level'] = in_array($level, ['campaign', 'ad_group', 'ad'], true) ? $level : null;
+
         return response()->json(['data' => $center->history($filters, $this->days($request))]);
     }
 
@@ -146,6 +150,10 @@ final class AutomationRuleController extends Controller
             'account_ids.*' => ['string', 'max:120'],
             'campaign_ids' => ['sometimes', 'array', 'max:50'],
             'campaign_ids.*' => ['uuid'],
+            'ad_group_ids' => ['sometimes', 'array', 'max:50'],
+            'ad_group_ids.*' => ['uuid'],
+            'ad_ids' => ['sometimes', 'array', 'max:50'],
+            'ad_ids.*' => ['uuid'],
             'object_level' => ['sometimes', 'in:campaign,ad_group,ad'],
             'schedule' => ['sometimes', 'in:'.implode(',', RuleSchedule::values())],
             'schedule_time' => ['sometimes', 'nullable', 'date_format:H:i'],
@@ -208,6 +216,8 @@ final class AutomationRuleController extends Controller
             providers: array_values(array_map('strval', (array) ($v['providers'] ?? []))),
             accountIds: array_values(array_map('strval', (array) ($v['account_ids'] ?? []))),
             campaignIds: array_values(array_map('strval', (array) ($v['campaign_ids'] ?? []))),
+            adGroupIds: array_values(array_map('strval', (array) ($v['ad_group_ids'] ?? []))),
+            adIds: array_values(array_map('strval', (array) ($v['ad_ids'] ?? []))),
             objectLevel: (string) ($v['object_level'] ?? 'campaign'),
             schedule: RuleSchedule::tryFrom((string) ($v['schedule'] ?? 'hourly')) ?? RuleSchedule::Hourly,
             scheduleTime: isset($v['schedule_time']) ? (string) $v['schedule_time'] : null,
@@ -245,6 +255,8 @@ final class AutomationRuleController extends Controller
             'providers' => $r->providers,
             'account_ids' => $r->accountIds,
             'campaign_ids' => $r->campaignIds,
+            'ad_group_ids' => $r->adGroupIds,
+            'ad_ids' => $r->adIds,
             'object_level' => $r->objectLevel,
             'schedule' => $r->schedule->value,
             'schedule_time' => $r->scheduleTime,

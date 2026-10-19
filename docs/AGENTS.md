@@ -65,9 +65,24 @@ Creative review, Weekly client report, Monthly executive review (1st of the mont
 again. `CampaignFiguresLevelTest` pins the aggregate, `CampaignAggregateConsumersTest` pins the portfolio, the rule
 dry run and the agents' campaign tool.
 
-**Next expansion — ad group and ad level.** The scope stops at campaign today. Rules on ad groups and ads need the
-same aggregate per level and each platform's write at that level; until then the builder offers campaign scope only
-rather than a level it cannot judge.
+**Three levels — campaign, ad group, ad.** A rule states its level and judges each entity on **its own** metric rows
+(`daily_metrics.entity_type` = its level), never summed with another level (`EntityLevelRulesTest`, "entity metric
+truth"). A level offers only the figures it has — no week-on-week cost change below a campaign; no budget used or end
+date on an ad — and only the changes it can hold: pause and resume everywhere, a daily budget on campaigns and ad
+groups, a bid nowhere (documented on every ad group, wired in no write). Capability is **provider × level × action**
+(`ProviderEntityWrites`, `docs/PROVIDER_READINESS.md`): X pauses a line item and documents no way to pause a promoted
+tweet; Google Ads has no ad-group budget. An ad-group or ad proposal names the entity by its own platform id and its
+level, goes through the same approval and the same carry-out gates, and is keyed apart from its campaign's — an ad
+set's pending pause never blocks its campaign's. Streaks, cooldown and conflicts are kept per entity; the dry run counts
+what matched at its level and above (ads, ad groups, campaigns); Action history names the entity, its type and its
+parent, and filters by level. Templates by level: Cut weak ad sets, Scale winning ad sets, Pause fatigued ads, Pause
+zero-conversion ads.
+
+**The campaign hierarchy** (Campaigns → a campaign → *Ad groups and ads*): ad groups with their ads, each ad with its
+creative's preview, CTR trend and frequency, and the campaign's creatives listed once with the ads that run them
+(linked, never copied). *Ask to pause / resume* is offered per ad group or ad where the platform documents it at that
+level and shown disabled with the platform's reason where it does not. Several can be chosen: ask to pause or resume,
+create a task, add to a rule's scope (same level only), or tag — each through its own use case.
 
 
 digitalSmart's agent layer is built so that **AI works inside controlled business workflows**: agents observe,

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Automation\Query;
 
-use App\Application\Advertising\DTO\CampaignControlFilter;
-use App\Application\Advertising\DTO\CampaignControlRow;
+use App\Application\Advertising\DTO\EntityControlRow;
 use App\Application\Advertising\Query\GetCampaignControl;
 use App\Application\Automation\Command\RunAutomationRules;
 use App\Application\Automation\Contract\RuleExecutionLog;
@@ -17,6 +16,7 @@ use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Access\Permission;
+use App\Domain\Advertising\AdEntityType;
 use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMode;
 use DateTimeImmutable;
@@ -48,13 +48,7 @@ final readonly class SimulateRule
 
         $rule = self::view($input);
         $today = $this->clock->now();
-        $rows = $this->campaigns->assessAll(new CampaignControlFilter(
-            clientIds: $rule->clientId === null ? [] : [$rule->clientId],
-            projectIds: $rule->projectId === null ? [] : [$rule->projectId],
-            providers: $rule->providers,
-            externalAccountIds: $rule->accountIds,
-            campaignIds: $rule->campaignIds,
-        ), $rule->windowDays)['rows'];
+        $rows = RunAutomationRules::subjects($this->campaigns, $rule);
 
         $objects = [];
         $insufficient = 0;
@@ -80,8 +74,13 @@ final readonly class SimulateRule
             }
 
             $objects[] = [
+                'level' => $row->level->value,
+                'entity_id' => $row->id,
+                'name' => $row->name,
+                'parent' => $row->parentLabel(),
                 'campaign_id' => $row->campaignId,
                 'campaign' => $row->campaignName,
+                'ad_group_id' => $row->adGroupId,
                 'provider' => $row->provider,
                 'client' => $row->clientName,
                 'project' => $row->projectName,
@@ -90,13 +89,20 @@ final readonly class SimulateRule
                 'action' => $rule->mode === RuleMode::Monitor ? 'notify' : $rule->action->value,
                 'before' => ['daily_budget' => $row->budgetMinor === null ? null : $row->budgetMinor / 100, 'status' => $row->status->value],
                 'after' => self::after($rule, $row),
-                'capability' => $rule->mode === RuleMode::Monitor ? 'supported' : $this->capability->of($rule->action, $row->provider, $this->actor->workspaceId()->value),
+                'capability' => $rule->mode === RuleMode::Monitor ? 'supported' : $this->capability->of($rule->action, $row->provider, $this->actor->workspaceId()->value, $row->level),
                 'outcome' => $verdict,
             ];
         }
 
         return [
+            'level' => $rule->level()->value,
             'matched' => count($objects),
+            /* What matched, at its level and above: an ad rule's matches name their ad groups and campaigns too. */
+            'matched_by_level' => [
+                'campaign' => count(array_unique(array_column($objects, 'campaign_id'))),
+                'ad_group' => $rule->level() === AdEntityType::Campaign ? 0 : count(array_unique(array_filter(array_column($objects, 'ad_group_id')))),
+                'ad' => $rule->level() === AdEntityType::Ad ? count($objects) : 0,
+            ],
             'looked_at' => count($rows),
             'insufficient' => $insufficient,
             'would_act' => count(array_filter($objects, static fn (array $o): bool => $o['outcome'] === 'would_act')),
@@ -139,6 +145,8 @@ final readonly class SimulateRule
             minSpend: $input->minSpend,
             minAgeDays: $input->minAgeDays,
             minConversions: $input->minConversions,
+            adGroupIds: $input->adGroupIds,
+            adIds: $input->adIds,
         );
     }
 
@@ -146,13 +154,13 @@ final readonly class SimulateRule
      * What the routine would do with this campaign right now, without doing it: act, or skip it and why — the
      * platform cannot take it, the rule is in its cooldown here, another rule moved it the other way, no daily budget.
      */
-    private function verdict(RuleView $rule, CampaignControlRow $row, DateTimeImmutable $now): string
+    private function verdict(RuleView $rule, EntityControlRow $row, DateTimeImmutable $now): string
     {
         if ($rule->mode === RuleMode::Monitor || in_array($rule->action, [RuleAction::Alert, RuleAction::Task], true)) {
             return 'would_act';
         }
 
-        $capability = $this->capability->of($rule->action, $row->provider, $this->actor->workspaceId()->value);
+        $capability = $this->capability->of($rule->action, $row->provider, $this->actor->workspaceId()->value, $row->level);
 
         if ($capability !== 'supported') {
             return $capability;
@@ -165,20 +173,20 @@ final readonly class SimulateRule
         if ($rule->id !== 'draft') {
             $since = $now->modify(sprintf('-%d hours', $rule->cooldownHours));
 
-            if ($this->executions->lastActedAt($rule->id, $row->campaignId, $since) !== null) {
+            if ($this->executions->lastActedAt($rule->id, $row->id, $since) !== null) {
                 return 'cooldown';
             }
         }
 
         $opposite = RunAutomationRules::OPPOSITE[$rule->action->value] ?? [];
 
-        return $this->executions->conflicting($rule->id, $row->campaignId, $opposite, $now->modify(sprintf('-%d hours', $rule->cooldownHours))) === null
+        return $this->executions->conflicting($rule->id === 'draft' ? null : $rule->id, $row->id, $opposite, $now->modify(sprintf('-%d hours', $rule->cooldownHours))) === null
             ? 'would_act'
             : 'conflict';
     }
 
     /** @return array<string, mixed> */
-    private static function after(RuleView $rule, CampaignControlRow $row): array
+    private static function after(RuleView $rule, EntityControlRow $row): array
     {
         if ($rule->mode === RuleMode::Monitor) {
             return [];

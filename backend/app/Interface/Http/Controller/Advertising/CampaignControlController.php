@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Interface\Http\Controller\Advertising;
 
+use App\Application\Advertising\Command\BulkEntityAction;
 use App\Application\Advertising\Command\RequestCampaignStatusChange;
 use App\Application\Advertising\DTO\CampaignControlFilter;
 use App\Application\Advertising\Query\GetCampaignControl;
+use App\Application\Agents\Command\ProposeEntityChange;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
 use App\Application\Tags\Contract\TagStore;
+use App\Domain\Advertising\AdEntityType;
 use App\Domain\Advertising\CampaignHealth;
 use App\Domain\Advertising\CampaignObjective;
 use App\Domain\Advertising\EntityStatus;
+use App\Domain\Agents\ActionRefused;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\WriteOperation;
 use App\Domain\Integration\WriteSupport;
@@ -161,6 +165,54 @@ final class CampaignControlController extends Controller
         }
 
         return response()->json(['data' => ApprovalResource::request($view, $clock->now())], Response::HTTP_CREATED);
+    }
+
+    /**
+     * Ask for one ad group or ad to be paused or resumed — the same approval as a campaign's, at the entity's own
+     * level, refused where the platform does not document that change there.
+     */
+    public function requestEntityChange(string $level, string $entity, Request $request, ProposeEntityChange $ask, Clock $clock): JsonResponse
+    {
+        $validated = $request->validate([
+            'action' => ['required', 'in:pause,resume'],
+            'reason' => ['required', 'string', 'min:3', 'max:1000'],
+        ]);
+
+        try {
+            $view = $ask(AdEntityType::from($level), $entity, $validated['action'] === 'pause' ? 'pause' : 'resume', null, trim((string) $validated['reason']));
+        } catch (InvalidApprovalRequest $refusal) {
+            return response()->json(['message' => $refusal->getMessage(), 'code' => $refusal->reasonCode], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (ActionRefused $refusal) {
+            return response()->json(['message' => $refusal->getMessage(), 'code' => $refusal->reasonCode], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json(['data' => ApprovalResource::request($view, $clock->now())], Response::HTTP_CREATED);
+    }
+
+    /** One action across many ad groups or ads — each through its own use case, each refusal named. */
+    public function bulkEntities(Request $request, BulkEntityAction $bulk): JsonResponse
+    {
+        $validated = $request->validate([
+            'level' => ['required', 'in:ad_group,ad'],
+            'ids' => ['required', 'array', 'min:1', 'max:'.BulkEntityAction::MAX],
+            'ids.*' => ['uuid'],
+            'action' => ['required', 'in:request_pause,request_resume,request_budget_change,create_task,add_to_rule'],
+            'reason' => ['required_unless:action,add_to_rule', 'nullable', 'string', 'min:3', 'max:1000'],
+            'change_pct' => ['required_if:action,request_budget_change', 'nullable', 'integer', 'between:-50,50', 'not_in:0'],
+            'rule_id' => ['required_if:action,add_to_rule', 'nullable', 'uuid'],
+        ]);
+
+        /** @var 'request_pause'|'request_resume'|'request_budget_change'|'create_task'|'add_to_rule' $action */
+        $action = (string) $validated['action'];
+
+        return response()->json(['data' => $bulk(
+            AdEntityType::from((string) $validated['level']),
+            array_values(array_map('strval', (array) $validated['ids'])),
+            $action,
+            trim((string) ($validated['reason'] ?? '')),
+            isset($validated['change_pct']) ? (int) $validated['change_pct'] : null,
+            isset($validated['rule_id']) ? (string) $validated['rule_id'] : null,
+        )]);
     }
 
     /**

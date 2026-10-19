@@ -31,6 +31,7 @@ use App\Application\Agents\Tool\ListAdSignalsTool;
 use App\Application\Agents\Tool\ListCampaignsTool;
 use App\Application\Agents\Tool\ListClientsTool;
 use App\Application\Agents\Tool\ProposeBudgetChangeTool;
+use App\Application\Agents\Tool\ProposeEntityChangeTool;
 use App\Application\Agents\Tool\ProposeStatusChangeTool;
 use App\Application\Agents\Tool\StatusEvidence;
 use App\Application\Agents\Tool\ToolCaller;
@@ -546,6 +547,7 @@ final class AppServiceProvider extends ServiceProvider
                 new ProposeStatusChangeTool($app->make(RequestStatusChangeUseCase::class), $app->make(StatusEvidence::class), $app->make(ToolCaller::class), WriteOperation::PauseCampaign),
                 new ProposeStatusChangeTool($app->make(RequestStatusChangeUseCase::class), $app->make(StatusEvidence::class), $app->make(ToolCaller::class), WriteOperation::ResumeCampaign),
                 $app->make(ProposeBudgetChangeTool::class),
+                $app->make(ProposeEntityChangeTool::class),
                 $app->make(ListAdSignalsTool::class),
                 $app->make(ListClientsTool::class),
                 $app->make(GetLeadQualityTool::class),

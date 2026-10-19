@@ -9,11 +9,13 @@ use App\Application\Advertising\DTO\CampaignControlFilter;
 use App\Application\Advertising\DTO\CampaignControlPage;
 use App\Application\Advertising\DTO\CampaignControlRow;
 use App\Application\Advertising\DTO\CampaignVitalsRow;
+use App\Application\Advertising\DTO\EntityControlRow;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Access\Permission;
+use App\Domain\Advertising\AdEntityType;
 use App\Domain\Advertising\CampaignHealth;
 use App\Domain\Advertising\CampaignHealthPolicy;
 use DateTimeImmutable;
@@ -188,6 +190,34 @@ final readonly class GetCampaignControl
             'from' => $from,
             'to' => $to,
         ];
+    }
+
+    /**
+     * Ad groups or ads under the campaigns the filter selects, each judged on its own rows over the same window the
+     * campaigns are — what an ad-group or ad rule reads.
+     *
+     * @param  list<string>  $adGroupIds
+     * @param  list<string>  $adIds
+     * @return list<EntityControlRow>
+     */
+    public function assessEntities(AdEntityType $level, CampaignControlFilter $filter, array $adGroupIds = [], array $adIds = [], ?int $windowDays = null): array
+    {
+        $this->guard->ensure(Permission::AnalyticsView);
+
+        $to = $this->clock->now()->modify('-1 day');
+        $from = $to->modify(sprintf('-%d days', self::window($windowDays) - 1));
+
+        return $this->campaigns->entities(
+            $this->actor->workspaceId()->value,
+            $this->visibility->visibleProjectIds(),
+            $filter,
+            $level,
+            $adGroupIds,
+            $adIds,
+            $from,
+            $to,
+            self::ASSESSMENT_CAP,
+        );
     }
 
     public static function window(?int $days): int

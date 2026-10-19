@@ -62,6 +62,7 @@ export type HistoryFilters = {
   result?: string | null;
   provider?: string | null;
   rule_id?: string | null;
+  level?: string | null;
 };
 
 export function useActionHistory(filters: HistoryFilters) {

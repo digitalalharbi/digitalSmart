@@ -9,6 +9,7 @@ use App\Application\Integration\Command\ConfigureConnection;
 use App\Application\Integration\Command\DisconnectProvider;
 use App\Application\Integration\Command\DiscoverAccounts;
 use App\Application\Integration\DTO\ProviderView;
+use App\Application\Integration\Query\GetProviderReadiness;
 use App\Application\Integration\Query\ListProviders;
 use App\Domain\Integration\ExternalAccount;
 use App\Domain\Integration\Provider;
@@ -31,6 +32,12 @@ final class ProviderController extends Controller
         return new JsonResponse([
             'data' => array_map($this->present(...), $listProviders()),
         ]);
+    }
+
+    /** Provider × level × change: what each platform documents, and how far this product has proven it. */
+    public function readiness(GetProviderReadiness $readiness): JsonResponse
+    {
+        return new JsonResponse(['data' => $readiness()]);
     }
 
     /** Store or replace a provider's credentials. */
