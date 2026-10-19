@@ -242,6 +242,9 @@ final readonly class GetCampaignControl
             healthReasonCode: $verdict->code,
             healthReasonParams: $verdict->params,
             endsAt: $row->endsAt,
+            startedAt: $row->startedAt,
+            impressions: $row->vitals->impressions,
+            clicks: $row->vitals->clicks,
         );
     }
 }

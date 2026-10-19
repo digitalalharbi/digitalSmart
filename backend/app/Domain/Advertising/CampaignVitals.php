@@ -27,6 +27,9 @@ final readonly class CampaignVitals
         public ?int $previousSpendMinor,
         public ?float $previousResults,
         public ?DateTimeImmutable $lastSyncedAt,
+        /** Impressions and clicks over the window, where the platform reported them — for CTR, CPC and CPM. */
+        public ?int $impressions = null,
+        public ?int $clicks = null,
     ) {}
 
     /** Cost per result, in minor units, or null when the question does not apply or cannot be answered. */

@@ -66,6 +66,10 @@ final readonly class CampaignControlRow
         public array $healthReasonParams = [],
         /** When the platform says the campaign stops, where it has an end date at all. */
         public ?DateTimeImmutable $endsAt = null,
+        /** When the campaign started — the platform's start date, or its creation date where none is set. */
+        public ?DateTimeImmutable $startedAt = null,
+        public ?int $impressions = null,
+        public ?int $clicks = null,
     ) {}
 
     /** @param list<int|null> $trend */
@@ -79,6 +83,7 @@ final readonly class CampaignControlRow
             $this->resultLabel, $this->costPerResultMinor, $this->revenueMinor, $this->roas,
             $this->reportedDays, $this->lastSyncedAt, $this->budgetUtilisation, $trend,
             $this->healthReasonCode, $this->healthReasonParams, $this->endsAt,
+            $this->startedAt, $this->impressions, $this->clicks,
         );
     }
 }

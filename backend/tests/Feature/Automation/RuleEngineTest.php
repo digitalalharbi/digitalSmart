@@ -53,7 +53,7 @@ it('waits until a rule has held for as many days as it asks', function (): void 
     $w = engineWorld();
     $rule = makeRule($w, ['name' => 'Three days', 'for_days' => 3]);
 
-    test()->artisan('automation:run', ['--workspace' => $w->workspaceId()])->assertSuccessful();
+    test()->artisan('automation:run', ['--workspace' => $w->workspaceId(), '--force' => true])->assertSuccessful();
     expect(ruleItems($w))->toBe([]);
 
     // Two days ago it was already true, and it still is: three days in a row.
@@ -67,8 +67,8 @@ it('proposes a pause at trust 2, once per streak, and changes nothing on the pla
 
     makeRule($w, ['name' => 'Stop the bleeding', 'action' => 'propose_pause', 'trust_level' => 2]);
 
-    test()->artisan('automation:run', ['--workspace' => $w->workspaceId()])->assertSuccessful();
-    test()->artisan('automation:run', ['--workspace' => $w->workspaceId()])->assertSuccessful();
+    test()->artisan('automation:run', ['--workspace' => $w->workspaceId(), '--force' => true])->assertSuccessful();
+    test()->artisan('automation:run', ['--workspace' => $w->workspaceId(), '--force' => true])->assertSuccessful();
 
     $proposals = DB::table('approval_requests')->where('agent', 'automation')->get();
 
@@ -97,7 +97,7 @@ it('watches silently at trust 0 — streaks are kept, nothing is shown', functio
     $w = engineWorld();
     $rule = makeRule($w, ['name' => 'Quiet', 'trust_level' => 0]);
 
-    test()->artisan('automation:run', ['--workspace' => $w->workspaceId()])->assertSuccessful();
+    test()->artisan('automation:run', ['--workspace' => $w->workspaceId(), '--force' => true])->assertSuccessful();
 
     expect(ruleItems($w))->toBe([])
         ->and(DB::table('automation_rule_streaks')->where('rule_id', $rule['id'])->count())->toBeGreaterThan(0);
@@ -107,11 +107,11 @@ it('ends every streak when a rule stops holding for all campaigns', function ():
     $w = engineWorld();
     $rule = makeRule($w, ['name' => 'Briefly true']);
 
-    test()->artisan('automation:run', ['--workspace' => $w->workspaceId()])->assertSuccessful();
+    test()->artisan('automation:run', ['--workspace' => $w->workspaceId(), '--force' => true])->assertSuccessful();
     expect(DB::table('automation_rule_streaks')->where('rule_id', $rule['id'])->count())->toBeGreaterThan(0);
 
     DB::table('automation_rules')->where('id', $rule['id'])->update(['threshold' => 999999999]);
-    test()->artisan('automation:run', ['--workspace' => $w->workspaceId()])->assertSuccessful();
+    test()->artisan('automation:run', ['--workspace' => $w->workspaceId(), '--force' => true])->assertSuccessful();
 
     expect(DB::table('automation_rule_streaks')->where('rule_id', $rule['id'])->count())->toBe(0)
         ->and(DB::table('agent_runs')->where('agent', 'automation')->where('status', 'failed')->count())->toBe(0);

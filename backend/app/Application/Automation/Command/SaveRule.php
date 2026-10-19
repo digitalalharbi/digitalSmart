@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Automation\Command;
 
+use App\Application\Advertising\Contract\CampaignControlReadModel;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Automation\Contract\AutomationRuleRepository;
 use App\Application\Automation\DTO\RuleInput;
@@ -16,9 +17,10 @@ use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Automation\Exception\RuleNotAllowed;
-use App\Domain\Automation\RuleAction;
+use App\Domain\Automation\RuleMode;
 use App\Domain\Automation\TrustLevel;
 use App\Domain\Dashboard\Exception\NameAlreadyUsed;
+use DateTimeZone;
 
 /**
  * Create a rule, or change one.
@@ -35,6 +37,7 @@ final readonly class SaveRule
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
+        private CampaignControlReadModel $campaigns,
     ) {}
 
     public function __invoke(RuleInput $input, ?string $id = null): RuleView
@@ -43,9 +46,7 @@ final readonly class SaveRule
 
         $workspaceId = $this->actor->workspaceId()->value;
 
-        if ($id !== null && $this->rules->find($workspaceId, $id) === null) {
-            throw ResourceNotFound::of('Rule');
-        }
+        $previous = $id === null ? null : ($this->rules->find($workspaceId, $id) ?? throw ResourceNotFound::of('Rule'));
 
         if ($input->projectId !== null) {
             $visible = $this->visibility->visibleProjectIds();
@@ -53,6 +54,14 @@ final readonly class SaveRule
             if ($visible !== null && ! in_array($input->projectId, $visible, true)) {
                 throw ResourceNotFound::of('Project');
             }
+        }
+
+        /*
+         * Auto-execute changes a platform without a person deciding. The owner has not authorised it for any
+         * workspace, so the mode is named and refused — never stored and never silently turned into Recommend.
+         */
+        if ($input->mode === RuleMode::Auto) {
+            throw new RuleNotAllowed('Auto-execute is not authorised for this workspace. Use Recommend: the change is proposed and a person approves it.');
         }
 
         /*
@@ -64,16 +73,32 @@ final readonly class SaveRule
             throw new RuleNotAllowed('Changing a platform without a person\'s approval is not available. The highest level is 3.');
         }
 
-        if (! $input->trustLevel->allows($input->action)) {
+        /* Monitor takes no action at all — it shows what the rule would do — so any action may be named there. */
+        if ($input->mode !== RuleMode::Monitor && ! $input->trustLevel->allows($input->action)) {
             throw new RuleNotAllowed(sprintf('That action needs trust level %d or above; this rule has %d.', $input->action->minimumTrust()->value, $input->trustLevel->value));
+        }
+
+        if ($input->objectLevel !== 'campaign') {
+            throw new RuleNotAllowed('Rules act on campaigns. Ad-group and ad rules are not available yet.');
+        }
+
+        if ($input->action->needsPct() && ($input->actionPct === null || $input->actionPct < 1 || $input->actionPct > 50)) {
+            throw new RuleNotAllowed('A budget or bid proposal names a change between 1% and 50%.');
+        }
+
+        if (! in_array($input->timezone, DateTimeZone::listIdentifiers(), true)) {
+            throw new RuleNotAllowed('Unknown time zone.');
+        }
+
+        /* Every campaign named in the scope must be one the author can see — a rule cannot reach past its author. */
+        foreach ($input->campaignIds as $campaignId) {
+            if ($this->campaigns->writeTarget($workspaceId, $this->visibility->visibleProjectIds(), $campaignId) === null) {
+                throw ResourceNotFound::of('Campaign');
+            }
         }
 
         if ($input->trustLevel->value >= TrustLevel::ActInternally->value) {
             $this->guard->ensure(Permission::WorkspacesUpdate);
-        }
-
-        if ($input->action === RuleAction::ProposeBudgetCut && ($input->actionPct === null || $input->actionPct < 1 || $input->actionPct > 50)) {
-            throw new RuleNotAllowed('A budget-cut proposal names a cut between 1% and 50%.');
         }
 
         if ($this->rules->nameTaken($workspaceId, $input->name, $id)) {
@@ -91,9 +116,54 @@ final readonly class SaveRule
             auditableType: 'automation_rule',
             auditableId: $saved->id,
             summary: sprintf('%s the rule "%s"', $id === null ? 'Created' : 'Changed', $saved->name),
-            changes: ['metric' => $saved->metric->value, 'threshold' => $saved->threshold, 'active' => $saved->isActive, 'conditions' => count($saved->conditions), 'for_days' => $saved->forDays, 'action' => $saved->action->value, 'trust_level' => $saved->trustLevel->value],
+            changes: ['kinds' => $this->kinds($previous, $saved), 'before' => $previous === null ? null : self::shape($previous), 'after' => self::shape($saved)],
         ));
 
         return $saved;
+    }
+
+    /** @return array<string, mixed> */
+    public static function shape(RuleView $r): array
+    {
+        return [
+            'name' => $r->name,
+            'active' => $r->isActive,
+            'mode' => $r->mode->value,
+            'schedule' => ['every' => $r->schedule->value, 'at' => $r->scheduleTime, 'timezone' => $r->timezone, 'cooldown_hours' => $r->cooldownHours, 'for_days' => $r->forDays],
+            'conditions' => ['logic' => $r->logic, 'list' => [
+                ['metric' => $r->metric->value, 'operator' => $r->operator->value, 'threshold' => $r->threshold],
+                ...array_map(static fn (array $c): array => ['metric' => $c['metric']->value, 'operator' => ($c['operator'] ?? $c['metric']->breachedWhen())->value, 'threshold' => $c['threshold']], $r->conditions),
+            ], 'window_days' => $r->windowDays],
+            'action' => ['action' => $r->action->value, 'pct' => $r->actionPct],
+            'scope' => ['client' => $r->clientId, 'project' => $r->projectId, 'platforms' => $r->providers, 'accounts' => $r->accountIds, 'campaigns' => $r->campaignIds, 'level' => $r->objectLevel],
+        ];
+    }
+
+    /**
+     * What a person would say changed: created, enabled/disabled, mode, schedule, conditions, action, scope, name.
+     *
+     * @return list<string>
+     */
+    private function kinds(?RuleView $before, RuleView $after): array
+    {
+        if ($before === null) {
+            return ['created'];
+        }
+
+        $a = self::shape($before);
+        $b = self::shape($after);
+        $kinds = [];
+
+        if ($a['active'] !== $b['active']) {
+            $kinds[] = $b['active'] ? 'enabled' : 'disabled';
+        }
+
+        foreach (['mode', 'schedule', 'conditions', 'action', 'scope', 'name'] as $key) {
+            if ($a[$key] !== $b[$key]) {
+                $kinds[] = $key.'_changed';
+            }
+        }
+
+        return $kinds === [] ? ['edited'] : $kinds;
     }
 }

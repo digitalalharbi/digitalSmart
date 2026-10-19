@@ -45,4 +45,11 @@ interface AutomationRuleRepository
     public function streaks(string $ruleId): array;
 
     public function markActed(string $ruleId, string $campaignId): void;
+
+    /**
+     * When the rule last ran and what it came to — matched, acted, refused — for the rules table.
+     *
+     * @param  array<string, int|string>  $result
+     */
+    public function recordRun(string $ruleId, array $result): void;
 }

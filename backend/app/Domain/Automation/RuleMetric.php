@@ -24,6 +24,22 @@ enum RuleMetric: string
     case Rejected = 'rejected';
     /** Days until the platform's own end date; a problem at or below the threshold. */
     case EndsWithin = 'ends_within';
+    /** Spend over the window, in the campaign's currency. */
+    case Spend = 'spend';
+    /** Results (the campaign's own objective: purchases, leads, installs…) over the window. */
+    case Conversions = 'conversions';
+    /** Click-through rate, percent. Only where the platform reported impressions. */
+    case Ctr = 'ctr';
+    /** Cost per click, in the campaign's currency. */
+    case Cpc = 'cpc';
+    /** Cost per thousand impressions, in the campaign's currency. */
+    case Cpm = 'cpm';
+    /** Days since the campaign started (the platform's start date, or its creation). */
+    case CampaignAge = 'campaign_age';
+    /** Active, and the platform is not delivering it. Takes no threshold. */
+    case NotDelivering = 'not_delivering';
+    /** Cost per result against the window before, percent change. */
+    case CostChange = 'cost_change';
 
     public function label(): string
     {
@@ -34,6 +50,14 @@ enum RuleMetric: string
             self::NoResults => 'Spending with no results',
             self::Rejected => 'Rejected by the platform',
             self::EndsWithin => 'Days until it ends',
+            self::Spend => 'Spend',
+            self::Conversions => 'Results',
+            self::Ctr => 'CTR (%)',
+            self::Cpc => 'Cost per click',
+            self::Cpm => 'Cost per 1,000 impressions',
+            self::CampaignAge => 'Days since start',
+            self::NotDelivering => 'Not delivering',
+            self::CostChange => 'Cost per result change (%)',
         };
     }
 
@@ -42,14 +66,39 @@ enum RuleMetric: string
     {
         return match ($this) {
             self::CostPerResult, self::BudgetUsed => RuleOperator::Above,
-            self::Roas, self::EndsWithin => RuleOperator::Below,
-            self::NoResults, self::Rejected => RuleOperator::Above,
+            self::Roas, self::EndsWithin, self::Conversions, self::Ctr => RuleOperator::Below,
+            self::NoResults, self::Rejected, self::NotDelivering, self::Spend, self::Cpc, self::Cpm,
+            self::CampaignAge, self::CostChange => RuleOperator::Above,
         };
+    }
+
+    /** What the threshold is measured in, so the builder can show it the way a person would say it. */
+    public function unit(): string
+    {
+        return match ($this) {
+            self::CostPerResult, self::Spend, self::Cpc, self::Cpm => 'money',
+            self::Roas => 'ratio',
+            self::BudgetUsed, self::Ctr, self::CostChange => 'percent',
+            self::EndsWithin, self::CampaignAge => 'days',
+            self::Conversions => 'count',
+            self::NoResults, self::Rejected, self::NotDelivering => 'state',
+        };
+    }
+
+    /**
+     * Whether the figure exists for a platform at all. Every metric here is computed from the normalised daily
+     * figures every adapter reports (spend, impressions, clicks, results, revenue) or from the campaign itself — so a
+     * metric is available wherever that platform's figures are synced, and `null` (not judged) where a figure is not
+     * reported for a campaign.
+     */
+    public function needsImpressions(): bool
+    {
+        return in_array($this, [self::Ctr, self::Cpm], true);
     }
 
     public function needsThreshold(): bool
     {
-        return $this !== self::NoResults && $this !== self::Rejected;
+        return ! in_array($this, [self::NoResults, self::Rejected, self::NotDelivering], true);
     }
 
     /** @return list<string> */
