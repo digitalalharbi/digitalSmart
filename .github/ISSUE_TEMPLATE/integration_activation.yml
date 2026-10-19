@@ -1,0 +1,33 @@
+name: Integration activation
+description: Bring a provider from AWAITING_CREDENTIALS to live.
+title: "[Integration] "
+labels: ["integration"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Never paste a credential, token or secret here. Credentials go into the product's encrypted store by the
+        owner, never into GitHub.
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      options: [Meta, Google Ads, TikTok, Snapchat, LinkedIn, X, ChatGPT Ads, GA4, GTM, Salla, Zid, WhatsApp, Email, Language model, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: state
+    attributes:
+      label: Current state and what is missing
+      description: Use the status vocabulary in CLAUDE.md. Name the exact credential or approval.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence required for LIVE_VERIFIED
+      value: |
+        - [ ] Real auth round trip
+        - [ ] Account discovery
+        - [ ] First live sync
+        - [ ] Result visible in the product

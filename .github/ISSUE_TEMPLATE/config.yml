@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: How a change reaches main
+    url: https://github.com/digitalalharbi/digitalSmart/blob/main/docs/CHANGE_MANAGEMENT.md
+    about: Request → branch → PR → CI → review → merge, and the emergency path.
+  - name: Where development runs, and what GitHub may do
+    url: https://github.com/digitalalharbi/digitalSmart/blob/main/docs/EXECUTION_POLICY.md
+    about: Development runs from a Claude Code session on the owner's machine. GitHub never invokes a model.
+  - name: What a provider needs before it can go live
+    url: https://github.com/digitalalharbi/digitalSmart/blob/main/docs/LIVE_COMMISSIONING.md
+    about: Every provider and its honest state. Never paste a credential into an issue.

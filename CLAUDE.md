@@ -1,3 +1,88 @@
+# digitalSmart — session bootstrap
+
+**`origin/main` on `https://github.com/digitalalharbi/digitalSmart` is the single source of truth.**
+Not a local branch, not a worktree, not anything said in an earlier conversation or remembered from one. Where memory
+and Git disagree, Git is right and memory is stale.
+
+## Start of every session
+
+```bash
+git fetch origin
+git log --oneline -10 origin/main
+git status
+```
+
+Then read, in this order — they are the project's own record and they outrank any recollection:
+
+- @docs/RESUME_STATE.md — the live state, under **START HERE**
+- @docs/CHANGE_MANAGEMENT.md — how a change gets from a request to `main`, and the emergency path
+- @docs/EXECUTION_POLICY.md — where development runs, and what GitHub may and may not do
+- @docs/CI_STATUS.md — whether CI runs today, and what stands in for it when it does not
+- @CHANGELOG.md — what has landed
+- @docs/ROADMAP.md, @docs/ARCHITECTURE.md, @docs/AGENTS.md — the product and how it is built
+
+Work from what those say. If a document contradicts the code, the code is the fact and the document is a defect.
+
+## Execution policy — owner decision, 2026-10-19
+
+**ALL PRODUCT DEVELOPMENT HAPPENS FROM A CLAUDE CODE SESSION ON THE OWNER'S MACHINE.**
+
+**GitHub is source control, CI and deployment only. GitHub never invokes Claude or Anthropic — for anything.**
+
+**No fees.** Nothing in this repository may cause a charge to the owner's GitHub or Anthropic accounts:
+
+- No `.github/workflows/claude.yml`, no autopilot, no scheduled workflow that develops, reviews or writes code.
+- No `anthropics/claude-code-action`, no `ANTHROPIC_API_KEY`, and **no `secrets.` reference in any workflow at all**.
+- No paid GitHub feature is switched on to make something work (no plan upgrade, no paid minutes, no paid runners).
+
+`scripts/governance/no-paid-model.sh` fails the build if any workflow regains a model action, a model key, a
+secret reference, a `schedule` trigger, a file named like an autopilot or `claude*.yml`, or a call to a model API —
+and asserts that `ci.yml` still has its jobs, so the rule cannot be met by breaking CI. It runs as the first CI job
+and in the local `pre-push` hook; `scripts/governance/test-no-paid-model.sh` proves it fails on each thing it forbids.
+
+## How work reaches main
+
+Every change — human or agent — takes the same path:
+
+```
+request / issue → branch → implementation → tests → PR → CI green → review → merge
+```
+
+- Branch names: `claude/<issue-number>-<short-slug>`, or `feat/…` · `fix/…` · `chore/…` when the change did not
+  start from an issue.
+- **`git fetch origin` first, always**, and branch from the freshest `origin/main`.
+- **No direct push to `main`.** The local `pre-push` hook (`.githooks/pre-push`, enabled with
+  `git config core.hooksPath .githooks`) refuses it. Server-side protection is not available on this private
+  repository's plan — see `docs/CI_STATUS.md`; until it is, the hook and this rule are the protection.
+- A PR fills in `.github/pull_request_template.md` honestly. "CI green" means the CI decided in
+  `docs/CI_STATUS.md` — while GitHub Actions cannot run, the full local gate output pasted into the PR.
+- After every merge: `git fetch origin`, and take that as the state for the next piece of work.
+
+## Committing alongside another session
+
+Another Claude Code session works in this same folder and leaves its own uncommitted files. Therefore:
+
+- Stage **only files you changed, by explicit path**. Never `git add .`, `git add -A`, or a whole directory.
+- Before every commit: `git status --short`, then `git diff --cached --name-only` — unstage anything that is not yours.
+- Never reset, checkout, restore, stash or reformat another session's files. Do not run Pint or Prettier over a
+  directory that contains them; format the files you changed, by path.
+- After each completed slice of work: commit your files, push your branch, open or update its PR.
+
+## Status vocabulary — use it exactly
+
+| Status | Meaning |
+|---|---|
+| `VERIFIED` | Built, tested and proven here, with the evidence named |
+| `IMPLEMENTED_NOT_VERIFIED` | Written, not yet proven. Not done |
+| `AWAITING_CREDENTIALS` | Complete. Supply the credential and it runs |
+| `AWAITING_MODEL_CREDENTIALS` | Complete. Supply a model key and it runs; the deterministic path runs meanwhile |
+| `BLOCKED_EXTERNAL` | Waiting on something only the owner or a provider can supply |
+| `LIVE_VERIFIED` | Real credentials **and** a real round trip **and** the result visible in the product |
+
+Never write `LIVE_VERIFIED` without that external evidence.
+
+---
+
 # digitalSmart — Autonomous Build Constitution
 
 You are the principal product engineer, product designer, data architect, QA lead, security engineer, and DevOps owner for **digitalSmart**, a private Smart Code platform.

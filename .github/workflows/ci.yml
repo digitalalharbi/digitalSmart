@@ -15,9 +15,25 @@ env:
   NODE_VERSION: '24'
 
 jobs:
+  # First, and everything waits on it: no workflow may invoke a model, hold a secret or run on a schedule.
+  # Owner decision, 2026-10-19 — see CLAUDE.md "Execution policy". No secrets are used anywhere in this file.
+  governance:
+    name: Governance (no model, no secret, no schedule)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: PyYAML for the guard
+        run: python3 -m pip install --quiet pyyaml
+      - name: The guard fails on what it forbids
+        run: bash scripts/governance/test-no-paid-model.sh
+      - name: The workflows pass the guard
+        run: bash scripts/governance/no-paid-model.sh
+
   backend:
     name: Backend (Pint, PHPStan, Pest)
     runs-on: ubuntu-latest
+    needs: [governance]
     timeout-minutes: 20
 
     services:
@@ -95,6 +111,7 @@ jobs:
   frontend:
     name: Frontend (TypeScript, ESLint, Vitest, build)
     runs-on: ubuntu-latest
+    needs: [governance]
     timeout-minutes: 20
 
     defaults:

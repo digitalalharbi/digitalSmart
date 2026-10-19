@@ -4,6 +4,27 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Governance: one source of truth, one path to main, no fees
+
+### Added
+
+- `CLAUDE.md` **session bootstrap**: `origin/main` is the single source of truth; every session starts with
+  `git fetch origin`, `git log --oneline -10 origin/main`, `git status`, then `docs/RESUME_STATE.md`.
+- **Path to main**: request → branch → tests → PR → CI → review → merge; branch names `claude/<n>-<slug>`,
+  `feat/…`, `fix/…`, `chore/…`; no direct push to `main` (`.githooks/pre-push`).
+- **No-fees execution policy** (owner decision): GitHub never invokes a model; no `claude.yml`, no autopilot, no
+  `anthropics/claude-code-action`, no `ANTHROPIC_API_KEY`, no secrets, no schedules in any workflow.
+  `scripts/governance/no-paid-model.sh` enforces it as the first CI job and in the pre-push hook;
+  `test-no-paid-model.sh` proves it fails on each forbidden thing.
+- `.github/pull_request_template.md` and issue templates (bug, improvement, integration activation).
+- `docs/RESUME_STATE.md`, `docs/CHANGE_MANAGEMENT.md`, `docs/EXECUTION_POLICY.md`, `docs/CI_STATUS.md`.
+
+### Known
+
+- GitHub Actions does not start on this private repository (account billing state, verified), and server-side
+  branch protection is unavailable on the plan while private. Three free options are evaluated in
+  `docs/CI_STATUS.md`; the owner decides.
+
 ## The business layer: specialist agents, rules that propose, one-time approvals, cross-platform drafts
 
 ### Added

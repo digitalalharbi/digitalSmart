@@ -1,0 +1,94 @@
+name: Bug report
+description: Something in digitalSmart behaves incorrectly.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report what you saw, not what you think caused it — a diagnosis in the title tends to become the only one
+        anybody considers. Never paste a token, a cookie, a password or a client's personal data.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options:
+        - Overview / Today
+        - Clients & Projects
+        - Campaigns (list, detail, hierarchy, builder, bulk)
+        - Performance / Analytics
+        - Content & Creative
+        - Work & Approvals (incl. one-time approval links)
+        - Reports / weekly briefs / presentations
+        - Integrations
+        - Finance / budgets
+        - Settings / MCP & AI / rules
+        - Client portal or shared report link
+        - API or MCP endpoint only
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: URL or endpoint
+      placeholder: /campaigns?days=30
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should have happened
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened
+      description: The exact message, in the language it appeared in. A screenshot helps.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Sign in as …
+        2. Open …
+        3. …
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Clients affected right now
+        - Wrong figure shown, no outage
+        - Broken but avoidable
+        - Cosmetic
+    validations:
+      required: true
+  - type: checkboxes
+    id: sensitive
+    attributes:
+      label: Does this touch anything load-bearing?
+      description: Any tick means the fix needs a test that pins it.
+      options:
+        - label: Money — spend, budget, currency, ROAS
+        - label: Isolation — one workspace, client or project seeing another's data
+        - label: Permissions or approvals — somebody deciding or reaching what they should not
+        - label: An agent or rule acting beyond its trust
+        - label: A provider integration
+        - label: A figure on a client-facing report or link
+  - type: textarea
+    id: environment
+    attributes:
+      label: Browser, device, account, language
+      placeholder: "Safari on iPhone · media buyer · Arabic"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console, network or server errors
+      description: Redact anything secret.
+      render: shell
