@@ -2,7 +2,17 @@
 
 ## Agents & Automation — automation-first (owner correction, 2026-10-19)
 
-**Rules = control. Agents = reasoning. Approvals = governance. Execution = provider action.** Chat is secondary.
+The operating model, in seven parts, each with one job:
+
+| Part | Job | Where |
+|---|---|---|
+| **Rules** | Deterministic control: the same figures give the same verdict, every time | `RunAutomationRules`, `RuleEvaluator` |
+| **Agents** | Analysis and reasoning over the agency's data — scheduled workers that find, compare and propose. Not chatbots: *Ask an agent* is a secondary action on a worker card | `app/Application/Agents/Agent/*` |
+| **Approvals** | Governance: a person decides every proposal that would move money or delivery | the tool gateway and Today |
+| **Execution** | Provider mutation, only where that platform's write is documented and credentials exist | provider adapters |
+| **Routines** | Scheduled operation: when each agent runs | `routes/console.php`, `GetAgentsStatus` |
+| **Action history** | Execution evidence: what each rule did or was refused, with before and after | `automation_rule_executions` |
+| **Change log** | Rule configuration history: who changed which rule, what, when | `audit_logs` |
 
 The area **Agents & Automation** (`/automation`) has five tabs:
 
@@ -24,7 +34,40 @@ rather than undo another rule's opposite move (`CONFLICT`); dry run on a saved r
 tool gateway — approval, the project's budget limit, no stacking, cooldown, audit. *Auto* is shown and refused
 (`AUTO_NOT_AUTHORISED`) — the database cannot store it — until the owner authorises auto-execution **and** the
 platform's write is documented. Bid changes are `unsupported` everywhere; an action whose platform write is not
-documented is recorded `unsupported`, never attempted. Ad-group and ad level rules are not available yet.
+documented is recorded `unsupported`, never attempted.
+
+**Capability, per action × platform** (`RuleCapability`, checked on save, in the dry run and before every action):
+`supported` (write documented, credentials present) · `awaiting_credentials` (documented, no credentials) ·
+`unverified` (the write exists but its current reference has not been read) · `unsupported` (bid changes; anything
+undocumented). The builder shows each platform's state under the action; a rule whose every chosen platform is
+unable is refused on save, and a bid change is refused outright.
+
+**Data sufficiency.** A rule may require a minimum spend, campaign age and number of results before it judges a
+campaign; one below them is *insufficient data* — counted in the dry run, never acted on.
+
+**Results.** Completed · No change required · Waiting approval · Failed · Unsupported · **Cooldown** (the same rule
+acted on this campaign inside its cooldown — recorded once, shown as *Cooldown active*) · **Conflict prevented**
+(another rule moved this campaign the opposite way inside the cooldown; the row names it). No raw payloads.
+
+**Dry run ("Test now")** on a draft or a saved rule: how many campaigns were looked at, matched, would be acted
+on, lacked data, and skipped with the reason (unsupported, cooldown, conflict, awaiting credentials). It writes nothing.
+
+**Bulk**: enable, disable, archive, change mode — each rule through its own save, each change in the change log.
+Bulk can never set Auto.
+
+**Where the results surface**: proposals land in Today through the same approval gateway as every other proposal;
+the daily digest carries counts — triggered, executed, waiting approval, failed — never one message per evaluation.
+
+**Routines** (Riyadh time): Daily performance review, Budget guardian, Tracking review (07:30), Lead quality review,
+Creative review, Weekly client report, Monthly executive review (1st of the month, 11:00).
+
+**Metric truth.** A campaign's figures are its campaign-level rows only; its ad groups and ads report the same money
+again. `CampaignFiguresLevelTest` pins the aggregate, `CampaignAggregateConsumersTest` pins the portfolio, the rule
+dry run and the agents' campaign tool.
+
+**Next expansion — ad group and ad level.** The scope stops at campaign today. Rules on ad groups and ads need the
+same aggregate per level and each platform's write at that level; until then the builder offers campaign scope only
+rather than a level it cannot judge.
 
 
 digitalSmart's agent layer is built so that **AI works inside controlled business workflows**: agents observe,
