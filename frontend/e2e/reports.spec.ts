@@ -118,7 +118,12 @@ test.describe('reports', () => {
   test('will not put a metric in a shape whose rows do not add up', async ({ page }) => {
     await openReports(page);
 
-    await page.getByRole('button', { name: 'New report' }).click();
+    // The full editor, where every shape and metric is chosen one at a time: open a saved report and edit it.
+    await page
+      .getByRole('button', { name: new RegExp(`${CLIENT_SAFE}(?! —)`) })
+      .first()
+      .click();
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
 
     const metrics = page.getByRole('group', { name: 'Metrics' });
     await expect(metrics).toBeVisible({ timeout: 30_000 });
@@ -242,15 +247,23 @@ test.describe('reports', () => {
     // An agency-wide report has no client to be narrowed by, so the role can build and read one.
     await page.getByRole('button', { name: 'New report' }).click();
 
+    // Client (none: an agency-wide report) → type → period → content → preview.
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await page.getByRole('button', { name: /Executive/ }).click();
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+
     const name = unique('Agency-wide');
     await page.getByLabel(/^Name/).fill(name);
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
 
     /*
-     * Marked safe to send, deliberately. An internal report cannot be shared by anybody, so
-     * leaving the default would prove the audience rule again rather than the permission.
+     * Marked for the client, deliberately. An internal report cannot be shared by anybody, so choosing the other
+     * would prove the audience rule again rather than the permission.
      */
-    await page.getByRole('button', { name: 'Safe to send to the client' }).click();
-    await page.getByRole('button', { name: 'Save the report' }).click();
+    await page.getByRole('button', { name: /For the client/ }).click();
+    await page.getByRole('button', { name: 'Create report' }).click();
 
     const links = page.getByRole('region', { name: 'Links out' });
     await expect(links).toBeVisible({ timeout: 30_000 });

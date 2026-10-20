@@ -18,6 +18,7 @@ import { ExportsPanel } from './ExportsPanel';
 import { ReportBuilder } from './ReportBuilder';
 import { ReportCover } from './ReportCover';
 import { ReportView } from './ReportView';
+import { ReportWizard } from './ReportWizard';
 import { SharePanel } from './SharePanel';
 import {
   useCreateReportMutation,
@@ -204,18 +205,39 @@ export function ReportsPage() {
         </section>
       )}
 
-      {editing !== null ? (
+      {editing === 'new' ? (
+        <ReportWizard
+          onSearchClients={setClientTerm}
+          isSearching={clients.isFetching}
+          vocabulary={vocabulary.data}
+          clients={(clients.data?.data ?? []).map((entry) => ({
+            id: entry.id,
+            name: entry.name,
+          }))}
+          isSaving={create.isPending}
+          error={error}
+          onSubmit={(input) => {
+            create.mutate(input, {
+              onSuccess: (saved) => {
+                setSelected(saved.id);
+                setEditing(null);
+              },
+            });
+          }}
+          onCancel={() => setEditing(null)}
+        />
+      ) : editing !== null ? (
         <ReportBuilder
           onSearchClients={setClientTerm}
           isSearching={clients.isFetching}
           /* Keyed, so switching between a new report and an edit cannot carry one's fields into the other. */
-          key={editing === 'new' ? 'new' : (selected ?? 'existing')}
+          key={selected ?? 'existing'}
           vocabulary={vocabulary.data}
           clients={(clients.data?.data ?? []).map((client) => ({
             id: client.id,
             name: client.name,
           }))}
-          draft={editing === 'existing' ? draft.data : undefined}
+          draft={draft.data}
           isSaving={create.isPending || update.isPending}
           error={error}
           onSubmit={(input) => {

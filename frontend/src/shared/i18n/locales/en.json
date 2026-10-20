@@ -3175,6 +3175,69 @@
         "focusStoreEvidence": "Its average order is {{percent}}% above the stores' average"
       },
       "unitsLabel": "sold"
+    },
+    "wizard": {
+      "label": "New report",
+      "step": "Step {{n}} of {{total}}",
+      "steps": {
+        "client": "Client",
+        "type": "Report type",
+        "period": "Period",
+        "content": "Content",
+        "preview": "Preview",
+        "share": "Who it is for"
+      },
+      "next": "Next",
+      "back": "Back",
+      "create": "Create report",
+      "compare": "Compare with",
+      "needsClient": "Choose a client first",
+      "clientNote": "Leave empty for a report across every client.",
+      "add": "Add a section",
+      "addable": {
+        "scorecard": "Headline figures",
+        "trend": "Trend",
+        "platforms": "Platforms",
+        "campaigns": "Campaigns",
+        "store": "Store",
+        "lead": "Leads"
+      },
+      "presets": {
+        "executive": {
+          "name": "Executive",
+          "tags": "Headline figures · Trend · Platforms · Campaigns"
+        },
+        "performance": {
+          "name": "Performance",
+          "tags": "Reach, clicks, results · Two trends · Rankings"
+        },
+        "lead_generation": {
+          "name": "Lead generation",
+          "tags": "Lead funnel · Sources · Response time"
+        },
+        "ecommerce": {
+          "name": "E-commerce",
+          "tags": "Revenue · Orders · Stores · Products"
+        },
+        "weekly": {
+          "name": "Weekly",
+          "tags": "Last 7 days · Against the week before"
+        },
+        "monthly": {
+          "name": "Monthly executive",
+          "tags": "Last month · Against the month before"
+        }
+      },
+      "audience": {
+        "client_safe": {
+          "name": "For the client",
+          "line": "Can be shared by a link. Nothing internal is shown."
+        },
+        "internal": {
+          "name": "For the team",
+          "line": "Stays inside the workspace."
+        }
+      }
     }
   },
   "sharedReport": {
