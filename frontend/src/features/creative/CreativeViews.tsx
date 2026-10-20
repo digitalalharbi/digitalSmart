@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Film, GalleryHorizontal, Image as ImageIcon, Type } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/lib/cn';
@@ -100,6 +101,8 @@ function Due({ card }: { card: CreativeCard }) {
   );
 }
 
+const GALLERY_PAGE = 12;
+
 export function CreativeGallery({
   cards,
   selected,
@@ -110,44 +113,58 @@ export function CreativeGallery({
   onSelect: (id: string) => void;
 }) {
   const { t } = useTranslation();
+  const [visible, setVisible] = useState(GALLERY_PAGE);
+  /* Twelve at a time, and always the chosen one: a selected card never folds away under the reader. */
+  const shown = cards.filter((card, index) => index < visible || card.id === selected);
 
   return (
-    <ul
-      aria-label={t('creative.gallery')}
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-    >
-      {cards.map((card) => (
-        <li key={card.id}>
-          <button
-            type="button"
-            onClick={() => onSelect(card.id)}
-            aria-pressed={selected === card.id}
-            className={cn(
-              'bg-surface border-line-subtle flex w-full flex-col gap-3 rounded-2xl border p-3 text-start shadow-xs',
-              'hover:border-line-strong focus-visible:ring-accent/40 focus-visible:ring-2 focus-visible:outline-none',
-              selected === card.id && 'border-accent ring-accent/25 ring-1',
-            )}
-          >
-            <CreativeThumb card={card} />
-            <span className="flex flex-col gap-1">
-              <span className="text-content text-sm font-medium" dir="auto">
-                {card.title}
+    <>
+      <ul
+        aria-label={t('creative.gallery')}
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      >
+        {shown.map((card) => (
+          <li key={card.id}>
+            <button
+              type="button"
+              onClick={() => onSelect(card.id)}
+              aria-pressed={selected === card.id}
+              className={cn(
+                'bg-surface border-line-subtle flex w-full flex-col gap-3 rounded-2xl border p-3 text-start shadow-xs',
+                'hover:border-line-strong focus-visible:ring-accent/40 focus-visible:ring-2 focus-visible:outline-none',
+                selected === card.id && 'border-accent ring-accent/25 ring-1',
+              )}
+            >
+              <CreativeThumb card={card} />
+              <span className="flex flex-col gap-1">
+                <span className="text-content text-sm font-medium" dir="auto">
+                  {card.title}
+                </span>
+                <span className="text-content-tertiary text-xs" dir="auto">
+                  {[card.client_name, card.kind_label].join(' · ')}
+                </span>
               </span>
-              <span className="text-content-tertiary text-xs" dir="auto">
-                {[card.client_name, card.kind_label].join(' · ')}
+              <span className="flex flex-wrap items-center gap-1.5">
+                <Badge tone={BADGE[card.state]}>{card.state_label}</Badge>
+                <Due card={card} />
+                {card.placement === null ? (
+                  <Badge tone="warning">{t('creative.card.noPlacement')}</Badge>
+                ) : null}
               </span>
-            </span>
-            <span className="flex flex-wrap items-center gap-1.5">
-              <Badge tone={BADGE[card.state]}>{card.state_label}</Badge>
-              <Due card={card} />
-              {card.placement === null ? (
-                <Badge tone="warning">{t('creative.card.noPlacement')}</Badge>
-              ) : null}
-            </span>
-          </button>
-        </li>
-      ))}
-    </ul>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {cards.length > shown.length ? (
+        <button
+          type="button"
+          onClick={() => setVisible((current) => current + GALLERY_PAGE)}
+          className="bg-surface text-content-secondary hover:bg-surface-hover mt-4 rounded-full px-5 py-2 text-sm font-semibold"
+        >
+          {t('actionCenter.showMore', { count: cards.length - shown.length })}
+        </button>
+      ) : null}
+    </>
   );
 }
 

@@ -28,7 +28,7 @@ test.describe('administration', () => {
     await expect(page.getByText('Add a colleague')).toBeVisible({ timeout: 30_000 });
 
     /* No email is sent and the panel says so rather than implying one is on its way. */
-    await expect(page.getByText(/No email is sent/)).toBeVisible();
+    await expect(page.getByText(/No email is sent/)).toBeAttached();
 
     const address = `colleague-${Date.now()}@example.com`;
 

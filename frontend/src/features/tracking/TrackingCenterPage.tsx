@@ -62,6 +62,7 @@ export function TrackingCenterPage() {
   const [client, setClient] = useState<{ id: string; label: string } | null>(null);
   const [clientTerm, setClientTerm] = useState('');
   const clientId = client?.id ?? null;
+  const [showAllDefinitions, setShowAllDefinitions] = useState(false);
   const [editing, setEditing] = useState<EventDefinition | null | 'new'>(null);
   /* Health is the answer — scores, what needs attention, what counts as a conversion. Diagnostics is every source and container. */
   const [params, setParams] = useSearchParams();
@@ -308,14 +309,17 @@ export function TrackingCenterPage() {
               />
             ) : (
               <ObservedEventsChart
-                definitions={health.data.definitions}
+                definitions={health.data.definitions.slice(0, 12)}
                 windowDays={health.data.window_days}
               />
             )}
 
             {health.data.definitions.length === 0 ? null : (
               <ul className="grid gap-3 sm:grid-cols-2">
-                {health.data.definitions.map((definition) => (
+                {(showAllDefinitions
+                  ? health.data.definitions
+                  : health.data.definitions.slice(0, 6)
+                ).map((definition) => (
                   <li key={definition.id}>
                     <ConversionCard
                       definition={definition}
@@ -326,6 +330,18 @@ export function TrackingCenterPage() {
                 ))}
               </ul>
             )}
+            {health.data.definitions.length > 6 ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="self-start"
+                onClick={() => setShowAllDefinitions((value) => !value)}
+              >
+                {showAllDefinitions
+                  ? t('actions.less')
+                  : t('tracking.showMore', { count: health.data.definitions.length - 6 })}
+              </Button>
+            ) : null}
           </section>
         </>
       )}

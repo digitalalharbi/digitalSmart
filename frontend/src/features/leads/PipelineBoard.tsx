@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/lib/cn';
 import { formatMinor } from '@/shared/lib/format';
@@ -5,6 +6,7 @@ import { formatRelativeTime } from '@/shared/lib/relative-time';
 import { Skeleton } from '@/shared/ui/skeleton';
 import type { Lead, LeadStage } from './types';
 
+const FOLD = 5;
 const COLUMNS: LeadStage[] = ['new', 'contacted', 'qualified', 'won', 'lost', 'disqualified'];
 
 const ACCENT: Record<LeadStage, string> = {
@@ -51,6 +53,7 @@ export function PipelineBoard({
   locale: string;
 }) {
   const { t } = useTranslation();
+  const [expanded, setExpanded] = useState<Set<LeadStage>>(new Set());
 
   if (isLoading || leads === undefined) {
     return <Skeleton className="h-64 w-full" />;
@@ -65,6 +68,12 @@ export function PipelineBoard({
     >
       {COLUMNS.map((stage) => {
         const inStage = leads.filter((l) => l.stage === stage);
+        const open = expanded.has(stage);
+        /* The column head carries the count; a long column shows its first few and folds the rest. */
+        const shown = open
+          ? inStage
+          : inStage.filter((lead, index) => index < FOLD || lead.id === selectedId);
+        const hidden = inStage.length - shown.length;
 
         return (
           <section
@@ -86,7 +95,7 @@ export function PipelineBoard({
               <p className="text-content-tertiary px-1 py-3 text-xs">{t('leads.board.empty')}</p>
             ) : (
               <ul className="flex flex-col gap-2">
-                {inStage.map((lead) => (
+                {shown.map((lead) => (
                   <li key={lead.id}>
                     <article
                       className={cn(
@@ -118,7 +127,7 @@ export function PipelineBoard({
                           {formatMinor(lead.value_minor, lead.currency, locale)}
                         </span>
                       ) : null}
-                      {canMove && NEXT[stage].length > 0 ? (
+                      {canMove && NEXT[stage].length > 0 && selectedId === lead.id ? (
                         <select
                           aria-label={t('leads.board.moveTo', { name: lead.name ?? '' })}
                           className="border-line bg-surface h-7 rounded-md border px-1.5 text-xs"
@@ -142,6 +151,22 @@ export function PipelineBoard({
                 ))}
               </ul>
             )}
+            {hidden > 0 || (open && inStage.length > FOLD) ? (
+              <button
+                type="button"
+                onClick={() =>
+                  setExpanded((current) => {
+                    const next = new Set(current);
+                    if (next.has(stage)) next.delete(stage);
+                    else next.add(stage);
+                    return next;
+                  })
+                }
+                className="text-content-secondary hover:text-content rounded-md px-1 py-1 text-start text-xs font-medium"
+              >
+                {open ? t('actions.less') : t('leads.board.more', { count: hidden })}
+              </button>
+            ) : null}
           </section>
         );
       })}

@@ -12,10 +12,12 @@ import { Alert } from '@/shared/ui/alert';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { EntityPicker } from '@/shared/ui/entity-picker';
+import { InfoHint } from '@/shared/ui/info-hint';
 import { MetricCard } from '@/shared/ui/metric-card';
 import { Skeleton } from '@/shared/ui/skeleton';
 import type { MetricValue } from '@/shared/metrics';
 import { BreakdownChart, type BreakdownRow } from './BreakdownChart';
+import { LeadsGlance } from './LeadsGlance';
 import { JourneyPanel } from './JourneyPanel';
 import { CrmReadPanel } from './CrmReadPanel';
 import { LeadHistoryPanel } from './LeadHistoryPanel';
@@ -171,8 +173,10 @@ export function LeadCentrePage() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4">
         <div>
-          <h1 className="text-content text-2xl font-semibold">{t('leads.title')}</h1>
-          <p className="text-content-secondary mt-1 max-w-2xl text-sm">{t('leads.subtitle')}</p>
+          <div className="flex items-center gap-1">
+            <h1 className="text-content text-2xl font-semibold">{t('leads.title')}</h1>
+            <InfoHint text={t('leads.subtitle')} />
+          </div>
         </div>
 
         {/*
@@ -303,6 +307,8 @@ export function LeadCentrePage() {
               {t('leads.mixedCurrency', { count: data.funnel.currency_count })}
             </Alert>
           ) : null}
+
+          <LeadsGlance funnel={data.funnel} sources={data.by_source} leads={leads.data} />
 
           <div className="grid gap-6 xl:grid-cols-2">
             <PipelineChart funnel={data.funnel} windowDays={data.window_days} />

@@ -96,7 +96,8 @@ export function MetricCard({
          * this platform" knows it is working and the platform is the limit.
          */
         <span className="text-content-tertiary text-xs leading-snug">
-          {value.unavailable_reason}
+          <span aria-hidden>{t('analytics.notAvailable')}</span>
+          <span className="sr-only">{value.unavailable_reason}</span>
         </span>
       ) : (
         <div className="flex flex-wrap items-center gap-2 text-xs">

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -71,6 +71,7 @@ function toDefaults(client: Client | undefined): FormValues {
 }
 
 export function ClientFormDialog({ open, onOpenChange, client }: ClientFormDialogProps) {
+  const [moreOpen, setMoreOpen] = useState(false);
   const { t } = useTranslation();
   const isEditing = client !== undefined;
   const create = useCreateClientMutation();
@@ -124,6 +125,18 @@ export function ClientFormDialog({ open, onOpenChange, client }: ClientFormDialo
       ? mutation.error.message
       : null;
 
+  /* A hidden field that fails validation must never stay hidden. */
+  const showMore =
+    moreOpen ||
+    [
+      'legal_name',
+      'website',
+      'primary_contact_name',
+      'primary_contact_email',
+      'primary_contact_phone',
+      'notes',
+    ].some((field) => field in errors);
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -160,21 +173,8 @@ export function ClientFormDialog({ open, onOpenChange, client }: ClientFormDialo
             </Field>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t('clients.fields.legalName')} error={errors.legal_name?.message}>
-                {(field) => <Input {...field} {...register('legal_name')} />}
-              </Field>
               <Field label={t('clients.fields.industry')} error={errors.industry?.message}>
                 {(field) => <Input {...field} {...register('industry')} />}
-              </Field>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label={t('clients.fields.website')}
-                error={errors.website?.message}
-                hint="https://example.com"
-              >
-                {(field) => <Input {...field} {...register('website')} inputMode="url" />}
               </Field>
               <Field
                 label={t('clients.fields.currency')}
@@ -192,35 +192,62 @@ export function ClientFormDialog({ open, onOpenChange, client }: ClientFormDialo
               </Field>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label={t('clients.fields.contactName')}
-                error={errors.primary_contact_name?.message}
-              >
-                {(field) => <Input {...field} {...register('primary_contact_name')} />}
-              </Field>
-              <Field
-                label={t('clients.fields.contactEmail')}
-                error={errors.primary_contact_email?.message}
-              >
-                {(field) => (
-                  <Input {...field} {...register('primary_contact_email')} type="email" />
-                )}
-              </Field>
-            </div>
-
-            <Field
-              label={t('clients.fields.contactPhone')}
-              error={errors.primary_contact_phone?.message}
+            <details
+              open={showMore}
+              onToggle={(event) => setMoreOpen(event.currentTarget.open)}
+              className="border-line-subtle rounded-xl border px-4 py-3"
             >
-              {(field) => (
-                <Input {...field} {...register('primary_contact_phone')} inputMode="tel" />
-              )}
-            </Field>
+              <summary className="text-content-secondary cursor-pointer text-sm font-medium">
+                {t('actions.advanced')}
+              </summary>
+              <div className="mt-4 flex flex-col gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label={t('clients.fields.legalName')} error={errors.legal_name?.message}>
+                    {(field) => <Input {...field} {...register('legal_name')} />}
+                  </Field>
+                </div>
 
-            <Field label={t('clients.fields.notes')} error={errors.notes?.message}>
-              {(field) => <Textarea {...field} {...register('notes')} rows={3} />}
-            </Field>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field
+                    label={t('clients.fields.website')}
+                    error={errors.website?.message}
+                    hint="https://example.com"
+                  >
+                    {(field) => <Input {...field} {...register('website')} inputMode="url" />}
+                  </Field>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field
+                    label={t('clients.fields.contactName')}
+                    error={errors.primary_contact_name?.message}
+                  >
+                    {(field) => <Input {...field} {...register('primary_contact_name')} />}
+                  </Field>
+                  <Field
+                    label={t('clients.fields.contactEmail')}
+                    error={errors.primary_contact_email?.message}
+                  >
+                    {(field) => (
+                      <Input {...field} {...register('primary_contact_email')} type="email" />
+                    )}
+                  </Field>
+                </div>
+
+                <Field
+                  label={t('clients.fields.contactPhone')}
+                  error={errors.primary_contact_phone?.message}
+                >
+                  {(field) => (
+                    <Input {...field} {...register('primary_contact_phone')} inputMode="tel" />
+                  )}
+                </Field>
+
+                <Field label={t('clients.fields.notes')} error={errors.notes?.message}>
+                  {(field) => <Textarea {...field} {...register('notes')} rows={3} />}
+                </Field>
+              </div>
+            </details>
 
             <div className="mt-2 flex justify-end gap-2">
               <Dialog.Close asChild>

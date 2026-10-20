@@ -4,6 +4,9 @@ import { useClientsQuery } from '@/features/clients';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
+import { InfoHint } from '@/shared/ui/info-hint';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { DonutChart, ProgressRing } from '@/shared/ui/viz';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { MetricCard } from '@/shared/ui/metric-card';
@@ -85,9 +88,9 @@ export function StoreAnalyticsPage() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4">
-        <div>
+        <div className="flex items-center gap-1">
           <h1 className="text-content text-2xl font-semibold">{t('commerce.title')}</h1>
-          <p className="text-content-secondary mt-1 max-w-2xl text-sm">{t('commerce.subtitle')}</p>
+          <InfoHint text={t('commerce.subtitle')} />
         </div>
 
         <div className="flex flex-wrap items-start gap-6">
@@ -150,15 +153,26 @@ export function StoreAnalyticsPage() {
            * modelled one are different kinds of claim, and a reader about to quote one deserves to be
            * told which they have.
            */}
-          <Alert tone={summary.is_modelled ? 'warning' : 'info'}>
-            <p>
-              {summary.is_invoiced
-                ? t('commerce.claim.invoiced', { source: summary.revenue_source_label })
-                : summary.is_modelled
-                  ? t('commerce.claim.modelled', { source: summary.revenue_source_label })
-                  : t('commerce.claim.reported', { source: summary.revenue_source_label })}
-            </p>
-          </Alert>
+          {(() => {
+            const claim = summary.is_invoiced
+              ? t('commerce.claim.invoiced', { source: summary.revenue_source_label })
+              : summary.is_modelled
+                ? t('commerce.claim.modelled', { source: summary.revenue_source_label })
+                : t('commerce.claim.reported', { source: summary.revenue_source_label });
+            /* A modelled figure is the one claim that must be read before it is quoted: it stays in the open. */
+            if (summary.is_modelled) {
+              return <Alert tone="warning">{claim}</Alert>;
+            }
+            return (
+              <div className="flex items-center gap-1.5">
+                <SourceBadge source={summary.source} />
+                <span className="text-content-secondary text-sm">
+                  {summary.revenue_source_label}
+                </span>
+                <InfoHint text={claim} />
+              </div>
+            );
+          })()}
 
           {summary.orders === 0 && summary.pending_orders === 0 ? (
             <EmptyState
@@ -188,13 +202,95 @@ export function StoreAnalyticsPage() {
                 ))}
               </section>
 
-              <p className="text-content-secondary text-sm">
-                {t('commerce.metrics.netRevenueHint', {
-                  gross: formatMinor(summary.revenue_minor, summary.currency, locale),
-                  refunded: formatMinor(summary.refunded_minor, summary.currency, locale),
-                  units: new Intl.NumberFormat(locale).format(summary.units),
-                })}
-              </p>
+              <div className="flex items-center gap-1">
+                <InfoHint
+                  text={t('commerce.metrics.netRevenueHint', {
+                    gross: formatMinor(summary.revenue_minor, summary.currency, locale),
+                    refunded: formatMinor(summary.refunded_minor, summary.currency, locale),
+                    units: new Intl.NumberFormat(locale).format(summary.units),
+                  })}
+                />
+              </div>
+
+              <section
+                className="grid gap-4 md:grid-cols-3"
+                aria-label={t('commerce.glance.label')}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('commerce.glance.orders')}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <DonutChart
+                      size={110}
+                      label={t('commerce.glance.orders')}
+                      centre={{
+                        value: new Intl.NumberFormat(locale).format(
+                          summary.orders + summary.pending_orders,
+                        ),
+                      }}
+                      segments={[
+                        {
+                          key: 'paid',
+                          label: t('commerce.glance.paid'),
+                          value: summary.orders,
+                          colour: 'var(--ds-success-500)',
+                        },
+                        {
+                          key: 'pending',
+                          label: t('commerce.glance.pending'),
+                          value: summary.pending_orders,
+                          colour: 'var(--ds-warning-500)',
+                        },
+                      ]}
+                    />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('commerce.glance.refunds')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex items-center gap-4">
+                    <ProgressRing
+                      size={110}
+                      value={
+                        summary.revenue_minor === 0
+                          ? 0
+                          : (summary.refunded_minor / summary.revenue_minor) * 100
+                      }
+                      tone="bad"
+                      label={t('commerce.glance.refunds')}
+                      centre={`${summary.revenue_minor === 0 ? 0 : Math.round((summary.refunded_minor / summary.revenue_minor) * 100)}%`}
+                    />
+                    <span className="ds-numeric text-content text-lg font-semibold">
+                      {formatMinor(summary.refunded_minor, summary.currency, locale)}
+                    </span>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('commerce.glance.attributed')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex items-center gap-4">
+                    <ProgressRing
+                      size={110}
+                      value={summary.attribution_coverage ?? 0}
+                      tone={
+                        coverageTone(summary.attribution_coverage) === 'success' ? 'good' : 'watch'
+                      }
+                      label={t('commerce.glance.attributed')}
+                      centre={
+                        summary.attribution_coverage === null
+                          ? '—'
+                          : `${summary.attribution_coverage}%`
+                      }
+                    />
+                    <span className="ds-numeric text-content text-lg font-semibold">
+                      {formatMinor(summary.attributed_revenue_minor, summary.currency, locale)}
+                    </span>
+                  </CardContent>
+                </Card>
+              </section>
 
               {summary.pending_orders > 0 ? (
                 <Alert tone="warning">
@@ -249,6 +345,7 @@ export function StoreAnalyticsPage() {
                   <h2 id="commerce-attribution" className="text-content text-lg font-semibold">
                     {t('commerce.attribution.title')}
                   </h2>
+                  <InfoHint text={t('commerce.attribution.hint')} />
                   <div className="flex items-center gap-2">
                     <SourceBadge source={summary.source} />
                     {/*
@@ -265,10 +362,6 @@ export function StoreAnalyticsPage() {
                     </Badge>
                   </div>
                 </div>
-
-                <p className="text-content-secondary max-w-3xl text-sm">
-                  {t('commerce.attribution.hint')}
-                </p>
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <BreakdownTable

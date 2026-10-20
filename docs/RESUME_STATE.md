@@ -18,6 +18,7 @@ disagree, Git is right.
 | Protection of `main` | **Server-side ruleset `main protection` active** (id 25378817): PR required, `Governance`/`Backend`/`Frontend` required and up to date, no force-push, no deletion. Admin bypass kept so the documented emergency push stays real, which is why the local `pre-push` hook is still the guard against the owner's own slip. |
 | Entity-level rules | **VERIFIED by CI** (#9, main `65e48d0`): ad-group and ad rules on their own metric rows, capability provider × level × change, dry run, history, bulk, hierarchy, readiness UI. Live reads/writes `AWAITING_CREDENTIALS`; bids `UNSUPPORTED_IN_DIGITALSMART`. |
 | Agents & Automation | Rules = control, Agents = reasoning, Approvals = governance, Execution = provider mutation, Routines = schedule, Action history = evidence, Change log = configuration history. Auto refused; bid wired nowhere. Rules at campaign, ad-group and ad level, each on its own rows; capability provider × level × change (`docs/PROVIDER_READINESS.md`). |
+| Visual restructure | PR #11 merged (cards, rings, hints). PR #12 (batch 4: leads, commerce, presentations, tracking, administration, forms) in review. Remaining: heavy-form audit beyond the client form, creative thumbnails from real assets (none exist), a measured before/after table. |
 | Sessions | Each session works on its own branch and worktree; the shared folder is not scratch space. |
 
 ### Last verified gates (local)

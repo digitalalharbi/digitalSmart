@@ -24,6 +24,7 @@ vi.mock('./api', () => ({
 
     return membersQuery();
   },
+  useMemberCountsQuery: () => ({ data: { active: 3, suspended: 1 } }),
   useAuditLogQuery: () => auditQuery(),
   useChangeMemberRoleMutation: () => ({ mutate: changeRole, isPending: false, error: null }),
   useChangeMemberStatusMutation: () => ({ mutate: vi.fn(), isPending: false, error: null }),

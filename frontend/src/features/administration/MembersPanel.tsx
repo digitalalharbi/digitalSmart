@@ -20,6 +20,7 @@ import {
 } from '@/shared/ui/table';
 import { LoadingRegion } from '@/shared/ui/loading-region';
 import { AddMemberPanel } from './AddMemberPanel';
+import { MembersGlance } from './MembersGlance';
 import { RemoveMemberDialog } from './RemoveMemberDialog';
 import { useChangeMemberRoleMutation, useChangeMemberStatusMutation, useMembersQuery } from './api';
 import {
@@ -91,6 +92,8 @@ export function MembersPanel() {
         list is what they do afterwards. Absent without `users.invite`: the server refuses it anyway, and showing
         a form that always fails is worse than not showing one.
       */}
+      <MembersGlance />
+
       {canInvite ? <AddMemberPanel /> : null}
 
       <div className="flex flex-wrap items-end gap-3">

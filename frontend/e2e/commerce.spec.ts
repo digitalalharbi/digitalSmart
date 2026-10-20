@@ -31,7 +31,8 @@ test.describe('store revenue', () => {
       'aria-pressed',
       'true',
     );
-    await expect(page.getByText(/invoiced this money|measurement of sales/)).toBeVisible();
+    /* The claim is an ⓘ beside the source badge: in the page for assistive technology, shown on hover or focus. */
+    await expect(page.getByText(/invoiced this money|measurement of sales/)).toBeAttached();
   });
 
   test('says plainly when a figure is modelled rather than recorded', async ({ page }) => {
@@ -51,7 +52,7 @@ test.describe('store revenue', () => {
   test('explains that sources are not combined', async ({ page }) => {
     await openCommerce(page);
 
-    await expect(page.getByText(/There is no combined figure/)).toBeVisible();
+    await expect(page.getByText(/There is no combined figure/)).toBeAttached();
   });
 
   test('splits the period into new, returning and unclassifiable customers', async ({ page }) => {

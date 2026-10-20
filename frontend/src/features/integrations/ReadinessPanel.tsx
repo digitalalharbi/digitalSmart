@@ -1,3 +1,4 @@
+import { InfoHint } from '@/shared/ui/info-hint';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/shared/api/client';
@@ -60,8 +61,10 @@ export function ReadinessPanel() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <h2 className="text-content text-base font-semibold">{t('readiness.title')}</h2>
-        <p className="text-content-secondary text-sm">{t('readiness.lead')}</p>
+        <h2 className="text-content flex items-center gap-1 text-base font-semibold">
+          {t('readiness.title')}
+          <InfoHint text={t('readiness.lead')} />
+        </h2>
       </div>
       {query.isError ? <Alert tone="danger">{t('readiness.failed')}</Alert> : null}
       {query.isPending ? (
@@ -128,9 +131,12 @@ export function ReadinessPanel() {
           </TableBody>
         </DataTable>
       )}
-      <p className="text-content-tertiary text-xs">
-        {t('readiness.ladder', { date: query.data?.[0]?.checked_on ?? '' })}
-      </p>
+      <div className="flex items-center gap-1">
+        <InfoHint
+          align="end"
+          text={t('readiness.ladder', { date: query.data?.[0]?.checked_on ?? '' })}
+        />
+      </div>
 
       {/* The endpoints and fields behind each cell: for whoever is commissioning a provider, not for the page. */}
       <details className="bg-surface rounded-2xl p-4 shadow-xs">

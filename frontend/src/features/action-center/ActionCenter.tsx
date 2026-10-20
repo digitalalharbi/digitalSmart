@@ -26,6 +26,8 @@ export function ActionCenter({ limit }: { limit?: number }) {
   const locale = i18n.language;
   const { can } = useSession();
   const [only, setOnly] = useState<ActionType | null>(null);
+  /* A queue of ninety is read twelve at a time: the worst come first, and the rest are one press away. */
+  const [visible, setVisible] = useState(12);
 
   const mayDecide = can(PERMISSIONS.approvalsView);
   const approvals = useApprovalQueueQuery({}, mayDecide);
@@ -93,7 +95,8 @@ export function ActionCenter({ limit }: { limit?: number }) {
 
   const shownApprovals = pending.filter((row) => only === null || APPROVAL_TYPE[row.kind] === only);
   const shownItems = found.filter((item) => only === null || itemType(item) === only);
-  const cap = limit ?? Number.POSITIVE_INFINITY;
+  const cap = limit ?? visible;
+  const remaining = limit === undefined ? shownApprovals.length + shownItems.length - cap : 0;
 
   return (
     <div className="flex flex-col gap-5">
@@ -159,6 +162,16 @@ export function ActionCenter({ limit }: { limit?: number }) {
           ))}
         </ul>
       )}
+
+      {remaining > 0 ? (
+        <button
+          type="button"
+          onClick={() => setVisible((current) => current + 12)}
+          className="bg-surface text-content-secondary hover:bg-surface-hover self-center rounded-full px-5 py-2 text-sm font-semibold"
+        >
+          {t('actionCenter.showMore', { count: remaining })}
+        </button>
+      ) : null}
     </div>
   );
 }

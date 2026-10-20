@@ -66,7 +66,8 @@
       "request": "Request",
       "lead": "Leads",
       "report": "Report"
-    }
+    },
+    "showMore": "Show more ({{count}})"
   },
   "automation": {
     "title": "Rules",
@@ -840,7 +841,8 @@
     "clear": "Clear",
     "info": "More information",
     "more": "More",
-    "less": "Less"
+    "less": "Less",
+    "advanced": "Advanced"
   },
   "overview": {
     "title": "Overview",
@@ -1250,7 +1252,10 @@
         "body": "What reaches whom, and the daily and weekly digests."
       }
     },
-    "rolesTitle": "Roles & permissions"
+    "rolesTitle": "Roles & permissions",
+    "glance": {
+      "label": "People with access"
+    }
   },
   "integrations": {
     "subtitle": "Ad platforms this workspace can read from, and which projects may read what.",
@@ -1421,7 +1426,8 @@
         "help": "A projection, not a measurement. Never totalled with actuals.",
         "notice": "this is a projection based on past performance, not a measurement, and it is not a guarantee of results."
       }
-    }
+    },
+    "notAvailable": "Not available"
   },
   "campaigns": {
     "status": {
@@ -1885,7 +1891,8 @@
       "tag_trigger_missing": "Trigger missing",
       "measurement_id_not_in_container": "Wrong measurement ID",
       "intent_signal_as_conversion": "Intent counted as conversion"
-    }
+    },
+    "showMore": "+{{count}} more"
   },
   "commerce": {
     "title": "Store revenue",
@@ -1942,7 +1949,8 @@
       "revenue": "Net revenue",
       "unattributed": "Unattributed",
       "evidence": "{{evidence}} · {{confidence}}%",
-      "empty": "Nothing to show for this period."
+      "empty": "Nothing to show for this period.",
+      "showTable": "Table ({{count}})"
     },
     "chart": {
       "label": "Net revenue by day from {{from}} to {{until}}, totalling {{total}}.",
@@ -1999,7 +2007,15 @@
       "readFailed": "Could not read {{name}}: {{reason}}",
       "readSkipped": "{{name}} is on a platform this product cannot read yet. The orders it sends are still received."
     },
-    "forbidden": "Your role does not include access to store revenue."
+    "forbidden": "Your role does not include access to store revenue.",
+    "glance": {
+      "label": "Store at a glance",
+      "orders": "Orders",
+      "paid": "Paid",
+      "pending": "Pending",
+      "refunds": "Refunded",
+      "attributed": "Attributed revenue"
+    }
   },
   "chart": {
     "view": {
@@ -2233,13 +2249,26 @@
         "won": "Won",
         "lost": "Lost",
         "disqualified": "Disqualified"
-      }
+      },
+      "more": "+{{count}} more"
     },
     "preset": {
       "mine": "My leads",
       "clients": "My clients’ leads",
       "week": "This week",
       "quarter": "Last 90 days"
+    },
+    "glance": {
+      "label": "Leads at a glance",
+      "quality": "Lead quality",
+      "sources": "Where leads come from",
+      "speed": "First answer",
+      "other": "Other",
+      "open": "Still open",
+      "speed_fast": "Under 1 h",
+      "speed_day": "Under 24 h",
+      "speed_slow": "Slower",
+      "waiting": "{{count}} waiting"
     }
   },
   "attribution": {

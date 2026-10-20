@@ -248,7 +248,7 @@ test.describe('client requests', () => {
     await expect(page.getByRole('heading', { name: 'New request' })).toBeVisible({
       timeout: 30_000,
     });
-    await expect(page.getByText(/it does not reorder anybody's work on its own/)).toBeVisible();
+    await expect(page.getByText(/it does not reorder anybody's work on its own/)).toBeAttached();
 
     await page.getByLabel('What do you need').fill('Add the new branch to the Eid campaign');
     await page.getByRole('button', { name: 'Send the request' }).click();

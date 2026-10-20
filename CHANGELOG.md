@@ -4,6 +4,29 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Visual first, batch 4: leads, commerce, presentations, tracking, administration
+
+### Changed
+- **Leads:** a quality ring (qualified against disqualified), a source donut, answer-speed bars with the waiting count
+  and the commonest lost-lead reasons as chips. Pipeline columns show five cards and fold the rest; the move control
+  appears only on the selected card. 2,110 → 621 visible words on the demo workspace.
+- **Commerce:** orders (paid / pending), refunds and attributed revenue as rings; the source's claim is a badge with an
+  ⓘ; every caption is behind a hint. Stores are tiles with a freshness dot.
+- **Presentations:** slide-shaped deck covers and client tiles; the empty "pick a client" form is gone.
+- **Tracking:** long groups and conversion lists fold ("+N more").
+- **Administration:** a ring of who has access above the directory, which stays a table.
+- **Client form:** name, industry and currency; everything else behind *Advanced* (reopens if a hidden field fails).
+- **Today** shows twelve decisions at a time; the creative gallery twelve cards at a time (the chosen one never folds).
+- Metric cards say *Not available* instead of repeating the reason; choice-group hints are an ⓘ.
+
+### Fixed
+- **Arabic plurals fell back to English for counts 0, 2 and 3–10.** Thirty-one plural groups had only `_one`/`_other`
+  (or `_other`); i18next does not fall back to `_other`. All six categories are present and a test guards it.
+
+### Verification
+- Unit: 751 passed; typecheck, ESLint, Prettier clean. End-to-end ran in CI only — local runs are refused by the disk
+  guard (5 GB free of 10 GB), which was not lowered.
+
 ## Visual first: fewer words, more pictures
 
 ### Changed

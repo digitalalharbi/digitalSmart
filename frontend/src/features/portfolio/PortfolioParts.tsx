@@ -129,6 +129,8 @@ export function KpiGrid({
   locale: string;
   drill?: boolean;
 }) {
+  /* On a client's own page, "active clients: 1" is not a figure — it is the page's own subject. */
+  const showClients = drill;
   const { t } = useTranslation();
 
   return (
@@ -157,9 +159,11 @@ export function KpiGrid({
       <Kpi label={t('portfolio.kpi.sales')} {...(drill ? { to: '/commerce' } : {})}>
         <Count value={data.sales} locale={locale} />
       </Kpi>
-      <Kpi label={t('portfolio.kpi.clients')} {...(drill ? { to: '/clients' } : {})}>
-        <Count value={data.active_clients} locale={locale} />
-      </Kpi>
+      {showClients ? (
+        <Kpi label={t('portfolio.kpi.clients')} to="/clients">
+          <Count value={data.active_clients} locale={locale} />
+        </Kpi>
+      ) : null}
       <Kpi label={t('portfolio.kpi.projects')} {...(drill ? { to: '/projects' } : {})}>
         <Count value={data.active_projects} locale={locale} />
       </Kpi>
