@@ -4,6 +4,7 @@ import type { EChartsCoreOption } from 'echarts/core';
 import { formatChange, formatMetric, MISSING } from '@/shared/metrics';
 import { MetricCard } from '@/shared/ui/metric-card';
 import { ScrollRegion } from '@/shared/ui/scroll-region';
+import { DonutChart } from '@/shared/ui/viz';
 import {
   barSeries,
   baseOption,
@@ -16,8 +17,13 @@ import {
 } from '@/shared/ui/chart';
 import type { RenderedSection } from './types';
 
+/** Metrics whose parts sum to a whole across platforms. */
+const ADDITIVE = new Set(['spend', 'revenue', 'clicks', 'impressions', 'conversions', 'leads']);
+
 type ReportSectionViewProps = {
   section: RenderedSection;
+  /** Daily values by metric, from the report's own trend section — a sparkline on a card, where one exists. */
+  sparks?: Record<string, Array<number | null>>;
 };
 
 /**
@@ -36,7 +42,7 @@ type ReportSectionViewProps = {
  * The change column in the table twin follows the same evidence: it appears when a figure actually carries a
  * comparison, rather than when a flag says it should.
  */
-export function ReportSectionView({ section }: ReportSectionViewProps) {
+export function ReportSectionView({ section, sparks }: ReportSectionViewProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const isRtl = i18n.dir() === 'rtl';
@@ -219,7 +225,7 @@ export function ReportSectionView({ section }: ReportSectionViewProps) {
                 The card renders a comparison when the figure carries one. It never does when the periods are not
                 comparable, because the server did not fetch one — see the note at the top of this file.
               */
-              <MetricCard key={metric} value={value} />
+              <MetricCard key={metric} value={value} trend={sparks?.[metric]} />
             );
           })}
         </div>
@@ -228,6 +234,24 @@ export function ReportSectionView({ section }: ReportSectionViewProps) {
   }
 
   const isTable = section.kind === 'table';
+
+  /*
+   * How the first metric splits across platforms, as a ring — only for a figure that adds up. Reach and the rates
+   * are not shares of anything, and a ring of them would be a claim the arithmetic does not support.
+   */
+  const first = section.metrics[0] ?? '';
+  const shares =
+    section.kind === 'breakdown' && section.dimension === 'provider' && ADDITIVE.has(first)
+      ? section.rows
+          .map((row, index) => ({
+            key: row.key,
+            label: row.label,
+            value: row.metrics.values[first]?.value ?? 0,
+            colour: `var(--ds-chart-${String((index % 8) + 1)})`,
+            metric: row.metrics.values[first],
+          }))
+          .filter((row) => row.value > 0)
+      : [];
 
   return (
     <ChartFrame
@@ -277,19 +301,32 @@ export function ReportSectionView({ section }: ReportSectionViewProps) {
           </table>
         </ScrollRegion>
       ) : (
-        <Chart
-          option={option}
-          height={section.kind === 'trend' ? 260 : Math.max(200, section.rows.length * 34 + 60)}
-          ariaLabel={section.title}
-        >
-          <ul>
-            {table.rows.map((row) => (
-              <li key={row.key}>
-                {row.label}: {row.cells.join(', ')}
-              </li>
-            ))}
-          </ul>
-        </Chart>
+        <div className={shares.length > 1 ? 'grid items-center gap-4 md:grid-cols-[auto_1fr]' : ''}>
+          {shares.length > 1 ? (
+            <DonutChart
+              size={150}
+              label={section.title}
+              segments={shares}
+              format={(value) => {
+                const sample = shares.find((row) => row.value === value)?.metric;
+                return sample === undefined ? String(value) : formatMetric(sample, locale);
+              }}
+            />
+          ) : null}
+          <Chart
+            option={option}
+            height={section.kind === 'trend' ? 260 : Math.max(200, section.rows.length * 34 + 60)}
+            ariaLabel={section.title}
+          >
+            <ul>
+              {table.rows.map((row) => (
+                <li key={row.key}>
+                  {row.label}: {row.cells.join(', ')}
+                </li>
+              ))}
+            </ul>
+          </Chart>
+        </div>
       )}
     </ChartFrame>
   );

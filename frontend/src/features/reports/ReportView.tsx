@@ -56,6 +56,19 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
   );
   const canSummarise = headline.length > 0 && headline.length < report.sections.length;
   const shown = level === 'executive' && canSummarise ? headline : report.sections;
+  /*
+   * A figure's own days, taken from the report's trend section when it has one for that metric. Never computed here:
+   * the report already carries the series, and a second derivation is a second number.
+   */
+  const sparks: Record<string, Array<number | null>> = {};
+  for (const section of report.sections) {
+    if (section.kind !== 'trend') {
+      continue;
+    }
+    for (const metric of section.metrics) {
+      sparks[metric] ??= section.series.map((point) => point.metrics.values[metric]?.value ?? null);
+    }
+  }
 
   return (
     <article className="flex flex-col gap-5">
@@ -204,7 +217,7 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
             </div>
           ) : null}
           {shown.map((section, index) => (
-            <ReportSectionView key={`${section.kind}-${index}`} section={section} />
+            <ReportSectionView key={`${section.kind}-${index}`} section={section} sparks={sparks} />
           ))}
         </div>
       )}

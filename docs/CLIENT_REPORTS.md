@@ -12,9 +12,9 @@ Status vocabulary as in `CLAUDE.md`. `EXISTS` means it was built before this pha
 | 3 | Shared link `/shared-reports/{token}`, no login, no admin chrome | EXISTS | `SharedReportPage`, `tests/Feature/Reporting` share tests, `e2e/reports.spec.ts` |
 | 3 | Header: client mark, name, title, period, last updated, *Powered by Smart Code* | IMPLEMENTED_NOT_VERIFIED | Hero card with initials (no logo is stored — a logo needs an upload feature); footer *Powered by*; CI pending |
 | 4 | Client-safe interactivity: period, comparison, platform / campaign filter, metric selector | NOT_STARTED | Needs a server-side filter contract on `GET /api/shared-reports/{token}` that can only narrow within the report's own scope; its own tests |
-| 5 | Hero KPI cards with comparison, change, sparkline | PARTIAL | Cards have value, comparison and change (`MetricCard`); no sparkline yet |
+| 5 | Hero KPI cards with comparison, change, sparkline | IMPLEMENTED_NOT_VERIFIED | Value, comparison, change, and a sparkline drawn from the report's own trend section where one covers the metric (breaks at a missing day); CI pending |
 | 6 | Hero trend, metric switching, previous-period overlay | PARTIAL | Trend chart exists; switching and overlay not |
-| 7 | Platform comparison (ranking, rings, share donut) | PARTIAL | Ranking bars via breakdown sections; rings and donut not |
+| 7 | Platform comparison (ranking, rings, share donut) | PARTIAL | Ranking bars plus a share ring for additive metrics across platforms (unit-tested; no demo report has a platform breakdown to look at); ROAS rings not |
 | 8 | Campaign ranking cards — top / needs attention | NOT_STARTED | Breakdown by campaign exists as a chart + table |
 | 9 | Funnel | NOT_STARTED | `FunnelBars` exists (Analytics, Leads); report section kind does not |
 | 10 | Commerce report (authorities never merged) | NOT_STARTED | Store analytics exist in-app; no report section kind |
