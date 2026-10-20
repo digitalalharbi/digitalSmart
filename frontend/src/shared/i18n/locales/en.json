@@ -1433,7 +1433,11 @@
         "notice": "this is a projection based on past performance, not a measurement, and it is not a guarantee of results."
       }
     },
-    "notAvailable": "Not available"
+    "notAvailable": "Not available",
+    "funnel": {
+      "title": "From seen to converted",
+      "notTracked": "Not tracked"
+    }
   },
   "campaigns": {
     "status": {

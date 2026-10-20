@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Chart, ChartFrame } from '@/shared/ui/chart';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { MetricCard, MetricCardSkeleton } from '@/shared/ui/metric-card';
+import { FunnelBars } from '@/shared/ui/viz';
 import { SourceNotice } from '@/shared/ui/source-badge';
 import { PageHeader } from '@/shared/ui/page-header';
+import { useProvidersQuery } from '@/features/integrations';
 import { useUiStore } from '@/shared/store/ui-store';
 import { BreakdownTable } from './BreakdownTable';
 import { breakdownOption, efficiencyOption, trendOption } from '@/shared/metrics';
@@ -75,6 +77,7 @@ export function AnalyticsPage() {
   const [trendMetric, setTrendMetric] = useState<string>('spend');
 
   const catalogue = useMetricCatalogue();
+  const registry = useProvidersQuery();
 
   const query = useMemo(
     () => ({
@@ -127,6 +130,20 @@ export function AnalyticsPage() {
     [data, catalogue.definitions, chartContext],
   );
 
+  /*
+   * Only platforms that report campaign figures. A store, an analytics property and a CRM are in the registry too,
+   * and a filter chip for each would offer a choice that can only ever narrow the page to nothing.
+   */
+  const advertising = new Set(
+    (registry.data ?? [])
+      .filter((row) => row.category === 'advertising')
+      .map((row) => row.provider),
+  );
+  const advertisingProviders =
+    registry.data === undefined
+      ? catalogue.data?.providers
+      : catalogue.data?.providers.filter((provider) => advertising.has(provider.value as never));
+
   if (isError && error instanceof ApiError && error.status === 403) {
     return (
       <div className="flex flex-col gap-6">
@@ -154,7 +171,7 @@ export function AnalyticsPage() {
         dimension={dimension}
         onDimensionChange={setDimension}
         dimensions={GROUP_BY}
-        providers={catalogue.data?.providers}
+        providers={advertisingProviders}
         selectedProviders={providers}
         onProviderToggle={(provider) =>
           setProviders((current) =>
@@ -272,6 +289,30 @@ export function AnalyticsPage() {
               </Chart>
             </ChartFrame>
           )}
+
+          {/* How far the audience got: seen, clicked, converted. A stage nobody measured is drawn as not tracked. */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('analytics.funnel.title')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FunnelBars
+                label={t('analytics.funnel.title')}
+                notTracked={t('analytics.funnel.notTracked')}
+                stages={(['impressions', 'clicks', 'conversions'] as const).map((key) => {
+                  const value = data?.summary.values[key];
+                  const number = value?.value ?? null;
+
+                  return {
+                    key,
+                    label: catalogue.definitions.get(key)?.label ?? key,
+                    value: number,
+                    display: value === undefined ? '—' : formatMetric(value, i18n.language),
+                  };
+                })}
+              />
+            </CardContent>
+          </Card>
 
           {/* Mix and efficiency, side by side on a wide canvas */}
           <div className="grid gap-5 xl:grid-cols-2">
