@@ -2352,13 +2352,26 @@
         "won": "مكسوب",
         "lost": "خاسر",
         "disqualified": "مستبعد"
-      }
+      },
+      "more": "+{{count}} أخرى"
     },
     "preset": {
       "mine": "عملائي المحتملون",
       "clients": "عملاء عملائي",
       "week": "هذا الأسبوع",
       "quarter": "آخر 90 يومًا"
+    },
+    "glance": {
+      "label": "الفرص في لمحة",
+      "quality": "جودة الفرص",
+      "sources": "مصادر الفرص",
+      "speed": "أول رد",
+      "other": "أخرى",
+      "open": "ما زالت مفتوحة",
+      "speed_fast": "أقل من ساعة",
+      "speed_day": "أقل من ٢٤ ساعة",
+      "speed_slow": "أبطأ",
+      "waiting": "{{count}} بانتظار الرد"
     }
   },
   "attribution": {

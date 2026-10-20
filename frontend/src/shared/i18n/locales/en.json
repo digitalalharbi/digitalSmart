@@ -2233,13 +2233,26 @@
         "won": "Won",
         "lost": "Lost",
         "disqualified": "Disqualified"
-      }
+      },
+      "more": "+{{count}} more"
     },
     "preset": {
       "mine": "My leads",
       "clients": "My clients’ leads",
       "week": "This week",
       "quarter": "Last 90 days"
+    },
+    "glance": {
+      "label": "Leads at a glance",
+      "quality": "Lead quality",
+      "sources": "Where leads come from",
+      "speed": "First answer",
+      "other": "Other",
+      "open": "Still open",
+      "speed_fast": "Under 1 h",
+      "speed_day": "Under 24 h",
+      "speed_slow": "Slower",
+      "waiting": "{{count}} waiting"
     }
   },
   "attribution": {
