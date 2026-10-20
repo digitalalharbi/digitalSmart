@@ -15,12 +15,12 @@ Status vocabulary as in `CLAUDE.md`. `EXISTS` means it was built before this pha
 | 5 | Hero KPI cards with comparison, change, sparkline | IMPLEMENTED_NOT_VERIFIED | Value, comparison, change, and a sparkline drawn from the report's own trend section where one covers the metric (breaks at a missing day); CI pending |
 | 6 | Hero trend, metric switching, previous-period overlay | PARTIAL | Trend chart exists; switching and overlay not |
 | 7 | Platform comparison (ranking, rings, share donut) | PARTIAL | Ranking bars plus a share ring for additive metrics across platforms (unit-tested; no demo report has a platform breakdown to look at); ROAS rings not |
-| 8 | Campaign ranking cards — top / needs attention | NOT_STARTED | Breakdown by campaign exists as a chart + table |
+| 8 | Campaign ranking cards — top / needs attention | IMPLEMENTED_NOT_VERIFIED | Top three as the server ranked them; *needs attention* = clearly worse (25%) than the report's own ROAS/CPA/CPL, shown with that figure beside it. Only when the report has a campaign breakdown; rules and tests in `highlights.ts`. CI pending |
 | 9 | Funnel | NOT_STARTED | `FunnelBars` exists (Analytics, Leads); report section kind does not |
 | 10 | Commerce report (authorities never merged) | NOT_STARTED | Store analytics exist in-app; no report section kind |
 | 11 | Lead report without PII | NOT_STARTED | Lead centre exists in-app |
 | 12 | Creative performance | BLOCKED_EXTERNAL | No real creative assets or thumbnails exist; placeholders must not be presented as creatives |
-| 13–14 | Insight and recommendation cards | NOT_STARTED | Reports agent findings exist; client-safe wording and evidence cards do not |
+| 13–14 | Insight and recommendation cards | IMPLEMENTED_NOT_VERIFIED | Insights from the server's own change figures (≥5% shown, ≥15% in the wrong direction is *needs attention*) plus a best performer from ≥3 campaigns. Two pointers, each with its evidence: a platform whose ROAS is ≥25% above the report's own, and a click-through fall ≥15%. **Note:** the allocation pointer sits against `docs/INTELLIGENCE.md`'s refusal to say where budget should go; it is worded as *consider*, shows both figures, and is the owner's explicit request — say if it should go. CI pending |
 | 15 | Data-quality status (Complete / Partial / Estimated / Awaiting) | PARTIAL | `SourceBadge` per section; plain-language mapping not done |
 | 16 | Live vs frozen badge | EXISTS | `mode` badge on every report |
 | 17 | Share cards: recipient, status, views, expiry, live/frozen; copy, revoke, replace | PARTIAL | Cards with view and expiry chips, turn-off with a reason; *Replace* (create new + turn off old) not one action yet |
