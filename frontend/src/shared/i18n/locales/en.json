@@ -3185,7 +3185,26 @@
     "unreachable": "The report could not be loaded. That is a connection problem, not an expired link — try again.",
     "preparedFor": "Prepared for {{recipient}}.",
     "footer": "Figures are as at the time shown above. A live link recalculates each time it is opened; a frozen copy never does, and says which it is.",
-    "poweredBy": "Powered by Smart Code"
+    "poweredBy": "Powered by Smart Code",
+    "filters": {
+      "open": "Filters",
+      "title": "Narrow this report",
+      "hint": "Choose what to look at. Only what is already in this report can be chosen.",
+      "clear": "Clear filters",
+      "done": "Done",
+      "remove": "Remove {{name}}",
+      "platform": "Platform",
+      "campaign": "Campaign",
+      "store": "Store",
+      "storeNote": "Applies to the store figures, under the same source of revenue.",
+      "search": "Search campaigns",
+      "period": "Period",
+      "from": "From",
+      "until": "Until",
+      "empty": "No data for this selection",
+      "emptyBody": "Nothing in this report matches these filters. Clear them to see the whole report.",
+      "refused": "That selection is not part of this report, so the whole report is shown."
+    }
   },
   "portal": {
     "title": "Client portal",

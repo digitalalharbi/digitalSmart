@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { env } from '@/shared/config/env';
+import { toSearch, type SharedFilterInfo, type SharedFilterState } from './sharedFilters';
 import type { RenderedReport } from './types';
 
 /** What the one unauthenticated read in this product answers with. */
@@ -11,6 +12,8 @@ export type SharedReportResult = {
   mode: 'live' | 'snapshot' | null;
   recipient_label: string | null;
   report: RenderedReport | null;
+  /** What this link can be narrowed by, and what it is narrowed by now. Null when the link is dead. */
+  filters?: SharedFilterInfo | null;
 };
 
 /**
@@ -29,11 +32,31 @@ export type SharedReportResult = {
  * **No locale header.** The server returns no prose worth translating on this path, and the page renders the state
  * in the reader's own language rather than echoing the server's English.
  */
-export async function fetchSharedReport(token: string): Promise<SharedReportResult> {
+export async function fetchSharedReport(
+  token: string,
+  filters: SharedFilterState,
+  /**
+   * True once the page has been opened. A refinement — a platform, a campaign, a date range — is the same visit, and
+   * the server does not count it as another view.
+   */
+  refine: boolean,
+): Promise<SharedReportResult> {
+  const params = toSearch(filters);
+
+  if (refine) {
+    params.set('refine', '1');
+  }
+
+  const query = params.toString();
   const { data } = await axios.get<{ data: SharedReportResult }>(
-    `${env.apiBaseUrl}/shared-reports/${token}`,
+    `${env.apiBaseUrl}/shared-reports/${token}${query === '' ? '' : `?${query}`}`,
     { withCredentials: false, headers: { Accept: 'application/json' } },
   );
 
   return data.data;
+}
+
+/** Whether the server refused a selection because it is not part of this report. */
+export function isOutOfScope(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.response?.status === 422;
 }

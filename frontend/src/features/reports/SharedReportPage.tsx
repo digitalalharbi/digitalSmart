@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef } from 'react';
 import { Languages, Moon, Sun } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
+import { useLocation, useParams, useSearchParams } from 'react-router';
 import { queryKeys } from '@/shared/api/query-keys';
 import { Alert } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
@@ -10,7 +11,15 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { resolveTheme, useUiStore } from '@/shared/store/ui-store';
 import type { Locale } from '@/shared/i18n';
 import { ReportView } from './ReportView';
-import { fetchSharedReport } from './sharedApi';
+import { SharedFilterBar } from './SharedFilterBar';
+import { fetchSharedReport, isOutOfScope } from './sharedApi';
+import {
+  filterKey,
+  isFiltered,
+  parseFilters,
+  toSearch,
+  type SharedFilterState,
+} from './sharedFilters';
 
 /**
  * A report read through a shared link, by somebody with no account.
@@ -41,9 +50,28 @@ export function SharedReportPage() {
   const resolved = resolveTheme(theme);
   const nextLocale: Locale = locale === 'en' ? 'ar' : 'en';
 
+  const [params, setParams] = useSearchParams();
+  const filters = useMemo(() => parseFilters(params), [params]);
+  /* Set by the redirect below, so the sentence survives it without a piece of state set from an effect. */
+  const refused = (useLocation().state as { refused?: boolean } | null)?.refused === true;
+  /*
+   * Whether this visit has already been counted. The first read of the page is the view; changing a platform, a
+   * campaign or the dates is the same visit, and the server does not count it again.
+   */
+  const opened = useRef(false);
+
   const query = useQuery({
-    queryKey: queryKeys.reports.shared(token ?? ''),
-    queryFn: () => fetchSharedReport(token ?? ''),
+    /*
+     * The token and the normalised filters, and nothing else: two reports never share an entry, and two visitors'
+     * narrowings of one report are the same entry only when they are the same narrowing.
+     */
+    queryKey: queryKeys.reports.shared(token ?? '', filterKey(filters)),
+    queryFn: async () => {
+      const answer = await fetchSharedReport(token ?? '', filters, opened.current);
+      opened.current = true;
+
+      return answer;
+    },
     enabled: token !== undefined && token !== '',
     /*
      * One attempt. A retry here re-records the view, and a link's open count is a figure an agency reads as "the
@@ -52,7 +80,26 @@ export function SharedReportPage() {
      */
     retry: false,
     staleTime: 60_000,
+    /* Keep the report on screen while a narrower one loads, so a filter change does not flash a skeleton. */
+    placeholderData: keepPreviousData,
   });
+
+  const setFilters = (next: SharedFilterState): void => {
+    setParams(toSearch(next), { replace: true });
+  };
+
+  /*
+   * A selection the server says is not part of this report — a stale address, a hand-edited one — is dropped and the
+   * whole report shown, with a sentence saying so. The address never widens anything; at worst it asks for less than
+   * the report holds and is told no.
+   */
+  const outOfScope = query.isError && isOutOfScope(query.error);
+
+  useEffect(() => {
+    if (outOfScope) {
+      setParams(new URLSearchParams(), { replace: true, state: { refused: true } });
+    }
+  }, [outOfScope, setParams]);
 
   const result = query.data;
 
@@ -90,7 +137,7 @@ export function SharedReportPage() {
       </header>
 
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-8">
-        {query.isPending ? (
+        {query.isPending || outOfScope ? (
           <Skeleton className="h-96 w-full" />
         ) : query.isError ? (
           /*
@@ -127,7 +174,15 @@ export function SharedReportPage() {
               </p>
             )}
 
-            <ReportView report={result.report} />
+            {refused ? <Alert tone="info">{t('sharedReport.filters.refused')}</Alert> : null}
+
+            <ReportView
+              report={result.report}
+              isFiltered={isFiltered(filters)}
+              filterBar={
+                <SharedFilterBar info={result.filters} filters={filters} onChange={setFilters} />
+              }
+            />
 
             <p className="text-content-tertiary border-line-subtle flex items-center justify-center gap-1 border-t pt-4 text-xs">
               {t('sharedReport.poweredBy')}

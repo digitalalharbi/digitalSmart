@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Reporting\Query;
 
 use App\Application\Analytics\Contract\AnalyticsReadModel;
+use App\Application\Analytics\DTO\AnalyticsFilters;
 use App\Application\Analytics\DTO\BreakdownRow;
 use App\Application\Analytics\DTO\MetricSet;
 use App\Application\Analytics\DTO\SeriesPoint;
@@ -15,6 +16,7 @@ use App\Application\Reporting\DTO\LeadFigures;
 use App\Application\Reporting\DTO\RenderedReport;
 use App\Application\Reporting\DTO\RenderedSection;
 use App\Application\Reporting\DTO\ReportDefinition;
+use App\Application\Reporting\DTO\ReportNarrowing;
 use App\Application\Reporting\DTO\SavedReport;
 use App\Application\Reporting\DTO\SectionDefinition;
 use App\Application\Reporting\DTO\StoreFigures;
@@ -61,6 +63,7 @@ final readonly class RenderReport
         string $workspaceId,
         SavedReport $report,
         ?ReportAudience $as = null,
+        ?ReportNarrowing $narrowing = null,
     ): RenderedReport {
         $now = $this->clock->now();
         $definition = $report->definition;
@@ -72,7 +75,21 @@ final readonly class RenderReport
             $definition->customUntil,
         );
 
-        $comparisonPeriod = $definition->comparison->resolve($period);
+        /*
+         * A visitor's narrowing, already intersected with this report's scope. It can only remove: a sub-range of the
+         * period, a subset of the platforms and campaigns the report holds, one of its stores.
+         *
+         * The comparison is dropped for a narrowed period rather than recomputed. The equally long stretch before a
+         * sub-range reaches back past the period the report was written to show, and a percentage change built on
+         * figures the link never covered would be a way of widening it.
+         */
+        $narrowedPeriod = $narrowing?->period;
+        $comparisonPeriod = $narrowedPeriod === null ? $definition->comparison->resolve($period) : null;
+        $period = $narrowedPeriod ?? $period;
+
+        if ($narrowing !== null && $narrowing->isActive()) {
+            $definition = $this->narrowed($definition, $narrowing);
+        }
 
         $comparability = $comparisonPeriod === null
             ? Comparability::none()
@@ -89,6 +106,7 @@ final readonly class RenderReport
                 $period,
                 $comparability->isComparable ? $comparisonPeriod : null,
                 $index,
+                $narrowing,
             );
 
             $sections[] = $rendered;
@@ -119,6 +137,39 @@ final readonly class RenderReport
         );
     }
 
+    /**
+     * The definition with the visitor's narrowing laid over its filters.
+     *
+     * A requested platform or campaign replaces the report's own list, which is safe only because
+     * `NarrowSharedReport` found every one of them inside that scope first; this method never receives a raw request.
+     */
+    private function narrowed(ReportDefinition $definition, ReportNarrowing $narrowing): ReportDefinition
+    {
+        $base = $definition->filters;
+
+        return new ReportDefinition(
+            name: $definition->name,
+            window: $definition->window,
+            comparison: $definition->comparison,
+            audience: $definition->audience,
+            filters: new AnalyticsFilters(
+                providers: $narrowing->providers !== [] ? $narrowing->providers : $base->providers,
+                externalAccountIds: $base->externalAccountIds,
+                campaignIds: $narrowing->campaignIds !== [] ? $narrowing->campaignIds : $base->campaignIds,
+                adGroupIds: $base->adGroupIds,
+                adIds: $base->adIds,
+                projectIds: $base->projectIds,
+                clientId: $base->clientId,
+            ),
+            sections: $definition->sections,
+            description: $definition->description,
+            clientId: $definition->clientId,
+            customFrom: $definition->customFrom,
+            customUntil: $definition->customUntil,
+            internalNote: $definition->internalNote,
+        );
+    }
+
     private function section(
         string $workspaceId,
         ReportDefinition $definition,
@@ -126,16 +177,33 @@ final readonly class RenderReport
         DateRange $period,
         ?DateRange $comparisonPeriod,
         int $index,
+        ?ReportNarrowing $narrowing = null,
     ): RenderedSection {
         $title = $section->title ?? $this->defaultTitle($section, $index);
         $caveats = $this->caveats($definition->comparison, $section);
+
+        /*
+         * A section that cannot follow an active filter is not shown under it. Leads and a store's orders carry no
+         * platform or campaign of the ad platforms, so a "Meta" chip over their figures would be a claim they cannot
+         * keep — they would be the whole client's, wearing a narrower label.
+         */
+        if ($narrowing !== null && $narrowing->narrowsAdvertising() && in_array($section->kind, [SectionKind::Lead, SectionKind::Store], true)) {
+            return new RenderedSection(
+                kind: $section->kind,
+                title: $title,
+                metrics: [],
+                source: MetricSource::Synced,
+                isEmpty: true,
+                caveats: ['This section cannot be narrowed by platform or campaign, so it is not shown for this selection.'],
+            );
+        }
 
         if ($section->kind === SectionKind::Lead) {
             return $this->lead($workspaceId, $definition, $section, $period, $title, $caveats);
         }
 
         if ($section->kind === SectionKind::Store) {
-            return $this->store($workspaceId, $definition, $section, $period, $comparisonPeriod, $title, $caveats);
+            return $this->store($workspaceId, $definition, $section, $period, $comparisonPeriod, $title, $caveats, $narrowing?->storeId);
         }
 
         if ($section->kind === SectionKind::Trend) {
@@ -338,6 +406,7 @@ final readonly class RenderReport
         ?DateRange $comparisonPeriod,
         string $title,
         array $caveats,
+        ?string $storeId = null,
     ): RenderedSection {
         $source = $section->revenueSource;
 
@@ -360,6 +429,7 @@ final readonly class RenderReport
             until: $period->end,
             visibleProjectIds: null,
             clientId: $definition->clientId,
+            storeId: $storeId,
             limit: 8,
         );
 
@@ -372,9 +442,10 @@ final readonly class RenderReport
             until: $comparisonPeriod->end,
             visibleProjectIds: null,
             clientId: $definition->clientId,
+            storeId: $storeId,
         ));
 
-        $stores = $this->stores->byStore($query);
+        $stores = $storeId === null ? $this->stores->byStore($query) : [];
         $currencies = array_unique(array_map(static fn ($row): string => $row->currency, $stores));
 
         $figures = new StoreFigures(
@@ -388,7 +459,7 @@ final readonly class RenderReport
              */
             stores: count($stores) > 1 && count($currencies) === 1 ? $stores : [],
             products: $this->stores->byProduct(new StoreQuery(
-                $workspaceId, $source, $period->start, $period->end, null, $definition->clientId, null, 5,
+                $workspaceId, $source, $period->start, $period->end, null, $definition->clientId, $storeId, 5,
             )),
             channels: $this->stores->byChannel($query),
             customerMix: $this->stores->customerMix($query),

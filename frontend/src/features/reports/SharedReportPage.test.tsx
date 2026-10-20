@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router';
 import type { MetricValue } from '@/shared/metrics';
 import { renderWithProviders } from '@/test/render';
@@ -15,11 +16,14 @@ const state = vi.hoisted(() => ({
   result: null as SharedReportResult | null,
   failsWith: null as Error | null,
   calls: 0,
+  seen: [] as { token: string; filters: unknown; refine: boolean }[],
 }));
 
 vi.mock('./sharedApi', () => ({
-  fetchSharedReport: (token: string) => {
+  isOutOfScope: (error: unknown) => error instanceof Error && error.message === 'out of scope',
+  fetchSharedReport: (token: string, filters: unknown, refine: boolean) => {
     state.calls += 1;
+    state.seen.push({ token, filters, refine });
 
     if (state.failsWith !== null) {
       return Promise.reject(state.failsWith);
@@ -118,12 +122,12 @@ function result(overrides: Partial<SharedReportResult> = {}): SharedReportResult
   };
 }
 
-async function open(token = 'a'.repeat(96)): Promise<void> {
+async function open(token = 'a'.repeat(96), search = ''): Promise<void> {
   await renderWithProviders(
     <Routes>
       <Route path="/shared-reports/:token" element={<SharedReportPage />} />
     </Routes>,
-    { route: `/shared-reports/${token}` },
+    { route: `/shared-reports/${token}${search}` },
   );
 }
 
@@ -131,6 +135,7 @@ beforeEach(() => {
   state.result = result();
   state.failsWith = null;
   state.calls = 0;
+  state.seen = [];
 });
 
 describe('SharedReportPage', () => {
@@ -212,5 +217,92 @@ describe('SharedReportPage', () => {
      * it" — inflating it to paper over a flaky connection is a figure this product would be lying with.
      */
     expect(state.calls).toBe(1);
+  });
+});
+
+const OPTIONS = {
+  can_filter: true,
+  available: {
+    platforms: [
+      { key: 'meta', label: 'Meta' },
+      { key: 'google_ads', label: 'Google Ads' },
+    ],
+    campaigns: [],
+    stores: [],
+    period: { from: '2026-09-08', until: '2026-10-07' },
+  },
+  applied: null,
+};
+
+describe('SharedReportPage — narrowing', () => {
+  it('offers filters only where the server says the link can be narrowed', async () => {
+    state.result = result({ filters: OPTIONS });
+    await open();
+
+    expect(await screen.findByRole('button', { name: /Filters/ })).toBeInTheDocument();
+  });
+
+  it('offers none on a frozen report, or on a report with nothing to choose between', async () => {
+    state.result = result({
+      mode: 'snapshot',
+      filters: { can_filter: false, available: null, applied: null },
+    });
+    await open();
+    await screen.findByRole('heading', { name: 'Monthly performance' });
+
+    expect(screen.queryByRole('button', { name: /Filters/ })).not.toBeInTheDocument();
+  });
+
+  it('reads the filters out of the address, counts the open as the visit, and refines without another', async () => {
+    state.result = result({ filters: OPTIONS });
+    await open('a'.repeat(96), '?platform=meta');
+
+    expect(await screen.findByRole('button', { name: 'Remove Meta' })).toBeInTheDocument();
+    expect(state.seen[0]).toMatchObject({ refine: false });
+    expect((state.seen[0]?.filters as { platforms: string[] }).platforms).toEqual(['meta']);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remove Meta' }));
+
+    await waitFor(() => {
+      expect(state.seen.length).toBeGreaterThan(1);
+    });
+    expect(state.seen[state.seen.length - 1]).toMatchObject({ refine: true });
+  });
+
+  it('clears every filter in one action', async () => {
+    state.result = result({ filters: OPTIONS });
+    await open('a'.repeat(96), '?platform=meta,google_ads');
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Clear filters' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Remove Meta' })).not.toBeInTheDocument();
+    });
+  });
+
+  it('drops a selection the server refuses, and says the whole report is shown', async () => {
+    state.result = result({ filters: OPTIONS });
+    state.failsWith = new Error('out of scope');
+    await open('a'.repeat(96), '?platform=tiktok');
+
+    // The refusal is answered, then the next read — with no filters — succeeds.
+    await waitFor(() => {
+      expect(state.calls).toBeGreaterThan(0);
+    });
+    state.failsWith = null;
+
+    expect(
+      await screen.findByText(/not part of this report, so the whole report is shown/),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Remove TikTok' })).not.toBeInTheDocument();
+  });
+
+  it('says there is no data for a selection that matches nothing, rather than showing zeroes', async () => {
+    const empty = rendered({ sections: [{ ...section(), is_empty: true }] });
+    state.result = result({ report: empty, filters: OPTIONS });
+    await open('a'.repeat(96), '?platform=meta');
+
+    expect(await screen.findByText('No data for this selection')).toBeInTheDocument();
+    expect(screen.queryByText('SAR 1,250.00')).not.toBeInTheDocument();
   });
 });
