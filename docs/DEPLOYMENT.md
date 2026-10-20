@@ -103,6 +103,20 @@ GitHub secrets: they live in the server's `shared/.env` or the product's encrypt
 any other secret name anywhere, refuses dynamic secret reads, and scans every tracked file for private keys and token
 shapes. GitHub masks secrets in logs; the key is written to a mode-600 file and removed when the job ends.
 
+## Sync status
+
+Is `main` green, and is that what is live — without opening GitHub.
+
+- **`scripts/sync-status.sh`** prints one line from `git` and the GitHub CLI: branch and commit, *Synced / Changes pending /
+  Ahead / Behind*, this branch's CI, `main`'s CI, and the deployment. Green is fine, amber is running or pending, red is
+  failed, grey is waiting on something outside the repository (no server) or unknown (offline). `--fetch` refreshes
+  `origin` first, `--json` is for a status line or a notifier. One read per source — no loop; run it again to refresh.
+- **Administration → Advanced diagnostics** shows `main` and Deploy as two dots with words. It reads the public GitHub
+  API (no credential), cached five minutes server-side, and needs `workspaces.view`. Set `DEPLOYED_SHA_FILE` in
+  `shared/.env` to `$PRODUCTION_PATH/shared/DEPLOYED_SHA` so *live* and *behind main* can be told apart; without it
+  the deployment dot stays grey, *waiting* — which is the truth until a server exists.
+- Neither shows a token, a run id or a log, and nothing here is visible to a client.
+
 ## History
 
 Each deploy is visible three ways: GitHub's **Environments → production** history (commit, time, status), the run's

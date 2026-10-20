@@ -66,6 +66,7 @@ use App\Interface\Http\Controller\Search\SearchController;
 use App\Interface\Http\Controller\Shortcuts\ShortcutController;
 use App\Interface\Http\Controller\SurfaceView\SurfaceViewController;
 use App\Interface\Http\Controller\System\HealthController;
+use App\Interface\Http\Controller\System\SyncStatusController;
 use App\Interface\Http\Controller\Tags\TagController;
 use App\Interface\Http\Controller\Workspace\MemberController;
 use App\Interface\Http\Controller\Workspace\RoleController;
@@ -804,6 +805,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      */
     /* Is the integration layer healthy: a plain summary for everybody, queue depth and error rates for admins. */
     Route::get('integrations/operations', [OperationsController::class, 'show'])->name('integrations.operations');
+    /* Is main green, and is that what is live. Internal, and cached against the public GitHub API. */
+    Route::get('system/sync-status', SyncStatusController::class)->name('system.sync-status');
     Route::get('integrations/connections', [ConnectionController::class, 'index'])->name('integrations.connections.index');
     Route::post('integrations/connections', [ConnectionController::class, 'store'])->name('integrations.connections.store');
     Route::post('integrations/connections/{connection}/discover', [ConnectionController::class, 'discover'])

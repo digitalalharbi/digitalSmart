@@ -1255,6 +1255,12 @@
     "rolesTitle": "Roles & permissions",
     "glance": {
       "label": "People with access"
+    },
+    "sync": {
+      "label": "Sync status",
+      "main": "Main",
+      "deploy": "Deploy",
+      "unavailable": "Status unavailable"
     }
   },
   "integrations": {

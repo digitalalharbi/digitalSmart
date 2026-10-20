@@ -37,4 +37,13 @@ return [
         ],
     ],
 
+    /*
+    | The public repository this installation is built from, and the file the deploy script records the live commit in.
+    | Neither is a secret: the repository is public and the API is read unauthenticated.
+    */
+    'github' => [
+        'repository' => env('GITHUB_REPOSITORY', 'digitalalharbi/digitalSmart'),
+        'deployed_sha_file' => env('DEPLOYED_SHA_FILE'),
+    ],
+
 ];

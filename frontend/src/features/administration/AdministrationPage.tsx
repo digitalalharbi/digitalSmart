@@ -9,6 +9,7 @@ import { AuditPanel } from './AuditPanel';
 import { MembersPanel } from './MembersPanel';
 import { OperationsPanel } from './OperationsPanel';
 import { RolesPanel } from './RolesPanel';
+import { SyncIndicator } from './SyncIndicator';
 import { SetupPanel } from './SetupPanel';
 
 type Section = 'people' | 'roles' | 'setup' | 'audit' | 'health' | 'diagnostics';
@@ -109,6 +110,7 @@ export function AdministrationPage() {
           {active === 'health' ? <OperationsPanel part="health" /> : null}
           {active === 'diagnostics' ? (
             <div className="flex flex-col gap-6">
+              <SyncIndicator />
               <HealthPanel />
               <OperationsPanel part="diagnostics" />
             </div>
