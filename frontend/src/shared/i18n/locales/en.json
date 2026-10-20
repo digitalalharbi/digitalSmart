@@ -1421,7 +1421,8 @@
         "help": "A projection, not a measurement. Never totalled with actuals.",
         "notice": "this is a projection based on past performance, not a measurement, and it is not a guarantee of results."
       }
-    }
+    },
+    "notAvailable": "Not available"
   },
   "campaigns": {
     "status": {

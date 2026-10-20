@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Download, Info, Printer } from 'lucide-react';
+import {
+  BarChart3,
+  CalendarRange,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Flag,
+  Info,
+  LayoutPanelTop,
+  Printer,
+} from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useBudgetsQuery, type BudgetPayload } from '@/features/budgets';
@@ -10,6 +20,7 @@ import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
+import { InfoHint } from '@/shared/ui/info-hint';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { SourceBadge } from '@/shared/ui/source-badge';
@@ -34,6 +45,13 @@ import type { DeckKindValue } from './types';
  * The provisional theme is stated on the page rather than in a README. Smart Code's own presentation identity has
  * not been provided, and a placeholder presented as a brand is worse than an obvious placeholder.
  */
+const DECK_GLYPH: Record<string, typeof BarChart3> = {
+  weekly_report: BarChart3,
+  monthly_report: CalendarRange,
+  closing_report: Flag,
+  media_plan: LayoutPanelTop,
+};
+
 export function PresentationsPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -128,22 +146,47 @@ export function PresentationsPage() {
       />
 
       <div className="ds-no-print flex flex-col gap-4">
-        <ChoiceGroup label={t('presentations.deck')}>
-          <div className="flex flex-wrap gap-2">
-            {(vocabulary.data?.kinds ?? []).map((entry) => (
-              <Choice
+        <div
+          role="group"
+          aria-label={t('presentations.deck')}
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {(vocabulary.data?.kinds ?? []).map((entry) => {
+            const Glyph = DECK_GLYPH[entry.kind] ?? LayoutPanelTop;
+            return (
+              <button
                 key={entry.kind}
-                isSelected={kind === entry.kind}
-                onSelect={() => setKind(entry.kind)}
+                type="button"
+                aria-pressed={kind === entry.kind}
+                onClick={() => setKind(entry.kind)}
+                className={cn(
+                  'bg-surface border-line-subtle group relative flex aspect-video flex-col justify-between overflow-hidden rounded-xl border p-3 text-start transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-[var(--ds-focus-ring)] focus-visible:outline-none',
+                  kind === entry.kind && 'ring-accent ring-2',
+                )}
               >
-                {entry.label}
-              </Choice>
-            ))}
-          </div>
-        </ChoiceGroup>
+                <span className="bg-accent/10 text-accent inline-flex size-8 items-center justify-center rounded-lg">
+                  <Glyph aria-hidden className="size-4" />
+                </span>
+                <span className="flex items-end gap-0.5" aria-hidden>
+                  {[40, 65, 50, 80, 60].map((h, i) => (
+                    <span
+                      key={i}
+                      className="bg-accent/25 w-2 rounded-sm"
+                      style={{ height: `${h * 0.3}px` }}
+                    />
+                  ))}
+                </span>
+                <span className="text-content text-sm font-semibold">{entry.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
         {kindInfo === null ? null : (
-          <p className="text-content-tertiary text-sm">{kindInfo.description}</p>
+          <div className="flex items-center gap-1">
+            <span className="text-content text-sm font-medium">{kindInfo.label}</span>
+            <InfoHint text={kindInfo.description} />
+          </div>
         )}
 
         {fromBudget ? (
@@ -185,7 +228,29 @@ export function PresentationsPage() {
         </Alert>
       )}
 
-      {!subjectChosen ? (
+      {!subjectChosen && !fromBudget ? (
+        <section aria-label={t('presentations.client')} className="ds-no-print">
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {(clients.data?.data ?? []).map((c) => (
+              <li key={c.id}>
+                <button
+                  type="button"
+                  onClick={() => setClient({ id: c.id, label: c.name })}
+                  className="bg-surface border-line-subtle flex w-full items-center gap-3 rounded-xl border p-3 text-start hover:shadow-md focus-visible:ring-2 focus-visible:ring-[var(--ds-focus-ring)] focus-visible:outline-none"
+                >
+                  <span className="bg-surface-sunken text-content-secondary inline-flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
+                    {c.name.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="text-content truncate text-sm font-medium" dir="auto">
+                    {c.name}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="sr-only">{t('presentations.pick.title')}</p>
+        </section>
+      ) : !subjectChosen ? (
         <EmptyState
           title={t(fromBudget ? 'presentations.pickBudget.title' : 'presentations.pick.title')}
           description={t(fromBudget ? 'presentations.pickBudget.body' : 'presentations.pick.body')}
