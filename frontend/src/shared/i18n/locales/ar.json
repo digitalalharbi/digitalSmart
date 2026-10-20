@@ -3332,6 +3332,55 @@
         "fasterResponse": "أجب العملاء المحتملين أسرع",
         "fasterResponseEvidence": "وسيط أول تواصل {{duration}}؛ و{{unanswered}} بلا تواصل مسجَّل"
       }
+    },
+    "commerce": {
+      "revenueTrend": "صافي الإيراد يوميًا — {{source}}",
+      "netRevenue": "صافي الإيراد",
+      "ordersTrend": "الطلبات يوميًا",
+      "orders": "الطلبات",
+      "gapNote": "اليوم بلا طلبات فجوة في الخط وليس صفرًا.",
+      "stores": "المتاجر",
+      "ordersCount_zero": "{{count}} طلب",
+      "ordersCount_one": "طلب واحد",
+      "ordersCount_two": "طلبان",
+      "ordersCount_few": "{{count}} طلبات",
+      "ordersCount_many": "{{count}} طلبًا",
+      "ordersCount_other": "{{count}} طلب",
+      "aovShort": "المتوسط {{value}}",
+      "refundedShort": "استُرد {{value}}",
+      "channels": "من أين جاءت الطلبات",
+      "unattributed": "غير مُتتبَّع",
+      "traced": "مُتتبَّع",
+      "channelsNote": "ما حملته كل طلبية بنفسها — وليس ما تدّعيه المنصات، ولا يُجمع معه.",
+      "products": "المنتجات المباعة",
+      "productsNote": "كما بيعت، قبل المردودات التي تُسجَّل على الطلب لا على المنتج.",
+      "customers": "عملاء جدد وعائدون",
+      "newCustomers": "جدد",
+      "returningCustomers": "عائدون",
+      "unknownCustomers": "قبل ربط هذا المتجر",
+      "customersCaption": "عميل",
+      "refunds": "المردودات",
+      "refundAmount": "المستردّ",
+      "refundOrders": "طلبات بها مردود",
+      "refundRate": "المستردّ من إجمالي المبيعات",
+      "refundMoved": "معدل المردودات أعلى بمقدار {{points}} نقطة من الفترة السابقة.",
+      "refundNote": "المردود مال أُعيد على طلب، وليس طلبًا أُلغي.",
+      "insightsLabel": "ما يلفت الانتباه",
+      "advice": "يستحق الإجراء",
+      "insight": {
+        "strongestDay": "أقوى يوم: {{date}}.",
+        "ordersUp": "الطلبات أعلى بنسبة {{percent}}٪ من الفترة السابقة.",
+        "ordersDown": "الطلبات أقل بنسبة {{percent}}٪ من الفترة السابقة.",
+        "refundsUp": "ارتفع معدل المردودات {{points}} نقطة.",
+        "topStore": "{{store}} يحقق {{share}}٪ من الإيراد."
+      },
+      "adviceText": {
+        "reviewRefunds": "راجع ما يُسترَد",
+        "reviewRefundsEvidence": "انتقل معدل المردودات من {{from}}٪ إلى {{to}}٪",
+        "focusStore": "انظر فيما يفعله {{store}} بشكل مختلف",
+        "focusStoreEvidence": "متوسط طلبه أعلى بنسبة {{percent}}٪ من متوسط المتاجر"
+      },
+      "unitsLabel": "قطعة"
     }
   },
   "sharedReport": {

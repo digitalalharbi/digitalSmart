@@ -8,6 +8,7 @@ use App\Application\Analytics\DTO\BreakdownRow;
 use App\Application\Analytics\DTO\MetricSet;
 use App\Application\Analytics\DTO\MetricValue;
 use App\Application\Analytics\DTO\SeriesPoint;
+use App\Application\Commerce\DTO\RevenueBreakdownRow;
 use App\Application\Reporting\Command\ShareReport;
 use App\Application\Reporting\Contract\SnapshotSerialiser;
 use App\Application\Reporting\DTO\LeadFigures;
@@ -18,6 +19,7 @@ use App\Application\Reporting\DTO\SavedReport;
 use App\Application\Reporting\DTO\SectionDefinition;
 use App\Application\Reporting\DTO\ShareView;
 use App\Application\Reporting\DTO\StoreFigure;
+use App\Application\Reporting\DTO\StoreFigures;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
 use App\Domain\Commerce\RevenueSource;
@@ -268,6 +270,7 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'value' => $figure->value,
                 'currency' => $figure->currency,
             ], $section->store->figures()),
+            'store_detail' => $section->store === null ? null : self::storeDetail($section->store),
             'lead' => $section->lead === null ? null : self::lead($section->lead),
             'totals' => $section->totals === null ? null : self::metricSet($section->totals),
             'series' => array_map(static fn (SeriesPoint $point): array => [
@@ -280,6 +283,83 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'status' => $row->status,
                 'metrics' => self::metricSet($row->metrics),
             ], $section->rows),
+        ];
+    }
+
+    /**
+     * What sits behind a store's headline figures: the trend, the stores, the products, the channels, the customers
+     * and the refunds.
+     *
+     * Counts, amounts and labels this product or the merchant wrote — a store's own name, a product as it was sold, a
+     * channel as the orders carried it. No store id, provider id, customer, order or contact: nothing here can name a
+     * person or lead back to a record. Everything is for the one authority the section names.
+     *
+     * @return array<string, mixed>
+     */
+    private static function storeDetail(StoreFigures $figures): array
+    {
+        $summary = $figures->summary;
+        $previous = $figures->previous;
+        $mix = $figures->customerMix;
+        $total = array_sum(array_map(static fn ($row): int => $row->netRevenueMinor, $figures->stores));
+
+        return [
+            'currency' => $summary->currency,
+            'daily' => array_map(static fn ($point): array => [
+                'date' => $point->date,
+                'orders' => $point->orders,
+                'net_revenue' => $point->netRevenueMinor,
+            ], $figures->daily),
+            'stores' => array_map(static fn ($row): array => [
+                'name' => $row->storeName,
+                'orders' => $row->orders,
+                'net_revenue' => $row->netRevenueMinor,
+                'refunded' => $row->refundedMinor,
+                'aov' => $row->orders > 0 ? intdiv($row->netRevenueMinor, $row->orders) : null,
+                // Null where nothing was sold anywhere: a share of nothing is not 0%.
+                'share' => $total > 0 ? round(($row->netRevenueMinor / $total) * 100, 1) : null,
+            ], $figures->stores),
+            'products' => array_map(static fn ($row): array => [
+                'label' => $row->label,
+                'orders' => $row->orders,
+                'units' => $row->units,
+                'revenue' => $row->revenueMinor,
+            ], $figures->products),
+            /*
+             * Not traced means the orders carried no source and no medium — whatever else they carried, a coupon or a
+             * referrer names no channel. The coverage is worked out from the same rows, so the ring's centre and its
+             * slices cannot disagree.
+             */
+            'channels' => array_map(static fn ($row): array => [
+                'label' => $row->label === RevenueBreakdownRow::UNATTRIBUTED ? null : $row->label,
+                'is_unattributed' => $row->label === RevenueBreakdownRow::UNATTRIBUTED,
+                'orders' => $row->orders,
+                'net_revenue' => $row->netRevenueMinor,
+            ], $figures->channels),
+            'attribution_coverage' => $summary->netRevenueMinor > 0
+                ? round((array_sum(array_map(
+                    static fn ($row): int => $row->label === RevenueBreakdownRow::UNATTRIBUTED ? 0 : $row->netRevenueMinor,
+                    $figures->channels,
+                )) / $summary->netRevenueMinor) * 100, 1)
+                : null,
+            'customers' => $mix === null ? null : [
+                'new' => $mix->newCustomers,
+                'returning' => $mix->returningCustomers,
+                'unknown' => $mix->unknownCustomers,
+                'new_share' => $mix->newShare(),
+                'unavailable_reason' => $mix->unavailableReason(),
+            ],
+            'refunds' => [
+                'amount' => $summary->refundedMinor,
+                'orders' => $summary->refundedOrders,
+                'rate' => $summary->refundRate(),
+                'previous_rate' => $previous?->refundRate(),
+            ],
+            'previous' => $previous === null ? null : [
+                'orders' => $previous->orders,
+                'net_revenue' => $previous->netRevenueMinor,
+                'aov' => $previous->averageOrderValueMinor(),
+            ],
         ];
     }
 

@@ -15,6 +15,9 @@ use App\Domain\Commerce\AttributionEvidence;
  */
 final readonly class RevenueBreakdownRow
 {
+    /** The label of the bucket for orders that carried no source and no medium. */
+    public const string UNATTRIBUTED = 'Unattributed';
+
     public function __construct(
         /** The channel, campaign or product name. */
         public string $label,

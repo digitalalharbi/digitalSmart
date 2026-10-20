@@ -135,7 +135,7 @@ final readonly class RenderReport
         }
 
         if ($section->kind === SectionKind::Store) {
-            return $this->store($workspaceId, $definition, $section, $period, $title, $caveats);
+            return $this->store($workspaceId, $definition, $section, $period, $comparisonPeriod, $title, $caveats);
         }
 
         if ($section->kind === SectionKind::Trend) {
@@ -335,6 +335,7 @@ final readonly class RenderReport
         ReportDefinition $definition,
         SectionDefinition $section,
         DateRange $period,
+        ?DateRange $comparisonPeriod,
         string $title,
         array $caveats,
     ): RenderedSection {
@@ -352,16 +353,46 @@ final readonly class RenderReport
             );
         }
 
-        $summary = $this->stores->summary(new StoreQuery(
+        $query = new StoreQuery(
             workspaceId: $workspaceId,
             revenueSource: $source,
             from: $period->start,
             until: $period->end,
             visibleProjectIds: null,
             clientId: $definition->clientId,
+            limit: 8,
+        );
+
+        $summary = $this->stores->summary($query);
+
+        $previous = $comparisonPeriod === null ? null : $this->stores->summary(new StoreQuery(
+            workspaceId: $workspaceId,
+            revenueSource: $source,
+            from: $comparisonPeriod->start,
+            until: $comparisonPeriod->end,
+            visibleProjectIds: null,
+            clientId: $definition->clientId,
         ));
 
-        $figures = new StoreFigures($source, $summary);
+        $stores = $this->stores->byStore($query);
+        $currencies = array_unique(array_map(static fn ($row): string => $row->currency, $stores));
+
+        $figures = new StoreFigures(
+            $source,
+            $summary,
+            previous: $previous,
+            daily: $this->stores->daily($query),
+            /*
+             * A comparison needs something to compare and one currency to compare in: shares of a total made of
+             * two currencies are not shares of anything.
+             */
+            stores: count($stores) > 1 && count($currencies) === 1 ? $stores : [],
+            products: $this->stores->byProduct(new StoreQuery(
+                $workspaceId, $source, $period->start, $period->end, null, $definition->clientId, null, 5,
+            )),
+            channels: $this->stores->byChannel($query),
+            customerMix: $this->stores->customerMix($query),
+        );
 
         if ($source->isModelled()) {
             $caveats[] = 'Attributed revenue is a model\'s output, not a record. It must not be presented to a client '
