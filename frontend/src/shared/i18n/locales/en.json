@@ -3042,6 +3042,27 @@
     "cover": {
       "sections_one": "{{count}} section",
       "sections_other": "{{count}} sections"
+    },
+    "highlights": {
+      "insights": "What changed",
+      "campaigns": "Campaigns",
+      "top": "Top campaigns",
+      "needs": "Needs attention",
+      "details": "View details",
+      "recommendations": "Worth a closer look",
+      "kind": {
+        "improved": "Improved",
+        "declined": "Declined",
+        "attention": "Needs attention",
+        "best": "Best performer"
+      },
+      "vsReport": "vs {{value}} overall",
+      "vsOverall": "vs {{value}} overall",
+      "evidence": "Evidence",
+      "rec": {
+        "allocate": "Consider more budget on {{subject}}",
+        "creative": "Refresh the creatives"
+      }
     }
   },
   "sharedReport": {

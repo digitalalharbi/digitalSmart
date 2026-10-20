@@ -8,6 +8,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { InfoHint } from '@/shared/ui/info-hint';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import type { MetricSourceValue } from '@/shared/metrics';
+import { ReportHighlights } from './ReportHighlights';
 import { ReportSectionView } from './ReportSectionView';
 import type { RenderedReport } from './types';
 
@@ -216,6 +217,12 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
               ))}
             </div>
           ) : null}
+          <ReportHighlights
+            report={report}
+            onViewDetails={
+              level === 'executive' && canSummarise ? () => setLevel('detailed') : undefined
+            }
+          />
           {shown.map((section, index) => (
             <ReportSectionView key={`${section.kind}-${index}`} section={section} sparks={sparks} />
           ))}

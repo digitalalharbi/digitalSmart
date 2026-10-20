@@ -3248,6 +3248,27 @@
       "sections_few": "{{count}} أقسام",
       "sections_many": "{{count}} قسمًا",
       "sections_other": "{{count}} قسم"
+    },
+    "highlights": {
+      "insights": "ما الذي تغيّر",
+      "campaigns": "الحملات",
+      "top": "أفضل الحملات",
+      "needs": "تحتاج انتباهًا",
+      "details": "عرض التفاصيل",
+      "recommendations": "تستحق نظرة أقرب",
+      "kind": {
+        "improved": "تحسّن",
+        "declined": "تراجع",
+        "attention": "يحتاج انتباهًا",
+        "best": "الأفضل أداءً"
+      },
+      "vsReport": "مقابل {{value}} إجمالًا",
+      "vsOverall": "مقابل {{value}} إجمالًا",
+      "evidence": "الدليل",
+      "rec": {
+        "allocate": "فكّر في زيادة الميزانية على {{subject}}",
+        "creative": "جدّد المواد الإبداعية"
+      }
     }
   },
   "sharedReport": {
