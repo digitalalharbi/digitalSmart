@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { MetricValue } from '@/shared/metrics';
-import { campaignCards, insights, recommendations } from './highlights';
+import { campaignCards, funnelStages, insights, recommendations } from './highlights';
 import type { RenderedReport, RenderedSection } from './types';
 
 function value(
@@ -269,5 +269,68 @@ describe('recommendations', () => {
 
     expect(recommendations(fell).map((r) => r.key)).toEqual(['creative']);
     expect(recommendations(slight)).toEqual([]);
+  });
+});
+
+describe('funnelStages', () => {
+  const card = (values: Record<string, MetricValue>) => report([section({ totals: set(values) })]);
+
+  it('chains impressions, clicks and the outcome the report carries', () => {
+    const stages = funnelStages(
+      card({
+        impressions: value('impressions', 1000),
+        clicks: value('clicks', 50),
+        leads: value('leads', 5),
+      }),
+    );
+
+    expect(stages?.map((stage) => stage.key)).toEqual(['impressions', 'clicks', 'leads']);
+  });
+
+  it('adds the commerce steps only when they were asked for, and keeps one it could not read', () => {
+    const stages = funnelStages(
+      card({
+        impressions: value('impressions', 1000),
+        clicks: value('clicks', 50),
+        add_to_cart: value('add_to_cart', null),
+        purchases: value('purchases', 3),
+      }),
+    );
+
+    expect(stages?.map((stage) => stage.key)).toEqual([
+      'impressions',
+      'clicks',
+      'add_to_cart',
+      'purchases',
+    ]);
+    expect(stages?.[2]?.value.value).toBeNull();
+  });
+
+  it('is not drawn without both ends: no outcome, or no clicks, is no funnel', () => {
+    expect(
+      funnelStages(card({ impressions: value('impressions', 9), clicks: value('clicks', 4) })),
+    ).toBeNull();
+    expect(
+      funnelStages(
+        card({
+          impressions: value('impressions', 9),
+          clicks: value('clicks', null),
+          leads: value('leads', 1),
+        }),
+      ),
+    ).toBeNull();
+  });
+
+  it('prefers purchases to leads when a report carries both, and never invents sessions', () => {
+    const stages = funnelStages(
+      card({
+        impressions: value('impressions', 1000),
+        clicks: value('clicks', 50),
+        leads: value('leads', 5),
+        purchases: value('purchases', 2),
+      }),
+    );
+
+    expect(stages?.map((stage) => stage.key)).toEqual(['impressions', 'clicks', 'purchases']);
   });
 });

@@ -3062,7 +3062,8 @@
       "rec": {
         "allocate": "Consider more budget on {{subject}}",
         "creative": "Refresh the creatives"
-      }
+      },
+      "funnel": "From seen to converted"
     }
   },
   "sharedReport": {

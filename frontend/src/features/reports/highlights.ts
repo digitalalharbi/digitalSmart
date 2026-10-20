@@ -224,3 +224,42 @@ export function recommendations(report: RenderedReport): Recommendation[] {
 
   return out;
 }
+
+/**
+ * The stages a client's audience passed through, using only stages the report actually carries.
+ *
+ * A funnel is a claim that each stage is the next one's source. This product holds aggregate counts, not people, so
+ * the claim is read loosely — a step can exceed the one before it (a purchase after a view, not a click) and the
+ * bar says so by showing no rate there rather than a rate above a hundred. A stage the report was asked for and
+ * could not read is kept, as not tracked; a stage nobody asked for is not invented.
+ */
+export type FunnelStage = { key: string; value: MetricValue };
+
+const OUTCOMES = ['purchases', 'leads', 'conversions'] as const;
+const COMMERCE_STEPS = ['add_to_cart', 'checkouts'] as const;
+
+export function funnelStages(report: RenderedReport): FunnelStage[] | null {
+  const values = scorecardValues(report);
+  const seen = values['impressions'];
+  const clicked = values['clicks'];
+
+  if (seen?.value == null || clicked?.value == null) {
+    return null;
+  }
+
+  const outcome = OUTCOMES.find((metric) => values[metric] !== undefined);
+
+  if (outcome === undefined) {
+    return null;
+  }
+
+  const middle =
+    outcome === 'purchases' ? COMMERCE_STEPS.filter((metric) => values[metric] !== undefined) : [];
+  const keys = ['impressions', 'clicks', ...middle, outcome];
+
+  return keys.flatMap((key) => {
+    const value = values[key];
+
+    return value === undefined ? [] : [{ key, value }];
+  });
+}
