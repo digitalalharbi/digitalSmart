@@ -2006,7 +2006,8 @@
       "tag_trigger_missing": "المشغّل مفقود",
       "measurement_id_not_in_container": "معرّف قياس خاطئ",
       "intent_signal_as_conversion": "نية محسوبة كتحويل"
-    }
+    },
+    "showMore": "+{{count}} أخرى"
   },
   "commerce": {
     "title": "إيراد المتاجر",

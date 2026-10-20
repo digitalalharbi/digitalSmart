@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
@@ -49,6 +50,8 @@ function formatEvidence(value: unknown, locale: string): string {
   return '—';
 }
 
+const FOLD = 4;
+
 /** Identical issues, once, with how many there are — five clients missing the same conversion is one finding. */
 function merged(group: TrackingIssue[]): Array<[TrackingIssue, number]> {
   const out = new Map<string, [TrackingIssue, number]>();
@@ -73,6 +76,7 @@ function merged(group: TrackingIssue[]): Array<[TrackingIssue, number]> {
  * An empty list is a real state with its own words: silence is the goal, so it is said out loud.
  */
 export function IssueList({ issues }: { issues: TrackingIssue[] }) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const { t, i18n } = useTranslation();
 
   if (issues.length === 0) {
@@ -163,57 +167,77 @@ export function IssueList({ issues }: { issues: TrackingIssue[] }) {
             </span>
           </header>
           <ul className="flex flex-col">
-            {merged(group).map(([issue, count], index) => (
-              <li
-                key={`${issue.code}-${issue.subject ?? index}-${issue.summary}`}
-                className="border-line-subtle border-t first:border-t-0"
-              >
-                <details className="group/issue">
-                  <summary className="flex cursor-pointer list-none items-center gap-2 px-1 py-2.5 text-sm [&::-webkit-details-marker]:hidden">
-                    <span
-                      className="text-content min-w-0 flex-1 truncate"
-                      dir="auto"
-                      title={issue.summary}
-                    >
-                      {issue.summary}
-                    </span>
-                    {count > 1 ? (
-                      <span className="bg-surface-sunken text-content-secondary ds-numeric shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold">
-                        ×{count}
+            {(expanded.has(code) ? merged(group) : merged(group).slice(0, FOLD)).map(
+              ([issue, count], index) => (
+                <li
+                  key={`${issue.code}-${issue.subject ?? index}-${issue.summary}`}
+                  className="border-line-subtle border-t first:border-t-0"
+                >
+                  <details className="group/issue">
+                    <summary className="flex cursor-pointer list-none items-center gap-2 px-1 py-2.5 text-sm [&::-webkit-details-marker]:hidden">
+                      <span
+                        className="text-content min-w-0 flex-1 truncate"
+                        dir="auto"
+                        title={issue.summary}
+                      >
+                        {issue.summary}
                       </span>
-                    ) : null}
-                    <ChevronDown
-                      aria-hidden
-                      className="text-content-tertiary size-4 shrink-0 transition-transform group-open/issue:rotate-180"
-                    />
-                  </summary>
-                  <div className={cn('flex flex-col gap-2 px-1 pb-3')}>
-                    {issue.remedy === null ? null : (
-                      <p className="bg-accent-subtle text-content-brand rounded-xl px-3 py-2 text-sm">
-                        {issue.remedy}
-                      </p>
-                    )}
-                    {Object.keys(issue.evidence).length === 0 ? null : (
-                      <dl className="flex flex-wrap gap-x-6 gap-y-1">
-                        {Object.entries(issue.evidence).map(([key, value]) => (
-                          <div key={key} className="flex gap-1.5 text-xs">
-                            <dt className="text-content-tertiary">
-                              {t(`tracking.evidence.${key}`, {
-                                defaultValue: key.replace(/_/g, ' '),
-                              })}
-                            </dt>
-                            <dd className="text-content-secondary font-medium">
-                              {formatEvidence(value, i18n.language)}
-                            </dd>
-                          </div>
-                        ))}
-                      </dl>
-                    )}
-                  </div>
-                </details>
-              </li>
-            ))}
+                      {count > 1 ? (
+                        <span className="bg-surface-sunken text-content-secondary ds-numeric shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold">
+                          ×{count}
+                        </span>
+                      ) : null}
+                      <ChevronDown
+                        aria-hidden
+                        className="text-content-tertiary size-4 shrink-0 transition-transform group-open/issue:rotate-180"
+                      />
+                    </summary>
+                    <div className={cn('flex flex-col gap-2 px-1 pb-3')}>
+                      {issue.remedy === null ? null : (
+                        <p className="bg-accent-subtle text-content-brand rounded-xl px-3 py-2 text-sm">
+                          {issue.remedy}
+                        </p>
+                      )}
+                      {Object.keys(issue.evidence).length === 0 ? null : (
+                        <dl className="flex flex-wrap gap-x-6 gap-y-1">
+                          {Object.entries(issue.evidence).map(([key, value]) => (
+                            <div key={key} className="flex gap-1.5 text-xs">
+                              <dt className="text-content-tertiary">
+                                {t(`tracking.evidence.${key}`, {
+                                  defaultValue: key.replace(/_/g, ' '),
+                                })}
+                              </dt>
+                              <dd className="text-content-secondary font-medium">
+                                {formatEvidence(value, i18n.language)}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      )}
+                    </div>
+                  </details>
+                </li>
+              ),
+            )}
           </ul>
+          {merged(group).length > FOLD ? (
+            <button
+              type="button"
+              onClick={() =>
+                setExpanded((current) => {
+                  const next = new Set(current);
+                  if (next.has(code)) next.delete(code);
+                  else next.add(code);
+                  return next;
+                })
+              }
+              className="text-content-secondary hover:text-content self-start rounded-md px-1 py-1 text-xs font-medium"
+            >
+              {expanded.has(code)
+                ? t('actions.less')
+                : t('tracking.showMore', { count: merged(group).length - FOLD })}
+            </button>
+          ) : null}
         </section>
       ))}
     </div>
