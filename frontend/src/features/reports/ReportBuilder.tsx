@@ -327,7 +327,11 @@ export function ReportBuilder({
                     <ChoiceGroup label={t('reports.builder.shape')}>
                       <div className="flex flex-wrap gap-2">
                         {kinds
-                          .filter((entry) => entry.kind !== 'store' || clientId !== null)
+                          .filter(
+                            (entry) =>
+                              (entry.kind !== 'store' && entry.kind !== 'lead') ||
+                              clientId !== null,
+                          )
                           .map((entry) => (
                             <Choice
                               key={entry.kind}
@@ -348,13 +352,14 @@ export function ReportBuilder({
                                   dimension: entry.needs_dimension
                                     ? (section.dimension ?? 'provider')
                                     : null,
-                                  revenue_source: entry.uses_metrics
-                                    ? null
-                                    : (section.revenue_source ??
-                                      (vocabulary?.revenue_sources ?? []).find(
-                                        (source) => source.is_invoiced,
-                                      )?.source ??
-                                      null),
+                                  revenue_source:
+                                    entry.kind !== 'store'
+                                      ? null
+                                      : (section.revenue_source ??
+                                        (vocabulary?.revenue_sources ?? []).find(
+                                          (source) => source.is_invoiced,
+                                        )?.source ??
+                                        null),
                                 });
                               }}
                             >
@@ -381,7 +386,7 @@ export function ReportBuilder({
                     )}
                   </div>
 
-                  {kind?.uses_metrics === false ? (
+                  {section.kind === 'lead' ? null : kind?.uses_metrics === false ? (
                     <ChoiceGroup
                       label={t('reports.builder.revenueSource')}
                       hint={t('reports.builder.revenueSourceHint')}

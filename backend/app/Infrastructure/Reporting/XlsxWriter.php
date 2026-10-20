@@ -199,6 +199,7 @@ final readonly class XlsxWriter implements ReportWorkbookWriter
             SectionKind::Scorecard => $this->scorecard($sheet, $section, $line),
             SectionKind::Trend => $this->trend($sheet, $section, $line),
             SectionKind::Store => $this->store($sheet, $section, $line),
+            SectionKind::Lead => $this->lead($sheet, $section, $line),
             default => $this->breakdown($sheet, $section, $line),
         };
 
@@ -291,6 +292,22 @@ final readonly class XlsxWriter implements ReportWorkbookWriter
                 );
             }
 
+            $line++;
+        }
+
+        return 2;
+    }
+
+    /** @return int the number of columns written */
+    private function lead(Worksheet $sheet, RenderedSection $section, int $line): int
+    {
+        $this->headings($sheet, $line, ['Figure', 'Value']);
+        $line++;
+
+        foreach ($section->lead?->facts() ?? [] as $fact) {
+            $sheet->setCellValueExplicit('A'.$line, $fact['label'], DataType::TYPE_STRING);
+            /* The words, in the value column: a rate with nothing to divide by is not a zero. */
+            $sheet->setCellValueExplicit('B'.$line, $fact['text'] ?? 'Not available', DataType::TYPE_STRING);
             $line++;
         }
 

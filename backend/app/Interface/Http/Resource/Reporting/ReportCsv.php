@@ -96,6 +96,16 @@ final readonly class ReportCsv
             return $lines;
         }
 
+        if ($section->kind === SectionKind::Lead && $section->lead !== null) {
+            $lines[] = self::row(['Figure', 'Value']);
+
+            foreach ($section->lead->facts() as $fact) {
+                $lines[] = self::row([$fact['label'], $fact['text'] ?? 'Not available']);
+            }
+
+            return $lines;
+        }
+
         if ($section->kind === SectionKind::Store && $section->store !== null) {
             $lines[] = self::row(['Revenue according to', $section->store->revenueSource->label()]);
             $lines[] = self::row(['Figure', 'Value']);

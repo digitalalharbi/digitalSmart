@@ -288,3 +288,23 @@ A fifth section kind, `store`, reads what a client's stores sold according to **
   disclosure the portal withholds), and allowed internally with a caveat that it must not be shown to a client as actual.
 - **Schema:** `report_sections.revenue_source`, with a CHECK that a `store` section names one and no other kind does.
 - Not yet: a revenue trend, revenue by source, a store comparison, top products.
+
+
+## Lead figures in a report
+
+A sixth section kind, `lead`, reads how one client's *recorded* leads turned out. It is aggregates and nothing else: the
+payload has fields for counts, rates, route and campaign labels and response-time buckets, and none that could hold a
+name, a phone number, an email, a note, a message, an owner or a stage history. The route's free-text detail (a form's
+name) is dropped and routes are folded to one row each.
+
+- **Not the platforms' lead count.** The ad sections' `leads` metric is what a platform claims; this is what the client
+  recorded. They are never added or divided, and a caveat says so.
+- **Qualified is where a lead stands now**, not a step it passed through, so it sits beside the funnel (leads → reached →
+  won) instead of in it. Qualification is of leads *reached*; the win rate is of leads *closed*; both are absent, not
+  zero, when there is nothing to divide by.
+- **Response time** is first contact minus arrival, over leads that have a recorded first contact. Unanswered leads are
+  counted separately and are not "slow". The median is withheld below five answered leads before any card points at it.
+- **One client, always.** A lead section needs the report's client and is narrowed by it again at render, so a shared link
+  cannot widen it. No comparison period: a lead's outcome keeps moving after the period closes.
+- Carried through snapshots, shared links, CSV, workbook and deck like the other kinds. Migration only widens the kind
+  check and lets a `lead` section carry no metrics.

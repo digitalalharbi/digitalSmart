@@ -135,4 +135,13 @@ final class InvalidReportDefinition extends RuntimeException
             'modelled_not_client_safe',
         );
     }
+
+    /** Lead figures belong to one client's enquiries; an agency-wide report has no single client to read them for. */
+    public static function leadNeedsClient(): self
+    {
+        return new self(
+            'Lead figures are read for one client. Choose the client this report is about.',
+            'lead_needs_client',
+        );
+    }
 }

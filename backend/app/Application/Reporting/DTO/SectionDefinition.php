@@ -34,6 +34,10 @@ final readonly class SectionDefinition
      */
     public function assertValid(): void
     {
+        if ($this->kind === SectionKind::Lead) {
+            return;
+        }
+
         if ($this->kind === SectionKind::Store) {
             if ($this->revenueSource === null) {
                 throw InvalidReportDefinition::revenueSourceRequired();

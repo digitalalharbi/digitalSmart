@@ -3275,6 +3275,63 @@
     },
     "store": {
       "according": "الإيراد وفق {{source}}"
+    },
+    "lead": {
+      "leads": "العملاء المحتملون",
+      "reached": "تم التواصل",
+      "qualified": "مؤهَّلون",
+      "won": "مكتسَبون",
+      "qualifiedRate": "المؤهَّلون من الذين تم التواصل معهم",
+      "winRate": "المكتسَبون من المغلقة",
+      "median": "وسيط أول تواصل",
+      "fromRecorded": "عملاء محتملون سجّلهم العميل — وليس عدّ منصات الإعلان",
+      "funnel": "من العميل المحتمل إلى البيع",
+      "funnelStage": {
+        "leads": "عملاء محتملون",
+        "reached": "تم التواصل",
+        "won": "مكتسَبون"
+      },
+      "funnelNote": "التأهيل هو موضع العميل المحتمل الآن، لذلك يُعرض بجانب القمع لا كخطوة داخله.",
+      "stages": "أين يقف العملاء المحتملون",
+      "stage": {
+        "new": "جديد",
+        "contacted": "جرت محاولة تواصل",
+        "qualified": "مؤهَّل",
+        "disqualified": "غير مؤهَّل",
+        "won": "مكتسَب",
+        "lost": "خسارة"
+      },
+      "sources": "كيف وصل العملاء المحتملون",
+      "sourcesCentre": "عميل",
+      "campaigns": "الحملات",
+      "top": "الأكثر تأهيلاً",
+      "needs": "تحتاج انتباهاً",
+      "campaignLine": "{{qualified}} مؤهَّل من {{total}}",
+      "campaignNone": "لا مؤهَّل حتى الآن من {{total}}",
+      "unattributed": "{{count}} بلا حملة. هم محسوبون أعلاه ولا تُنسب إلى حملة.",
+      "response": "الزمن حتى أول تواصل",
+      "responseNote": "{{measured}} لهم أول تواصل مسجَّل. {{unanswered}} لم يُجَب بعد، وهم مستبعدون ولا يُعدّون بطيئين.",
+      "bucket": {
+        "b0": "أقل من 5 دقائق",
+        "b1": "5–15 دقيقة",
+        "b2": "15–60 دقيقة",
+        "b3": "1–4 ساعات",
+        "b4": "4 ساعات فأكثر"
+      },
+      "insightsLabel": "ما يلفت الانتباه",
+      "advice": "يستحق الإجراء",
+      "insight": {
+        "bestRoute": "عملاء {{route}} هم الأكثر تأهيلاً: {{share}}٪ منهم مؤهَّلون.",
+        "slowResponse": "أول تواصل يستغرق {{duration}} في الوسيط.",
+        "fastResponse": "أول تواصل يستغرق {{duration}} في الوسيط.",
+        "unanswered": "{{count}} من {{total}} بلا أول تواصل مسجَّل."
+      },
+      "adviceText": {
+        "prioritiseRoute": "أعطِ الأولوية لعملاء {{route}}",
+        "prioritiseRouteEvidence": "{{share}}٪ مؤهَّلون، مقابل {{overall}}٪ لجميع العملاء",
+        "fasterResponse": "أجب العملاء المحتملين أسرع",
+        "fasterResponseEvidence": "وسيط أول تواصل {{duration}}؛ و{{unanswered}} بلا تواصل مسجَّل"
+      }
     }
   },
   "sharedReport": {

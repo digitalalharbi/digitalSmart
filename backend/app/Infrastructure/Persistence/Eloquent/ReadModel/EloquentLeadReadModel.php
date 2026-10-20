@@ -7,6 +7,7 @@ namespace App\Infrastructure\Persistence\Eloquent\ReadModel;
 use App\Application\Leads\Contract\LeadReadModel;
 use App\Application\Leads\DTO\LeadBreakdownRow;
 use App\Application\Leads\DTO\LeadFilter;
+use App\Application\Leads\DTO\LeadResponseTime;
 use App\Application\Leads\DTO\LeadSourceRow;
 use App\Domain\Commerce\AttributionEvidence;
 use App\Domain\Leads\LeadFunnel;
@@ -200,6 +201,47 @@ final readonly class EloquentLeadReadModel implements LeadReadModel
         }
 
         return $rows;
+    }
+
+    public function responseTime(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        ?string $clientId,
+        DateTimeImmutable $from,
+        DateTimeImmutable $until,
+        ?LeadFilter $filter = null,
+    ): LeadResponseTime {
+        [$a, $b, $c, $d] = LeadResponseTime::EDGES;
+        $gap = 'extract(epoch from (l.first_contacted_at - l.received_at))';
+
+        /** @var stdClass|null $row */
+        $row = $this->scope($workspaceId, $visibleProjectIds, $clientId, $from, $until, $filter)
+            ->selectRaw(
+                'count(*) filter (where l.first_contacted_at is null) as unanswered, '
+                .'count(*) filter (where l.first_contacted_at is not null) as measured, '
+                ."percentile_cont(0.5) within group (order by {$gap}) filter (where {$gap} >= 0) as median, "
+                // A first contact stamped before the lead arrived is a data fault, not a fast answer: kept out.
+                ."count(*) filter (where {$gap} >= 0 and {$gap} < {$a}) as b0, "
+                ."count(*) filter (where {$gap} >= {$a} and {$gap} < {$b}) as b1, "
+                ."count(*) filter (where {$gap} >= {$b} and {$gap} < {$c}) as b2, "
+                ."count(*) filter (where {$gap} >= {$c} and {$gap} < {$d}) as b3, "
+                ."count(*) filter (where {$gap} >= {$d}) as b4"
+            )
+            ->first();
+
+        $values = (array) $row;
+        $buckets = [
+            (int) ($values['b0'] ?? 0), (int) ($values['b1'] ?? 0), (int) ($values['b2'] ?? 0),
+            (int) ($values['b3'] ?? 0), (int) ($values['b4'] ?? 0),
+        ];
+        $median = $values['median'] ?? null;
+
+        return new LeadResponseTime(
+            measured: array_sum($buckets),
+            unanswered: (int) ($values['unanswered'] ?? 0),
+            medianSeconds: is_numeric($median) && array_sum($buckets) > 0 ? max(0, (int) round((float) $median)) : null,
+            buckets: $buckets,
+        );
     }
 
     /**

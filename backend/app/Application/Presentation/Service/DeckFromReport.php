@@ -82,6 +82,23 @@ final readonly class DeckFromReport
         }
 
         return match ($section->kind) {
+            SectionKind::Lead => new Slide(
+                kind: SlideKind::Scorecard,
+                title: $section->title,
+                lead: null,
+                figures: array_map(
+                    static fn (array $fact): SlideFigure => new SlideFigure(
+                        label: $fact['label'],
+                        value: $fact['text'] ?? 'Not available',
+                        change: null,
+                        changeIsGood: null,
+                        sourceLabel: 'Recorded leads',
+                        unavailableReason: $fact['text'] === null ? 'There was nothing to divide by.' : null,
+                    ),
+                    $section->lead?->facts() ?? [],
+                ),
+                notes: $notes,
+            ),
             SectionKind::Store => new Slide(
                 kind: SlideKind::Scorecard,
                 title: $section->title,

@@ -3069,6 +3069,63 @@
     },
     "store": {
       "according": "Revenue according to {{source}}"
+    },
+    "lead": {
+      "leads": "Leads",
+      "reached": "Reached",
+      "qualified": "Qualified",
+      "won": "Won",
+      "qualifiedRate": "Qualified, of leads reached",
+      "winRate": "Won, of leads closed",
+      "median": "Median first contact",
+      "fromRecorded": "Leads this client recorded — not the ad platforms' own count",
+      "funnel": "From lead to sale",
+      "funnelStage": {
+        "leads": "Leads",
+        "reached": "Reached",
+        "won": "Won"
+      },
+      "funnelNote": "Qualified is where a lead stands now, so it is shown beside the funnel rather than as a step in it.",
+      "stages": "Where leads stand",
+      "stage": {
+        "new": "New",
+        "contacted": "Contact attempted",
+        "qualified": "Qualified",
+        "disqualified": "Not qualified",
+        "won": "Won",
+        "lost": "Lost"
+      },
+      "sources": "How leads arrived",
+      "sourcesCentre": "leads",
+      "campaigns": "Campaigns",
+      "top": "Most qualified leads",
+      "needs": "Needs attention",
+      "campaignLine": "{{qualified}} qualified of {{total}} leads",
+      "campaignNone": "No qualified lead yet from {{total}} leads",
+      "unattributed": "{{count}} leads carry no campaign. They are counted above, not credited to one.",
+      "response": "Time to first contact",
+      "responseNote": "{{measured}} leads with a recorded first contact. {{unanswered}} not answered yet are left out, not counted as slow.",
+      "bucket": {
+        "b0": "Under 5 min",
+        "b1": "5–15 min",
+        "b2": "15–60 min",
+        "b3": "1–4 hours",
+        "b4": "4 hours or more"
+      },
+      "insightsLabel": "What stands out",
+      "advice": "Worth acting on",
+      "insight": {
+        "bestRoute": "{{route}} leads qualify most: {{share}}% of its leads are qualified.",
+        "slowResponse": "First contact takes {{duration}} at the median.",
+        "fastResponse": "First contact takes {{duration}} at the median.",
+        "unanswered": "{{count}} of {{total}} leads have no recorded first contact."
+      },
+      "adviceText": {
+        "prioritiseRoute": "Prioritise {{route}} leads",
+        "prioritiseRouteEvidence": "{{share}}% qualified, against {{overall}}% across all leads",
+        "fasterResponse": "Answer leads faster",
+        "fasterResponseEvidence": "Median first contact is {{duration}}; {{unanswered}} leads have no recorded contact"
+      }
     }
   },
   "sharedReport": {
