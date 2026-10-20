@@ -7,3 +7,4 @@ export { HealthRing, type HealthCounts } from './HealthRing';
 export { ChartCard, ChangePill } from './ChartCard';
 export { CHART, TOOLTIP_CLASS } from './theme';
 export { ProgressBar, ProgressRing, CompareBars, type ProgressTone } from './Progress';
+export { Sparkline } from './Sparkline';

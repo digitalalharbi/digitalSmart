@@ -5,6 +5,7 @@ import type { MetricValue } from '@/shared/metrics';
 import { cn } from '@/shared/lib/cn';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import { TrendBadge } from '@/shared/ui/trend-badge';
+import { Sparkline } from '@/shared/ui/viz/Sparkline';
 
 type MetricCardProps = {
   value: MetricValue;
@@ -13,6 +14,8 @@ type MetricCardProps = {
   className?: string;
   onSelect?: () => void;
   isSelected?: boolean;
+  /** The figure's own daily values, oldest first. Drawn small; absent where the surface has no series. */
+  trend?: Array<number | null> | undefined;
 };
 
 /**
@@ -34,6 +37,7 @@ export function MetricCard({
   className,
   onSelect,
   isSelected = false,
+  trend,
 }: MetricCardProps) {
   const { t, i18n } = useTranslation();
   const change = formatChange(value, i18n.language);
@@ -77,17 +81,20 @@ export function MetricCard({
         The figure dominates. A KPI card whose value is the same size as its label is a card nobody can scan,
         and scanning is the entire job of a scorecard row.
       */}
-      <span
-        className={cn(
-          /* Steps down on a phone and truncates rather than overflow: a nine-digit figure in a half-width card. */
-          'ds-figure text-content max-w-full min-w-0 truncate',
-          emphasis === 'primary' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl',
-          value.value === null && 'text-content-tertiary text-xl font-normal sm:text-2xl',
-        )}
-        title={formatMetric(value, i18n.language)}
-      >
-        {formatMetric(value, i18n.language)}
-      </span>
+      <div className="flex items-end justify-between gap-3">
+        <span
+          className={cn(
+            /* Steps down on a phone and truncates rather than overflow: a nine-digit figure in a half-width card. */
+            'ds-figure text-content max-w-full min-w-0 truncate',
+            emphasis === 'primary' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl',
+            value.value === null && 'text-content-tertiary text-xl font-normal sm:text-2xl',
+          )}
+          title={formatMetric(value, i18n.language)}
+        >
+          {formatMetric(value, i18n.language)}
+        </span>
+        {trend === undefined ? null : <Sparkline values={trend} className="shrink-0" />}
+      </div>
 
       {value.value === null && value.unavailable_reason !== null ? (
         /*
