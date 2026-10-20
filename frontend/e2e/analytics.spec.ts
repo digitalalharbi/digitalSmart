@@ -61,6 +61,9 @@ test.describe('analytics', () => {
   test('breaks spend down by campaign with the platform ids kept', async ({ page }) => {
     await openSurface(page, '/analytics', 'Key figures');
 
+    // The table is the working, not the answer: it opens on request.
+    await page.getByRole('button', { name: /^Details/ }).click();
+
     const table = page.getByRole('table');
     await expect(table).toBeVisible();
 
@@ -105,7 +108,11 @@ test.describe('analytics', () => {
 
     const everything = (await spendTile.textContent()) ?? '';
 
-    await page.getByRole('button', { name: 'Meta Ads' }).click();
+    /*
+     * The chip in the filter bar, which comes first in the page. The platform card of the same name is the other way
+     * to make the same choice, and is covered by the unit tests.
+     */
+    await page.getByRole('button', { name: 'Meta Ads' }).first().click();
 
     // One platform's spend is necessarily less than three platforms' spend, so the
     // tile must change — a filter that leaves the total identical is not applied.

@@ -3,16 +3,21 @@ import { useTranslation } from 'react-i18next';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Choice } from '@/shared/ui/choice';
 import { Chart, ChartFrame } from '@/shared/ui/chart';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { MetricCard, MetricCardSkeleton } from '@/shared/ui/metric-card';
-import { FunnelBars } from '@/shared/ui/viz';
+import { ReportHighlights } from '@/features/reports';
 import { SourceNotice } from '@/shared/ui/source-badge';
 import { PageHeader } from '@/shared/ui/page-header';
 import { useProvidersQuery } from '@/features/integrations';
 import { useUiStore } from '@/shared/store/ui-store';
+import { analyticsAsReport } from './asReport';
+import { AttributionPanel } from './AttributionPanel';
 import { BreakdownTable } from './BreakdownTable';
-import { breakdownOption, efficiencyOption, trendOption } from '@/shared/metrics';
+import { PacingStrip } from './PacingStrip';
+import { PlatformPanel } from './PlatformPanel';
+import { efficiencyOption, trendOption } from '@/shared/metrics';
 import { FilterBar } from './FilterBar';
 import { formatMetric } from '@/shared/metrics';
 import { useAnalytics, useMetricCatalogue } from './useAnalytics';
@@ -31,6 +36,9 @@ const SCORECARD = [
   'cpc',
   'cpm',
 ] as const;
+
+/** The figures the hero chart can be pointed at, in the order an agency reads them. */
+const HERO = ['spend', 'revenue', 'roas', 'conversions', 'cpa', 'clicks', 'ctr'] as const;
 
 const BREAKDOWN_METRICS = [
   'spend',
@@ -76,6 +84,14 @@ export function AnalyticsPage() {
   // which is how a reader investigates the figure that caught their eye.
   const [trendMetric, setTrendMetric] = useState<string>('spend');
 
+  /*
+   * The working context narrows this surface like every other; the topbar chip says so on every screen. One client,
+   * one project, or everything.
+   */
+  const context = useUiStore((state) => state.context);
+  const clientId = context.client?.id ?? null;
+  const projectId = context.project?.id ?? null;
+
   const catalogue = useMetricCatalogue();
   const registry = useProvidersQuery();
 
@@ -88,11 +104,41 @@ export function AnalyticsPage() {
       order_by: 'spend',
       limit: 25,
       ...(providers.length > 0 ? { providers } : {}),
+      ...(clientId === null ? {} : { client_id: clientId }),
+      ...(projectId === null ? {} : { project_ids: [projectId] }),
     }),
-    [preset, comparison, dimension, providers, trendMetric],
+    [preset, comparison, dimension, providers, trendMetric, clientId, projectId],
   );
 
   const { data, isPending, isError, error, isFetching } = useAnalytics(query);
+
+  /*
+   * The platforms and the campaigns, each as its own ranking, over the same period, comparison and context. The
+   * platform panel deliberately ignores the platform filter: it is where the filter is chosen, and a panel that
+   * collapsed to the one platform it had just selected could not be used to choose another.
+   */
+  const rankingQuery = (by: DimensionValue, limit: number) => ({
+    preset,
+    compare: comparison,
+    dimension: by,
+    metrics: BREAKDOWN_METRICS,
+    order_by: 'spend',
+    limit,
+    ...(clientId === null ? {} : { client_id: clientId }),
+    ...(projectId === null ? {} : { project_ids: [projectId] }),
+  });
+  const platforms = useAnalytics(rankingQuery('provider', 12));
+  const campaignRows = useAnalytics({
+    ...rankingQuery('campaign', 25),
+    ...(providers.length > 0 ? { providers } : {}),
+  });
+
+  /* The funnel, the insights, the campaign cards and the pointers are the report system's own, over these figures. */
+  const asReport = useMemo(
+    () => (data === undefined ? null : analyticsAsReport(data, platforms.data, campaignRows.data)),
+    [data, platforms.data, campaignRows.data],
+  );
+  const [showDetails, setShowDetails] = useState(false);
 
   const chartContext = useMemo(() => ({ locale: i18n.language, isRtl }), [i18n.language, isRtl]);
 
@@ -107,19 +153,6 @@ export function AnalyticsPage() {
             chartContext,
           ),
     [data, trendMetric, catalogue.definitions, chartContext],
-  );
-
-  const breakdownChart = useMemo(
-    () =>
-      data === undefined || data.breakdown.length === 0
-        ? null
-        : breakdownOption(
-            data.breakdown.slice(0, 10),
-            'spend',
-            catalogue.definitions,
-            chartContext,
-          ),
-    [data, catalogue.definitions, chartContext],
   );
 
   const efficiency = useMemo(
@@ -208,6 +241,11 @@ export function AnalyticsPage() {
                   emphasis={index < 3 ? 'primary' : 'secondary'}
                   onSelect={() => setTrendMetric(metric)}
                   isSelected={trendMetric === metric}
+                  /*
+                   * How the figure moved, from its own daily values — the series the hero chart draws, so the two can
+                   * never disagree. A day with no figure is a break in the line, not a zero.
+                   */
+                  trend={(data?.series ?? []).map((point) => point.values[metric]?.value ?? null)}
                 />
               );
             })}
@@ -227,6 +265,22 @@ export function AnalyticsPage() {
             bottom of the page holds every one of their values, by the same dimension. The
             trend's daily figures appear nowhere else.
           */}
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-label={t('analytics.hero.metric')}
+          >
+            {HERO.map((metric) => (
+              <Choice
+                key={metric}
+                isSelected={trendMetric === metric}
+                onSelect={() => setTrendMetric(metric)}
+              >
+                {catalogue.definitions.get(metric)?.label ?? metric}
+              </Choice>
+            ))}
+          </div>
+
           {trend === null ? (
             <div className="bg-surface-sunken h-[400px] animate-pulse rounded-lg" />
           ) : (
@@ -290,89 +344,72 @@ export function AnalyticsPage() {
             </ChartFrame>
           )}
 
-          {/* How far the audience got: seen, clicked, converted. A stage nobody measured is drawn as not tracked. */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('analytics.funnel.title')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FunnelBars
-                label={t('analytics.funnel.title')}
-                notTracked={t('analytics.funnel.notTracked')}
-                stages={(['impressions', 'clicks', 'conversions'] as const).map((key) => {
-                  const value = data?.summary.values[key];
-                  const number = value?.value ?? null;
+          {/* Platforms: where the money went, and each platform's own figures. A card narrows the page. */}
+          {platforms.data === undefined ? null : (
+            <PlatformPanel
+              data={platforms.data}
+              selected={providers}
+              onToggle={(provider) =>
+                setProviders((current) =>
+                  current.includes(provider)
+                    ? current.filter((value) => value !== provider)
+                    : [...current, provider],
+                )
+              }
+            />
+          )}
 
-                  return {
-                    key,
-                    label: catalogue.definitions.get(key)?.label ?? key,
-                    value: number,
-                    display: value === undefined ? '—' : formatMetric(value, i18n.language),
-                  };
-                })}
-              />
-            </CardContent>
-          </Card>
+          {/*
+            What the figures say, and the funnel, and the campaigns that carried them: the report system's own cards
+            over this page's own figures, so a client's live report and this page cannot disagree about the same week.
+          */}
+          {asReport === null ? null : (
+            <ReportHighlights report={asReport} onViewDetails={() => setShowDetails(true)} />
+          )}
 
-          {/* Mix and efficiency, side by side on a wide canvas */}
-          <div className="grid gap-5 xl:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {t('analytics.mix.title', { dimension: t(`analytics.dimensions.${dimension}`) })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {breakdownChart === null ? (
+          <PacingStrip clientId={clientId} projectId={projectId} locale={i18n.language} />
+
+          {data === undefined ? null : <AttributionPanel data={data} clientId={clientId} />}
+
+          {/* The working: efficiency against scale, and every row. Detail, not the answer, so it opens on request. */}
+          <section aria-label={t('analytics.table.title')} className="flex flex-col gap-3">
+            <button
+              type="button"
+              aria-expanded={showDetails}
+              onClick={() => setShowDetails((open) => !open)}
+              className="text-content flex w-fit items-center gap-2 text-[0.9375rem] font-semibold"
+            >
+              {t('analytics.details', { dimension: t(`analytics.dimensions.${dimension}`) })}
+            </button>
+            {!showDetails ? null : (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('analytics.efficiency.title')}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {efficiency === null ? (
+                      <EmptyState title={t('analytics.empty.breakdown')} />
+                    ) : (
+                      <Chart
+                        option={efficiency}
+                        height={300}
+                        ariaLabel={t('analytics.efficiency.aria')}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+                {data === undefined || data.breakdown.length === 0 ? (
                   <EmptyState title={t('analytics.empty.breakdown')} />
                 ) : (
-                  <Chart
-                    option={breakdownChart}
-                    height={300}
-                    ariaLabel={t('analytics.mix.aria', {
-                      dimension: t(`analytics.dimensions.${dimension}`),
-                    })}
+                  <BreakdownTable
+                    rows={data.breakdown}
+                    metrics={BREAKDOWN_METRICS}
+                    definitions={catalogue.definitions}
+                    dimensionLabel={t(`analytics.dimensions.${dimension}`)}
                   />
                 )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('analytics.efficiency.title')}</CardTitle>
-                {/* Says what the chart is for, because a scatter is not self-explanatory. */}
-                <p className="text-content-secondary text-sm">
-                  {t('analytics.efficiency.question')}
-                </p>
-              </CardHeader>
-              <CardContent>
-                {efficiency === null ? (
-                  <EmptyState title={t('analytics.empty.breakdown')} />
-                ) : (
-                  <Chart
-                    option={efficiency}
-                    height={300}
-                    ariaLabel={t('analytics.efficiency.aria')}
-                  />
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* The table, which is where the detail actually lives */}
-          <section className="flex flex-col gap-3" aria-label={t('analytics.table.title')}>
-            <h2 className="text-content text-[0.9375rem] font-semibold">
-              {t('analytics.table.title', { dimension: t(`analytics.dimensions.${dimension}`) })}
-            </h2>
-            {data === undefined || data.breakdown.length === 0 ? (
-              <EmptyState title={t('analytics.empty.breakdown')} />
-            ) : (
-              <BreakdownTable
-                rows={data.breakdown}
-                metrics={BREAKDOWN_METRICS}
-                definitions={catalogue.definitions}
-                dimensionLabel={t(`analytics.dimensions.${dimension}`)}
-              />
+              </>
             )}
           </section>
         </>

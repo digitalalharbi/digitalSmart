@@ -81,7 +81,7 @@ export function MetricCard({
         The figure dominates. A KPI card whose value is the same size as its label is a card nobody can scan,
         and scanning is the entire job of a scorecard row.
       */}
-      <div className="flex items-end justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
         <span
           className={cn(
             /* Steps down on a phone and truncates rather than overflow: a nine-digit figure in a half-width card. */
