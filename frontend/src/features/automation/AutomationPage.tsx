@@ -256,7 +256,10 @@ export function AutomationPage() {
             {t('automation.none')}
           </p>
         ) : view === 'cards' ? (
-          <ul className="grid gap-3 xl:grid-cols-2" aria-label={t('automation.rules')}>
+          <ul
+            className="grid grid-cols-[minmax(0,1fr)] gap-3 xl:grid-cols-2"
+            aria-label={t('automation.rules')}
+          >
             {shown.map((rule) => (
               <li key={rule.id} className="contents">
                 <RuleCard

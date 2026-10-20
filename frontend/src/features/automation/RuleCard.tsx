@@ -58,7 +58,7 @@ export function RuleCard({
     <article
       aria-label={rule.name}
       className={cn(
-        'bg-surface flex flex-col gap-4 rounded-3xl p-5 shadow-xs',
+        'bg-surface flex min-w-0 flex-col gap-4 rounded-3xl p-5 shadow-xs',
         !rule.is_active && 'opacity-70',
       )}
     >

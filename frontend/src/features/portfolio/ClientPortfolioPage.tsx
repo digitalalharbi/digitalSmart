@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { HealthRing } from '@/shared/ui/viz';
 import { Badge } from '@/shared/ui/badge';
 import {
   Count,
@@ -187,8 +188,16 @@ export function ClientPortfolioPage() {
                 <CardHeader>
                   <CardTitle>{t('portfolio.health')}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <HealthSection health={data.health} />
+                <CardContent className="flex flex-wrap items-center gap-6">
+                  <HealthRing
+                    counts={data.health}
+                    size={96}
+                    thickness={12}
+                    label={t('portfolio.health')}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <HealthSection health={data.health} />
+                  </div>
                 </CardContent>
               </Card>
 
@@ -215,9 +224,17 @@ export function ClientPortfolioPage() {
                               >
                                 {project.name}
                               </Link>
-                              <Badge tone="neutral">
-                                {t(`portfolio.status.${project.status}`, project.status)}
-                              </Badge>
+                              <span className="flex shrink-0 items-center gap-2">
+                                <HealthRing
+                                  counts={project.campaign_health}
+                                  size={36}
+                                  thickness={6}
+                                  label={t('portfolio.health')}
+                                />
+                                <Badge tone="neutral">
+                                  {t(`portfolio.status.${project.status}`, project.status)}
+                                </Badge>
+                              </span>
                             </div>
                             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                               <div>
