@@ -22,6 +22,7 @@ use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
+use App\Domain\Commerce\RevenueSource;
 use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\Exception\InvalidReportDefinition;
 use App\Domain\Reporting\Exception\InvalidShare;
@@ -342,6 +343,16 @@ final class ReportController extends Controller
                 return $this->unknown('dimension', Dimension::values());
             }
 
+            $sourceValue = is_string($entry['revenue_source'] ?? null) ? $entry['revenue_source'] : '';
+            $revenueSource = RevenueSource::tryFrom($sourceValue);
+
+            if ($sourceValue !== '' && $revenueSource === null) {
+                return $this->unknown(
+                    'revenue source',
+                    array_map(static fn (RevenueSource $case): string => $case->value, RevenueSource::cases()),
+                );
+            }
+
             $sections[] = new SectionDefinition(
                 kind: $kind,
                 metrics: $metrics,
@@ -352,6 +363,7 @@ final class ReportController extends Controller
                 rowLimit: isset($entry['row_limit']) && is_numeric($entry['row_limit'])
                     ? (int) $entry['row_limit']
                     : null,
+                revenueSource: $revenueSource,
             );
         }
 

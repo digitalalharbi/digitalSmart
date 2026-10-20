@@ -28,7 +28,7 @@ export type ComparisonModeValue = 'none' | 'previous_period' | 'same_period_last
 
 export type ReportAudienceValue = 'internal' | 'client_safe';
 
-export type SectionKindValue = 'scorecard' | 'trend' | 'breakdown' | 'table';
+export type SectionKindValue = 'scorecard' | 'trend' | 'breakdown' | 'table' | 'store';
 
 export type RenderModeValue = 'live' | 'snapshot';
 
@@ -55,6 +55,8 @@ export type SectionKindInfo = {
   needs_dimension: boolean;
   supports_comparison: boolean;
   metric_cap: number;
+  /** False for a store section, which names a revenue source instead of choosing metrics. */
+  uses_metrics: boolean;
   /** Which metrics this shape accepts. Reach is absent from a ranking: its rows do not add up. */
   metrics: string[];
 };
@@ -66,6 +68,14 @@ export type MetricInfo = {
   is_monetary: boolean;
   lower_is_better: boolean;
   is_additive: boolean;
+};
+
+export type RevenueSourceInfo = {
+  source: string;
+  label: string;
+  is_invoiced: boolean;
+  /** A model's output. The server refuses it in a report written for a client. */
+  is_modelled: boolean;
 };
 
 export type DimensionInfo = {
@@ -80,6 +90,8 @@ export type ReportVocabulary = {
   sections: SectionKindInfo[];
   metrics: MetricInfo[];
   dimensions: DimensionInfo[];
+  /** Who may be named as the claimant of a store's revenue. */
+  revenue_sources: RevenueSourceInfo[];
   max_share_days: number;
 };
 
@@ -113,6 +125,19 @@ export type RenderedSection = {
   totals: RenderedMetricSet | null;
   series: { date: string; metrics: RenderedMetricSet }[];
   rows: { key: string; label: string; status: string | null; metrics: RenderedMetricSet }[];
+  /** Who is claiming the revenue, for a store section; null for every other kind. */
+  revenue_source?: string | null;
+  revenue_source_label?: string | null;
+  store?: StoreFigure[] | null;
+};
+
+/** One store figure. `money` is in minor units of its `currency`; null means there is none to show. */
+export type StoreFigure = {
+  key: string;
+  label: string;
+  kind: 'money' | 'count';
+  value: number | null;
+  currency: string | null;
 };
 
 export type RenderedReport = {
@@ -165,6 +190,8 @@ export type SectionDraft = {
   metrics: string[];
   dimension: string | null;
   row_limit: number | null;
+  /** Who claims the revenue, for a store section. */
+  revenue_source?: string | null;
 };
 
 export type ReportDraft = {

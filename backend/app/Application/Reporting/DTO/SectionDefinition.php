@@ -6,6 +6,7 @@ namespace App\Application\Reporting\DTO;
 
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
+use App\Domain\Commerce\RevenueSource;
 use App\Domain\Reporting\Exception\InvalidReportDefinition;
 use App\Domain\Reporting\SectionKind;
 
@@ -19,6 +20,8 @@ final readonly class SectionDefinition
         public ?string $title = null,
         public ?Dimension $dimension = null,
         public ?int $rowLimit = null,
+        /** Who claims the revenue, for a store section; null for every other kind. */
+        public ?RevenueSource $revenueSource = null,
     ) {}
 
     /**
@@ -31,6 +34,14 @@ final readonly class SectionDefinition
      */
     public function assertValid(): void
     {
+        if ($this->kind === SectionKind::Store) {
+            if ($this->revenueSource === null) {
+                throw InvalidReportDefinition::revenueSourceRequired();
+            }
+
+            return;
+        }
+
         if ($this->metrics === []) {
             throw InvalidReportDefinition::metricsRequired($this->kind);
         }

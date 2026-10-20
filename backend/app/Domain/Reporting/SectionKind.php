@@ -30,9 +30,24 @@ enum SectionKind: string
     /** The same rows as a breakdown, as a table, with every metric visible at once. */
     case Table = 'table';
 
+    /**
+     * What a client's stores sold, according to **one named authority**.
+     *
+     * Its own kind, not a metric: the figures come from orders rather than from ad facts, and a store's revenue
+     * dropped into a scorecard beside the platform's own would be two claims under one word. The section names who is
+     * making the claim, and a report that wants a second authority adds a second section.
+     */
+    case Store = 'store';
+
     public function needsDimension(): bool
     {
         return $this === self::Breakdown || $this === self::Table;
+    }
+
+    /** Whether the section carries ad metrics at all. A store section carries a revenue authority instead. */
+    public function usesMetrics(): bool
+    {
+        return $this !== self::Store;
     }
 
     /**
@@ -60,6 +75,7 @@ enum SectionKind: string
             self::Trend => 4,
             self::Breakdown => 3,
             self::Table => 8,
+            self::Store => 0,
         };
     }
 
@@ -70,6 +86,7 @@ enum SectionKind: string
             self::Trend => 'Over time',
             self::Breakdown => 'A ranking',
             self::Table => 'A table',
+            self::Store => 'Store figures',
         };
     }
 
@@ -82,6 +99,10 @@ enum SectionKind: string
      */
     public function accepts(Metric $metric): bool
     {
+        if ($this === self::Store) {
+            return false;
+        }
+
         if ($this === self::Scorecard || $this === self::Trend) {
             return true;
         }

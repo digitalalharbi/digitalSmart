@@ -75,6 +75,7 @@ function body(input: ReportInput): Record<string, unknown> {
       ...(section.title === null ? {} : { title: section.title }),
       ...(section.dimension === null ? {} : { dimension: section.dimension }),
       ...(section.row_limit === null ? {} : { row_limit: section.row_limit }),
+      ...(section.revenue_source === null ? {} : { revenue_source: section.revenue_source }),
     })),
   };
 }

@@ -2975,7 +2975,9 @@
       "groupBy": "Group by",
       "carriesComparison": "This section carries the comparison",
       "save": "Save the report",
-      "currentClient": "Chosen client"
+      "currentClient": "Chosen client",
+      "revenueSource": "Whose revenue",
+      "revenueSourceHint": "A store's revenue is a claim by one authority. Add a second section to show another — they are never added together."
     },
     "share": {
       "title": "Snapshots and links",
@@ -3064,6 +3066,9 @@
         "creative": "Refresh the creatives"
       },
       "funnel": "From seen to converted"
+    },
+    "store": {
+      "according": "Revenue according to {{source}}"
     }
   },
   "sharedReport": {

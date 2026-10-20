@@ -1,3 +1,4 @@
+import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/render';
 import type { MetricValue } from '@/shared/metrics';
@@ -53,6 +54,9 @@ function breakdown(metric: string, rows: Array<[string, number | null]>): Render
     currency: null,
     totals: null,
     series: [],
+    revenue_source: null,
+    revenue_source_label: null,
+    store: null,
     rows: rows.map(([label, amount]) => ({
       key: label,
       label,
@@ -100,5 +104,44 @@ describe('ReportSectionView — platform share', () => {
     );
 
     expect(container.querySelectorAll('circle')).toHaveLength(0);
+  });
+});
+
+describe('ReportSectionView — store figures', () => {
+  const store: RenderedSection = {
+    ...breakdown('clicks', []),
+    kind: 'store',
+    title: 'Store figures — Salla',
+    dimension: null,
+    metrics: [],
+    currency: 'SAR',
+    revenue_source: 'salla',
+    revenue_source_label: 'Salla',
+    store: [
+      {
+        key: 'net_revenue',
+        label: 'Net revenue',
+        kind: 'money',
+        value: 1_400_000,
+        currency: 'SAR',
+      },
+      { key: 'orders', label: 'Orders', kind: 'count', value: 12, currency: null },
+      { key: 'aov', label: 'Average order value', kind: 'money', value: null, currency: 'SAR' },
+    ],
+  };
+
+  it("names whose claim it is and writes money in the currency's own units", async () => {
+    await renderWithProviders(<ReportSectionView section={store} />);
+
+    expect(screen.getByText('Revenue according to Salla')).toBeInTheDocument();
+    expect(screen.getByText(/14,000/)).toBeInTheDocument();
+    expect(screen.getByText('12')).toBeInTheDocument();
+  });
+
+  it('says there is no average rather than showing a zero', async () => {
+    await renderWithProviders(<ReportSectionView section={store} />);
+
+    expect(screen.queryByText(/^SAR\s?0\.00$/)).not.toBeInTheDocument();
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
   });
 });

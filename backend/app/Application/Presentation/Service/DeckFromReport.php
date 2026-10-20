@@ -12,6 +12,7 @@ use App\Application\Presentation\DTO\SlideSeries;
 use App\Application\Presentation\DTO\SlideTable;
 use App\Application\Reporting\DTO\RenderedReport;
 use App\Application\Reporting\DTO\RenderedSection;
+use App\Application\Reporting\DTO\StoreFigure;
 use App\Application\Shared\Service\MetricText;
 use App\Domain\Analytics\Metric;
 use App\Domain\Presentation\SlideKind;
@@ -81,6 +82,23 @@ final readonly class DeckFromReport
         }
 
         return match ($section->kind) {
+            SectionKind::Store => new Slide(
+                kind: SlideKind::Scorecard,
+                title: $section->title,
+                lead: null,
+                figures: array_map(
+                    static fn (StoreFigure $figure): SlideFigure => new SlideFigure(
+                        label: $figure->label,
+                        value: $figure->text() ?? 'Not available',
+                        change: null,
+                        changeIsGood: null,
+                        sourceLabel: $section->store?->revenueSource->label() ?? $section->source->label(),
+                        unavailableReason: $figure->value === null ? 'There were no orders to average.' : null,
+                    ),
+                    $section->store?->figures() ?? [],
+                ),
+                notes: $notes,
+            ),
             SectionKind::Scorecard => new Slide(
                 kind: SlideKind::Scorecard,
                 title: $section->title,
