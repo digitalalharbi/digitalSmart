@@ -159,6 +159,10 @@ export function StoreAnalyticsPage() {
               : summary.is_modelled
                 ? t('commerce.claim.modelled', { source: summary.revenue_source_label })
                 : t('commerce.claim.reported', { source: summary.revenue_source_label });
+            /* A modelled figure is the one claim that must be read before it is quoted: it stays in the open. */
+            if (summary.is_modelled) {
+              return <Alert tone="warning">{claim}</Alert>;
+            }
             return (
               <div className="flex items-center gap-1.5">
                 <SourceBadge source={summary.source} />

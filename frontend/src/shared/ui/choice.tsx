@@ -23,12 +23,12 @@ export function ChoiceGroup({
   return (
     <fieldset className={cn('relative flex flex-col gap-2', className)}>
       <legend className="text-content text-sm font-medium">{label}</legend>
+      {children}
       {hint === undefined ? null : (
         <span className="absolute end-0 top-[-0.25rem]">
           <InfoHint text={hint} align="end" />
         </span>
       )}
-      {children}
     </fieldset>
   );
 }
