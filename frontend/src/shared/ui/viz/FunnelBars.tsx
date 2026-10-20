@@ -47,20 +47,35 @@ export function FunnelBars({
                 {notTracked}
               </span>
             ) : (
-              <span
-                aria-hidden
-                className="bg-surface-sunken block h-9 flex-1 overflow-hidden rounded-xl"
-              >
-                <span
-                  className="flex h-full items-center rounded-xl px-3 text-sm font-semibold text-white"
-                  style={{
-                    width: `${String(Math.max(8, (stage.value / top) * 100))}%`,
-                    backgroundColor: `color-mix(in oklab, var(--ds-accent-strong) ${String(100 - index * 12)}%, var(--ds-brand-900))`,
-                  }}
-                >
-                  <span className="ds-numeric">{stage.display}</span>
-                </span>
-              </span>
+              (() => {
+                const width = Math.max(8, (stage.value / top) * 100);
+                /*
+                 * A figure written in white must sit on the bar. On a narrow bar it spills onto the pale track and
+                 * becomes unreadable, so below 45% it is written beside the bar in ordinary ink instead.
+                 */
+                const inside = width >= 45;
+                return (
+                  <span
+                    aria-hidden
+                    className="bg-surface-sunken flex h-9 flex-1 items-center overflow-hidden rounded-xl"
+                  >
+                    <span
+                      className="flex h-full shrink-0 items-center rounded-xl px-3 text-sm font-semibold text-white"
+                      style={{
+                        width: `${String(width)}%`,
+                        backgroundColor: `color-mix(in oklab, var(--ds-accent-strong) ${String(100 - index * 12)}%, var(--ds-brand-900))`,
+                      }}
+                    >
+                      {inside ? <span className="ds-numeric">{stage.display}</span> : null}
+                    </span>
+                    {inside ? null : (
+                      <span className="ds-numeric text-content ms-2 truncate text-sm font-semibold">
+                        {stage.display}
+                      </span>
+                    )}
+                  </span>
+                );
+              })()
             )}
             <span className="text-content-tertiary ds-numeric w-20 shrink-0 text-end text-xs">
               {rate === null ? null : (
