@@ -27,6 +27,8 @@ const ROUTES = [
   '/integrations',
   '/administration',
   '/notifications',
+  '/automation',
+  '/commerce',
 ];
 
 test.describe('narrow screens', () => {
