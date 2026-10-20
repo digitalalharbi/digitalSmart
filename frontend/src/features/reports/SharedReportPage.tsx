@@ -5,6 +5,7 @@ import { useParams } from 'react-router';
 import { queryKeys } from '@/shared/api/query-keys';
 import { Alert } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
+import { InfoHint } from '@/shared/ui/info-hint';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { resolveTheme, useUiStore } from '@/shared/store/ui-store';
 import type { Locale } from '@/shared/i18n';
@@ -128,8 +129,9 @@ export function SharedReportPage() {
 
             <ReportView report={result.report} />
 
-            <p className="text-content-tertiary border-line-subtle border-t pt-4 text-xs">
-              {t('sharedReport.footer')}
+            <p className="text-content-tertiary border-line-subtle flex items-center justify-center gap-1 border-t pt-4 text-xs">
+              {t('sharedReport.poweredBy')}
+              <InfoHint text={t('sharedReport.footer')} />
             </p>
           </>
         )}
