@@ -101,4 +101,38 @@ final class InvalidReportDefinition extends RuntimeException
             'dates_required',
         );
     }
+
+    /** A store section that does not say who is claiming the revenue. */
+    public static function revenueSourceRequired(): self
+    {
+        return new self(
+            'Store figures need a named source. A Salla total counts invoices and a GA4 total counts what a browser '
+            .'reported, so there is no unnamed total to show.',
+            'revenue_source_required',
+        );
+    }
+
+    /** Store figures belong to a client's stores; an agency-wide report has no single store to read. */
+    public static function storeNeedsClient(): self
+    {
+        return new self(
+            'Store figures are read for one client. Choose the client this report is about.',
+            'store_needs_client',
+        );
+    }
+
+    /**
+     * A modelled figure in a report a client will read.
+     *
+     * Attributed revenue is a model's output and needs somebody who can answer a question about it; it is withheld
+     * from the client portal for the same reason, and a shared link is the same disclosure by another door.
+     */
+    public static function modelledNotClientSafe(): self
+    {
+        return new self(
+            'Attributed revenue is a model\'s estimate and cannot go in a report written for a client. Use the '
+            .'store\'s own figures, or keep this report internal.',
+            'modelled_not_client_safe',
+        );
+    }
 }

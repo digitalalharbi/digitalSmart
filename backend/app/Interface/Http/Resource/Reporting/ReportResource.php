@@ -16,8 +16,10 @@ use App\Application\Reporting\DTO\ReportSummary;
 use App\Application\Reporting\DTO\SavedReport;
 use App\Application\Reporting\DTO\SectionDefinition;
 use App\Application\Reporting\DTO\ShareView;
+use App\Application\Reporting\DTO\StoreFigure;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
+use App\Domain\Commerce\RevenueSource;
 use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\ReportWindow;
@@ -68,6 +70,8 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'needs_dimension' => $kind->needsDimension(),
                 'supports_comparison' => $kind->supportsComparison(),
                 'metric_cap' => $kind->metricCap(),
+                /* False for a store section, which names a revenue source instead of choosing metrics. */
+                'uses_metrics' => $kind->usesMetrics(),
                 /*
                  * Which metrics this shape will accept, so a builder cannot offer reach in a ranking and then be
                  * refused. The rule is the domain's; this publishes it.
@@ -90,6 +94,16 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'dimension' => $dimension->value,
                 'label' => $dimension->label(),
             ], Dimension::cases()),
+            /*
+             * Who may be named as the claimant of a store's revenue. `is_modelled` is published so a builder can keep
+             * an attributed figure out of a report written for a client — the server refuses it either way.
+             */
+            'revenue_sources' => array_map(static fn (RevenueSource $source): array => [
+                'source' => $source->value,
+                'label' => $source->label(),
+                'is_invoiced' => $source->isInvoiced(),
+                'is_modelled' => $source->isModelled(),
+            ], RevenueSource::cases()),
             'max_share_days' => ShareReport::MAX_DAYS,
         ];
     }
@@ -189,6 +203,7 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'metrics' => array_map(static fn (Metric $metric): string => $metric->value, $section->metrics),
                 'dimension' => $section->dimension?->value,
                 'row_limit' => $section->rowLimit,
+                'revenue_source' => $section->revenueSource?->value,
             ], $definition->sections),
             'created_by_name' => $report->createdByName,
             'updated_at' => $report->updatedAt->format(DateTimeImmutable::ATOM),
@@ -239,6 +254,19 @@ final readonly class ReportResource implements SnapshotSerialiser
             'is_empty' => $section->isEmpty,
             'caveats' => $section->caveats,
             'currency' => $section->currency,
+            /*
+             * Who is claiming the revenue, and the figures as the store read model published them. Absent for every
+             * kind but a store section.
+             */
+            'revenue_source' => $section->store?->revenueSource->value,
+            'revenue_source_label' => $section->store?->revenueSource->label(),
+            'store' => $section->store === null ? null : array_map(static fn (StoreFigure $figure): array => [
+                'key' => $figure->key,
+                'label' => $figure->label,
+                'kind' => $figure->kind,
+                'value' => $figure->value,
+                'currency' => $figure->currency,
+            ], $section->store->figures()),
             'totals' => $section->totals === null ? null : self::metricSet($section->totals),
             'series' => array_map(static fn (SeriesPoint $point): array => [
                 'date' => $point->date->format('Y-m-d'),

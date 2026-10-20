@@ -8,11 +8,14 @@ use App\Application\Analytics\Contract\AnalyticsReadModel;
 use App\Application\Analytics\DTO\BreakdownRow;
 use App\Application\Analytics\DTO\MetricSet;
 use App\Application\Analytics\DTO\SeriesPoint;
+use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
+use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Reporting\DTO\RenderedReport;
 use App\Application\Reporting\DTO\RenderedSection;
 use App\Application\Reporting\DTO\ReportDefinition;
 use App\Application\Reporting\DTO\SavedReport;
 use App\Application\Reporting\DTO\SectionDefinition;
+use App\Application\Reporting\DTO\StoreFigures;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Analytics\Metric;
@@ -47,6 +50,7 @@ final readonly class RenderReport
 {
     public function __construct(
         private AnalyticsReadModel $analytics,
+        private StoreAnalyticsReadModel $stores,
         private Clock $clock,
     ) {}
 
@@ -122,6 +126,10 @@ final readonly class RenderReport
     ): RenderedSection {
         $title = $section->title ?? $this->defaultTitle($section, $index);
         $caveats = $this->caveats($definition->comparison, $section);
+
+        if ($section->kind === SectionKind::Store) {
+            return $this->store($workspaceId, $definition, $section, $period, $title, $caveats);
+        }
 
         if ($section->kind === SectionKind::Trend) {
             $series = $this->analytics->series(
@@ -237,6 +245,73 @@ final readonly class RenderReport
     }
 
     /**
+     * What the client's stores sold, according to the one authority the section names.
+     *
+     * Read for the report's own client and never across clients: `ReportDefinition` refuses a store section without
+     * one, and the query is narrowed by it here as well, so a definition edited around the check still reads one
+     * client's orders. No comparison period — a store's earlier month is a different question with its own caveat.
+     *
+     * @param  list<string>  $caveats
+     */
+    private function store(
+        string $workspaceId,
+        ReportDefinition $definition,
+        SectionDefinition $section,
+        DateRange $period,
+        string $title,
+        array $caveats,
+    ): RenderedSection {
+        $source = $section->revenueSource;
+
+        if ($source === null || $definition->clientId === null) {
+            // Unreachable through the use cases, which validate first. Kept honest rather than assumed.
+            return new RenderedSection(
+                kind: $section->kind,
+                title: $title,
+                metrics: [],
+                source: MetricSource::Synced,
+                isEmpty: true,
+                caveats: $caveats,
+            );
+        }
+
+        $summary = $this->stores->summary(new StoreQuery(
+            workspaceId: $workspaceId,
+            revenueSource: $source,
+            from: $period->start,
+            until: $period->end,
+            visibleProjectIds: null,
+            clientId: $definition->clientId,
+        ));
+
+        $figures = new StoreFigures($source, $summary);
+
+        if ($source->isModelled()) {
+            $caveats[] = 'Attributed revenue is a model\'s output, not a record. It must not be presented to a client '
+                .'as actual.';
+        }
+
+        if ($summary->pendingOrders > 0) {
+            $caveats[] = sprintf(
+                '%d orders were placed and not yet paid for. They are not counted above — cash on delivery becomes '
+                .'revenue when it is collected.',
+                $summary->pendingOrders,
+            );
+        }
+
+        return new RenderedSection(
+            kind: $section->kind,
+            title: $title,
+            metrics: [],
+            source: $summary->source,
+            isEmpty: $figures->isEmpty(),
+            caveats: array_values(array_unique($caveats)),
+            currency: $summary->currency,
+            store: $figures,
+        );
+    }
+
+    /**
      * What this section cannot say.
      *
      * Assembled per section rather than once per report, because a caveat attached to the whole document is one
@@ -274,6 +349,10 @@ final readonly class RenderReport
     private function defaultTitle(SectionDefinition $section, int $index): string
     {
         $metric = $section->metrics[0] ?? null;
+
+        if ($section->kind === SectionKind::Store) {
+            return sprintf('Store figures — %s', $section->revenueSource?->label() ?? 'unnamed source');
+        }
 
         if ($metric === null) {
             return $section->kind->label();

@@ -198,6 +198,7 @@ final readonly class XlsxWriter implements ReportWorkbookWriter
         $columns = match ($section->kind) {
             SectionKind::Scorecard => $this->scorecard($sheet, $section, $line),
             SectionKind::Trend => $this->trend($sheet, $section, $line),
+            SectionKind::Store => $this->store($sheet, $section, $line),
             default => $this->breakdown($sheet, $section, $line),
         };
 
@@ -264,6 +265,36 @@ final readonly class XlsxWriter implements ReportWorkbookWriter
         }
 
         return 4;
+    }
+
+    /** @return int the number of columns written */
+    private function store(Worksheet $sheet, RenderedSection $section, int $line): int
+    {
+        $this->headings($sheet, $line, ['Figure', 'Value']);
+        $line++;
+
+        foreach ($section->store?->figures() ?? [] as $figure) {
+            $label = $figure->currency === null ? $figure->label : sprintf('%s (%s)', $figure->label, $figure->currency);
+            $sheet->setCellValueExplicit('A'.$line, $label, DataType::TYPE_STRING);
+
+            $major = $figure->major();
+
+            if ($major === null) {
+                /* The words, in the numeric column: visibly not a number, and refusing to be summed. */
+                $sheet->setCellValueExplicit('B'.$line, 'Not available', DataType::TYPE_STRING);
+            } else {
+                $sheet->setCellValue('B'.$line, $major);
+                $decimals = $figure->decimals();
+                $format = $decimals === 0 ? '#,##0' : '#,##0.'.str_repeat('0', $decimals);
+                $sheet->getStyle('B'.$line)->getNumberFormat()->setFormatCode(
+                    $figure->currency === null ? $format : sprintf('%s" %s"', $format, $figure->currency),
+                );
+            }
+
+            $line++;
+        }
+
+        return 2;
     }
 
     /** @return int the number of columns written */

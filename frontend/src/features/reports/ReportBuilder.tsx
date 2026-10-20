@@ -90,7 +90,14 @@ export function ReportBuilder({
   const [internalNote, setInternalNote] = useState(draft?.internal_note ?? '');
   const [sections, setSections] = useState<SectionDraft[]>(
     draft?.sections ?? [
-      { kind: 'scorecard', title: null, metrics: ['spend'], dimension: null, row_limit: null },
+      {
+        kind: 'scorecard',
+        title: null,
+        metrics: ['spend'],
+        dimension: null,
+        row_limit: null,
+        revenue_source: null,
+      },
     ],
   );
 
@@ -296,6 +303,7 @@ export function ReportBuilder({
                       metrics: ['spend'],
                       dimension: null,
                       row_limit: null,
+                      revenue_source: null,
                     },
                   ])
                 }
@@ -318,32 +326,41 @@ export function ReportBuilder({
                   <div className="flex items-start justify-between gap-2">
                     <ChoiceGroup label={t('reports.builder.shape')}>
                       <div className="flex flex-wrap gap-2">
-                        {kinds.map((entry) => (
-                          <Choice
-                            key={entry.kind}
-                            isSelected={section.kind === entry.kind}
-                            onSelect={() => {
-                              /*
-                               * Changing the shape drops metrics the new shape will not accept, rather than carrying
-                               * them over to be refused on save. Reach in a scorecard is fine; the same reach in a
-                               * ranking is not, and the form should not have to be told twice.
-                               */
-                              const keep = section.metrics.filter((metric) =>
-                                entry.metrics.includes(metric),
-                              );
+                        {kinds
+                          .filter((entry) => entry.kind !== 'store' || clientId !== null)
+                          .map((entry) => (
+                            <Choice
+                              key={entry.kind}
+                              isSelected={section.kind === entry.kind}
+                              onSelect={() => {
+                                /*
+                                 * Changing the shape drops metrics the new shape will not accept, rather than carrying
+                                 * them over to be refused on save. Reach in a scorecard is fine; the same reach in a
+                                 * ranking is not, and the form should not have to be told twice.
+                                 */
+                                const keep = section.metrics.filter((metric) =>
+                                  entry.metrics.includes(metric),
+                                );
 
-                              updateSection(index, {
-                                kind: entry.kind,
-                                metrics: keep.slice(0, entry.metric_cap),
-                                dimension: entry.needs_dimension
-                                  ? (section.dimension ?? 'provider')
-                                  : null,
-                              });
-                            }}
-                          >
-                            {entry.label}
-                          </Choice>
-                        ))}
+                                updateSection(index, {
+                                  kind: entry.kind,
+                                  metrics: keep.slice(0, entry.metric_cap),
+                                  dimension: entry.needs_dimension
+                                    ? (section.dimension ?? 'provider')
+                                    : null,
+                                  revenue_source: entry.uses_metrics
+                                    ? null
+                                    : (section.revenue_source ??
+                                      (vocabulary?.revenue_sources ?? []).find(
+                                        (source) => source.is_invoiced,
+                                      )?.source ??
+                                      null),
+                                });
+                              }}
+                            >
+                              {entry.label}
+                            </Choice>
+                          ))}
                       </div>
                     </ChoiceGroup>
 
@@ -364,41 +381,65 @@ export function ReportBuilder({
                     )}
                   </div>
 
-                  <ChoiceGroup
-                    label={t('reports.builder.metrics')}
-                    /* Spread rather than passed as undefined: `exactOptionalPropertyTypes` treats the two differently. */
-                    {...(kind === undefined
-                      ? {}
-                      : { hint: t('reports.builder.metricsHint', { cap: kind.metric_cap }) })}
-                  >
-                    <div className="flex flex-wrap gap-2">
-                      {allowed.map((metric) => {
-                        const isSelected = section.metrics.includes(metric);
+                  {kind?.uses_metrics === false ? (
+                    <ChoiceGroup
+                      label={t('reports.builder.revenueSource')}
+                      hint={t('reports.builder.revenueSourceHint')}
+                    >
+                      <div className="flex flex-wrap gap-2">
+                        {(vocabulary?.revenue_sources ?? [])
+                          /* A model's figure cannot go in a report a client will read; the server refuses it too. */
+                          .filter((entry) => !(audience === 'client_safe' && entry.is_modelled))
+                          .map((entry) => (
+                            <Choice
+                              key={entry.source}
+                              isSelected={section.revenue_source === entry.source}
+                              onSelect={() =>
+                                updateSection(index, { revenue_source: entry.source })
+                              }
+                            >
+                              {entry.label}
+                            </Choice>
+                          ))}
+                      </div>
+                    </ChoiceGroup>
+                  ) : (
+                    <ChoiceGroup
+                      label={t('reports.builder.metrics')}
+                      /* Spread rather than passed as undefined: `exactOptionalPropertyTypes` treats the two differently. */
+                      {...(kind === undefined
+                        ? {}
+                        : { hint: t('reports.builder.metricsHint', { cap: kind.metric_cap }) })}
+                    >
+                      <div className="flex flex-wrap gap-2">
+                        {allowed.map((metric) => {
+                          const isSelected = section.metrics.includes(metric);
 
-                        return (
-                          <Choice
-                            key={metric}
-                            isSelected={isSelected}
-                            /*
-                             * Disabled at the cap rather than silently dropping a choice. The cap is the shape's own,
-                             * published by the server: four lines on a trend is the measured limit where series
-                             * cross, and a table can carry more because position does the work.
-                             */
-                            disabled={!isSelected && atCap}
-                            onSelect={() =>
-                              updateSection(index, {
-                                metrics: isSelected
-                                  ? section.metrics.filter((entry) => entry !== metric)
-                                  : [...section.metrics, metric],
-                              })
-                            }
-                          >
-                            {metricsByValue.get(metric)?.label ?? metric}
-                          </Choice>
-                        );
-                      })}
-                    </div>
-                  </ChoiceGroup>
+                          return (
+                            <Choice
+                              key={metric}
+                              isSelected={isSelected}
+                              /*
+                               * Disabled at the cap rather than silently dropping a choice. The cap is the shape's own,
+                               * published by the server: four lines on a trend is the measured limit where series
+                               * cross, and a table can carry more because position does the work.
+                               */
+                              disabled={!isSelected && atCap}
+                              onSelect={() =>
+                                updateSection(index, {
+                                  metrics: isSelected
+                                    ? section.metrics.filter((entry) => entry !== metric)
+                                    : [...section.metrics, metric],
+                                })
+                              }
+                            >
+                              {metricsByValue.get(metric)?.label ?? metric}
+                            </Choice>
+                          );
+                        })}
+                      </div>
+                    </ChoiceGroup>
+                  )}
 
                   {kind?.needs_dimension !== true ? null : (
                     <ChoiceGroup label={t('reports.builder.groupBy')}>

@@ -270,3 +270,21 @@ client.
   different product and would need its own honesty rules about denominators.
 - **Branding on the shared page.** It carries the product mark and the report, not the agency's
   logo. A white-label surface is Phase 22's decision to make, with the client portal.
+
+
+## Store figures in a report
+
+A fifth section kind, `store`, reads what a client's stores sold according to **one named revenue authority**
+(`revenue_source`: Salla, Zid, Google Analytics, CRM, platform reported, entered by hand, or attributed).
+
+- **It is not an ad metric.** The figures come from orders through the store read model, in their own payload
+  (`store`), so a store's "revenue" and the platform's "revenue" are never one column or one key. A report that wants
+  two authorities has two sections; nothing adds them.
+- **One client.** A store section needs the report to name its client — an agency-wide report has no single store to
+  read — and the query is narrowed by that client again at render time.
+- **Net of refunds**, orders that recognise revenue only; orders placed and not yet paid are counted beside the total and
+  said in a caveat. No average order value over no orders: the figure is absent, not zero.
+- **Attributed revenue is a model's output.** It is refused in a report whose audience is `client_safe` (the same
+  disclosure the portal withholds), and allowed internally with a caveat that it must not be shown to a client as actual.
+- **Schema:** `report_sections.revenue_source`, with a CHECK that a `store` section names one and no other kind does.
+- Not yet: a revenue trend, revenue by source, a store comparison, top products.

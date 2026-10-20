@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { EChartsCoreOption } from 'echarts/core';
 import { formatChange, formatMetric, MISSING } from '@/shared/metrics';
 import { MetricCard } from '@/shared/ui/metric-card';
+import { formatMinor } from '@/shared/lib/format';
 import { ScrollRegion } from '@/shared/ui/scroll-region';
 import { DonutChart } from '@/shared/ui/viz';
 import {
@@ -196,6 +197,58 @@ export function ReportSectionView({ section, sparks }: ReportSectionViewProps) {
       })),
     };
   }, [section, hasComparison, locale, t]);
+
+  /*
+   * Store figures: one authority's claim about what a client's stores sold. Its own cards rather than metric cards,
+   * so a store's "revenue" can never be merged with — or mistaken for — the platform's.
+   */
+  if (section.kind === 'store' && section.store !== null) {
+    const figures = section.store;
+    const write = (figure: (typeof figures)[number]): string =>
+      figure.value === null
+        ? MISSING
+        : figure.kind === 'money' && figure.currency !== null
+          ? formatMinor(figure.value, figure.currency, locale)
+          : new Intl.NumberFormat(locale).format(figure.value);
+
+    return (
+      <ChartFrame
+        title={section.title}
+        caveats={section.caveats}
+        isEmpty={section.is_empty}
+        emptyTitle={t('reports.section.emptyTitle')}
+        emptyBody={t('reports.section.emptyBody')}
+        table={{
+          columns: [t('reports.table.metric'), t('reports.table.value')],
+          rows: figures.map((figure) => ({
+            key: figure.key,
+            label: figure.label,
+            cells: [write(figure)],
+          })),
+        }}
+      >
+        <p className="text-content-secondary mb-3 text-xs">
+          {t('reports.store.according', { source: section.revenue_source_label ?? '' })}
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {figures.map((figure) => (
+            <div key={figure.key} className="bg-surface-sunken flex flex-col gap-1 rounded-2xl p-4">
+              <span className="text-content-tertiary ds-overline">{figure.label}</span>
+              <span
+                className={
+                  figure.value === null
+                    ? 'text-content-tertiary text-xl'
+                    : 'ds-figure text-content text-2xl'
+                }
+              >
+                {write(figure)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </ChartFrame>
+    );
+  }
 
   /*
    * A scorecard is a row of figures rather than a chart, so it gets no `Chart` — `docs/DATA_VISUALISATION.md` is

@@ -96,6 +96,23 @@ final readonly class ReportCsv
             return $lines;
         }
 
+        if ($section->kind === SectionKind::Store && $section->store !== null) {
+            $lines[] = self::row(['Revenue according to', $section->store->revenueSource->label()]);
+            $lines[] = self::row(['Figure', 'Value']);
+
+            foreach ($section->store->figures() as $figure) {
+                $lines[] = self::row([
+                    $figure->currency === null ? $figure->label : sprintf('%s (%s)', $figure->label, $figure->currency),
+                    /* Said rather than blank: an empty cell is summed as zero by whoever opens the file next. */
+                    $figure->major() === null
+                        ? 'Not available'
+                        : number_format((float) $figure->major(), $figure->decimals(), '.', ''),
+                ]);
+            }
+
+            return $lines;
+        }
+
         if ($section->kind === SectionKind::Scorecard && $section->totals !== null) {
             $lines[] = self::row(['Metric', 'Value', 'Comparison', 'Change']);
 

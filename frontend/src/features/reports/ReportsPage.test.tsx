@@ -130,6 +130,7 @@ function vocabulary(): ReportVocabulary {
         needs_dimension: false,
         supports_comparison: true,
         metric_cap: 6,
+        uses_metrics: true,
         metrics: ['spend', 'clicks', 'reach'],
       },
       {
@@ -138,6 +139,7 @@ function vocabulary(): ReportVocabulary {
         needs_dimension: true,
         supports_comparison: false,
         metric_cap: 3,
+        uses_metrics: true,
         /* Reach is absent: its rows do not add up, so the server will not accept it here. */
         metrics: ['spend', 'clicks'],
       },
@@ -169,6 +171,10 @@ function vocabulary(): ReportVocabulary {
       },
     ],
     dimensions: [{ dimension: 'provider', label: 'Platform' }],
+    revenue_sources: [
+      { source: 'salla', label: 'Salla', is_invoiced: true, is_modelled: false },
+      { source: 'attributed', label: 'Attributed', is_invoiced: false, is_modelled: true },
+    ],
     max_share_days: 90,
   };
 }

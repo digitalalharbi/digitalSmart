@@ -9,6 +9,7 @@ use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\Exception\InvalidReportDefinition;
 use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\ReportWindow;
+use App\Domain\Reporting\SectionKind;
 use DateTimeImmutable;
 
 /** A report as somebody defined it. */
@@ -47,6 +48,18 @@ final readonly class ReportDefinition
 
         foreach ($this->sections as $section) {
             $section->assertValid();
+
+            if ($section->kind !== SectionKind::Store) {
+                continue;
+            }
+
+            if ($this->clientId === null) {
+                throw InvalidReportDefinition::storeNeedsClient();
+            }
+
+            if ($this->audience === ReportAudience::ClientSafe && $section->revenueSource?->isModelled() === true) {
+                throw InvalidReportDefinition::modelledNotClientSafe();
+            }
         }
     }
 }

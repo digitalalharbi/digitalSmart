@@ -15,6 +15,7 @@ use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
+use App\Domain\Commerce\RevenueSource;
 use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\ReportWindow;
@@ -310,6 +311,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                 ),
                 'dimension' => $section->dimension?->value,
                 'row_limit' => $section->rowLimit,
+                'revenue_source' => $section->revenueSource?->value,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -354,6 +356,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                 rowLimit: isset($values['row_limit']) && is_numeric($values['row_limit'])
                     ? (int) $values['row_limit']
                     : null,
+                revenueSource: RevenueSource::tryFrom((string) ($values['revenue_source'] ?? '')),
             );
         }
 

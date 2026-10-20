@@ -47,6 +47,8 @@ final readonly class RenderedSection
         public array $rows = [],
         public ?Dimension $dimension = null,
         public ?string $currency = null,
+        /** Present for a store section, which reads orders rather than ad facts. */
+        public ?StoreFigures $store = null,
     ) {}
 
     public function requiresLabel(): bool
