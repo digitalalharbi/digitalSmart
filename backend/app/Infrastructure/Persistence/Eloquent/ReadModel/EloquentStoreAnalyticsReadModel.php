@@ -53,12 +53,13 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
     {
         $counted = $this->scope($query)->whereIn('o.payment_state', self::REVENUE_STATES);
 
-        /** @var object{orders: int|string|null, revenue: int|string|null, refunded: int|string|null, customers: int|string|null, attributed_orders: int|string|null, attributed_revenue: int|string|null}|null $totals */
+        /** @var object{orders: int|string|null, revenue: int|string|null, refunded: int|string|null, customers: int|string|null, refunded_orders: int|string|null, attributed_orders: int|string|null, attributed_revenue: int|string|null}|null $totals */
         $totals = (clone $counted)->selectRaw(
             'count(*) as orders, '
             .'coalesce(sum(o.total_minor), 0) as revenue, '
             .'coalesce(sum(o.refunded_minor), 0) as refunded, '
             .'count(distinct o.store_customer_id) as customers, '
+            .'count(*) filter (where o.refunded_minor > 0) as refunded_orders, '
             /*
              * Attributed means "carried something", which is a weaker claim than "names a campaign" and
              * the right one for a coverage figure: it answers "how much of this total can be traced to
@@ -98,6 +99,7 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
             pendingRevenueMinor: (int) ($pending->revenue ?? 0),
             attributedOrders: (int) ($totals->attributed_orders ?? 0),
             attributedRevenueMinor: (int) ($totals->attributed_revenue ?? 0),
+            refundedOrders: (int) ($totals->refunded_orders ?? 0),
         );
     }
 
@@ -660,7 +662,7 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
     {
         if ($source === '' && $medium === '') {
             // The honest bucket, named rather than blank.
-            return 'Unattributed';
+            return RevenueBreakdownRow::UNATTRIBUTED;
         }
 
         return $medium === '' ? $source : $source.' / '.$medium;

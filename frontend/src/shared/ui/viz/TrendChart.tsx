@@ -270,6 +270,33 @@ export function TrendChart({
             )}
           </svg>
 
+          {/*
+           * A reading with a gap on both sides has no line to draw, and an invisible reading looks like a missing
+           * one. A dot, in HTML rather than SVG because the plot is stretched and a circle would come out an oval.
+           */}
+          {drawn.flatMap(({ s, runs }) =>
+            runs
+              .filter((points) => points.length === 1)
+              .map((points, index) => {
+                const [px, py] = points[0] as [number, number];
+
+                return (
+                  <span
+                    key={`${s.key}-dot-${String(index)}-${String(px)}`}
+                    aria-hidden
+                    className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
+                    style={{
+                      width: 8,
+                      height: 8,
+                      left: `${String((px / W) * 100)}%`,
+                      top: `${String((py / H) * 100)}%`,
+                      backgroundColor: s.colour,
+                    }}
+                  />
+                );
+              }),
+          )}
+
           {active === null
             ? null
             : series.map((s) => {

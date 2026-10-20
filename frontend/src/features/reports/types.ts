@@ -129,6 +129,8 @@ export type RenderedSection = {
   revenue_source?: string | null;
   revenue_source_label?: string | null;
   store?: StoreFigure[] | null;
+  /** The trend, stores, products, channels, customers and refunds behind a store section's figures. */
+  store_detail?: StoreDetail | null;
   /** Aggregates of the client's recorded leads, for a lead section. Never a record. */
   lead?: LeadAggregates | null;
 };
@@ -172,6 +174,43 @@ export type LeadAggregates = {
     /** Leads per bucket: under 5 min, 5–15, 15–60, 1–4 h, 4 h and over. */
     buckets: number[];
   };
+};
+
+/**
+ * What sits behind a store section's headline figures, for the one authority it names.
+ *
+ * Money is in minor units of `currency`. Nothing here identifies a person, an order or a store record: a store is its
+ * own name, a product is as it was sold, a channel is as the orders carried it. A day that is absent from `daily` had
+ * no orders and is a gap, not a zero; a share or a rate is null where it has nothing to divide by.
+ */
+export type StoreDetail = {
+  currency: string;
+  daily: { date: string; orders: number; net_revenue: number }[];
+  stores: {
+    name: string;
+    orders: number;
+    net_revenue: number;
+    refunded: number;
+    aov: number | null;
+    share: number | null;
+  }[];
+  products: { label: string; orders: number; units: number; revenue: number }[];
+  channels: {
+    label: string | null;
+    is_unattributed: boolean;
+    orders: number;
+    net_revenue: number;
+  }[];
+  attribution_coverage: number | null;
+  customers: {
+    new: number;
+    returning: number;
+    unknown: number;
+    new_share: number | null;
+    unavailable_reason: string | null;
+  } | null;
+  refunds: { amount: number; orders: number; rate: number | null; previous_rate: number | null };
+  previous: { orders: number; net_revenue: number; aov: number | null } | null;
 };
 
 /** One store figure. `money` is in minor units of its `currency`; null means there is none to show. */

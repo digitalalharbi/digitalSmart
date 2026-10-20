@@ -17,6 +17,7 @@ import {
   seriesColour,
 } from '@/shared/ui/chart';
 import { LeadSectionView } from './LeadSectionView';
+import { StoreDetailView } from './StoreDetailView';
 import type { RenderedSection } from './types';
 
 /** Metrics whose parts sum to a whole across platforms. */
@@ -251,6 +252,13 @@ export function ReportSectionView({ section, sparks }: ReportSectionViewProps) {
             </div>
           ))}
         </div>
+        {section.store_detail == null ? null : (
+          <StoreDetailView
+            detail={section.store_detail}
+            orders={figures.find((figure) => figure.key === 'orders')?.value ?? 0}
+            authority={section.revenue_source_label ?? ''}
+          />
+        )}
       </ChartFrame>
     );
   }

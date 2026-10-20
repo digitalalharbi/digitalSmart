@@ -36,6 +36,8 @@ final readonly class StoreRevenueSummary
         /** How many of the counted orders carried any attribution evidence at all. */
         public int $attributedOrders,
         public int $attributedRevenueMinor,
+        /** How many of the counted orders have had any refund against them. A refund is not a cancellation. */
+        public int $refundedOrders = 0,
     ) {}
 
     /**
@@ -48,6 +50,17 @@ final readonly class StoreRevenueSummary
     public function averageOrderValueMinor(): ?int
     {
         return $this->orders > 0 ? intdiv($this->netRevenueMinor, $this->orders) : null;
+    }
+
+    /**
+     * Refunded money as a share of gross revenue, 0–100, or null.
+     *
+     * Gross, because that is what the refunds were taken from. Null rather than zero where nothing was sold: a rate
+     * over no sales is not a clean record.
+     */
+    public function refundRate(): ?float
+    {
+        return $this->revenueMinor > 0 ? round(($this->refundedMinor / $this->revenueMinor) * 100, 1) : null;
     }
 
     /**

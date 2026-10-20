@@ -3126,6 +3126,55 @@
         "fasterResponse": "Answer leads faster",
         "fasterResponseEvidence": "Median first contact is {{duration}}; {{unanswered}} leads have no recorded contact"
       }
+    },
+    "commerce": {
+      "revenueTrend": "Net revenue by day — {{source}}",
+      "netRevenue": "Net revenue",
+      "ordersTrend": "Orders by day",
+      "orders": "Orders",
+      "gapNote": "A day with no orders is a gap in the line, not a zero.",
+      "stores": "Stores",
+      "ordersCount_one": "{{count}} order",
+      "ordersCount_other": "{{count}} orders",
+      "ordersCount_zero": "{{count}} orders",
+      "ordersCount_two": "{{count}} orders",
+      "ordersCount_few": "{{count}} orders",
+      "ordersCount_many": "{{count}} orders",
+      "aovShort": "average {{value}}",
+      "refundedShort": "{{value}} refunded",
+      "channels": "Where the orders came from",
+      "unattributed": "Not traced",
+      "traced": "traced",
+      "channelsNote": "What each order itself carried — not the platforms' own claims, and not added to them.",
+      "products": "Products sold",
+      "productsNote": "As sold, before refunds, which are recorded against orders and not against products.",
+      "customers": "New and returning customers",
+      "newCustomers": "New",
+      "returningCustomers": "Returning",
+      "unknownCustomers": "Before this store was connected",
+      "customersCaption": "customers",
+      "refunds": "Refunds",
+      "refundAmount": "Refunded",
+      "refundOrders": "Orders with a refund",
+      "refundRate": "Refunded, of gross sales",
+      "refundMoved": "The refund rate is {{points}} points higher than in the earlier period.",
+      "refundNote": "A refund is money returned on an order, not an order that was cancelled.",
+      "insightsLabel": "What stands out",
+      "advice": "Worth acting on",
+      "insight": {
+        "strongestDay": "Strongest day: {{date}}.",
+        "ordersUp": "Orders are up {{percent}}% on the earlier period.",
+        "ordersDown": "Orders are down {{percent}}% on the earlier period.",
+        "refundsUp": "The refund rate rose {{points}} points.",
+        "topStore": "{{store}} brings {{share}}% of revenue."
+      },
+      "adviceText": {
+        "reviewRefunds": "Review what is being refunded",
+        "reviewRefundsEvidence": "Refund rate went from {{from}}% to {{to}}%",
+        "focusStore": "Look at what {{store}} does differently",
+        "focusStoreEvidence": "Its average order is {{percent}}% above the stores' average"
+      },
+      "unitsLabel": "sold"
     }
   },
   "sharedReport": {

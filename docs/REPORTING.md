@@ -308,3 +308,17 @@ name) is dropped and routes are folded to one row each.
   cannot widen it. No comparison period: a lead's outcome keeps moving after the period closes.
 - Carried through snapshots, shared links, CSV, workbook and deck like the other kinds. Migration only widens the kind
   check and lets a `lead` section carry no metrics.
+
+
+### What sits behind a store section's figures
+
+The section's payload carries a second object, `store_detail`, for the same authority and client: daily net revenue and
+orders (days without orders are absent — a gap, because this section cannot tell "no orders" from "not synced"), the
+client's stores (only with two or more, in one currency), products as sold, channels as the orders carried them (the
+bucket with no source and no medium is its own *not traced* row; the traced share is worked out from the same rows),
+new/returning/unclassified customer counts, refunds (amount, orders with a refund, rate against **gross** sales, and the
+earlier period's rate when the periods are comparable) and the comparison period's orders and net revenue.
+
+Nothing in it can name a person or lead back to a record: no store id, provider id, customer, order or contact — a store
+is its own name, a product is as it was sold. There is deliberately no conversion rate and no funnel: the report holds no
+store sessions, and ad clicks are not a denominator for a store's orders.

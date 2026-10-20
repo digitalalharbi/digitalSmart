@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Reporting\DTO;
 
+use App\Application\Commerce\DTO\CustomerMix;
+use App\Application\Commerce\DTO\DailyRevenuePoint;
+use App\Application\Commerce\DTO\RevenueBreakdownRow;
 use App\Application\Commerce\DTO\StoreRevenueSummary;
+use App\Application\Commerce\DTO\StoreRollupRow;
 use App\Domain\Commerce\RevenueSource;
 
 /**
@@ -19,6 +23,22 @@ final readonly class StoreFigures
     public function __construct(
         public RevenueSource $revenueSource,
         public StoreRevenueSummary $summary,
+        /**
+         * The same authority's figures for the comparison period, or null.
+         *
+         * Null when no comparison was asked for or the periods cannot be compared — never a guess. It is what
+         * "refund rate rose" and "orders improved" are read against, so without it neither is said.
+         */
+        public ?StoreRevenueSummary $previous = null,
+        /** @var list<DailyRevenuePoint> days that had orders; a day without any is a gap, not a zero */
+        public array $daily = [],
+        /** @var list<StoreRollupRow> only when the client has more than one store, all in one currency */
+        public array $stores = [],
+        /** @var list<RevenueBreakdownRow> as sold, by name, before refunds */
+        public array $products = [],
+        /** @var list<RevenueBreakdownRow> what the orders carried, with the unattributed row */
+        public array $channels = [],
+        public ?CustomerMix $customerMix = null,
     ) {}
 
     /** @return list<StoreFigure> */
