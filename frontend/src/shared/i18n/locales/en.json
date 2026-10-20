@@ -1949,7 +1949,8 @@
       "revenue": "Net revenue",
       "unattributed": "Unattributed",
       "evidence": "{{evidence}} · {{confidence}}%",
-      "empty": "Nothing to show for this period."
+      "empty": "Nothing to show for this period.",
+      "showTable": "Table ({{count}})"
     },
     "chart": {
       "label": "Net revenue by day from {{from}} to {{until}}, totalling {{total}}.",

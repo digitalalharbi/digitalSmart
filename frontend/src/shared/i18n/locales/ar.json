@@ -2098,7 +2098,8 @@
       "revenue": "الإيراد الصافي",
       "unattributed": "غير منسوب",
       "evidence": "{{evidence}} · {{confidence}}%",
-      "empty": "لا شيء لعرضه في هذه الفترة."
+      "empty": "لا شيء لعرضه في هذه الفترة.",
+      "showTable": "الجدول ({{count}})"
     },
     "chart": {
       "label": "الإيراد الصافي يوميًا من {{from}} إلى {{until}}، بإجمالي {{total}}.",
