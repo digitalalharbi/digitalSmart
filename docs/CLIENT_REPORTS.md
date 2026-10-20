@@ -23,8 +23,8 @@ Status vocabulary as in `CLAUDE.md`. `EXISTS` means it was built before this pha
 | 13–14 | Insight and recommendation cards | NOT_STARTED | Reports agent findings exist; client-safe wording and evidence cards do not |
 | 15 | Data-quality status (Complete / Partial / Estimated / Awaiting) | PARTIAL | `SourceBadge` per section; plain-language mapping not done |
 | 16 | Live vs frozen badge | EXISTS | `mode` badge on every report |
-| 17 | Share cards: recipient, status, views, expiry, live/frozen; copy, revoke, replace | PARTIAL | `SharePanel` has them as rows; card layout and *Replace* not done |
-| 18 | WhatsApp share (name, period, link; no figures) | NOT_STARTED | `wa.me` link with a fixed client-safe message |
+| 17 | Share cards: recipient, status, views, expiry, live/frozen; copy, revoke, replace | PARTIAL | Cards with view and expiry chips, turn-off with a reason; *Replace* (create new + turn off old) not one action yet |
+| 18 | WhatsApp share (name, period, link; no figures) | IMPLEMENTED_NOT_VERIFIED | `wa.me` link beside the freshly created link; unit test asserts the message carries no figure; CI pending |
 | 19 | Link preview (OpenGraph) without figures | NOT_STARTED | SPA-served page; needs a server-rendered preview route |
 | 20–21 | Mobile and Arabic RTL | PARTIAL | Overflow verified for the app routes; the shared page and the new hero not yet measured |
 | 22–23 | Visual builder with presets | NOT_STARTED | `ReportBuilder` is still a form |

@@ -1,4 +1,4 @@
-import { Copy, Link2, Snowflake, TriangleAlert } from 'lucide-react';
+import { Clock, Copy, Eye, Link2, MessageCircle, Snowflake, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/shared/ui/alert';
@@ -24,6 +24,8 @@ type SharePanelProps = {
   onShare: (input: { days: number; snapshotId: string | null; recipientLabel: string }) => void;
   onRevoke: (shareId: string, reason: string) => void;
   onTakeSnapshot: (label: string) => void;
+  /** What the WhatsApp message names. Words only: the message carries no figure and no figure travels in the link. */
+  context?: { client: string | null; title: string; period: string };
 };
 
 /**
@@ -54,8 +56,9 @@ export function SharePanel({
   onShare,
   onRevoke,
   onTakeSnapshot,
+  context,
 }: SharePanelProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [days, setDays] = useState(7);
   const [snapshotId, setSnapshotId] = useState<string | null>(null);
   const [recipient, setRecipient] = useState('');
@@ -98,6 +101,24 @@ export function SharePanel({
                 <Copy aria-hidden className="me-1 size-3.5" />
                 {t('reports.share.copy')}
               </Button>
+              {context === undefined ? null : (
+                <a
+                  className="text-content-brand ms-3 inline-flex items-center gap-1.5 text-sm hover:underline"
+                  href={`https://wa.me/?text=${encodeURIComponent(
+                    t('reports.share.whatsappMessage', {
+                      client: context.client ?? '',
+                      title: context.title,
+                      period: context.period,
+                      link: `${window.location.origin}/shared-reports/${freshToken}`,
+                    }),
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle aria-hidden className="size-3.5" />
+                  {t('reports.share.whatsapp')}
+                </a>
+              )}
             </span>
           </Alert>
         )}
@@ -197,12 +218,18 @@ export function SharePanel({
                     )}
                   </div>
 
-                  <p className="text-content-tertiary text-xs">
-                    {t('reports.share.meta', {
-                      expires: new Date(share.expires_at).toLocaleDateString(),
-                      views: share.view_count,
-                    })}
-                  </p>
+                  <div className="text-content-secondary flex flex-wrap items-center gap-2 text-xs">
+                    <span className="bg-surface-sunken inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium">
+                      <Eye aria-hidden className="size-3.5" />
+                      <span className="ds-numeric">{share.view_count}</span>
+                      <span className="sr-only">{t('reports.share.viewsLabel')}</span>
+                    </span>
+                    <span className="bg-surface-sunken inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium">
+                      <Clock aria-hidden className="size-3.5" />
+                      <span className="sr-only">{t('reports.share.expiresLabel')} </span>
+                      {new Date(share.expires_at).toLocaleDateString(i18n.language)}
+                    </span>
+                  </div>
 
                   {share.revoked_reason === null ? null : (
                     <p className="text-content-tertiary text-xs">
