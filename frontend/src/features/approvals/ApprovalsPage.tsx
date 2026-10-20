@@ -240,8 +240,8 @@ export function ApprovalsPage() {
                 <ProgressRing
                   value={rate === null ? 0 : rate * 100}
                   tone={key === 'carriedOut' && rate !== null && rate < 0.8 ? 'watch' : 'good'}
-                  size={52}
-                  centre={rate === null ? '—' : formatRate(rate, locale)}
+                  size={64}
+                  centre={rate === null ? '—' : `${Math.round(rate * 100)}%`}
                   label={t(`approvals.rate.${key}`)}
                 />
                 <span className="text-content-secondary text-sm">{t(`approvals.rate.${key}`)}</span>
