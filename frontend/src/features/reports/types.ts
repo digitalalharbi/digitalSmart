@@ -28,7 +28,7 @@ export type ComparisonModeValue = 'none' | 'previous_period' | 'same_period_last
 
 export type ReportAudienceValue = 'internal' | 'client_safe';
 
-export type SectionKindValue = 'scorecard' | 'trend' | 'breakdown' | 'table' | 'store';
+export type SectionKindValue = 'scorecard' | 'trend' | 'breakdown' | 'table' | 'store' | 'lead';
 
 export type RenderModeValue = 'live' | 'snapshot';
 
@@ -129,6 +129,49 @@ export type RenderedSection = {
   revenue_source?: string | null;
   revenue_source_label?: string | null;
   store?: StoreFigure[] | null;
+  /** Aggregates of the client's recorded leads, for a lead section. Never a record. */
+  lead?: LeadAggregates | null;
+};
+
+/**
+ * A client's recorded leads, as counts and rates only.
+ *
+ * There is no field here that could hold a name, a contact point, a note or an owner, and the server does not send one.
+ * A rate is null when it has nothing to divide by — that is "no figure", never zero.
+ */
+export type LeadAggregates = {
+  total: number;
+  reached: number;
+  qualified: number;
+  disqualified: number;
+  won: number;
+  lost: number;
+  open: number;
+  qualification_rate: number | null;
+  win_rate: number | null;
+  stages: Record<'new' | 'contacted' | 'qualified' | 'disqualified' | 'won' | 'lost', number>;
+  sources: {
+    kind: string;
+    label: string;
+    total: number;
+    qualified: number;
+    is_measured: boolean;
+  }[];
+  campaigns: {
+    label: string | null;
+    is_unattributed: boolean;
+    total: number;
+    qualified: number;
+    won: number;
+    closed: number;
+  }[];
+  response: {
+    measured: number;
+    unanswered: number;
+    median_seconds: number | null;
+    /** Leads per bucket: under 5 min, 5–15, 15–60, 1–4 h, 4 h and over. */
+    buckets: number[];
+  };
 };
 
 /** One store figure. `money` is in minor units of its `currency`; null means there is none to show. */

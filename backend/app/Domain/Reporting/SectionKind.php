@@ -39,6 +39,15 @@ enum SectionKind: string
      */
     case Store = 'store';
 
+    /**
+     * How a client's recorded leads turned out: counts by stage, route and campaign, and how fast they were answered.
+     *
+     * Aggregates only. A lead is a person, so the section carries no name, contact point, note or message — nothing a
+     * reader could use to find one. It reads the leads table, not the ad platforms' own `leads` metric, and says so:
+     * "leads the platform reported" and "leads this client recorded" are different claims.
+     */
+    case Lead = 'lead';
+
     public function needsDimension(): bool
     {
         return $this === self::Breakdown || $this === self::Table;
@@ -47,7 +56,7 @@ enum SectionKind: string
     /** Whether the section carries ad metrics at all. A store section carries a revenue authority instead. */
     public function usesMetrics(): bool
     {
-        return $this !== self::Store;
+        return $this !== self::Store && $this !== self::Lead;
     }
 
     /**
@@ -75,7 +84,7 @@ enum SectionKind: string
             self::Trend => 4,
             self::Breakdown => 3,
             self::Table => 8,
-            self::Store => 0,
+            self::Store, self::Lead => 0,
         };
     }
 
@@ -87,6 +96,7 @@ enum SectionKind: string
             self::Breakdown => 'A ranking',
             self::Table => 'A table',
             self::Store => 'Store figures',
+            self::Lead => 'Lead figures',
         };
     }
 
@@ -99,7 +109,7 @@ enum SectionKind: string
      */
     public function accepts(Metric $metric): bool
     {
-        if ($this === self::Store) {
+        if ($this === self::Store || $this === self::Lead) {
             return false;
         }
 

@@ -49,6 +49,8 @@ final readonly class RenderedSection
         public ?string $currency = null,
         /** Present for a store section, which reads orders rather than ad facts. */
         public ?StoreFigures $store = null,
+        /** Present for a lead section: aggregates of the client's recorded leads, never a record. */
+        public ?LeadFigures $lead = null,
     ) {}
 
     public function requiresLabel(): bool

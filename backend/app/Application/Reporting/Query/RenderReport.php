@@ -10,6 +10,8 @@ use App\Application\Analytics\DTO\MetricSet;
 use App\Application\Analytics\DTO\SeriesPoint;
 use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
 use App\Application\Commerce\DTO\StoreQuery;
+use App\Application\Leads\Contract\LeadReadModel;
+use App\Application\Reporting\DTO\LeadFigures;
 use App\Application\Reporting\DTO\RenderedReport;
 use App\Application\Reporting\DTO\RenderedSection;
 use App\Application\Reporting\DTO\ReportDefinition;
@@ -51,6 +53,7 @@ final readonly class RenderReport
     public function __construct(
         private AnalyticsReadModel $analytics,
         private StoreAnalyticsReadModel $stores,
+        private LeadReadModel $leads,
         private Clock $clock,
     ) {}
 
@@ -126,6 +129,10 @@ final readonly class RenderReport
     ): RenderedSection {
         $title = $section->title ?? $this->defaultTitle($section, $index);
         $caveats = $this->caveats($definition->comparison, $section);
+
+        if ($section->kind === SectionKind::Lead) {
+            return $this->lead($workspaceId, $definition, $section, $period, $title, $caveats);
+        }
 
         if ($section->kind === SectionKind::Store) {
             return $this->store($workspaceId, $definition, $section, $period, $title, $caveats);
@@ -245,6 +252,76 @@ final readonly class RenderReport
     }
 
     /**
+     * How the client's recorded leads turned out.
+     *
+     * Aggregates only, read for the report's own client and never across clients (`ReportDefinition` refuses a lead
+     * section without one, and the query is narrowed by it again here). Nothing about an individual lead is read into
+     * the figures. No comparison period: a lead's outcome keeps changing after the period closes, so an earlier
+     * month's rate is not a settled number to compare with.
+     *
+     * @param  list<string>  $caveats
+     */
+    private function lead(
+        string $workspaceId,
+        ReportDefinition $definition,
+        SectionDefinition $section,
+        DateRange $period,
+        string $title,
+        array $caveats,
+    ): RenderedSection {
+        if ($definition->clientId === null) {
+            return new RenderedSection(
+                kind: $section->kind,
+                title: $title,
+                metrics: [],
+                source: MetricSource::Synced,
+                isEmpty: true,
+                caveats: $caveats,
+            );
+        }
+
+        $from = $period->start;
+        $until = $period->end->setTime(23, 59, 59);
+        $clientId = $definition->clientId;
+
+        $figures = new LeadFigures(
+            funnel: $this->leads->funnel($workspaceId, null, $clientId, $from, $until),
+            sources: $this->leads->bySource($workspaceId, null, $clientId, $from, $until),
+            campaigns: $this->leads->byCampaign($workspaceId, null, $clientId, $from, $until),
+            response: $this->leads->responseTime($workspaceId, null, $clientId, $from, $until),
+        );
+
+        $caveats[] = 'These are the leads recorded for this client, not the ad platforms\' own lead counts. A lead is not '
+            .'yet a qualified lead, and a qualified lead is not a sale.';
+        $caveats[] = 'Where a lead stands keeps changing after the period closes, so the qualified and won counts for '
+            .'recent weeks can still rise.';
+
+        foreach ($figures->sources as $row) {
+            if (! $row->isMeasured() && $row->total > 0) {
+                $caveats[] = 'Some leads were entered by hand or imported. They are counted, but nothing says where they came from.';
+                break;
+            }
+        }
+
+        if ($figures->response->unanswered > 0) {
+            $caveats[] = sprintf(
+                '%d leads have no recorded first contact. They are left out of the response times, not counted as slow.',
+                $figures->response->unanswered,
+            );
+        }
+
+        return new RenderedSection(
+            kind: $section->kind,
+            title: $title,
+            metrics: [],
+            source: MetricSource::Synced,
+            isEmpty: $figures->isEmpty(),
+            caveats: array_values(array_unique($caveats)),
+            lead: $figures,
+        );
+    }
+
+    /**
      * What the client's stores sold, according to the one authority the section names.
      *
      * Read for the report's own client and never across clients: `ReportDefinition` refuses a store section without
@@ -349,6 +426,10 @@ final readonly class RenderReport
     private function defaultTitle(SectionDefinition $section, int $index): string
     {
         $metric = $section->metrics[0] ?? null;
+
+        if ($section->kind === SectionKind::Lead) {
+            return 'Leads';
+        }
 
         if ($section->kind === SectionKind::Store) {
             return sprintf('Store figures — %s', $section->revenueSource?->label() ?? 'unnamed source');

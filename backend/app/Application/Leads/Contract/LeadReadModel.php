@@ -6,6 +6,7 @@ namespace App\Application\Leads\Contract;
 
 use App\Application\Leads\DTO\LeadBreakdownRow;
 use App\Application\Leads\DTO\LeadFilter;
+use App\Application\Leads\DTO\LeadResponseTime;
 use App\Application\Leads\DTO\LeadSourceRow;
 use App\Domain\Leads\LeadFunnel;
 use DateTimeImmutable;
@@ -60,4 +61,20 @@ interface LeadReadModel
         DateTimeImmutable $until,
         ?LeadFilter $filter = null,
     ): array;
+
+    /**
+     * How fast the period's leads were first answered.
+     *
+     * Leads with no recorded first contact are counted as unanswered and kept out of the median and the buckets.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     */
+    public function responseTime(
+        string $workspaceId,
+        ?array $visibleProjectIds,
+        ?string $clientId,
+        DateTimeImmutable $from,
+        DateTimeImmutable $until,
+        ?LeadFilter $filter = null,
+    ): LeadResponseTime;
 }

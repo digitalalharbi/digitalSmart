@@ -16,6 +16,7 @@ import {
   readChartPalette,
   seriesColour,
 } from '@/shared/ui/chart';
+import { LeadSectionView } from './LeadSectionView';
 import type { RenderedSection } from './types';
 
 /** Metrics whose parts sum to a whole across platforms. */
@@ -197,6 +198,10 @@ export function ReportSectionView({ section, sparks }: ReportSectionViewProps) {
       })),
     };
   }, [section, hasComparison, locale, t]);
+
+  if (section.kind === 'lead') {
+    return <LeadSectionView section={section} />;
+  }
 
   /*
    * Store figures: one authority's claim about what a client's stores sold. Its own cards rather than metric cards,

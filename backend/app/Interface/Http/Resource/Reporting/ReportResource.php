@@ -10,6 +10,7 @@ use App\Application\Analytics\DTO\MetricValue;
 use App\Application\Analytics\DTO\SeriesPoint;
 use App\Application\Reporting\Command\ShareReport;
 use App\Application\Reporting\Contract\SnapshotSerialiser;
+use App\Application\Reporting\DTO\LeadFigures;
 use App\Application\Reporting\DTO\RenderedReport;
 use App\Application\Reporting\DTO\RenderedSection;
 use App\Application\Reporting\DTO\ReportSummary;
@@ -267,6 +268,7 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'value' => $figure->value,
                 'currency' => $figure->currency,
             ], $section->store->figures()),
+            'lead' => $section->lead === null ? null : self::lead($section->lead),
             'totals' => $section->totals === null ? null : self::metricSet($section->totals),
             'series' => array_map(static fn (SeriesPoint $point): array => [
                 'date' => $point->date->format('Y-m-d'),
@@ -279,6 +281,87 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'metrics' => self::metricSet($row->metrics),
             ], $section->rows),
         ];
+    }
+
+    /**
+     * Lead aggregates, and only aggregates.
+     *
+     * Every key is a count, a rate or a label this product wrote. Nothing a person typed reaches it except a campaign
+     * name, which is the advertiser's own and already appears in the ad sections. The fields are listed one by one so a
+     * new column on the leads table cannot start travelling by accident.
+     *
+     * @return array<string, mixed>
+     */
+    private static function lead(LeadFigures $lead): array
+    {
+        $funnel = $lead->funnel;
+        $named = array_values(array_filter($lead->campaigns, static fn ($row): bool => ! $row->isUnattributed()));
+        $rest = array_values(array_filter($lead->campaigns, static fn ($row): bool => $row->isUnattributed()));
+
+        return [
+            'total' => $funnel->total,
+            'reached' => $funnel->reached,
+            'qualified' => $funnel->qualified,
+            'disqualified' => $funnel->disqualified,
+            'won' => $funnel->won,
+            'lost' => $funnel->lost,
+            'open' => $funnel->open,
+            'qualification_rate' => $funnel->qualificationRate(),
+            'win_rate' => $funnel->winRate(),
+            'stages' => $lead->stages(),
+            'sources' => array_map(static fn ($row): array => [
+                'kind' => $row->sourceKind->value,
+                'label' => $row->sourceKind->label(),
+                'total' => $row->total,
+                'qualified' => $row->qualified,
+                'is_measured' => $row->isMeasured(),
+            ], self::mergeSources($lead)),
+            'campaigns' => array_map(static fn ($row): array => [
+                'label' => $row->isUnattributed() ? null : $row->label,
+                'is_unattributed' => $row->isUnattributed(),
+                'total' => $row->total,
+                'qualified' => $row->qualified,
+                'won' => $row->won,
+                'closed' => $row->closed,
+            ], [...array_slice($named, 0, 10), ...$rest]),
+            'response' => [
+                'measured' => $lead->response->measured,
+                'unanswered' => $lead->response->unanswered,
+                'median_seconds' => $lead->response->medianSeconds,
+                'buckets' => $lead->response->buckets,
+            ],
+        ];
+    }
+
+    /**
+     * One row per route.
+     *
+     * The read model groups by route *and* free-text detail (a form's name); the detail is dropped here and the rows
+     * folded, so a route appears once and no typed label travels.
+     *
+     * @return list<\App\Application\Leads\DTO\LeadSourceRow>
+     */
+    private static function mergeSources(LeadFigures $lead): array
+    {
+        $merged = [];
+
+        foreach ($lead->sources as $row) {
+            $key = $row->sourceKind->value;
+            $merged[$key] = isset($merged[$key])
+                ? new \App\Application\Leads\DTO\LeadSourceRow(
+                    $row->sourceKind, null,
+                    $merged[$key]->total + $row->total,
+                    $merged[$key]->qualified + $row->qualified,
+                    $merged[$key]->won + $row->won,
+                    $merged[$key]->closed + $row->closed,
+                )
+                : new \App\Application\Leads\DTO\LeadSourceRow($row->sourceKind, null, $row->total, $row->qualified, $row->won, $row->closed);
+        }
+
+        $rows = array_values($merged);
+        usort($rows, static fn ($a, $b): int => $b->total <=> $a->total);
+
+        return $rows;
     }
 
     /** @return array<string, mixed> */

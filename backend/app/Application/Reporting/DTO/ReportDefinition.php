@@ -49,6 +49,10 @@ final readonly class ReportDefinition
         foreach ($this->sections as $section) {
             $section->assertValid();
 
+            if ($section->kind === SectionKind::Lead && $this->clientId === null) {
+                throw InvalidReportDefinition::leadNeedsClient();
+            }
+
             if ($section->kind !== SectionKind::Store) {
                 continue;
             }
