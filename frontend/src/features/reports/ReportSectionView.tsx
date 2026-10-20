@@ -202,7 +202,7 @@ export function ReportSectionView({ section, sparks }: ReportSectionViewProps) {
    * Store figures: one authority's claim about what a client's stores sold. Its own cards rather than metric cards,
    * so a store's "revenue" can never be merged with — or mistaken for — the platform's.
    */
-  if (section.kind === 'store' && section.store !== null) {
+  if (section.kind === 'store' && section.store != null) {
     const figures = section.store;
     const write = (figure: (typeof figures)[number]): string =>
       figure.value === null

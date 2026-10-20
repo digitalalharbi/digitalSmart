@@ -126,9 +126,9 @@ export type RenderedSection = {
   series: { date: string; metrics: RenderedMetricSet }[];
   rows: { key: string; label: string; status: string | null; metrics: RenderedMetricSet }[];
   /** Who is claiming the revenue, for a store section; null for every other kind. */
-  revenue_source: string | null;
-  revenue_source_label: string | null;
-  store: StoreFigure[] | null;
+  revenue_source?: string | null;
+  revenue_source_label?: string | null;
+  store?: StoreFigure[] | null;
 };
 
 /** One store figure. `money` is in minor units of its `currency`; null means there is none to show. */
@@ -191,7 +191,7 @@ export type SectionDraft = {
   dimension: string | null;
   row_limit: number | null;
   /** Who claims the revenue, for a store section. */
-  revenue_source: string | null;
+  revenue_source?: string | null;
 };
 
 export type ReportDraft = {
