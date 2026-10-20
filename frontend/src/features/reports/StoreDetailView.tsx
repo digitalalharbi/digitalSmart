@@ -360,13 +360,7 @@ function RefundTile({
   return (
     <div className="bg-surface-sunken flex min-w-0 flex-col gap-1 rounded-2xl p-4">
       <span className="text-content-tertiary ds-overline">{label}</span>
-      <span
-        className={
-          warn
-            ? 'ds-figure text-xl text-[var(--ds-warning-600,#b45309)]'
-            : 'ds-figure text-content text-xl'
-        }
-      >
+      <span className={warn ? 'ds-figure text-warning text-xl' : 'ds-figure text-content text-xl'}>
         {value}
       </span>
     </div>

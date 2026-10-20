@@ -19,10 +19,10 @@ import {
 import type { RenderedReport } from './types';
 
 const KIND: Record<InsightKind, { icon: typeof TrendingUp; tone: string }> = {
-  improved: { icon: TrendingUp, tone: 'text-[var(--ds-success-600,#15803d)]' },
+  improved: { icon: TrendingUp, tone: 'text-success' },
   declined: { icon: TrendingDown, tone: 'text-content-secondary' },
-  attention: { icon: AlertTriangle, tone: 'text-[var(--ds-warning-600,#b45309)]' },
-  best: { icon: Star, tone: 'text-[var(--ds-accent)]' },
+  attention: { icon: AlertTriangle, tone: 'text-warning' },
+  best: { icon: Star, tone: 'text-content-brand' },
 };
 
 /**
@@ -155,12 +155,7 @@ function CampaignColumn({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <h3
-        className={cn(
-          'text-sm font-semibold',
-          warn ? 'text-[var(--ds-warning-600,#b45309)]' : 'text-content',
-        )}
-      >
+      <h3 className={cn('text-sm font-semibold', warn ? 'text-warning' : 'text-content')}>
         {title}
       </h3>
       <ul className="flex flex-col gap-2">
