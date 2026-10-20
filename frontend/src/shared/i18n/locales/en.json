@@ -840,7 +840,8 @@
     "clear": "Clear",
     "info": "More information",
     "more": "More",
-    "less": "Less"
+    "less": "Less",
+    "advanced": "Advanced"
   },
   "overview": {
     "title": "Overview",
