@@ -2933,7 +2933,9 @@
       "renderedAt": "Figures as at {{at}}.",
       "emptyTitle": "Nothing recorded in this period",
       "emptyBody": "No section of this report has data for these dates. That is not the same as a total of zero.",
-      "xlsx": "Download Excel"
+      "xlsx": "Download Excel",
+      "vs": "vs {{label}}",
+      "running": "Period still running"
     },
     "section": {
       "emptyTitle": "Nothing recorded",
@@ -3045,7 +3047,8 @@
     "revoked": "This link has been turned off. Ask whoever sent it for a new one.",
     "unreachable": "The report could not be loaded. That is a connection problem, not an expired link — try again.",
     "preparedFor": "Prepared for {{recipient}}.",
-    "footer": "Figures are as at the time shown above. A live link recalculates each time it is opened; a frozen copy never does, and says which it is."
+    "footer": "Figures are as at the time shown above. A live link recalculates each time it is opened; a frozen copy never does, and says which it is.",
+    "poweredBy": "Powered by Smart Code"
   },
   "portal": {
     "title": "Client portal",

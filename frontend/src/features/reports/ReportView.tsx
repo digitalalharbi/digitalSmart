@@ -5,6 +5,7 @@ import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/ui/empty-state';
+import { InfoHint } from '@/shared/ui/info-hint';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import type { MetricSourceValue } from '@/shared/metrics';
 import { ReportSectionView } from './ReportSectionView';
@@ -41,7 +42,7 @@ type ReportViewProps = {
  * themselves — against whatever period they happen to pick.
  */
 export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   /*
    * Two readings of one report. Executive is the answer — the scorecards and the trends; detailed is the
    * working: every breakdown and table. A client-safe report opens as the first, because the people it was
@@ -58,17 +59,27 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
 
   return (
     <article className="flex flex-col gap-5">
-      <header className="flex flex-col gap-3">
+      <header className="bg-surface flex flex-col gap-4 rounded-3xl p-5 shadow-xs">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-content text-xl font-semibold">{report.name}</h2>
-            <p className="text-content-secondary mt-1 text-sm">
-              {report.client_name ?? t('reports.view.allClients')}
-              {' · '}
-              {report.period.from} – {report.period.until}
-              {' · '}
-              {t('reports.view.days', { count: report.period.days })}
-            </p>
+          <div className="flex min-w-0 items-center gap-3">
+            {/* Initials, not a logo: nothing here stores one, and a mark that looked like a brand asset would be a claim. */}
+            <span
+              aria-hidden
+              className="bg-surface-sunken text-content-secondary inline-flex size-12 shrink-0 items-center justify-center rounded-2xl text-base font-semibold"
+            >
+              {(report.client_name ?? report.name).slice(0, 2).toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1">
+                <h2 className="text-content text-xl font-semibold" dir="auto">
+                  {report.name}
+                </h2>
+                {report.description === null ? null : <InfoHint text={report.description} />}
+              </div>
+              <p className="text-content-secondary mt-0.5 truncate text-sm" dir="auto">
+                {report.client_name ?? t('reports.view.allClients')}
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -103,18 +114,47 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
           </div>
         </div>
 
-        {report.description === null ? null : (
-          <p className="text-content-secondary text-sm">{report.description}</p>
-        )}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="bg-surface-sunken text-content-secondary ds-numeric rounded-full px-3 py-1 font-medium">
+            <bdi dir="ltr">
+              {report.period.from} – {report.period.until}
+            </bdi>
+            {' · '}
+            {t('reports.view.days', { count: report.period.days })}
+          </span>
 
-        {report.period.is_incomplete ? (
-          <Alert tone="info">{t('reports.view.incomplete')}</Alert>
-        ) : null}
+          {report.comparison.was_requested && report.comparison.is_comparable ? (
+            <span className="bg-surface-sunken text-content-secondary inline-flex items-center gap-1 rounded-full px-3 py-1 font-medium">
+              {t('reports.view.vs', {
+                label: report.comparison.label.toLocaleLowerCase(i18n.language),
+              })}
+              <InfoHint
+                text={t('reports.view.comparedWith', {
+                  label: report.comparison.label,
+                  from: report.comparison.from ?? '',
+                  until: report.comparison.until ?? '',
+                })}
+              />
+            </span>
+          ) : null}
+
+          {report.period.is_incomplete ? (
+            <Badge tone="warning" className="gap-1">
+              {t('reports.view.running')}
+              <InfoHint text={t('reports.view.incomplete')} />
+            </Badge>
+          ) : null}
+
+          <span className="text-content-tertiary ms-auto">
+            {t('reports.view.renderedAt', {
+              at: new Date(report.rendered_at).toLocaleString(i18n.language),
+            })}
+          </span>
+        </div>
 
         {/*
-          The sentence that replaces the percentages. Said once, above the sections, because it is true of every
-          change figure in the document — and said at all, because a reader who finds no comparison and no reason
-          does the arithmetic themselves against whatever period they pick.
+          The sentence that replaces the percentages. It stays in the open: a reader who finds no comparison and no
+          reason does the arithmetic themselves against whatever period they pick.
         */}
         {report.comparison.was_requested && !report.comparison.is_comparable ? (
           <Alert tone="warning" className="flex items-start gap-2">
@@ -126,16 +166,6 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
           </Alert>
         ) : null}
 
-        {report.comparison.was_requested && report.comparison.is_comparable ? (
-          <p className="text-content-tertiary text-sm">
-            {t('reports.view.comparedWith', {
-              label: report.comparison.label,
-              from: report.comparison.from ?? '',
-              until: report.comparison.until ?? '',
-            })}
-          </p>
-        ) : null}
-
         {/*
           The agency's own commentary. Absent from a client-safe render because it was never read on that path — see
           `RenderReport` — so this only ever appears on an internal one.
@@ -145,10 +175,6 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
             {t('reports.view.internalNote', { note: report.internal_note })}
           </Alert>
         )}
-
-        <p className="text-content-tertiary text-xs">
-          {t('reports.view.renderedAt', { at: new Date(report.rendered_at).toLocaleString() })}
-        </p>
       </header>
 
       {report.is_empty ? (

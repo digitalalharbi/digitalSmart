@@ -1,0 +1,51 @@
+# Client reports and shared dashboards — requirements matrix
+
+The owner's brief (2026-10-20): turn the existing report system into a premium, interactive client experience behind a
+shared link. **Not a rebuild** — `ReportBuilder`, `ReportView`, `ReportSectionView`, `SharePanel`, `SharedReportPage`,
+snapshots, expiring and revocable links, view counts and the portal already exist.
+
+Status vocabulary as in `CLAUDE.md`. `EXISTS` means it was built before this phase and is covered by tests there;
+`NOT_STARTED` means nothing yet. Nothing here is `VERIFIED` without a named test or a browser check.
+
+| # | Requirement | Status | Evidence / what is missing |
+|---|---|---|---|
+| 3 | Shared link `/shared-reports/{token}`, no login, no admin chrome | EXISTS | `SharedReportPage`, `tests/Feature/Reporting` share tests, `e2e/reports.spec.ts` |
+| 3 | Header: client mark, name, title, period, last updated, *Powered by Smart Code* | IMPLEMENTED_NOT_VERIFIED | Hero card with initials (no logo is stored — a logo needs an upload feature); footer *Powered by*; CI pending |
+| 4 | Client-safe interactivity: period, comparison, platform / campaign filter, metric selector | NOT_STARTED | Needs a server-side filter contract on `GET /api/shared-reports/{token}` that can only narrow within the report's own scope; its own tests |
+| 5 | Hero KPI cards with comparison, change, sparkline | PARTIAL | Cards have value, comparison and change (`MetricCard`); no sparkline yet |
+| 6 | Hero trend, metric switching, previous-period overlay | PARTIAL | Trend chart exists; switching and overlay not |
+| 7 | Platform comparison (ranking, rings, share donut) | PARTIAL | Ranking bars via breakdown sections; rings and donut not |
+| 8 | Campaign ranking cards — top / needs attention | NOT_STARTED | Breakdown by campaign exists as a chart + table |
+| 9 | Funnel | NOT_STARTED | `FunnelBars` exists (Analytics, Leads); report section kind does not |
+| 10 | Commerce report (authorities never merged) | NOT_STARTED | Store analytics exist in-app; no report section kind |
+| 11 | Lead report without PII | NOT_STARTED | Lead centre exists in-app |
+| 12 | Creative performance | BLOCKED_EXTERNAL | No real creative assets or thumbnails exist; placeholders must not be presented as creatives |
+| 13–14 | Insight and recommendation cards | NOT_STARTED | Reports agent findings exist; client-safe wording and evidence cards do not |
+| 15 | Data-quality status (Complete / Partial / Estimated / Awaiting) | PARTIAL | `SourceBadge` per section; plain-language mapping not done |
+| 16 | Live vs frozen badge | EXISTS | `mode` badge on every report |
+| 17 | Share cards: recipient, status, views, expiry, live/frozen; copy, revoke, replace | PARTIAL | `SharePanel` has them as rows; card layout and *Replace* not done |
+| 18 | WhatsApp share (name, period, link; no figures) | NOT_STARTED | `wa.me` link with a fixed client-safe message |
+| 19 | Link preview (OpenGraph) without figures | NOT_STARTED | SPA-served page; needs a server-rendered preview route |
+| 20–21 | Mobile and Arabic RTL | PARTIAL | Overflow verified for the app routes; the shared page and the new hero not yet measured |
+| 22–23 | Visual builder with presets | NOT_STARTED | `ReportBuilder` is still a form |
+| 24 | Reports index as a library | EXISTS | Cover cards (`ReportCover`) |
+| 25 | Saved templates | NOT_STARTED | |
+| 26 | Automation (weekly, monthly → snapshot → share → notify; no auto-send) | PARTIAL | Scheduled exports exist; report generation + share does not |
+| 27 | Reports agent: deterministic changes, missing data | PARTIAL | Weekly briefs exist |
+| 28 | Presentation mode | NOT_STARTED | Presentations module has slides; no report full-screen view |
+| 29 | Print / PDF | PARTIAL | Presentations print; report print stylesheet not checked |
+| 30 | Data truth rules | EXISTS | `docs/REPORTING.md`; null ≠ zero, source labels, comparability refusals |
+| 31 | Link security, rate limit, scope | EXISTS | Token hash, expiry ≤ 90 days, revocation, per-address limit, client-safe only |
+| 32 | Independent section loading | NOT_STARTED | One request renders the report today |
+| 33 | Agency-side view analytics only | EXISTS | View count and last viewed; no behavioural tracking |
+
+## Order of work
+
+1. **Slice 1 (this PR):** the report header as a hero — mark, title, period and comparison chips, live/frozen, source,
+   *Powered by*. Frontend only.
+2. **Slice 2:** share cards, WhatsApp share, report library polish.
+3. **Slice 3:** new section kinds that need only data the report already has — sparklines on the KPI cards, platform
+   share donut, campaign ranking cards, insight cards.
+4. **Slice 4 (backend, own tests):** filters on the shared read, server-side and scope-checked; independent section
+   loading; link preview route.
+5. **Later:** visual builder and presets, templates, automation, presentation mode, creative section when assets exist.
