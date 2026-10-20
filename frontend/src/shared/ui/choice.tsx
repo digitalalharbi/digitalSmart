@@ -20,16 +20,29 @@ export function ChoiceGroup({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <fieldset className={cn('relative flex flex-col gap-2', className)}>
+  const group = (
+    <fieldset className={cn('flex flex-col gap-2', hint === undefined && className)}>
       <legend className="text-content text-sm font-medium">{label}</legend>
       {children}
-      {hint === undefined ? null : (
-        <span className="absolute end-0 top-[-0.25rem]">
-          <InfoHint text={hint} align="end" />
-        </span>
-      )}
     </fieldset>
+  );
+
+  if (hint === undefined) {
+    return group;
+  }
+
+  /*
+   * The hint sits beside the group, not inside it: a button inside the fieldset is the first button a query for
+   * "the group's buttons" finds while the real options are still loading, and a keyboard user would meet an
+   * unrelated control in the middle of the choices.
+   */
+  return (
+    <div className={cn('relative', className)}>
+      {group}
+      <span className="absolute end-0 top-[-0.25rem]">
+        <InfoHint text={hint} align="end" />
+      </span>
+    </div>
   );
 }
 
