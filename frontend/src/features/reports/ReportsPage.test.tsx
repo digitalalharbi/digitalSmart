@@ -486,11 +486,16 @@ describe('reading a report', function () {
   });
 });
 
-describe('building one', function () {
-  it('does not offer a metric the shape will not accept', async () => {
-    await renderWithProviders(<ReportsPage />);
+/** Open the first saved report and its full editor — where every shape, metric and period is chosen one at a time. */
+async function openEditor(): Promise<void> {
+  await renderWithProviders(<ReportsPage />);
+  await userEvent.click(await screen.findByRole('button', { name: /Monthly performance/ }));
+  await userEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+}
 
-    await userEvent.click(await screen.findByRole('button', { name: 'New report' }));
+describe('editing one in the full editor', function () {
+  it('does not offer a metric the shape will not accept', async () => {
+    await openEditor();
 
     const sections = await screen.findByRole('group', { name: 'Metrics' });
 
@@ -510,33 +515,16 @@ describe('building one', function () {
   });
 
   it('shows what a comparison cannot account for while it is being chosen', async () => {
-    await renderWithProviders(<ReportsPage />);
-
-    await userEvent.click(await screen.findByRole('button', { name: 'New report' }));
-    await userEvent.click(screen.getByRole('button', { name: 'The period before' }));
+    await openEditor();
+    await userEvent.click(await screen.findByRole('button', { name: 'The period before' }));
 
     // Part of deciding whether to ask for one, rather than a footnote after the report is read.
     expect(await screen.findByText(/cannot tell seasonality from performance/)).toBeInTheDocument();
   });
 
-  it('defaults a new report to internal', async () => {
-    await renderWithProviders(<ReportsPage />);
-
-    await userEvent.click(await screen.findByRole('button', { name: 'New report' }));
-    /* A regex because `Field` appends a required marker to the label's text, as the other suites here do. */
-    await userEvent.type(await screen.findByLabelText(/^Name/), 'Weekly');
-    await userEvent.click(screen.getByRole('button', { name: 'Save the report' }));
-
-    /*
-     * A default of client-safe would mean a report written in shorthand becoming shareable by omission.
-     */
-    expect(state.created).toMatchObject({ audience: 'internal', comparison: 'none' });
-  });
-
   it('asks for dates only for a specific period', async () => {
-    await renderWithProviders(<ReportsPage />);
-
-    await userEvent.click(await screen.findByRole('button', { name: 'New report' }));
+    await openEditor();
+    await screen.findByRole('group', { name: 'Metrics' });
 
     expect(screen.queryByLabelText('From')).not.toBeInTheDocument();
 
@@ -544,6 +532,70 @@ describe('building one', function () {
 
     expect(await screen.findByLabelText('From')).toBeInTheDocument();
     expect(screen.getByLabelText('Until')).toBeInTheDocument();
+  });
+});
+
+describe('building one with the wizard', function () {
+  async function toShare(preset: string): Promise<void> {
+    await renderWithProviders(<ReportsPage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'New report' }));
+
+    // Client → type → period → content → preview → who it is for.
+    await userEvent.click(await screen.findByRole('button', { name: 'Next' }));
+    await userEvent.click(await screen.findByRole('button', { name: new RegExp(preset) }));
+    for (let step = 0; step < 4; step += 1) {
+      await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    }
+  }
+
+  it('starts from a preset and does not decide who the report is for', async () => {
+    await toShare('Executive');
+
+    /*
+     * No default. A default of client-safe would mean a report written in shorthand becoming shareable by omission,
+     * so the last button stays off until somebody has said who it is for.
+     */
+    const create = await screen.findByRole('button', { name: 'Create report' });
+
+    expect(create).toBeDisabled();
+
+    await userEvent.click(screen.getByRole('button', { name: /For the team/ }));
+
+    expect(create).toBeEnabled();
+
+    await userEvent.click(create);
+
+    expect(state.created).toMatchObject({
+      audience: 'internal',
+      window: 'last_30_days',
+      comparison: 'previous_period',
+    });
+    expect((state.created?.['sections'] as unknown[]).length).toBeGreaterThan(0);
+  });
+
+  it("offers the presets that read one client's own records only once there is a client", async () => {
+    await renderWithProviders(<ReportsPage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'New report' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Next' }));
+
+    expect(await screen.findByRole('button', { name: /Lead generation/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /E-commerce/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Executive/ })).toBeEnabled();
+  });
+
+  it("lets a preset's sections be taken out before anything is saved", async () => {
+    await renderWithProviders(<ReportsPage />);
+    await userEvent.click(await screen.findByRole('button', { name: 'New report' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Next' }));
+    await userEvent.click(await screen.findByRole('button', { name: /Executive/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+
+    const before = screen.getAllByRole('button', { name: 'Remove this section' }).length;
+    await userEvent.click(screen.getAllByRole('button', { name: 'Remove this section' })[0]!);
+
+    expect(screen.getAllByRole('button', { name: 'Remove this section' })).toHaveLength(before - 1);
+    expect(state.created).toBeNull();
   });
 });
 

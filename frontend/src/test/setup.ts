@@ -17,6 +17,11 @@ import { cleanup, configure } from '@testing-library/react';
 configure({ asyncUtilTimeout: 5_000 });
 
 beforeAll(() => {
+  // jsdom does not implement scrollIntoView either; the wizard brings itself to the top of the screen on opening.
+  if (typeof Element.prototype.scrollIntoView !== 'function') {
+    Element.prototype.scrollIntoView = vi.fn();
+  }
+
   // jsdom does not implement matchMedia, which the theme resolver relies on.
   if (!window.matchMedia) {
     Object.defineProperty(window, 'matchMedia', {
