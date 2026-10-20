@@ -3203,7 +3203,11 @@
       "revokedBecause": "أُوقِف: {{reason}}",
       "revoke": "أوقِف",
       "revokeReason": "سبب الإيقاف",
-      "confirmRevoke": "أوقِفه"
+      "confirmRevoke": "أوقِفه",
+      "whatsapp": "مشاركة عبر واتساب",
+      "whatsappMessage": "{{client}} — {{title}} ({{period}}): {{link}}",
+      "viewsLabel": "مشاهدات",
+      "expiresLabel": "ينتهي"
     },
     "exports": {
       "title": "تجهيز ملف في الخلفية",

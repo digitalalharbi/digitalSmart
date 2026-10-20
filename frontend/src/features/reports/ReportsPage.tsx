@@ -283,6 +283,11 @@ export function ReportsPage() {
               canShare={canShare}
               isInternal={current?.audience !== 'client_safe'}
               freshToken={freshToken}
+              context={{
+                client: rendered.data.client_name,
+                title: rendered.data.name,
+                period: `${rendered.data.period.from} – ${rendered.data.period.until}`,
+              }}
               isWorking={snapshot.isPending || share.isPending || revoke.isPending}
               error={error}
               onShare={(input) => {

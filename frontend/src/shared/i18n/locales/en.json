@@ -3001,7 +3001,11 @@
       "revokedBecause": "Turned off: {{reason}}",
       "revoke": "Turn off",
       "revokeReason": "Why it is being turned off",
-      "confirmRevoke": "Turn it off"
+      "confirmRevoke": "Turn it off",
+      "whatsapp": "Share on WhatsApp",
+      "whatsappMessage": "{{client}} — {{title}} ({{period}}): {{link}}",
+      "viewsLabel": "views",
+      "expiresLabel": "Expires"
     },
     "exports": {
       "title": "Prepare a file in the background",
