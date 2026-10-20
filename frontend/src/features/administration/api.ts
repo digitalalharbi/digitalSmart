@@ -12,6 +12,23 @@ import type {
   WorkspaceRole,
 } from './types';
 
+/** How many people hold access, by status — one request each, a single row asked for, only the total read. */
+export function useMemberCountsQuery() {
+  return useQuery({
+    queryKey: [...queryKeys.members.list({}), 'counts'],
+    queryFn: async (): Promise<{ active: number; suspended: number }> => {
+      const total = async (status: string): Promise<number> => {
+        const response = await api.get<Paginated<Member>>('/members', {
+          params: { status, per_page: 1 },
+        });
+        return response.data.meta.total;
+      };
+      const [active, suspended] = await Promise.all([total('active'), total('suspended')]);
+      return { active, suspended };
+    },
+  });
+}
+
 export function useMembersQuery(params: {
   search?: string;
   status?: string;

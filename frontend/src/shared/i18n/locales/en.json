@@ -1251,7 +1251,10 @@
         "body": "What reaches whom, and the daily and weekly digests."
       }
     },
-    "rolesTitle": "Roles & permissions"
+    "rolesTitle": "Roles & permissions",
+    "glance": {
+      "label": "People with access"
+    }
   },
   "integrations": {
     "subtitle": "Ad platforms this workspace can read from, and which projects may read what.",

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { UserPlus } from 'lucide-react';
 import { ApiError } from '@/shared/api/client';
 import { Alert } from '@/shared/ui/alert';
+import { InfoHint } from '@/shared/ui/info-hint';
 import { Button } from '@/shared/ui/button';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
@@ -43,8 +44,8 @@ export function AddMemberPanel() {
         <h3 className="text-content flex items-center gap-2 text-sm font-semibold">
           <UserPlus aria-hidden className="size-4" />
           {t('administration.addMember.title')}
+          <InfoHint text={t('administration.addMember.subtitle')} />
         </h3>
-        <p className="text-content-secondary text-sm">{t('administration.addMember.subtitle')}</p>
       </div>
 
       {added === null ? null : (
