@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/shared/lib/cn';
+import { InfoHint } from './info-hint';
 
 /**
  * A labelled set of mutually exclusive choices.
@@ -20,9 +21,13 @@ export function ChoiceGroup({
   className?: string;
 }) {
   return (
-    <fieldset className={cn('flex flex-col gap-2', className)}>
+    <fieldset className={cn('relative flex flex-col gap-2', className)}>
       <legend className="text-content text-sm font-medium">{label}</legend>
-      {hint === undefined ? null : <p className="text-content-tertiary text-xs">{hint}</p>}
+      {hint === undefined ? null : (
+        <span className="absolute end-0 top-[-0.25rem]">
+          <InfoHint text={hint} align="end" />
+        </span>
+      )}
       {children}
     </fieldset>
   );

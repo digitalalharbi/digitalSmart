@@ -1,3 +1,4 @@
+import { InfoHint } from '@/shared/ui/info-hint';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/shared/ui/alert';
 import { Card, CardContent } from '@/shared/ui/card';
@@ -51,7 +52,10 @@ export function CustomerMixPanel({
     <Card>
       <CardContent className="flex flex-col gap-4 p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h3 className="text-content text-sm font-semibold">{t('commerce.mix.title')}</h3>
+          <h3 className="text-content flex items-center gap-1 text-sm font-semibold">
+            {t('commerce.mix.title')}
+            {mix.unavailable_reason === null ? <InfoHint text={t('commerce.mix.hint')} /> : null}
+          </h3>
 
           {/*
             The headline figure, or nothing. Never nought per cent: zero is a measurement and the absence of one
@@ -72,9 +76,7 @@ export function CustomerMixPanel({
           )}
         </div>
 
-        {mix.unavailable_reason === null ? (
-          <p className="text-content-secondary text-sm">{t('commerce.mix.hint')}</p>
-        ) : (
+        {mix.unavailable_reason === null ? null : (
           <Alert tone="info">{mix.unavailable_reason}</Alert>
         )}
 

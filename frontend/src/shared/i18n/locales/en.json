@@ -1999,7 +1999,15 @@
       "readFailed": "Could not read {{name}}: {{reason}}",
       "readSkipped": "{{name}} is on a platform this product cannot read yet. The orders it sends are still received."
     },
-    "forbidden": "Your role does not include access to store revenue."
+    "forbidden": "Your role does not include access to store revenue.",
+    "glance": {
+      "label": "Store at a glance",
+      "orders": "Orders",
+      "paid": "Paid",
+      "pending": "Pending",
+      "refunds": "Refunded",
+      "attributed": "Attributed revenue"
+    }
   },
   "chart": {
     "view": {
