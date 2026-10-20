@@ -61,24 +61,47 @@ export function ActivityFeed({
       {shown.map((entry) => (
         <li
           key={entry.id}
-          className="border-line-subtle flex flex-wrap items-baseline gap-x-2 gap-y-0.5 border-b py-2.5 last:border-0"
+          className="border-line-subtle flex items-center gap-3 border-b py-2.5 last:border-0"
         >
-          <span className="text-content text-sm">
-            {entry.to === undefined ? (
-              entry.summary
-            ) : (
-              <Link to={entry.to} className="hover:text-content-brand hover:underline">
-                {entry.summary}
-              </Link>
+          {/* Who, as a mark: initials for a person, a dot for the system — attributing a schedule to a person would lie. */}
+          <span
+            aria-hidden
+            className={cn(
+              'grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold',
+              entry.actor === null
+                ? 'bg-surface-sunken text-content-tertiary'
+                : 'bg-accent-subtle text-content-brand',
             )}
+          >
+            {entry.actor === null
+              ? '·'
+              : entry.actor
+                  .split(/\s+/u)
+                  .slice(0, 2)
+                  .map((part) => part.charAt(0).toUpperCase())
+                  .join('')}
           </span>
-          <span className="text-content-tertiary text-xs">
-            {entry.actor ?? t('activity.system')}
-            {' · '}
-            <time dateTime={entry.at} title={new Date(entry.at).toLocaleString(i18n.language)}>
-              {formatRelativeTime(entry.at, i18n.language)}
-            </time>
+          <span className="min-w-0 flex-1">
+            <span className="text-content block truncate text-sm" title={entry.summary}>
+              {entry.to === undefined ? (
+                entry.summary
+              ) : (
+                <Link to={entry.to} className="hover:text-content-brand hover:underline">
+                  {entry.summary}
+                </Link>
+              )}
+            </span>
+            <span className="text-content-tertiary block truncate text-xs">
+              {entry.actor ?? t('activity.system')}
+            </span>
           </span>
+          <time
+            className="bg-surface-sunken text-content-secondary shrink-0 rounded-full px-2 py-0.5 text-xs"
+            dateTime={entry.at}
+            title={new Date(entry.at).toLocaleString(i18n.language)}
+          >
+            {formatRelativeTime(entry.at, i18n.language)}
+          </time>
         </li>
       ))}
     </ol>

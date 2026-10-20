@@ -4,6 +4,29 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Visual first: fewer words, more pictures
+
+### Changed
+- **Page and card descriptions are an ⓘ**, not a paragraph (`InfoHint`), across all thirty-odd pages at once: the
+  shared `PageHeader`, `PageSection`, `CardDescription` and chart frame now carry them. The text is always in the page
+  for assistive technology.
+- **Long notes fold** to two lines with *More* (`Alert`); failures never fold.
+- **Projects open on cards** (health ring, spend, open campaigns and work, a schedule bar); the table is a toggle.
+- **Rules are cards** — when → then → scope, with the last run's counters — and the table is a toggle.
+- **Finance:** each currency's totals as a ring and three tiles; budgets at risk as pacing cards with the expected-pace
+  tick.
+- **Tracking:** a severity ring, issues grouped by kind and merged when identical, remedy and evidence on expand.
+- **Weekly briefs** are cover cards (initials, days and platforms as chips, best and weakest as coloured chips).
+- **Creative desk:** workload as bars with the late share in red; deadlines and approvals as dotted rows.
+- **Campaign cards:** figure tiles; the health reason behind an ⓘ.
+- **Integrations:** a status strip (connected / sandbox / awaiting) replaces a paragraph.
+- **Activity feed:** an avatar, one line, a time pill.
+- **Approvals:** the two rates as rings; the outstanding-change warning is one short line.
+- New primitives: `ProgressBar`, `ProgressRing`, `CompareBars`, `InfoHint`.
+
+### Kept as tables, deliberately
+Audit log, member directory, the platform write matrix — lookups compared row by row and server-paginated.
+
 ## Rules at ad-group and ad level, and a provider readiness matrix
 
 ### Added

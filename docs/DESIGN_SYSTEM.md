@@ -248,6 +248,32 @@ A change is coloured by whether it is **good**, which the server decides from th
 metric's own direction: CPA falling 20% is green, spend falling 20% is not. The
 interface never re-derives that from the sign.
 
+## Visual first, text last (owner direction, 2026-10-19)
+
+The product says things with pictures. A screen opens with figures and charts, then cards, and only then — if at all —
+a compact table. Words are the title, a short label, a status and a short action.
+
+**The rules, and the one component that enforces each:**
+
+| Instead of | Use | Where |
+|---|---|---|
+| A paragraph saying what a page or card is for | `InfoHint` — an ⓘ; hover, focus or tap shows it; a screen reader gets it as the button's description either way | `PageHeader` and `PageSection` descriptions, `CardDescription`, chart subtitles and caveats all become one automatically |
+| A long note or caution | `Alert` folds any info/warning text over 110 characters to two lines with *More*; a failure is never folded | `shared/ui/alert.tsx` |
+| A table as the main view | Cards first, the table one toggle away (`Cards / Table`) | Projects, Clients, Rules |
+| "Spent 62% of budget" | `ProgressBar` / `ProgressRing`, the expected pace as a tick | Finance, project cards |
+| "Raise from X to Y" | `CompareBars` or `BeforeAfter` with the change as a pill | decision cards |
+| A list of issues | Grouped by kind with a severity ring; identical findings merged (×N); remedy and evidence on expand | Tracking |
+| A rule as a sentence | **when** chips → **then** chip → scope, counters under it | Rules |
+| "Best: A · Weakest: B" | Two coloured chips with arrows | weekly briefs |
+
+**What stays in words, on purpose:** a failure someone must act on; a figure's source badge (SANDBOX / estimated); and
+anything a screen reader needs — the text of every hint is always in the page, so removing it from the pixels removes it
+from nobody's reading.
+
+**Tables that remain, and why:** the audit log, the member directory and the platform write matrix are lookups, not
+pictures — compared row by row and server-paginated, so a chart over one page would mislead. They are compact and sit
+below the figures.
+
 ## Components
 
 Primitives live in `frontend/src/shared/ui`, shadcn/ui-style: unstyled behaviour plus

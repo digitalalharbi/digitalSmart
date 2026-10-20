@@ -55,6 +55,10 @@ vi.mock('./api', () => ({
   }),
 }));
 
+vi.mock('@/features/portfolio', () => ({
+  usePortfolio: () => ({ data: undefined, isPending: false }),
+}));
+
 vi.mock('@/features/clients', () => ({
   useClientsQuery: () => ({ data: { data: [], meta: null } }),
 }));
@@ -110,9 +114,24 @@ describe('ProjectsPage', () => {
     permissions.current = ['projects.view_all'];
   });
 
-  it('shows the client, schedule and team size for each project', async () => {
+  it('opens on cards: the project, its client, its status and its team, each as a picture or a pill', async () => {
     projectsQuery.mockReturnValue(page([project()]));
     await renderWithProviders(<ProjectsPage />);
+
+    const card = screen.getByRole('article', { name: 'Ramadan Campaign' });
+    expect(within(card).getByText('Alhambra Retail')).toBeInTheDocument();
+    expect(within(card).getByText('Active')).toBeInTheDocument();
+    expect(within(card).getByRole('button', { name: 'Manage access' })).toHaveTextContent('4');
+    expect(within(card).getByRole('progressbar')).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('keeps the table one click away, for comparing many at once', async () => {
+    const user = userEvent.setup();
+    projectsQuery.mockReturnValue(page([project()]));
+    await renderWithProviders(<ProjectsPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Table' }));
 
     const row = screen.getByRole('row', { name: /Ramadan Campaign/ });
     expect(within(row).getByText('Alhambra Retail')).toBeInTheDocument();

@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from 'react';
 import { cn } from '@/shared/lib/cn';
+import { InfoHint } from './info-hint';
 
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
@@ -19,7 +20,12 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex flex-col gap-1 px-5 pt-5 pb-4 sm:px-6', className)} {...props} />;
+  return (
+    <div
+      className={cn('relative flex flex-col gap-1 px-5 pt-5 pb-4 sm:px-6', className)}
+      {...props}
+    />
+  );
 }
 
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
@@ -28,9 +34,23 @@ export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingEle
   );
 }
 
-export function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
+/**
+ * A card's subtitle. Plain text becomes a hint in the card's corner — a card's own title says what it is, and the
+ * sentence under it was read once. Anything richer than text (a link, a figure) stays where it is.
+ */
+export function CardDescription({
+  className,
+  children,
+  ...props
+}: HTMLAttributes<HTMLParagraphElement>) {
+  if (typeof children === 'string') {
+    return <InfoHint text={children} align="end" className="absolute end-3 top-3" />;
+  }
+
   return (
-    <p className={cn('text-content-secondary text-sm leading-relaxed', className)} {...props} />
+    <p className={cn('text-content-secondary text-sm leading-relaxed', className)} {...props}>
+      {children}
+    </p>
   );
 }
 

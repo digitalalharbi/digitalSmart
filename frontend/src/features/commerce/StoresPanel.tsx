@@ -200,42 +200,68 @@ export function StoresPanel({ clientId, clients }: { clientId: string | null; cl
           description={t('commerce.stores.emptyBody')}
         />
       ) : (
-        <ul aria-label={t('commerce.stores.listLabel')} className="flex flex-col gap-2">
+        <ul
+          aria-label={t('commerce.stores.listLabel')}
+          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+        >
           {(stores.data ?? []).map((store) => (
             <li
               key={store.id}
-              className="border-line-subtle bg-surface flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
+              className="border-line-subtle bg-surface flex flex-col gap-3 rounded-2xl border p-4"
             >
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <p className="text-content truncate text-sm font-medium">{store.name}</p>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-content truncate text-sm font-medium" dir="auto">
+                    {store.name}
+                  </p>
+                  <p className="text-content-tertiary truncate text-xs" dir="auto">
+                    {t('commerce.stores.forClient', { client: store.client_name })}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-1">
                   <Badge>{store.provider_label}</Badge>
                   <Badge tone="neutral">{store.currency}</Badge>
                 </div>
-                <p className="text-content-tertiary text-xs">
-                  {t('commerce.stores.forClient', { client: store.client_name })} ·{' '}
-                  <LastRead store={store} />
-                </p>
               </div>
 
-              {canManage ? (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  /*
-                   * A store whose platform has no sync adapter cannot be read at all — its webhooks still
-                   * arrive. The control says so rather than offering a read that can only answer "skipped".
-                   */
-                  disabled={!store.is_readable || read.isPending}
-                  onClick={() =>
-                    read.mutate(store.id, {
-                      onSuccess: (result) => setLastRead({ name: store.name, result }),
-                    })
-                  }
-                >
-                  {store.is_readable ? t('commerce.stores.read') : t('commerce.stores.cannotRead')}
-                </Button>
-              ) : null}
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-content-secondary flex min-w-0 items-center gap-2 text-xs">
+                  <span
+                    aria-hidden
+                    className={
+                      'size-2 shrink-0 rounded-full ' +
+                      (store.last_synced_at === null
+                        ? 'bg-[var(--ds-status-warning,#d97706)]'
+                        : store.orders_synced_through === null
+                          ? 'bg-[var(--ds-status-warning,#d97706)]'
+                          : 'bg-[var(--ds-status-good,#16a34a)]')
+                    }
+                  />
+                  <span className="truncate">
+                    <LastRead store={store} />
+                  </span>
+                </p>
+                {canManage ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    /*
+                     * A store whose platform has no sync adapter cannot be read at all — its webhooks still
+                     * arrive. The control says so rather than offering a read that can only answer "skipped".
+                     */
+                    disabled={!store.is_readable || read.isPending}
+                    onClick={() =>
+                      read.mutate(store.id, {
+                        onSuccess: (result) => setLastRead({ name: store.name, result }),
+                      })
+                    }
+                  >
+                    {store.is_readable
+                      ? t('commerce.stores.read')
+                      : t('commerce.stores.cannotRead')}
+                  </Button>
+                ) : null}
+              </div>
             </li>
           ))}
         </ul>

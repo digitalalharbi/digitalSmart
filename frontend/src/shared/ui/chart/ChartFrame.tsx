@@ -3,6 +3,7 @@ import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MetricSourceValue } from '@/shared/metrics';
 import { cn } from '@/shared/lib/cn';
+import { InfoHint } from '../info-hint';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import { useUiStore } from '@/shared/store/ui-store';
@@ -87,10 +88,13 @@ export function ChartFrame({
               {title}
             </h3>
             {source === undefined ? null : <SourceBadge source={source} />}
+            {/* What the chart plots and what to be careful of: one hint, not two paragraphs around the picture. */}
+            {subtitle === undefined && (caveats === undefined || caveats.length === 0) ? null : (
+              <InfoHint
+                text={[subtitle, ...(caveats ?? [])].filter((part) => part !== undefined).join(' ')}
+              />
+            )}
           </div>
-          {subtitle === undefined ? null : (
-            <p className="text-content-secondary text-sm leading-relaxed">{subtitle}</p>
-          )}
         </div>
 
         {/*
@@ -175,16 +179,6 @@ export function ChartFrame({
           <ChartTable columns={table.columns} rows={table.rows} caption={title} />
         )}
       </div>
-
-      {caveats === undefined || caveats.length === 0 ? null : (
-        <footer className="border-line-subtle border-t px-5 py-3">
-          <ul className="text-content-tertiary flex flex-col gap-1 text-xs leading-relaxed">
-            {caveats.map((caveat) => (
-              <li key={caveat}>{caveat}</li>
-            ))}
-          </ul>
-        </footer>
-      )}
     </section>
   );
 }

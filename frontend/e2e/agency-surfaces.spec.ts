@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { ACCOUNTS, signIn } from './support/accounts';
+import { tableView } from './support/views';
 import { chooseClient } from './support/pickers';
 
 /**
@@ -82,6 +83,7 @@ test.describe('agency surfaces', () => {
   test('a project’s workspace opens from the projects list', async ({ page }) => {
     await page.goto('/projects');
     await expect(page.getByRole('heading', { level: 1, name: 'Projects' })).toBeVisible();
+    await tableView(page);
 
     /* Its own project, so the test does not depend on what other specs left behind. */
     const name = `E2E Workspace ${String(Date.now())}`;

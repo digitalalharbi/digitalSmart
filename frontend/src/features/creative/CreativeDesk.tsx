@@ -37,6 +37,7 @@ export function CreativeDesk({ board }: { board: CreativeBoard }) {
   }
 
   const people = [...byOwner.entries()].sort((a, b) => b[1].open - a[1].open).slice(0, 5);
+  const peak = Math.max(1, ...people.map(([, load]) => load.open));
   const number = new Intl.NumberFormat(i18n.language);
   const date = new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'short' });
 
@@ -64,24 +65,52 @@ export function CreativeDesk({ board }: { board: CreativeBoard }) {
       <div className="grid gap-4 lg:grid-cols-3">
         <DeskList title={t('creative.desk.workload')} empty={t('creative.desk.noWork')}>
           {people.map(([name, load]) => (
-            <li key={name} className="flex items-center justify-between gap-3 py-1.5 text-sm">
-              <span className="min-w-0 truncate" dir="auto">
-                {name === '' ? t('attention.unassigned') : name}
+            <li key={name} className="flex flex-col gap-1.5 py-2 text-sm">
+              <span className="flex items-center justify-between gap-3">
+                <span className="min-w-0 truncate" dir="auto">
+                  {name === '' ? t('attention.unassigned') : name}
+                </span>
+                <span className="text-content ds-numeric shrink-0 font-semibold">
+                  {number.format(load.open)}
+                </span>
               </span>
-              <span className="text-content-secondary ds-numeric shrink-0">
-                <span>{number.format(load.open)}</span>
-                {load.overdue > 0 ? (
-                  <span className="text-danger ms-2">
-                    · {t('creative.desk.late', { count: load.overdue })}
-                  </span>
-                ) : null}
+              {/* The load as a bar, the late part of it in red — who is full, and who is behind. */}
+              <span
+                aria-hidden
+                className="bg-surface-sunken flex h-2 overflow-hidden rounded-full"
+                dir="ltr"
+              >
+                <span
+                  className="h-full"
+                  style={{
+                    width: `${String(((load.open - load.overdue) / peak) * 100)}%`,
+                    background: 'var(--ds-accent)',
+                  }}
+                />
+                <span
+                  className="h-full"
+                  style={{
+                    width: `${String((load.overdue / peak) * 100)}%`,
+                    background: 'var(--ds-danger-500)',
+                  }}
+                />
               </span>
+              {load.overdue > 0 ? (
+                <span className="text-danger text-xs">
+                  {t('creative.desk.late', { count: load.overdue })}
+                </span>
+              ) : null}
             </li>
           ))}
         </DeskList>
         <DeskList title={t('creative.desk.deadlines')} empty={t('creative.desk.noDeadlines')}>
           {dueSoon.map((card) => (
-            <DeskRow key={card.id} card={card} note={deadline(card, t, date)} />
+            <DeskRow
+              key={card.id}
+              card={card}
+              note={deadline(card, t, date)}
+              tone={card.is_overdue || card.days_until_due === 0 ? 'late' : 'soon'}
+            />
           ))}
         </DeskList>
         <DeskList title={t('creative.desk.approved')} empty={t('creative.desk.noApproved')}>
@@ -92,6 +121,7 @@ export function CreativeDesk({ board }: { board: CreativeBoard }) {
               note={
                 card.state_changed_at === null ? '' : date.format(new Date(card.state_changed_at))
               }
+              tone="done"
             />
           ))}
         </DeskList>
@@ -133,13 +163,34 @@ function DeskList({
   );
 }
 
-function DeskRow({ card, note }: { card: CreativeCard; note: string }) {
+const ROW_DOT = {
+  late: 'var(--ds-danger-500)',
+  soon: 'var(--ds-warning-500)',
+  done: 'var(--ds-success-500)',
+} as const;
+
+function DeskRow({
+  card,
+  note,
+  tone,
+}: {
+  card: CreativeCard;
+  note: string;
+  tone: keyof typeof ROW_DOT;
+}) {
   return (
-    <li className="flex items-center justify-between gap-3 py-1.5 text-sm">
-      <span className="min-w-0 truncate" dir="auto">
+    <li className="flex items-center gap-2.5 py-1.5 text-sm">
+      <span
+        aria-hidden
+        className="size-2 shrink-0 rounded-full"
+        style={{ background: ROW_DOT[tone] }}
+      />
+      <span className="min-w-0 flex-1 truncate" dir="auto">
         {card.title}
       </span>
-      <span className="text-content-tertiary shrink-0 text-xs">{note}</span>
+      <span className="bg-surface-sunken text-content-secondary shrink-0 rounded-full px-2 py-0.5 text-xs">
+        {note}
+      </span>
     </li>
   );
 }

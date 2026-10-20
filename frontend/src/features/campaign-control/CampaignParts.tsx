@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import { InfoHint } from '@/shared/ui/info-hint';
 import { cn } from '@/shared/lib/cn';
 import { formatPercent } from '@/shared/lib/format';
 import { money, resultText } from './text';
@@ -53,7 +54,7 @@ export function CampaignIdentity({ row }: { row: CampaignRow }) {
           {row.name}
         </Link>
         <span className="text-content-tertiary truncate text-xs">
-          {[row.client_name, row.project_name, row.external_account.name]
+          {[row.client_name, row.project_name]
             .filter((part): part is string => part !== null)
             .join(' · ')}
         </span>
@@ -74,22 +75,21 @@ export function StatusPair({
 
   return (
     <span className="flex flex-wrap items-center gap-1.5">
-      <HealthPill
-        state={HEALTH_TO_STATE[row.health]}
-        detail={
-          withReason
-            ? reasonText(
-                t,
-                row.health_reason_code === undefined
-                  ? null
-                  : { code: row.health_reason_code, params: row.health_reason_params ?? {} },
-                row.health_reason,
-              )
-            : undefined
-        }
-      />
+      <HealthPill state={HEALTH_TO_STATE[row.health]} />
       {/* The platform's word, beside ours — rule 11. They disagree exactly when it matters. */}
       <Badge tone="neutral">{statusName(t, row)}</Badge>
+      {withReason ? (
+        /* Why it is judged so: one sentence, a hover away and always in the page — not a line under every card. */
+        <InfoHint
+          text={reasonText(
+            t,
+            row.health_reason_code === undefined
+              ? null
+              : { code: row.health_reason_code, params: row.health_reason_params ?? {} },
+            row.health_reason,
+          )}
+        />
+      ) : null}
     </span>
   );
 }
@@ -126,32 +126,19 @@ export function CampaignCard({
       </div>
       <StatusPair row={row} withReason />
 
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-        <div>
-          <dt className="text-content-tertiary text-xs">{t('campaignControl.col.spend')}</dt>
-          <dd className="ds-numeric text-content">
-            {money(row.spend_minor, row.currency, locale)}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-content-tertiary text-xs capitalize">{resultName(t, row)}</dt>
-          <dd className="ds-numeric text-content">{resultText(row, locale)}</dd>
-        </div>
-        <div>
-          <dt className="text-content-tertiary text-xs">
-            {t('campaignControl.col.costPerResult')}
-          </dt>
-          <dd className="ds-numeric text-content">
-            {money(row.cost_per_result_minor, row.currency, locale)}
-          </dd>
-        </div>
+      <dl className="grid grid-cols-2 gap-2">
+        <Tile
+          label={t('campaignControl.col.spend')}
+          value={money(row.spend_minor, row.currency, locale)}
+          big
+        />
+        <Tile label={resultName(t, row)} value={resultText(row, locale)} big />
+        <Tile
+          label={t('campaignControl.col.costPerResult')}
+          value={money(row.cost_per_result_minor, row.currency, locale)}
+        />
         {/* Only where the objective measures revenue. The server withholds it for the rest. */}
-        {row.roas === null ? null : (
-          <div>
-            <dt className="text-content-tertiary text-xs">ROAS</dt>
-            <dd className="ds-numeric text-content">{row.roas.toFixed(2)}×</dd>
-          </div>
-        )}
+        {row.roas === null ? null : <Tile label="ROAS" value={`${row.roas.toFixed(2)}×`} />}
       </dl>
 
       <div className="flex items-end justify-between gap-3">
@@ -164,6 +151,22 @@ export function CampaignCard({
       <Hierarchy campaignId={row.id} />
       <QuickActions row={row} />
     </article>
+  );
+}
+
+function Tile({ label, value, big = false }: { label: string; value: string; big?: boolean }) {
+  return (
+    <div className="bg-surface-sunken min-w-0 rounded-xl p-2.5">
+      <dt className="text-content-tertiary truncate text-xs capitalize">{label}</dt>
+      <dd
+        className={cn(
+          'ds-numeric text-content truncate font-semibold',
+          big ? 'text-lg' : 'text-sm',
+        )}
+      >
+        {value}
+      </dd>
+    </div>
   );
 }
 

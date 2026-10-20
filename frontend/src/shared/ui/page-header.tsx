@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/shared/lib/cn';
+import { InfoHint } from './info-hint';
 
 type PageHeaderProps = {
   title: string;
@@ -27,6 +28,8 @@ type PageHeaderProps = {
  * **Actions are right-aligned and wrap underneath**, never squeezed: on a phone the title keeps its line and
  * the actions take the next one, because a truncated primary action is a button nobody can read.
  *
+ * **The description is an ⓘ**, not a paragraph: it is read once and scrolled past ever after.
+ *
  * **Filters get their own row.** They are the noisiest part of an analytical page and the least important to
  * read first.
  */
@@ -42,10 +45,10 @@ export function PageHeader({
     <header className={cn('flex flex-col gap-4', className)}>
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="min-w-0">
-          <h1 className="text-content text-2xl font-semibold tracking-tight">{title}</h1>
-          {description === undefined ? null : (
-            <p className="text-content-secondary mt-1.5 max-w-2xl text-sm">{description}</p>
-          )}
+          <div className="flex items-center gap-1">
+            <h1 className="text-content text-2xl font-semibold tracking-tight">{title}</h1>
+            {description === undefined ? null : <InfoHint text={description} />}
+          </div>
         </div>
 
         {actions === undefined && primaryAction === undefined ? null : (
@@ -89,12 +92,12 @@ export function PageSection({
     <section aria-labelledby={id} className={cn('flex flex-col gap-3', className)}>
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
         <div className="min-w-0">
-          <h2 id={id} className="text-content text-lg font-semibold">
-            {title}
-          </h2>
-          {description === undefined ? null : (
-            <p className="text-content-secondary mt-1 text-sm">{description}</p>
-          )}
+          <div className="flex items-center gap-1">
+            <h2 id={id} className="text-content text-lg font-semibold">
+              {title}
+            </h2>
+            {description === undefined ? null : <InfoHint text={description} />}
+          </div>
         </div>
         {actions}
       </div>

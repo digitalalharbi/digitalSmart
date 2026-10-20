@@ -8,8 +8,10 @@ test.describe('integrations', () => {
 
     await expect(page.getByRole('heading', { level: 1, name: 'Integrations' })).toBeVisible();
 
-    // The reason nothing is connected is stated, not implied.
-    await expect(page.getByText('Waiting on provider access')).toBeVisible();
+    // How many platforms wait is a count on the status strip; the reason is on its hint.
+    await expect(
+      page.getByRole('list', { name: 'Platform status' }).getByText('Awaiting access'),
+    ).toBeVisible();
     await expect(page.getByText('Meta Ads').first()).toBeVisible();
     await expect(page.getByText('ChatGPT Ads').first()).toBeVisible();
   });

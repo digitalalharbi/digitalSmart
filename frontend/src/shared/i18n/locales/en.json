@@ -719,7 +719,10 @@
     "askButton": "Ask",
     "askedAgents": "Answered by {{agents}}",
     "askNothing": "Nothing found for that right now.",
-    "askFailed": "The agents could not answer. Try again."
+    "askFailed": "The agents could not answer. Try again.",
+    "daysShort": "d",
+    "bestLabel": "Best",
+    "worstLabel": "Weakest"
   },
   "approvalLink": {
     "title": "A decision is waiting for you",
@@ -834,7 +837,10 @@
     "previous": "Previous",
     "next": "Next",
     "remove": "Remove",
-    "clear": "Clear"
+    "clear": "Clear",
+    "info": "More information",
+    "more": "More",
+    "less": "Less"
   },
   "overview": {
     "title": "Overview",
@@ -1118,6 +1124,11 @@
       "failed": "That did not save. Nothing has changed.",
       "open": "Manage access",
       "listLabel": "People on this project"
+    },
+    "card": {
+      "schedule": "Schedule",
+      "campaigns": "Campaigns",
+      "work": "Open work"
     }
   },
   "administration": {
@@ -1309,7 +1320,13 @@
       "read": "Read history",
       "queued": "History from {{from}} to {{until}} is queued. It runs after live syncs, so current figures are never held up."
     },
-    "advanced": "Advanced"
+    "advanced": "Advanced",
+    "summary": "Platform status",
+    "state": {
+      "connected": "Connected",
+      "sandbox": "Sandbox",
+      "waiting": "Awaiting access"
+    }
   },
   "analytics": {
     "subtitle": "Performance across every platform a project is bound to.",
@@ -1850,6 +1867,24 @@
       "crm": "CRM",
       "website": "Website",
       "manual": "Entered by hand"
+    },
+    "issueKind": {
+      "no_source": "No source",
+      "never_synced": "Not read yet",
+      "stale_sync": "Out of date",
+      "no_recent_events": "No events",
+      "primary_conversion_unseen": "Main conversion unseen",
+      "unmapped_event": "Unmapped event",
+      "no_primary_conversion": "No main conversion",
+      "purchase_without_value": "Purchase without value",
+      "duplicate_mapping": "Duplicate mapping",
+      "container_never_published": "Never published",
+      "container_unpublished_changes": "Unpublished changes",
+      "tag_paused": "Tag paused",
+      "tag_without_trigger": "Tag without trigger",
+      "tag_trigger_missing": "Trigger missing",
+      "measurement_id_not_in_container": "Wrong measurement ID",
+      "intent_signal_as_conversion": "Intent counted as conversion"
     }
   },
   "commerce": {
@@ -2548,7 +2583,8 @@
       "outstandingWarning": "{{count}} approved change has not been carried out, the oldest approved {{days}} days ago. Until somebody records making it, nothing has changed on the platform.",
       "outstandingWarning_other": "{{count}} approved changes have not been carried out, the oldest approved {{days}} days ago. Until somebody records making them, nothing has changed on the platforms.",
       "emptyTitle": "Nothing waiting",
-      "emptyBody": "No request is waiting for a decision and no approved change is waiting to be made."
+      "emptyBody": "No request is waiting for a decision and no approved change is waiting to be made.",
+      "outstandingShort": "{{count}} approved, not done · oldest {{days}}d"
     },
     "kinds": {
       "title": "What is waiting for a decision",
@@ -2627,7 +2663,11 @@
       "removeField": "Remove this field",
       "submit": "Send for approval"
     },
-    "raise": "Raise a request"
+    "raise": "Raise a request",
+    "rate": {
+      "approved": "Approved",
+      "carriedOut": "Carried out"
+    }
   },
   "notifications": {
     "title": "Notifications",
