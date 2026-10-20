@@ -146,6 +146,8 @@ use App\Application\Shared\Contract\OwnerDirectory;
 use App\Application\Shared\Contract\WorkLedger;
 use App\Application\Shortcuts\Contract\ShortcutStore;
 use App\Application\SurfaceView\Contract\SurfaceViewRepository;
+use App\Application\System\Contract\DeploymentRecord;
+use App\Application\System\Contract\RepositoryStatusSource;
 use App\Application\System\Query\GetSystemHealth;
 use App\Application\Tags\Contract\TagStore;
 use App\Application\Workspace\Contract\AssignedWorkRepository;
@@ -276,6 +278,8 @@ use App\Infrastructure\System\CacheHealthProbe;
 use App\Infrastructure\System\DatabaseHealthProbe;
 use App\Infrastructure\System\DatabaseWorkLedger;
 use App\Infrastructure\System\FailedWorkHealthProbe;
+use App\Infrastructure\System\FileDeploymentRecord;
+use App\Infrastructure\System\GitHubRepositoryStatusSource;
 use App\Infrastructure\System\LaravelApplicationInfo;
 use App\Infrastructure\System\QueueHealthProbe;
 use App\Interface\Export\ReportExportRenderer;
@@ -577,6 +581,14 @@ final class AppServiceProvider extends ServiceProvider
 
         $this->registerAssistant();
 
+        $this->app->bind(RepositoryStatusSource::class, static fn ($app): RepositoryStatusSource => new GitHubRepositoryStatusSource(
+            $app->make(HttpFactory::class),
+            $app->make(\Illuminate\Contracts\Cache\Repository::class),
+            (string) config('services.github.repository'),
+        ));
+        $this->app->bind(DeploymentRecord::class, static fn (): DeploymentRecord => new FileDeploymentRecord(
+            is_string(config('services.github.deployed_sha_file')) ? config('services.github.deployed_sha_file') : null,
+        ));
         $this->app->singleton(GetSystemHealth::class, fn ($app): GetSystemHealth => new GetSystemHealth(
             $app->make(ApplicationInfo::class),
             $app->tagged(HealthProbe::class),
