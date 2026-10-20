@@ -8,6 +8,7 @@ use App\Application\Reporting\Contract\ReportRepository;
 use App\Application\Reporting\Contract\ReportShareStore;
 use App\Application\Reporting\Contract\SnapshotSerialiser;
 use App\Application\Reporting\DTO\SharedFilterRequest;
+use App\Application\Reporting\Service\ClientSafePayload;
 use App\Application\Reporting\Service\NarrowSharedReport;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Reporting\Exception\FilterOutsideScope;
@@ -38,6 +39,7 @@ final readonly class ReadSharedReport
         private RenderReport $render,
         private SnapshotSerialiser $serialiser,
         private NarrowSharedReport $narrow,
+        private ClientSafePayload $clientSafe,
         private Clock $clock,
     ) {}
 
@@ -112,7 +114,7 @@ final readonly class ReadSharedReport
                 'state' => $state,
                 'message' => null,
                 'mode' => RenderMode::Snapshot,
-                'payload' => $snapshot['payload'],
+                'payload' => ($this->clientSafe)($snapshot['payload'], $share->id),
                 'recipient' => $share->recipientLabel,
                 /*
                  * A frozen report is one fixed answer. Its figures were taken at one moment and cannot be re-cut
@@ -173,7 +175,7 @@ final readonly class ReadSharedReport
             'state' => $state,
             'message' => null,
             'mode' => RenderMode::Live,
-            'payload' => $this->serialiser->toArray($rendered),
+            'payload' => ($this->clientSafe)($this->serialiser->toArray($rendered), $share->id),
             'recipient' => $share->recipientLabel,
             'filters' => [
                 'can_filter' => true,
