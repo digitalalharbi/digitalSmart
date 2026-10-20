@@ -7,7 +7,10 @@ namespace App\Application\Reporting\Query;
 use App\Application\Reporting\Contract\ReportRepository;
 use App\Application\Reporting\Contract\ReportShareStore;
 use App\Application\Reporting\Contract\SnapshotSerialiser;
+use App\Application\Reporting\DTO\SharedFilterRequest;
+use App\Application\Reporting\Service\NarrowSharedReport;
 use App\Application\Shared\Contract\Clock;
+use App\Domain\Reporting\Exception\FilterOutsideScope;
 use App\Domain\Reporting\RenderMode;
 use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\ShareState;
@@ -34,6 +37,7 @@ final readonly class ReadSharedReport
         private ReportRepository $reports,
         private RenderReport $render,
         private SnapshotSerialiser $serialiser,
+        private NarrowSharedReport $narrow,
         private Clock $clock,
     ) {}
 
@@ -44,9 +48,12 @@ final readonly class ReadSharedReport
      *     mode: ?RenderMode,
      *     payload: ?array<string, mixed>,
      *     recipient: ?string,
+     *     filters: ?array<string, mixed>,
      * }
+     *
+     * @throws FilterOutsideScope
      */
-    public function __invoke(string $token): array
+    public function __invoke(string $token, ?SharedFilterRequest $filter = null): array
     {
         $share = $this->shares->findByToken($token);
 
@@ -61,6 +68,7 @@ final readonly class ReadSharedReport
                 'mode' => null,
                 'payload' => null,
                 'recipient' => null,
+                'filters' => null,
             ];
         }
 
@@ -74,6 +82,7 @@ final readonly class ReadSharedReport
                 'mode' => null,
                 'payload' => null,
                 'recipient' => null,
+                'filters' => null,
             ];
         }
 
@@ -87,10 +96,13 @@ final readonly class ReadSharedReport
                     'mode' => null,
                     'payload' => null,
                     'recipient' => null,
+                    'filters' => null,
                 ];
             }
 
-            $this->shares->recordView($share->id, $now);
+            if ($filter === null || ! $filter->refinement) {
+                $this->shares->recordView($share->id, $now);
+            }
 
             /*
              * The stored payload, unchanged. Not re-rendered, not merged with today's figures — that is the whole
@@ -102,6 +114,12 @@ final readonly class ReadSharedReport
                 'mode' => RenderMode::Snapshot,
                 'payload' => $snapshot['payload'],
                 'recipient' => $share->recipientLabel,
+                /*
+                 * A frozen report is one fixed answer. Its figures were taken at one moment and cannot be re-cut
+                 * without reading the live tables, which is exactly what a snapshot exists not to do — so no filter is
+                 * offered and a filter in the request is ignored, never turned into a query.
+                 */
+                'filters' => ['can_filter' => false, 'available' => null, 'applied' => null],
             ];
         }
 
@@ -118,16 +136,37 @@ final readonly class ReadSharedReport
                 'mode' => null,
                 'payload' => null,
                 'recipient' => null,
+                'filters' => null,
             ];
         }
 
-        $this->shares->recordView($share->id, $now);
+        $request = $filter ?? new SharedFilterRequest;
+        $base = $report->definition->window->resolve(
+            $now,
+            $report->definition->customFrom,
+            $report->definition->customUntil,
+        );
+
+        /*
+         * The visitor's request is looked up inside this link's own scope before it touches a query. Anything outside
+         * it throws, and the controller turns that into a refusal.
+         */
+        $narrowing = $this->narrow->narrow($share->id, $share->workspaceId, $report, $base, $request);
+
+        /*
+         * A view is the page being opened, not the page being refined. Changing platform, campaign or dates is the
+         * same visit, and a count that rose with every click would be a reading habit presented as interest.
+         */
+        if (! $request->refinement) {
+            $this->shares->recordView($share->id, $now);
+        }
 
         $rendered = ($this->render)(
             $share->workspaceId,
             $report,
             // Explicit, so no future configuration can make this path serve an internal render.
             ReportAudience::ClientSafe,
+            $narrowing,
         );
 
         return [
@@ -136,6 +175,19 @@ final readonly class ReadSharedReport
             'mode' => RenderMode::Live,
             'payload' => $this->serialiser->toArray($rendered),
             'recipient' => $share->recipientLabel,
+            'filters' => [
+                'can_filter' => true,
+                'available' => $this->narrow->options($share->id, $share->workspaceId, $report, $base) + [
+                    'period' => ['from' => $base->startDate(), 'until' => $base->endDate()],
+                ],
+                'applied' => [
+                    'platforms' => $narrowing->providers,
+                    'campaigns' => $request->campaigns,
+                    'store' => $request->store,
+                    'from' => $narrowing->period?->startDate(),
+                    'until' => $narrowing->period?->endDate(),
+                ],
+            ],
         ];
     }
 }

@@ -322,3 +322,32 @@ earlier period's rate when the periods are comparable) and the comparison period
 Nothing in it can name a person or lead back to a record: no store id, provider id, customer, order or contact — a store
 is its own name, a product is as it was sold. There is deliberately no conversion rate and no funnel: the report holds no
 store sessions, and ad clicks are not a denominator for a store's orders.
+
+
+## Narrowing a shared report
+
+**The token defines access; a filter only narrows it.** `GET /api/shared-reports/{token}` accepts `platform` (comma
+list), `campaign` (comma list of opaque keys), `store` (one opaque key), `from` and `until` (`Y-m-d`), and `refine=1`.
+
+- **Scope first, request second.** `NarrowSharedReport` derives what the link may show from the report itself — its
+  client, its own filters, its resolved period — and only then looks each requested value up *inside* it. A platform with
+  no rows in the report, a campaign key not in this link's list, a store of another client, a day outside the period: none
+  is found, and a value not found throws `FilterOutsideScope` (HTTP 422, `code: filter_out_of_scope`). There is no path from
+  a request value to a query that skips the lookup. Parameters that are not filters (`client_id`, `report_id`,
+  `workspace_id`, `project_id`, `providers[]`) are not read at all.
+- **Opaque keys.** Campaigns and stores are offered as `sha256(shareId|entityId)[:16]`. A key from one link means nothing
+  on another, and the page never holds an internal id. The options are what the report contains: a dimension with one
+  value is not offered.
+- **Live and frozen.** A live link re-renders with the narrowed scope. A snapshot link is one fixed answer: `filters` is
+  `{can_filter: false}`, a requested filter is ignored and the stored payload is served unchanged — it never reads live
+  tables.
+- **A narrowed period has no comparison.** The equally long stretch before a sub-range reaches back past the period the
+  link was written to show; it is dropped, not recomputed.
+- **Sections that cannot follow a filter are hidden, not mislabelled.** Leads and a store's orders carry no ad platform or
+  campaign, so under a platform or campaign filter they render empty with a sentence. A store filter keeps the section's
+  revenue authority and removes the multi-store comparison.
+- **Views.** A visit is the page being opened. Requests with `refine=1` — the page sends it for every change after the
+  first read — do not call `recordView`. (Nothing stops a visitor omitting it; the only thing that buys them is a higher
+  count on their own link.)
+- **No server cache exists for this read**, so there is nothing to cross tenants. The page's own cache key is the token plus
+  the normalised filter string, so two links never share an entry.

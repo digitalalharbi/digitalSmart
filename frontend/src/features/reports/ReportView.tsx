@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { CalendarClock, Download, Snowflake, TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/shared/ui/alert';
@@ -23,6 +23,10 @@ type ReportViewProps = {
   csvHref?: string | undefined;
   /** The same figures, typed. Offered beside the CSV rather than instead of it: a CSV is what a script reads. */
   xlsxHref?: string | undefined;
+  /** A row of controls under the header — the shared page's filters. Absent everywhere else. */
+  filterBar?: ReactNode | undefined;
+  /** Whether a visitor's filters are on, which changes what an empty report means: nothing matches, not nothing recorded. */
+  isFiltered?: boolean | undefined;
 };
 
 /**
@@ -42,7 +46,13 @@ type ReportViewProps = {
  * because a reader who sees no comparison and no explanation assumes the feature is broken and does the arithmetic
  * themselves — against whatever period they happen to pick.
  */
-export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
+export function ReportView({
+  report,
+  csvHref,
+  xlsxHref,
+  filterBar,
+  isFiltered = false,
+}: ReportViewProps) {
   const { t, i18n } = useTranslation();
   /*
    * Two readings of one report. Executive is the answer — the scorecards and the trends; detailed is the
@@ -191,10 +201,14 @@ export function ReportView({ report, csvHref, xlsxHref }: ReportViewProps) {
         )}
       </header>
 
-      {report.is_empty ? (
+      {filterBar}
+
+      {report.is_empty || (isFiltered && report.sections.every((section) => section.is_empty)) ? (
         <EmptyState
-          title={t('reports.view.emptyTitle')}
-          description={t('reports.view.emptyBody')}
+          title={isFiltered ? t('sharedReport.filters.empty') : t('reports.view.emptyTitle')}
+          description={
+            isFiltered ? t('sharedReport.filters.emptyBody') : t('reports.view.emptyBody')
+          }
         />
       ) : (
         <div className="flex flex-col gap-6">

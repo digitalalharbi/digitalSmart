@@ -223,7 +223,7 @@ export const queryKeys = {
      * A report read through a shared link. Keyed by the token because that is all the reader has — there is no
      * report id on that path, and deliberately so.
      */
-    shared: (token: string) => ['reports', 'shared', token] as const,
+    shared: (token: string, filters = '') => ['reports', 'shared', token, filters] as const,
   },
   portal: {
     all: () => ['portal'] as const,
