@@ -351,3 +351,15 @@ list), `campaign` (comma list of opaque keys), `store` (one opaque key), `from` 
   count on their own link.)
 - **No server cache exists for this read**, so there is nothing to cross tenants. The page's own cache key is the token plus
   the normalised filter string, so two links never share an entry.
+
+
+### No internal id reaches a visitor
+
+The agency's own render carries a campaign's id as a breakdown row's `key` and the report's own id as `id`: the agency's
+screens have a use for them. The shared read does not send them. `ClientSafePayload` runs over the payload of a live render
+**and** of a stored snapshot (a snapshot taken before it existed holds the ids it was rendered with, and the stored payload
+is not rewritten) and replaces them with `sha256(shareId|value)` cut to twelve characters — stable within a link, different
+between two, not reversible to the id. A second pass replaces any string that is, in its entirety, a UUID, so a field added
+later cannot start leaking before somebody lists it. Filter options are not touched: they are already opaque per-link keys.
+The CSV, workbook and deck writers never read an id. `SharedPayloadIdsTest` collects every id in the report tables and
+searches the serialised response for each, and for anything UUID-shaped.
