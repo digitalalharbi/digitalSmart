@@ -161,7 +161,7 @@ describe('Arabic plural groups', () => {
         }
       }
     };
-    walk(ar as Tree, '');
+    walk(ar, '');
 
     expect(missing).toEqual([]);
   });
