@@ -123,7 +123,7 @@ test.describe('shared report filters', () => {
         timeout: 30_000,
       });
       await expect(visiting).not.toHaveURL(/campaign=|from=/);
-      await expect(visiting.getByRole('heading', { level: 1 })).toBeVisible();
+      await expect(visiting.getByRole('heading', { name: /^Widening/ })).toBeVisible();
     } finally {
       await visitor.close();
     }
