@@ -135,3 +135,34 @@ describe('the two locale files', () => {
     expect([...arabicBases].filter((key) => !englishBases.has(key))).toEqual([]);
   });
 });
+
+/*
+ * Arabic has six plural categories. i18next looks up exactly the category the count falls in and does not fall
+ * back to `_other`, so a group with only `_one` and `_other` renders in English for 0, 2 and 3–10 — the counts
+ * that are most of what a reader sees. Found on the commerce page, where "2 orders are placed…" appeared in
+ * English inside an Arabic interface.
+ */
+describe('Arabic plural groups', () => {
+  it('carry all six categories wherever they carry any', () => {
+    const missing: string[] = [];
+    const walk = (tree: Tree, prefix: string) => {
+      const keys = new Set(Object.keys(tree));
+      for (const key of keys) {
+        const value = tree[key];
+        if (typeof value !== 'string' && value !== undefined) {
+          walk(value, `${prefix}${key}.`);
+        } else if (key.endsWith('_other')) {
+          const base = key.slice(0, -'_other'.length);
+          for (const category of ['zero', 'one', 'two', 'few', 'many']) {
+            if (!keys.has(`${base}_${category}`)) {
+              missing.push(`${prefix}${base}_${category}`);
+            }
+          }
+        }
+      }
+    };
+    walk(ar as Tree, '');
+
+    expect(missing).toEqual([]);
+  });
+});
