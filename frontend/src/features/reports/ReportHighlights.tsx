@@ -4,8 +4,11 @@ import { formatChange, formatMetric } from '@/shared/metrics';
 import type { MetricValue } from '@/shared/metrics';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { FunnelBars } from '@/shared/ui/viz';
 import {
   campaignCards,
+  funnelStages,
   insights,
   recommendations,
   type CampaignCard,
@@ -37,12 +40,13 @@ export function ReportHighlights({
   /** Opens the working: the tables and breakdowns behind these cards. Absent when they are already showing. */
   onViewDetails?: (() => void) | undefined;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const found = insights(report);
   const { top, attention } = campaignCards(report);
   const advice = recommendations(report);
+  const funnel = funnelStages(report);
 
-  if (found.length === 0 && top.length === 0 && advice.length === 0) {
+  if (found.length === 0 && top.length === 0 && advice.length === 0 && funnel === null) {
     return null;
   }
 
@@ -57,6 +61,26 @@ export function ReportHighlights({
             <InsightCard key={insight.key} insight={insight} />
           ))}
         </ul>
+      )}
+
+      {funnel === null ? null : (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('reports.highlights.funnel')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FunnelBars
+              label={t('reports.highlights.funnel')}
+              notTracked={t('analytics.funnel.notTracked')}
+              stages={funnel.map((stage) => ({
+                key: stage.key,
+                label: stage.value.label,
+                value: stage.value.value,
+                display: formatMetric(stage.value, i18n.language, true),
+              }))}
+            />
+          </CardContent>
+        </Card>
       )}
 
       {top.length === 0 ? null : (

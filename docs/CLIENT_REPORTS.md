@@ -16,7 +16,7 @@ Status vocabulary as in `CLAUDE.md`. `EXISTS` means it was built before this pha
 | 6 | Hero trend, metric switching, previous-period overlay | PARTIAL | Trend chart exists; switching and overlay not |
 | 7 | Platform comparison (ranking, rings, share donut) | PARTIAL | Ranking bars plus a share ring for additive metrics across platforms (unit-tested; no demo report has a platform breakdown to look at); ROAS rings not |
 | 8 | Campaign ranking cards — top / needs attention | IMPLEMENTED_NOT_VERIFIED | Top three as the server ranked them; *needs attention* = clearly worse (25%) than the report's own ROAS/CPA/CPL, shown with that figure beside it. Only when the report has a campaign breakdown; rules and tests in `highlights.ts`. CI pending |
-| 9 | Funnel | NOT_STARTED | `FunnelBars` exists (Analytics, Leads); report section kind does not |
+| 9 | Funnel | IMPLEMENTED_NOT_VERIFIED | Impressions → clicks → (add to cart → checkouts →) purchases, or → leads, or → conversions, built only from stages the report's own scorecards carry; a stage asked for and unread is drawn as not tracked; no sessions stage, because a report holds none. No demo report carries an outcome metric, so it is covered by tests. CI pending |
 | 10 | Commerce report (authorities never merged) | NOT_STARTED | Store analytics exist in-app; no report section kind |
 | 11 | Lead report without PII | NOT_STARTED | Lead centre exists in-app |
 | 12 | Creative performance | BLOCKED_EXTERNAL | No real creative assets or thumbnails exist; placeholders must not be presented as creatives |

@@ -121,4 +121,33 @@ describe('ReportHighlights', () => {
     rerender(<ReportHighlights report={{ sections: [] } as unknown as RenderedReport} />);
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('draws a funnel from the stages the report carries, and none when it lacks an outcome', async () => {
+    const withOutcome = {
+      sections: [
+        section({
+          totals: set({
+            impressions: value('impressions', 1000),
+            clicks: value('clicks', 50),
+            leads: value('leads', 5),
+          }),
+        }),
+      ],
+    } as unknown as RenderedReport;
+    const without = {
+      sections: [
+        section({
+          totals: set({ impressions: value('impressions', 1000), clicks: value('clicks', 50) }),
+        }),
+      ],
+    } as unknown as RenderedReport;
+
+    const first = await renderWithProviders(<ReportHighlights report={withOutcome} />);
+    expect(screen.getByRole('list', { name: 'From seen to converted' })).toBeInTheDocument();
+    expect(screen.getByText('5%')).toBeInTheDocument();
+    first.unmount();
+
+    const second = await renderWithProviders(<ReportHighlights report={without} />);
+    expect(second.container).toBeEmptyDOMElement();
+  });
 });
