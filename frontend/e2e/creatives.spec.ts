@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ACCOUNTS, signIn } from './support/accounts';
+import { ACCOUNTS, DEMO_PASSWORD, signIn } from './support/accounts';
 
 /**
  * Creatives across the workspace: pictures first, honest where there is no picture, and usable on a phone and in Arabic.
@@ -31,7 +31,7 @@ test.describe('creatives', () => {
   test("narrows by platform from the server's own options", async ({ page }) => {
     await signIn(page, ACCOUNTS.owner);
     await page.goto('/creatives');
-    const platform = page.getByLabel('Platform');
+    const platform = page.locator('#creatives-Platform');
     await expect(platform).toBeVisible({ timeout: 30_000 });
 
     const options = await platform.locator('option').allTextContents();
@@ -65,7 +65,11 @@ test.describe('creatives', () => {
     test.use({ locale: 'ar-SA' });
 
     test('reads right to left, with Latin digits', async ({ page }) => {
-      await signIn(page, ACCOUNTS.owner);
+      await page.goto('/login');
+      await page.getByLabel('البريد الإلكتروني').fill(ACCOUNTS.owner);
+      await page.getByLabel('كلمة المرور').fill(DEMO_PASSWORD);
+      await page.getByRole('button', { name: 'تسجيل الدخول' }).click();
+      await expect(page.getByRole('heading', { level: 1, name: 'نظرة عامة' })).toBeVisible();
       await page.goto('/creatives');
 
       await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
