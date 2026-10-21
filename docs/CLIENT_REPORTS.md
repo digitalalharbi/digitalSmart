@@ -124,3 +124,19 @@ Media-first cards from the aggregate read above: Top / Rising / Fatiguing / Need
 2–4 creative comparison (one bar chart per figure plus each creative's CTR spark). A tile draws only an address the
 server vouches for, with no referrer; otherwise it says "Sample data — no preview" or "No preview from the platform".
 Organic content analytics remains `NOT_SUPPORTED`.
+
+### Creative report section (`kind: creative`)
+
+A report block with five views (`creative_view`): **top** (the layer's top-rated creatives), **performance** (largest by
+spend, a table), **format_mix** (money by format, or a count when the creatives are paid in two currencies),
+**comparison** (the four largest side by side) and **refresh** (wearing out or weak). Each view is a read of the same
+creative layer as the Creatives page (`CreativeIntelligenceReader`), inside the report's own client / platform /
+campaign scope — so, unlike store and lead sections, it **follows a visitor's platform and campaign narrowing** on a
+shared link.
+
+- No identifier leaves: rows carry a position, a name, the platform's name, a format, a vetted preview reference, the
+  figures, a daily CTR spark, a plain verdict and its evidence — never a creative, ad, campaign or account id.
+- A frozen snapshot freezes the section like any other.
+- CSV, XLSX and the PPTX deck carry the creatives as a table (spend, impressions, CTR, results, cost per result).
+- Needs a migration (`creative_view` column, widened kind check); reversible.
+- Presets: *Performance* now ends with top and refresh creatives.

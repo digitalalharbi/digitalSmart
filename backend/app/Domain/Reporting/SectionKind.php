@@ -48,6 +48,15 @@ enum SectionKind: string
      */
     case Lead = 'lead';
 
+    /**
+     * How the creatives behind a client's advertising performed: the pictures, the figures and the plain verdicts.
+     *
+     * Reads the same creative layer as the Creatives page, scoped by the report's own platform and campaign filters, so
+     * unlike a store or lead section it follows a visitor's narrowing. It carries a fixed set of figures and names its
+     * view (`CreativeView`) rather than taking a metric list.
+     */
+    case Creative = 'creative';
+
     public function needsDimension(): bool
     {
         return $this === self::Breakdown || $this === self::Table;
@@ -56,7 +65,7 @@ enum SectionKind: string
     /** Whether the section carries ad metrics at all. A store section carries a revenue authority instead. */
     public function usesMetrics(): bool
     {
-        return $this !== self::Store && $this !== self::Lead;
+        return $this !== self::Store && $this !== self::Lead && $this !== self::Creative;
     }
 
     /**
@@ -84,7 +93,7 @@ enum SectionKind: string
             self::Trend => 4,
             self::Breakdown => 3,
             self::Table => 8,
-            self::Store, self::Lead => 0,
+            self::Store, self::Lead, self::Creative => 0,
         };
     }
 
@@ -97,6 +106,7 @@ enum SectionKind: string
             self::Table => 'A table',
             self::Store => 'Store figures',
             self::Lead => 'Lead figures',
+            self::Creative => 'Creatives',
         };
     }
 
@@ -109,7 +119,7 @@ enum SectionKind: string
      */
     public function accepts(Metric $metric): bool
     {
-        if ($this === self::Store || $this === self::Lead) {
+        if ($this === self::Store || $this === self::Lead || $this === self::Creative) {
             return false;
         }
 

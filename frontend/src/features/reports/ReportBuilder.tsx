@@ -97,6 +97,7 @@ export function ReportBuilder({
         dimension: null,
         row_limit: null,
         revenue_source: null,
+        creative_view: null,
       },
     ],
   );
@@ -304,6 +305,7 @@ export function ReportBuilder({
                       dimension: null,
                       row_limit: null,
                       revenue_source: null,
+                      creative_view: null,
                     },
                   ])
                 }
@@ -348,6 +350,10 @@ export function ReportBuilder({
 
                                 updateSection(index, {
                                   kind: entry.kind,
+                                  creative_view:
+                                    entry.kind === 'creative'
+                                      ? (section.creative_view ?? 'top')
+                                      : null,
                                   metrics: keep.slice(0, entry.metric_cap),
                                   dimension: entry.needs_dimension
                                     ? (section.dimension ?? 'provider')
@@ -386,7 +392,21 @@ export function ReportBuilder({
                     )}
                   </div>
 
-                  {section.kind === 'lead' ? null : kind?.uses_metrics === false ? (
+                  {section.kind === 'lead' ? null : section.kind === 'creative' ? (
+                    <ChoiceGroup label={t('reports.builder.creativeView')}>
+                      <div className="flex flex-wrap gap-2">
+                        {(vocabulary?.creative_views ?? []).map((entry) => (
+                          <Choice
+                            key={entry.view}
+                            isSelected={section.creative_view === entry.view}
+                            onSelect={() => updateSection(index, { creative_view: entry.view })}
+                          >
+                            {entry.label}
+                          </Choice>
+                        ))}
+                      </div>
+                    </ChoiceGroup>
+                  ) : kind?.uses_metrics === false ? (
                     <ChoiceGroup
                       label={t('reports.builder.revenueSource')}
                       hint={t('reports.builder.revenueSourceHint')}

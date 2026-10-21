@@ -147,7 +147,7 @@ final readonly class DeckFromReport
                 table: $this->rowTable($section),
                 notes: $notes,
             ),
-            SectionKind::Table => new Slide(
+            SectionKind::Table, SectionKind::Creative => new Slide(
                 kind: SlideKind::Table,
                 title: $section->title,
                 lead: null,

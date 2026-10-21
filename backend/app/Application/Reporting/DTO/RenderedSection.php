@@ -51,6 +51,8 @@ final readonly class RenderedSection
         public ?StoreFigures $store = null,
         /** Present for a lead section: aggregates of the client's recorded leads, never a record. */
         public ?LeadFigures $lead = null,
+        /** Present for a creative section: the creatives of its view, never a platform identifier. */
+        public ?CreativeSection $creative = null,
     ) {}
 
     public function requiresLabel(): bool

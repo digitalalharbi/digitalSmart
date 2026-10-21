@@ -1,5 +1,6 @@
 import type {
   ComparisonModeValue,
+  CreativeViewValue,
   ReportVocabulary,
   ReportWindowValue,
   SectionDraft,
@@ -24,6 +25,8 @@ type Wanted = {
   kind: SectionKindValue;
   metrics?: string[];
   dimension?: string;
+  /** For a creative section: which part of the creative picture it shows. */
+  creativeView?: CreativeViewValue;
 };
 
 export type Preset = {
@@ -68,6 +71,8 @@ export const PRESETS: Preset[] = [
       { kind: 'trend', metrics: ['clicks'] },
       { kind: 'breakdown', dimension: 'provider', metrics: ['spend', 'clicks'] },
       { kind: 'breakdown', dimension: 'campaign', metrics: ['spend', 'clicks', 'conversions'] },
+      { kind: 'creative', creativeView: 'top' },
+      { kind: 'creative', creativeView: 'refresh' },
     ],
   },
   {
@@ -152,6 +157,27 @@ export function presetSections(preset: Preset, vocabulary: ReportVocabulary): Se
     const kind = vocabulary.sections.find((entry) => entry.kind === wanted.kind);
 
     if (kind === undefined) {
+      continue;
+    }
+
+    if (wanted.kind === 'creative') {
+      const view = wanted.creativeView ?? 'top';
+
+      /* A view the server does not list is left out, as an unknown shape is. */
+      if (!(vocabulary.creative_views ?? []).some((entry) => entry.view === view)) {
+        continue;
+      }
+
+      drafts.push({
+        kind: 'creative',
+        title: null,
+        metrics: [],
+        dimension: null,
+        row_limit: null,
+        revenue_source: null,
+        creative_view: view,
+      });
+
       continue;
     }
 

@@ -2994,7 +2994,8 @@
       "save": "Save the report",
       "currentClient": "Chosen client",
       "revenueSource": "Whose revenue",
-      "revenueSourceHint": "A store's revenue is a claim by one authority. Add a second section to show another — they are never added together."
+      "revenueSourceHint": "A store's revenue is a claim by one authority. Add a second section to show another — they are never added together.",
+      "creativeView": "What to show"
     },
     "share": {
       "title": "Snapshots and links",
@@ -3272,6 +3273,16 @@
         "campaigns": "The campaigns",
         "advice": "Worth acting on"
       }
+    },
+    "creative": {
+      "needTwo": "A comparison needs at least two creatives.",
+      "emptyTitle": "No creatives in this period",
+      "emptyBody": "Nothing ran with a creative in this period, or none could be rated.",
+      "platform": "Platform",
+      "format": "Format",
+      "results": "Results",
+      "verdict": "Verdict",
+      "creative": "Creative"
     }
   },
   "sharedReport": {

@@ -28,7 +28,10 @@ export type ComparisonModeValue = 'none' | 'previous_period' | 'same_period_last
 
 export type ReportAudienceValue = 'internal' | 'client_safe';
 
-export type SectionKindValue = 'scorecard' | 'trend' | 'breakdown' | 'table' | 'store' | 'lead';
+export type SectionKindValue =
+  'scorecard' | 'trend' | 'breakdown' | 'table' | 'store' | 'lead' | 'creative';
+
+export type CreativeViewValue = 'top' | 'performance' | 'format_mix' | 'comparison' | 'refresh';
 
 export type RenderModeValue = 'live' | 'snapshot';
 
@@ -92,6 +95,8 @@ export type ReportVocabulary = {
   dimensions: DimensionInfo[];
   /** Who may be named as the claimant of a store's revenue. */
   revenue_sources: RevenueSourceInfo[];
+  /** The parts of the creative picture a creative section can show. */
+  creative_views?: { view: CreativeViewValue; label: string }[];
   max_share_days: number;
 };
 
@@ -133,6 +138,40 @@ export type RenderedSection = {
   store_detail?: StoreDetail | null;
   /** Aggregates of the client's recorded leads, for a lead section. Never a record. */
   lead?: LeadAggregates | null;
+  /** The creatives of a creative section's view. Positions and names only — no identifier of any kind. */
+  creative?: CreativeSectionData | null;
+};
+
+export type CreativeSectionRow = {
+  position: number;
+  label: string;
+  platform: string;
+  platform_label: string;
+  format: string;
+  format_label: string;
+  media: {
+    state: 'available' | 'fixture' | 'none';
+    kind: 'image' | 'video' | 'none';
+    url: string | null;
+    origin: 'app' | 'provider' | null;
+  };
+  ads: number;
+  campaigns: string[];
+  campaign_count: number;
+  metrics: RenderedMetricSet;
+  trend: Array<{ date: string; spend: number | null; ctr: number | null }>;
+  verdict: 'top' | 'rising' | 'stable' | 'fatiguing' | 'weak' | null;
+  verdict_label: string | null;
+  evidence: Array<{ signal: string; value: number | string | null }>;
+};
+
+export type CreativeSectionData = {
+  view: CreativeViewValue;
+  total: number;
+  /** True when the mix is a share of money; false when it counts creatives because the money is in two currencies. */
+  mix_is_spend: boolean;
+  mix: Array<{ key: string; label: string; value: number }>;
+  rows: CreativeSectionRow[];
 };
 
 /**
@@ -274,6 +313,8 @@ export type SectionDraft = {
   row_limit: number | null;
   /** Who claims the revenue, for a store section. */
   revenue_source?: string | null;
+  /** Which part of the creative picture a creative section shows. */
+  creative_view?: CreativeViewValue | null;
 };
 
 export type ReportDraft = {

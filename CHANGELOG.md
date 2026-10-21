@@ -4,6 +4,19 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Creatives: aggregate read, workspace page, client-safe report section
+
+### Added
+- **`GET /api/analytics/creatives`** — one scoped, paged read of how creatives performed (asset or ad grain), on the shared
+  analytics engine; deterministic fatigue verdicts with evidence; a media reference that is a real image or an honest
+  "no preview" (fixture hosts and credential-bearing URLs are never passed on).
+- **`/creatives`** — media-first views (Top, Rising, Fatiguing, Needs replacement), filters, format and platform mix,
+  2–4 creative comparison.
+- **Creative report section** with five views, shared-link narrowing by platform and campaign, snapshots, CSV/XLSX/deck.
+
+### Fixed
+- A platform's own placeholder name ("Ad 40110003") no longer reaches a client surface with the provider's id in it.
+
 ## Visual first, batch 4: leads, commerce, presentations, tracking, administration
 
 ### Changed

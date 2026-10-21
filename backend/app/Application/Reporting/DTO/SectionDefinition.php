@@ -7,6 +7,7 @@ namespace App\Application\Reporting\DTO;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
 use App\Domain\Commerce\RevenueSource;
+use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\Exception\InvalidReportDefinition;
 use App\Domain\Reporting\SectionKind;
 
@@ -22,6 +23,8 @@ final readonly class SectionDefinition
         public ?int $rowLimit = null,
         /** Who claims the revenue, for a store section; null for every other kind. */
         public ?RevenueSource $revenueSource = null,
+        /** Which part of the creative picture a creative section shows; null for every other kind. */
+        public ?CreativeView $creativeView = null,
     ) {}
 
     /**
@@ -35,6 +38,14 @@ final readonly class SectionDefinition
     public function assertValid(): void
     {
         if ($this->kind === SectionKind::Lead) {
+            return;
+        }
+
+        if ($this->kind === SectionKind::Creative) {
+            if ($this->creativeView === null) {
+                throw InvalidReportDefinition::creativeViewRequired();
+            }
+
             return;
         }
 

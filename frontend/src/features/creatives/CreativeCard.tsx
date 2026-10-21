@@ -34,14 +34,15 @@ function Figure({ label, value }: { label: string; value: string }) {
  */
 export function CreativeCard({
   row,
-  chosen,
-  canChoose,
+  chosen = false,
+  canChoose = false,
   onToggle,
 }: {
   row: CreativeRow;
-  chosen: boolean;
-  canChoose: boolean;
-  onToggle: () => void;
+  chosen?: boolean;
+  canChoose?: boolean;
+  /** Absent where there is nothing to compare against — a report is read, not worked. */
+  onToggle?: (() => void) | undefined;
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -113,16 +114,18 @@ export function CreativeCard({
           />
         </div>
 
-        <label className="text-content-secondary flex items-center gap-2 text-xs">
-          <input
-            type="checkbox"
-            checked={chosen}
-            disabled={!chosen && !canChoose}
-            onChange={onToggle}
-          />
-          {t('creatives.compare')}
-          <span className="sr-only"> — {row.label}</span>
-        </label>
+        {onToggle === undefined ? null : (
+          <label className="text-content-secondary flex items-center gap-2 text-xs">
+            <input
+              type="checkbox"
+              checked={chosen}
+              disabled={!chosen && !canChoose}
+              onChange={onToggle}
+            />
+            {t('creatives.compare')}
+            <span className="sr-only"> — {row.label}</span>
+          </label>
+        )}
       </div>
     </li>
   );
