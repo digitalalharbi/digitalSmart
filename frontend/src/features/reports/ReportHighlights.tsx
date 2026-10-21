@@ -72,12 +72,27 @@ export function ReportHighlights({
             <FunnelBars
               label={t('reports.highlights.funnel')}
               notTracked={t('analytics.funnel.notTracked')}
-              stages={funnel.map((stage) => ({
-                key: stage.key,
-                label: stage.value.label,
-                value: stage.value.value,
-                display: formatMetric(stage.value, i18n.language, true),
-              }))}
+              /*
+               * The search for the biggest leak starts after the first step: impressions to clicks is click-through
+               * rate, always the steepest drop and judged on its own. What is left is where an audience that did click
+               * was lost.
+               */
+              leakFrom={2}
+              leakLabel={t('reports.highlights.leak')}
+              stages={funnel.map((stage) => {
+                const change = formatChange(stage.value, i18n.language);
+
+                return {
+                  key: stage.key,
+                  label: stage.value.label,
+                  value: stage.value.value,
+                  display: formatMetric(stage.value, i18n.language, true),
+                  /* The server's own change against the earlier period; absent where it withheld one. */
+                  ...(change === null
+                    ? {}
+                    : { change: { text: change, good: stage.value.change_is_good } }),
+                };
+              })}
             />
           </CardContent>
         </Card>

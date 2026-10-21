@@ -224,6 +224,8 @@ function Funnel({ lead, n }: { lead: LeadAggregates; n: (value: number) => strin
       <FunnelBars
         label={t('reports.lead.funnel')}
         notTracked={t('analytics.funnel.notTracked')}
+        leakFrom={1}
+        leakLabel={t('reports.highlights.leak')}
         stages={stages.map((stage) => ({
           key: stage.key,
           label: t(`reports.lead.funnelStage.${stage.key}`),
