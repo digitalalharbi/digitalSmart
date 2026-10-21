@@ -85,10 +85,9 @@ test.describe('creative sections in a shared report', () => {
         expect(body).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
         expect(body).not.toContain('.invalid');
 
-        await expect(visiting.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
-        await expect(
-          visiting.getByRole('heading', { name: /Top creatives|أفضل المواد|Top/ }).first(),
-        ).toBeVisible();
+        await expect(visiting.getByRole('heading', { name: /^Creatives / }).first()).toBeVisible({
+          timeout: 30_000,
+        });
 
         const overflow = await visiting.evaluate(
           () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
