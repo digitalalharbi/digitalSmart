@@ -907,7 +907,8 @@
     "automationAgents": "الوكلاء",
     "automationRoutines": "المهام الدورية",
     "automationHistory": "سجل الإجراءات",
-    "automationChanges": "سجل التغييرات"
+    "automationChanges": "سجل التغييرات",
+    "creatives": "المواد الإبداعية"
   },
   "actions": {
     "search": "بحث",
@@ -4731,5 +4732,74 @@
       "ugc": "محتوى المستخدمين",
       "influencer": "مؤثّر"
     }
+  },
+  "creatives": {
+    "title": "المواد الإبداعية",
+    "description": "أداء كل مادة إبداعية بحسب أرقام المنصة نفسها.",
+    "filters": "مرشحات المواد الإبداعية",
+    "client": "العميل",
+    "project": "المشروع",
+    "platform": "المنصة",
+    "format": "الصيغة",
+    "any": "الكل",
+    "clear": "مسح",
+    "oneCampaign": "حملة واحدة",
+    "filtered": "مفلتر",
+    "views": "عرض المواد الإبداعية",
+    "view": {
+      "top": "الأفضل",
+      "rising": "صاعد",
+      "fatiguing": "يتعب",
+      "weak": "يحتاج استبدال"
+    },
+    "verdict": {
+      "top": "الأفضل",
+      "rising": "صاعد",
+      "stable": "مستقر",
+      "fatiguing": "يتعب",
+      "weak": "استبدال"
+    },
+    "none": {
+      "top": "لا توجد مادة بارزة بعد.",
+      "rising": "لا شيء صاعد بعد.",
+      "fatiguing": "لا شيء يتعب.",
+      "weak": "لا شيء يحتاج استبدال."
+    },
+    "media": {
+      "none": "لا معاينة من المنصة",
+      "fixture": "بيانات تجريبية — بلا معاينة"
+    },
+    "evidence": {
+      "ctr": "نسبة النقر",
+      "frequency": "التكرار",
+      "cost": "تكلفة النتيجة",
+      "conversionRate": "معدل التحويل"
+    },
+    "spend": "الإنفاق",
+    "frequency": "التكرار",
+    "compare": "قارن",
+    "pickOne": "اختر مادة أخرى للمقارنة.",
+    "comparison": "المقارنة",
+    "best": "الأفضل",
+    "formatMix": "توزيع الصيغ",
+    "platformMix": "توزيع المنصات",
+    "bySpend": "بحسب الإنفاق",
+    "byCount": "بحسب عدد المواد",
+    "largest": "عرض الأكبر {{shown}} بحسب الإنفاق من أصل {{total}}.",
+    "error": "تعذّر تحميل المواد الإبداعية. حاول بعد قليل.",
+    "emptyTitle": "لا مواد إبداعية في هذا الاختيار",
+    "empty": "لم يعمل شيء بمادة إبداعية في هذه الفترة، أو أن المرشحات لا تُبقي شيئاً. وسّع الفترة أو امسح مرشحاً.",
+    "ads_zero": "{{count}} إعلان",
+    "ads_one": "إعلان واحد",
+    "ads_two": "إعلانان",
+    "ads_few": "{{count}} إعلانات",
+    "ads_many": "{{count}} إعلاناً",
+    "ads_other": "{{count}} إعلان",
+    "lastDays_zero": "آخر {{count}} يوم",
+    "lastDays_one": "آخر يوم",
+    "lastDays_two": "آخر يومين",
+    "lastDays_few": "آخر {{count}} أيام",
+    "lastDays_many": "آخر {{count}} يوماً",
+    "lastDays_other": "آخر {{count}} يوم"
   }
 }

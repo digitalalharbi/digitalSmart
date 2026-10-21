@@ -62,6 +62,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'analytics.view',
   },
   {
+    path: '/creatives',
+    labelKey: 'nav.creatives',
+    icon: 'Images',
+    section: 'intelligence',
+    phase: 'Phase 4',
+    // The endpoint checks the same permission the rest of the analytics surface does.
+    permission: 'analytics.view',
+  },
+  {
     path: '/creative-hub',
     labelKey: 'nav.creativeHub',
     icon: 'Palette',

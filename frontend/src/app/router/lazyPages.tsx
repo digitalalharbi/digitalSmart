@@ -174,3 +174,7 @@ export const AutomationPage = lazy(async () => ({
 export const AiCenterPage = lazy(async () => ({
   default: (await import('@/features/ai-center/AiCenterPage')).AiCenterPage,
 }));
+
+export const CreativesPage = lazy(async () => ({
+  default: (await import('@/features/creatives/CreativesPage')).CreativesPage,
+}));

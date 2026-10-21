@@ -13,6 +13,7 @@ import { NotificationsPage } from '@/features/notifications';
 import { PlaceholderPage } from '@/features/placeholder';
 import {
   AnalyticsPage,
+  CreativesPage,
   ApprovalsPage,
   AssistantPage,
   AttributionPage,
@@ -75,6 +76,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/leads': deferred(<LeadCentrePage />),
   '/attribution': deferred(<AttributionPage />),
   '/creative-hub': deferred(<CreativeHubPage />),
+  '/creatives': deferred(<CreativesPage />),
   '/today': deferred(<ActionCenterPage />),
   '/ai-center': deferred(<AiCenterPage />),
   '/automation': deferred(<AutomationPage />),
