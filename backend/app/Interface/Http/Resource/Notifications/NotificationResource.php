@@ -6,7 +6,9 @@ namespace App\Interface\Http\Resource\Notifications;
 
 use App\Application\Notifications\DTO\NotificationFeed;
 use App\Application\Notifications\DTO\NotificationView;
+use App\Domain\Notifications\NotificationCategory;
 use App\Domain\Notifications\NotificationKind;
+use App\Domain\Notifications\NotificationSeverity;
 use DateTimeImmutable;
 
 final readonly class NotificationResource
@@ -46,6 +48,13 @@ final readonly class NotificationResource
             'id' => $view->id,
             'kind' => $view->kind->value,
             'kind_label' => $view->kind->label(),
+            'category' => $view->kind->category()->value,
+            'category_label' => $view->kind->category()->label(),
+            /* Decided by a rule when it was announced, and stored: a badge that agrees with the list under it. */
+            'severity' => $view->severity->value,
+            'severity_label' => $view->severity->label(),
+            /* The figures a card draws. Null for the kinds that carry a sentence and a link only. */
+            'payload' => $view->payload,
             'needs_action' => $view->kind->needsAction(),
             /* The sentence as it was announced. Never re-rendered — see the migration's note. */
             'title' => $view->title,
@@ -63,6 +72,8 @@ final readonly class NotificationResource
             'is_unread' => $view->isUnread(),
             'is_waiting' => $view->isWaiting(),
             'read_at' => $view->readAt?->format(DateTimeImmutable::ATOM),
+            'clicked_at' => $view->clickedAt?->format(DateTimeImmutable::ATOM),
+            'dismissed_at' => $view->dismissedAt?->format(DateTimeImmutable::ATOM),
             'created_at' => $view->createdAt->format(DateTimeImmutable::ATOM),
             /*
              * The recipient is deliberately absent. A reader is always the recipient, and a field nobody needs
@@ -82,7 +93,17 @@ final readonly class NotificationResource
                 /* The permission a recipient must hold. Published because it explains who gets told what. */
                 'requires' => $kind->requires()->value,
                 'subject' => $kind->subject()->value,
+                'category' => $kind->category()->value,
             ], NotificationKind::cases()),
+            'categories' => array_map(static fn (NotificationCategory $category): array => [
+                'category' => $category->value,
+                'label' => $category->label(),
+            ], NotificationCategory::cases()),
+            'severities' => array_map(static fn (NotificationSeverity $severity): array => [
+                'severity' => $severity->value,
+                'label' => $severity->label(),
+                'rank' => $severity->rank(),
+            ], NotificationSeverity::cases()),
         ];
     }
 }

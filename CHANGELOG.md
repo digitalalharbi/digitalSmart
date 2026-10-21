@@ -4,6 +4,26 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Performance notifications: severity by rule, a tab per kind, no spam, and the performance digests
+
+### Added
+- **Severity, category, payload, dedupe key and history on every notification.** `info / success / attention /
+  critical` decided by `NotificationSeverity::forAdverseChange` (the campaign health policy's own two lines) or by a
+  state, never by hand; every kind files itself under one tab; `payload` carries the figures a card draws; `clicked_at`
+  and `dismissed_at` complete read.
+- **Dedup and cooldown in `Announce`.** A draft with a dedupe key is written only when nothing under that key was said
+  inside its cooldown, or what was said was less severe.
+- **Eleven kinds**: the performance digest and ten event alerts (ROAS drop, cost per result rise, spend spike, budget
+  near limit, no results, tracking failure, campaign rejected, creative fatigue, campaign ended, under-delivering),
+  each with its permission and subject. Sources that raise the alerts are the next slice.
+- **Daily, weekly and monthly performance digests** composed from the analytics layer in the reader's own scope —
+  figures with change, best and weakest platform by one rule, top campaigns, the campaign and creative to look at,
+  ≤5 action cards, the budget part by permission, ≤3 evidence-backed recommendations weekly and monthly — landing at
+  nine in each workspace's own time zone (`digests:performance`, hourly).
+
+### Changed
+- `NotificationStore::announce` takes the draft; `RunExport` and `BuildDigests` announce through it with a severity.
+
 ## Creatives: aggregate read, workspace page, client-safe report section
 
 ### Added

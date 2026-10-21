@@ -19,6 +19,15 @@ enum DigestKind: string
     case WeeklyProjects = 'weekly_projects';
     case MonthlyExecutive = 'monthly_executive';
 
+    /*
+     * The performance digests. Not attention lists: figures against the earlier period, best and weakest
+     * platform, the campaign to look at, the creative wearing out, and a handful of action cards — composed by
+     * `BuildPerformanceDigests` from the analytics layer, in the reader's own scope.
+     */
+    case DailyPerformance = 'daily_performance';
+    case WeeklyPerformance = 'weekly_performance';
+    case MonthlyPerformance = 'monthly_performance';
+
     public function label(): string
     {
         return match ($this) {
@@ -26,6 +35,9 @@ enum DigestKind: string
             self::DailyBudget => 'Daily budget digest',
             self::WeeklyProjects => 'Weekly project digest',
             self::MonthlyExecutive => 'Monthly executive digest',
+            self::DailyPerformance => 'Daily performance digest',
+            self::WeeklyPerformance => 'Weekly performance digest',
+            self::MonthlyPerformance => 'Monthly executive summary',
         };
     }
 
@@ -38,7 +50,15 @@ enum DigestKind: string
             self::WeeklyProjects => [AttentionStream::Approvals, AttentionStream::Requests, AttentionStream::Tasks],
             /* Everything, and worst first: the executive reads the three largest risks, not the queue. */
             self::MonthlyExecutive => AttentionStream::cases(),
+            /* The performance digests read the queue for their action cards: what a figure cannot say. */
+            self::DailyPerformance, self::WeeklyPerformance => [AttentionStream::Campaigns, AttentionStream::Budgets, AttentionStream::Tracking, AttentionStream::Automation],
+            self::MonthlyPerformance => AttentionStream::cases(),
         };
+    }
+
+    public function isPerformance(): bool
+    {
+        return $this === self::DailyPerformance || $this === self::WeeklyPerformance || $this === self::MonthlyPerformance;
     }
 
     /** @return list<string> */

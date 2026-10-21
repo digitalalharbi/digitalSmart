@@ -33,14 +33,48 @@ export type NotificationKindValue =
   | 'client_request_needs_information'
   | 'client_request_answered'
   | 'client_request_replied'
-  | 'digest_ready';
+  | 'digest_ready'
+  | 'export_ready'
+  | 'performance_digest'
+  | 'roas_drop'
+  | 'cost_per_result_rise'
+  | 'spend_spike'
+  | 'budget_near_limit'
+  | 'no_results'
+  | 'tracking_failure'
+  | 'campaign_rejected'
+  | 'creative_fatigue'
+  | 'campaign_ended'
+  | 'campaign_under_delivering';
 
-export type NotificationSubjectValue = 'task' | 'approval' | 'client_request' | 'lead' | 'digest';
+export type NotificationSubjectValue =
+  | 'task'
+  | 'approval'
+  | 'client_request'
+  | 'lead'
+  | 'digest'
+  | 'export'
+  | 'campaign'
+  | 'budget'
+  | 'creative'
+  | 'measurement_source';
+
+export type NotificationSeverityValue = 'info' | 'success' | 'attention' | 'critical';
+
+export type NotificationCategoryValue =
+  'performance' | 'budget' | 'creative' | 'tracking' | 'approvals' | 'reports' | 'work';
 
 export type NotificationItem = {
   id: string;
   kind: NotificationKindValue;
   kind_label: string;
+  category: NotificationCategoryValue;
+  category_label: string;
+  /** Decided by a rule when it was announced, and stored. */
+  severity: NotificationSeverityValue;
+  severity_label: string;
+  /** The figures a card draws; null for the kinds that carry a sentence and a link only. */
+  payload: Record<string, unknown> | null;
   needs_action: boolean;
   /** The sentence as it was announced. Never re-rendered from the subject. */
   title: string;
@@ -58,6 +92,8 @@ export type NotificationItem = {
   is_unread: boolean;
   is_waiting: boolean;
   read_at: string | null;
+  clicked_at: string | null;
+  dismissed_at: string | null;
   created_at: string;
 };
 

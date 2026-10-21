@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Notifications\DTO;
 
 use App\Domain\Notifications\NotificationKind;
+use App\Domain\Notifications\NotificationSeverity;
 use App\Domain\Notifications\NotificationSubject;
 use DateTimeImmutable;
 
@@ -33,6 +34,11 @@ final readonly class NotificationView
         public ?string $actorName,
         public ?DateTimeImmutable $readAt,
         public DateTimeImmutable $createdAt,
+        public NotificationSeverity $severity = NotificationSeverity::Info,
+        /** @var array<string, mixed>|null */
+        public ?array $payload = null,
+        public ?DateTimeImmutable $clickedAt = null,
+        public ?DateTimeImmutable $dismissedAt = null,
     ) {}
 
     public function isUnread(): bool

@@ -111,6 +111,48 @@ enum NotificationKind: string
     /** A background export finished and is waiting to be downloaded. Goes only to the person who asked. */
     case ExportReady = 'export_ready';
 
+    /**
+     * Your daily, weekly or monthly performance digest is ready. The cadence and the headline figures travel in
+     * the payload; the digest row holds the rest.
+     */
+    case PerformanceDigest = 'performance_digest';
+
+    /*
+     * Event alerts. Each one is a figure that moved against somebody, or a state a campaign reached, with the
+     * evidence in the payload — never a sentence about how it feels. They carry a dedupe key, so "ROAS low"
+     * is said once per cooldown and again only when it got worse.
+     */
+
+    /** Return on ad spend fell against the earlier period. */
+    case RoasDrop = 'roas_drop';
+
+    /** Cost per result — a conversion, a lead — rose against the earlier period. */
+    case CostPerResultRise = 'cost_per_result_rise';
+
+    /** Spend jumped against the earlier period. */
+    case SpendSpike = 'spend_spike';
+
+    /** A budget is close to its approved amount with the period still running. */
+    case BudgetNearLimit = 'budget_near_limit';
+
+    /** Money went out and nothing came back: no leads, no purchases. */
+    case NoResults = 'no_results';
+
+    /** A measurement source stopped reporting, or a conversion the client pays for is not being measured. */
+    case TrackingFailure = 'tracking_failure';
+
+    /** The platform rejected a campaign or an ad. */
+    case CampaignRejected = 'campaign_rejected';
+
+    /** A creative is wearing out: click-through falling with frequency, cost or conversion rate corroborating. */
+    case CreativeFatigue = 'creative_fatigue';
+
+    /** A campaign reached its end date. */
+    case CampaignEnded = 'campaign_ended';
+
+    /** A live campaign is delivering well below its budget or its earlier pace. */
+    case CampaignUnderDelivering = 'campaign_under_delivering';
+
     public function label(): string
     {
         return match ($this) {
@@ -126,6 +168,17 @@ enum NotificationKind: string
             self::ClientRequestReplied => 'A client replied on a request',
             self::DigestReady => 'Your digest is ready',
             self::ExportReady => 'Your export is ready',
+            self::PerformanceDigest => 'Your performance digest is ready',
+            self::RoasDrop => 'ROAS dropped',
+            self::CostPerResultRise => 'Cost per result rose',
+            self::SpendSpike => 'Spend spiked',
+            self::BudgetNearLimit => 'A budget is near its limit',
+            self::NoResults => 'Spend with no results',
+            self::TrackingFailure => 'Tracking is failing',
+            self::CampaignRejected => 'A campaign was rejected',
+            self::CreativeFatigue => 'A creative is wearing out',
+            self::CampaignEnded => 'A campaign ended',
+            self::CampaignUnderDelivering => 'A campaign is under-delivering',
         };
     }
 
@@ -163,6 +216,44 @@ enum NotificationKind: string
             /* Digests are built from streams the recipient's permissions already admit; this only has to be a floor. */
             self::DigestReady => Permission::AnalyticsView,
             self::ExportReady => Permission::ReportsView,
+            self::PerformanceDigest,
+            self::RoasDrop,
+            self::CostPerResultRise,
+            self::SpendSpike,
+            self::NoResults,
+            self::CampaignRejected,
+            self::CampaignEnded,
+            self::CampaignUnderDelivering => Permission::AnalyticsView,
+            self::BudgetNearLimit => Permission::BudgetsView,
+            self::TrackingFailure => Permission::TrackingView,
+            self::CreativeFatigue => Permission::CreativeView,
+        };
+    }
+
+    /** The tab it is filed under. */
+    public function category(): NotificationCategory
+    {
+        return match ($this) {
+            self::TaskAssigned,
+            self::LeadAssigned,
+            self::ClientRequestSubmitted,
+            self::ClientRequestMoved,
+            self::ClientRequestNeedsInformation,
+            self::ClientRequestAnswered,
+            self::ClientRequestReplied => NotificationCategory::Work,
+            self::ApprovalRequested, self::ApprovalDecided, self::ApprovalEnacted => NotificationCategory::Approvals,
+            self::DigestReady, self::ExportReady => NotificationCategory::Reports,
+            self::PerformanceDigest,
+            self::RoasDrop,
+            self::CostPerResultRise,
+            self::SpendSpike,
+            self::NoResults,
+            self::CampaignRejected,
+            self::CampaignEnded,
+            self::CampaignUnderDelivering => NotificationCategory::Performance,
+            self::BudgetNearLimit => NotificationCategory::Budget,
+            self::TrackingFailure => NotificationCategory::Tracking,
+            self::CreativeFatigue => NotificationCategory::Creative,
         };
     }
 
@@ -185,7 +276,17 @@ enum NotificationKind: string
              * something from you" is a to-do list with the client's name on it, and the figure the portal leads
              * with has to be able to tell them apart.
              */
-            || $this === self::ClientRequestNeedsInformation;
+            || $this === self::ClientRequestNeedsInformation
+            /* Every alert but "it ended" asks for a decision; the digest is reading, not doing. */
+            || $this === self::RoasDrop
+            || $this === self::CostPerResultRise
+            || $this === self::SpendSpike
+            || $this === self::BudgetNearLimit
+            || $this === self::NoResults
+            || $this === self::TrackingFailure
+            || $this === self::CampaignRejected
+            || $this === self::CreativeFatigue
+            || $this === self::CampaignUnderDelivering;
     }
 
     public function subject(): NotificationSubject
@@ -199,8 +300,18 @@ enum NotificationKind: string
             self::ClientRequestNeedsInformation,
             self::ClientRequestAnswered,
             self::ClientRequestReplied => NotificationSubject::ClientRequest,
-            self::DigestReady => NotificationSubject::Digest,
+            self::DigestReady, self::PerformanceDigest => NotificationSubject::Digest,
             self::ExportReady => NotificationSubject::Export,
+            self::RoasDrop,
+            self::CostPerResultRise,
+            self::SpendSpike,
+            self::NoResults,
+            self::CampaignRejected,
+            self::CampaignEnded,
+            self::CampaignUnderDelivering => NotificationSubject::Campaign,
+            self::BudgetNearLimit => NotificationSubject::Budget,
+            self::TrackingFailure => NotificationSubject::MeasurementSource,
+            self::CreativeFatigue => NotificationSubject::Creative,
         };
     }
 

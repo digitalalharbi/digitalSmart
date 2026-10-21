@@ -8,9 +8,11 @@ use App\Application\Export\Contract\ExportFileStorage;
 use App\Application\Export\Contract\ExportJobStore;
 use App\Application\Export\Contract\ExportRenderer;
 use App\Application\Notifications\Contract\NotificationStore;
+use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Export\ExportStatus;
 use App\Domain\Notifications\NotificationKind;
+use App\Domain\Notifications\NotificationSeverity;
 use Throwable;
 
 /**
@@ -53,11 +55,12 @@ final readonly class RunExport
             $this->notifications->announce(
                 $job->workspaceId,
                 [$job->userId],
-                NotificationKind::ExportReady,
-                sprintf('Your export is ready: %s', $file->filename),
-                null,
-                NotificationKind::ExportReady->subject(),
-                $id,
+                new NotificationDraft(
+                    kind: NotificationKind::ExportReady,
+                    title: sprintf('Your export is ready: %s', $file->filename),
+                    subjectId: $id,
+                    severity: NotificationSeverity::Success,
+                ),
                 null,
             );
         } catch (Throwable $failure) {
