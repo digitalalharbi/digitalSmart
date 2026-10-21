@@ -179,6 +179,9 @@ export function SharedReportPage() {
             <ReportView
               report={result.report}
               isFiltered={isFiltered(filters)}
+              presentable
+              /* A link that ends in ?present=1 opens as a talk, for a meeting that starts from the link. */
+              startPresenting={params.get('present') === '1'}
               filterBar={
                 <SharedFilterBar info={result.filters} filters={filters} onChange={setFilters} />
               }
