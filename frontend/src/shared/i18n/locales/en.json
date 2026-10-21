@@ -1437,7 +1437,23 @@
     "funnel": {
       "title": "From seen to converted",
       "notTracked": "Not tracked"
-    }
+    },
+    "hero": {
+      "metric": "Metric"
+    },
+    "platforms": {
+      "title": "Platforms",
+      "share": "Share of spend",
+      "cards": "Platform cards"
+    },
+    "attribution": {
+      "title": "Revenue, by who says so",
+      "hint": "Each authority is its own figure. They measure different things and will disagree — there is no combined total.",
+      "claimed": "Claimed by the platforms",
+      "invoiced": "Invoiced by the store",
+      "measured": "Measured by the property"
+    },
+    "details": "Details — {{dimension}}"
   },
   "campaigns": {
     "status": {

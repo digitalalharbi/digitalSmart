@@ -1,4 +1,5 @@
 export { StoreAnalyticsPage } from './StoreAnalyticsPage';
+export { useStoreAnalyticsQuery } from './useCommerce';
 /*
  * The two presentation pieces and the money helpers, exported because the client portal composes the same
  * revenue surface. Shared through the barrel rather than copied: two renderers of one revenue figure are two

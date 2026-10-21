@@ -159,7 +159,12 @@ describe('AnalyticsPage', () => {
     await screen.findByRole('region', { name: 'Key figures' });
 
     expect(scorecard().getByText('SPEND')).toBeInTheDocument();
-    expect(screen.getByText('SANDBOX — Ramadan Sales')).toBeInTheDocument();
+
+    // The table is the working, not the answer: it opens on request.
+    expect(screen.queryByText('23850000000000001')).not.toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('button', { name: /^Details/ }));
+
+    expect(screen.getAllByText('SANDBOX — Ramadan Sales').length).toBeGreaterThan(0);
     // The provider's own id, for reconciling against the platform.
     expect(screen.getByText('23850000000000001')).toBeInTheDocument();
   });
@@ -256,5 +261,76 @@ describe('AnalyticsPage', () => {
     await renderWithProviders(<AnalyticsPage />);
 
     expect(await screen.findByText(/could not be loaded/i)).toBeInTheDocument();
+  });
+});
+
+describe('AnalyticsPage — command centre', () => {
+  function providerPayload(): AnalyticsPayload {
+    const base = payload();
+    const row = (key: string, label: string, spend: number) => ({
+      ...base.breakdown[0]!,
+      dimension: 'provider',
+      key,
+      label,
+      external_id: null,
+      values: { ...base.breakdown[0]!.values, spend: metric('spend', { value: spend }) },
+    });
+
+    return {
+      ...base,
+      dimension: 'provider',
+      breakdown: [row('meta', 'Meta Ads', 600), row('google_ads', 'Google Ads', 400)],
+    };
+  }
+
+  beforeEach(() => {
+    fetchAnalytics.mockImplementation((query: { dimension?: string }) =>
+      Promise.resolve(query.dimension === 'provider' ? providerPayload() : payload()),
+    );
+  });
+
+  it('shows each platform as a card and narrows the page to the one chosen', async () => {
+    await renderWithProviders(<AnalyticsPage />);
+
+    // The platform cards are their own list; the filter bar carries a chip of the same name.
+    const cards = within(await screen.findByRole('list', { name: 'Platform cards' }));
+    await userEvent.click(cards.getByRole('button', { name: /Meta Ads/, pressed: false }));
+
+    expect(
+      await cards.findByRole('button', { name: /Meta Ads/, pressed: true }),
+    ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(
+        (fetchAnalytics.mock.calls as [{ providers?: string[] }][]).some(
+          ([query]) => query.providers?.includes('meta') === true,
+        ),
+      ).toBe(true);
+    });
+  });
+
+  it('draws a spark of each key figure from the days the hero chart draws', async () => {
+    await renderWithProviders(<AnalyticsPage />);
+    await screen.findByRole('region', { name: 'Key figures' });
+
+    // Two days of data is a line; one tile each, hidden from assistive technology.
+    expect(
+      document.querySelectorAll('[data-sparkline], svg[aria-hidden="true"]').length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('offers the hero chart a choice of figure', async () => {
+    await renderWithProviders(<AnalyticsPage />);
+
+    const group = await screen.findByRole('group', { name: 'Metric' });
+
+    expect(within(group).getByRole('button', { name: 'ROAS' })).toBeInTheDocument();
+  });
+
+  it('shows no attribution comparison without one client in view', async () => {
+    await renderWithProviders(<AnalyticsPage />);
+    await screen.findByRole('region', { name: 'Key figures' });
+
+    expect(screen.queryByText('Revenue, by who says so')).not.toBeInTheDocument();
   });
 });

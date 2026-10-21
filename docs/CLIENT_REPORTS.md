@@ -49,3 +49,18 @@ Status vocabulary as in `CLAUDE.md`. `EXISTS` means it was built before this pha
 4. **Slice 4 (backend, own tests):** filters on the shared read, server-side and scope-checked; independent section
    loading; link preview route.
 5. **Later:** visual builder and presets, templates, automation, presentation mode, creative section when assets exist.
+
+
+## Surface A — Analytics, on the same visual foundation
+
+The internal Analytics page reads the one analytics endpoint and shows it with the report system's own pieces:
+
+- **KPI strip** with a sparkline per figure, drawn from the same daily series the hero chart plots; a metric chip row points the hero chart at spend, revenue, ROAS, conversions, CPA, clicks or CTR.
+- **Platforms**: a card per platform with its own figures and, where the spend is one currency, a share ring. A card is a filter.
+- **Insights, funnel, campaign cards (top / needs attention) and pointers** are `ReportHighlights` over `analyticsAsReport(...)` — the same functions the client's live report uses, over the same figures in the same shape. No second implementation of any of them.
+- **Budget pacing** is the Budget Control Center's own `PacingHero` from `/budgets/control`, following the working context.
+- **Revenue by who says so** (one client in context only): ad platforms' claim, then Salla / Zid / Google Analytics each as their own card — never added.
+- Efficiency scatter and the breakdown table are **detail**, behind one disclosure.
+- Follows the working context (one client / one project / everything).
+
+Not built: a previous-period overlay on the hero chart (the endpoint returns the comparison as a figure per metric, not as a series), the objective filter, and a content / creative panel (Slice E).
