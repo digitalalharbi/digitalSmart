@@ -115,3 +115,12 @@ One aggregate read of how creatives performed, on the same engine as every other
 | No internal ids | No provider/external ids, account ids or tokens in a row; a name that merely embeds the provider's id ("Ad 4011…") is stripped to "Ad". |
 
 Organic content analytics remains `NOT_SUPPORTED`.
+
+### Creatives page (`/creatives`, Content & Creative area)
+
+Media-first cards from the aggregate read above: Top / Rising / Fatiguing / Needs replacement views with counts, filters
+(client, project, platform, format, one campaign via `?campaign=`, the shared period), a format mix and a platform mix
+(by spend when the shown creatives share one currency, otherwise by count — never a cross-currency share), and a
+2–4 creative comparison (one bar chart per figure plus each creative's CTR spark). A tile draws only an address the
+server vouches for, with no referrer; otherwise it says "Sample data — no preview" or "No preview from the platform".
+Organic content analytics remains `NOT_SUPPORTED`.

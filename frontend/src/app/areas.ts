@@ -70,7 +70,12 @@ export const AREAS: readonly Area[] = [
     icon: 'ChartNoAxesCombined',
     paths: ['/analytics', '/leads', '/commerce', '/commerce/stores', '/attribution', '/tracking'],
   },
-  { key: 'creative', labelKey: 'areas.creative', icon: 'Palette', paths: ['/creative-hub'] },
+  {
+    key: 'creative',
+    labelKey: 'areas.creative',
+    icon: 'Palette',
+    paths: ['/creative-hub', '/creatives'],
+  },
   {
     key: 'work',
     labelKey: 'areas.work',

@@ -817,7 +817,8 @@
     "automationAgents": "Agents",
     "automationRoutines": "Routines",
     "automationHistory": "Action history",
-    "automationChanges": "Change log"
+    "automationChanges": "Change log",
+    "creatives": "Creatives"
   },
   "actions": {
     "search": "Search",
@@ -4403,5 +4404,66 @@
       "ugc": "UGC",
       "influencer": "Influencer"
     }
+  },
+  "creatives": {
+    "title": "Creatives",
+    "description": "How each creative performed — judged on the platform's own figures.",
+    "filters": "Creative filters",
+    "client": "Client",
+    "project": "Project",
+    "platform": "Platform",
+    "format": "Format",
+    "any": "Any",
+    "clear": "Clear",
+    "oneCampaign": "One campaign",
+    "filtered": "filtered",
+    "views": "Creative view",
+    "view": {
+      "top": "Top",
+      "rising": "Rising",
+      "fatiguing": "Fatiguing",
+      "weak": "Needs replacement"
+    },
+    "verdict": {
+      "top": "Top",
+      "rising": "Rising",
+      "stable": "Steady",
+      "fatiguing": "Fatiguing",
+      "weak": "Replace"
+    },
+    "none": {
+      "top": "No creative stands out yet.",
+      "rising": "Nothing is rising yet.",
+      "fatiguing": "Nothing is wearing out.",
+      "weak": "Nothing needs replacing."
+    },
+    "media": {
+      "none": "No preview from the platform",
+      "fixture": "Sample data — no preview"
+    },
+    "evidence": {
+      "ctr": "CTR",
+      "frequency": "Frequency",
+      "cost": "Cost per result",
+      "conversionRate": "Conversion rate"
+    },
+    "spend": "Spend",
+    "frequency": "Frequency",
+    "compare": "Compare",
+    "pickOne": "Choose one more to compare.",
+    "comparison": "Comparison",
+    "best": "Best",
+    "formatMix": "Format mix",
+    "platformMix": "Platform mix",
+    "bySpend": "by spend",
+    "byCount": "by number of creatives",
+    "largest": "Showing the {{shown}} largest by spend of {{total}}.",
+    "error": "Creatives could not be loaded. Try again in a moment.",
+    "emptyTitle": "No creatives in this selection",
+    "empty": "Nothing ran with a creative in this period, or the filters leave nothing. Widen the period or clear a filter.",
+    "ads_one": "{{count}} ad",
+    "ads_other": "{{count}} ads",
+    "lastDays_one": "Last {{count}} day",
+    "lastDays_other": "Last {{count}} days"
   }
 }
