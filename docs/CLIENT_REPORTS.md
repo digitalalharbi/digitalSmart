@@ -97,3 +97,21 @@ Any report — the agency's own view or a shared link — can be opened as a tal
 - **Keyboard and touch follow the page's direction.** Forward is the right arrow in English and the left arrow in Arabic; Page Down / Space also go forward, Home and End jump; a swipe goes the way a page of that language turns. Escape leaves and focus returns to what opened it. `F` toggles full screen. The page behind does not scroll; a live region announces "Slide n of N: title".
 - **Filters carry in.** A filtered shared link presents the filtered report; the deck re-reads nothing.
 - **Not built, with reasons:** a creative screen with a large preview and its metric panel (the report system has no creative section, and without real assets it would be a placeholder; creative intelligence lives on a campaign's page), speaker notes, and exporting the deck from this view (the PPTX export is the Presentations module's).
+
+## Creative data foundation — `GET /api/analytics/creatives`
+
+One aggregate read of how creatives performed, on the same engine as every other figure (`AnalyticsReadModel` over
+`daily_metrics`). Nothing here computes a metric of its own.
+
+| Rule | How |
+|---|---|
+| Asset ≠ ad instance | `grain=asset` groups ad rows by the creative they run (`ads.creative_id`); `grain=ad` keeps each ad. Names and captions are never used to merge. An ad with no known creative is absent from asset grain, present at ad grain. |
+| Same money as the ad rows | Level is pinned to `ad` rows, so a campaign's spend is never added to its ads'. |
+| Scope | Workspace, visible projects (assignment), client, project, platform, ad account, campaign, date range (≤ 400 days). |
+| Bounded | Cohort = top 500 by spend; pages of ≤ 100 with `offset`/`has_more`; trends for the page's keys in one grouped query; no per-creative provider call at render. |
+| Media | `CreativeMedia` — real https or app-hosted images only. Fixture hosts (`.invalid`, `.test`, …) are `state: fixture` with no URL; credential-bearing URLs and `http:` are dropped; no URL ⇒ `state: none`. The UI draws a neutral placeholder, never invented artwork. |
+| Missing ≠ 0 | Unreported figures are `null` with the layer's `unavailable_reason`. Frequency is `null` where the platform reports no reach. |
+| Verdicts | `CreativeAssessor`, deterministic, no model. No verdict below 1,000 impressions in either period; *fatiguing* needs CTR −25 % **and** a corroborating signal (frequency up, cost per result up, conversion rate down); a CTR fall alone is returned as evidence, unclassified. *Rising*, *top* and *weak* need a cohort of ≥ 4. Every verdict ships its evidence. |
+| No internal ids | No provider/external ids, account ids or tokens in a row; a name that merely embeds the provider's id ("Ad 4011…") is stripped to "Ad". |
+
+Organic content analytics remains `NOT_SUPPORTED`.

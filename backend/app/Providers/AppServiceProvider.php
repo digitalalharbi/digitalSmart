@@ -37,6 +37,7 @@ use App\Application\Agents\Tool\StatusEvidence;
 use App\Application\Agents\Tool\ToolCaller;
 use App\Application\Agents\Tool\ToolGateway;
 use App\Application\Analytics\Contract\AnalyticsReadModel;
+use App\Application\Analytics\Contract\CreativeCatalogue;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Attention\Contract\ActorMemberships;
 use App\Application\Attention\Contract\AttentionSource;
@@ -215,6 +216,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientIndustryDire
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientVisibility;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentConnectionDirectory;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentCreativeCatalogue;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentJourneyReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentLeadReadModel;
@@ -385,6 +387,7 @@ final class AppServiceProvider extends ServiceProvider
 
         // Analytics (Phase 4)
         AnalyticsReadModel::class => EloquentAnalyticsReadModel::class,
+        CreativeCatalogue::class => EloquentCreativeCatalogue::class,
         VisibilityResolver::class => ActorVisibilityResolver::class,
         AccessSynchroniser::class => WorkspaceAccessSynchroniser::class,
         SavedViewRepository::class => EloquentSavedViewRepository::class,

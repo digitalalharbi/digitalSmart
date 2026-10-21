@@ -19,6 +19,15 @@ enum Dimension: string
     case AdGroup = 'ad_group';
     case Ad = 'ad';
 
+    /**
+     * The platform's creative — the asset an ad runs — as distinct from the ad that runs it.
+     *
+     * One creative can sit behind several ads, so grouping by it answers "which asset performs best" where grouping by ad
+     * answers "which placement of it". It has no column of its own in the fact table: it is reached through the ad, by a join
+     * the read model makes, and an ad whose creative is not known is in no creative's figures rather than in a guessed one.
+     */
+    case Creative = 'creative';
+
     /** The daily_metrics column this groups on. */
     public function column(): string
     {
@@ -29,6 +38,7 @@ enum Dimension: string
             self::Campaign => 'campaign_id',
             self::AdGroup => 'ad_group_id',
             self::Ad => 'ad_id',
+            self::Creative => 'joined_creative_id',
         };
     }
 
@@ -44,7 +54,7 @@ enum Dimension: string
         return match ($this) {
             self::Campaign => 'campaign',
             self::AdGroup => 'ad_group',
-            self::Ad => 'ad',
+            self::Ad, self::Creative => 'ad',
             // Date, provider and account can be answered at any level.
             default => null,
         };
@@ -59,6 +69,7 @@ enum Dimension: string
             self::Campaign => 'Campaign',
             self::AdGroup => 'Ad group',
             self::Ad => 'Ad',
+            self::Creative => 'Creative',
         };
     }
 
