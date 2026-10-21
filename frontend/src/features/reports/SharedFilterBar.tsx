@@ -1,3 +1,4 @@
+import { localeTag } from '@/shared/lib/format';
 import { useMemo, useState } from 'react';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -41,7 +42,7 @@ export function SharedFilterBar({
 
   const options = info?.available ?? null;
   const day = (iso: string): string =>
-    new Intl.DateTimeFormat(i18n.language, {
+    new Intl.DateTimeFormat(localeTag(i18n.language), {
       month: 'short',
       day: 'numeric',
       timeZone: 'UTC',
@@ -102,7 +103,7 @@ export function SharedFilterBar({
           {t('sharedReport.filters.open')}
           {chips.length === 0 ? null : (
             <span className="bg-accent-strong text-accent-contrast ms-1 rounded-full px-1.5 text-xs">
-              {new Intl.NumberFormat(i18n.language).format(chips.length)}
+              {new Intl.NumberFormat(localeTag(i18n.language)).format(chips.length)}
             </span>
           )}
         </Button>

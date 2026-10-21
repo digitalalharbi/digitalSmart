@@ -2,7 +2,7 @@ import { AlertTriangle, Lightbulb, Star, TrendingDown, TrendingUp } from 'lucide
 import { useTranslation } from 'react-i18next';
 import { MISSING } from '@/shared/metrics';
 import { fromMinor } from '@/shared/lib/money';
-import { formatCurrency, formatMinor } from '@/shared/lib/format';
+import { formatCurrency, formatMinor, localeTag } from '@/shared/lib/format';
 import { DonutChart, RankingBars, TrendChart } from '@/shared/ui/viz';
 import { refundPoints, storeAdvice, storeInsights, type StoreInsight } from './storeHighlights';
 import type { StoreDetail } from './types';
@@ -71,17 +71,22 @@ export function StoreDetailView({
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const money = (minor: number): string => formatMinor(minor, detail.currency, locale);
-  const count = (value: number): string => new Intl.NumberFormat(locale).format(value);
+  const count = (value: number): string => new Intl.NumberFormat(localeTag(locale)).format(value);
   const compact = (value: number): string =>
-    new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+    new Intl.NumberFormat(localeTag(locale), {
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(value);
   const percent = (value: number): string =>
-    new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(
+    new Intl.NumberFormat(localeTag(locale), { style: 'percent', maximumFractionDigits: 1 }).format(
       value / 100,
     );
   const day = (iso: string): string =>
-    new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(
-      new Date(`${iso}T00:00:00Z`),
-    );
+    new Intl.DateTimeFormat(localeTag(locale), {
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(`${iso}T00:00:00Z`));
 
   const { dates } = dailySeries(detail);
   const byDate = new Map(detail.daily.map((point) => [point.date, point]));
@@ -293,7 +298,7 @@ export function StoreDetailView({
             <p className="text-content-secondary flex items-center gap-2 text-xs">
               <AlertTriangle aria-hidden className="size-3.5 shrink-0" />
               {t('reports.commerce.refundMoved', {
-                points: new Intl.NumberFormat(locale).format(points),
+                points: new Intl.NumberFormat(localeTag(locale)).format(points),
               })}
             </p>
           ) : null}

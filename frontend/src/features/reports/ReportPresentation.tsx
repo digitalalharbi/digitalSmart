@@ -1,3 +1,4 @@
+import { localeTag } from '@/shared/lib/format';
 import { ArrowLeft, ArrowRight, Maximize2, Minimize2, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -123,8 +124,8 @@ export function ReportPresentation({
           <X aria-hidden className="size-5" />
         </button>
         <p className="text-content-secondary ds-numeric text-sm" aria-hidden>
-          {new Intl.NumberFormat(i18n.language).format(index + 1)} /{' '}
-          {new Intl.NumberFormat(i18n.language).format(slides.length)}
+          {new Intl.NumberFormat(localeTag(i18n.language)).format(index + 1)} /{' '}
+          {new Intl.NumberFormat(localeTag(i18n.language)).format(slides.length)}
         </p>
         <div className="ms-auto flex items-center gap-1">
           <button
