@@ -4159,7 +4159,8 @@
     "context": "Campaign context",
     "where": "Where it sits",
     "tasks": "Tasks about this campaign",
-    "noTasks": "No open tasks about this campaign."
+    "noTasks": "No open tasks about this campaign.",
+    "performance": "Performance"
   },
   "backgroundWork": {
     "title": "Background work",

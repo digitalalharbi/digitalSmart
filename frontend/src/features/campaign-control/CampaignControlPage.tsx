@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/shared/api/client';
 import { useUiStore } from '@/shared/store/ui-store';
 import { Link, useSearchParams } from 'react-router';
+import { PlatformPanel, useAnalytics } from '@/features/analytics';
 import { useClientsQuery } from '@/features/clients';
 import { useProjectsQuery } from '@/features/projects';
 import { useProvidersQuery } from '@/features/integrations';
@@ -64,6 +65,28 @@ export function CampaignControlPage() {
   const { data, isPending, isError, isFetching } = useCampaignControl(
     filters.days === null ? { ...filters, days: sharedDays } : filters,
   );
+  /*
+   * Where the money went, platform by platform, over the period this page is showing. The panel ignores the platform
+   * filter on purpose: it is where that filter is chosen, and a panel that shrank to the platform just picked could
+   * not be used to pick another. Picking one narrows the whole page — the list, the ring and the totals.
+   */
+  const days = filters.days ?? sharedDays;
+  const platforms = useAnalytics({
+    preset:
+      (
+        { 7: '7d', 14: '14d', 28: '28d', 30: '30d', 90: '90d' } as Record<
+          number,
+          '7d' | '14d' | '28d' | '30d' | '90d'
+        >
+      )[days] ?? '28d',
+    dimension: 'provider',
+    metrics: ['spend', 'conversions', 'cpa', 'roas', 'ctr'],
+    order_by: 'spend',
+    limit: 12,
+    ...(filters.client === null ? {} : { client_id: filters.client.id }),
+    ...(filters.project === null ? {} : { project_ids: [filters.project.id] }),
+  });
+
   /* Open when an address already narrows by one of the extra filters, so nothing in force is hidden. */
   const [moreOpen, setMoreOpen] = useState(
     () =>
@@ -219,6 +242,18 @@ export function CampaignControlPage() {
           !filters.mine
         }
       />
+
+      {platforms.data === undefined ? null : (
+        <PlatformPanel
+          data={platforms.data}
+          selected={filters.provider === null ? [] : [filters.provider]}
+          onToggle={(provider) =>
+            update({
+              provider: filters.provider === provider ? null : provider,
+            })
+          }
+        />
+      )}
 
       {data?.meta.is_truncated === true ? (
         <p className="text-content-tertiary text-xs">

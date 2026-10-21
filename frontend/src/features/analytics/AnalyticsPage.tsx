@@ -16,6 +16,7 @@ import { analyticsAsReport } from './asReport';
 import { AttributionPanel } from './AttributionPanel';
 import { BreakdownTable } from './BreakdownTable';
 import { PacingStrip } from './PacingStrip';
+import { HERO_METRICS as HERO } from './heroMetrics';
 import { PlatformPanel } from './PlatformPanel';
 import { efficiencyOption, trendOption } from '@/shared/metrics';
 import { FilterBar } from './FilterBar';
@@ -36,9 +37,6 @@ const SCORECARD = [
   'cpc',
   'cpm',
 ] as const;
-
-/** The figures the hero chart can be pointed at, in the order an agency reads them. */
-const HERO = ['spend', 'revenue', 'roas', 'conversions', 'cpa', 'clicks', 'ctr'] as const;
 
 const BREAKDOWN_METRICS = [
   'spend',
