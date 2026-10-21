@@ -6,6 +6,7 @@ import { cn } from '@/shared/lib/cn';
 import { formatChange, formatMetric, MISSING } from '@/shared/metrics';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import type { MetricSourceValue } from '@/shared/metrics';
+import { CreativeSlide } from './CreativeSlide';
 import { ReportHighlights } from './ReportHighlights';
 import { ReportSectionView } from './ReportSectionView';
 import { buildSlides, stepFor, swipeStep, type Slide } from './slides';
@@ -214,6 +215,8 @@ function slideTitle(slide: Slide, report: RenderedReport, t: (key: string) => st
     case 'kpis':
     case 'section':
       return slide.section.title;
+    case 'creative':
+      return `${slide.section.title} · ${slide.row.label}`;
     case 'highlight':
       return t(`reports.present.part.${slide.part}`);
     case 'status':
@@ -318,6 +321,10 @@ function SlideBody({
 
   if (slide.kind === 'section') {
     return <ReportSectionView section={slide.section} />;
+  }
+
+  if (slide.kind === 'creative') {
+    return <CreativeSlide section={slide.section} row={slide.row} n={slide.n} of={slide.of} />;
   }
 
   if (slide.kind === 'highlight') {

@@ -1,5 +1,5 @@
 import { campaignCards, funnelStages, insights, recommendations } from './highlights';
-import type { RenderedReport, RenderedSection } from './types';
+import type { CreativeSectionRow, RenderedReport, RenderedSection } from './types';
 
 /**
  * The screens of a report, in the order a client reads it.
@@ -14,6 +14,15 @@ export type Slide =
   | { key: string; kind: 'cover' }
   | { key: string; kind: 'kpis'; section: RenderedSection }
   | { key: string; kind: 'section'; section: RenderedSection }
+  | {
+      key: string;
+      kind: 'creative';
+      section: RenderedSection;
+      row: CreativeSectionRow;
+      /** Which creative of how many this section shows, for the "2 of 6" under the picture. */
+      n: number;
+      of: number;
+    }
   | { key: string; kind: 'highlight'; part: 'funnel' | 'insights' | 'campaigns' | 'advice' }
   | { key: string; kind: 'status' };
 
@@ -45,9 +54,40 @@ export function buildSlides(report: RenderedReport): Slide[] {
     slides.push({ key: 'funnel', kind: 'highlight', part: 'funnel' });
   }
 
-  [...of('store'), ...of('lead'), ...of('creative')].forEach((section, index) =>
+  [...of('store'), ...of('lead')].forEach((section, index) =>
     slides.push({ key: `own-${String(index)}`, kind: 'section', section }),
   );
+
+  /*
+   * Creatives are pictures, so the ones worth a screen each get one: the top and the ones to refresh, a creative per
+   * screen with its picture large. The other views (a table, a mix, a comparison) are one screen as they are.
+   */
+  of('creative').forEach((section, sectionIndex) => {
+    const rows = section.creative?.rows ?? [];
+
+    if (section.creative?.view === 'top' || section.creative?.view === 'refresh') {
+      /* The story's own order: a creative that is tiring comes before one that has already failed. */
+      const ordered =
+        section.creative.view === 'refresh'
+          ? [...rows].sort((a, b) => Number(a.verdict === 'weak') - Number(b.verdict === 'weak'))
+          : rows;
+
+      ordered.forEach((row, index) =>
+        slides.push({
+          key: `creative-${String(sectionIndex)}-${String(index)}`,
+          kind: 'creative',
+          section,
+          row,
+          n: index + 1,
+          of: rows.length,
+        }),
+      );
+
+      return;
+    }
+
+    slides.push({ key: `creative-${String(sectionIndex)}`, kind: 'section', section });
+  });
 
   if (insights(report).length > 0) {
     slides.push({ key: 'insights', kind: 'highlight', part: 'insights' });
