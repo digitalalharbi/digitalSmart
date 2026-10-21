@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { MetricValue } from '@/shared/metrics';
 import { buildSlides, stepFor, swipeStep } from './slides';
-import type { RenderedReport, RenderedSection } from './types';
+import type {
+  CreativeSectionRow,
+  CreativeViewValue,
+  RenderedReport,
+  RenderedSection,
+} from './types';
 
 function value(metric: string, amount: number | null, change: number | null = null): MetricValue {
   return {
@@ -198,5 +203,79 @@ describe('swipeStep', () => {
     expect(swipeStep(3, 2, false)).toBe(0);
     expect(swipeStep(40, 0, false)).toBe(0);
     expect(swipeStep(80, 120, false)).toBe(0);
+  });
+});
+
+function creativeRow(position: number): CreativeSectionRow {
+  return {
+    position,
+    label: `Creative ${String(position)}`,
+    platform: 'meta',
+    platform_label: 'Meta',
+    format: 'video',
+    format_label: 'Video',
+    media: { state: 'none', kind: 'none', url: null, origin: null },
+    ads: 1,
+    campaigns: [],
+    campaign_count: 0,
+    metrics: { values: {}, source: 'synced', currency: 'SAR', row_count: 1, is_empty: false },
+    trend: [],
+    verdict: 'top',
+    verdict_label: 'Top',
+    evidence: [],
+  };
+}
+
+function creativeSection(view: CreativeViewValue, count: number): RenderedSection {
+  return section({
+    kind: 'creative',
+    title: 'Creatives',
+    metrics: [],
+    totals: null,
+    creative: {
+      view,
+      total: count,
+      mix_is_spend: true,
+      mix: [],
+      rows: Array.from({ length: count }, (_, index) => creativeRow(index + 1)),
+    },
+  });
+}
+
+describe('creative screens', () => {
+  it('tells the refresh story in order: tiring first, failed last', () => {
+    const section = creativeSection('refresh', 3);
+    section.creative!.rows[0]!.verdict = 'weak';
+    section.creative!.rows[1]!.verdict = 'fatiguing';
+    section.creative!.rows[2]!.verdict = 'weak';
+
+    const verdicts = buildSlides(report([section]))
+      .filter((slide) => slide.kind === 'creative')
+      .map((slide) => slide.row.verdict);
+
+    expect(verdicts).toEqual(['fatiguing', 'weak', 'weak']);
+  });
+
+  it('gives each top and each to-refresh creative its own screen, in order', () => {
+    const slides = buildSlides(report([creativeSection('top', 3), creativeSection('refresh', 2)]));
+    const creatives = slides.filter((slide) => slide.kind === 'creative');
+
+    expect(creatives).toHaveLength(5);
+    expect(creatives[0]).toMatchObject({ n: 1, of: 3 });
+    expect(creatives[3]).toMatchObject({ n: 1, of: 2 });
+  });
+
+  it('keeps a table, a mix and a comparison as one screen each, and skips a creative section with nothing', () => {
+    const slides = buildSlides(
+      report([
+        creativeSection('performance', 4),
+        creativeSection('format_mix', 4),
+        creativeSection('comparison', 4),
+        { ...creativeSection('top', 0), is_empty: true },
+      ]),
+    );
+
+    expect(slides.filter((slide) => slide.kind === 'creative')).toHaveLength(0);
+    expect(slides.filter((slide) => slide.kind === 'section')).toHaveLength(3);
   });
 });

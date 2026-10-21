@@ -140,3 +140,13 @@ shared link.
 - CSV, XLSX and the PPTX deck carry the creatives as a table (spend, impressions, CTR, results, cost per result).
 - Needs a migration (`creative_view` column, widened kind check); reversible.
 - Presets: *Performance* now ends with top and refresh creatives.
+
+### Presentation mode — creative screens
+
+A creative section's **top** and **refresh** views give each creative a screen of its own: the picture (or the honest
+"no preview" tile) over roughly two thirds of a desktop screen and the whole width first on a phone, with name,
+platform, campaign, spend, CTR, CPA, results, and ROAS / frequency only where valid, a CTR spark, and the plain verdict
+with its CTR change. A video is its poster only. The refresh story runs tiring creatives before failed ones. Performance,
+format mix and comparison views are one screen each, drawn by the same components as the report page. Screens are built
+from the payload the page received, so a narrowed or frozen shared link presents exactly what it shows; the existing
+arrows, swipe, Escape and fullscreen apply.

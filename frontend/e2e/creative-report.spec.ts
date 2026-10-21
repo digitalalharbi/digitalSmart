@@ -103,6 +103,32 @@ test.describe('creative sections in a shared report', () => {
         if (locale === 'ar') {
           await expect(visiting.locator('html')).toHaveAttribute('dir', 'rtl');
         }
+
+        /*
+         * The same link as a talk. The creative screens are built from the payload the page just received, so a
+         * narrowed or frozen link shows the same creatives here as on the page; what is asserted is that a creative
+         * gets a screen of its own, fits a phone, and moves with the existing controls.
+         */
+        await visiting.goto(`/shared-reports/${token}?present=1`);
+        const deck = visiting.getByRole('dialog');
+        await expect(deck).toBeVisible({ timeout: 30_000 });
+        const forward = locale === 'en' ? 'ArrowRight' : 'ArrowLeft';
+        const creativeScreen = deck.getByRole('heading', {
+          name: /Top creatives|Creative performance|أفضل المواد|أداء المواد/,
+        });
+
+        for (let step = 0; step < 12 && (await creativeScreen.count()) === 0; step += 1) {
+          await visiting.keyboard.press(forward);
+        }
+
+        await expect(creativeScreen.first()).toBeVisible();
+        expect(
+          await visiting.evaluate(
+            () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          ),
+        ).toBeLessThanOrEqual(0);
+        await visiting.keyboard.press('Escape');
+        await expect(deck).toHaveCount(0);
       } finally {
         await visitor.close();
       }
