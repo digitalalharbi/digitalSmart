@@ -17,49 +17,7 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { StatusRequestDialog } from './QuickActions';
-
-type Creative = {
-  id: string;
-  name: string;
-  format: string;
-  title: string | null;
-  thumbnail_url: string | null;
-};
-
-type Ad = {
-  id: string;
-  name: string;
-  status: string;
-  creative: Creative | null;
-  spend_minor: number | null;
-  ctr_now: number | null;
-  ctr_change: number | null;
-  frequency: number | null;
-};
-
-type Group = {
-  id: string;
-  name: string;
-  status: string;
-  budget_mode: string;
-  budget_minor: number | null;
-  currency: string | null;
-  audience: string | null;
-  spend_minor: number | null;
-  conversions: number | null;
-  ads: Ad[];
-};
-
-type Level = 'ad_group' | 'ad';
-type Change = 'pause' | 'resume' | 'budget';
-type Write = { support: 'documented' | 'not_offered'; because: string | null };
-
-type Hierarchy = {
-  groups: Group[];
-  creatives: Array<Creative & { ads: number; ad_names: string[] }>;
-  /** What may be asked for at each level, on this campaign's own platform — never inferred from the campaign. */
-  writes: Record<Level, Partial<Record<Change, Write>>>;
-};
+import { useCampaignHierarchy, type Level } from './hierarchyData';
 
 type BulkAction = 'request_pause' | 'request_resume' | 'create_task' | 'add_to_rule' | 'tag';
 
@@ -104,16 +62,7 @@ export function Hierarchy({
   const mayAsk = can('approvals.request');
   const mayBulk = mayAsk || can('tasks.manage');
 
-  const query = useQuery({
-    queryKey: ['campaign-hierarchy', campaignId] as const,
-    queryFn: async (): Promise<Hierarchy> => {
-      const { data } = await api.get<{ data: Hierarchy }>(`/campaigns/${campaignId}/hierarchy`);
-
-      return data.data;
-    },
-    enabled: open,
-    staleTime: 60_000,
-  });
+  const query = useCampaignHierarchy(campaignId, open);
 
   const rules = useQuery({
     queryKey: ['automation', 'rules'] as const,

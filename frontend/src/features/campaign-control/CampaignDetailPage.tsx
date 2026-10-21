@@ -25,6 +25,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { KpiTile } from '@/shared/ui/kpi-tile';
 import { TrendChart } from '@/shared/ui/viz';
 import { BudgetBar } from './CampaignParts';
+import { CreativeIntelligence } from './CreativeIntelligence';
 import { Hierarchy } from './Hierarchy';
 import { QuickActions } from './QuickActions';
 import { objectiveName, resultName } from './labels';
@@ -281,6 +282,8 @@ export function CampaignDetailPage() {
                 </CardContent>
               </Card>
             )}
+
+            <CreativeIntelligence campaignId={row.id} />
 
             <Card>
               <CardHeader>

@@ -79,3 +79,13 @@ One primitive, `FunnelBars`, for every funnel: the report's, the Analytics page'
 - **A step has no rate** where either count is missing, the earlier one is zero, or the step is larger than the one before it (a different population) — never zero, never over a hundred.
 - **The biggest drop** is the lowest-rate step from the third stage on in an advertising funnel — impressions to clicks is click-through rate, always the steepest and judged on its own — and from the first step in a lead funnel. It is marked only when at least two steps compete; one candidate would be the largest by default, and a highlight that cannot fail to appear is not information.
 - **Not built:** a commerce funnel from sessions to purchase. The store sections hold orders, not sessions or checkout starts, and an analytics property's sessions are a different authority; stages from two authorities are not joined into one funnel.
+
+### Creatives (Slice E)
+
+On a campaign's page, **Creatives**: media-first cards in four views — Top, Rising, Fatiguing, Needs replacement — and a comparison of two to four, drawn as bars with the winner marked, plus spend and results by creative format as rings.
+
+- **Rules, not a model.** A creative is judged once it has at least 1,000 impressions (the Creative agent's own floor); below that it is *not enough data* and in no list. Fatiguing is a click-through change of −25 % or worse against the week before (the same line the agent and the hierarchy tree use); rising is +25 % or better; *needs replacement* is a fatiguing creative that is also under the campaign's median click-through rate. Top is ordered by results, then click-through, then spend. Each card carries the figures its label rests on.
+- **Shares only of what adds up.** The format rings are spend and results; no format-level ratio is computed.
+- **Thumbnails** are the creative's own when the platform supplied one, and a format icon when it did not — the demo has no artwork, and the card does not pretend otherwise.
+- **Same data as the tree.** The ads and creatives come from the hierarchy read (`useCampaignHierarchy`, one key, shared with the tree); their figures from the analytics endpoint by ad, over the shared period.
+- **Not built, with reasons:** organic content performance (reach, engagement and conversions for content that is not an ad are not synced, and nothing is invented); audience and placement cuts; a workspace-wide creative view (no aggregate read of creatives across campaigns exists yet); a creative section in the client's shared report (the report system has no creative section kind, and without real assets it would be a grid of placeholders).

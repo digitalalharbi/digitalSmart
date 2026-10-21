@@ -4354,5 +4354,38 @@
       "not_wired": "Documented · not wired"
     },
     "ladder": "Code verified → sandbox verified → awaiting credentials → live read → live write. Nothing here is live yet. Checked {{date}}."
+  },
+  "creativeIntel": {
+    "title": "Creatives",
+    "views": "Creative view",
+    "view": {
+      "top": "Top",
+      "rising": "Rising",
+      "tiring": "Fatiguing",
+      "replace": "Needs replacement"
+    },
+    "state": {
+      "rising": "Rising",
+      "steady": "Steady",
+      "tiring": "Fatiguing",
+      "needs_replacing": "Replace",
+      "not_enough_data": "Not enough data"
+    },
+    "none": "Nothing in this view yet.",
+    "spend": "Spend",
+    "frequency": "Frequency",
+    "compare": "Compare",
+    "pickOne": "Choose one more to compare.",
+    "comparison": "Comparison",
+    "best": "Best",
+    "spendByFormat": "Spend by format",
+    "resultsByFormat": "Results by format",
+    "format": {
+      "image": "Image",
+      "video": "Video",
+      "carousel": "Carousel",
+      "ugc": "UGC",
+      "influencer": "Influencer"
+    }
   }
 }
