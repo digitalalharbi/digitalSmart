@@ -720,6 +720,47 @@ operator detail, and a client viewer reaches that page.
 | `POST` | `/api/notifications/{notification}/read` | Returns the whole feed |
 | `POST` | `/api/notifications/read-all` | Returns the feed, and how many were cleared |
 
+## Performance digests and alerts
+
+The bell carries three more things since the performance notifications work, all on the same rows and the same
+disclosure rule.
+
+**Severity is a rule.** `NotificationSeverity` — info / success / attention / critical — is stored with every row
+and decided when it is announced: `forAdverseChange()` reads a figure that moved by the same two lines the campaign
+health policy uses (a fifth worse is attention, half worse is critical, a fifth better is success); a digest takes the
+worst thing in it from the attention queue's own counts. Nothing is coloured by hand.
+
+**Category is a column.** Every kind files itself under one tab — performance, budget, creative, tracking, approvals,
+reports, work — in `NotificationKind::category()`, so a tab is a WHERE clause and its badge a grouped count.
+
+**No spam.** A draft may carry a `dedupe_key` (`roas_drop:{campaign}`) and a cooldown (24 h by default). `Announce`
+asks the store for the worst severity announced under that key inside the cooldown and writes only when there was
+none or the new one is worse: the same ROAS drop every hour is said once; a drop that became critical is said
+again; two campaigns are two keys. `AlertDedupTest` pins all three.
+
+**The alert kinds** — ROAS drop, cost per result rise, spend spike, budget near limit, no results, tracking failure,
+campaign rejected, creative fatigue, campaign ended, under-delivering — each name the permission a recipient must
+hold and the subject they point at (campaign, budget, creative, measurement source). The vocabulary exists and is
+deduplicated; the sources that raise them from the attention queue and the rule engine are the next slice.
+
+**The performance digests** (`daily_performance`, `weekly_performance`, `monthly_performance`) are figures, not
+lists. `PerformanceDigestComposer` composes one per person *as that person*: the analytics layer's own summary with
+its comparison, best and weakest platform by one stated rule (ROAS where two platforms report it, else cost per
+result, else results), the top campaigns, the campaign the queue most wants looked at, the one creative wearing out
+(the creative layer's verdict with its evidence), at most five action cards from the attention queue, the budget
+part only for `budgets.view`, and — weekly and monthly only — at most three recommendations, each with the figure
+it rests on. No analytics scope (no permission, or no project in sight) means no digest; a buyer on no project gets
+nothing, which is the truth.
+
+**When they land.** `digests:performance` runs hourly and decides per workspace in *its* time zone
+(`workspaces.timezone`): the daily digest once the local morning reaches nine, the weekly on the local Sunday, the
+monthly on the local first; `digests.period_on` is the last day of the period, so a period is written once however
+many times the hour comes round. The older attention digests keep their UTC schedule for now.
+
+**History.** A row now records generated (`created_at`), read, clicked and dismissed; sent and failed belong to the
+delivery rows a channel adapter will write. Email and WhatsApp delivery do not exist yet: there is no sender
+identity and no provider credential, so nothing is marked sent that was not.
+
 ## A note on testing the channel
 
 `Broadcast::channel()` registers on whichever broadcaster was default when `routes/channels.php` was

@@ -26,6 +26,14 @@ enum NotificationSubject: string
 
     case Export = 'export';
 
+    case Campaign = 'campaign';
+
+    case Budget = 'budget';
+
+    case Creative = 'creative';
+
+    case MeasurementSource = 'measurement_source';
+
     public function table(): string
     {
         return match ($this) {
@@ -35,6 +43,10 @@ enum NotificationSubject: string
             self::Lead => 'leads',
             self::Digest => 'digests',
             self::Export => 'export_jobs',
+            self::Campaign => 'campaigns',
+            self::Budget => 'budgets',
+            self::Creative => 'creatives',
+            self::MeasurementSource => 'measurement_sources',
         };
     }
 
@@ -52,6 +64,7 @@ enum NotificationSubject: string
             self::Lead => 'name',
             self::Digest => 'kind',
             self::Export => 'filename',
+            self::Campaign, self::Budget, self::Creative, self::MeasurementSource => 'name',
         };
     }
 
@@ -65,6 +78,10 @@ enum NotificationSubject: string
             self::Lead => '/leads',
             self::Digest => '/',
             self::Export => '/reports',
+            self::Campaign => '/campaigns',
+            self::Budget => '/budget-control',
+            self::Creative => '/creatives',
+            self::MeasurementSource => '/tracking',
         };
     }
 
@@ -77,6 +94,10 @@ enum NotificationSubject: string
             self::Lead => 'Lead',
             self::Digest => 'Digest',
             self::Export => 'Export',
+            self::Campaign => 'Campaign',
+            self::Budget => 'Budget',
+            self::Creative => 'Creative',
+            self::MeasurementSource => 'Measurement source',
         };
     }
 

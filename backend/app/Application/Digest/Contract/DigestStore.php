@@ -13,6 +13,16 @@ interface DigestStore
     public function recipients(?string $workspaceId): array;
 
     /**
+     * Every workspace with its own time zone, so a digest can land at nine in the morning where the agency is.
+     *
+     * @return list<array{workspace_id: string, timezone: string}>
+     */
+    public function workspaces(?string $workspaceId): array;
+
+    /** Whether any digest of this kind for this period has been written in the workspace — the cheap "already done" check. */
+    public function exists(string $workspaceId, DigestKind $kind, DateTimeImmutable $on): bool;
+
+    /**
      * Idempotent per person, kind and day.
      *
      * @param  array<string, mixed>  $summary

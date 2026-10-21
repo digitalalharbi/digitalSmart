@@ -10,11 +10,13 @@ use App\Application\Attention\Query\GetAttentionQueue;
 use App\Application\Automation\Contract\RuleExecutionLog;
 use App\Application\Digest\Contract\DigestStore;
 use App\Application\Notifications\Contract\NotificationStore;
+use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Attention\DigestKind;
 use App\Domain\Identity\UserId;
 use App\Domain\Notifications\NotificationKind;
+use App\Domain\Notifications\NotificationSeverity;
 use App\Domain\Workspace\WorkspaceId;
 use DateTimeImmutable;
 use Throwable;
@@ -93,12 +95,13 @@ final readonly class BuildDigests
                     $this->notifications->announce(
                         $recipient['workspace_id'],
                         [$recipient['user_id']],
-                        NotificationKind::DigestReady,
-                        sprintf('%s: %d %s', $kind->label(), $queue->total, $queue->total === 1 ? 'item needs attention' : 'items need attention')
-                            .($rules['waiting_approval'] > 0 ? sprintf(' · %d rule %s waiting your approval', $rules['waiting_approval'], $rules['waiting_approval'] === 1 ? 'proposal' : 'proposals') : ''),
-                        null,
-                        NotificationKind::DigestReady->subject(),
-                        $digestId,
+                        new NotificationDraft(
+                            kind: NotificationKind::DigestReady,
+                            title: sprintf('%s: %d %s', $kind->label(), $queue->total, $queue->total === 1 ? 'item needs attention' : 'items need attention')
+                                .($rules['waiting_approval'] > 0 ? sprintf(' · %d rule %s waiting your approval', $rules['waiting_approval'], $rules['waiting_approval'] === 1 ? 'proposal' : 'proposals') : ''),
+                            subjectId: $digestId,
+                            severity: ($queue->severityCounts['critical'] ?? 0) > 0 ? NotificationSeverity::Critical : NotificationSeverity::Attention,
+                        ),
                         null,
                     );
                 }

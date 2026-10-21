@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Notifications\Contract;
 
+use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Notifications\DTO\NotificationView;
 use App\Domain\Notifications\NotificationDigest;
-use App\Domain\Notifications\NotificationKind;
-use App\Domain\Notifications\NotificationSubject;
+use App\Domain\Notifications\NotificationSeverity;
+use DateTimeImmutable;
 
 interface NotificationStore
 {
@@ -21,16 +22,15 @@ interface NotificationStore
      * @param  list<string>  $userIds
      * @return list<NotificationView>
      */
-    public function announce(
-        string $workspaceId,
-        array $userIds,
-        NotificationKind $kind,
-        string $title,
-        ?string $body,
-        NotificationSubject $subject,
-        string $subjectId,
-        ?string $actorId,
-    ): array;
+    public function announce(string $workspaceId, array $userIds, NotificationDraft $draft, ?string $actorId): array;
+
+    /**
+     * The worst severity announced under this dedupe key since `$since`, or null when nothing was.
+     *
+     * The cooldown check. Asked before writing, so a repeat that says nothing new is never stored — a bell that
+     * rings for the same ROAS every hour is a bell somebody silences.
+     */
+    public function lastSeverity(string $workspaceId, string $dedupeKey, DateTimeImmutable $since): ?NotificationSeverity;
 
     /**
      * One person's notifications, newest first.

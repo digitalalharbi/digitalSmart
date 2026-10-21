@@ -28,6 +28,28 @@ final readonly class EloquentDigestStore implements DigestStore
         return $out;
     }
 
+    /** @return list<array{workspace_id: string, timezone: string}> */
+    public function workspaces(?string $workspaceId): array
+    {
+        $out = [];
+
+        foreach (DB::table('workspaces')
+            ->when($workspaceId !== null, static fn ($q) => $q->where('id', $workspaceId))
+            ->orderBy('id')->get(['id', 'timezone']) as $w) {
+            $timezone = is_string($w->timezone) && $w->timezone !== '' ? $w->timezone : 'UTC';
+            $out[] = ['workspace_id' => (string) $w->id, 'timezone' => $timezone];
+        }
+
+        return $out;
+    }
+
+    public function exists(string $workspaceId, DigestKind $kind, DateTimeImmutable $on): bool
+    {
+        return DB::table('digests')
+            ->where(['workspace_id' => $workspaceId, 'kind' => $kind->value, 'period_on' => $on->format('Y-m-d')])
+            ->exists();
+    }
+
     public function put(string $workspaceId, string $userId, DigestKind $kind, DateTimeImmutable $on, int $total, array $summary): ?string
     {
         $key = ['workspace_id' => $workspaceId, 'user_id' => $userId, 'kind' => $kind->value, 'period_on' => $on->format('Y-m-d')];

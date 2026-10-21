@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Infrastructure\Notifications;
 
 use App\Application\Notifications\Contract\NotificationStore;
+use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Notifications\DTO\NotificationView;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Notifications\NotificationDigest;
 use App\Domain\Notifications\NotificationKind;
+use App\Domain\Notifications\NotificationSeverity;
 use App\Domain\Notifications\NotificationSubject;
 use DateTimeImmutable;
 use Exception;
@@ -30,16 +32,8 @@ final readonly class EloquentNotificationStore implements NotificationStore
 {
     public function __construct(private IdentifierGenerator $identifiers) {}
 
-    public function announce(
-        string $workspaceId,
-        array $userIds,
-        NotificationKind $kind,
-        string $title,
-        ?string $body,
-        NotificationSubject $subject,
-        string $subjectId,
-        ?string $actorId,
-    ): array {
+    public function announce(string $workspaceId, array $userIds, NotificationDraft $draft, ?string $actorId): array
+    {
         if ($userIds === []) {
             return [];
         }
@@ -57,11 +51,15 @@ final readonly class EloquentNotificationStore implements NotificationStore
                 'workspace_id' => $workspaceId,
                 'user_id' => $userId,
                 'actor_id' => $actorId,
-                'kind' => $kind->value,
-                'title' => $title,
-                'body' => $body,
-                'subject_type' => $subject->value,
-                'subject_id' => $subjectId,
+                'kind' => $draft->kind->value,
+                'category' => $draft->kind->category()->value,
+                'severity' => $draft->severity->value,
+                'title' => $draft->title,
+                'body' => $draft->body,
+                'payload' => $draft->payload === null ? null : json_encode($draft->payload, JSON_THROW_ON_ERROR),
+                'dedupe_key' => $draft->dedupeKey,
+                'subject_type' => $draft->kind->subject()->value,
+                'subject_id' => $draft->subjectId,
                 'read_at' => null,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -72,6 +70,26 @@ final readonly class EloquentNotificationStore implements NotificationStore
         DB::table('notifications')->insert($rows);
 
         return $this->byIds($workspaceId, $ids);
+    }
+
+    public function lastSeverity(string $workspaceId, string $dedupeKey, DateTimeImmutable $since): ?NotificationSeverity
+    {
+        $worst = null;
+
+        foreach (DB::table('notifications')
+            ->where('workspace_id', $workspaceId)
+            ->where('dedupe_key', $dedupeKey)
+            ->where('created_at', '>=', $since)
+            ->distinct()
+            ->pluck('severity') as $value) {
+            $severity = NotificationSeverity::tryFrom((string) $value);
+
+            if ($severity !== null && ($worst === null || $severity->rank() > $worst->rank())) {
+                $worst = $severity;
+            }
+        }
+
+        return $worst;
     }
 
     public function forUser(string $workspaceId, string $userId, bool $unreadOnly, int $limit): array
@@ -239,6 +257,10 @@ final readonly class EloquentNotificationStore implements NotificationStore
                 actorName: $this->text($values['actor_name'] ?? null),
                 readAt: $this->date($values['read_at'] ?? null),
                 createdAt: $this->date($values['created_at'] ?? null) ?? new DateTimeImmutable('@0'),
+                severity: NotificationSeverity::tryFrom((string) ($values['severity'] ?? '')) ?? NotificationSeverity::Info,
+                payload: $this->payload($values['payload'] ?? null),
+                clickedAt: $this->date($values['clicked_at'] ?? null),
+                dismissedAt: $this->date($values['dismissed_at'] ?? null),
             );
         }
 
@@ -288,6 +310,19 @@ final readonly class EloquentNotificationStore implements NotificationStore
         }
 
         return $resolved;
+    }
+
+    /** @return array<string, mixed>|null */
+    private function payload(mixed $value): ?array
+    {
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        $decoded = json_decode($value, true);
+
+        /** @var array<string, mixed>|null */
+        return is_array($decoded) ? $decoded : null;
     }
 
     private function text(mixed $value): ?string

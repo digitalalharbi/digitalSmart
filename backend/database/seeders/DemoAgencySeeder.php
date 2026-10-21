@@ -25,6 +25,8 @@ use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
 use App\Domain\Integration\ProviderConnectionId;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
+use App\Domain\Notifications\NotificationKind;
+use App\Domain\Notifications\NotificationSeverity;
 use App\Domain\Portal\PortalModule;
 use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\ReportAudience;
@@ -1731,7 +1733,15 @@ final class DemoAgencySeeder extends Seeder
         $this->insert('creative_approvals', $decisions);
         $this->insert('approval_requests', $approvals);
         $this->insert('client_requests', $requests);
-        $this->insert('notifications', $notify);
+        /* The tab and the badge come from the kind, as the store derives them; a seeded row must not say less. */
+        $this->insert('notifications', array_map(static function (array $row): array {
+            $kind = NotificationKind::from((string) $row['kind']);
+
+            return $row + [
+                'category' => $kind->category()->value,
+                'severity' => ($kind->needsAction() ? NotificationSeverity::Attention : NotificationSeverity::Info)->value,
+            ];
+        }, $notify));
 
         unset($clients);
     }
