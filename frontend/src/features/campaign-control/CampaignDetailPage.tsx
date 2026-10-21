@@ -1,10 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
+import {
+  HeroTrend,
+  PacingStrip,
+  analyticsAsReport,
+  useAnalytics,
+  useMetricCatalogue,
+} from '@/features/analytics';
 import { ContextInsight } from '@/features/assistant';
+import { ReportHighlights } from '@/features/reports';
 import { BackgroundWork } from '@/features/background-work';
 import { api } from '@/shared/api/client';
 import { formatCompact } from '@/shared/lib/format';
+import { useUiStore } from '@/shared/store/ui-store';
 import { formatRelativeTime } from '@/shared/lib/relative-time';
 import { Alert } from '@/shared/ui/alert';
 import { buttonVariants } from '@/shared/ui/button.variants';
@@ -21,6 +31,20 @@ import { objectiveName, resultName } from './labels';
 import { money, resultText } from './text';
 import { reasonText } from '@/shared/lib/reason';
 import { HEALTH_TO_STATE, type CampaignControlPage, type CampaignRow } from './types';
+
+/** What the campaign's own analytics asks for: the figures the hero chart plots and the funnel reads. */
+const ANALYTICS_METRICS = [
+  'spend',
+  'revenue',
+  'roas',
+  'conversions',
+  'cpa',
+  'impressions',
+  'clicks',
+  'ctr',
+  'cpc',
+  'cpm',
+];
 
 type Readiness = {
   overall: { state: string; label: string };
@@ -61,6 +85,37 @@ export function CampaignDetailPage() {
   });
 
   const row = control.data?.row ?? null;
+
+  /*
+   * The same analytics endpoint, narrowed to this campaign, over the period every analytical page shares. The hero
+   * chart, the funnel and the insights below are read from it by the same code the client's live report uses, so the
+   * campaign's page and its client's report cannot tell two stories about the same week.
+   */
+  const period = useUiStore((state) => state.period);
+  const catalogue = useMetricCatalogue();
+  const [heroMetric, setHeroMetric] = useState('spend');
+  const analytics = useAnalytics(
+    {
+      preset: ({ 7: '7d', 30: '30d', 90: '90d' } as const)[period.days],
+      compare: period.compare,
+      metrics: ANALYTICS_METRICS,
+      order_by: 'spend',
+      limit: 10,
+      campaign_ids: [campaignId],
+    },
+    campaignId !== '',
+  );
+  const asReport = useMemo(
+    () =>
+      analytics.data === undefined || analytics.data.is_empty
+        ? null
+        : analyticsAsReport(analytics.data, undefined, undefined),
+    [analytics.data],
+  );
+  const metricLabels = useMemo(
+    () => new Map([...catalogue.definitions].map(([key, def]) => [key, def.label])),
+    [catalogue.definitions],
+  );
 
   /* The work already raised about this campaign — the next thing to do is often a task somebody has open. */
   const tasks = useQuery({
@@ -181,27 +236,51 @@ export function CampaignDetailPage() {
               )}
             </section>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('campaignDetail.trend')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TrendChart
-                  labels={dayLabels}
-                  series={[
-                    {
-                      key: 'spend',
-                      label: t('campaignControl.col.spend'),
-                      values: (control.data?.trend ?? []).map((v) => (v === null ? null : v / 100)),
-                      colour: 'var(--ds-accent)',
-                    },
-                  ]}
-                  format={(v) => formatCompact(v, locale)}
-                  label={t('campaignDetail.trendLabel', { name: row.name })}
-                  height={220}
-                />
-              </CardContent>
-            </Card>
+            {analytics.data === undefined || analytics.data.is_empty ? null : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('campaignDetail.performance')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <HeroTrend
+                    data={analytics.data}
+                    metric={heroMetric}
+                    onMetric={setHeroMetric}
+                    label={t('campaignDetail.trendLabel', { name: row.name })}
+                    labels={metricLabels}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* The funnel and what stands out, from the report system's own reader over this campaign's figures. */}
+            {asReport === null ? null : <ReportHighlights report={asReport} />}
+
+            {analytics.data !== undefined && !analytics.data.is_empty ? null : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('campaignDetail.trend')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TrendChart
+                    labels={dayLabels}
+                    series={[
+                      {
+                        key: 'spend',
+                        label: t('campaignControl.col.spend'),
+                        values: (control.data?.trend ?? []).map((v) =>
+                          v === null ? null : v / 100,
+                        ),
+                        colour: 'var(--ds-accent)',
+                      },
+                    ]}
+                    format={(v) => formatCompact(v, locale)}
+                    label={t('campaignDetail.trendLabel', { name: row.name })}
+                    height={220}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader>
@@ -221,6 +300,8 @@ export function CampaignDetailPage() {
                   <BudgetBar row={row} />
                 </CardContent>
               </Card>
+              {/* Plan, pace and forecast for this campaign's own budgets: the Budget Control Center's bars. */}
+              <PacingStrip clientId={row.client_id} projectId={row.project_id} locale={locale} />
             </div>
 
             <details className="text-sm">

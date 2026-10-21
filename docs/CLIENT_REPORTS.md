@@ -64,3 +64,9 @@ The internal Analytics page reads the one analytics endpoint and shows it with t
 - Follows the working context (one client / one project / everything).
 
 Not built: a previous-period overlay on the hero chart (the endpoint returns the comparison as a figure per metric, not as a series), the objective filter, and a content / creative panel (Slice E).
+
+### Campaigns and platforms (Slice C)
+
+- **Platform cards on the Campaigns page** are the Analytics page's `PlatformPanel`, over the same endpoint, period and context; a card sets the page's platform filter (a second tap clears it) and narrows the list, the health ring and the totals. The panel ignores that filter itself, so another platform can still be chosen.
+- **Campaign detail**: the hero chart (`HeroTrend`, seven figures, one at a time — never two on an axis, and not drawn for a money figure with no currency) and the funnel and insights (`ReportHighlights` over `analyticsAsReport`) read the analytics endpoint narrowed to the campaign, so the page and the client's live report use one reader. Ad groups → ads and the creatives are the existing `Hierarchy`. Budget pacing is the Budget Control Center's bars for the campaign's client and project.
+- **Not built, with reasons:** audience and placement breakdowns (the platforms' reporting for them is not synced, and an ad group's audience is a name, not a measurement); an attribution card on one campaign (a store records orders by the UTM campaign *name* it carried, not by this campaign's id, so a comparison with the client's store total would compare different scopes — the Attribution page compares by name, with its own coverage figure).
