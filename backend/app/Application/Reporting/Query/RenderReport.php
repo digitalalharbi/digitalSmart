@@ -7,11 +7,14 @@ namespace App\Application\Reporting\Query;
 use App\Application\Analytics\Contract\AnalyticsReadModel;
 use App\Application\Analytics\DTO\AnalyticsFilters;
 use App\Application\Analytics\DTO\BreakdownRow;
+use App\Application\Analytics\DTO\CreativeRow;
 use App\Application\Analytics\DTO\MetricSet;
 use App\Application\Analytics\DTO\SeriesPoint;
+use App\Application\Analytics\Service\CreativeIntelligenceReader;
 use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Leads\Contract\LeadReadModel;
+use App\Application\Reporting\DTO\CreativeSection;
 use App\Application\Reporting\DTO\LeadFigures;
 use App\Application\Reporting\DTO\RenderedReport;
 use App\Application\Reporting\DTO\RenderedSection;
@@ -21,10 +24,13 @@ use App\Application\Reporting\DTO\SavedReport;
 use App\Application\Reporting\DTO\SectionDefinition;
 use App\Application\Reporting\DTO\StoreFigures;
 use App\Application\Shared\Contract\Clock;
+use App\Domain\Advertising\CreativeFormat;
 use App\Domain\Advertising\MetricSource;
+use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
 use App\Domain\Reporting\Comparability;
 use App\Domain\Reporting\ComparisonMode;
+use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\RenderMode;
 use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\SectionKind;
@@ -56,6 +62,7 @@ final readonly class RenderReport
         private AnalyticsReadModel $analytics,
         private StoreAnalyticsReadModel $stores,
         private LeadReadModel $leads,
+        private CreativeIntelligenceReader $creatives,
         private Clock $clock,
     ) {}
 
@@ -200,6 +207,10 @@ final readonly class RenderReport
 
         if ($section->kind === SectionKind::Lead) {
             return $this->lead($workspaceId, $definition, $section, $period, $title, $caveats);
+        }
+
+        if ($section->kind === SectionKind::Creative) {
+            return $this->creative($workspaceId, $definition, $section, $period, $title, $caveats);
         }
 
         if ($section->kind === SectionKind::Store) {
@@ -390,6 +401,102 @@ final readonly class RenderReport
     }
 
     /**
+     * A creative section: one view of how the report's creatives performed.
+     *
+     * Read from the creative layer the Creatives page reads, inside the scope the report was written with (its client,
+     * platforms and campaigns, plus whatever a visitor narrowed to), so a number here is the number there. Nothing is
+     * computed in this method but the format mix, which is a sum over rows already read — and which is a share of money
+     * only when the creatives share a currency.
+     *
+     * @param  list<string>  $caveats
+     */
+    private function creative(
+        string $workspaceId,
+        ReportDefinition $definition,
+        SectionDefinition $section,
+        DateRange $period,
+        string $title,
+        array $caveats,
+    ): RenderedSection {
+        $view = $section->creativeView ?? CreativeView::Top;
+        $limit = max(1, min($section->rowLimit ?? $view->defaultLimit(), 100));
+
+        $read = $this->creatives->read(
+            $workspaceId,
+            $period,
+            $definition->filters,
+            'asset',
+            null,
+            $view === CreativeView::Top ? 'top' : null,
+            $view === CreativeView::Refresh || $view === CreativeView::FormatMix ? 100 : $limit,
+        );
+
+        $rows = $read->rows;
+
+        if ($view === CreativeView::Refresh) {
+            $rows = array_slice(array_values(array_filter(
+                $rows,
+                static fn (CreativeRow $row): bool => in_array($row->assessment->verdict?->value, ['fatiguing', 'weak'], true),
+            )), 0, $limit);
+        }
+
+        $currencies = array_values(array_unique(array_map(
+            static fn (CreativeRow $row): string => $row->metrics->currency ?? '',
+            $rows,
+        )));
+        $mixIsSpend = count($currencies) <= 1;
+        $mix = [];
+
+        if ($view === CreativeView::FormatMix) {
+            $groups = [];
+
+            foreach ($rows as $row) {
+                $key = $row->info->format;
+                $groups[$key] ??= [
+                    'key' => $key,
+                    'label' => CreativeFormat::tryFrom($key)?->label() ?? $key,
+                    'value' => 0.0,
+                ];
+                $groups[$key]['value'] += $mixIsSpend ? (float) ($row->metrics->get(Metric::Spend)->value ?? 0) : 1.0;
+            }
+
+            $mix = array_values($groups);
+            usort($mix, static fn (array $a, array $b): int => $b['value'] <=> $a['value']);
+        }
+
+        if ($view === CreativeView::Top || $view === CreativeView::Refresh) {
+            $caveats[] = 'Judged only on creatives seen at least 1,000 times in this period and the one before, and only '
+                .'when four or more are being compared. Fewer than that is left unrated rather than rated down.';
+        }
+
+        if ($view === CreativeView::FormatMix && ! $mixIsSpend) {
+            $caveats[] = 'These creatives are paid for in more than one currency, so the mix counts creatives rather '
+                .'than sharing out money.';
+        }
+
+        $breakdown = [];
+
+        foreach ($rows as $index => $row) {
+            /* The position stands in for the key: a creative's own identifier is not part of what a report says. */
+            $breakdown[] = new BreakdownRow(Dimension::Creative, 'creative-'.($index + 1), $row->info->name, $row->metrics);
+        }
+
+        $sources = array_map(static fn (CreativeRow $row): MetricSource => $row->metrics->source, $rows);
+
+        return new RenderedSection(
+            kind: $section->kind,
+            title: $title,
+            metrics: [Metric::Spend, Metric::Impressions, Metric::Ctr, Metric::Conversions, Metric::CostPerConversion],
+            source: $sources === [] ? MetricSource::Synced : MetricSource::weakest($sources),
+            isEmpty: $rows === [],
+            caveats: array_values(array_unique($caveats)),
+            rows: $breakdown,
+            currency: count($currencies) === 1 && $currencies[0] !== '' ? $currencies[0] : null,
+            creative: new CreativeSection($view, $rows, $mix, $mixIsSpend, $read->total),
+        );
+    }
+
+    /**
      * What the client's stores sold, according to the one authority the section names.
      *
      * Read for the report's own client and never across clients: `ReportDefinition` refuses a store section without
@@ -531,6 +638,10 @@ final readonly class RenderReport
 
         if ($section->kind === SectionKind::Lead) {
             return 'Leads';
+        }
+
+        if ($section->kind === SectionKind::Creative) {
+            return $section->creativeView?->label() ?? $section->kind->label();
         }
 
         if ($section->kind === SectionKind::Store) {

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Interface\Http\Resource\Reporting;
 
 use App\Application\Analytics\DTO\BreakdownRow;
+use App\Application\Analytics\DTO\CreativeRow;
 use App\Application\Analytics\DTO\MetricSet;
 use App\Application\Analytics\DTO\MetricValue;
 use App\Application\Analytics\DTO\SeriesPoint;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
 use App\Application\Reporting\Command\ShareReport;
 use App\Application\Reporting\Contract\SnapshotSerialiser;
+use App\Application\Reporting\DTO\CreativeSection;
 use App\Application\Reporting\DTO\LeadFigures;
 use App\Application\Reporting\DTO\RenderedReport;
 use App\Application\Reporting\DTO\RenderedSection;
@@ -20,10 +22,13 @@ use App\Application\Reporting\DTO\SectionDefinition;
 use App\Application\Reporting\DTO\ShareView;
 use App\Application\Reporting\DTO\StoreFigure;
 use App\Application\Reporting\DTO\StoreFigures;
+use App\Domain\Advertising\CreativeFormat;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
 use App\Domain\Commerce\RevenueSource;
+use App\Domain\Integration\Provider;
 use App\Domain\Reporting\ComparisonMode;
+use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
@@ -107,6 +112,10 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'is_invoiced' => $source->isInvoiced(),
                 'is_modelled' => $source->isModelled(),
             ], RevenueSource::cases()),
+            'creative_views' => array_map(static fn (CreativeView $view): array => [
+                'view' => $view->value,
+                'label' => $view->label(),
+            ], CreativeView::cases()),
             'max_share_days' => ShareReport::MAX_DAYS,
         ];
     }
@@ -207,6 +216,7 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'dimension' => $section->dimension?->value,
                 'row_limit' => $section->rowLimit,
                 'revenue_source' => $section->revenueSource?->value,
+                'creative_view' => $section->creativeView?->value,
             ], $definition->sections),
             'created_by_name' => $report->createdByName,
             'updated_at' => $report->updatedAt->format(DateTimeImmutable::ATOM),
@@ -272,6 +282,7 @@ final readonly class ReportResource implements SnapshotSerialiser
             ], $section->store->figures()),
             'store_detail' => $section->store === null ? null : self::storeDetail($section->store),
             'lead' => $section->lead === null ? null : self::lead($section->lead),
+            'creative' => $section->creative === null ? null : self::creative($section->creative),
             'totals' => $section->totals === null ? null : self::metricSet($section->totals),
             'series' => array_map(static fn (SeriesPoint $point): array => [
                 'date' => $point->date->format('Y-m-d'),
@@ -283,6 +294,51 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'status' => $row->status,
                 'metrics' => self::metricSet($row->metrics),
             ], $section->rows),
+        ];
+    }
+
+    /**
+     * A creative section's rows as a reader sees them: the picture reference, the figures, the plain verdict and why.
+     *
+     * Position, never identifier — no creative key, ad name, ad status, platform id or account appears, so the same
+     * shape is safe for a client and for a shared link. A preview address appears only when the media policy vouched
+     * for it; otherwise the state says why there is none.
+     *
+     * @return array<string, mixed>
+     */
+    private static function creative(CreativeSection $creative): array
+    {
+        return [
+            'view' => $creative->view->value,
+            'total' => $creative->total,
+            'mix_is_spend' => $creative->mixIsSpend,
+            'mix' => $creative->mix,
+            'rows' => array_map(static fn (CreativeRow $row, int $index): array => [
+                'position' => $index + 1,
+                'label' => $row->info->name,
+                'platform' => $row->info->provider,
+                'platform_label' => Provider::tryFrom($row->info->provider)?->label() ?? $row->info->provider,
+                'format' => $row->info->format,
+                'format_label' => CreativeFormat::tryFrom($row->info->format)?->label() ?? $row->info->format,
+                'media' => [
+                    'state' => $row->info->media->state,
+                    'kind' => $row->info->media->kind,
+                    'url' => $row->info->media->url,
+                    'origin' => $row->info->media->origin,
+                ],
+                'ads' => $row->info->adCount,
+                'campaigns' => $row->info->campaigns,
+                'campaign_count' => $row->info->campaignCount,
+                'metrics' => self::metricSet($row->metrics),
+                'trend' => array_map(static fn (SeriesPoint $point): array => [
+                    'date' => $point->date->format('Y-m-d'),
+                    'spend' => $point->metrics->get(Metric::Spend)?->value,
+                    'ctr' => $point->metrics->get(Metric::Ctr)?->value,
+                ], $row->trend),
+                'verdict' => $row->assessment->verdict?->value,
+                'verdict_label' => $row->assessment->verdict?->label(),
+                'evidence' => $row->assessment->evidence,
+            ], $creative->rows, array_keys($creative->rows)),
         ];
     }
 

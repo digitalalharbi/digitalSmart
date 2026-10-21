@@ -17,6 +17,7 @@ use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
 use App\Domain\Commerce\RevenueSource;
 use App\Domain\Reporting\ComparisonMode;
+use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
@@ -312,6 +313,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                 'dimension' => $section->dimension?->value,
                 'row_limit' => $section->rowLimit,
                 'revenue_source' => $section->revenueSource?->value,
+                'creative_view' => $section->creativeView?->value,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -357,6 +359,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                     ? (int) $values['row_limit']
                     : null,
                 revenueSource: RevenueSource::tryFrom((string) ($values['revenue_source'] ?? '')),
+                creativeView: CreativeView::tryFrom((string) ($values['creative_view'] ?? '')),
             );
         }
 

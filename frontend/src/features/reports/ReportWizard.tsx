@@ -14,6 +14,7 @@ import {
   Users,
   X,
   type LucideIcon,
+  Images,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -54,6 +55,7 @@ const KIND_ICON: Record<SectionKindValue, LucideIcon> = {
   table: BarChart3,
   store: ShoppingBag,
   lead: Users,
+  creative: Images,
 };
 
 export type WizardResult = {

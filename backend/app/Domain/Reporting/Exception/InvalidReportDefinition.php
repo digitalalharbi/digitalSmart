@@ -93,6 +93,16 @@ final class InvalidReportDefinition extends RuntimeException
         );
     }
 
+    /** A creative section that does not say which part of the creative picture it shows. */
+    public static function creativeViewRequired(): self
+    {
+        return new self(
+            'A creative section needs to say what it shows: the top creatives, their performance, the format mix, a '
+            .'comparison or the ones to refresh.',
+            'creative_view_required',
+        );
+    }
+
     /** A custom window with no dates. */
     public static function datesRequired(): self
     {

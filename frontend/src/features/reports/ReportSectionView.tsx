@@ -16,6 +16,7 @@ import {
   readChartPalette,
   seriesColour,
 } from '@/shared/ui/chart';
+import { CreativeSectionView } from './CreativeSectionView';
 import { LeadSectionView } from './LeadSectionView';
 import { StoreDetailView } from './StoreDetailView';
 import type { RenderedSection } from './types';
@@ -202,6 +203,10 @@ export function ReportSectionView({ section, sparks }: ReportSectionViewProps) {
 
   if (section.kind === 'lead') {
     return <LeadSectionView section={section} />;
+  }
+
+  if (section.kind === 'creative') {
+    return <CreativeSectionView section={section} />;
   }
 
   /*

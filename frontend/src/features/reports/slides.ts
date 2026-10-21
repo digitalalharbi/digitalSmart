@@ -45,7 +45,7 @@ export function buildSlides(report: RenderedReport): Slide[] {
     slides.push({ key: 'funnel', kind: 'highlight', part: 'funnel' });
   }
 
-  [...of('store'), ...of('lead')].forEach((section, index) =>
+  [...of('store'), ...of('lead'), ...of('creative')].forEach((section, index) =>
     slides.push({ key: `own-${String(index)}`, kind: 'section', section }),
   );
 

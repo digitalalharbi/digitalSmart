@@ -24,6 +24,7 @@ use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
 use App\Domain\Commerce\RevenueSource;
 use App\Domain\Reporting\ComparisonMode;
+use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\Exception\InvalidReportDefinition;
 use App\Domain\Reporting\Exception\InvalidShare;
 use App\Domain\Reporting\ReportAudience;
@@ -353,6 +354,13 @@ final class ReportController extends Controller
                 );
             }
 
+            $viewValue = is_string($entry['creative_view'] ?? null) ? $entry['creative_view'] : '';
+            $creativeView = CreativeView::tryFrom($viewValue);
+
+            if ($viewValue !== '' && $creativeView === null) {
+                return $this->unknown('creative view', CreativeView::values());
+            }
+
             $sections[] = new SectionDefinition(
                 kind: $kind,
                 metrics: $metrics,
@@ -364,6 +372,7 @@ final class ReportController extends Controller
                     ? (int) $entry['row_limit']
                     : null,
                 revenueSource: $revenueSource,
+                creativeView: $creativeView,
             );
         }
 
