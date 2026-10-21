@@ -32,19 +32,26 @@ const KIND: Record<InsightKind, { icon: typeof TrendingUp; tone: string }> = {
  *
  * Absent when there is nothing to say. A panel reading "no insights" would be furniture, and silence is honest.
  */
+export type HighlightPart = 'insights' | 'funnel' | 'campaigns' | 'advice';
+
 export function ReportHighlights({
   report,
   onViewDetails,
+  parts = ['insights', 'funnel', 'campaigns', 'advice'],
 }: {
   report: RenderedReport;
+  /** Which blocks to draw. A presentation shows one per screen; everywhere else all four. */
+  parts?: readonly HighlightPart[] | undefined;
   /** Opens the working: the tables and breakdowns behind these cards. Absent when they are already showing. */
   onViewDetails?: (() => void) | undefined;
 }) {
   const { t, i18n } = useTranslation();
-  const found = insights(report);
-  const { top, attention } = campaignCards(report);
-  const advice = recommendations(report);
-  const funnel = funnelStages(report);
+  const found = parts.includes('insights') ? insights(report) : [];
+  const { top, attention } = parts.includes('campaigns')
+    ? campaignCards(report)
+    : { top: [], attention: [] };
+  const advice = parts.includes('advice') ? recommendations(report) : [];
+  const funnel = parts.includes('funnel') ? funnelStages(report) : null;
 
   if (found.length === 0 && top.length === 0 && advice.length === 0 && funnel === null) {
     return null;

@@ -293,6 +293,7 @@ export function ReportsPage() {
             report={rendered.data}
             csvHref={csvUrl(selected)}
             xlsxHref={xlsxUrl(selected)}
+            presentable
           />
 
           <ExportsPanel reportId={selected} />

@@ -3255,6 +3255,22 @@
           "line": "Stays inside the workspace."
         }
       }
+    },
+    "present": {
+      "label": "{{name}} — presentation",
+      "close": "Close presentation",
+      "fullscreen": "Full screen",
+      "previous": "Previous",
+      "next": "Next",
+      "position": "Slide {{n}} of {{total}}: {{title}}",
+      "start": "Present",
+      "status": "Data status",
+      "part": {
+        "funnel": "Where the audience went",
+        "insights": "What stands out",
+        "campaigns": "The campaigns",
+        "advice": "Worth acting on"
+      }
     }
   },
   "sharedReport": {

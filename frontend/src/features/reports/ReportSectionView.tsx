@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { EChartsCoreOption } from 'echarts/core';
 import { formatChange, formatMetric, MISSING } from '@/shared/metrics';
 import { MetricCard } from '@/shared/ui/metric-card';
-import { formatMinor } from '@/shared/lib/format';
+import { formatMinor, localeTag } from '@/shared/lib/format';
 import { ScrollRegion } from '@/shared/ui/scroll-region';
 import { DonutChart } from '@/shared/ui/viz';
 import {
@@ -215,7 +215,7 @@ export function ReportSectionView({ section, sparks }: ReportSectionViewProps) {
         ? MISSING
         : figure.kind === 'money' && figure.currency !== null
           ? formatMinor(figure.value, figure.currency, locale)
-          : new Intl.NumberFormat(locale).format(figure.value);
+          : new Intl.NumberFormat(localeTag(locale)).format(figure.value);
 
     return (
       <ChartFrame

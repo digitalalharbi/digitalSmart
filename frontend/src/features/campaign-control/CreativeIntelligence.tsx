@@ -1,3 +1,4 @@
+import { localeTag } from '@/shared/lib/format';
 import {
   AlertTriangle,
   Image as ImageIcon,
@@ -123,7 +124,7 @@ export function CreativeIntelligence({ campaignId }: { campaignId: string }) {
         {VIEWS.map((entry) => (
           <Choice key={entry} isSelected={view === entry} onSelect={() => setView(entry)}>
             {t(`creativeIntel.view.${entry}`)} ·{' '}
-            {new Intl.NumberFormat(locale).format(views[entry].length)}
+            {new Intl.NumberFormat(localeTag(locale)).format(views[entry].length)}
           </Choice>
         ))}
       </div>
@@ -176,7 +177,7 @@ export function CreativeIntelligence({ campaignId }: { campaignId: string }) {
                       hint={
                         change === null
                           ? null
-                          : `${change > 0 ? '+' : ''}${new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(change)}`
+                          : `${change > 0 ? '+' : ''}${new Intl.NumberFormat(localeTag(locale), { style: 'percent', maximumFractionDigits: 0 }).format(change)}`
                       }
                     />
                     <Figure
@@ -188,9 +189,9 @@ export function CreativeIntelligence({ campaignId }: { campaignId: string }) {
                       value={
                         item.frequency === null
                           ? MISSING
-                          : new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(
-                              item.frequency,
-                            )
+                          : new Intl.NumberFormat(localeTag(locale), {
+                              maximumFractionDigits: 1,
+                            }).format(item.frequency)
                       }
                     />
                   </dl>
@@ -290,7 +291,7 @@ export function CreativeIntelligence({ campaignId }: { campaignId: string }) {
                       colour: COLOURS[index] ?? 'var(--ds-chart-4)',
                     }))}
                   format={(value) =>
-                    new Intl.NumberFormat(locale, {
+                    new Intl.NumberFormat(localeTag(locale), {
                       style: 'percent',
                       maximumFractionDigits: 0,
                     }).format(value / total)

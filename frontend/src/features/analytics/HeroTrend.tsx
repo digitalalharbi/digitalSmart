@@ -1,3 +1,4 @@
+import { localeTag } from '@/shared/lib/format';
 import { useTranslation } from 'react-i18next';
 import { formatMetric } from '@/shared/metrics';
 import type { AnalyticsPayload, MetricValue } from '@/shared/metrics';
@@ -35,9 +36,11 @@ export function HeroTrend({
     .map((point) => point.values[metric])
     .find((value): value is MetricValue => value !== undefined);
   const day = (iso: string): string =>
-    new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(
-      new Date(`${iso}T00:00:00Z`),
-    );
+    new Intl.DateTimeFormat(localeTag(locale), {
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(`${iso}T00:00:00Z`));
 
   return (
     <div className="flex flex-col gap-3">

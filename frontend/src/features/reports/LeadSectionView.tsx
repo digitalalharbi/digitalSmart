@@ -1,3 +1,4 @@
+import { localeTag } from '@/shared/lib/format';
 import { AlertTriangle, Lightbulb, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MISSING } from '@/shared/metrics';
@@ -26,13 +27,13 @@ const STAGE_ORDER = ['won', 'qualified', 'contacted', 'new', 'disqualified', 'lo
 /** A duration in the reader's own language and numerals: "42 min", "٤٢ د". */
 function duration(minutes: number, locale: string): string {
   return minutes >= 120
-    ? new Intl.NumberFormat(locale, {
+    ? new Intl.NumberFormat(localeTag(locale), {
         style: 'unit',
         unit: 'hour',
         unitDisplay: 'narrow',
         maximumFractionDigits: 1,
       }).format(minutes / 60)
-    : new Intl.NumberFormat(locale, {
+    : new Intl.NumberFormat(localeTag(locale), {
         style: 'unit',
         unit: 'minute',
         unitDisplay: 'narrow',
@@ -58,13 +59,14 @@ export function LeadSectionView({ section }: { section: RenderedSection }) {
     return null;
   }
 
-  const n = (value: number): string => new Intl.NumberFormat(locale).format(value);
+  const n = (value: number): string => new Intl.NumberFormat(localeTag(locale)).format(value);
   const pct = (value: number | null): string =>
     value === null
       ? MISSING
-      : new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(
-          value / 100,
-        );
+      : new Intl.NumberFormat(localeTag(locale), {
+          style: 'percent',
+          maximumFractionDigits: 1,
+        }).format(value / 100);
   const median = lead.response.median_seconds;
 
   return (

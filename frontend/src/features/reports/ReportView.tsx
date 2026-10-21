@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { CalendarClock, Download, Snowflake, TriangleAlert } from 'lucide-react';
+import { CalendarClock, Download, Presentation, Snowflake, TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
@@ -9,6 +9,7 @@ import { InfoHint } from '@/shared/ui/info-hint';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import type { MetricSourceValue } from '@/shared/metrics';
 import { ReportHighlights } from './ReportHighlights';
+import { ReportPresentation } from './ReportPresentation';
 import { ReportSectionView } from './ReportSectionView';
 import type { RenderedReport } from './types';
 
@@ -27,6 +28,10 @@ type ReportViewProps = {
   filterBar?: ReactNode | undefined;
   /** Whether a visitor's filters are on, which changes what an empty report means: nothing matches, not nothing recorded. */
   isFiltered?: boolean | undefined;
+  /** Offer the report as a full-screen presentation. */
+  presentable?: boolean | undefined;
+  /** Open it as one straight away — a link that says so. */
+  startPresenting?: boolean | undefined;
 };
 
 /**
@@ -52,8 +57,11 @@ export function ReportView({
   xlsxHref,
   filterBar,
   isFiltered = false,
+  presentable = false,
+  startPresenting = false,
 }: ReportViewProps) {
   const { t, i18n } = useTranslation();
+  const [presenting, setPresenting] = useState(startPresenting);
   /*
    * Two readings of one report. Executive is the answer — the scorecards and the trends; detailed is the
    * working: every breakdown and table. A client-safe report opens as the first, because the people it was
@@ -83,6 +91,9 @@ export function ReportView({
 
   return (
     <article className="flex flex-col gap-5">
+      {presenting ? (
+        <ReportPresentation report={report} onClose={() => setPresenting(false)} />
+      ) : null}
       <header className="bg-surface flex flex-col gap-4 rounded-3xl p-5 shadow-xs">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -117,6 +128,17 @@ export function ReportView({
               )}
               {report.mode_label}
             </Badge>
+            {presentable ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setPresenting(true)}
+              >
+                <Presentation aria-hidden className="size-3.5" />
+                {t('reports.present.start')}
+              </Button>
+            ) : null}
             {csvHref === undefined ? null : (
               <a
                 href={csvHref}

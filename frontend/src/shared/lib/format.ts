@@ -11,9 +11,12 @@ const LOCALE_TAG: Record<string, string> = {
   ar: 'ar-SA-u-nu-latn',
 };
 
-function tagFor(locale: string): string {
+/** The BCP 47 tag this product formats with: Arabic keeps Latin digits, whatever the engine's default is. */
+export function localeTag(locale: string): string {
   return LOCALE_TAG[locale] ?? 'en-US';
 }
+
+const tagFor = localeTag;
 
 export function formatNumber(value: number, locale = 'en', fractionDigits = 0): string {
   return new Intl.NumberFormat(tagFor(locale), {

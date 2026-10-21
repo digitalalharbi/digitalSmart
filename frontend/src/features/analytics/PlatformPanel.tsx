@@ -1,3 +1,4 @@
+import { localeTag } from '@/shared/lib/format';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/lib/cn';
 import { formatMetric, MISSING } from '@/shared/metrics';
@@ -70,14 +71,14 @@ export function PlatformPanel({
               colour: COLOURS[index] ?? 'var(--ds-chart-6)',
             }))}
             centre={{
-              value: new Intl.NumberFormat(i18n.language, {
+              value: new Intl.NumberFormat(localeTag(i18n.language), {
                 style: 'percent',
                 maximumFractionDigits: 0,
               }).format(spendOf(top[0] as BreakdownRowPayload) / total),
               caption: top[0]?.label ?? '',
             }}
             format={(value) =>
-              new Intl.NumberFormat(i18n.language, {
+              new Intl.NumberFormat(localeTag(i18n.language), {
                 style: 'percent',
                 maximumFractionDigits: 0,
               }).format(value / total)
