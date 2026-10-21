@@ -15,6 +15,7 @@ use App\Interface\Http\Controller\Agents\McpTokenController;
 use App\Interface\Http\Controller\Agents\ModelRoutingController;
 use App\Interface\Http\Controller\Agents\OperatingRulesController;
 use App\Interface\Http\Controller\Analytics\AnalyticsController;
+use App\Interface\Http\Controller\Analytics\CreativeIntelligenceController;
 use App\Interface\Http\Controller\Analytics\MetricCatalogueController;
 use App\Interface\Http\Controller\Attention\AttentionController;
 use App\Interface\Http\Controller\Attribution\AttributionController;
@@ -249,6 +250,9 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     // What can be asked for, and what each metric means. Served rather than
     // duplicated in the client, so formatting cannot diverge between screens.
     Route::get('analytics/catalogue', MetricCatalogueController::class)->name('analytics.catalogue');
+
+    /* Creatives, by asset or by ad: the same engine as `analytics`, grouped by what ran. */
+    Route::get('analytics/creatives', CreativeIntelligenceController::class)->name('analytics.creatives');
 
     /*
      * Saved views: a stored analytics query. The preset is stored rather than the

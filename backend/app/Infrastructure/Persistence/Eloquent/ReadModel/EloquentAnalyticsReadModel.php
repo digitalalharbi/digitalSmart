@@ -119,6 +119,7 @@ final readonly class EloquentAnalyticsReadModel implements AnalyticsReadModel
         array $metrics,
         ?Metric $orderBy = null,
         int $limit = 50,
+        int $offset = 0,
     ): array {
         $column = $dimension->column();
         $level = $dimension->level();
@@ -131,7 +132,10 @@ final readonly class EloquentAnalyticsReadModel implements AnalyticsReadModel
             ->selectRaw('count(distinct entity_id) as entity_count')
             ->whereNotNull($column)
             ->groupBy($column)
-            ->limit(max(1, min(500, $limit)));
+            ->limit(max(1, min(500, $limit)))
+            ->offset(max(0, $offset));
+
+        $this->joinCreatives($query, $dimension, $workspaceId);
 
         $orderColumn = $orderBy instanceof Metric ? self::COLUMNS[$orderBy->value] ?? null : null;
 
@@ -140,6 +144,9 @@ final readonly class EloquentAnalyticsReadModel implements AnalyticsReadModel
         } else {
             $query->orderByRaw('sum(spend_minor) desc nulls last');
         }
+
+        // A stable order, so a page boundary never shows a row twice or skips one when two groups tie.
+        $query->orderBy($column);
 
         $rows = $query->get();
         $labels = $this->labelsFor($dimension, $this->groupKeys($rows));
@@ -163,6 +170,80 @@ final readonly class EloquentAnalyticsReadModel implements AnalyticsReadModel
         }
 
         return $result;
+    }
+
+    public function seriesBy(
+        string $workspaceId,
+        DateRange $range,
+        AnalyticsFilters $filters,
+        Dimension $dimension,
+        array $keys,
+        array $metrics,
+    ): array {
+        if ($keys === []) {
+            return [];
+        }
+
+        $column = $dimension->column();
+
+        $query = $this->baseQuery($workspaceId, $range, $filters, $dimension->level())
+            ->selectRaw(sprintf('%s as group_key', $column))
+            ->selectRaw('date')
+            ->selectRaw($this->aggregateSelect())
+            ->selectRaw('count(distinct entity_id) as entity_count')
+            ->whereIn($column, $keys)
+            ->groupBy($column, 'date')
+            ->orderBy('date');
+
+        $this->joinCreatives($query, $dimension, $workspaceId);
+
+        /** @var array<string, array<string, array<string, mixed>>> $byKey */
+        $byKey = [];
+
+        foreach ($query->get() as $row) {
+            $aggregate = (array) $row;
+            $byKey[(string) ($aggregate['group_key'] ?? '')][(string) ($aggregate['date'] ?? '')] = $aggregate;
+        }
+
+        $result = [];
+
+        foreach ($byKey as $key => $days) {
+            $points = [];
+            $cursor = $range->start;
+
+            while ($cursor->format('Y-m-d') <= $range->endDate()) {
+                $points[] = new SeriesPoint(date: $cursor, metrics: $this->buildSet($metrics, $days[$cursor->format('Y-m-d')] ?? null));
+                $cursor = $cursor->modify('+1 day');
+            }
+
+            $result[$key] = $points;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Reach the creative through the ad, when that is what is being grouped.
+     *
+     * The join is to a derived table whose two columns have names no metric row has, so every unqualified column in the
+     * query still means exactly one thing — and an ad with no creative drops out through the caller's null check instead
+     * of being counted under somebody else's.
+     */
+    private function joinCreatives(Builder $query, Dimension $dimension, string $workspaceId): void
+    {
+        if ($dimension !== Dimension::Creative) {
+            return;
+        }
+
+        $query->leftJoinSub(
+            DB::table('ads')
+                ->where('workspace_id', $workspaceId)
+                ->select(['id as joined_ad_id', 'creative_id as joined_creative_id']),
+            'creative_link',
+            'creative_link.joined_ad_id',
+            '=',
+            'daily_metrics.ad_id',
+        );
     }
 
     /**
@@ -571,6 +652,7 @@ final readonly class EloquentAnalyticsReadModel implements AnalyticsReadModel
             Dimension::AdGroup => ['ad_groups', 'campaign_id'],
             Dimension::Ad => ['ads', 'ad_group_id'],
             Dimension::ExternalAccount => ['external_accounts', null],
+            Dimension::Creative => ['creatives', null],
             default => [null, null],
         };
 
@@ -580,7 +662,7 @@ final readonly class EloquentAnalyticsReadModel implements AnalyticsReadModel
 
         $columns = ['id', 'name', 'external_id'];
 
-        if ($table !== 'external_accounts') {
+        if (! in_array($table, ['external_accounts', 'creatives'], true)) {
             $columns[] = 'status';
         }
 

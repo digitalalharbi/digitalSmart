@@ -81,5 +81,26 @@ interface AnalyticsReadModel
         array $metrics,
         ?Metric $orderBy = null,
         int $limit = 50,
+        int $offset = 0,
+    ): array;
+
+    /**
+     * A daily series for each of several entities at once — the sparkline under a row.
+     *
+     * One grouped query for all of them, never one per entity, and through the same scope and the same metric derivation as
+     * every other read here: a point on a creative's trend is computed by the code that computes its row's figure, so the two
+     * cannot disagree. A day with no figure is an empty set, not a zero.
+     *
+     * @param  list<string>  $keys  the grouping keys of the entities asked about
+     * @param  list<Metric>  $metrics
+     * @return array<string, list<SeriesPoint>> keyed by grouping key; a key with no rows is absent
+     */
+    public function seriesBy(
+        string $workspaceId,
+        DateRange $range,
+        AnalyticsFilters $filters,
+        Dimension $dimension,
+        array $keys,
+        array $metrics,
     ): array;
 }
