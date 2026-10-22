@@ -3192,7 +3192,8 @@
     },
     "actions": {
       "edit": "تعديل",
-      "delete": "حذف"
+      "delete": "حذف",
+      "manage": "إدارة"
     },
     "view": {
       "allClients": "عبر جميع العملاء",
@@ -3256,7 +3257,14 @@
       "currentClient": "العميل المختار",
       "revenueSource": "إيراد مَن",
       "revenueSourceHint": "إيراد المتجر ادّعاء من جهة واحدة. أضف قسمًا ثانيًا لإظهار جهة أخرى — لا تُجمع معًا أبدًا.",
-      "creativeView": "ما الذي يُعرض"
+      "creativeView": "ما الذي يُعرض",
+      "campaignScope_zero": "عن {{count}} حملة",
+      "campaignScope_one": "عن حملة واحدة",
+      "campaignScope_two": "عن حملتين",
+      "campaignScope_few": "عن {{count}} حملات",
+      "campaignScope_many": "عن {{count}} حملة",
+      "campaignScope_other": "عن {{count}} حملة",
+      "clearCampaignScope": "اقرأ العميل كله بدلًا من ذلك"
     },
     "share": {
       "title": "اللقطات والروابط",
@@ -3484,7 +3492,9 @@
         "platforms": "المنصات",
         "campaigns": "الحملات",
         "store": "المتجر",
-        "lead": "العملاء المحتملون"
+        "lead": "العملاء المحتملون",
+        "traffic": "النقرات والمسار",
+        "attribution": "الإيراد المنسوب"
       },
       "presets": {
         "executive": {
@@ -3514,6 +3524,10 @@
         "creative": {
           "name": "أداء المواد الإبداعية",
           "tags": "معرض · الأفضل · مقارنة · إرهاق · توزيع الصيغ والمنصات"
+        },
+        "campaign": {
+          "name": "تقرير حملة",
+          "tags": "الأرقام · المسار · المجموعات · المواد الإعلانية · النسب"
         }
       },
       "audience": {
@@ -3525,7 +3539,9 @@
           "name": "للفريق",
           "line": "يبقى داخل مساحة العمل."
         }
-      }
+      },
+      "aboutCampaign": "هذا التقرير عن الحملة «{{name}}» فقط.",
+      "internalOnly": "غير متاح: الإيراد المنسوب داخلي ولا يُعرض للعميل."
     },
     "present": {
       "label": "{{name}} — عرض تقديمي",
@@ -3647,6 +3663,58 @@
       "expires": "يُغلق الرابط",
       "live": "أرقام حيّة · {{count}}",
       "frozen": "أرقام مجمّدة · {{count}}"
+    },
+    "traffic": {
+      "label": "النقرات والمسار",
+      "notTracked": "غير متتبَّع",
+      "leak": "أكبر نقطة فقد",
+      "stages": {
+        "impressions": "المشاهدات",
+        "clicks": "النقرات",
+        "link_clicks": "نقرات الرابط",
+        "conversions": "النتائج"
+      },
+      "rates": {
+        "ctr": "نسبة النقر",
+        "cpc": "تكلفة النقرة",
+        "conversion_rate": "نسبة النتائج"
+      }
+    },
+    "attribution": {
+      "campaign": "الحملة",
+      "conversions": "الطلبات",
+      "revenue": "الإيراد",
+      "roas": "العائد",
+      "campaigns": "الحملات المنسوب إليها الطلبات",
+      "according": "الطلبات محسوبة من {{source}}، ومنسوبة إلى الحملة التي جاء بها كل طلب.",
+      "coverage": "من إيراد الفترة تفسّره هذه الحملات (يُعتمد من {{percent}}٪).",
+      "reportable": "قابل للاعتماد",
+      "sample": "اعتبره عيّنة",
+      "unknown": "وصل {{amount}} بلا أي معلومة تسويقية. هو مجهول وليس صفرًا، ولا يُوزَّع على الحملات."
+    },
+    "manage": {
+      "missingTitle": "هذا التقرير غير متاح",
+      "missingBody": "ربما حُذف، أو لا تملك صلاحية قراءته.",
+      "back": "العودة إلى التقارير",
+      "trail": "موقعك",
+      "loading": "تقرير",
+      "tabsLabel": "هذا التقرير",
+      "tabs": {
+        "report": "التقرير",
+        "settings": "الإعدادات",
+        "sharing": "المشاركة",
+        "files": "الملفات والجدولة"
+      },
+      "settings": {
+        "client": "العميل",
+        "period": "الفترة",
+        "comparison": "المقارنة",
+        "audience": "كُتب لـ",
+        "scope": "النطاق",
+        "wholeClient": "كل ما يديره العميل",
+        "sections": "الأقسام"
+      },
+      "confirmDelete": "احذف هذا التقرير"
     }
   },
   "sharedReport": {
@@ -4699,7 +4767,8 @@
     "where": "موقعها",
     "tasks": "مهام عن هذه الحملة",
     "noTasks": "لا مهام مفتوحة عن هذه الحملة.",
-    "performance": "الأداء"
+    "performance": "الأداء",
+    "createReport": "إنشاء تقرير"
   },
   "backgroundWork": {
     "title": "العمل في الخلفية",

@@ -38,6 +38,7 @@ type ReportBuilderProps = {
     comparison: ComparisonModeValue;
     audience: ReportAudienceValue;
     internalNote: string | null;
+    campaignIds: string[];
     sections: SectionDraft[];
   }) => void;
   onCancel: () => void;
@@ -88,6 +89,8 @@ export function ReportBuilder({
   const [comparison, setComparison] = useState<ComparisonModeValue>(draft?.comparison ?? 'none');
   const [audience, setAudience] = useState<ReportAudienceValue>(draft?.audience ?? 'internal');
   const [internalNote, setInternalNote] = useState(draft?.internal_note ?? '');
+  /* A report written about particular campaigns keeps them on every save; clearing them is a choice made in Advanced. */
+  const [campaignIds, setCampaignIds] = useState<string[]>(draft?.filters.campaign_ids ?? []);
   const [sections, setSections] = useState<SectionDraft[]>(
     draft?.sections ?? [
       {
@@ -145,6 +148,7 @@ export function ReportBuilder({
               comparison,
               audience,
               internalNote: internalNote.trim() === '' ? null : internalNote.trim(),
+              campaignIds,
               sections,
             });
           }}
@@ -158,17 +162,6 @@ export function ReportBuilder({
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 required
-              />
-            )}
-          </Field>
-
-          <Field label={t('reports.builder.description')}>
-            {(props) => (
-              <Textarea
-                {...props}
-                rows={2}
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
               />
             )}
           </Field>
@@ -270,21 +263,61 @@ export function ReportBuilder({
             </div>
           </ChoiceGroup>
 
-          {audience !== 'internal' ? null : (
-            <Field
-              label={t('reports.builder.internalNote')}
-              hint={t('reports.builder.internalNoteHint')}
-            >
-              {(props) => (
-                <Textarea
-                  {...props}
-                  rows={2}
-                  value={internalNote}
-                  onChange={(event) => setInternalNote(event.target.value)}
-                />
+          {/*
+            The settings most reports never touch. Open on its own when this report already uses one, so editing never
+            hides a value somebody set.
+          */}
+          <details
+            open={description.trim() !== '' || internalNote.trim() !== '' || campaignIds.length > 0}
+            className="border-line-subtle rounded-xl border px-4 py-3"
+          >
+            <summary className="text-content-secondary cursor-pointer text-sm font-medium">
+              {t('actions.advanced')}
+            </summary>
+            <div className="mt-4 flex flex-col gap-4">
+              <Field label={t('reports.builder.description')}>
+                {(props) => (
+                  <Textarea
+                    {...props}
+                    rows={2}
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                  />
+                )}
+              </Field>
+
+              {audience !== 'internal' ? null : (
+                <Field
+                  label={t('reports.builder.internalNote')}
+                  hint={t('reports.builder.internalNoteHint')}
+                >
+                  {(props) => (
+                    <Textarea
+                      {...props}
+                      rows={2}
+                      value={internalNote}
+                      onChange={(event) => setInternalNote(event.target.value)}
+                    />
+                  )}
+                </Field>
               )}
-            </Field>
-          )}
+              {campaignIds.length === 0 ? null : (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-content-secondary text-sm">
+                    {t('reports.builder.campaignScope', { count: campaignIds.length })}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCampaignIds([])}
+                  >
+                    {t('reports.builder.clearCampaignScope')}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </details>
 
           <section className="flex flex-col gap-4" aria-label={t('reports.builder.sections')}>
             <div className="flex items-center justify-between">
@@ -331,8 +364,9 @@ export function ReportBuilder({
                         {kinds
                           .filter(
                             (entry) =>
-                              (entry.kind !== 'store' && entry.kind !== 'lead') ||
-                              clientId !== null,
+                              (entry.needs_client !== true || clientId !== null) &&
+                              /* Attributed revenue is internal: a client-safe report cannot hold it, and the server refuses it. */
+                              !(audience === 'client_safe' && entry.is_client_safe === false),
                           )
                           .map((entry) => (
                             <Choice
@@ -359,7 +393,7 @@ export function ReportBuilder({
                                     ? (section.dimension ?? 'provider')
                                     : null,
                                   revenue_source:
-                                    entry.kind !== 'store'
+                                    entry.names_revenue_source !== true
                                       ? null
                                       : (section.revenue_source ??
                                         (vocabulary?.revenue_sources ?? []).find(
@@ -392,7 +426,7 @@ export function ReportBuilder({
                     )}
                   </div>
 
-                  {section.kind === 'lead' ? null : section.kind === 'creative' ? (
+                  {section.kind === 'creative' ? (
                     <ChoiceGroup label={t('reports.builder.creativeView')}>
                       <div className="flex flex-wrap gap-2">
                         {(vocabulary?.creative_views ?? []).map((entry) => (
@@ -406,7 +440,8 @@ export function ReportBuilder({
                         ))}
                       </div>
                     </ChoiceGroup>
-                  ) : kind?.uses_metrics === false ? (
+                  ) : kind?.uses_metrics === false &&
+                    kind.names_revenue_source !== true ? null : kind?.uses_metrics === false ? (
                     <ChoiceGroup
                       label={t('reports.builder.revenueSource')}
                       hint={t('reports.builder.revenueSourceHint')}

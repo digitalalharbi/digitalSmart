@@ -93,6 +93,12 @@ enum SectionKind: string
         return $this === self::Store || $this === self::Attribution;
     }
 
+    /** Whether the section reads one client's own records, so a report with it must name a client. */
+    public function needsClient(): bool
+    {
+        return in_array($this, [self::Store, self::Lead, self::Attribution], true);
+    }
+
     /** Whether a report written for a client may carry this section. Attribution is the one it may not. */
     public function isClientSafe(): bool
     {

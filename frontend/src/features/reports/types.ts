@@ -29,7 +29,15 @@ export type ComparisonModeValue = 'none' | 'previous_period' | 'same_period_last
 export type ReportAudienceValue = 'internal' | 'client_safe';
 
 export type SectionKindValue =
-  'scorecard' | 'trend' | 'breakdown' | 'table' | 'store' | 'lead' | 'creative';
+  | 'scorecard'
+  | 'trend'
+  | 'breakdown'
+  | 'table'
+  | 'store'
+  | 'lead'
+  | 'creative'
+  | 'traffic'
+  | 'attribution';
 
 export type CreativeViewValue =
   'top' | 'performance' | 'format_mix' | 'comparison' | 'refresh' | 'gallery' | 'platform_mix';
@@ -61,6 +69,12 @@ export type SectionKindInfo = {
   metric_cap: number;
   /** False for a store section, which names a revenue source instead of choosing metrics. */
   uses_metrics: boolean;
+  /** True for a store and an attributed-revenue section: they name whose revenue they count. */
+  names_revenue_source?: boolean;
+  /** True where the section reads one client's own records, so the report must name a client. */
+  needs_client?: boolean;
+  /** False for attributed revenue: a client's portal never shows it, so a client-safe report cannot hold it. */
+  is_client_safe?: boolean;
   /** Which metrics this shape accepts. Reach is absent from a ranking: its rows do not add up. */
   metrics: string[];
 };
@@ -141,6 +155,41 @@ export type RenderedSection = {
   lead?: LeadAggregates | null;
   /** The creatives of a creative section's view. Positions and names only — no identifier of any kind. */
   creative?: CreativeSectionData | null;
+  /** Which campaigns a client's orders came from, with how much of the period that explains. */
+  attribution?: AttributionSectionData | null;
+};
+
+export type AttributionSectionData = {
+  model: string;
+  model_label: string;
+  is_modelled: boolean;
+  revenue_source: string;
+  revenue_source_label: string;
+  lookback_days: number;
+  coverage: {
+    conversions: number;
+    attributed_conversions: number;
+    campaign_named_conversions: number;
+    conversion_coverage: number | null;
+    revenue_coverage: number | null;
+    campaign_named_share: number | null;
+    unattributed_revenue_minor: number | null;
+    is_reportable: boolean;
+    reportable_percent: number;
+  };
+  unmatched_spend_minor: number | null;
+  spend_currency: string | null;
+  rows: Array<{
+    label: string;
+    provider: string | null;
+    link: string;
+    conversions: number;
+    revenue_minor: number | null;
+    currency: string | null;
+    evidence: string;
+    spend_minor: number | null;
+    roas: number | null;
+  }>;
 };
 
 export type CreativeSectionRow = {

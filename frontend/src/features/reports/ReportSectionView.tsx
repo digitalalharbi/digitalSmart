@@ -16,9 +16,11 @@ import {
   readChartPalette,
   seriesColour,
 } from '@/shared/ui/chart';
+import { AttributionSectionView } from './AttributionSectionView';
 import { CreativeSectionView } from './CreativeSectionView';
 import { LeadSectionView } from './LeadSectionView';
 import { StoreDetailView } from './StoreDetailView';
+import { TrafficSectionView } from './TrafficSectionView';
 import type { RenderedSection } from './types';
 
 /** Metrics whose parts sum to a whole across platforms. */
@@ -207,6 +209,14 @@ export function ReportSectionView({ section, sparks }: ReportSectionViewProps) {
 
   if (section.kind === 'creative') {
     return <CreativeSectionView section={section} />;
+  }
+
+  if (section.kind === 'traffic') {
+    return <TrafficSectionView section={section} />;
+  }
+
+  if (section.kind === 'attribution') {
+    return <AttributionSectionView section={section} />;
   }
 
   /*

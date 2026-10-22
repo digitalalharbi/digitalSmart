@@ -57,6 +57,8 @@ type ReportInput = {
   comparison: string;
   audience: string;
   internalNote?: string | null;
+  /** The campaigns the report is about. Sent whole on every save, so an edit never loses the scope. */
+  campaignIds?: string[];
   sections: SectionDraft[];
 };
 
@@ -71,6 +73,7 @@ function body(input: ReportInput): Record<string, unknown> {
     ...(input.customFrom ? { custom_from: input.customFrom } : {}),
     ...(input.customUntil ? { custom_until: input.customUntil } : {}),
     ...(input.internalNote === undefined ? {} : { internal_note: input.internalNote ?? '' }),
+    ...(input.campaignIds === undefined ? {} : { campaign_ids: input.campaignIds }),
     sections: input.sections.map((section) => ({
       kind: section.kind,
       metrics: section.metrics,

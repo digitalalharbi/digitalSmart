@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { PERMISSIONS, useSession } from '@/features/auth';
 import { useClientsQuery } from '@/features/clients';
@@ -8,6 +9,7 @@ import { formatNumber } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
+import { buttonVariants } from '@/shared/ui/button.variants';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { PageHeader } from '@/shared/ui/page-header';
@@ -60,13 +62,47 @@ export function ReportsPage() {
   const canShare = can(PERMISSIONS.reportsShare);
 
   /* Searched, never listed: a hundred-client agency cannot be a row of buttons, and the 101st is not a typo. */
-  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
+  /*
+   * Addresses that land on a particular state: a report to read (`open`), to edit (`edit`), or a new one about a
+   * campaign (`new` with `campaign`, `campaign_name`, `client`, `client_name`). Read once, when the page opens, and
+   * then cleared, so a refresh does not reopen what was just closed.
+   */
+  const [params, setParams] = useSearchParams();
+  const [arrival] = useState(() => ({
+    open: params.get('open'),
+    edit: params.get('edit'),
+    isNew: params.get('new') !== null,
+    campaign: params.get('campaign'),
+    campaignName: params.get('campaign_name') ?? '',
+    client: params.get('client'),
+    clientName: params.get('client_name') ?? '',
+  }));
+  const [client, setClient] = useState<{ id: string; label: string } | null>(
+    arrival.isNew && arrival.client !== null
+      ? { id: arrival.client, label: arrival.clientName }
+      : null,
+  );
   const [clientTerm, setClientTerm] = useState('');
   const clientId = client?.id ?? null;
-  const [selected, setSelected] = useState<string | null>(null);
-  const [editing, setEditing] = useState<'new' | 'existing' | null>(null);
+  const [selected, setSelected] = useState<string | null>(arrival.edit ?? arrival.open);
+  const [editing, setEditing] = useState<'new' | 'existing' | null>(
+    arrival.edit !== null && canManage ? 'existing' : arrival.isNew && canManage ? 'new' : null,
+  );
   const [freshToken, setFreshToken] = useState<string | null>(null);
   const [tab, setTab] = useState<CentreTab>('library');
+  /* Opened from a campaign: the report being made is about that campaign, and for that campaign's client. */
+  const [campaign] = useState<{ id: string; label: string } | null>(
+    arrival.isNew && arrival.campaign !== null
+      ? { id: arrival.campaign, label: arrival.campaignName }
+      : null,
+  );
+
+  /* The address has been read; take the question mark off it. */
+  useEffect(() => {
+    if (params.size > 0) {
+      setParams({}, { replace: true });
+    }
+  }, [params, setParams]);
 
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const vocabulary = useReportVocabularyQuery(canView);
@@ -258,8 +294,13 @@ export function ReportsPage() {
               </section>
             )}
 
-            {editing === 'new' ? (
+            {editing === 'new' && campaign !== null && vocabulary.data === undefined ? (
+              /* The campaign report is built from the server's vocabulary, so the wizard waits for it. */
+              <Skeleton className="h-96 w-full" />
+            ) : editing === 'new' ? (
               <ReportWizard
+                campaign={campaign}
+                initialClient={campaign === null ? null : client}
                 onSearchClients={setClientTerm}
                 isSearching={clients.isFetching}
                 vocabulary={vocabulary.data}
@@ -324,6 +365,12 @@ export function ReportsPage() {
                       <Button variant="secondary" size="sm" onClick={() => setEditing('existing')}>
                         {t('reports.actions.edit')}
                       </Button>
+                      <Link
+                        to={`/reports/${selected}/manage`}
+                        className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                      >
+                        {t('reports.actions.manage')}
+                      </Link>
                       <Button
                         variant="ghost"
                         size="sm"

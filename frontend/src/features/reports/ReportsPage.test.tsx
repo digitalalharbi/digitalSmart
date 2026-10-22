@@ -3,6 +3,8 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { MetricValue } from '@/shared/metrics';
 import { renderWithProviders } from '@/test/render';
+import { Route, Routes } from 'react-router';
+import { ReportManagePage } from './ReportManagePage';
 import { ReportsPage } from './ReportsPage';
 import type {
   CentreShare,
@@ -874,5 +876,54 @@ describe('the reports centre', function () {
       'aria-selected',
       'true',
     );
+  });
+});
+
+describe("one report's own page", () => {
+  function page() {
+    return renderWithProviders(
+      <Routes>
+        <Route path="/reports/:reportId/manage" element={<ReportManagePage />} />
+      </Routes>,
+      { route: '/reports/report-1/manage' },
+    );
+  }
+
+  it('names the report, who it is written for and what has happened to it', async () => {
+    await page();
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Monthly performance' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Settings' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Sharing' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Files and schedule' })).toBeInTheDocument();
+    expect(screen.getByText('Never opened')).toBeInTheDocument();
+  });
+
+  it('shows what the report is set to, including a campaign scope, before anyone shares it', async () => {
+    state.draft = draft({
+      filters: {
+        providers: [],
+        campaign_ids: ['c-1', 'c-2'],
+        project_ids: [],
+        client_id: 'client-1',
+      },
+    });
+    const user = userEvent.setup();
+    await page();
+
+    await user.click(await screen.findByRole('tab', { name: 'Settings' }));
+
+    expect(await screen.findByText('About 2 campaigns')).toBeInTheDocument();
+    expect(screen.getByText('Alhambra', { selector: 'dd' })).toBeInTheDocument();
+  });
+
+  it('offers no way in for somebody who may not read reports', async () => {
+    permissions.current = [];
+    await page();
+
+    expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Settings' })).not.toBeInTheDocument();
   });
 });

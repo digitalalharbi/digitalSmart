@@ -82,6 +82,10 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'metric_cap' => $kind->metricCap(),
                 /* False for a store section, which names a revenue source instead of choosing metrics. */
                 'uses_metrics' => $kind->usesMetrics(),
+                /* What the builder needs to know about a shape without keeping its own list of them. */
+                'names_revenue_source' => $kind->namesRevenueSource(),
+                'needs_client' => $kind->needsClient(),
+                'is_client_safe' => $kind->isClientSafe(),
                 /*
                  * Which metrics this shape will accept, so a builder cannot offer reach in a ranking and then be
                  * refused. The rule is the domain's; this publishes it.
