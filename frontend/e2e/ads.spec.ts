@@ -56,7 +56,10 @@ test.describe('ads', () => {
 /** Its own test, not inside the owner's describe: signing one account out under another's open page is a race. */
 test('ads are closed to a role that may not read performance', async ({ page }) => {
   await signIn(page, ACCOUNTS.creative);
-  const response = await page.request.get('/api/analytics/creatives?grain=ad');
+  /* As the SPA sends it: Sanctum only treats a request as the browser's own when it names where it came from. */
+  const response = await page.request.get('/api/analytics/creatives?grain=ad', {
+    headers: { Accept: 'application/json', Referer: page.url() },
+  });
 
   expect(response.status()).toBe(403);
 });
