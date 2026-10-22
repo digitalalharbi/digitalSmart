@@ -20,6 +20,9 @@ export async function fetchCampaignControl(filters: ControlFilters): Promise<Cam
       ...(filters.status === null ? {} : { status: filters.status }),
       ...(filters.objective === null ? {} : { objective: filters.objective }),
       ...(filters.health === null ? {} : { health: filters.health }),
+      ...(filters.endsWithin === null ? {} : { ends_within: filters.endsWithin }),
+      ...(filters.budget === null ? {} : { budget: filters.budget }),
+      ...(filters.zeroResults ? { no_results: 1 } : {}),
       ...(filters.search.trim() === '' ? {} : { search: filters.search.trim() }),
     },
   });

@@ -71,6 +71,20 @@ final readonly class CampaignControlResource
             'trend' => $row->trend,
             'reported_days' => $row->reportedDays,
             'last_synced_at' => $row->lastSyncedAt?->format(DateTimeInterface::ATOM),
+
+            /* The platform's own dates, where it has them. A campaign with no end date has none, rather than a guess. */
+            'starts_on' => $row->startedAt?->format('Y-m-d'),
+            'ends_on' => $row->endsAt?->format('Y-m-d'),
+
+            /*
+             * What the click-through rate is made of, and the rate. Null where the platform reported no
+             * impressions: nothing divided by nothing is not a rate of zero.
+             */
+            'impressions' => $row->impressions,
+            'clicks' => $row->clicks,
+            'ctr' => $row->impressions !== null && $row->impressions > 0 && $row->clicks !== null
+                ? $row->clicks / $row->impressions
+                : null,
         ];
     }
 

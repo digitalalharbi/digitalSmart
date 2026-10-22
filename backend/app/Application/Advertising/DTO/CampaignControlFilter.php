@@ -16,6 +16,12 @@ use App\Domain\Advertising\EntityStatus;
  */
 final readonly class CampaignControlFilter
 {
+    /** The share of a daily budget at and above which spending is "high". */
+    public const BUDGET_HIGH = 0.9;
+
+    /** The share of a daily budget at and below which spending is "low". */
+    public const BUDGET_LOW = 0.5;
+
     /**
      * @param  list<string>  $clientIds
      * @param  list<string>  $projectIds
@@ -52,7 +58,22 @@ final readonly class CampaignControlFilter
          * @var list<string>
          */
         public array $campaignIds = [],
+        /** Only campaigns the platform says stop within this many days. A campaign with no end date never matches. */
+        public ?int $endsWithinDays = null,
+        /**
+         * `high` — spending at or above nine tenths of a daily budget; `low` — at or below half of it. Only a daily
+         * budget has a line to measure against, so a campaign without one matches neither.
+         */
+        public ?string $budgetState = null,
+        /** Only campaigns that spent and *reported* zero results. A campaign that reported nothing is not a zero. */
+        public bool $reportedNoResults = false,
     ) {}
+
+    /** @return list<string> */
+    public static function budgetStates(): array
+    {
+        return ['high', 'low'];
+    }
 
     /** @return list<string> */
     public static function sorts(): array

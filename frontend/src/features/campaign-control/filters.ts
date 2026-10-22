@@ -23,12 +23,18 @@ export const DEFAULT_FILTERS: ControlFilters = {
   objective: null,
   health: null,
   tag: null,
+  endsWithin: null,
+  budget: null,
+  zeroResults: false,
   search: '',
   sort: 'health',
   descending: false,
   offset: 0,
-  view: 'cards',
+  /* The table is the working view: an operator compares rows. Cards are one toggle away and the phone's default. */
+  view: 'table',
 };
+
+export const ENDS_WITHIN = [7, 14, 30] as const;
 
 /**
  * The filters, as a URL.
@@ -56,6 +62,14 @@ export function fromParams(params: URLSearchParams): ControlFilters {
     days: PERIODS.includes(Number(params.get('days')) as never) ? Number(params.get('days')) : null,
     mode: params.get('mode') === 'detailed' ? 'detailed' : 'summary',
     tag: entity('tag'),
+    endsWithin: ENDS_WITHIN.includes(Number(params.get('ends')) as never)
+      ? Number(params.get('ends'))
+      : null,
+    budget:
+      params.get('budget') === 'high' || params.get('budget') === 'low'
+        ? (params.get('budget') as 'high' | 'low')
+        : null,
+    zeroResults: params.get('zero') === '1',
     provider: params.get('provider'),
     status: params.get('status'),
     objective: params.get('objective'),
@@ -64,7 +78,7 @@ export function fromParams(params: URLSearchParams): ControlFilters {
     sort: sort !== null && SORTS.includes(sort) ? sort : 'health',
     descending: params.get('dir') === 'desc',
     offset: Number.isFinite(offset) && offset > 0 ? offset : 0,
-    view: params.get('view') === 'table' ? 'table' : 'cards',
+    view: params.get('view') === 'cards' ? 'cards' : 'table',
   };
 }
 
@@ -89,6 +103,9 @@ export function toParams(filters: ControlFilters): URLSearchParams {
   set('days', filters.days === null ? null : String(filters.days));
   set('mode', filters.mode === 'detailed' ? 'detailed' : null);
   set('tag', filters.tag === null ? null : `${filters.tag.id}~${filters.tag.label}`);
+  set('ends', filters.endsWithin === null ? null : String(filters.endsWithin));
+  set('budget', filters.budget);
+  set('zero', filters.zeroResults ? '1' : null);
   set('provider', filters.provider);
   set('status', filters.status);
   set('objective', filters.objective);
@@ -97,7 +114,7 @@ export function toParams(filters: ControlFilters): URLSearchParams {
   set('sort', filters.sort === 'health' ? null : filters.sort);
   set('dir', filters.descending ? 'desc' : null);
   set('offset', filters.offset > 0 ? String(filters.offset) : null);
-  set('view', filters.view === 'table' ? 'table' : null);
+  set('view', filters.view === 'cards' ? 'cards' : null);
 
   return params;
 }

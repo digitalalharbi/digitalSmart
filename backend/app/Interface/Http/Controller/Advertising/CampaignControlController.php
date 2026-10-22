@@ -70,6 +70,13 @@ final class CampaignControlController extends Controller
             return $this->unknown('sort', CampaignControlFilter::sorts());
         }
 
+        $endsWithin = $this->intOrNull($request, 'ends_within');
+        $budgetState = $request->query('budget');
+
+        if ($budgetState !== null && (! is_string($budgetState) || ! in_array($budgetState, CampaignControlFilter::budgetStates(), true))) {
+            return $this->unknown('budget', CampaignControlFilter::budgetStates());
+        }
+
         $filter = new CampaignControlFilter(
             clientIds: $this->uuids($request, 'client_id'),
             projectIds: $this->projectScope($request, $actor),
@@ -83,6 +90,9 @@ final class CampaignControlController extends Controller
             tagIds: $this->uuids($request, 'tag_id'),
             campaignIds: $this->uuids($request, 'campaign_id'),
             descending: $request->query('direction') === 'desc',
+            endsWithinDays: $endsWithin === null ? null : max(1, min($endsWithin, 365)),
+            budgetState: $budgetState,
+            reportedNoResults: $request->boolean('no_results'),
         );
 
         $page = $campaigns(

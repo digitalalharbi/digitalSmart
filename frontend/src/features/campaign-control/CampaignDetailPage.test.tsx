@@ -1,10 +1,12 @@
 import { Route, Routes } from 'react-router';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/render';
 import { CampaignDetailPage } from './CampaignDetailPage';
 
-const state = vi.hoisted(() => ({ revenue: null as number | null, roas: null as number | null }));
+type State = { revenue: number | null; roas: number | null; ctr: number | null };
+
+const state = vi.hoisted((): State => ({ revenue: null, roas: null, ctr: 0.04 }));
 
 vi.mock('@/shared/api/client', async (importOriginal) => {
   const original = await importOriginal<Record<string, unknown>>();
@@ -142,6 +144,7 @@ vi.mock('@/shared/api/client', async (importOriginal) => {
                 cost_per_result_minor: 41_666,
                 revenue_minor: state.revenue,
                 roas: state.roas,
+                ctr: state.ctr,
                 budget_utilisation: 0.5,
                 last_synced_at: '2026-10-15T09:00:00Z',
               },
@@ -191,6 +194,26 @@ describe('CampaignDetailPage', () => {
 
     expect(screen.queryByText('ROAS')).not.toBeInTheDocument();
     expect(screen.queryByText('Revenue')).not.toBeInTheDocument();
+  });
+
+  it('reads the click-through rate where the platform reported one, and omits it where it did not', async () => {
+    await page();
+    await screen.findByText('Spending with nothing recorded.');
+
+    expect(
+      within(screen.getByRole('region', { name: 'Key figures' })).getByText('4.00%'),
+    ).toBeInTheDocument();
+  });
+
+  it('shows no click-through rate rather than a zero when none was reported', async () => {
+    state.ctr = null;
+    await page();
+    await screen.findByText('Spending with nothing recorded.');
+
+    expect(
+      within(screen.getByRole('region', { name: 'Key figures' })).queryByText('CTR'),
+    ).not.toBeInTheDocument();
+    state.ctr = 0.04;
   });
 
   it('keeps platform detail under Advanced', async () => {

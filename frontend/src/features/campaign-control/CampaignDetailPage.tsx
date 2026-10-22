@@ -13,7 +13,9 @@ import { ContextInsight } from '@/features/assistant';
 import { ReportHighlights } from '@/features/reports';
 import { BackgroundWork } from '@/features/background-work';
 import { api } from '@/shared/api/client';
-import { formatCompact } from '@/shared/lib/format';
+import { formatCompact, formatPercent } from '@/shared/lib/format';
+import { ProviderLogo } from '@/features/integrations';
+import { Badge } from '@/shared/ui/badge';
 import { useUiStore } from '@/shared/store/ui-store';
 import { formatRelativeTime } from '@/shared/lib/relative-time';
 import { Alert } from '@/shared/ui/alert';
@@ -28,7 +30,7 @@ import { BudgetBar } from './CampaignParts';
 import { CreativeIntelligence } from './CreativeIntelligence';
 import { Hierarchy } from './Hierarchy';
 import { QuickActions } from './QuickActions';
-import { objectiveName, resultName } from './labels';
+import { objectiveName, resultName, statusName } from './labels';
 import { money, resultText } from './text';
 import { reasonText } from '@/shared/lib/reason';
 import { HEALTH_TO_STATE, type CampaignControlPage, type CampaignRow } from './types';
@@ -193,6 +195,8 @@ export function CampaignDetailPage() {
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
           <div className="flex min-w-0 flex-col gap-4">
             <div className="flex flex-wrap items-center gap-3">
+              <ProviderLogo provider={row.provider as never} className="size-7" />
+              <Badge tone="neutral">{statusName(t, row)}</Badge>
               <HealthPill state={HEALTH_TO_STATE[row.health]} />
               <span className="text-content-secondary text-sm">
                 {reasonText(
@@ -234,6 +238,13 @@ export function CampaignDetailPage() {
               )}
               {row.roas === null ? null : (
                 <KpiTile label="ROAS" value={`${row.roas.toFixed(2)}×`} />
+              )}
+              {/* Only where the platform reported impressions: nothing divided by nothing is not a rate of zero. */}
+              {row.ctr === null ? null : (
+                <KpiTile
+                  label={t('campaignControl.col.ctr')}
+                  value={formatPercent(row.ctr, locale, 2)}
+                />
               )}
             </section>
 

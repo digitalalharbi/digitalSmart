@@ -4,6 +4,34 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Campaigns as an Ads Manager table: columns, filters and views an operator compares
+
+### Added
+- **The campaign table is the working view.** One row per campaign: platform, campaign, client, project, status,
+  objective, budget with its pacing bar, spend, result, cost per result, revenue, ROAS, CTR, start and end date,
+  health, a fourteen-day spend line and last sync. Sticky head, sortable where the server can order (campaign,
+  health, spend, cost per result, ROAS), pagination as before. Cards stay one press away and are the phone's layout
+  (a row becomes a card below `sm`).
+- **Columns are the reader's choice** — a menu with a compact-rows switch, remembered in this browser (a convenience:
+  every read and write of it may fail).
+- **Filters the server applies**: budget state (spending at least nine tenths, or at most half, of a daily budget),
+  ends within 7/14/30 days, and *spent, no results*. A campaign with no daily budget matches neither budget state,
+  one with no end date never matches *ends soon*, and *no results* means a reported zero — a campaign that reported
+  nothing is not one.
+- **Ready-made views**: Active, Needs attention, Critical, High spend, Best ROAS, Ending soon, Budget risk, No
+  conversions, Mine — each a set of the filters above, so each can be saved and shared as a link.
+- **The API publishes what the row already held**: `starts_on`, `ends_on`, `impressions`, `clicks`, `ctr` (null where
+  no impressions were reported — nothing over nothing is not zero).
+- **The campaign page** shows the platform and its status beside the verdict, and the click-through rate where one was
+  reported.
+
+### Changed
+- "Completed" reads **Ended** (منتهية).
+
+### Not yet
+- Bulk assign, tag, add-to-report and compare on the selection; an activity feed on the campaign page; campaign
+  attribution section. Ad groups and ads get their own screens in the next PRs.
+
 ## Navigation in the order the work is done, and Arabic a person would say
 
 ### Changed
