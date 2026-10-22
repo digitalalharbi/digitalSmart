@@ -53,6 +53,7 @@ final readonly class RenderedSection
         public ?LeadFigures $lead = null,
         /** Present for a creative section: the creatives of its view, never a platform identifier. */
         public ?CreativeSection $creative = null,
+        public ?AttributionFigures $attribution = null,
     ) {}
 
     public function requiresLabel(): bool

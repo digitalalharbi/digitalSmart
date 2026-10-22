@@ -37,7 +37,15 @@ final readonly class SectionDefinition
      */
     public function assertValid(): void
     {
-        if ($this->kind === SectionKind::Lead) {
+        if ($this->kind === SectionKind::Lead || $this->kind === SectionKind::Traffic) {
+            return;
+        }
+
+        if ($this->kind === SectionKind::Attribution) {
+            if ($this->revenueSource === null) {
+                throw InvalidReportDefinition::attributionNeedsSource();
+            }
+
             return;
         }
 

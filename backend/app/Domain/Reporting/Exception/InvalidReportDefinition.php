@@ -146,6 +146,32 @@ final class InvalidReportDefinition extends RuntimeException
         );
     }
 
+    /** Attributed revenue is read from one client's orders, and is never part of a client's own report. */
+    public static function attributionNeedsClient(): self
+    {
+        return new self(
+            'Attributed revenue is read for one client. Choose the client this report is about.',
+            'attribution_needs_client',
+        );
+    }
+
+    public static function attributionNotClientSafe(): self
+    {
+        return new self(
+            'Attributed revenue is internal: a client\'s portal never shows it, so a report written for a client cannot '
+            .'hold it. Keep this report internal, or take the section out.',
+            'attribution_not_client_safe',
+        );
+    }
+
+    public static function attributionNeedsSource(): self
+    {
+        return new self(
+            'Attributed revenue names whose orders it counts. Choose the revenue source.',
+            'attribution_needs_source',
+        );
+    }
+
     /** Lead figures belong to one client's enquiries; an agency-wide report has no single client to read them for. */
     public static function leadNeedsClient(): self
     {

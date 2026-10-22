@@ -349,6 +349,7 @@ final readonly class ReportResource implements SnapshotSerialiser
             'store_detail' => $section->store === null ? null : self::storeDetail($section->store),
             'lead' => $section->lead === null ? null : self::lead($section->lead),
             'creative' => $section->creative === null ? null : self::creative($section->creative),
+            'attribution' => $section->attribution === null ? null : self::attribution($section->attribution),
             'totals' => $section->totals === null ? null : self::metricSet($section->totals),
             'series' => array_map(static fn (SeriesPoint $point): array => [
                 'date' => $point->date->format('Y-m-d'),
@@ -483,6 +484,51 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'net_revenue' => $previous->netRevenueMinor,
                 'aov' => $previous->averageOrderValueMinor(),
             ],
+        ];
+    }
+
+    /**
+     * Attributed revenue: the model, how much of the period it explains, and the campaigns credited.
+     *
+     * Coverage is part of the payload rather than a footnote, and a revenue that was not carried is `null`, not zero.
+     *
+     * @return array<string, mixed>
+     */
+    private static function attribution(\App\Application\Reporting\DTO\AttributionFigures $figures): array
+    {
+        $coverage = $figures->coverage;
+
+        return [
+            'model' => $figures->model->value,
+            'model_label' => $figures->model->label(),
+            'is_modelled' => $figures->model->isModelled(),
+            'revenue_source' => $figures->revenueSource->value,
+            'revenue_source_label' => $figures->revenueSource->label(),
+            'lookback_days' => $figures->lookbackDays,
+            'coverage' => [
+                'conversions' => $coverage->conversions,
+                'attributed_conversions' => $coverage->attributedConversions,
+                'campaign_named_conversions' => $coverage->campaignNamedConversions,
+                'conversion_coverage' => $coverage->conversionCoverage(),
+                'revenue_coverage' => $coverage->revenueCoverage(),
+                'campaign_named_share' => $coverage->campaignNamedShare(),
+                'unattributed_revenue_minor' => $coverage->unattributedRevenueMinor(),
+                'is_reportable' => $coverage->isReportable(),
+                'reportable_percent' => \App\Domain\Attribution\AttributionCoverage::REPORTABLE_PERCENT,
+            ],
+            'unmatched_spend_minor' => $figures->unmatchedSpendMinor,
+            'spend_currency' => $figures->spendCurrency,
+            'rows' => array_map(static fn (\App\Application\Attribution\DTO\AttributedCampaignRow $row): array => [
+                'label' => $row->label,
+                'provider' => $row->provider,
+                'link' => $row->link->value,
+                'conversions' => $row->conversions,
+                'revenue_minor' => $row->revenueMinor,
+                'currency' => $row->currency,
+                'evidence' => $row->evidence->value,
+                'spend_minor' => $row->spendMinor,
+                'roas' => $row->roas(),
+            ], $figures->rows),
         ];
     }
 
