@@ -8,6 +8,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { InfoHint } from '@/shared/ui/info-hint';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import type { MetricSourceValue } from '@/shared/metrics';
+import { CreativeHero } from './CreativeHero';
 import { ReportHighlights } from './ReportHighlights';
 import { ReportPresentation } from './ReportPresentation';
 import { ReportSectionView } from './ReportSectionView';
@@ -71,7 +72,12 @@ export function ReportView({
     report.audience === 'client_safe' ? 'executive' : 'detailed',
   );
   const headline = report.sections.filter(
-    (section) => section.kind === 'scorecard' || section.kind === 'trend',
+    (section) =>
+      section.kind === 'scorecard' ||
+      section.kind === 'trend' ||
+      /* The creative answer, not its working: the gallery and the top creatives read as the executive view. */
+      (section.kind === 'creative' &&
+        (section.creative?.view === 'gallery' || section.creative?.view === 'top')),
   );
   const canSummarise = headline.length > 0 && headline.length < report.sections.length;
   const shown = level === 'executive' && canSummarise ? headline : report.sections;
@@ -253,6 +259,7 @@ export function ReportView({
               ))}
             </div>
           ) : null}
+          <CreativeHero report={report} />
           <ReportHighlights
             report={report}
             onViewDetails={

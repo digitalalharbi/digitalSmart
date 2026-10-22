@@ -28,6 +28,12 @@ enum CreativeView: string
     /** Creatives wearing out, or weak enough to replace. */
     case Refresh = 'refresh';
 
+    /** The largest creatives by spend as a media-first grid, with the scope's totals and trend beside them. */
+    case Gallery = 'gallery';
+
+    /** Each platform's creatives: how many, what they cost, what they returned. */
+    case PlatformMix = 'platform_mix';
+
     public function label(): string
     {
         return match ($this) {
@@ -36,6 +42,8 @@ enum CreativeView: string
             self::FormatMix => 'Format mix',
             self::Comparison => 'Creative comparison',
             self::Refresh => 'Creatives to refresh',
+            self::Gallery => 'Creative gallery',
+            self::PlatformMix => 'Platform creative mix',
         };
     }
 
@@ -48,6 +56,8 @@ enum CreativeView: string
             self::FormatMix => 100,
             self::Comparison => 4,
             self::Refresh => 6,
+            self::Gallery => 12,
+            self::PlatformMix => 100,
         };
     }
 

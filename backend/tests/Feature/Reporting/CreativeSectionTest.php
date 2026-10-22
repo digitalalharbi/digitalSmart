@@ -16,7 +16,7 @@ use Tests\Support\SyncedWorkspace;
 |
 */
 
-const CREATIVE_VIEWS = ['top', 'performance', 'format_mix', 'comparison', 'refresh'];
+const CREATIVE_VIEWS = ['top', 'performance', 'format_mix', 'comparison', 'refresh', 'gallery', 'platform_mix'];
 
 /** @return array{workspace: SyncedWorkspace, report: string} */
 function creativeReport(string $audience = 'client_safe'): array
@@ -75,7 +75,7 @@ describe('the definition', function (): void {
 
         $saved = test()->actingAs($setup['workspace']->scenario->owner)->getJson("/api/reports/{$setup['report']}")->assertOk()->json('data');
 
-        expect($saved['sections'])->toHaveCount(5);
+        expect($saved['sections'])->toHaveCount(7);
 
         test()->actingAs($setup['workspace']->scenario->owner)
             ->postJson('/api/reports', ['name' => 'Bad', 'window' => 'last_7_days', 'sections' => [['kind' => 'creative']]])
@@ -135,6 +135,32 @@ describe('rendering', function (): void {
         test()->actingAs($setup['workspace']->scenario->owner)->get("/api/reports/{$setup['report']}/xlsx")->assertOk();
 
         expect($csv)->toContain('Top creatives')->and($csv)->toContain('Spend');
+    });
+});
+
+describe('the gallery and the platform mix', function (): void {
+    it('carries the scope\'s own totals and days with the gallery, read from the analytics layer', function (): void {
+        $setup = creativeReport();
+        $data = test()->actingAs($setup['workspace']->scenario->owner)->getJson("/api/reports/{$setup['report']}")->assertOk()->json('data');
+        $gallery = creativeSection($data, 'gallery');
+
+        $page = test()->actingAs($setup['workspace']->scenario->owner)->getJson('/api/analytics?preset=7d&metrics[]=spend')->assertOk()->json('data.summary.values.spend.value');
+
+        expect($gallery['totals']['values']['spend']['value'])->toBe($page)
+            ->and($gallery['totals']['values'])->toHaveKeys(['ctr', 'cpa', 'conversions'])
+            ->and(count($gallery['series']))->toBe(7)
+            ->and($gallery['series'][0]['metrics']['values'])->toHaveKeys(['spend', 'ctr', 'frequency'])
+            ->and(count($gallery['creative']['rows']))->toBeLessThanOrEqual(12);
+    });
+
+    it('sums each platform\'s creatives over the rows it shows, and withholds money across two currencies', function (): void {
+        $setup = creativeReport();
+        $data = test()->actingAs($setup['workspace']->scenario->owner)->getJson("/api/reports/{$setup['report']}")->assertOk()->json('data');
+        $mix = creativeSection($data, 'platform_mix')['creative']['platform_mix'];
+
+        expect(array_column($mix, 'key'))->toEqualCanonicalizing(['meta', 'google_ads'])
+            ->and(array_sum(array_column($mix, 'creatives')))->toBe(count(creativeSection($data, 'platform_mix')['creative']['rows']))
+            ->and($mix[0])->toHaveKeys(['label', 'creatives', 'spend', 'results', 'ctr', 'cpa', 'currency']);
     });
 });
 

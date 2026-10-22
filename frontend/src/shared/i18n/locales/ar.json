@@ -3499,6 +3499,10 @@
         "monthly": {
           "name": "تنفيذي شهري",
           "tags": "الشهر الماضي · مقابل الشهر الذي قبله"
+        },
+        "creative": {
+          "name": "أداء المواد الإبداعية",
+          "tags": "معرض · الأفضل · مقارنة · إرهاق · توزيع الصيغ والمنصات"
         }
       },
       "audience": {
@@ -3532,11 +3536,42 @@
       "needTwo": "المقارنة تحتاج مادتين إبداعيتين على الأقل.",
       "emptyTitle": "لا مواد إبداعية في هذه الفترة",
       "emptyBody": "لم يعمل شيء بمادة إبداعية في هذه الفترة، أو لم يمكن تقييمها.",
-      "platform": "المنصة",
       "format": "الصيغة",
       "results": "النتائج",
       "verdict": "الحكم",
-      "creative": "المادة الإبداعية"
+      "creative": "المادة الإبداعية",
+      "hero": {
+        "label": "ملخّص المواد الإبداعية",
+        "creatives": "المواد الإبداعية",
+        "spend": "الإنفاق",
+        "conversions": "النتائج",
+        "ctr": "متوسط نسبة النقر",
+        "cpa": "متوسط تكلفة النتيجة",
+        "best": "أفضل مادة"
+      },
+      "insights": "رؤى المواد الإبداعية",
+      "recommendations": "توصيات المواد الإبداعية",
+      "insight": {
+        "best_ctr": "أفضل نسبة نقر",
+        "best_roas": "أعلى عائد",
+        "fatigue": "إرهاق مرصود",
+        "best_platform": "الأكثر نتائج"
+      },
+      "action": {
+        "refresh": "جدّد {{subject}}",
+        "scale": "وسّع {{subject}}"
+      },
+      "trend": {
+        "metric": "مقياس الاتجاه",
+        "label": "اتجاه المواد الإبداعية"
+      },
+      "platformCount_zero": "{{count}} مادة",
+      "platformCount_one": "مادة واحدة",
+      "platformCount_two": "مادتان",
+      "platformCount_few": "{{count}} مواد",
+      "platformCount_many": "{{count}} مادة",
+      "platformCount_other": "{{count}} مادة",
+      "platform": "المنصة"
     }
   },
   "sharedReport": {

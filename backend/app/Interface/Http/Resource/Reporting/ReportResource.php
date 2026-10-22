@@ -313,6 +313,7 @@ final readonly class ReportResource implements SnapshotSerialiser
             'total' => $creative->total,
             'mix_is_spend' => $creative->mixIsSpend,
             'mix' => $creative->mix,
+            'platform_mix' => $creative->platformMix,
             'rows' => array_map(static fn (CreativeRow $row, int $index): array => [
                 'position' => $index + 1,
                 'label' => $row->info->name,

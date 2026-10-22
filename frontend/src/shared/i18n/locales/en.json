@@ -3293,6 +3293,10 @@
         "monthly": {
           "name": "Monthly executive",
           "tags": "Last month · Against the month before"
+        },
+        "creative": {
+          "name": "Creative performance",
+          "tags": "Gallery · Top · Comparison · Fatigue · Format and platform mix"
         }
       },
       "audience": {
@@ -3326,11 +3330,38 @@
       "needTwo": "A comparison needs at least two creatives.",
       "emptyTitle": "No creatives in this period",
       "emptyBody": "Nothing ran with a creative in this period, or none could be rated.",
-      "platform": "Platform",
       "format": "Format",
       "results": "Results",
       "verdict": "Verdict",
-      "creative": "Creative"
+      "creative": "Creative",
+      "hero": {
+        "label": "Creative summary",
+        "creatives": "Creatives",
+        "spend": "Spend",
+        "conversions": "Results",
+        "ctr": "Average CTR",
+        "cpa": "Average CPA",
+        "best": "Best creative"
+      },
+      "insights": "Creative insights",
+      "recommendations": "Creative recommendations",
+      "insight": {
+        "best_ctr": "Best CTR",
+        "best_roas": "Highest ROAS",
+        "fatigue": "Fatigue detected",
+        "best_platform": "Most results"
+      },
+      "action": {
+        "refresh": "Refresh {{subject}}",
+        "scale": "Scale {{subject}}"
+      },
+      "trend": {
+        "metric": "Trend figure",
+        "label": "Creative trend"
+      },
+      "platformCount_one": "{{count}} creative",
+      "platformCount_other": "{{count}} creatives",
+      "platform": "Platform"
     }
   },
   "sharedReport": {

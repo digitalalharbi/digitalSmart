@@ -31,7 +31,8 @@ export type ReportAudienceValue = 'internal' | 'client_safe';
 export type SectionKindValue =
   'scorecard' | 'trend' | 'breakdown' | 'table' | 'store' | 'lead' | 'creative';
 
-export type CreativeViewValue = 'top' | 'performance' | 'format_mix' | 'comparison' | 'refresh';
+export type CreativeViewValue =
+  'top' | 'performance' | 'format_mix' | 'comparison' | 'refresh' | 'gallery' | 'platform_mix';
 
 export type RenderModeValue = 'live' | 'snapshot';
 
@@ -171,6 +172,17 @@ export type CreativeSectionData = {
   /** True when the mix is a share of money; false when it counts creatives because the money is in two currencies. */
   mix_is_spend: boolean;
   mix: Array<{ key: string; label: string; value: number }>;
+  /** Each platform's creatives, summed over the rows shown. Money is 0 and cpa null where two currencies meet. */
+  platform_mix?: Array<{
+    key: string;
+    label: string;
+    creatives: number;
+    spend: number;
+    results: number;
+    ctr: number | null;
+    cpa: number | null;
+    currency: string | null;
+  }>;
   rows: CreativeSectionRow[];
 };
 
