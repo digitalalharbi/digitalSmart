@@ -49,7 +49,7 @@ test('a campaign opens into its ad groups and ads, and what can be asked at each
   page,
 }) => {
   await signIn(page, ACCOUNTS.owner);
-  await page.goto('/campaigns');
+  await page.goto('/campaigns?view=cards');
 
   const card = page.getByRole('article').first();
   await card.getByRole('button', { name: 'Ad groups and ads' }).click();

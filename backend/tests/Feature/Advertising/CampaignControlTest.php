@@ -451,3 +451,79 @@ it('answers for exactly one campaign when asked by id, with the same verdict as 
         ->and($single[0]['health'])->toBe($one['health'])
         ->and($single[0]['spend_minor'])->toBe($one['spend_minor']);
 });
+
+/*
+ * What an operator scans a table for: when it started, when it stops, and whether anybody clicked. Each is the
+ * platform's own figure or nothing — a campaign without an end date has no `ends_on`, and one that reported no
+ * impressions has no rate rather than a rate of zero.
+ */
+it('publishes the dates, the impressions and clicks, and a click-through rate only where it can be one', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = controlAccounts($scenario);
+    controlProject($scenario, $accounts[0]['id']);
+    $dated = controlCampaign($scenario, $accounts[0]['id'], 'Dated');
+    $dated->forceFill(['starts_at' => now()->subDays(40), 'ends_at' => now()->addDays(9)])->save();
+    metricsFor($scenario, $dated, days: 28);
+    $silent = controlCampaign($scenario, $accounts[0]['id'], 'Silent');
+
+    /** @var list<array<string, mixed>> $listed */
+    $listed = $this->actingAs($scenario->owner)->getJson('/api/campaigns/control')->assertOk()->json('data');
+    $rows = array_column($listed, null, 'name');
+
+    expect($rows['Dated']['starts_on'])->toBe(now()->subDays(40)->toDateString())
+        ->and($rows['Dated']['ends_on'])->toBe(now()->addDays(9)->toDateString())
+        ->and($rows['Dated']['impressions'])->toBe(280_000)
+        ->and($rows['Dated']['clicks'])->toBe(5_600)
+        ->and($rows['Dated']['ctr'])->toEqualWithDelta(0.02, 0.0001)
+        ->and($rows['Silent']['ends_on'])->toBeNull()
+        ->and($rows['Silent']['impressions'])->toBeNull()
+        ->and($rows['Silent']['ctr'])->toBeNull();
+});
+
+it('narrows to what ends soon, and never to a campaign with no end date', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = controlAccounts($scenario);
+    controlProject($scenario, $accounts[0]['id']);
+    $soon = controlCampaign($scenario, $accounts[0]['id'], 'Ends soon');
+    $soon->forceFill(['ends_at' => now()->addDays(5)])->save();
+    $later = controlCampaign($scenario, $accounts[0]['id'], 'Ends later');
+    $later->forceFill(['ends_at' => now()->addDays(40)])->save();
+    controlCampaign($scenario, $accounts[0]['id'], 'Open ended');
+
+    $names = $this->actingAs($scenario->owner)->getJson('/api/campaigns/control?ends_within=7')
+        ->assertOk()->json('data.*.name');
+
+    expect($names)->toBe(['Ends soon']);
+});
+
+it('narrows by how much of a daily budget is being spent, and refuses a state it does not know', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = controlAccounts($scenario);
+    controlProject($scenario, $accounts[0]['id']);
+    $hot = controlCampaign($scenario, $accounts[0]['id'], 'Hot');
+    metricsFor($scenario, $hot, days: 28, spendMinor: 100_000);
+    $cold = controlCampaign($scenario, $accounts[0]['id'], 'Cold');
+    metricsFor($scenario, $cold, days: 28, spendMinor: 10_000);
+
+    $this->actingAs($scenario->owner)->getJson('/api/campaigns/control?budget=high')
+        ->assertOk()->assertJsonPath('data.*.name', ['Hot']);
+    $this->actingAs($scenario->owner)->getJson('/api/campaigns/control?budget=low')
+        ->assertOk()->assertJsonPath('data.*.name', ['Cold']);
+    $this->actingAs($scenario->owner)->getJson('/api/campaigns/control?budget=whatever')
+        ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+});
+
+it('finds campaigns that spent and reported zero results, not ones that reported nothing', function (): void {
+    $scenario = workspaceScenario();
+    $accounts = controlAccounts($scenario);
+    controlProject($scenario, $accounts[0]['id']);
+    $zero = controlCampaign($scenario, $accounts[0]['id'], 'Reported zero');
+    metricsFor($scenario, $zero, days: 28, conversions: 0.0);
+    $unreported = controlCampaign($scenario, $accounts[0]['id'], 'Reported nothing');
+    metricsFor($scenario, $unreported, days: 28, conversions: null);
+    $fine = controlCampaign($scenario, $accounts[0]['id'], 'Fine');
+    metricsFor($scenario, $fine, days: 28, conversions: 5.0);
+
+    $this->actingAs($scenario->owner)->getJson('/api/campaigns/control?no_results=1')
+        ->assertOk()->assertJsonPath('data.*.name', ['Reported zero']);
+});

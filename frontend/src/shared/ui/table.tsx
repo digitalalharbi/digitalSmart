@@ -35,6 +35,7 @@ export function DataTable({
   label,
   caption,
   minWidth = '48rem',
+  maxHeight,
   className,
   children,
   ...props
@@ -44,12 +45,23 @@ export function DataTable({
   /** Visible caption, where the surrounding card does not already carry the name. */
   caption?: string | undefined;
   minWidth?: string | undefined;
+  /**
+   * Bounds the table's height so it scrolls inside its own frame — which is what lets a `sticky` head stay in view
+   * while a long list is read. Left unset, the table is as tall as its rows and the page scrolls instead.
+   */
+  maxHeight?: string | undefined;
   className?: string | undefined;
 }) {
   return (
     <ScrollRegion
       label={label}
-      className="bg-surface border-line-subtle rounded-2xl border shadow-xs"
+      className={cn(
+        'bg-surface border-line-subtle rounded-2xl border shadow-xs',
+        maxHeight !== undefined && 'sm:max-h-(--ds-table-max) sm:overflow-y-auto',
+      )}
+      style={
+        maxHeight === undefined ? undefined : ({ '--ds-table-max': maxHeight } as CSSProperties)
+      }
     >
       {/*
         The minimum width applies from `sm` up only. On a phone the rows are cards and a minimum width would
@@ -76,9 +88,23 @@ export function DataTable({
 }
 
 /** Hidden on a phone, where each cell carries its own label instead. */
-export function TableHead({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
+export function TableHead({
+  sticky = false,
+  className,
+  ...props
+}: HTMLAttributes<HTMLTableSectionElement> & {
+  /** Keeps the column names in view while the rows scroll; needs the table's `maxHeight` to have anything to stick to. */
+  sticky?: boolean;
+}) {
   return (
-    <thead className={cn('border-line-subtle border-b max-sm:hidden', className)} {...props} />
+    <thead
+      className={cn(
+        'border-line-subtle border-b max-sm:hidden',
+        sticky && '[&_th]:bg-surface [&_th]:sticky [&_th]:top-0 [&_th]:z-10',
+        className,
+      )}
+      {...props}
+    />
   );
 }
 

@@ -28,7 +28,7 @@ test.describe('journey A — the media buyer', () => {
     await expect(page).toHaveURL(/\/campaigns\?mine=1/, SLOW);
     await expect(page.getByLabel('My projects only')).toBeChecked();
 
-    const first = page.getByRole('article').first();
+    const first = page.locator('tbody tr').first();
     await expect(first).toBeVisible(SLOW);
     const name = (await first.getByRole('link').first().textContent()) ?? '';
     await first.getByRole('link').first().click();

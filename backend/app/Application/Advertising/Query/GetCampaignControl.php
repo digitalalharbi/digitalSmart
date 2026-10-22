@@ -91,6 +91,38 @@ final readonly class GetCampaignControl
         }
 
         /*
+         * The filters that read what a verdict was built from. The counts above were taken before them: they
+         * describe the population, and these narrow the list.
+         */
+        if ($filter->endsWithinDays !== null) {
+            $horizon = $now->modify('+'.$filter->endsWithinDays.' days');
+            $rows = array_values(array_filter(
+                $rows,
+                static fn (CampaignControlRow $row): bool => $row->endsAt !== null
+                    && $row->endsAt >= $now
+                    && $row->endsAt <= $horizon,
+            ));
+        }
+
+        if ($filter->budgetState !== null) {
+            $high = $filter->budgetState === 'high';
+            $rows = array_values(array_filter(
+                $rows,
+                static fn (CampaignControlRow $row): bool => $row->budgetUtilisation !== null
+                    && ($high
+                        ? $row->budgetUtilisation >= CampaignControlFilter::BUDGET_HIGH
+                        : $row->budgetUtilisation <= CampaignControlFilter::BUDGET_LOW),
+            ));
+        }
+
+        if ($filter->reportedNoResults) {
+            $rows = array_values(array_filter(
+                $rows,
+                static fn (CampaignControlRow $row): bool => ($row->spendMinor ?? 0) > 0 && $row->results === 0.0,
+            ));
+        }
+
+        /*
          * Worst first, then by spend. A critical campaign spending nothing still outranks a healthy one
          * spending a fortune, because this list is a queue of work rather than a league table.
          */

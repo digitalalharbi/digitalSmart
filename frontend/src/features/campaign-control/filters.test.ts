@@ -16,8 +16,11 @@ describe('control-center filters in the URL', () => {
       search: 'ramadan',
       sort: 'spend' as const,
       descending: true,
+      endsWithin: 7,
+      budget: 'high' as const,
+      zeroResults: true,
       offset: 48,
-      view: 'table' as const,
+      view: 'cards' as const,
     };
 
     expect(fromParams(toParams(filters))).toEqual(filters);
@@ -25,6 +28,20 @@ describe('control-center filters in the URL', () => {
 
   it('writes nothing for the defaults, so a clean view has a clean URL', () => {
     expect(toParams(DEFAULT_FILTERS).toString()).toBe('');
+  });
+
+  it('opens on the table, and writes the view only when it is the cards', () => {
+    expect(DEFAULT_FILTERS.view).toBe('table');
+    expect(toParams({ ...DEFAULT_FILTERS, view: 'cards' }).get('view')).toBe('cards');
+    expect(fromParams(new URLSearchParams('view=cards')).view).toBe('cards');
+  });
+
+  it('keeps only the windows and budget states it offers', () => {
+    const parsed = fromParams(new URLSearchParams('ends=5&budget=huge&zero=1'));
+
+    expect(parsed.endsWithin).toBeNull();
+    expect(parsed.budget).toBeNull();
+    expect(parsed.zeroResults).toBe(true);
   });
 
   it('ignores a value it does not recognise rather than trusting the address bar', () => {

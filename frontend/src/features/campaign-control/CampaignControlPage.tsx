@@ -17,24 +17,17 @@ import { EntityPicker } from '@/shared/ui/entity-picker';
 import { Input } from '@/shared/ui/input';
 import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
-import {
-  DataTable,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/shared/ui/table';
 import { PAGE_SIZE } from './api';
-import { CampaignCard, CampaignIdentity, StatusPair, BudgetBar } from './CampaignParts';
-import { money, resultText } from './text';
+import { CampaignCard } from './CampaignParts';
+import { CampaignTable, TableSettingsMenu } from './CampaignTable';
+import { readSettings, writeSettings, type TableSettings } from './columns';
 import { SavedViewsMenu } from '@/features/surface-views';
 import { OwnershipQueue } from './OwnershipQueue';
 import { BulkBar } from './BulkBar';
 import { CampaignsHero } from './CampaignsHero';
-import { DEFAULT_FILTERS, PERIODS, fromParams, toParams } from './filters';
+import { DEFAULT_FILTERS, ENDS_WITHIN, PERIODS, fromParams, toParams } from './filters';
 import { useCampaignControl } from './useCampaignControl';
-import type { ControlFilters, SortKey } from './types';
+import { HEALTH_TO_STATE, type ControlFilters, type SortKey } from './types';
 
 /**
  * The Campaign Control Center.
@@ -46,8 +39,7 @@ import type { ControlFilters, SortKey } from './types';
  * page of 24 and the counts that describe the rest.
  */
 export function CampaignControlPage() {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.language;
+  const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const { context, setContext } = useUiStore();
   const fromUrl = fromParams(params);
@@ -95,7 +87,10 @@ export function CampaignControlPage() {
       filters.account !== null ||
       filters.status !== null ||
       filters.objective !== null ||
-      filters.tag !== null,
+      filters.tag !== null ||
+      filters.health !== null ||
+      filters.budget !== null ||
+      filters.endsWithin !== null,
   );
 
   const [clientTerm, setClientTerm] = useState('');
@@ -131,6 +126,12 @@ export function CampaignControlPage() {
     retry: false,
   });
   const providers = useProvidersQuery();
+  const providerLabels = new Map((providers.data ?? []).map((p) => [p.provider, p.label]));
+  const [tableSettings, setTableSettings] = useState<TableSettings>(readSettings);
+  const changeSettings = (next: TableSettings) => {
+    setTableSettings(next);
+    writeSettings(next);
+  };
   const tags = useQuery({
     queryKey: ['tags'] as const,
     queryFn: async (): Promise<Array<{ id: string; name: string }>> => {
@@ -167,6 +168,9 @@ export function CampaignControlPage() {
     filters.status !== null ||
     filters.objective !== null ||
     filters.health !== null ||
+    filters.budget !== null ||
+    filters.endsWithin !== null ||
+    filters.zeroResults ||
     filters.search.trim() !== '';
 
   return (
@@ -191,26 +195,46 @@ export function CampaignControlPage() {
               }
               presets={[
                 {
-                  key: 'critical',
-                  label: t('campaignControl.preset.critical'),
-                  filters: { health: 'critical' },
+                  key: 'active',
+                  label: t('campaignControl.preset.active'),
+                  filters: { status: 'active' },
                 },
                 {
                   key: 'attention',
                   label: t('campaignControl.preset.attention'),
                   filters: { health: 'needs_attention' },
                 },
+                {
+                  key: 'critical',
+                  label: t('campaignControl.preset.critical'),
+                  filters: { health: 'critical' },
+                },
+                {
+                  key: 'spend',
+                  label: t('campaignControl.preset.spend'),
+                  filters: { sort: 'spend' },
+                },
+                {
+                  key: 'roas',
+                  label: t('campaignControl.preset.roas'),
+                  filters: { sort: 'roas' },
+                },
+                {
+                  key: 'ending',
+                  label: t('campaignControl.preset.ending'),
+                  filters: { ends: '7' },
+                },
+                {
+                  key: 'budget',
+                  label: t('campaignControl.preset.budget'),
+                  filters: { budget: 'high' },
+                },
+                {
+                  key: 'noResults',
+                  label: t('campaignControl.preset.noResults'),
+                  filters: { zero: '1' },
+                },
                 { key: 'mine', label: t('campaignControl.preset.mine'), filters: { mine: '1' } },
-                {
-                  key: 'google',
-                  label: t('campaignControl.preset.google'),
-                  filters: { provider: 'google_ads' },
-                },
-                {
-                  key: 'meta',
-                  label: t('campaignControl.preset.meta'),
-                  filters: { provider: 'meta' },
-                },
               ]}
               onApply={(saved) => setParams(new URLSearchParams(saved), { replace: true })}
             />
@@ -316,6 +340,9 @@ export function CampaignControlPage() {
             <SlidersHorizontal />
             {t('campaignControl.moreFilters')}
           </Button>
+          {filters.view === 'table' ? (
+            <TableSettingsMenu settings={tableSettings} onChange={changeSettings} />
+          ) : null}
           <div className="flex gap-1" role="group" aria-label={t('campaignControl.view')}>
             <Button
               variant={filters.view === 'cards' ? 'secondary' : 'ghost'}
@@ -412,7 +439,45 @@ export function CampaignControlPage() {
                 label: o.label,
               }))}
               any={t('campaignControl.any')}
-            />{' '}
+            />
+            <Select
+              label={t('campaignControl.performance')}
+              value={filters.health}
+              onChange={(health) => update({ health: health as ControlFilters['health'] })}
+              options={(data?.meta.health ?? []).map((h) => ({
+                value: h.health,
+                label: t(`health.${HEALTH_TO_STATE[h.health]}`, { defaultValue: h.label }),
+              }))}
+              any={t('campaignControl.any')}
+            />
+            <Select
+              label={t('campaignControl.budgetState')}
+              value={filters.budget}
+              onChange={(budget) => update({ budget: budget as ControlFilters['budget'] })}
+              options={[
+                { value: 'high', label: t('campaignControl.budgetHigh') },
+                { value: 'low', label: t('campaignControl.budgetLow') },
+              ]}
+              any={t('campaignControl.any')}
+            />
+            <Select
+              label={t('campaignControl.endsWithin')}
+              value={filters.endsWithin === null ? null : String(filters.endsWithin)}
+              onChange={(days) => update({ endsWithin: days === null ? null : Number(days) })}
+              options={ENDS_WITHIN.map((days) => ({
+                value: String(days),
+                label: t('campaignControl.inDays', { count: days }),
+              }))}
+              any={t('campaignControl.any')}
+            />
+            <label className="flex h-9 items-center gap-2 self-end text-sm">
+              <input
+                type="checkbox"
+                checked={filters.zeroResults}
+                onChange={(event) => update({ zeroResults: event.target.checked })}
+              />
+              {t('campaignControl.zeroResults')}
+            </label>
             <Select
               label={t('campaignControl.sort')}
               value={filters.sort}
@@ -463,68 +528,25 @@ export function CampaignControlPage() {
           ))}
         </ul>
       ) : (
-        <DataTable label={t('campaignControl.title')} minWidth="64rem">
-          <TableHead>
-            <TableRow>
-              <TableHeader>
-                <input
-                  type="checkbox"
-                  aria-label={t('bulk.selectPage')}
-                  className="accent-action size-4"
-                  checked={data.data.length > 0 && data.data.every((row) => chosen.has(row.id))}
-                  onChange={(e) =>
-                    setChosen(
-                      e.target.checked ? new Set(data.data.map((row) => row.id)) : new Set(),
-                    )
-                  }
-                />
-              </TableHeader>
-              <TableHeader>{t('campaignControl.col.campaign')}</TableHeader>
-              <TableHeader>{t('campaignControl.col.health')}</TableHeader>
-              <TableHeader align="end">{t('campaignControl.col.spend')}</TableHeader>
-              <TableHeader align="end">{t('campaignControl.col.result')}</TableHeader>
-              <TableHeader align="end">{t('campaignControl.col.costPerResult')}</TableHeader>
-              <TableHeader align="end">ROAS</TableHeader>
-              <TableHeader>{t('campaignControl.col.budget')}</TableHeader>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.data.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell>
-                  <input
-                    type="checkbox"
-                    aria-label={t('bulk.select', { name: row.name })}
-                    className="accent-action size-4"
-                    checked={chosen.has(row.id)}
-                    onChange={() => toggle(row.id)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <CampaignIdentity row={row} />
-                </TableCell>
-                <TableCell label={t('campaignControl.col.health')}>
-                  <StatusPair row={row} />
-                </TableCell>
-                <TableCell isNumeric align="end" label={t('campaignControl.col.spend')}>
-                  {money(row.spend_minor, row.currency, locale)}
-                </TableCell>
-                <TableCell isNumeric align="end" label={t('campaignControl.col.result')}>
-                  {resultText(row, locale)}
-                </TableCell>
-                <TableCell isNumeric align="end" label={t('campaignControl.col.costPerResult')}>
-                  {money(row.cost_per_result_minor, row.currency, locale)}
-                </TableCell>
-                <TableCell isNumeric align="end" label="ROAS">
-                  {row.roas === null ? '—' : `${row.roas.toFixed(2)}×`}
-                </TableCell>
-                <TableCell label={t('campaignControl.col.budget')}>
-                  <BudgetBar row={row} />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </DataTable>
+        <CampaignTable
+          rows={data.data}
+          chosen={chosen}
+          onToggle={toggle}
+          onToggleAll={(all) =>
+            setChosen(all ? new Set(data.data.map((row) => row.id)) : new Set())
+          }
+          sort={filters.sort}
+          descending={filters.descending}
+          onSort={(sort) =>
+            update(
+              sort === filters.sort
+                ? { descending: !filters.descending }
+                : { sort, descending: false },
+            )
+          }
+          providerLabels={providerLabels}
+          settings={tableSettings}
+        />
       )}
 
       {chosen.size === 0 ? null : (

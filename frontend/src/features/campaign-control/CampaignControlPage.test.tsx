@@ -60,6 +60,11 @@ function row(o: Partial<CampaignRow> = {}): CampaignRow {
     trend: [1, 2, 3, null, 5],
     reported_days: 28,
     last_synced_at: '2026-06-15T09:00:00Z',
+    starts_on: '2026-05-01',
+    ends_on: null,
+    impressions: 200_000,
+    clicks: 4_000,
+    ctr: 0.02,
     tags: [],
     status_action: null,
     ...o,
@@ -113,7 +118,7 @@ describe('CampaignControlPage', () => {
   });
 
   it('shows the platform’s status and the product’s verdict together', async () => {
-    await renderWithProviders(<CampaignControlPage />);
+    await renderWithProviders(<CampaignControlPage />, { route: '/campaigns?view=cards' });
     const card = screen.getByRole('article', { name: 'Ramadan Push' });
 
     expect(within(card).getByText('Critical')).toBeInTheDocument();
@@ -123,7 +128,7 @@ describe('CampaignControlPage', () => {
 
   /* The server withholds ROAS for an objective that does not measure revenue; the page must not invent a slot. */
   it('shows no ROAS where the server sent none', async () => {
-    await renderWithProviders(<CampaignControlPage />);
+    await renderWithProviders(<CampaignControlPage />, { route: '/campaigns?view=cards' });
     const card = screen.getByRole('article', { name: 'Ramadan Push' });
 
     expect(within(card).queryByText('ROAS')).not.toBeInTheDocument();
@@ -133,7 +138,7 @@ describe('CampaignControlPage', () => {
     query.mockReturnValue(
       page([row({ spend_minor: null, cost_per_result_minor: null, result: null })]),
     );
-    await renderWithProviders(<CampaignControlPage />);
+    await renderWithProviders(<CampaignControlPage />, { route: '/campaigns?view=cards' });
     const card = screen.getByRole('article', { name: 'Ramadan Push' });
 
     expect(within(card).getAllByText('—').length).toBeGreaterThanOrEqual(3);
@@ -170,7 +175,7 @@ describe('CampaignControlPage', () => {
   /* The agency's own vocabulary reaches the card: the campaign's tags plus those inherited from its project. */
 
   it('offers to pin a campaign, by name', async () => {
-    await renderWithProviders(<CampaignControlPage />);
+    await renderWithProviders(<CampaignControlPage />, { route: '/campaigns?view=cards' });
 
     expect(screen.getByRole('button', { name: 'Pin Ramadan Push' })).toBeInTheDocument();
   });
@@ -182,5 +187,76 @@ describe('CampaignControlPage', () => {
     /* The headline is compact (12.5K); the currency switch only appears when there is more than one. */
     expect(screen.getByRole('heading', { name: 'Spend' })).toBeInTheDocument();
     expect(screen.getByText(/12\.5K/)).toBeInTheDocument();
+  });
+
+  describe('the table', () => {
+    it('opens on the table, with the columns an operator compares and none of the optional ones', async () => {
+      await renderWithProviders(<CampaignControlPage />);
+      const table = screen.getByRole('table', { name: 'Campaigns' });
+
+      for (const name of [
+        'Platform',
+        'Campaign',
+        'Client',
+        'Project',
+        'Status',
+        'Budget',
+        'Spend',
+      ]) {
+        expect(within(table).getByRole('columnheader', { name })).toBeInTheDocument();
+      }
+
+      expect(within(table).getByRole('columnheader', { name: 'CTR' })).toBeInTheDocument();
+      expect(within(table).getByText('Alhambra Retail')).toBeInTheDocument();
+      expect(within(table).getByText('Meta')).toBeInTheDocument();
+      expect(within(table).getByText('2.00%')).toBeInTheDocument();
+      expect(
+        within(table).queryByRole('columnheader', { name: 'Revenue' }),
+      ).not.toBeInTheDocument();
+      expect(within(table).queryByRole('columnheader', { name: 'Ends' })).not.toBeInTheDocument();
+    });
+
+    it('lets the reader choose the columns, and shows a missing date as a dash', async () => {
+      const user = userEvent.setup();
+      await renderWithProviders(<CampaignControlPage />);
+
+      await user.click(screen.getByRole('button', { name: 'Columns' }));
+      await user.click(screen.getByRole('checkbox', { name: 'End date' }));
+
+      const table = screen.getByRole('table', { name: 'Campaigns' });
+
+      expect(within(table).getByRole('columnheader', { name: 'Ends' })).toBeInTheDocument();
+      /* The row has no end date: a dash, never an invented one. */
+      expect(within(table).getAllByText('—').length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('sorts from the column head, and a second press reverses it', async () => {
+      const user = userEvent.setup();
+      await renderWithProviders(<CampaignControlPage />);
+
+      await user.click(screen.getByRole('button', { name: /^Spend/ }));
+      expect(query).toHaveBeenLastCalledWith(expect.objectContaining({ sort: 'spend' }));
+    });
+
+    it('does not offer to sort a column the server cannot order by', async () => {
+      await renderWithProviders(<CampaignControlPage />);
+
+      expect(screen.queryByRole('button', { name: /^CTR/ })).not.toBeInTheDocument();
+    });
+
+    it('narrows by budget state, by what ends soon and by spent-with-no-results', async () => {
+      const user = userEvent.setup();
+      await renderWithProviders(<CampaignControlPage />);
+
+      await user.click(screen.getByRole('button', { name: 'More filters' }));
+      await user.selectOptions(screen.getByLabelText('Budget'), 'high');
+      expect(query).toHaveBeenLastCalledWith(expect.objectContaining({ budget: 'high' }));
+
+      await user.selectOptions(screen.getByLabelText('Ends within'), '7');
+      expect(query).toHaveBeenLastCalledWith(expect.objectContaining({ endsWithin: 7 }));
+
+      await user.click(screen.getByRole('checkbox', { name: 'Spent, no results' }));
+      expect(query).toHaveBeenLastCalledWith(expect.objectContaining({ zeroResults: true }));
+    });
   });
 });

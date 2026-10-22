@@ -49,6 +49,13 @@ export type CampaignRow = {
   trend: Array<number | null>;
   reported_days: number;
   last_synced_at: string | null;
+  /** The platform's own dates (`YYYY-MM-DD`), where it has them. No end date means none, never a guess. */
+  starts_on: string | null;
+  ends_on: string | null;
+  impressions: number | null;
+  clicks: number | null;
+  /** Clicks over impressions as a ratio; null where nothing was reported to divide by. */
+  ctr: number | null;
   /** Internal tags: the campaign's own plus its project's and client's. Empty for a role that may not see them. */
   tags: Array<{ id: string; name: string }>;
   /**
@@ -97,6 +104,12 @@ export type ControlFilters = {
   objective: string | null;
   health: HealthValue | null;
   tag: { id: string; label: string } | null;
+  /** Only what the platform says stops within this many days. */
+  endsWithin: number | null;
+  /** Only campaigns spending at least nine tenths (`high`) or at most half (`low`) of a daily budget. */
+  budget: 'high' | 'low' | null;
+  /** Only campaigns that spent and reported zero results — not ones that reported nothing. */
+  zeroResults: boolean;
   search: string;
   sort: SortKey;
   descending: boolean;

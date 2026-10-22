@@ -3751,7 +3751,18 @@
       "spend": "Spend",
       "result": "Result",
       "costPerResult": "Cost per result",
-      "budget": "Budget"
+      "budget": "Budget",
+      "platform": "Platform",
+      "client": "Client",
+      "project": "Project",
+      "status": "Status",
+      "objective": "Objective",
+      "revenue": "Revenue",
+      "ctr": "CTR",
+      "start": "Starts",
+      "end": "Ends",
+      "trend": "Trend",
+      "sync": "Last sync"
     },
     "sortBy": {
       "health": "Health",
@@ -3814,7 +3825,13 @@
       "attention": "Needs attention",
       "mine": "My campaigns",
       "google": "Google Ads campaigns",
-      "meta": "Meta Ads campaigns"
+      "meta": "Meta Ads campaigns",
+      "active": "Active campaigns",
+      "spend": "High spend",
+      "roas": "Best ROAS",
+      "ending": "Ending soon",
+      "budget": "Budget risk",
+      "noResults": "No conversions"
     },
     "statusName": {
       "active": "Active",
@@ -3822,7 +3839,7 @@
       "not_delivering": "Not delivering",
       "in_review": "In review",
       "rejected": "Rejected",
-      "completed": "Completed",
+      "completed": "Ended",
       "archived": "Archived",
       "removed": "Removed",
       "unknown": "Unknown"
@@ -3852,7 +3869,36 @@
     },
     "otherWindow": "Showing health over the last {{days}} days. A campaign’s own page and the daily queue read 28 days, so a verdict can differ.",
     "sharedPeriod_one": "Shared period ({{count}} day)",
-    "sharedPeriod_other": "Shared period ({{count}} days)"
+    "sharedPeriod_other": "Shared period ({{count}} days)",
+    "columns": {
+      "title": "Columns",
+      "dense": "Compact rows",
+      "platform": "Platform",
+      "client": "Client",
+      "project": "Project",
+      "status": "Status",
+      "objective": "Objective",
+      "budget": "Budget",
+      "spend": "Spend",
+      "results": "Result",
+      "cpa": "Cost per result",
+      "revenue": "Revenue",
+      "roas": "ROAS",
+      "ctr": "CTR",
+      "start": "Start date",
+      "end": "End date",
+      "health": "Health",
+      "trend": "Trend",
+      "sync": "Last sync"
+    },
+    "performance": "Performance",
+    "budgetState": "Budget",
+    "budgetHigh": "Spending most of it",
+    "budgetLow": "Spending little of it",
+    "endsWithin": "Ends within",
+    "zeroResults": "Spent, no results",
+    "inDays_one": "{{count}} day",
+    "inDays_other": "{{count}} days"
   },
   "palette": {
     "title": "Search the agency",
