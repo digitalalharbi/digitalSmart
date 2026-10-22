@@ -15,6 +15,9 @@ export type SharedFilterState = {
   store: string | null;
   from: string | null;
   until: string | null;
+  /** Opaque keys for creatives, and a format slug — both handed out by the server for this link. */
+  creatives: string[];
+  format: string | null;
 };
 
 export const NO_FILTERS: SharedFilterState = {
@@ -23,7 +26,11 @@ export const NO_FILTERS: SharedFilterState = {
   store: null,
   from: null,
   until: null,
+  creatives: [],
+  format: null,
 };
+
+const FORMAT = /^[a-z_]{1,32}$/;
 
 const KEY = /^[A-Za-z0-9_-]{1,64}$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -46,6 +53,7 @@ export function parseFilters(params: URLSearchParams): SharedFilterState {
   const store = params.get('store');
   const from = params.get('from');
   const until = params.get('until');
+  const format = params.get('format');
 
   return {
     platforms: list(params.get('platform')),
@@ -53,6 +61,8 @@ export function parseFilters(params: URLSearchParams): SharedFilterState {
     store: store !== null && KEY.test(store) ? store : null,
     from: from !== null && DATE.test(from) ? from : null,
     until: until !== null && DATE.test(until) ? until : null,
+    creatives: list(params.get('creative')),
+    format: format !== null && FORMAT.test(format) ? format : null,
   };
 }
 
@@ -80,6 +90,14 @@ export function toSearch(filters: SharedFilterState): URLSearchParams {
     params.set('until', filters.until);
   }
 
+  if (filters.creatives.length > 0) {
+    params.set('creative', [...filters.creatives].sort().join(','));
+  }
+
+  if (filters.format !== null) {
+    params.set('format', filters.format);
+  }
+
   return params;
 }
 
@@ -97,6 +115,9 @@ export type SharedFilterOptions = {
   platforms: { key: string; label: string }[];
   campaigns: { key: string; label: string }[];
   stores: { key: string; label: string }[];
+  /** Offered only when the report shows creatives, and only where there is more than one to choose between. */
+  creatives?: { key: string; label: string }[];
+  formats?: { key: string; label: string }[];
   period: { from: string; until: string };
 };
 

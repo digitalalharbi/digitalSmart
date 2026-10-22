@@ -279,3 +279,64 @@ describe('creative screens', () => {
     expect(slides.filter((slide) => slide.kind === 'section')).toHaveLength(3);
   });
 });
+
+describe('the creative story', () => {
+  it('opens on the summary, runs top → comparison → refresh → mixes, and closes on the advice, whatever the saved order', () => {
+    const winner = { ...creativeRow(8), label: 'Winner' };
+    winner.metrics = {
+      values: { roas: value('roas', 9), cpa: value('cpa', 10) },
+      source: 'synced',
+      currency: 'SAR',
+      row_count: 1,
+      is_empty: false,
+    };
+    const other = { ...creativeRow(9), label: 'Runner-up' };
+    other.metrics = {
+      values: { roas: value('roas', 2) },
+      source: 'synced',
+      currency: 'SAR',
+      row_count: 1,
+      is_empty: false,
+    };
+    const gallery = {
+      ...creativeSection('gallery', 0),
+      creative: {
+        view: 'gallery' as const,
+        total: 2,
+        mix_is_spend: true,
+        mix: [],
+        rows: [winner, other],
+      },
+      is_empty: false,
+    };
+
+    const slides = buildSlides(
+      report([
+        creativeSection('format_mix', 2),
+        creativeSection('refresh', 1),
+        creativeSection('top', 1),
+        gallery,
+        creativeSection('comparison', 2),
+      ]),
+    );
+    const kinds = slides.map((slide) =>
+      slide.kind === 'section'
+        ? slide.section.creative?.view
+        : slide.kind === 'creative'
+          ? `creative:${slide.section.creative?.view ?? ''}`
+          : slide.kind,
+    );
+
+    expect(kinds).toEqual([
+      'cover',
+      'creative-summary',
+      'gallery',
+      'creative:top',
+      'comparison',
+      'creative:refresh',
+      'format_mix',
+      'creative-advice',
+      'status',
+    ]);
+  });
+});

@@ -163,3 +163,12 @@ gallery's trend switches one figure at a time — spend, CTR, CPA, results, ROAS
 *Creative performance* preset composes all of it. Lifecycle states beyond the five verdicts (New, Learning, Scaling)
 and content analysis beyond format (hook/theme, creator, UGC vs branded) need metadata the platforms do not sync and
 are `NOT_SUPPORTED` rather than inferred.
+
+### Creative filters and the presentation sequence (PR D)
+
+A shared link can be narrowed by **creative** (`creative=` opaque keys the link handed out, offered only when the
+report shows creatives and only when there is more than one) and by **format** (`format=` the format's own slug, from
+the report's creatives); both only narrow, both are looked up inside the link's scope, and a value outside it is
+refused with the rest of the filters. Presentation mode orders the creative story — summary (figures and insights), the
+gallery, the top creatives one per screen, the comparison, the ones to refresh, the format and platform mixes, then the
+recommendations on a screen of their own — whatever order the sections were saved in.

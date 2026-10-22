@@ -226,3 +226,51 @@ describe('a frozen report', function (): void {
             ->and(preg_match('/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i', $body))->toBe(0);
     });
 });
+
+describe('narrowing by creative and format', function (): void {
+    it('offers the report\'s creatives and formats by opaque key, and narrows to one creative', function (): void {
+        $setup = creativeReport();
+        $token = creativeLink($setup);
+        $all = creativeShared($token);
+        $options = $all['filters']['available'];
+
+        expect($options['creatives'])->not->toBe([])
+            ->and($options['formats'])->not->toBe([])
+            ->and(preg_match('/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i', (string) json_encode($options)))->toBe(0);
+
+        $one = $options['creatives'][0];
+        $narrowed = creativeShared($token, "creative={$one['key']}&refine=1");
+        $rows = creativeSection($narrowed, 'performance')['creative']['rows'];
+
+        expect($rows)->toHaveCount(1)
+            ->and($rows[0]['label'])->toBe($one['label'])
+            ->and($narrowed['filters']['applied']['creatives'])->toBe([$one['key']]);
+    });
+
+    it('narrows to a format the report holds, and refuses a creative or a format it does not', function (): void {
+        $setup = creativeReport();
+        $token = creativeLink($setup);
+        $format = creativeShared($token)['filters']['available']['formats'][0]['key'];
+
+        $narrowed = creativeShared($token, "format={$format}&refine=1");
+
+        foreach (creativeSection($narrowed, 'performance')['creative']['rows'] as $row) {
+            expect($row['format'])->toBe($format);
+        }
+
+        test()->getJson("/api/shared-reports/{$token}?creative=not-a-key")->assertUnprocessable();
+        test()->getJson("/api/shared-reports/{$token}?format=hologram")->assertUnprocessable();
+    });
+
+    it('offers no creative filter on a report that shows no creatives', function (): void {
+        $workspace = SyncedWorkspace::default();
+        $report = (string) test()->actingAs($workspace->scenario->owner)->postJson('/api/reports', [
+            'name' => 'Plain', 'audience' => 'client_safe', 'window' => 'last_7_days',
+            'sections' => [['kind' => 'scorecard', 'metrics' => ['spend']]],
+        ])->assertCreated()->json('data.id');
+        $token = (string) test()->actingAs($workspace->scenario->owner)->postJson("/api/reports/{$report}/shares", ['days' => 7])->assertCreated()->json('meta.token');
+
+        expect(creativeShared($token)['filters']['available']['creatives'])->toBe([]);
+        test()->getJson("/api/shared-reports/{$token}?creative=abc")->assertUnprocessable();
+    });
+});

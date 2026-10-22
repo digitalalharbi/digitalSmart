@@ -119,6 +119,11 @@ test.describe('creative sections in a shared report', () => {
         const deck = visiting.getByRole('dialog');
         await expect(deck).toBeVisible({ timeout: 30_000 });
         const forward = locale === 'en' ? 'ArrowRight' : 'ArrowLeft';
+        /* The story opens on the creative summary, right after the cover. */
+        await visiting.keyboard.press(forward);
+        await expect(
+          deck.getByRole('region', { name: /Creative summary|ملخّص المواد/ }),
+        ).toBeVisible();
         const creativeScreen = deck.getByRole('heading', {
           name: /Top creatives|Creative performance|أفضل المواد|أداء المواد/,
         });

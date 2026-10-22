@@ -1,3 +1,4 @@
+import { creativeHero, creativeRecommendations } from './creativeHighlights';
 import { campaignCards, funnelStages, insights, recommendations } from './highlights';
 import type { CreativeSectionRow, RenderedReport, RenderedSection } from './types';
 
@@ -24,6 +25,9 @@ export type Slide =
       of: number;
     }
   | { key: string; kind: 'highlight'; part: 'funnel' | 'insights' | 'campaigns' | 'advice' }
+  /** The creative story's own screens: the summary first, the advice last. */
+  | { key: string; kind: 'creative-summary' }
+  | { key: string; kind: 'creative-advice' }
   | { key: string; kind: 'status' };
 
 /** Sections that carry nothing say so in the report; a screen of "nothing recorded" would be a dead end in a meeting. */
@@ -62,7 +66,30 @@ export function buildSlides(report: RenderedReport): Slide[] {
    * Creatives are pictures, so the ones worth a screen each get one: the top and the ones to refresh, a creative per
    * screen with its picture large. The other views (a table, a mix, a comparison) are one screen as they are.
    */
-  of('creative').forEach((section, sectionIndex) => {
+  /*
+   * The creative story has an order of its own — the summary, the top creatives, the comparison, the ones wearing
+   * out, the mixes, then what to do — whatever order the sections were saved in. A screen exists only where the
+   * report has something for it.
+   */
+  const creativeOrder: Record<string, number> = {
+    gallery: 0,
+    top: 1,
+    comparison: 2,
+    refresh: 3,
+    format_mix: 4,
+    platform_mix: 5,
+    performance: 6,
+  };
+  const creatives = [...of('creative')].sort(
+    (a, b) =>
+      (creativeOrder[a.creative?.view ?? ''] ?? 9) - (creativeOrder[b.creative?.view ?? ''] ?? 9),
+  );
+
+  if (creativeHero(report) !== null) {
+    slides.push({ key: 'creative-summary', kind: 'creative-summary' });
+  }
+
+  creatives.forEach((section, sectionIndex) => {
     const rows = section.creative?.rows ?? [];
 
     if (section.creative?.view === 'top' || section.creative?.view === 'refresh') {
@@ -88,6 +115,10 @@ export function buildSlides(report: RenderedReport): Slide[] {
 
     slides.push({ key: `creative-${String(sectionIndex)}`, kind: 'section', section });
   });
+
+  if (creativeRecommendations(report).length > 0) {
+    slides.push({ key: 'creative-advice', kind: 'creative-advice' });
+  }
 
   if (insights(report).length > 0) {
     slides.push({ key: 'insights', kind: 'highlight', part: 'insights' });
