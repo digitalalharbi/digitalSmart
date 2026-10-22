@@ -36,7 +36,7 @@ test.describe('ad groups', () => {
     await page.getByRole('region', { name: 'Filters' }).getByLabel('Search').fill('SANDBOX');
     await expect(page).toHaveURL(/q=SANDBOX/);
 
-    await page.getByLabel('Search').fill('');
+    await page.getByRole('region', { name: 'Filters' }).getByLabel('Search').fill('');
     const link = page.locator('tbody tr').first().locator('a[href^="/ad-groups/"]').first();
     const name = (await link.textContent()) ?? '';
     await link.click();
@@ -60,7 +60,10 @@ test.describe('ad groups', () => {
 /** Its own test, not inside the owner's describe: signing one account out under another's open page is a race. */
 test('ad groups are closed to a role that may not read performance', async ({ page }) => {
   await signIn(page, ACCOUNTS.creative);
-  const response = await page.request.get('/api/ad-groups');
+  /* As the SPA sends it: Sanctum only treats a request as the browser's own when it names where it came from. */
+  const response = await page.request.get('/api/ad-groups', {
+    headers: { Accept: 'application/json', Referer: page.url() },
+  });
 
   expect(response.status()).toBe(403);
 });
