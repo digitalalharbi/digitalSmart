@@ -77,6 +77,9 @@ Schedule::command('digests:build monthly_executive')->monthlyOn(1, '08:00')->wit
  */
 Schedule::command('digests:performance')->hourly()->withoutOverlapping()->runInBackground();
 
+/* The alerts: hourly, after the rules have run, and said once per cooldown — the bell rings for a change, not a repeat. */
+Schedule::command('alerts:raise')->hourlyAt(20)->withoutOverlapping()->runInBackground();
+
 /* Exports are kept a week. The file goes; the row stays as the record of having asked. */
 Schedule::command('exports:prune')->dailyAt('04:00')->withoutOverlapping()->runInBackground();
 

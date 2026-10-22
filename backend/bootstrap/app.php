@@ -15,6 +15,7 @@ use App\Interface\Console\CommissionProvider;
 use App\Interface\Console\DemoAgencyCommand;
 use App\Interface\Console\PerformanceDigestsCommand;
 use App\Interface\Console\PruneExportsCommand;
+use App\Interface\Console\RaiseAlertsCommand;
 use App\Interface\Console\ReadStores;
 use App\Interface\Console\RunAgentsCommand;
 use App\Interface\Console\RunAutomationRulesCommand;
@@ -54,6 +55,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         BuildDigestsCommand::class,
         PerformanceDigestsCommand::class,
+        RaiseAlertsCommand::class,
         RunAgentsCommand::class,
         RunAutomationRulesCommand::class,
         CommissionProvider::class,

@@ -45,12 +45,16 @@ final readonly class Announce
         private NotificationPreferenceStore $preferences,
     ) {}
 
-    /** @return list<NotificationView> what was written, which may legitimately be nothing */
-    public function __invoke(NotificationDraft $draft): array
+    /**
+     * @param  string|null  $asSystem  a workspace id when nobody did this — a scheduled alert, a digest — so no actor
+     *                                 is dropped and the workspace is named rather than read from a session
+     * @return list<NotificationView> what was written, which may legitimately be nothing
+     */
+    public function __invoke(NotificationDraft $draft, ?string $asSystem = null): array
     {
         try {
-            $workspaceId = $this->actor->workspaceId()->value;
-            $actorId = $this->actor->userId()->value;
+            $workspaceId = $asSystem ?? $this->actor->workspaceId()->value;
+            $actorId = $asSystem === null ? $this->actor->userId()->value : null;
 
             $userIds = array_values(array_filter(
                 $this->recipients->resolve($workspaceId, $draft),

@@ -757,6 +757,13 @@ nothing, which is the truth.
 monthly on the local first; `digests.period_on` is the last day of the period, so a period is written once however
 many times the hour comes round. The older attention digests keep their UTC schedule for now.
 
+**The alerts are raised from signals that already exist** (`alerts:raise`, hourly). `AlertRule` is the whole
+judgement: a campaign health code, a budget risk or a tracking issue from the attention queue becomes its alert with
+the queue's own severity; a campaign's ROAS a fifth under the week before (half under: critical) or spend half again
+(double: critical) from the analytics layer's own breakdown; a creative the creative layer calls fatiguing; a campaign
+whose end date passed in the last day. Each draft carries a dedupe key, so the bell rings for a change and not for a
+repeat, and the recipient resolver — not the command — decides who may be told.
+
 **The centre, settings and history (PR B).** `GET /api/notifications?category=` filters by tab; the feed's digest
 carries `unread_by_category` and `unread_by_severity`, grouped in the same query as the list. `POST
 …/{id}/clicked` records a click-through (and a read); `POST …/{id}/dismiss` puts a row away — out of the list and

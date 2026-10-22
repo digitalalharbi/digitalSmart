@@ -4,6 +4,14 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The alerts are raised
+
+### Added
+- **`alerts:raise`** (hourly): the ten alert kinds from signals the product already has — attention-queue codes with
+  their own severity, ROAS drop and spend spike from the analytics breakdown against the week before, creative
+  fatigue from the creative layer's verdict, campaigns that ended — each deduplicated by kind and subject.
+- `Announce` can announce as the system for a named workspace, so nobody is dropped as "the actor".
+
 ## Notification centre, digest settings and history
 
 ### Added
