@@ -26,6 +26,10 @@ final readonly class SharedFilterRequest
         public ?DateTimeImmutable $until = null,
         /** The visitor already opened this page in this session, so this read is a refinement and not a view. */
         public bool $refinement = false,
+        /** @var list<string> opaque keys the link handed out for its creatives */
+        public array $creatives = [],
+        /** A creative format the report's own creatives hold, by its slug. */
+        public ?string $format = null,
     ) {}
 
     public function isEmpty(): bool
@@ -34,6 +38,8 @@ final readonly class SharedFilterRequest
             && $this->campaigns === []
             && $this->store === null
             && $this->from === null
-            && $this->until === null;
+            && $this->until === null
+            && $this->creatives === []
+            && $this->format === null;
     }
 }

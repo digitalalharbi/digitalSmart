@@ -23,6 +23,8 @@ describe('parseFilters', () => {
       store: 's1',
       from: '2026-10-01',
       until: null,
+      creatives: [],
+      format: null,
     });
   });
 
@@ -51,6 +53,8 @@ describe('toSearch and filterKey', () => {
       store: 's',
       from: '2026-10-01',
       until: '2026-10-05',
+      creatives: [],
+      format: null,
     };
 
     expect(parseFilters(toSearch(state))).toEqual(state);
@@ -83,5 +87,16 @@ describe('hasOptions', () => {
     expect(hasOptions({ can_filter: false, available: null, applied: null })).toBe(false);
     expect(hasOptions(null)).toBe(false);
     expect(hasOptions(undefined)).toBe(false);
+  });
+
+  it('carries creatives and a format, and drops a format that is not a plain slug', () => {
+    const parsed = parseFilters(new URLSearchParams('creative=b2,a1&format=video'));
+
+    expect(parsed.creatives).toEqual(['a1', 'b2']);
+    expect(parsed.format).toBe('video');
+    expect(parseFilters(new URLSearchParams('format=<script>')).format).toBeNull();
+    expect(toSearch({ ...NO_FILTERS, creatives: ['b2', 'a1'], format: 'video' }).toString()).toBe(
+      'creative=a1%2Cb2&format=video',
+    );
   });
 });

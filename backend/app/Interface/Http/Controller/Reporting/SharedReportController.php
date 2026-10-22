@@ -92,6 +92,7 @@ final class SharedReportController extends Controller
         };
 
         $store = $request->query('store');
+        $format = $request->query('format');
 
         return new SharedFilterRequest(
             platforms: $list('platform'),
@@ -100,6 +101,8 @@ final class SharedReportController extends Controller
             from: $date($request->query('from')),
             until: $date($request->query('until')),
             refinement: $request->query('refine') === '1',
+            creatives: $list('creative'),
+            format: is_string($format) && preg_match('/^[a-z_]{1,32}$/', $format) === 1 ? $format : null,
         );
     }
 }

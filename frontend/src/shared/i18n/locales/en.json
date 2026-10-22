@@ -3390,7 +3390,9 @@
       "until": "Until",
       "empty": "No data for this selection",
       "emptyBody": "Nothing in this report matches these filters. Clear them to see the whole report.",
-      "refused": "That selection is not part of this report, so the whole report is shown."
+      "refused": "That selection is not part of this report, so the whole report is shown.",
+      "creative": "Creative",
+      "format": "Format"
     }
   },
   "portal": {

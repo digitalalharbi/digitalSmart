@@ -217,7 +217,7 @@ final readonly class RenderReport
         }
 
         if ($section->kind === SectionKind::Creative) {
-            return $this->creative($workspaceId, $definition, $section, $period, $title, $caveats);
+            return $this->creative($workspaceId, $definition, $section, $period, $title, $caveats, $narrowing);
         }
 
         if ($section->kind === SectionKind::Store) {
@@ -424,21 +424,31 @@ final readonly class RenderReport
         DateRange $period,
         string $title,
         array $caveats,
+        ?ReportNarrowing $narrowing = null,
     ): RenderedSection {
         $view = $section->creativeView ?? CreativeView::Top;
         $limit = max(1, min($section->rowLimit ?? $view->defaultLimit(), 100));
+        $chosen = $narrowing === null ? [] : $narrowing->creativeIds;
 
         $read = $this->creatives->read(
             $workspaceId,
             $period,
             $definition->filters,
             'asset',
-            null,
+            $narrowing?->format,
             $view === CreativeView::Top ? 'top' : null,
-            in_array($view, [CreativeView::Refresh, CreativeView::FormatMix, CreativeView::PlatformMix], true) ? 100 : $limit,
+            /* A visitor's creative filter is applied after the read, so the read must reach every creative it may name. */
+            $chosen !== [] || in_array($view, [CreativeView::Refresh, CreativeView::FormatMix, CreativeView::PlatformMix], true) ? 100 : $limit,
         );
 
         $rows = $read->rows;
+
+        if ($chosen !== []) {
+            $rows = array_slice(array_values(array_filter(
+                $rows,
+                static fn (CreativeRow $row): bool => in_array($row->info->key, $chosen, true),
+            )), 0, $limit);
+        }
 
         if ($view === CreativeView::Refresh) {
             $rows = array_slice(array_values(array_filter(

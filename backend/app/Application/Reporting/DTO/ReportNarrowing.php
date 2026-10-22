@@ -23,16 +23,24 @@ final readonly class ReportNarrowing
         public array $providers = [],
         public array $campaignIds = [],
         public ?string $storeId = null,
+        /** @var list<string> creative keys the visitor narrowed to; applies to creative sections only */
+        public array $creativeIds = [],
+        public ?string $format = null,
     ) {}
 
     public function isActive(): bool
     {
-        return $this->period !== null || $this->providers !== [] || $this->campaignIds !== [] || $this->storeId !== null;
+        return $this->period !== null || $this->providers !== [] || $this->campaignIds !== [] || $this->storeId !== null || $this->creativeIds !== [] || $this->format !== null;
     }
 
     /** Whether a figure about ad platforms or campaigns is being narrowed. Leads and stores cannot follow that. */
     public function narrowsAdvertising(): bool
     {
         return $this->providers !== [] || $this->campaignIds !== [];
+    }
+
+    public function narrowsCreatives(): bool
+    {
+        return $this->creativeIds !== [] || $this->format !== null;
     }
 }

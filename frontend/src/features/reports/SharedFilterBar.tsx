@@ -75,6 +75,22 @@ export function SharedFilterBar({
       label: options.campaigns.find((entry) => entry.key === key)?.label ?? key,
       remove: () => onChange({ ...filters, campaigns: filters.campaigns.filter((c) => c !== key) }),
     })),
+    ...filters.creatives.map((key) => ({
+      key: `creative-${key}`,
+      label: options.creatives?.find((entry) => entry.key === key)?.label ?? key,
+      remove: () => onChange({ ...filters, creatives: filters.creatives.filter((c) => c !== key) }),
+    })),
+    ...(filters.format === null
+      ? []
+      : [
+          {
+            key: 'format',
+            label:
+              options.formats?.find((entry) => entry.key === filters.format)?.label ??
+              filters.format,
+            remove: () => onChange({ ...filters, format: null }),
+          },
+        ]),
     ...(filters.store === null
       ? []
       : [
@@ -161,6 +177,45 @@ export function SharedFilterBar({
                     }
                   >
                     {platform.label}
+                  </Choice>
+                ))}
+              </div>
+            </ChoiceGroup>
+          )}
+
+          {(options.formats?.length ?? 0) === 0 ? null : (
+            <ChoiceGroup label={t('sharedReport.filters.format')}>
+              <div className="flex flex-wrap gap-2">
+                {(options.formats ?? []).map((format) => (
+                  <Choice
+                    key={format.key}
+                    isSelected={filters.format === format.key}
+                    onSelect={() =>
+                      onChange({
+                        ...filters,
+                        format: filters.format === format.key ? null : format.key,
+                      })
+                    }
+                  >
+                    {format.label}
+                  </Choice>
+                ))}
+              </div>
+            </ChoiceGroup>
+          )}
+
+          {(options.creatives?.length ?? 0) === 0 ? null : (
+            <ChoiceGroup label={t('sharedReport.filters.creative')}>
+              <div className="flex flex-wrap gap-2">
+                {(options.creatives ?? []).slice(0, SHOWN).map((creative) => (
+                  <Choice
+                    key={creative.key}
+                    isSelected={filters.creatives.includes(creative.key)}
+                    onSelect={() =>
+                      onChange({ ...filters, creatives: toggle(filters.creatives, creative.key) })
+                    }
+                  >
+                    {creative.label}
                   </Choice>
                 ))}
               </div>

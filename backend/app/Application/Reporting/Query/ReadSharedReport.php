@@ -186,6 +186,8 @@ final readonly class ReadSharedReport
                     'platforms' => $narrowing->providers,
                     'campaigns' => $request->campaigns,
                     'store' => $request->store,
+                    'creatives' => $request->creatives,
+                    'format' => $narrowing->format,
                     'from' => $narrowing->period?->startDate(),
                     'until' => $narrowing->period?->endDate(),
                 ],

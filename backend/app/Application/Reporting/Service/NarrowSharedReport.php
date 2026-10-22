@@ -6,12 +6,15 @@ namespace App\Application\Reporting\Service;
 
 use App\Application\Analytics\Contract\AnalyticsReadModel;
 use App\Application\Analytics\DTO\AnalyticsFilters;
+use App\Application\Analytics\DTO\CreativeRow;
+use App\Application\Analytics\Service\CreativeIntelligenceReader;
 use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Commerce\DTO\StoreRollupRow;
 use App\Application\Reporting\DTO\ReportNarrowing;
 use App\Application\Reporting\DTO\SavedReport;
 use App\Application\Reporting\DTO\SharedFilterRequest;
+use App\Domain\Advertising\CreativeFormat;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
 use App\Domain\Integration\Provider;
@@ -33,12 +36,16 @@ use App\Domain\Shared\ValueObject\DateRange;
  */
 final readonly class NarrowSharedReport
 {
+    /** How many creatives the page may be offered: the largest by spend, which is what a report shows anyway. */
+    private const int CREATIVE_LIMIT = 100;
+
     /** How many campaigns the page may be offered, and may be asked about. A search box covers the rest. */
     private const int CAMPAIGN_LIMIT = 100;
 
     public function __construct(
         private AnalyticsReadModel $analytics,
         private StoreAnalyticsReadModel $stores,
+        private CreativeIntelligenceReader $creatives,
     ) {}
 
     /**
@@ -68,10 +75,14 @@ final readonly class NarrowSharedReport
             $this->analytics->breakdown($workspaceId, $period, $filters, Dimension::Campaign, [Metric::Spend], Metric::Spend, self::CAMPAIGN_LIMIT),
         );
 
+        [$creatives, $formats] = $this->creativeOptions($shareId, $workspaceId, $report, $period);
+
         return [
             'platforms' => count($platforms) > 1 ? $platforms : [],
             'campaigns' => count($campaigns) > 1 ? $campaigns : [],
             'stores' => $this->storeOptions($shareId, $workspaceId, $report, $period),
+            'creatives' => count($creatives) > 1 ? $creatives : [],
+            'formats' => count($formats) > 1 ? $formats : [],
         ];
     }
 
@@ -98,7 +109,95 @@ final readonly class NarrowSharedReport
             providers: $this->platforms($workspaceId, $filters, $period, $request),
             campaignIds: $this->campaigns($shareId, $workspaceId, $filters, $period, $request),
             storeId: $this->store($shareId, $workspaceId, $report, $period, $request),
+            creativeIds: $this->creatives($shareId, $workspaceId, $report, $period, $request),
+            format: $this->format($workspaceId, $report, $period, $request),
         );
+    }
+
+    /**
+     * The creatives and formats the report's own creative sections hold, by opaque key and by the format's own slug.
+     * Empty when the report shows no creatives: a creative filter on a report without them would be a control that
+     * narrows nothing.
+     *
+     * @return array{0: list<array{key: string, label: string}>, 1: list<array{key: string, label: string}>}
+     */
+    private function creativeOptions(string $shareId, string $workspaceId, SavedReport $report, DateRange $period): array
+    {
+        if (! $this->showsCreatives($report)) {
+            return [[], []];
+        }
+
+        $read = $this->creatives->read($workspaceId, $period, $report->definition->filters, 'asset', null, null, self::CREATIVE_LIMIT);
+        $creatives = array_map(
+            fn (CreativeRow $row): array => ['key' => $this->key($shareId, $row->info->key), 'label' => $row->info->name],
+            $read->rows,
+        );
+        $formats = array_map(
+            static fn (string $format): array => ['key' => $format, 'label' => CreativeFormat::tryFrom($format)?->label() ?? $format],
+            array_keys($read->formats),
+        );
+
+        return [$creatives, $formats];
+    }
+
+    /** @return list<string> */
+    private function creatives(string $shareId, string $workspaceId, SavedReport $report, DateRange $period, SharedFilterRequest $request): array
+    {
+        if ($request->creatives === []) {
+            return [];
+        }
+
+        if (! $this->showsCreatives($report)) {
+            throw FilterOutsideScope::unknown('creative');
+        }
+
+        $byKey = [];
+
+        foreach ($this->creatives->read($workspaceId, $period, $report->definition->filters, 'asset', null, null, self::CREATIVE_LIMIT)->rows as $row) {
+            $byKey[$this->key($shareId, $row->info->key)] = $row->info->key;
+        }
+
+        $ids = [];
+
+        foreach ($request->creatives as $key) {
+            if (! isset($byKey[$key])) {
+                throw FilterOutsideScope::unknown('creative');
+            }
+
+            $ids[] = $byKey[$key];
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function format(string $workspaceId, SavedReport $report, DateRange $period, SharedFilterRequest $request): ?string
+    {
+        if ($request->format === null) {
+            return null;
+        }
+
+        if (! $this->showsCreatives($report)) {
+            throw FilterOutsideScope::unknown('format');
+        }
+
+        $present = $this->creatives->read($workspaceId, $period, $report->definition->filters, 'asset', null, null, 1)->formats;
+
+        if (! isset($present[$request->format])) {
+            throw FilterOutsideScope::unknown('format');
+        }
+
+        return $request->format;
+    }
+
+    private function showsCreatives(SavedReport $report): bool
+    {
+        foreach ($report->definition->sections as $section) {
+            if ($section->kind === SectionKind::Creative) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function period(DateRange $scope, SharedFilterRequest $request): ?DateRange

@@ -6,6 +6,7 @@ import { cn } from '@/shared/lib/cn';
 import { formatChange, formatMetric, MISSING } from '@/shared/metrics';
 import { SourceBadge } from '@/shared/ui/source-badge';
 import type { MetricSourceValue } from '@/shared/metrics';
+import { CreativeHero, CreativeAdvice } from './CreativeHero';
 import { CreativeSlide } from './CreativeSlide';
 import { ReportHighlights } from './ReportHighlights';
 import { ReportSectionView } from './ReportSectionView';
@@ -217,6 +218,10 @@ function slideTitle(slide: Slide, report: RenderedReport, t: (key: string) => st
       return slide.section.title;
     case 'creative':
       return `${slide.section.title} · ${slide.row.label}`;
+    case 'creative-summary':
+      return t('reports.creative.hero.label');
+    case 'creative-advice':
+      return t('reports.creative.recommendations');
     case 'highlight':
       return t(`reports.present.part.${slide.part}`);
     case 'status':
@@ -325,6 +330,24 @@ function SlideBody({
 
   if (slide.kind === 'creative') {
     return <CreativeSlide section={slide.section} row={slide.row} n={slide.n} of={slide.of} />;
+  }
+
+  if (slide.kind === 'creative-summary') {
+    return (
+      <>
+        <h2 className="text-content-secondary text-xl font-medium">{title}</h2>
+        <CreativeHero report={report} parts={['figures', 'insights']} />
+      </>
+    );
+  }
+
+  if (slide.kind === 'creative-advice') {
+    return (
+      <>
+        <h2 className="text-content-secondary text-xl font-medium">{title}</h2>
+        <CreativeAdvice report={report} />
+      </>
+    );
   }
 
   if (slide.kind === 'highlight') {
