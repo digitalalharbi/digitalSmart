@@ -18,11 +18,12 @@ enum SurfaceKind: string
     case CampaignControl = 'campaign_control';
     case BudgetControl = 'budget_control';
     case Leads = 'leads';
+    case AdGroups = 'ad_groups';
 
     public function permission(): Permission
     {
         return match ($this) {
-            self::CampaignControl, self::BudgetControl => Permission::AnalyticsView,
+            self::CampaignControl, self::BudgetControl, self::AdGroups => Permission::AnalyticsView,
             self::Leads => Permission::LeadsView,
         };
     }
@@ -34,6 +35,7 @@ enum SurfaceKind: string
             /* The names the page's own URL uses, so a saved view *is* a link and opens by setting them. */
             self::CampaignControl => ['client', 'project', 'account', 'tag', 'mine', 'days', 'provider', 'status', 'objective', 'health', 'ends', 'budget', 'zero', 'q', 'sort', 'dir', 'view'],
             self::BudgetControl => ['risk', 'client', 'project', 'q'],
+            self::AdGroups => ['client', 'project', 'campaign', 'mine', 'days', 'provider', 'status', 'zero', 'q', 'sort', 'dir'],
             self::Leads => ['scope', 'client_id', 'project_id', 'owner_id', 'source_kind', 'campaign', 'days'],
         };
     }

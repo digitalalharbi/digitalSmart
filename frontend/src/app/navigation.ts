@@ -62,6 +62,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: 'analytics.view',
   },
   {
+    path: '/ad-groups',
+    labelKey: 'nav.adGroups',
+    icon: 'Layers',
+    section: 'work',
+    phase: 'Phase 3',
+    // Reads the same performance data the campaigns do, under the permission the endpoint checks.
+    permission: 'analytics.view',
+  },
+  {
     path: '/creatives',
     labelKey: 'nav.creatives',
     icon: 'Images',

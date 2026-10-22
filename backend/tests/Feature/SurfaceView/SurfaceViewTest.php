@@ -109,3 +109,15 @@ it('keeps every filter the campaigns page puts in its address', function (): voi
 
     expect($kept)->toEqual($filters);
 });
+
+it('saves a view of the ad groups screen, with the filters that screen offers and no others', function (): void {
+    ['s' => $s] = viewWorld();
+
+    $kept = $this->actingAs($s->owner)->postJson('/api/views/ad_groups', [
+        'name' => 'Spending, no results',
+        'filters' => ['campaign' => 'c~Campaign', 'status' => 'active', 'zero' => '1', 'sort' => 'roas', 'ends' => '7'],
+    ])->assertCreated()->json('data.filters');
+
+    /* `ends` is the campaigns screen's filter; an ad group has no end date of its own to offer. */
+    expect($kept)->toEqual(['campaign' => 'c~Campaign', 'status' => 'active', 'zero' => '1', 'sort' => 'roas']);
+});

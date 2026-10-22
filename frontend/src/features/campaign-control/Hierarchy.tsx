@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -281,9 +282,13 @@ export function Hierarchy({
                   <span className="flex min-w-0 items-center gap-2">
                     {checkbox('ad_group', group.id, group.name)}
                     <span className="flex min-w-0 flex-col">
-                      <span className="text-content truncate text-sm font-semibold" dir="auto">
+                      <Link
+                        to={`/ad-groups/${group.id}`}
+                        className="text-content truncate text-sm font-semibold hover:underline"
+                        dir="auto"
+                      >
                         {group.name}
-                      </span>
+                      </Link>
                       {group.audience === null ? null : (
                         <span className="text-content-tertiary truncate text-xs" dir="auto">
                           {group.audience}

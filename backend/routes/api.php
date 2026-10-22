@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Interface\Http\Controller\Activity\ActivityController;
+use App\Interface\Http\Controller\Advertising\AdGroupController;
 use App\Interface\Http\Controller\Advertising\CampaignBlueprintController;
 use App\Interface\Http\Controller\Advertising\CampaignBulkController;
 use App\Interface\Http\Controller\Advertising\CampaignControlController;
@@ -880,6 +881,9 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      */
     Route::get('campaigns/control', [CampaignControlController::class, 'index'])
         ->name('campaigns.control.index');
+
+    /* Every ad group the reader may see, each on its own metric rows. */
+    Route::get('ad-groups', [AdGroupController::class, 'index'])->name('ad_groups.index');
 
     Route::get('campaigns/{campaign}/hierarchy', CampaignHierarchyController::class)
         ->whereUuid('campaign')->name('campaigns.hierarchy');

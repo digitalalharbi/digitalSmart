@@ -13,6 +13,6 @@ export function money(
 }
 
 /** The objective's own result: a count of what the campaign was built to produce. */
-export function resultText(row: CampaignRow, locale: string): string {
+export function resultText(row: Pick<CampaignRow, 'result'>, locale: string): string {
   return row.result === null ? '—' : formatNumber(row.result, locale);
 }
