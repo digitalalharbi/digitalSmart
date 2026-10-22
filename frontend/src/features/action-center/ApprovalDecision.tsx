@@ -220,7 +220,7 @@ export function ApprovalDecision({ row, locale }: { row: ApprovalRow; locale: st
           <span className="text-content-tertiary text-sm">{t('actionCenter.waitingFor')}</span>
         ) : (
           <>
-            <Button disabled={decide.isPending} onClick={() => send('approved')}>
+            <Button variant="approve" disabled={decide.isPending} onClick={() => send('approved')}>
               <Check />
               {t('actionCenter.approve')}
             </Button>
