@@ -347,3 +347,65 @@ describe('paging', function (): void {
         expect($videos)->toBe($everything);
     });
 });
+
+describe('ads as a screen of their own', function (): void {
+    it('says where each ad sits — its ad group and its campaign — and nothing for an asset', function (): void {
+        $workspace = SyncedWorkspace::default();
+
+        $ads = creativeRead($workspace, ['grain' => 'ad', 'providers' => ['meta'], 'limit' => 100])['rows'];
+
+        expect($ads)->not->toBeEmpty();
+
+        foreach ($ads as $row) {
+            $parents = $row['parents'];
+            $ad = DB::table('ads')->where('id', $row['key'])->first();
+            expect($ad)->not->toBeNull();
+            assert($ad instanceof stdClass);
+
+            expect($parents['ad_group']['id'])->toBe((string) $ad->ad_group_id)
+                ->and($parents['campaign']['id'])->toBe((string) $ad->campaign_id)
+                ->and($parents['ad_group']['name'])->toBe((string) DB::table('ad_groups')->where('id', $ad->ad_group_id)->value('name'));
+        }
+
+        foreach (creativeRead($workspace, ['grain' => 'asset', 'providers' => ['meta'], 'limit' => 100])['rows'] as $asset) {
+            expect($asset['parents'])->toBeNull();
+        }
+    });
+
+    it('narrows to one ad group’s ads', function (): void {
+        $workspace = SyncedWorkspace::default();
+        $groupId = (string) DB::table('ads')->where('provider', 'meta')->orderBy('id')->value('ad_group_id');
+        $expected = DB::table('ads')->where('ad_group_id', $groupId)->pluck('id')->map(static fn ($id): string => (string) $id)->all();
+
+        $rows = creativeRead($workspace, ['grain' => 'ad', 'ad_group_ids' => [$groupId], 'limit' => 100])['rows'];
+
+        expect(creativeKeys(['rows' => $rows]))->not->toBeEmpty()
+            ->and(array_diff(creativeKeys(['rows' => $rows]), $expected))->toBe([]);
+    });
+
+    it('narrows to the ads’ own status, not their campaign’s', function (): void {
+        $workspace = SyncedWorkspace::default();
+        $ad = (string) DB::table('ads')->where('provider', 'meta')->orderBy('id')->value('id');
+        DB::table('ads')->where('id', $ad)->update(['status' => 'paused']);
+
+        $paused = creativeRead($workspace, ['grain' => 'ad', 'ad_status' => 'paused', 'providers' => ['meta'], 'limit' => 100]);
+
+        expect(creativeKeys($paused))->toContain($ad);
+
+        foreach ($paused['rows'] as $row) {
+            expect($row['ad_status'])->toBe('paused');
+        }
+
+        $active = creativeRead($workspace, ['grain' => 'ad', 'ad_status' => 'active', 'providers' => ['meta'], 'limit' => 100]);
+
+        expect(creativeKeys($active))->not->toContain($ad);
+    });
+
+    it('refuses an ad status it does not know', function (): void {
+        $workspace = SyncedWorkspace::default();
+
+        $this->actingAs($workspace->scenario->owner)
+            ->getJson('/api/analytics/creatives?grain=ad&ad_status=sideways')
+            ->assertStatus(422);
+    });
+});

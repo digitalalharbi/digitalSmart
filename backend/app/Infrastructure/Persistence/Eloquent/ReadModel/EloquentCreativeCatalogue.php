@@ -59,11 +59,13 @@ final readonly class EloquentCreativeCatalogue implements CreativeCatalogue
 
         $rows = DB::table('ads as a')
             ->join('campaigns as c', 'c.id', '=', 'a.campaign_id')
+            ->leftJoin('ad_groups as g', 'g.id', '=', 'a.ad_group_id')
             ->leftJoin('creatives as cr', 'cr.id', '=', 'a.creative_id')
             ->where('a.workspace_id', $workspaceId)
             ->whereIn('a.id', $adIds)
             ->get([
                 'a.id', 'a.name', 'a.external_id', 'a.status', 'a.provider', 'a.creative_id',
+                'a.ad_group_id', 'a.campaign_id', 'g.name as ad_group_name',
                 'c.name as campaign_name', 'cr.format', 'cr.thumbnail_url',
             ]);
 
@@ -89,6 +91,9 @@ final readonly class EloquentCreativeCatalogue implements CreativeCatalogue
                 adName: self::shown((string) $row->name, (string) $row->external_id, 'Ad'),
                 adStatus: (string) $row->status,
                 assetKey: $creative,
+                adGroupId: $row->ad_group_id === null ? null : (string) $row->ad_group_id,
+                adGroupName: $row->ad_group_name === null ? null : (string) $row->ad_group_name,
+                campaignId: (string) $row->campaign_id,
             );
         }
 

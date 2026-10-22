@@ -4,6 +4,25 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Ads: a screen of their own, pictures first
+
+### Added
+- **Ads is a first-class destination** in the Campaigns area (`/ads`), reachable without opening a campaign or an ad
+  group. Media first — each ad a card with its picture, its figures and what is wrong with it — and the table one press
+  away: preview, ad, platform, campaign, ad group, status, spend, result, CTR, CPA, ROAS, frequency, creative status.
+- **No second engine.** It is the creative layer at the grain of an ad, so an ad's figure, its picture (drawn only where
+  the server vouches for the address), its fatigue verdict and its evidence are the ones the Creatives page and a
+  client's report give for the same ad. The creative read now says where each ad sits (`parents`: its ad group and its
+  campaign) and filters by the ad's **own** status, by ad group and by ad.
+- **An ad's page**: the trail Campaigns / campaign / ad group / ad; a large preview; spend, result, CPA, CTR, ROAS where
+  there is revenue, frequency; the fatigue verdict with the changes behind it; the shared trend (spend, results, CPA,
+  CTR, ROAS, frequency) and funnel over the ad's own rows. Names in a campaign's tree and an ad group's list now lead
+  to it.
+- **Saved views for ads** (a new surface; its CHECK is re-derived from the enum, reversible).
+
+### Not shown, on purpose
+- No audience or placement on an ad: nothing here stores either per ad, and a section would have to invent it.
+
 ## Ad Groups: a screen of their own between a campaign and its ads
 
 ### Added

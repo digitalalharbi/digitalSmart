@@ -1,4 +1,4 @@
-export type SurfaceKind = 'campaign_control' | 'budget_control' | 'leads' | 'ad_groups';
+export type SurfaceKind = 'campaign_control' | 'budget_control' | 'leads' | 'ad_groups' | 'ads';
 
 export type ViewVisibility = 'private' | 'project' | 'workspace';
 

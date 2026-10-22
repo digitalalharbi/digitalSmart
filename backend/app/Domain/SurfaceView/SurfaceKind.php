@@ -19,11 +19,12 @@ enum SurfaceKind: string
     case BudgetControl = 'budget_control';
     case Leads = 'leads';
     case AdGroups = 'ad_groups';
+    case Ads = 'ads';
 
     public function permission(): Permission
     {
         return match ($this) {
-            self::CampaignControl, self::BudgetControl, self::AdGroups => Permission::AnalyticsView,
+            self::CampaignControl, self::BudgetControl, self::AdGroups, self::Ads => Permission::AnalyticsView,
             self::Leads => Permission::LeadsView,
         };
     }
@@ -36,6 +37,7 @@ enum SurfaceKind: string
             self::CampaignControl => ['client', 'project', 'account', 'tag', 'mine', 'days', 'provider', 'status', 'objective', 'health', 'ends', 'budget', 'zero', 'q', 'sort', 'dir', 'view'],
             self::BudgetControl => ['risk', 'client', 'project', 'q'],
             self::AdGroups => ['client', 'project', 'campaign', 'mine', 'days', 'provider', 'status', 'zero', 'q', 'sort', 'dir'],
+            self::Ads => ['client', 'project', 'campaign', 'group', 'days', 'provider', 'status', 'verdict', 'format', 'view'],
             self::Leads => ['scope', 'client_id', 'project_id', 'owner_id', 'source_kind', 'campaign', 'days'],
         };
     }

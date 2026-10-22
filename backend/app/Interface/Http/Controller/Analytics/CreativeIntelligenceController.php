@@ -24,6 +24,7 @@ final class CreativeIntelligenceController extends Controller
             grain: $request->grain(),
             format: $request->creativeFormat(),
             verdict: $request->verdict(),
+            adStatus: $request->adStatus(),
             limit: $request->integer('limit', 24),
             offset: $request->integer('offset', 0),
         );
