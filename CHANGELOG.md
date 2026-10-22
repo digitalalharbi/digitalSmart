@@ -4,6 +4,24 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The reports centre: the library, what is live, what is scheduled, every frozen record, every link out
+
+### Added
+- **Five tabs on Reports**: Library (as before), **Live reports** (those with an open link that recomputes on each
+  open), **Scheduled** (the files somebody asked to have made on a rhythm), **Snapshots** (every frozen record) and
+  **Shared links** (every link out of the agency, whether it shows live or frozen figures, its state, opens, last
+  opened and expiry). Each lists what exists or says there is nothing; a report named in any tab opens in the library.
+- **Tracking on each report**: made (and by whom), opens, last opened, when the soonest link closes, and how many links
+  show live versus frozen figures. **Counts and times only** — a view is a number and the last time one happened, as a
+  link has always held them; there is no scroll depth, no time on page, no who.
+- **`GET /api/report-shares`** (needs the permission to create links) and **`GET /api/report-snapshots`**: across the
+  reports the reader may see, workspace-scoped; a link is its twelve-character hint, never its token. A media buyer
+  on no project sees no snapshots of a client they are not on and is refused the links.
+- A shared `TabList` (arrow keys follow the reading direction, Home/End).
+
+### Not yet
+- A campaign-scoped report type and the attribution and traffic sections (next PR); a settings disclosure in the
+  builder; a per-report management page with its own tabs.
 ## Ads: a screen of their own, pictures first
 
 ### Added

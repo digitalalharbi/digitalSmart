@@ -5,6 +5,9 @@ import {
   deleteReport,
   createSchedule,
   deleteSchedule,
+  fetchAllSchedules,
+  fetchAllShares,
+  fetchAllSnapshots,
   fetchExports,
   fetchSchedules,
   fetchReport,
@@ -69,6 +72,34 @@ export function useSnapshotsQuery(reportId: string | null) {
     queryKey: queryKeys.reports.snapshots(reportId ?? ''),
     queryFn: () => fetchSnapshots(reportId ?? ''),
     enabled: reportId !== null,
+    staleTime: 30_000,
+  });
+}
+
+/** The workspace-wide lists the centre's tabs read. Fetched only while their tab is open. */
+export function useAllSharesQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: queryKeys.reports.allShares(),
+    queryFn: fetchAllShares,
+    enabled,
+    staleTime: 15_000,
+  });
+}
+
+export function useAllSnapshotsQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: queryKeys.reports.allSnapshots(),
+    queryFn: fetchAllSnapshots,
+    enabled,
+    staleTime: 30_000,
+  });
+}
+
+export function useAllSchedulesQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: queryKeys.reports.allSchedules(),
+    queryFn: fetchAllSchedules,
+    enabled,
     staleTime: 30_000,
   });
 }

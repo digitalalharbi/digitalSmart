@@ -75,4 +75,20 @@ interface ReportRepository
      * @return list<array{id: string, taken_at: DateTimeImmutable, period_from: DateTimeImmutable, period_until: DateTimeImmutable, source: MetricSource, label: ?string, taken_by_name: ?string}>
      */
     public function snapshots(string $workspaceId, string $reportId, int $limit): array;
+
+    /**
+     * Every shared link on the reports the reader may see, newest first — what the reports centre lists.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return list<array{id: string, report_id: string, report_name: string, client_name: ?string, hint: string, snapshot_id: ?string, expires_at: DateTimeImmutable, revoked_at: ?DateTimeImmutable, revoked_reason: ?string, recipient_label: ?string, view_count: int, last_viewed_at: ?DateTimeImmutable, created_by_name: ?string, created_at: DateTimeImmutable}>
+     */
+    public function sharesAcross(string $workspaceId, ?array $visibleProjectIds, int $limit): array;
+
+    /**
+     * Every snapshot of the reports the reader may see, newest first.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return list<array{id: string, report_id: string, report_name: string, client_name: ?string, taken_at: DateTimeImmutable, period_from: DateTimeImmutable, period_until: DateTimeImmutable, source: MetricSource, label: ?string, taken_by_name: ?string}>
+     */
+    public function snapshotsAcross(string $workspaceId, ?array $visibleProjectIds, int $limit): array;
 }

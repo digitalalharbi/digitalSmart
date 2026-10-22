@@ -23,6 +23,7 @@ use App\Application\Reporting\DTO\ShareView;
 use App\Application\Reporting\DTO\StoreFigure;
 use App\Application\Reporting\DTO\StoreFigures;
 use App\Domain\Advertising\CreativeFormat;
+use App\Domain\Advertising\MetricSource;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
 use App\Domain\Commerce\RevenueSource;
@@ -32,6 +33,7 @@ use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
+use App\Domain\Reporting\ShareState;
 use App\Interface\Http\Resource\Analytics\MetricValueResource;
 use DateTimeImmutable;
 
@@ -183,6 +185,70 @@ final readonly class ReportResource implements SnapshotSerialiser
             /* The figure somebody checks before saying "nobody outside can see this". */
             'active_share_count' => $summary->activeShareCount,
             'updated_at' => $summary->updatedAt->format(DateTimeImmutable::ATOM),
+
+            /*
+             * What the agency can say about the report's life: made, opened, due to lapse, live or frozen. Counts and
+             * times — never who looked, or how, or for how long.
+             */
+            'created_at' => $summary->createdAt?->format(DateTimeImmutable::ATOM),
+            'created_by_name' => $summary->createdByName,
+            'view_count' => $summary->viewCount,
+            'last_viewed_at' => $summary->lastViewedAt?->format(DateTimeImmutable::ATOM),
+            'next_expiry_at' => $summary->nextExpiryAt?->format(DateTimeImmutable::ATOM),
+            'live_share_count' => $summary->liveShareCount,
+            'frozen_share_count' => $summary->frozenShareCount,
+        ];
+    }
+
+    /**
+     * One link in the workspace-wide list: the report it opens, and the same fields a report's own list of links has.
+     *
+     * @param  array{id: string, report_id: string, report_name: string, client_name: ?string, hint: string, snapshot_id: ?string, expires_at: DateTimeImmutable, revoked_at: ?DateTimeImmutable, revoked_reason: ?string, recipient_label: ?string, view_count: int, last_viewed_at: ?DateTimeImmutable, created_by_name: ?string, created_at: DateTimeImmutable}  $share
+     * @return array<string, mixed>
+     */
+    public static function acrossShare(array $share, DateTimeImmutable $now): array
+    {
+        $state = ShareState::of($share['revoked_at'] !== null, $share['expires_at'], $now);
+
+        return [
+            'id' => $share['id'],
+            'report_id' => $share['report_id'],
+            'report_name' => $share['report_name'],
+            'client_name' => $share['client_name'],
+            /* The hint, never the token. */
+            'hint' => $share['hint'],
+            'state' => $state->value,
+            'state_label' => $state->label(),
+            'is_frozen' => $share['snapshot_id'] !== null,
+            'expires_at' => $share['expires_at']->format(DateTimeImmutable::ATOM),
+            'revoked_at' => $share['revoked_at']?->format(DateTimeImmutable::ATOM),
+            'revoked_reason' => $share['revoked_reason'],
+            'recipient_label' => $share['recipient_label'],
+            'view_count' => $share['view_count'],
+            'last_viewed_at' => $share['last_viewed_at']?->format(DateTimeImmutable::ATOM),
+            'created_by_name' => $share['created_by_name'],
+            'created_at' => $share['created_at']->format(DateTimeImmutable::ATOM),
+        ];
+    }
+
+    /**
+     * @param  array{id: string, report_id: string, report_name: string, client_name: ?string, taken_at: DateTimeImmutable, period_from: DateTimeImmutable, period_until: DateTimeImmutable, source: MetricSource, label: ?string, taken_by_name: ?string}  $snapshot
+     * @return array<string, mixed>
+     */
+    public static function acrossSnapshot(array $snapshot): array
+    {
+        return [
+            'id' => $snapshot['id'],
+            'report_id' => $snapshot['report_id'],
+            'report_name' => $snapshot['report_name'],
+            'client_name' => $snapshot['client_name'],
+            'taken_at' => $snapshot['taken_at']->format(DateTimeImmutable::ATOM),
+            'period_from' => $snapshot['period_from']->format('Y-m-d'),
+            'period_until' => $snapshot['period_until']->format('Y-m-d'),
+            'source' => $snapshot['source']->value,
+            'source_label' => $snapshot['source']->label(),
+            'label' => $snapshot['label'],
+            'taken_by_name' => $snapshot['taken_by_name'],
         ];
     }
 

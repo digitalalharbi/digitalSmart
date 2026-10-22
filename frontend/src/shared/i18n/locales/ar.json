@@ -3583,6 +3583,70 @@
       "platformCount_many": "{{count}} مادة",
       "platformCount_other": "{{count}} مادة",
       "platform": "المنصة"
+    },
+    "centre": {
+      "label": "مركز التقارير",
+      "loadFailed": "تعذّر تحميل هذه القائمة.",
+      "tabs": {
+        "library": "المكتبة",
+        "live": "التقارير الحيّة",
+        "scheduled": "المجدولة",
+        "snapshots": "اللقطات",
+        "links": "الروابط المشتركة"
+      },
+      "col": {
+        "report": "التقرير",
+        "client": "العميل",
+        "links": "روابط حيّة",
+        "file": "الملف",
+        "cadence": "يتكرر",
+        "nextRun": "التشغيل القادم",
+        "lastRun": "آخر تشغيل",
+        "state": "الحالة",
+        "label": "الاسم",
+        "taken": "تاريخ اللقطة",
+        "period": "الفترة",
+        "by": "بواسطة",
+        "recipient": "أُرسل إلى",
+        "mode": "يعرض"
+      },
+      "mode": {
+        "live": "أرقام حيّة",
+        "frozen": "أرقام مجمّدة"
+      },
+      "state": {
+        "active": "فعّال",
+        "expired": "منتهٍ",
+        "revoked": "ملغى"
+      },
+      "halted": "متوقف",
+      "running": "يعمل",
+      "live": {
+        "emptyTitle": "لا توجد تقارير حيّة",
+        "emptyBody": "يكون التقرير حيًّا حين يكون له رابط مفتوح يعرض أرقام اليوم عند كل فتح."
+      },
+      "scheduled": {
+        "emptyTitle": "لا شيء مجدول",
+        "emptyBody": "جدوِل ملفًا من تقرير وسيظهر هنا."
+      },
+      "snapshots": {
+        "emptyTitle": "لا توجد لقطات بعد",
+        "emptyBody": "تجمّد اللقطة ما قاله التقرير يوم أُخذت."
+      },
+      "links": {
+        "emptyTitle": "لا روابط خارج الوكالة",
+        "emptyBody": "لا أحد خارجها يستطيع قراءة أيٍّ من هذه التقارير الآن."
+      }
+    },
+    "tracking": {
+      "label": "عن {{name}}",
+      "created": "أُنشئ",
+      "views": "مرات الفتح",
+      "lastViewed": "آخر فتح",
+      "neverOpened": "لم يُفتح قط",
+      "expires": "يُغلق الرابط",
+      "live": "أرقام حيّة · {{count}}",
+      "frozen": "أرقام مجمّدة · {{count}}"
     }
   },
   "sharedReport": {

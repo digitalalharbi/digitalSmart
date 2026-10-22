@@ -221,6 +221,9 @@ export const queryKeys = {
     draft: (reportId: string) => ['reports', 'draft', reportId] as const,
     snapshots: (reportId: string) => ['reports', 'snapshots', reportId] as const,
     shares: (reportId: string) => ['reports', 'shares', reportId] as const,
+    allShares: () => ['reports', 'all-shares'] as const,
+    allSnapshots: () => ['reports', 'all-snapshots'] as const,
+    allSchedules: () => ['reports', 'all-schedules'] as const,
     /*
      * A report read through a shared link. Keyed by the token because that is all the reader has — there is no
      * report id on that path, and deliberately so.

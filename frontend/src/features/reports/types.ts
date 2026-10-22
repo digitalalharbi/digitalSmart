@@ -315,6 +315,30 @@ export type ReportSummary = {
   /** The figure somebody checks before saying "nobody outside can see this". */
   active_share_count: number;
   updated_at: string;
+  /** What the agency can say about the report's life. Counts and times — never who looked, or how. */
+  created_at: string | null;
+  created_by_name: string | null;
+  view_count: number;
+  last_viewed_at: string | null;
+  /** The soonest an active link lapses. */
+  next_expiry_at: string | null;
+  /** Active links that recompute on every open, and active links frozen at a snapshot. */
+  live_share_count: number;
+  frozen_share_count: number;
+};
+
+/** A link in the workspace-wide list: the same fields a report's own list has, and the report it opens. */
+export type CentreShare = ReportShare & {
+  report_id: string;
+  report_name: string;
+  client_name: string | null;
+};
+
+/** A snapshot in the workspace-wide list. */
+export type CentreSnapshot = ReportSnapshot & {
+  report_id: string;
+  report_name: string;
+  client_name: string | null;
 };
 
 export type SectionDraft = {

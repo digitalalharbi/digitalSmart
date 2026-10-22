@@ -29,5 +29,18 @@ final readonly class ReportSummary
         /** Active shares. The figure somebody checks before they say "nobody outside can see this". */
         public int $activeShareCount,
         public DateTimeImmutable $updatedAt,
+        /**
+         * What the agency can say about a report's life — never about a reader. Views are a count and a last time, as a
+         * link has always held them; nothing here says who looked, or how, or for how long.
+         */
+        public ?DateTimeImmutable $createdAt = null,
+        public ?string $createdByName = null,
+        public int $viewCount = 0,
+        public ?DateTimeImmutable $lastViewedAt = null,
+        /** The soonest an active link lapses, so "expires soon" is visible without opening the report. */
+        public ?DateTimeImmutable $nextExpiryAt = null,
+        /** Active links that recompute on every open, and active links frozen at a snapshot. */
+        public int $liveShareCount = 0,
+        public int $frozenShareCount = 0,
     ) {}
 }

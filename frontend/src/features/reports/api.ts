@@ -3,6 +3,8 @@ import type {
   RenderedReport,
   ExportCadence,
   ExportJob,
+  CentreShare,
+  CentreSnapshot,
   ExportSchedule,
   ExportKind,
   ReportDraft,
@@ -113,6 +115,25 @@ export async function takeSnapshot(input: {
     `/reports/${input.reportId}/snapshots`,
     input.label === undefined ? {} : { label: input.label },
   );
+
+  return data.data;
+}
+
+export async function fetchAllShares(): Promise<CentreShare[]> {
+  const { data } = await api.get<{ data: CentreShare[] }>('/report-shares');
+
+  return data.data;
+}
+
+export async function fetchAllSnapshots(): Promise<CentreSnapshot[]> {
+  const { data } = await api.get<{ data: CentreSnapshot[] }>('/report-snapshots');
+
+  return data.data;
+}
+
+/** Every schedule of the reader's own, across reports. */
+export async function fetchAllSchedules(): Promise<ExportSchedule[]> {
+  const { data } = await api.get<{ data: ExportSchedule[] }>('/exports/schedules');
 
   return data.data;
 }
