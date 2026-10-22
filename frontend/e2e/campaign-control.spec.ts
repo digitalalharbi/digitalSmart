@@ -21,7 +21,10 @@ test.describe('campaign control center', () => {
     await expect(
       first.getByText(/Healthy|Watch|Needs attention|Critical|Inactive|Not enough data/).first(),
     ).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Platform' })).toBeVisible();
+    /* The head row is hidden on a phone, where each row is a card carrying its own column labels. */
+    if ((page.viewportSize()?.width ?? 0) >= 640) {
+      await expect(page.getByRole('columnheader', { name: 'Platform' })).toBeVisible();
+    }
   });
 
   test('keeps the cards one press away, with the platform’s word beside the verdict', async ({
