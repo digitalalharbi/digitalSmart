@@ -7,15 +7,15 @@
     "overview": "نظرة عامة",
     "clients": "العملاء والمشاريع",
     "campaigns": "الحملات",
-    "performance": "الأداء",
+    "performance": "التحليلات",
     "finance": "المالية",
     "creative": "المحتوى والإبداع",
-    "work": "العمل والموافقات",
+    "work": "المهام والموافقات",
     "reports": "التقارير",
     "integrations": "التكاملات",
     "settings": "الإعدادات",
     "tabs": "أقسام هذا المجال",
-    "automation": "الوكلاء والأتمتة"
+    "automation": "الأتمتة"
   },
   "actionCenter": {
     "waitingFor": "بانتظار من يملك صلاحية الموافقة",
@@ -878,7 +878,7 @@
     "campaigns": "الحملات",
     "clients": "العملاء",
     "creativeHub": "مركز الإبداع",
-    "mediaPlanner": "مخطط الوسائط",
+    "mediaPlanner": "تخطيط الإعلانات",
     "budgetCalculator": "حاسبة الميزانية",
     "approvals": "الموافقات",
     "analytics": "التحليلات",
@@ -1283,12 +1283,12 @@
       "suspended": "معلّق"
     },
     "roles": {
-      "owner": "مالك",
-      "admin": "مسؤول",
-      "project-manager": "مدير مشاريع",
-      "media-buyer": "مشتري وسائط",
-      "creative": "مصمم",
-      "client-viewer": "عميل مُشاهد"
+      "owner": "مالك النظام",
+      "admin": "مدير النظام",
+      "project-manager": "مدير المشاريع",
+      "media-buyer": "مسؤول الحملات",
+      "creative": "المصمم",
+      "client-viewer": "العميل"
     },
     "columns": {
       "person": "الشخص",

@@ -4,6 +4,23 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Navigation in the order the work is done, and Arabic a person would say
+
+### Changed
+- **The eleven areas read in working order**: Overview, Clients & Projects, Campaigns, Analytics, Creative Intelligence,
+  Reports, Work & Approvals, Agents & Automation, Integrations, Finance, Settings. "Performance" is now Analytics.
+  Routes and permissions are unchanged.
+- **Arabic role names, display only**: مالك النظام، مدير النظام، مدير المشاريع، مسؤول الحملات، المصمم، العميل. Slugs,
+  permission keys and the API are untouched. Area names: التحليلات، المهام والموافقات، الأتمتة.
+
+### Fixed
+- **A role's English name was printed inside Arabic screens** (account menu, members table, project people). The
+  server publishes the name beside the slug; the interface now names the six system roles from the locale by slug
+  and keeps the name a workspace gave a role of its own.
+
+### Not yet
+- Ad Groups and Ads get their navigation items with their pages (a navigation item without a page fails a test).
+
 ## Delivery, honestly: email and WhatsApp as `AWAITING_CREDENTIALS`
 
 ### Added

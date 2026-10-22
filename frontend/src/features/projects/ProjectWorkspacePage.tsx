@@ -41,6 +41,7 @@ import {
   Section,
   TasksList,
 } from './workspace/Panels';
+import { roleLabel } from '@/shared/lib/role-label';
 
 /*
  * Six areas, not nine. Tasks and approvals are one question — "what is waiting on us?" — so they are one tab; leads
@@ -402,7 +403,7 @@ export function ProjectWorkspacePage() {
                         {member.name}
                       </span>
                       <span className="text-content-tertiary shrink-0 text-xs">
-                        {member.role_name}
+                        {roleLabel(t, member.role_slug, member.role_name)}
                       </span>
                     </li>
                   ))}

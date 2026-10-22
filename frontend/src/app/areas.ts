@@ -2,7 +2,8 @@ import { NAV_ITEMS, type NavItem } from '@/app/navigation';
 import type { HomeProfileKey } from '@/features/home';
 
 /**
- * The product's eleven areas.
+ * The product's eleven areas, in the order the navigation reads them: the working context first (clients, then
+ * the campaign hierarchy), then what the work produced (analytics, creative, reports), then how it is run.
  *
  * The product used to offer twenty-odd destinations side by side, and a person had to know which module answered
  * which question. Each area now answers exactly one question, and the destinations that used to be top-level
@@ -51,19 +52,6 @@ export const AREAS: readonly Area[] = [
     icon: 'Megaphone',
     paths: ['/campaigns', '/media-planner'],
   },
-  /* Rules are control, agents are reasoning, approvals are governance — the automation operating centre. */
-  {
-    key: 'automation',
-    labelKey: 'areas.automation',
-    icon: 'Bot',
-    paths: [
-      '/automation',
-      '/automation/agents',
-      '/automation/routines',
-      '/automation/history',
-      '/automation/changes',
-    ],
-  },
   {
     key: 'performance',
     labelKey: 'areas.performance',
@@ -77,24 +65,37 @@ export const AREAS: readonly Area[] = [
     paths: ['/creative-hub', '/creatives'],
   },
   {
+    key: 'reports',
+    labelKey: 'areas.reports',
+    icon: 'FileChartColumn',
+    paths: ['/reports', '/presentations'],
+  },
+  {
     key: 'work',
     labelKey: 'areas.work',
     icon: 'ListChecks',
     paths: ['/today', '/tasks', '/approvals', '/client-requests'],
   },
+  /* Rules are control, agents are reasoning, approvals are governance — the automation operating centre. */
+  {
+    key: 'automation',
+    labelKey: 'areas.automation',
+    icon: 'Bot',
+    paths: [
+      '/automation',
+      '/automation/agents',
+      '/automation/routines',
+      '/automation/history',
+      '/automation/changes',
+    ],
+  },
+  { key: 'integrations', labelKey: 'areas.integrations', icon: 'Plug', paths: ['/integrations'] },
   {
     key: 'finance',
     labelKey: 'areas.finance',
     icon: 'Landmark',
     paths: ['/budget-control', '/budget-calculator'],
   },
-  {
-    key: 'reports',
-    labelKey: 'areas.reports',
-    icon: 'FileChartColumn',
-    paths: ['/reports', '/presentations'],
-  },
-  { key: 'integrations', labelKey: 'areas.integrations', icon: 'Plug', paths: ['/integrations'] },
   {
     key: 'settings',
     labelKey: 'areas.settings',

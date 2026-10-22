@@ -10,6 +10,7 @@ import {
   useSwitchWorkspaceMutation,
 } from '@/features/auth';
 import { Button } from '@/shared/ui/button';
+import { roleLabel } from '@/shared/lib/role-label';
 
 /**
  * Identity, workspace switching and sign-out.
@@ -107,7 +108,9 @@ export function AccountMenu() {
                 />
                 <span className="flex min-w-0 flex-col">
                   <span className="truncate">{workspace.name}</span>
-                  <span className="text-content-tertiary text-xs">{workspace.role_name}</span>
+                  <span className="text-content-tertiary text-xs">
+                    {roleLabel(t, workspace.role, workspace.role_name)}
+                  </span>
                 </span>
               </DropdownMenu.Item>
             );
