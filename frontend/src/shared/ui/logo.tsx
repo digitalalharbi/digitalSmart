@@ -34,8 +34,7 @@ import { cn } from '@/shared/lib/cn';
 |
 */
 
-export type LogoVariant = 'auto' | 'dark' | 'light' | 'on-orange' | 'mono';
-export type LogoLayout = 'horizontal' | 'stacked' | 'mark';
+import { LOGO_MINIMUM, type LogoLayout, type LogoVariant } from './logo.model';
 
 const ART: Record<LogoLayout, Record<Exclude<LogoVariant, 'auto'>, string>> = {
   horizontal: {
@@ -58,12 +57,6 @@ const RATIO: Record<LogoLayout, number> = {
   horizontal: 568.7 / 160,
   stacked: 404.8 / 234.8,
   mark: 1,
-};
-
-export const LOGO_MINIMUM: Record<LogoLayout, number> = {
-  horizontal: 100,
-  stacked: 100,
-  mark: 16,
 };
 
 interface LogoProps {

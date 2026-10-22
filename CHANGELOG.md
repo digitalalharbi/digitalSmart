@@ -4,6 +4,43 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The approved brand, a sign-in screen and a one-screen landing page
+
+### Changed
+- **The brand kit is applied**: the approved orange `#C24A2C` as the brand ramp, dark as the default theme (light kept),
+  Sora for Latin text, figures and money, IBM Plex Sans Arabic for Arabic, Latin digits kept in both languages. The kit's
+  neutral and status colours are tokens in the existing OKLCH system, not a second theme. Primary actions, the active
+  navigation item and the one primary figure are orange; Approve is ink on the page; orange never stands in for a
+  warning or danger.
+- **The approved SVG logo is a component** (`Logo`, variants dark / light / on-orange / mono, layouts horizontal /
+  stacked / mark). It loads the kit's files untouched, picks the artwork for the theme in CSS so a theme change never
+  flashes, and raises a request below the brand minimum instead of shrinking the artwork. It replaces the "dS" mark and
+  the text name in the sidebar, the top bar and the sign-in screen.
+- **Platform chart colours** are one mapping (`platformColours.ts`) in the approved order — Meta, Google, Snapchat,
+  TikTok, LinkedIn, X — following the platform, never its rank; marks close to their surface carry an edge.
+- **Favicon set, web manifest, theme colour and the page title** are the kit's.
+- Cards are 20px; every card and figure tile has a hairline in the brand's border colour.
+
+### Added
+- **A sign-in screen** that is one screen on a desktop: brand panel (logo, headline, four short benefits) and the form.
+  On a phone the form comes first. Only the sign-in that exists is offered.
+- **A public landing page** at `/welcome`, one screen on a desktop: what digitalSmart is, the platforms it is built for
+  (including ChatGPT; names only, no claim of a live connection), a preview drawn from the product's own parts and marked
+  as sample data, and four short value cards. Its one action goes to the real sign-in screen.
+- A gate on both screens: no sideways or vertical scroll at 1440×900, 1366×768, 1280×720 and 1024×768, no sideways scroll
+  at 390×844 and 375×812, English and Arabic, axe clean in both themes.
+
+### Verified, and what was found
+- **The brand colours do not all clear AA as the kit gives them**, and the contrast gates were not weakened. Orange
+  with white text on hover fails, so the hover label turns black in dark and the hover step is deeper in light; the kit's
+  status colours fail as text on white, so light mode uses deeper steps; the 12% status tints fail on dark surfaces,
+  so they are lower, to the measured maximum. Some platform colours sit under 3:1 on one surface (Snapchat and X on
+  graphite, Google, TikTok and LinkedIn on white); those marks always carry a legend, a label and a table, and an edge.
+- **The orange could not be chart series one under the colour-blind gates in the kit's order**, so the chart palette's
+  other slots were re-ordered by search; the palette gates are unchanged.
+- **Dark was not actually the default** (it followed the browser); new visitors now get dark and a saved choice is kept.
+- Not offered on the sign-in screen: "forgot password" (there is no reset flow and no sender to send it) and any sign-up.
+
 ## The campaign report: a funnel, attributed revenue, advanced settings and a page per report
 
 ### Added

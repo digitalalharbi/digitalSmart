@@ -16,7 +16,7 @@ export function BrandSide() {
 
   return (
     <aside className="bg-surface border-line flex flex-col justify-center gap-[clamp(0.75rem,2.4vh,1.75rem)] border-t px-6 py-8 sm:px-12 lg:border-e lg:border-t-0 lg:py-6">
-      <Logo layout="horizontal" width={150} label={t('brand.name')} />
+      <Logo layout="horizontal" width={150} label={t('brand.name')} className="hidden lg:block" />
 
       <span className="bg-accent-subtle text-content-brand w-fit rounded-full px-3 py-1 text-xs font-medium">
         {t('entry.label')}

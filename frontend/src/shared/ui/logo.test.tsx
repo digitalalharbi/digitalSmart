@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { Logo, LOGO_MINIMUM } from './logo';
+import { Logo } from './logo';
+import { LOGO_MINIMUM } from './logo.model';
 
 describe('Logo', () => {
   it('shows the approved artwork as an image, named for assistive technology', () => {
