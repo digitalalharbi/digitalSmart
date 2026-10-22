@@ -18,22 +18,25 @@ export function ReportTracking({ report }: { report: ReportSummary }) {
   const shared = report.live_share_count + report.frozen_share_count > 0;
 
   return (
-    <dl
-      aria-label={t('reports.tracking.label', { name: report.name })}
-      className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs"
-    >
-      <Fact label={t('reports.tracking.created')}>{dayOf(report.created_at, locale)}</Fact>
-      <Fact label={t('reports.tracking.views')}>
-        {report.view_count === 0 ? '—' : formatNumber(report.view_count, locale)}
-      </Fact>
-      <Fact label={t('reports.tracking.lastViewed')}>
-        {report.last_viewed_at === null
-          ? t('reports.tracking.neverOpened')
-          : formatRelativeTime(report.last_viewed_at, locale)}
-      </Fact>
-      <Fact label={t('reports.tracking.expires')}>{dayOf(report.next_expiry_at, locale)}</Fact>
+    <div className="flex flex-col gap-1.5">
+      <dl
+        aria-label={t('reports.tracking.label', { name: report.name })}
+        className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs"
+      >
+        <Fact label={t('reports.tracking.created')}>{dayOf(report.created_at, locale)}</Fact>
+        <Fact label={t('reports.tracking.views')}>
+          {report.view_count === 0 ? '—' : formatNumber(report.view_count, locale)}
+        </Fact>
+        <Fact label={t('reports.tracking.lastViewed')}>
+          {report.last_viewed_at === null
+            ? t('reports.tracking.neverOpened')
+            : formatRelativeTime(report.last_viewed_at, locale)}
+        </Fact>
+        <Fact label={t('reports.tracking.expires')}>{dayOf(report.next_expiry_at, locale)}</Fact>
+      </dl>
+      {/* Outside the list: a definition list may hold only terms and definitions, and a row of badges is neither. */}
       {!shared ? null : (
-        <div className="col-span-2 flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1">
           {report.live_share_count === 0 ? null : (
             <Badge tone="neutral">
               {t('reports.tracking.live', { count: report.live_share_count })}
@@ -46,7 +49,7 @@ export function ReportTracking({ report }: { report: ReportSummary }) {
           )}
         </div>
       )}
-    </dl>
+    </div>
   );
 }
 
