@@ -6,7 +6,7 @@
 `git fetch origin && git log --oneline -10 origin/main && git status` before anything else; where this file and Git
 disagree, Git is right.
 
-### Where things stand — 2026-10-19
+### Where things stand — 2026-10-22
 
 | Area | State |
 |---|---|
@@ -18,15 +18,15 @@ disagree, Git is right.
 | Protection of `main` | **Server-side ruleset `main protection` active** (id 25378817): PR required, `Governance`/`Backend`/`Frontend` required and up to date, no force-push, no deletion. Admin bypass kept so the documented emergency push stays real, which is why the local `pre-push` hook is still the guard against the owner's own slip. |
 | Entity-level rules | **VERIFIED by CI** (#9, main `65e48d0`): ad-group and ad rules on their own metric rows, capability provider × level × change, dry run, history, bulk, hierarchy, readiness UI. Live reads/writes `AWAITING_CREDENTIALS`; bids `UNSUPPORTED_IN_DIGITALSMART`. |
 | Agents & Automation | Rules = control, Agents = reasoning, Approvals = governance, Execution = provider mutation, Routines = schedule, Action history = evidence, Change log = configuration history. Auto refused; bid wired nowhere. Rules at campaign, ad-group and ad level, each on its own rows; capability provider × level × change (`docs/PROVIDER_READINESS.md`). |
-| Creatives | **VERIFIED by CI** (#32–#35, main `e660348`): aggregate creative read, `/creatives` page, client-safe creative report section with shared-link narrowing, presentation-mode creative screens. |
-| Notifications | PR A merged (#36); PR B in flight (centre + settings + history). Was: severity/category/payload/dedup on the bell, eleven new kinds, daily/weekly/monthly performance digests in workspace time. Next: B notification centre + settings + history, C creative report visual upgrade, D filters + presentation polish, E email/WhatsApp adapters (`AWAITING_CREDENTIALS`). |
+| Creatives | **VERIFIED by CI** (#32–#35, #38, #39; main `4b14edf`): aggregate creative read, `/creatives` page, client-safe creative report section — hero, gallery, trend switch, top creatives, comparison, format and platform mix, fatigue, ≤4 insights, ≤3 recommendations — shared-link narrowing by platform, campaign, creative and format, presentation-mode creative story in order. |
+| Notifications | **VERIFIED by CI** (#36, #37, #40; main `3e3d316`): severity by rule, a tab per kind, dedup/cooldown, daily/weekly/monthly performance digests at nine in workspace time, the centre with history and per-person settings, the ten alerts raised hourly from the product's own signals. Email/WhatsApp delivery (#41) is `AWAITING_CREDENTIALS`: one honest row per channel, nothing sent, `sent` unwritable by any adapter here. |
 | Visual restructure | PR #11 merged (cards, rings, hints). PR #12 (batch 4: leads, commerce, presentations, tracking, administration, forms) in review. Remaining: heavy-form audit beyond the client form, creative thumbnails from real assets (none exist), a measured before/after table. |
 | Sessions | Each session works on its own branch and worktree; the shared folder is not scratch space. |
 
 ### Last verified gates (local)
 
 - Backend: PHPStan level 8 clean, Pint clean; feature suites for every new slice green. Full suite: see the latest PR.
-- Frontend: typecheck, ESLint, Prettier clean; 730 unit tests; production build.
+- Frontend: typecheck, ESLint, Prettier clean; 900 unit tests; production build.
 - E2E desktop: 210 passed, 1 failed + 1 flaky in the dashboard builder under machine load — being re-run in isolation.
 
 ### Next

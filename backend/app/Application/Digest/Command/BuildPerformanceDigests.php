@@ -7,6 +7,7 @@ namespace App\Application\Digest\Command;
 use App\Application\Digest\Contract\DigestStore;
 use App\Application\Digest\DTO\PerformanceDigestPeriod;
 use App\Application\Digest\Service\PerformanceDigestComposer;
+use App\Application\Notifications\Command\DeliverNotification;
 use App\Application\Notifications\Contract\NotificationPreferenceStore;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\DTO\NotificationDraft;
@@ -47,6 +48,7 @@ final readonly class BuildPerformanceDigests
         private ActorContextBinder $actors,
         private Clock $clock,
         private NotificationPreferenceStore $preferences,
+        private DeliverNotification $deliver,
     ) {}
 
     /** @return array<string, array{written: int, skipped: int, failed: int}> keyed by digest kind */
@@ -150,7 +152,12 @@ final readonly class BuildPerformanceDigests
             $digestId = $this->store->put($workspace, $userId, $kind, $period->on, $digest['needs_attention'], $digest);
 
             if ($digestId !== null) {
-                $this->notifications->announce($workspace, [$userId], $this->draft($kind, $digestId, $digest), null);
+                $written = $this->notifications->announce($workspace, [$userId], $this->draft($kind, $digestId, $digest), null);
+
+                /* The bell is written; the other channels the person asked for get their attempt, and a row each. */
+                foreach ($written as $notification) {
+                    ($this->deliver)($workspace, $notification);
+                }
             }
 
             return ['written' => 1, 'skipped' => 0, 'failed' => 0];

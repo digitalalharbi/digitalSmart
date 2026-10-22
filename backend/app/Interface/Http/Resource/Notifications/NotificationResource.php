@@ -22,7 +22,10 @@ final readonly class NotificationResource
 
         return [
             'notifications' => array_map(
-                static fn (NotificationView $view): array => self::one($view),
+                static fn (NotificationView $view): array => self::one($view) + [
+                    /* The channels this was carried over and what became of each; absent for the bell alone. */
+                    'deliveries' => $feed->deliveries[$view->id] ?? [],
+                ],
                 $feed->notifications,
             ),
             'digest' => [

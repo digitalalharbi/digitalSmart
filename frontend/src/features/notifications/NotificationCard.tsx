@@ -208,6 +208,21 @@ export function NotificationCard({
           </p>
         )}
 
+        {(item.deliveries ?? []).length === 0 ? null : (
+          <ul className="flex flex-wrap gap-1.5" aria-label={t('notifications.delivery.label')}>
+            {(item.deliveries ?? []).map((delivery) => (
+              <li
+                key={delivery.channel}
+                className="bg-surface-sunken text-content-secondary rounded-full px-2 py-0.5 text-xs"
+                title={delivery.detail ?? undefined}
+              >
+                {t(`notifications.settings.channel.${delivery.channel}`)} ·{' '}
+                {t(`notifications.delivery.status.${delivery.status}`)}
+              </li>
+            ))}
+          </ul>
+        )}
+
         <div className="flex flex-wrap items-center gap-3">
           {item.subject.exists ? (
             <Link

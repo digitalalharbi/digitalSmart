@@ -94,6 +94,13 @@ export type NotificationItem = {
   read_at: string | null;
   clicked_at: string | null;
   dismissed_at: string | null;
+  /** The channels this was carried over and what became of each. Empty for the bell alone. */
+  deliveries?: Array<{
+    channel: DigestChannelValue;
+    status: 'awaiting_credentials' | 'logged' | 'sent' | 'failed';
+    detail: string | null;
+    attempted_at: string;
+  }>;
   created_at: string;
 };
 

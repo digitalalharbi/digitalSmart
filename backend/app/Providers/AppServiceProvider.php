@@ -114,6 +114,8 @@ use App\Application\Measurement\Contract\ObservedEventWriter;
 use App\Application\Measurement\Contract\TagContainerReadAdapter;
 use App\Application\Notifications\Contract\AlertSubjects;
 use App\Application\Notifications\Contract\NotificationBroadcaster;
+use App\Application\Notifications\Contract\NotificationChannelDelivery;
+use App\Application\Notifications\Contract\NotificationDeliveryLog;
 use App\Application\Notifications\Contract\NotificationPreferenceStore;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\Contract\RecipientResolver;
@@ -198,8 +200,10 @@ use App\Infrastructure\Measurement\Adapter\GoogleTagManagerReadAdapter;
 use App\Infrastructure\Measurement\MeasurementSyncAdapterRegistry;
 use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
 use App\Infrastructure\Notifications\EloquentAlertSubjects;
+use App\Infrastructure\Notifications\EloquentNotificationDeliveryLog;
 use App\Infrastructure\Notifications\EloquentNotificationPreferenceStore;
 use App\Infrastructure\Notifications\EloquentNotificationStore;
+use App\Infrastructure\Notifications\HonestChannelDelivery;
 use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
 use App\Infrastructure\Operations\BroadcastBoardSignaller;
@@ -494,6 +498,7 @@ final class AppServiceProvider extends ServiceProvider
         NotificationStore::class => EloquentNotificationStore::class,
         NotificationPreferenceStore::class => EloquentNotificationPreferenceStore::class,
         AlertSubjects::class => EloquentAlertSubjects::class,
+        NotificationDeliveryLog::class => EloquentNotificationDeliveryLog::class,
         RecipientResolver::class => PermissionAwareRecipientResolver::class,
         NotificationBroadcaster::class => ReverbNotificationBroadcaster::class,
 
@@ -520,6 +525,11 @@ final class AppServiceProvider extends ServiceProvider
         foreach (self::BINDINGS as $abstract => $concrete) {
             $this->app->bind($abstract, $concrete);
         }
+
+        /* Email and WhatsApp deliveries, in the state they are in: nothing is sent, and the row says why. */
+        $this->app->bind(NotificationChannelDelivery::class, static fn (): NotificationChannelDelivery => new HonestChannelDelivery(
+            logInDevelopment: app()->environment('local', 'testing'),
+        ));
 
         /* One-time approval links: keyed by the application key, sent to the SPA's own origin, delivered honestly. */
         $this->app->bind(ApprovalLinkDelivery::class, static fn (): ApprovalLinkDelivery => new ChannelApprovalLinkDelivery(

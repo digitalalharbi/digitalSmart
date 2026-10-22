@@ -21,5 +21,7 @@ final readonly class NotificationFeed
          * that implied it was live while polling is a page where somebody waits for an update that never comes.
          */
         public bool $isLive,
+        /** @var array<string, list<array{channel: string, status: string, detail: ?string, attempted_at: string}>> by notification id */
+        public array $deliveries = [],
     ) {}
 }

@@ -4,6 +4,14 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Delivery, honestly: email and WhatsApp as `AWAITING_CREDENTIALS`
+
+### Added
+- **`notification_deliveries`**: one row per notification per channel a person asked for, with `awaiting_credentials`,
+  `logged` (development), `failed` or `sent` — and nothing in this repository can write `sent`. The bell is never a row.
+- `NotificationChannelDelivery` port and `HonestChannelDelivery`, which names what each channel is missing; a digest
+  is carried over the recipient's other channels after it is announced; the feed carries each notification's deliveries.
+
 ## The alerts are raised
 
 ### Added
