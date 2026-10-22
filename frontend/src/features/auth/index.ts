@@ -1,4 +1,4 @@
-export { LoginPage } from './LoginPage';
+export { SignInForm } from './SignInForm';
 export { PasswordDialog } from './PasswordDialog';
 export { useSession } from './useSession';
 export { PERMISSIONS } from './permissions';

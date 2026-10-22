@@ -4,7 +4,7 @@
 |--------------------------------------------------------------------------
 |
 | The one place the six platforms' chart colours are named. The values live in tokens.css
-| (`--ds-platform-*`, the approved brand order: Meta, Google, Snapchat, TikTok, LinkedIn, X); this
+| (`--ds-platform-*`, the approved brand values); this
 | module only says which token belongs to which provider and which marks need an edge.
 |
 | Colour follows the platform, never its rank in a list, so filtering a chart does not repaint the
@@ -13,13 +13,14 @@
 |
 */
 
+/** The order platforms are listed in: Snapchat first, then TikTok, then Meta — the owner's priority. */
 export const PLATFORM_ORDER = [
-  'meta',
-  'google_ads',
   'snapchat',
   'tiktok',
-  'linkedin',
+  'meta',
+  'google_ads',
   'x',
+  'linkedin',
 ] as const;
 
 export type ChartPlatform = (typeof PLATFORM_ORDER)[number];

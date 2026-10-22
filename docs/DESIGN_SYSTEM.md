@@ -58,9 +58,12 @@ Source: the digitalSmart Brand Kit. **Dark is the default theme; light is kept.*
   languages so figures reconcile with platform dashboards.
 - **Where the kit does not clear AA**, the brand colour is kept and the surrounding surface or step is adjusted; the
   exceptions and the reasons are in `CHANGELOG.md`. The contrast and palette gates are unchanged.
-- **Entry screens** (`/login`, `/welcome`): one screen on a desktop (no scroll either way at 1440×900, 1366×768,
-  1280×720, 1024×768); at shorter heights supporting copy steps aside, never the logo, headline, form or call to action.
-  `e2e/entry-screens.spec.ts` is the gate.
+- **Entry screens** (`/`, `/welcome`, `/login`): one screen on a desktop (no scroll either way at 1920×1080, 1600×900,
+  1440×900, 1366×768, 1280×720, 1024×768); on a phone the page may scroll down, never sideways, from 320px up. At shorter
+  heights supporting copy steps aside, never the logo, headline, platforms or the way in. Fields are 16px and controls
+  44px on touch; browser zoom is never disabled; the page keeps clear of the notch (`ds-safe-area`). Copy sells what the
+  buyer gains in formal Arabic and says nothing about how it is done. `e2e/entry-screens.spec.ts` is the gate across
+  Chromium, Firefox, WebKit, Mobile Safari and Mobile Chromium.
 
 ## Platform colours — strict rule
 

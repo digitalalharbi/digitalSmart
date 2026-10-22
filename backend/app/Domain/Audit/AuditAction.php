@@ -206,6 +206,9 @@ enum AuditAction: string
      */
     case WorkspaceMemberRemoved = 'workspace.member_removed';
 
+    /* Somebody who asked for an account was answered: contacted, approved or declined. Nothing is created by it. */
+    case AccessRequestReviewed = 'access.request_reviewed';
+
     public function group(): string
     {
         return explode('.', $this->value)[0];

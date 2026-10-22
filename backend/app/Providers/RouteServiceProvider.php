@@ -57,6 +57,10 @@ final class RouteServiceProvider extends ServiceProvider
             $this->limit('shared_reports'),
         )->by('ip:'.(string) $request->ip()));
 
+        RateLimiter::for('access-requests', fn (Request $request): Limit => Limit::perMinute(
+            $this->limit('access_requests'),
+        )->by('ip:'.(string) $request->ip()));
+
         RateLimiter::for('auth', /** @return list<Limit> */ fn (Request $request): array => [
             Limit::perMinute($this->limit('auth'))->by('ip:'.(string) $request->ip()),
             Limit::perMinute($this->limit('auth'))->by('email:'.strtolower((string) $request->input('email'))),

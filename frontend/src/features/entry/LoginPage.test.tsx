@@ -8,7 +8,7 @@ import { LoginPage } from './LoginPage';
 const login = vi.hoisted(() => vi.fn());
 const navigate = vi.hoisted(() => vi.fn());
 
-vi.mock('./api', () => ({
+vi.mock('@/features/auth/api', () => ({
   useLoginMutation: () => ({
     mutateAsync: login,
     isPending: false,

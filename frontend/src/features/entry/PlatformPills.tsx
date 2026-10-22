@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/shared/lib/cn';
 import { platformChartColour } from '@/shared/ui/chart/platformColours';
 
 /**
@@ -7,22 +8,35 @@ import { platformChartColour } from '@/shared/ui/chart/platformColours';
  * This says what the product supports, not what is connected: nothing here claims a live account.
  */
 const PLATFORMS = [
+  { key: 'snapchat', name: 'Snapchat' },
+  { key: 'tiktok', name: 'TikTok' },
   { key: 'meta', name: 'Meta' },
   { key: 'google_ads', name: 'Google' },
-  { key: 'tiktok', name: 'TikTok' },
-  { key: 'snapchat', name: 'Snapchat' },
   { key: 'x', name: 'X' },
   { key: 'linkedin', name: 'LinkedIn' },
   { key: 'openai', name: 'ChatGPT' },
 ] as const;
 
-export function PlatformPills() {
+/** `centered`: everywhere, or only below the desktop breakpoint, where the column is the whole screen. */
+export function PlatformPills({ centered }: { centered?: 'always' | 'max-lg' }) {
+  const centre =
+    centered === 'always'
+      ? 'items-center'
+      : centered === 'max-lg'
+        ? 'items-center lg:items-start'
+        : null;
+  const centreRow =
+    centered === 'always'
+      ? 'justify-center'
+      : centered === 'max-lg'
+        ? 'justify-center lg:justify-start'
+        : null;
   const { t } = useTranslation();
 
   return (
-    <div id="platforms" className="flex flex-col gap-2">
+    <div id="platforms" className={cn('flex flex-col gap-2', centre)}>
       <p className="text-content-tertiary text-xs">{t('entry.platformsLabel')}</p>
-      <ul className="flex flex-wrap gap-1.5">
+      <ul className={cn('flex flex-wrap gap-1.5', centreRow)}>
         {PLATFORMS.map((platform) => (
           <li
             key={platform.key}

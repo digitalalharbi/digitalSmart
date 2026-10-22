@@ -16,6 +16,7 @@ export function PreferenceSwitches() {
       <Button
         variant="ghost"
         size="icon"
+        className="pointer-coarse:size-11"
         onClick={() => setLocale(nextLocale)}
         aria-label={t('actions.toggleLanguage')}
         title={t('actions.toggleLanguage')}
@@ -25,6 +26,7 @@ export function PreferenceSwitches() {
       <Button
         variant="ghost"
         size="icon"
+        className="pointer-coarse:size-11"
         onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
         aria-label={t('actions.toggleTheme')}
         title={t('actions.toggleTheme')}

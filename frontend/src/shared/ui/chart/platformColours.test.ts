@@ -26,14 +26,14 @@ const TOKEN: Record<string, string> = {
 };
 
 describe('platform chart colours', () => {
-  it('keeps the approved order', () => {
+  it('keeps the owner order', () => {
     expect([...PLATFORM_ORDER]).toEqual([
-      'meta',
-      'google_ads',
       'snapchat',
       'tiktok',
-      'linkedin',
+      'meta',
+      'google_ads',
       'x',
+      'linkedin',
     ]);
   });
 

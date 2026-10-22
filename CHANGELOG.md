@@ -4,42 +4,57 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
-## The approved brand, a sign-in screen and a one-screen landing page
+## The approved brand, a home page that sells, a sign-in screen and a phone bar
 
 ### Changed
-- **The brand kit is applied**: the approved orange `#C24A2C` as the brand ramp, dark as the default theme (light kept),
-  Sora for Latin text, figures and money, IBM Plex Sans Arabic for Arabic, Latin digits kept in both languages. The kit's
-  neutral and status colours are tokens in the existing OKLCH system, not a second theme. Primary actions, the active
-  navigation item and the one primary figure are orange; Approve is ink on the page; orange never stands in for a
-  warning or danger.
-- **The approved SVG logo is a component** (`Logo`, variants dark / light / on-orange / mono, layouts horizontal /
-  stacked / mark). It loads the kit's files untouched, picks the artwork for the theme in CSS so a theme change never
-  flashes, and raises a request below the brand minimum instead of shrinking the artwork. It replaces the "dS" mark and
-  the text name in the sidebar, the top bar and the sign-in screen.
-- **Platform chart colours** are one mapping (`platformColours.ts`) in the approved order — Meta, Google, Snapchat,
-  TikTok, LinkedIn, X — following the platform, never its rank; marks close to their surface carry an edge.
-- **Favicon set, web manifest, theme colour and the page title** are the kit's.
-- Cards are 20px; every card and figure tile has a hairline in the brand's border colour.
+- **The brand kit is applied**: the approved orange `#C24A2C`, dark as the default theme (light kept), Sora for Latin
+  text, figures and money, IBM Plex Sans Arabic for Arabic, Latin digits kept in both languages. The kit's colours are
+  tokens in the existing OKLCH system, not a second theme. Orange is for primary actions, the active navigation item
+  and the one primary figure; it never stands in for a warning or danger.
+- **The approved SVG logo is a component** (`Logo`), loaded untouched, picked for the theme in CSS, never drawn from
+  text, never mirrored. It replaces the "dS" mark and the text name.
+- **Platform colours are one mapping** (`platformColours.ts`), listed Snapchat, TikTok, Meta, then Google, X, LinkedIn
+  (the owner's order); colour follows the platform, never its rank, and marks close to their surface carry an edge.
+- **The home address is the marketing page** for anybody not signed in (`/`, also `/welcome`); `/login` is the sign-in
+  screen. Every other address behind a session still goes to sign-in.
+- **Cards** are 20px with a hairline in the brand's border colour; **text fields** are 16px on a phone (anything less
+  makes iOS Safari zoom the page on focus) and every control is at least 44px on a touch screen.
+- **Favicon set, web manifest, theme colour and page title** are the kit's. The page respects the notch and the home
+  indicator (`viewport-fit=cover` with safe-area padding) and never disables browser zoom.
 
 ### Added
-- **A sign-in screen** that is one screen on a desktop: brand panel (logo, headline, four short benefits) and the form.
-  On a phone the form comes first. Only the sign-in that exists is offered.
-- **A public landing page** at `/welcome`, one screen on a desktop: what digitalSmart is, the platforms it is built for
-  (including ChatGPT; names only, no claim of a live connection), a preview drawn from the product's own parts and marked
-  as sample data, and four short value cards. Its one action goes to the real sign-in screen.
-- A gate on both screens: no sideways or vertical scroll at 1440×900, 1366×768, 1280×720 and 1024×768, no sideways scroll
-  at 390×844 and 375×812, English and Arabic, axe clean in both themes.
+- **A landing page, one screen on a desktop**: what digitalSmart is in formal, benefit-led Arabic and English, the
+  platforms it supports (names only, no claim of a live connection), a preview drawn from the product's own parts and
+  marked as sample data, and four short benefit cards. On a phone it reads in order: headline, platforms, the way in
+  centred under them, then the preview and the benefits.
+- **Asking for an account** (`/request-access`, `POST /api/public/access-requests`): a visitor with no account sends
+  name, email and what they need. It creates **no account and sends nothing**; it is a request that the workspace's
+  administrators read in Administration → Account requests and mark contacted, approved or declined (a decision is final
+  and audited). Public and so limited: five a minute per address, a hidden field a person never fills, the same answer
+  whether the request was kept, repeated or dropped, one workspace only (`ACCESS_REQUESTS_WORKSPACE_SLUG`; unset, the
+  installation takes none and the page does not offer it).
+- **A bottom navigation bar on a phone** (four areas and "More"), so the signed-in application is one tap from where a
+  thumb already is; it hides where the rail and top bar take over.
+- **A compatibility gate** (`e2e/entry-screens.spec.ts`, `e2e/mobile-shell.spec.ts`): Chromium, Firefox, WebKit, Mobile
+  Safari and Mobile Chromium (the three added projects run only these specs). Six desktop sizes (1920×1080 to 1024×768)
+  with no scroll in either direction and nothing drawn off the screen; phones from 320×568 to 430×932 and 844×390
+  landscape with no sideways scroll; touch targets, 16px fields, zoom left alone, brand fonts and the logo whole,
+  no missing asset or repeated font download; axe clean in both themes and languages; and the signed-in shell at 375px
+  across eight surfaces.
 
-### Verified, and what was found
-- **The brand colours do not all clear AA as the kit gives them**, and the contrast gates were not weakened. Orange
-  with white text on hover fails, so the hover label turns black in dark and the hover step is deeper in light; the kit's
-  status colours fail as text on white, so light mode uses deeper steps; the 12% status tints fail on dark surfaces,
-  so they are lower, to the measured maximum. Some platform colours sit under 3:1 on one surface (Snapchat and X on
-  graphite, Google, TikTok and LinkedIn on white); those marks always carry a legend, a label and a table, and an edge.
-- **The orange could not be chart series one under the colour-blind gates in the kit's order**, so the chart palette's
-  other slots were re-ordered by search; the palette gates are unchanged.
-- **Dark was not actually the default** (it followed the browser); new visitors now get dark and a saved choice is kept.
-- Not offered on the sign-in screen: "forgot password" (there is no reset flow and no sender to send it) and any sign-up.
+### Fixed
+- **`/ad-groups` was wider than a phone** (a large amount in a two-column figure tile pushed the page sideways); amounts
+  now wrap and the tile is tighter on a phone.
+- **The landing header did not fit at 320px**; the mark stands in for the wordmark below 420px.
+
+### Where the kit does not clear AA
+The brand colour was kept and the surrounding step or tint adjusted; the contrast and palette gates were not changed.
+Orange with white text on hover fails (the label turns black in dark, the step deepens in light); the kit's status colours
+fail as text on white (deeper steps in light); the kit's 12% status tints fail on dark surfaces (lower, to the measured
+maximum); some platform marks sit under 3:1 on one surface and always carry a legend, a label and an edge.
+
+### Not offered
+"Forgot password" (there is no reset flow and no sender), automatic sign-up, trials, demo buttons.
 
 ## The campaign report: a funnel, attributed revenue, advanced settings and a page per report
 

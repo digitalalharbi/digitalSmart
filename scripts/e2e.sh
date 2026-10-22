@@ -147,6 +147,8 @@ echo "==> Starting API on :$API_PORT"
   RATE_LIMIT_API_USER="${RATE_LIMIT_API_USER:-1000}" \
   RATE_LIMIT_AUTH="${RATE_LIMIT_AUTH:-500}" \
   RATE_LIMIT_HEALTH="${RATE_LIMIT_HEALTH:-1000}" \
+  ACCESS_REQUESTS_WORKSPACE_SLUG="${ACCESS_REQUESTS_WORKSPACE_SLUG:-demo-smart-code}" \
+  RATE_LIMIT_ACCESS_REQUESTS="${RATE_LIMIT_ACCESS_REQUESTS:-500}" \
   exec php artisan serve --host=127.0.0.1 --port="$API_PORT" --no-reload
 ) > /tmp/digitalsmart-e2e-api.log 2>&1 &
 API_PID=$!

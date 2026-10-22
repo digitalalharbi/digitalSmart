@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+/** The specs the extra browsers run. Everything else runs on `chromium` and `mobile-safari` only. */
+const COMPATIBILITY = /(entry-screens|mobile-shell)\.spec\.ts$/;
+
 const PORT = Number.parseInt(process.env.VITE_DEV_PORT ?? '5174', 10);
 
 /**
@@ -62,6 +65,15 @@ export default defineConfig({
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile-safari', use: { ...devices['iPhone 14'] } },
+    /*
+     * The compatibility matrix for what a visitor meets before signing in, and for the shell on a phone. Targeted, not
+     * the whole suite: these three projects run only the specs named below, so a fourth browser does not multiply a
+     * nineteen-minute run. Firefox and desktop Safari (WebKit) cover the engines `chromium` does not; Pixel 7 is the
+     * Android-class Chromium on a touch screen.
+     */
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testMatch: COMPATIBILITY },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: COMPATIBILITY },
+    { name: 'mobile-chromium', use: { ...devices['Pixel 7'] }, testMatch: COMPATIBILITY },
   ],
   /*
    * Tests run against the production build. The dev server's on-demand

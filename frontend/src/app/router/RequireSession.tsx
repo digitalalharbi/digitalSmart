@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { PasswordDialog, useSession } from '@/features/auth';
+import { LandingPage } from '@/features/entry';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { LoadingRegion } from '@/shared/ui/loading-region';
 
@@ -28,6 +29,15 @@ export function RequireSession({ children }: { children: ReactNode }) {
   }
 
   if (!isAuthenticated) {
+    /*
+     * The home address is the public face of the product: somebody who is not signed in and opens it is shown what
+     * digitalSmart is, with sign-in one tap away at `/login`. Every other address behind a session still sends them
+     * to sign in, remembering where they were headed.
+     */
+    if (location.pathname === '/') {
+      return <LandingPage />;
+    }
+
     // Remember where they were headed so sign-in can return them there.
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }

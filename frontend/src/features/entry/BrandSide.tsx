@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next';
-import { BellRing, ChartColumn, LayoutGrid, Link2, type LucideIcon } from 'lucide-react';
+import { BellRing, FileCheck2, LayoutGrid, Palette, type LucideIcon } from 'lucide-react';
 import { Logo } from '@/shared/ui/logo';
 
-const BENEFITS: Array<{ key: 'platforms' | 'analytics' | 'reports' | 'alerts'; icon: LucideIcon }> =
+const BENEFITS: Array<{ key: 'platforms' | 'alerts' | 'reports' | 'creative'; icon: LucideIcon }> =
   [
     { key: 'platforms', icon: LayoutGrid },
-    { key: 'analytics', icon: ChartColumn },
-    { key: 'reports', icon: Link2 },
     { key: 'alerts', icon: BellRing },
+    { key: 'reports', icon: FileCheck2 },
+    { key: 'creative', icon: Palette },
   ];
 
 /** The brand half of the sign-in screen: who this is, what it does, in four short cards. */
@@ -43,10 +43,10 @@ export function BrandSide() {
             </span>
             <span className="min-w-0">
               <span className="text-content block text-sm font-semibold">
-                {t(`entry.benefits.${key}.title`)}
+                {t(`entry.promises.${key}.title`)}
               </span>
               <span className="text-content-secondary block text-xs leading-snug [@media(max-height:760px)]:hidden">
-                {t(`entry.benefits.${key}.body`)}
+                {t(`entry.promises.${key}.line`)}
               </span>
             </span>
           </li>

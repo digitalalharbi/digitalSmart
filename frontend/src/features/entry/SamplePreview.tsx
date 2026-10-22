@@ -10,17 +10,17 @@ import { cn } from '@/shared/lib/cn';
  * panel says so; nothing here is read from an account.
  */
 const MIX = [
-  { key: 'meta', label: 'Meta', value: 38 },
-  { key: 'google_ads', label: 'Google', value: 27 },
-  { key: 'tiktok', label: 'TikTok', value: 18 },
-  { key: 'snapchat', label: 'Snapchat', value: 12 },
+  { key: 'snapchat', label: 'Snapchat', value: 38 },
+  { key: 'tiktok', label: 'TikTok', value: 27 },
+  { key: 'meta', label: 'Meta', value: 18 },
+  { key: 'google_ads', label: 'Google', value: 12 },
   { key: 'linkedin', label: 'LinkedIn', value: 5 },
 ];
 
 const TOP = [
-  { name: 'Ramadan — Sales', provider: 'meta', roas: 4.2, share: 100 },
-  { name: 'Always-on Search', provider: 'google_ads', roas: 3.6, share: 82 },
-  { name: 'Spring Collection', provider: 'tiktok', roas: 2.9, share: 64 },
+  { name: 'Ramadan — Sales', provider: 'snapchat', roas: 4.2, share: 100 },
+  { name: 'Always-on Video', provider: 'tiktok', roas: 3.6, share: 82 },
+  { name: 'Spring Collection', provider: 'meta', roas: 2.9, share: 64 },
 ];
 
 const TREND = [14, 18, 16, 22, 21, 27, 25, 31, 29, 34, 33, 38];
