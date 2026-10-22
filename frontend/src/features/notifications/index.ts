@@ -6,4 +6,4 @@ export {
   useNotificationRealtime,
   useNotificationsQuery,
 } from './useNotifications';
-export type { NotificationFeed, NotificationItem } from './types';
+export type { NotificationFeed, NotificationItem, NotificationPreferences } from './types';

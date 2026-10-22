@@ -8,6 +8,7 @@ use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Notifications\DTO\NotificationView;
 use App\Application\Shared\Contract\IdentifierGenerator;
+use App\Domain\Notifications\NotificationCategory;
 use App\Domain\Notifications\NotificationDigest;
 use App\Domain\Notifications\NotificationKind;
 use App\Domain\Notifications\NotificationSeverity;
@@ -92,15 +93,21 @@ final readonly class EloquentNotificationStore implements NotificationStore
         return $worst;
     }
 
-    public function forUser(string $workspaceId, string $userId, bool $unreadOnly, int $limit): array
+    public function forUser(string $workspaceId, string $userId, bool $unreadOnly, int $limit, ?NotificationCategory $category = null): array
     {
         $builder = DB::table('notifications as n')
             ->leftJoin('users as a', 'a.id', '=', 'n.actor_id')
             ->where('n.workspace_id', $workspaceId)
-            ->where('n.user_id', $userId);
+            ->where('n.user_id', $userId)
+            /* Put away is put away: a dismissed row is history, not the list. */
+            ->whereNull('n.dismissed_at');
 
         if ($unreadOnly) {
             $builder->whereNull('n.read_at');
+        }
+
+        if ($category !== null) {
+            $builder->where('n.category', $category->value);
         }
 
         $rows = $builder
@@ -120,10 +127,13 @@ final readonly class EloquentNotificationStore implements NotificationStore
         $rows = DB::table('notifications')
             ->where('workspace_id', $workspaceId)
             ->where('user_id', $userId)
-            ->groupBy('kind', 'read_at')
-            ->get(['kind', DB::raw('(read_at is null) as is_unread'), DB::raw('count(*) as tally')]);
+            ->whereNull('dismissed_at')
+            ->groupBy('kind', 'severity', DB::raw('(read_at is null)'))
+            ->get(['kind', 'severity', DB::raw('(read_at is null) as is_unread'), DB::raw('count(*) as tally')]);
 
         $unreadByKind = array_fill_keys(NotificationKind::values(), 0);
+        $unreadByCategory = array_fill_keys(NotificationCategory::values(), 0);
+        $unreadBySeverity = array_fill_keys(NotificationSeverity::values(), 0);
         $total = $unread = $waiting = 0;
 
         foreach ($rows as $row) {
@@ -141,6 +151,9 @@ final readonly class EloquentNotificationStore implements NotificationStore
 
             $unread += $tally;
             $unreadByKind[$kind->value] += $tally;
+            $unreadByCategory[$kind->category()->value] += $tally;
+            $severity = NotificationSeverity::tryFrom((string) ($values['severity'] ?? '')) ?? NotificationSeverity::Info;
+            $unreadBySeverity[$severity->value] += $tally;
 
             if ($kind->needsAction()) {
                 $waiting += $tally;
@@ -152,6 +165,8 @@ final readonly class EloquentNotificationStore implements NotificationStore
             unread: $unread,
             waiting: $waiting,
             unreadByKind: $unreadByKind,
+            unreadByCategory: $unreadByCategory,
+            unreadBySeverity: $unreadBySeverity,
         );
     }
 
@@ -187,8 +202,54 @@ final readonly class EloquentNotificationStore implements NotificationStore
         return DB::table('notifications')
             ->where('workspace_id', $workspaceId)
             ->where('user_id', $userId)
+            ->whereNull('dismissed_at')
             ->whereNull('read_at')
             ->update(['read_at' => now(), 'updated_at' => now()]);
+    }
+
+    public function markClicked(string $workspaceId, string $userId, string $notificationId): bool
+    {
+        return $this->stamp($workspaceId, $userId, $notificationId, 'clicked_at', true);
+    }
+
+    public function dismiss(string $workspaceId, string $userId, string $notificationId): bool
+    {
+        return $this->stamp($workspaceId, $userId, $notificationId, 'dismissed_at', false);
+    }
+
+    /**
+     * Set one history timestamp once, on the owner's own row. Opening counts as reading; putting away does not.
+     */
+    private function stamp(string $workspaceId, string $userId, string $notificationId, string $column, bool $alsoRead): bool
+    {
+        $mine = DB::table('notifications')
+            ->where('workspace_id', $workspaceId)
+            ->where('user_id', $userId)
+            ->where('id', $notificationId);
+
+        if (! $mine->exists()) {
+            return false;
+        }
+
+        $now = now();
+
+        DB::table('notifications')
+            ->where('workspace_id', $workspaceId)
+            ->where('user_id', $userId)
+            ->where('id', $notificationId)
+            ->whereNull($column)
+            ->update([$column => $now, 'updated_at' => $now]);
+
+        if ($alsoRead) {
+            DB::table('notifications')
+                ->where('workspace_id', $workspaceId)
+                ->where('user_id', $userId)
+                ->where('id', $notificationId)
+                ->whereNull('read_at')
+                ->update(['read_at' => $now, 'updated_at' => $now]);
+        }
+
+        return true;
     }
 
     /**

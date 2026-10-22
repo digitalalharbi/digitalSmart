@@ -113,6 +113,7 @@ use App\Application\Measurement\Contract\ObservedEventReadModel;
 use App\Application\Measurement\Contract\ObservedEventWriter;
 use App\Application\Measurement\Contract\TagContainerReadAdapter;
 use App\Application\Notifications\Contract\NotificationBroadcaster;
+use App\Application\Notifications\Contract\NotificationPreferenceStore;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\Contract\RecipientResolver;
 use App\Application\Operations\Command\IssueApprovalLink;
@@ -195,6 +196,7 @@ use App\Infrastructure\Leads\Adapter\HubSpotCrmReadAdapter;
 use App\Infrastructure\Measurement\Adapter\GoogleTagManagerReadAdapter;
 use App\Infrastructure\Measurement\MeasurementSyncAdapterRegistry;
 use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
+use App\Infrastructure\Notifications\EloquentNotificationPreferenceStore;
 use App\Infrastructure\Notifications\EloquentNotificationStore;
 use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
@@ -488,6 +490,7 @@ final class AppServiceProvider extends ServiceProvider
          */
         ProviderWriterRegistry::class => CampaignWriterRegistry::class,
         NotificationStore::class => EloquentNotificationStore::class,
+        NotificationPreferenceStore::class => EloquentNotificationPreferenceStore::class,
         RecipientResolver::class => PermissionAwareRecipientResolver::class,
         NotificationBroadcaster::class => ReverbNotificationBroadcaster::class,
 

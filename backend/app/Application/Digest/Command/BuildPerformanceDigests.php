@@ -7,12 +7,15 @@ namespace App\Application\Digest\Command;
 use App\Application\Digest\Contract\DigestStore;
 use App\Application\Digest\DTO\PerformanceDigestPeriod;
 use App\Application\Digest\Service\PerformanceDigestComposer;
+use App\Application\Notifications\Contract\NotificationPreferenceStore;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\DTO\NotificationDraft;
+use App\Application\Notifications\DTO\NotificationPreferences;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Attention\DigestKind;
 use App\Domain\Identity\UserId;
+use App\Domain\Notifications\NotificationCategory;
 use App\Domain\Notifications\NotificationKind;
 use App\Domain\Notifications\NotificationSeverity;
 use App\Domain\Workspace\WorkspaceId;
@@ -23,11 +26,11 @@ use Throwable;
 /**
  * The daily, weekly and monthly performance digests, each landing at nine in the workspace's own morning.
  *
- * `dispatch()` is what the scheduler calls every hour: for each workspace it reads the local time and builds
- * whichever digests are due — daily once the local hour has reached nine, weekly on the local Sunday, monthly on
- * the local first — and skips a workspace where that period's digest already exists. So a workspace in Riyadh and
- * one in Jakarta each get theirs at their own nine, and a scheduler that ran late still delivers rather than
- * missing the minute.
+ * `dispatch()` is what the scheduler calls every hour: for each person it reads the local time — their own zone,
+ * or the workspace's — and builds whichever digests they want that are due: daily once the local hour has reached
+ * the one they chose (nine by default), weekly on the local Sunday, monthly on the local first — skipping a period
+ * already written. So a workspace in Riyadh and one in Jakarta each get theirs at their own nine, somebody who
+ * asked for seven gets it at seven, and a scheduler that ran late still delivers rather than missing the minute.
  *
  * `build()` writes one digest per person **as that person**: the actor is bound to them and the composer reads in
  * their scope, so a digest can never be a side door around visibility. Somebody with nothing to be told gets
@@ -43,6 +46,7 @@ final readonly class BuildPerformanceDigests
         private PerformanceDigestComposer $composer,
         private ActorContextBinder $actors,
         private Clock $clock,
+        private NotificationPreferenceStore $preferences,
     ) {}
 
     /** @return array<string, array{written: int, skipped: int, failed: int}> keyed by digest kind */
@@ -50,12 +54,23 @@ final readonly class BuildPerformanceDigests
     {
         $now = $this->clock->now();
         $results = [];
+        $zones = [];
 
         foreach ($this->store->workspaces($workspaceId) as $workspace) {
-            $zone = $this->zone($workspace['timezone']);
+            $zones[$workspace['workspace_id']] = $workspace['timezone'];
+        }
+
+        /*
+         * Per person, not per workspace: each one has a zone (theirs, or the workspace's), an hour, and a say in
+         * which digests they want. What is due for one may not be due for the next.
+         */
+        foreach ($this->store->recipients($workspaceId) as $recipient) {
+            $workspace = $recipient['workspace_id'];
+            $preferences = $this->preferences->get($workspace, $recipient['user_id']);
+            $zone = $this->zone($preferences->timezone ?? $zones[$workspace] ?? 'UTC');
             $local = $now->setTimezone($zone);
 
-            if ((int) $local->format('G') < self::LOCAL_HOUR) {
+            if ((int) $local->format('G') < $preferences->hour) {
                 continue;
             }
 
@@ -70,13 +85,17 @@ final readonly class BuildPerformanceDigests
             }
 
             foreach ($due as $kind) {
-                $period = PerformanceDigestPeriod::for($kind, $now, $zone);
-
-                if ($this->store->exists($workspace['workspace_id'], $kind, $period->on)) {
+                if (! $preferences->wants($kind) || $preferences->mutes(NotificationCategory::Performance)) {
                     continue;
                 }
 
-                $result = $this->build($kind, $workspace['workspace_id'], $zone);
+                $period = PerformanceDigestPeriod::for($kind, $now, $zone);
+
+                if ($this->store->existsFor($workspace, $recipient['user_id'], $kind, $period->on)) {
+                    continue;
+                }
+
+                $result = $this->one($recipient['user_id'], $workspace, $kind, $period, $preferences);
                 $results[$kind->value] = [
                     'written' => ($results[$kind->value]['written'] ?? 0) + $result['written'],
                     'skipped' => ($results[$kind->value]['skipped'] ?? 0) + $result['skipped'],
@@ -91,44 +110,57 @@ final readonly class BuildPerformanceDigests
     /** @return array{written: int, skipped: int, failed: int} */
     public function build(DigestKind $kind, ?string $workspaceId = null, ?DateTimeZone $zone = null): array
     {
-        $written = $skipped = $failed = 0;
+        $totals = ['written' => 0, 'skipped' => 0, 'failed' => 0];
         $now = $this->clock->now();
         $zones = [];
 
         foreach ($this->store->workspaces($workspaceId) as $workspace) {
-            $zones[$workspace['workspace_id']] = $zone ?? $this->zone($workspace['timezone']);
+            $zones[$workspace['workspace_id']] = $workspace['timezone'];
         }
 
         foreach ($this->store->recipients($workspaceId) as $recipient) {
             $workspace = $recipient['workspace_id'];
+            $preferences = $this->preferences->get($workspace, $recipient['user_id']);
+            $period = PerformanceDigestPeriod::for($kind, $now, $zone ?? $this->zone($preferences->timezone ?? $zones[$workspace] ?? 'UTC'));
+            $result = $this->one($recipient['user_id'], $workspace, $kind, $period, $preferences);
 
-            try {
-                $this->actors->bind(new UserId($recipient['user_id']), new WorkspaceId($workspace));
-                $period = PerformanceDigestPeriod::for($kind, $now, $zones[$workspace] ?? new DateTimeZone('UTC'));
-                $digest = $this->composer->compose($workspace, $period);
-
-                if ($digest === null) {
-                    $skipped++;
-
-                    continue;
-                }
-
-                $digestId = $this->store->put($workspace, $recipient['user_id'], $kind, $period->on, $digest['needs_attention'], $digest);
-
-                if ($digestId !== null) {
-                    $this->notifications->announce($workspace, [$recipient['user_id']], $this->draft($kind, $digestId, $digest), null);
-                }
-
-                $written++;
-            } catch (Throwable $failure) {
-                report($failure);
-                $failed++;
-            } finally {
-                $this->actors->clear();
+            foreach ($result as $key => $count) {
+                $totals[$key] += $count;
             }
         }
 
-        return ['written' => $written, 'skipped' => $skipped, 'failed' => $failed];
+        return $totals;
+    }
+
+    /**
+     * One person's digest, written as that person.
+     *
+     * @return array{written: int, skipped: int, failed: int}
+     */
+    private function one(string $userId, string $workspace, DigestKind $kind, PerformanceDigestPeriod $period, NotificationPreferences $preferences): array
+    {
+        try {
+            $this->actors->bind(new UserId($userId), new WorkspaceId($workspace));
+            $digest = $this->composer->compose($workspace, $period, $preferences);
+
+            if ($digest === null) {
+                return ['written' => 0, 'skipped' => 1, 'failed' => 0];
+            }
+
+            $digestId = $this->store->put($workspace, $userId, $kind, $period->on, $digest['needs_attention'], $digest);
+
+            if ($digestId !== null) {
+                $this->notifications->announce($workspace, [$userId], $this->draft($kind, $digestId, $digest), null);
+            }
+
+            return ['written' => 1, 'skipped' => 0, 'failed' => 0];
+        } catch (Throwable $failure) {
+            report($failure);
+
+            return ['written' => 0, 'skipped' => 0, 'failed' => 1];
+        } finally {
+            $this->actors->clear();
+        }
     }
 
     /** @param array<string, mixed> $digest */

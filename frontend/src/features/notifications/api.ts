@@ -1,9 +1,21 @@
 import { api } from '@/shared/api/client';
-import type { NotificationFeed, NotificationVocabulary } from './types';
+import type {
+  NotificationCategoryValue,
+  NotificationFeed,
+  NotificationPreferences,
+  NotificationPreferencesInput,
+  NotificationVocabulary,
+} from './types';
 
-export async function fetchNotifications(unreadOnly = false): Promise<NotificationFeed> {
+export async function fetchNotifications(
+  unreadOnly = false,
+  category: NotificationCategoryValue | null = null,
+): Promise<NotificationFeed> {
   const { data } = await api.get<{ data: NotificationFeed }>('/notifications', {
-    params: unreadOnly ? { unread: '1' } : {},
+    params: {
+      ...(unreadOnly ? { unread: '1' } : {}),
+      ...(category === null ? {} : { category }),
+    },
   });
 
   return data.data;
@@ -27,8 +39,42 @@ export async function markNotificationRead(notificationId: string): Promise<Noti
   return data.data;
 }
 
+/** Following the link is reading it too; the server records both. */
+export async function markNotificationClicked(notificationId: string): Promise<NotificationFeed> {
+  const { data } = await api.post<{ data: NotificationFeed }>(
+    `/notifications/${notificationId}/clicked`,
+  );
+
+  return data.data;
+}
+
+export async function dismissNotification(notificationId: string): Promise<NotificationFeed> {
+  const { data } = await api.post<{ data: NotificationFeed }>(
+    `/notifications/${notificationId}/dismiss`,
+  );
+
+  return data.data;
+}
+
 export async function markAllNotificationsRead(): Promise<NotificationFeed> {
   const { data } = await api.post<{ data: NotificationFeed }>('/notifications/read-all');
+
+  return data.data;
+}
+
+export async function fetchNotificationPreferences(): Promise<NotificationPreferences> {
+  const { data } = await api.get<{ data: NotificationPreferences }>('/notifications/preferences');
+
+  return data.data;
+}
+
+export async function saveNotificationPreferences(
+  input: NotificationPreferencesInput,
+): Promise<NotificationPreferences> {
+  const { data } = await api.put<{ data: NotificationPreferences }>(
+    '/notifications/preferences',
+    input,
+  );
 
   return data.data;
 }

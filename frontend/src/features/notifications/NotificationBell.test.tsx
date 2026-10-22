@@ -29,7 +29,14 @@ vi.mock('./api', () => ({
 function feed(waiting: number, unread: number): NotificationFeed {
   return {
     notifications: [],
-    digest: { total: unread, unread, waiting, unread_by_kind: {} },
+    digest: {
+      total: unread,
+      unread,
+      waiting,
+      unread_by_kind: {},
+      unread_by_category: {} as never,
+      unread_by_severity: {} as never,
+    },
     is_live: false,
   };
 }

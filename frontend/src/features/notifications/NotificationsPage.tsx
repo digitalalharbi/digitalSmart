@@ -1,10 +1,8 @@
-import { BellOff, Link2Off, RadioTower, WifiOff } from 'lucide-react';
+import { BellOff, RadioTower, WifiOff } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
 import { useSession } from '@/features/auth';
 import { ApiError } from '@/shared/api/client';
-import { cn } from '@/shared/lib/cn';
 import { formatNumber } from '@/shared/lib/format';
 import { Alert } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
@@ -15,13 +13,28 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { PageHeader } from '@/shared/ui/page-header';
 import { isRealtimeConfigured } from '@/shared/realtime/echo';
+import { DigestSettings } from './DigestSettings';
+import { NotificationCard } from './NotificationCard';
+import type { NotificationCategoryValue } from './types';
 import {
+  useDismissMutation,
   useMarkAllReadMutation,
+  useMarkClickedMutation,
   useMarkReadMutation,
   useNotificationRealtime,
   useNotificationVocabularyQuery,
   useNotificationsQuery,
 } from './useNotifications';
+
+const TABS: NotificationCategoryValue[] = [
+  'performance',
+  'budget',
+  'creative',
+  'tracking',
+  'approvals',
+  'reports',
+  'work',
+];
 
 /**
  * The notification centre.
@@ -45,22 +58,25 @@ export function NotificationsPage() {
   const locale = i18n.language;
   const { user } = useSession();
   const [unreadOnly, setUnreadOnly] = useState(false);
+  const [tab, setTab] = useState<NotificationCategoryValue | null>(null);
 
-  const feed = useNotificationsQuery(unreadOnly);
+  const feed = useNotificationsQuery(unreadOnly, true, tab);
   const markRead = useMarkReadMutation();
+  const markClicked = useMarkClickedMutation();
+  const dismiss = useDismissMutation();
   const markAll = useMarkAllReadMutation();
 
   useNotificationRealtime(user?.active_workspace?.id ?? null, user?.id ?? null);
 
   const error = useMemo(() => {
-    for (const mutation of [markRead, markAll]) {
+    for (const mutation of [markRead, markAll, markClicked, dismiss]) {
       if (mutation.error instanceof ApiError && mutation.error.message !== '') {
         return mutation.error.message;
       }
     }
 
     return null;
-  }, [markRead, markAll]);
+  }, [markRead, markAll, markClicked, dismiss]);
 
   const digest = feed.data?.digest;
   /* Both sides. See the note above: either one being off means this page is polling. */
@@ -73,6 +89,28 @@ export function NotificationsPage() {
         description={t('notifications.subtitle')}
         filters={
           <div className="flex flex-wrap items-end justify-between gap-4">
+            {/* A tab is a stored column on the server, so its count and its list cannot disagree. */}
+            <ChoiceGroup label={t('notifications.tabs.label')}>
+              <div className="flex flex-wrap gap-2">
+                <Choice isSelected={tab === null} onSelect={() => setTab(null)}>
+                  {t('notifications.tabs.all')}
+                </Choice>
+                {TABS.map((category) => {
+                  const unread = digest?.unread_by_category?.[category] ?? 0;
+
+                  return (
+                    <Choice
+                      key={category}
+                      isSelected={tab === category}
+                      onSelect={() => setTab(category)}
+                    >
+                      {t(`notifications.tabs.${category}`)}
+                      {unread > 0 ? ` · ${formatNumber(unread, locale)}` : ''}
+                    </Choice>
+                  );
+                })}
+              </div>
+            </ChoiceGroup>
             <ChoiceGroup label={t('notifications.scope.show')}>
               <div className="flex flex-wrap gap-2">
                 <Choice isSelected={!unreadOnly} onSelect={() => setUnreadOnly(false)}>
@@ -105,13 +143,21 @@ export function NotificationsPage() {
         <Skeleton className="h-32 w-full" />
       ) : (
         <>
-          <section aria-label={t('notifications.counts')} className="grid gap-4 sm:grid-cols-3">
+          <section
+            aria-label={t('notifications.counts')}
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          >
             {[
               /*
                * Waiting first, and it is the figure the bell in the shell carries too. The other two are
                * context: how much is new, and how much there has ever been.
                */
               { key: 'waiting', value: digest.waiting, tone: 'warning' as const },
+              {
+                key: 'critical',
+                value: digest.unread_by_severity?.critical ?? 0,
+                tone: 'neutral' as const,
+              },
               { key: 'unread', value: digest.unread, tone: 'neutral' as const },
               { key: 'total', value: digest.total, tone: 'neutral' as const },
             ].map((figure) => (
@@ -153,82 +199,35 @@ export function NotificationsPage() {
           {feed.data.notifications.length === 0 ? (
             <EmptyState
               title={t(
-                unreadOnly ? 'notifications.empty.unreadTitle' : 'notifications.empty.title',
+                tab !== null
+                  ? 'notifications.empty.tabTitle'
+                  : unreadOnly
+                    ? 'notifications.empty.unreadTitle'
+                    : 'notifications.empty.title',
               )}
               description={t(
-                unreadOnly ? 'notifications.empty.unreadBody' : 'notifications.empty.body',
+                tab !== null
+                  ? 'notifications.empty.tabBody'
+                  : unreadOnly
+                    ? 'notifications.empty.unreadBody'
+                    : 'notifications.empty.body',
               )}
             />
           ) : (
             <ul aria-label={t('notifications.list')} className="flex flex-col gap-2">
               {feed.data.notifications.map((item) => (
                 <li key={item.id}>
-                  <article
-                    className={cn(
-                      'bg-surface border-line-subtle flex flex-col gap-2 rounded-2xl border p-4 shadow-xs',
-                      item.is_unread && 'border-accent/40',
-                    )}
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-content text-sm font-medium">{item.title}</span>
-                        <span className="text-content-tertiary text-xs">
-                          {item.kind_label}
-                          {item.actor_name === null ? '' : ` · ${item.actor_name}`}
-                        </span>
-                      </div>
-                      <span className="flex flex-wrap items-center gap-1.5">
-                        {item.is_waiting ? (
-                          <Badge tone="warning">{t('notifications.waiting')}</Badge>
-                        ) : item.is_unread ? (
-                          <Badge tone="neutral">{t('notifications.unread')}</Badge>
-                        ) : null}
-                      </span>
-                    </div>
-
-                    {item.body === null ? null : (
-                      <p className="text-content-secondary text-sm">{item.body}</p>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      {item.subject.exists ? (
-                        <Link
-                          to={item.subject.path}
-                          className="text-content-brand text-sm hover:underline"
-                          onClick={() => {
-                            if (item.is_unread) {
-                              /*
-                               * Opening the thing is reading the notification. Leaving it unread after somebody
-                               * has acted on it is how a badge comes to show a number nobody can clear.
-                               */
-                              markRead.mutate(item.id);
-                            }
-                          }}
-                        >
-                          {t('notifications.open', { subject: item.subject.type_label })}
-                        </Link>
-                      ) : (
-                        <span className="text-content-tertiary inline-flex items-center gap-1.5 text-sm">
-                          <Link2Off aria-hidden className="size-3.5" />
-                          {/*
-                            The sentence stays as it was announced; only the link goes. A notification about
-                            something that has since been deleted is still a record of having been told.
-                          */}
-                          {t('notifications.subjectGone', { subject: item.subject.type_label })}
-                        </span>
-                      )}
-
-                      {item.is_unread ? (
-                        <button
-                          type="button"
-                          onClick={() => markRead.mutate(item.id)}
-                          className="text-content-tertiary hover:text-content text-sm"
-                        >
-                          {t('notifications.markRead')}
-                        </button>
-                      ) : null}
-                    </div>
-                  </article>
+                  <NotificationCard
+                    item={item}
+                    /*
+                     * Opening the thing is reading the notification, and the server records the click too.
+                     * Leaving it unread after somebody has acted on it is how a badge comes to show a number
+                     * nobody can clear.
+                     */
+                    onOpen={() => markClicked.mutate(item.id)}
+                    onRead={() => markRead.mutate(item.id)}
+                    onDismiss={() => dismiss.mutate(item.id)}
+                  />
                 </li>
               ))}
             </ul>
@@ -242,6 +241,8 @@ export function NotificationsPage() {
             product can tell you is a list that drifts, and the drift is invisible precisely because it reads
             as an explanation rather than as data.
           */}
+          <DigestSettings />
+
           <KindDisclosure isEmpty={digest.total === 0} />
         </>
       )}

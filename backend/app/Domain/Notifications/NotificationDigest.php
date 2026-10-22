@@ -24,6 +24,10 @@ final readonly class NotificationDigest
         /** Unread, and of a kind the recipient is expected to do something about. */
         public int $waiting,
         public array $unreadByKind,
+        /** @var array<string, int> unread, by the tab a kind files under */
+        public array $unreadByCategory = [],
+        /** @var array<string, int> unread, by severity */
+        public array $unreadBySeverity = [],
     ) {}
 
     public function hasAnything(): bool

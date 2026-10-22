@@ -546,6 +546,14 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         ->name('notifications.read_all');
     Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])
         ->whereUuid('notification')->name('notifications.read');
+    Route::post('notifications/{notification}/clicked', [NotificationController::class, 'clicked'])
+        ->whereUuid('notification')->name('notifications.clicked');
+    Route::post('notifications/{notification}/dismiss', [NotificationController::class, 'dismiss'])
+        ->whereUuid('notification')->name('notifications.dismiss');
+    Route::get('notifications/preferences', [NotificationController::class, 'preferences'])
+        ->name('notifications.preferences');
+    Route::put('notifications/preferences', [NotificationController::class, 'savePreferences'])
+        ->name('notifications.preferences.save');
 
     /*
      * Approvals. The vocabulary publishes, per kind, whether approving a request makes the change — which today
