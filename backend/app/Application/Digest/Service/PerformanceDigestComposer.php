@@ -14,6 +14,7 @@ use App\Application\Attention\DTO\AttentionItem;
 use App\Application\Attention\Query\GetAttentionQueue;
 use App\Application\Budget\Query\GetBudgetControl;
 use App\Application\Digest\DTO\PerformanceDigestPeriod;
+use App\Application\Notifications\DTO\NotificationPreferences;
 use App\Application\Shared\Contract\ActorContext;
 use App\Domain\Access\Permission;
 use App\Domain\Analytics\Dimension;
@@ -65,10 +66,10 @@ final readonly class PerformanceDigestComposer
     /**
      * @return array<string, mixed>|null null when the reader has nothing to be told
      */
-    public function compose(string $workspaceId, PerformanceDigestPeriod $period): ?array
+    public function compose(string $workspaceId, PerformanceDigestPeriod $period, ?NotificationPreferences $preferences = null): ?array
     {
         $permissions = $this->actor->permissions();
-        $filters = $this->scope();
+        $filters = $this->scope($preferences);
 
         /* No figures to read — no analytics permission, or no project in sight — is no performance digest at all. */
         if ($filters === null) {
@@ -127,7 +128,11 @@ final readonly class PerformanceDigestComposer
         return $digest;
     }
 
-    private function scope(): ?AnalyticsFilters
+    /**
+     * The reader's scope, narrowed by what they asked for. A preference can only narrow: a project they chose that
+     * they cannot see is dropped, and a scope that leaves nothing is no digest.
+     */
+    private function scope(?NotificationPreferences $preferences): ?AnalyticsFilters
     {
         if (! $this->actor->permissions()->has(Permission::AnalyticsView)) {
             return null;
@@ -139,7 +144,18 @@ final readonly class PerformanceDigestComposer
             return null;
         }
 
-        return new AnalyticsFilters(projectIds: $visible ?? []);
+        $projects = $visible ?? [];
+        $chosen = $preferences?->projectIds;
+
+        if ($chosen !== null) {
+            $projects = $visible === null ? $chosen : array_values(array_intersect($chosen, $visible));
+
+            if ($projects === []) {
+                return null;
+            }
+        }
+
+        return new AnalyticsFilters(projectIds: $projects, clientId: $preferences?->clientId);
     }
 
     /**

@@ -2748,13 +2748,16 @@
       "waiting": "Waiting on you",
       "waitingNote": "Needs you",
       "unread": "Unread",
-      "total": "All time"
+      "total": "All time",
+      "critical": "Critical"
     },
     "empty": {
       "title": "Nothing yet",
       "body": "You have not been told anything in this workspace.",
       "unreadTitle": "Nothing unread",
-      "unreadBody": "You have read everything you were told."
+      "unreadBody": "You have read everything you were told.",
+      "tabTitle": "Nothing in this tab",
+      "tabBody": "Nothing you were told files under this tab."
     },
     "bell": {
       "quiet": "Notifications. Nothing waiting on you.",
@@ -2767,6 +2770,51 @@
       "title": "What puts something here",
       "rule": "A notification reaches only the people whose role already lets them see the thing it is about — so two people on the same workspace are told different things, by design.",
       "needsAction": "Waits on you"
+    },
+    "tabs": {
+      "label": "Tab",
+      "all": "All",
+      "performance": "Performance",
+      "budget": "Budget",
+      "creative": "Creative",
+      "tracking": "Tracking",
+      "approvals": "Approvals",
+      "reports": "Reports",
+      "work": "Work"
+    },
+    "severity": {
+      "info": "Info",
+      "success": "Good news",
+      "attention": "Needs attention",
+      "critical": "Critical"
+    },
+    "dismiss": "Dismiss",
+    "settings": {
+      "title": "Digest settings",
+      "digests": "Digests",
+      "cadence": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      },
+      "channels": "Where",
+      "channelsHint": "In the app always works. Email and WhatsApp are recorded now and start the day a sender is connected — nothing is marked sent that was not.",
+      "channel": {
+        "in_app": "In the app",
+        "email": "Email",
+        "whatsapp": "WhatsApp"
+      },
+      "awaitingCredentials": "Awaiting credentials",
+      "timezone": "Time zone",
+      "workspaceZone": "Follow the workspace",
+      "hour": "Send at",
+      "client": "Only this client",
+      "clear": "Clear",
+      "chosenClient": "Chosen client",
+      "muted": "Muted tabs",
+      "mutedHint": "A muted tab is not sent to you. It cannot widen what you are shown — only switch it off.",
+      "saved": "Saved.",
+      "save": "Save settings"
     }
   },
   "requests": {

@@ -103,6 +103,9 @@ export type NotificationDigest = {
   /** Unread and of a kind the reader is expected to act on. */
   waiting: number;
   unread_by_kind: Record<string, number>;
+  /** Unread by tab and by severity — grouped server-side so the badges agree with the list. */
+  unread_by_category: Record<NotificationCategoryValue, number>;
+  unread_by_severity: Record<NotificationSeverityValue, number>;
 };
 
 export type NotificationFeed = {
@@ -115,10 +118,38 @@ export type NotificationKindInfo = {
   kind: NotificationKindValue;
   label: string;
   needs_action: boolean;
+  category?: NotificationCategoryValue;
   requires: string;
   subject: NotificationSubjectValue;
 };
 
 export type NotificationVocabulary = {
   kinds: NotificationKindInfo[];
+  categories?: { category: NotificationCategoryValue; label: string }[];
+  severities?: { severity: NotificationSeverityValue; label: string; rank: number }[];
 };
+
+export type DigestChannelValue = 'in_app' | 'email' | 'whatsapp';
+
+/**
+ * What one person asked for. `timezone` null follows the workspace; `project_ids` null means every project they can
+ * see. `channel_availability` is the server's own word on what each channel can do today — nothing is promised.
+ */
+export type NotificationPreferences = {
+  daily: boolean;
+  weekly: boolean;
+  monthly: boolean;
+  channels: DigestChannelValue[];
+  timezone: string | null;
+  hour: number;
+  client_id: string | null;
+  project_ids: string[] | null;
+  muted_categories: NotificationCategoryValue[];
+  channel_availability: {
+    channel: DigestChannelValue;
+    label: string;
+    availability: 'available' | 'awaiting_credentials';
+  }[];
+};
+
+export type NotificationPreferencesInput = Omit<NotificationPreferences, 'channel_availability'>;

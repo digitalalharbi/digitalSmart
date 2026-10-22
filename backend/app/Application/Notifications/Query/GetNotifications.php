@@ -8,6 +8,7 @@ use App\Application\Notifications\Contract\NotificationBroadcaster;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\DTO\NotificationFeed;
 use App\Application\Shared\Contract\ActorContext;
+use App\Domain\Notifications\NotificationCategory;
 
 /**
  * One person's notifications.
@@ -28,7 +29,7 @@ final readonly class GetNotifications
         private NotificationBroadcaster $broadcaster,
     ) {}
 
-    public function __invoke(bool $unreadOnly = false, ?int $limit = null): NotificationFeed
+    public function __invoke(bool $unreadOnly = false, ?int $limit = null, ?NotificationCategory $category = null): NotificationFeed
     {
         $workspaceId = $this->actor->workspaceId()->value;
         $userId = $this->actor->userId()->value;
@@ -39,6 +40,7 @@ final readonly class GetNotifications
                 $userId,
                 $unreadOnly,
                 max(1, min($limit ?? self::LIMIT, 200)),
+                $category,
             ),
             digest: $this->store->digest($workspaceId, $userId),
             /*

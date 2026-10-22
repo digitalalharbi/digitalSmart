@@ -3,11 +3,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/query-keys';
 import { connectRealtime, isRealtimeConfigured } from '@/shared/realtime/echo';
 import {
+  dismissNotification,
+  fetchNotificationPreferences,
   fetchNotificationVocabulary,
   fetchNotifications,
   markAllNotificationsRead,
+  markNotificationClicked,
   markNotificationRead,
+  saveNotificationPreferences,
 } from './api';
+import type { NotificationCategoryValue } from './types';
 
 /**
  * One person's notifications.
@@ -17,10 +22,14 @@ import {
  * stops trusting the badge. Sixty seconds when polling: long enough not to be chatty, short enough that a bell
  * is not an hour stale.
  */
-export function useNotificationsQuery(unreadOnly = false, enabled = true) {
+export function useNotificationsQuery(
+  unreadOnly = false,
+  enabled = true,
+  category: NotificationCategoryValue | null = null,
+) {
   return useQuery({
-    queryKey: queryKeys.notifications.feed(unreadOnly),
-    queryFn: () => fetchNotifications(unreadOnly),
+    queryKey: queryKeys.notifications.feed(unreadOnly, category),
+    queryFn: () => fetchNotifications(unreadOnly, category),
     enabled,
     staleTime: 15_000,
     ...(isRealtimeConfigured() ? {} : { refetchInterval: 60_000 }),
@@ -99,4 +108,32 @@ export function useMarkReadMutation() {
 
 export function useMarkAllReadMutation() {
   return useNotificationMutation(() => markAllNotificationsRead());
+}
+
+export function useMarkClickedMutation() {
+  return useNotificationMutation(markNotificationClicked);
+}
+
+export function useDismissMutation() {
+  return useNotificationMutation(dismissNotification);
+}
+
+export function useNotificationPreferencesQuery(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.notifications.preferences(),
+    queryFn: fetchNotificationPreferences,
+    enabled,
+    staleTime: 60_000,
+  });
+}
+
+export function useSavePreferencesMutation() {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: saveNotificationPreferences,
+    onSuccess: (saved) => {
+      client.setQueryData(queryKeys.notifications.preferences(), saved);
+    },
+  });
 }

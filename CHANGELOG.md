@@ -4,6 +4,18 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Notification centre, digest settings and history
+
+### Added
+- **Tabs that are a column**: `?category=` on the feed; unread counts by tab and by severity grouped server-side.
+- **History**: clicked and dismissed, each the owner's own; a dismissed row leaves the list and the counts and keeps
+  its record.
+- **Per-person digest settings**: daily / weekly / monthly, channels (in-app available; email and WhatsApp recorded
+  and marked `awaiting_credentials`), time zone or the workspace's, hour, client scope, muted tabs. The dispatcher and
+  `Announce` honour them; a preference can only narrow or switch off.
+- **The centre, rebuilt**: cards with an icon per tab, a severity pill, the payload's figures (before → after, change,
+  spend / ROAS / CPA / results), the scope line, one action, dismiss; a digest-settings panel.
+
 ## Performance notifications: severity by rule, a tab per kind, no spam, and the performance digests
 
 ### Added

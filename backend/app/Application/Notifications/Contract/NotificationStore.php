@@ -6,6 +6,7 @@ namespace App\Application\Notifications\Contract;
 
 use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Notifications\DTO\NotificationView;
+use App\Domain\Notifications\NotificationCategory;
 use App\Domain\Notifications\NotificationDigest;
 use App\Domain\Notifications\NotificationSeverity;
 use DateTimeImmutable;
@@ -37,7 +38,7 @@ interface NotificationStore
      *
      * @return list<NotificationView>
      */
-    public function forUser(string $workspaceId, string $userId, bool $unreadOnly, int $limit): array;
+    public function forUser(string $workspaceId, string $userId, bool $unreadOnly, int $limit, ?NotificationCategory $category = null): array;
 
     public function digest(string $workspaceId, string $userId): NotificationDigest;
 
@@ -51,4 +52,10 @@ interface NotificationStore
 
     /** Mark everything unread as read, and return how many were changed. */
     public function markAllRead(string $workspaceId, string $userId): int;
+
+    /** Record a click-through (and a read), scoped to the owner. False when the row is not that person's. */
+    public function markClicked(string $workspaceId, string $userId, string $notificationId): bool;
+
+    /** Dismiss, scoped to the owner. The row stays; the list and the counts no longer carry it. */
+    public function dismiss(string $workspaceId, string $userId, string $notificationId): bool;
 }

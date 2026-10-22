@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Interface\Http\Resource\Notifications;
 
 use App\Application\Notifications\DTO\NotificationFeed;
+use App\Application\Notifications\DTO\NotificationPreferences;
 use App\Application\Notifications\DTO\NotificationView;
+use App\Domain\Notifications\DigestChannel;
 use App\Domain\Notifications\NotificationCategory;
 use App\Domain\Notifications\NotificationKind;
 use App\Domain\Notifications\NotificationSeverity;
@@ -32,6 +34,8 @@ final readonly class NotificationResource
                  */
                 'waiting' => $digest->waiting,
                 'unread_by_kind' => $digest->unreadByKind,
+                'unread_by_category' => $digest->unreadByCategory,
+                'unread_by_severity' => $digest->unreadBySeverity,
             ],
             /*
              * Whether this session is being pushed to or is polling. Published rather than assumed: a page that
@@ -79,6 +83,28 @@ final readonly class NotificationResource
              * The recipient is deliberately absent. A reader is always the recipient, and a field nobody needs
              * in a payload is a field somebody eventually relies on.
              */
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public static function preferences(NotificationPreferences $preferences): array
+    {
+        return [
+            'daily' => $preferences->daily,
+            'weekly' => $preferences->weekly,
+            'monthly' => $preferences->monthly,
+            'channels' => array_map(static fn (DigestChannel $c): string => $c->value, $preferences->channels),
+            'timezone' => $preferences->timezone,
+            'hour' => $preferences->hour,
+            'client_id' => $preferences->clientId,
+            'project_ids' => $preferences->projectIds,
+            'muted_categories' => array_map(static fn (NotificationCategory $c): string => $c->value, $preferences->mutedCategories),
+            /* What each channel can do today, in the product's own words: nothing is promised that cannot be sent. */
+            'channel_availability' => array_map(static fn (DigestChannel $c): array => [
+                'channel' => $c->value,
+                'label' => $c->label(),
+                'availability' => $c->availability(),
+            ], DigestChannel::cases()),
         ];
     }
 

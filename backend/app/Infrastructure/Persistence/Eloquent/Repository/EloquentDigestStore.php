@@ -50,6 +50,13 @@ final readonly class EloquentDigestStore implements DigestStore
             ->exists();
     }
 
+    public function existsFor(string $workspaceId, string $userId, DigestKind $kind, DateTimeImmutable $on): bool
+    {
+        return DB::table('digests')
+            ->where(['workspace_id' => $workspaceId, 'user_id' => $userId, 'kind' => $kind->value, 'period_on' => $on->format('Y-m-d')])
+            ->exists();
+    }
+
     public function put(string $workspaceId, string $userId, DigestKind $kind, DateTimeImmutable $on, int $total, array $summary): ?string
     {
         $key = ['workspace_id' => $workspaceId, 'user_id' => $userId, 'kind' => $kind->value, 'period_on' => $on->format('Y-m-d')];

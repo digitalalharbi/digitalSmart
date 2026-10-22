@@ -1,9 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { NotificationsPage } from './NotificationsPage';
-import type { NotificationFeed, NotificationItem, NotificationKindInfo } from './types';
+import type {
+  NotificationFeed,
+  NotificationItem,
+  NotificationKindInfo,
+  NotificationPreferences,
+  NotificationPreferencesInput,
+} from './types';
 
 vi.mock('@/features/auth', () => ({
   useSession: () => ({
@@ -33,13 +39,54 @@ const state = vi.hoisted(() => ({
   marked: null as string | null,
   clearedAll: false,
   lastUnreadOnly: null as boolean | null,
+  lastCategory: null as string | null,
+  clicked: null as string | null,
+  dismissed: null as string | null,
+  savedPreferences: null as NotificationPreferencesInput | null,
+  preferences: {
+    daily: true,
+    weekly: true,
+    monthly: true,
+    channels: ['in_app'],
+    timezone: null,
+    hour: 9,
+    client_id: null,
+    project_ids: null,
+    muted_categories: [],
+    channel_availability: [
+      { channel: 'in_app', label: 'In the app', availability: 'available' },
+      { channel: 'email', label: 'Email', availability: 'awaiting_credentials' },
+      { channel: 'whatsapp', label: 'WhatsApp', availability: 'awaiting_credentials' },
+    ],
+  } as unknown as NotificationPreferences,
+}));
+
+vi.mock('@/features/clients', () => ({
+  useClientsQuery: () => ({ data: { data: [] }, isFetching: false }),
 }));
 
 vi.mock('./api', () => ({
-  fetchNotifications: (unreadOnly: boolean) => {
+  fetchNotifications: (unreadOnly: boolean, category: string | null = null) => {
     state.lastUnreadOnly = unreadOnly;
+    state.lastCategory = category;
 
     return Promise.resolve(state.feed);
+  },
+  markNotificationClicked: (id: string) => {
+    state.clicked = id;
+
+    return Promise.resolve(state.feed);
+  },
+  dismissNotification: (id: string) => {
+    state.dismissed = id;
+
+    return Promise.resolve(state.feed);
+  },
+  fetchNotificationPreferences: () => Promise.resolve(state.preferences),
+  saveNotificationPreferences: (input: NotificationPreferencesInput) => {
+    state.savedPreferences = input;
+
+    return Promise.resolve({ ...state.preferences, ...input });
   },
   fetchNotificationVocabulary: () => Promise.resolve({ kinds: state.kinds }),
   markNotificationRead: (id: string) => {
@@ -94,6 +141,8 @@ function feed(overrides: Partial<NotificationFeed> = {}): NotificationFeed {
       unread: 2,
       waiting: 1,
       unread_by_kind: { approval_requested: 1, approval_decided: 1 },
+      unread_by_category: {} as never,
+      unread_by_severity: {} as never,
     },
     is_live: false,
     ...overrides,
@@ -186,7 +235,7 @@ describe('the notification centre', function () {
      * Opening the thing is reading the notification. Leaving it unread after somebody has acted on it is how a
      * badge comes to show a number nobody can clear.
      */
-    expect(state.marked).toBe('notification-1');
+    expect(state.clicked).toBe('notification-1');
   });
 
   it('says the thing it points at has been deleted rather than linking to nothing', async () => {
@@ -261,7 +310,14 @@ describe('the notification centre', function () {
 
   it('offers no clear-all when nothing is unread', async () => {
     state.feed = feed({
-      digest: { total: 3, unread: 0, waiting: 0, unread_by_kind: {} },
+      digest: {
+        total: 3,
+        unread: 0,
+        waiting: 0,
+        unread_by_kind: {},
+        unread_by_category: {} as never,
+        unread_by_severity: {} as never,
+      },
       notifications: [
         item({ is_unread: false, is_waiting: false, read_at: '2026-10-07T10:00:00+00:00' }),
       ],
@@ -282,7 +338,14 @@ describe('the notification centre', function () {
   it('says what would put something here, from the server’s own vocabulary', async () => {
     state.feed = feed({
       notifications: [],
-      digest: { total: 0, unread: 0, waiting: 0, unread_by_kind: {} },
+      digest: {
+        total: 0,
+        unread: 0,
+        waiting: 0,
+        unread_by_kind: {},
+        unread_by_category: {} as never,
+        unread_by_severity: {} as never,
+      },
     });
 
     await renderWithProviders(<NotificationsPage />);
@@ -317,5 +380,75 @@ describe('the notification centre', function () {
 
     await screen.findByRole('region', { name: 'Notification summary' });
     expect(screen.queryByText('What puts something here')).not.toBeInTheDocument();
+  });
+  it('narrows to a tab by asking the server for that category, and counts it on the tab', async () => {
+    state.feed = feed({ notifications: [item()] });
+    state.feed.digest.unread_by_category = { approvals: 1 } as never;
+    await renderWithProviders(<NotificationsPage />);
+    await screen.findByRole('region', { name: 'Notification summary' });
+
+    await userEvent.click(screen.getByRole('button', { name: /^Approvals · 1$/ }));
+
+    await waitFor(() => expect(state.lastCategory).toBe('approvals'));
+  });
+
+  it('draws an alert as figures and a severity, not a paragraph', async () => {
+    state.feed = feed({
+      notifications: [
+        item({
+          id: 'alert-1',
+          kind: 'roas_drop',
+          kind_label: 'ROAS dropped',
+          category: 'performance',
+          category_label: 'Performance',
+          severity: 'critical',
+          severity_label: 'Critical',
+          title: 'ROAS dropped on Eid film',
+          body: null,
+          payload: { before: 3.8, after: 2.9, change_ratio: -0.24, client: 'Razzah Avenue' },
+          subject: {
+            type: 'campaign',
+            type_label: 'Campaign',
+            id: 'c-1',
+            label: 'Eid film',
+            exists: true,
+            path: '/campaigns',
+          },
+        }),
+      ],
+    });
+    await renderWithProviders(<NotificationsPage />);
+    const list = await screen.findByRole('list', { name: 'Your notifications' });
+
+    expect(within(list).getByText('3.8 → 2.9')).toBeInTheDocument();
+    expect(within(list).getByText('-24%')).toBeInTheDocument();
+    expect(within(list).getByText('Critical')).toBeInTheDocument();
+    expect(within(list).getByText(/Razzah Avenue/)).toBeInTheDocument();
+    expect(within(list).getByRole('link', { name: 'Open the Campaign' })).toBeInTheDocument();
+  });
+
+  it('puts a notification away', async () => {
+    state.feed = feed({ notifications: [item()] });
+    await renderWithProviders(<NotificationsPage />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /^Dismiss/ }));
+
+    await waitFor(() => expect(state.dismissed).toBe('notification-1'));
+  });
+
+  it('saves digest settings, and says which channels are still waiting on a credential', async () => {
+    state.feed = feed({ notifications: [] });
+    await renderWithProviders(<NotificationsPage />);
+    await screen.findByRole('region', { name: 'Notification summary' });
+
+    await userEvent.click(await screen.findByText('Digest settings'));
+    expect(screen.getAllByText('Awaiting credentials')).toHaveLength(2);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Weekly' }));
+    await userEvent.selectOptions(screen.getByLabelText('Send at'), '7');
+    await userEvent.click(screen.getByRole('button', { name: 'Save settings' }));
+
+    await waitFor(() => expect(state.savedPreferences).toMatchObject({ weekly: false, hour: 7 }));
+    expect(await screen.findByText('Saved.')).toBeInTheDocument();
   });
 });

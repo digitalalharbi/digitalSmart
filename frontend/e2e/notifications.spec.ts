@@ -113,4 +113,46 @@ test.describe('notifications', () => {
       timeout: 30_000,
     });
   });
+
+  test('has a tab per category and digest settings, and fits a phone in Arabic', async ({
+    page,
+  }) => {
+    await openCentre(page);
+    await expect(page.getByRole('heading', { level: 1, name: 'Notifications' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(page.getByRole('region', { name: 'Notification summary' })).toBeVisible({
+      timeout: 30_000,
+    });
+
+    const tabs = page.getByRole('group', { name: 'Tab' });
+    await expect(tabs.getByRole('button', { name: /^Performance/ })).toBeVisible();
+    await expect(tabs.getByRole('button', { name: /^Budget/ })).toBeVisible();
+    await expect(tabs.getByRole('button', { name: /^Creative/ })).toBeVisible();
+    await tabs.getByRole('button', { name: /^Approvals/ }).click();
+    await expect(page).toHaveURL(/notifications/);
+
+    await page.getByText('Digest settings').click();
+    await expect(page.getByRole('button', { name: 'Save settings' })).toBeVisible();
+    /* Email and WhatsApp are offered and say plainly they are waiting on a credential. Nothing is faked. */
+    await expect(page.getByText('Awaiting credentials').first()).toBeVisible();
+
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'digitalsmart.ui',
+        JSON.stringify({ state: { theme: 'light', locale: 'ar' }, version: 1 }),
+      );
+    });
+    await page.reload();
+    await expect(page.getByRole('heading', { level: 1, name: 'الإشعارات' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBeLessThanOrEqual(0);
+  });
 });

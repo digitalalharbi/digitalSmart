@@ -757,6 +757,16 @@ nothing, which is the truth.
 monthly on the local first; `digests.period_on` is the last day of the period, so a period is written once however
 many times the hour comes round. The older attention digests keep their UTC schedule for now.
 
+**The centre, settings and history (PR B).** `GET /api/notifications?category=` filters by tab; the feed's digest
+carries `unread_by_category` and `unread_by_severity`, grouped in the same query as the list. `POST
+…/{id}/clicked` records a click-through (and a read); `POST …/{id}/dismiss` puts a row away — out of the list and
+the counts, never out of the record — and both answer *not found* for somebody else's row. `GET` / `PUT
+/api/notifications/preferences` hold one person's choices: which digests, which channels (each with the product's own
+word on whether it can deliver today), a time zone (or the workspace's), an hour, a client scope, and muted tabs.
+`Announce` drops a recipient who muted the tab; the dispatcher reads each person's zone, hour and cadence; the
+composer narrows to the chosen client or projects and never widens. The page is tabs, count tiles, cards (icon by tab,
+severity pill, the payload's figures, one action, dismiss) and the settings panel.
+
 **History.** A row now records generated (`created_at`), read, clicked and dismissed; sent and failed belong to the
 delivery rows a channel adapter will write. Email and WhatsApp delivery do not exist yet: there is no sender
 identity and no provider credential, so nothing is marked sent that was not.

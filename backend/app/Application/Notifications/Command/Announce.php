@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Notifications\Command;
 
 use App\Application\Notifications\Contract\NotificationBroadcaster;
+use App\Application\Notifications\Contract\NotificationPreferenceStore;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\Contract\RecipientResolver;
 use App\Application\Notifications\DTO\NotificationDraft;
@@ -41,6 +42,7 @@ final readonly class Announce
         private NotificationBroadcaster $broadcaster,
         private ActorContext $actor,
         private Clock $clock,
+        private NotificationPreferenceStore $preferences,
     ) {}
 
     /** @return list<NotificationView> what was written, which may legitimately be nothing */
@@ -71,6 +73,10 @@ final readonly class Announce
                     return [];
                 }
             }
+
+            /* Somebody who muted this tab asked not to be told; the permission check above still decided who *could* be. */
+            $muted = $this->preferences->mutedAmong($workspaceId, $draft->kind->category(), $userIds);
+            $userIds = array_values(array_diff($userIds, $muted));
 
             if ($userIds === []) {
                 /*

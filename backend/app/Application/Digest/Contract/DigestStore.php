@@ -22,6 +22,9 @@ interface DigestStore
     /** Whether any digest of this kind for this period has been written in the workspace — the cheap "already done" check. */
     public function exists(string $workspaceId, DigestKind $kind, DateTimeImmutable $on): bool;
 
+    /** Whether this person already has this period's digest — the per-recipient "already done" check. */
+    public function existsFor(string $workspaceId, string $userId, DigestKind $kind, DateTimeImmutable $on): bool;
+
     /**
      * Idempotent per person, kind and day.
      *
