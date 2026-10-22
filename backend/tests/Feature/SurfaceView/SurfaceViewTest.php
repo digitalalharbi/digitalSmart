@@ -89,3 +89,23 @@ it('answers an unknown surface plainly', function (): void {
 
     $this->actingAs($s->owner)->getJson('/api/views/nonsense')->assertNotFound()->assertJsonPath('code', 'unknown_surface');
 });
+
+/*
+ * A view is a link that was kept, so every filter the Campaigns page puts in its address must survive being saved —
+ * otherwise "Ending soon" or "Budget risk" can be shown but not kept, and a saved view quietly opens wider than it was.
+ */
+it('keeps every filter the campaigns page puts in its address', function (): void {
+    ['s' => $s] = viewWorld();
+    $filters = [
+        'client' => 'c~Client', 'project' => 'p~Project', 'account' => 'a~Account', 'tag' => 't~Tag',
+        'mine' => '1', 'days' => '14', 'provider' => 'meta', 'status' => 'active', 'objective' => 'leads',
+        'health' => 'critical', 'ends' => '7', 'budget' => 'high', 'zero' => '1', 'q' => 'ramadan',
+        'sort' => 'spend', 'dir' => 'desc', 'view' => 'cards',
+    ];
+
+    $kept = $this->actingAs($s->owner)->postJson('/api/views/campaign_control', [
+        'name' => 'Everything', 'filters' => $filters,
+    ])->assertCreated()->json('data.filters');
+
+    expect($kept)->toEqual($filters);
+});

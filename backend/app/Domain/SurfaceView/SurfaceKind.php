@@ -32,7 +32,7 @@ enum SurfaceKind: string
     {
         return match ($this) {
             /* The names the page's own URL uses, so a saved view *is* a link and opens by setting them. */
-            self::CampaignControl => ['client', 'project', 'tag', 'provider', 'status', 'objective', 'health', 'q', 'sort', 'dir', 'view'],
+            self::CampaignControl => ['client', 'project', 'account', 'tag', 'mine', 'days', 'provider', 'status', 'objective', 'health', 'ends', 'budget', 'zero', 'q', 'sort', 'dir', 'view'],
             self::BudgetControl => ['risk', 'client', 'project', 'q'],
             self::Leads => ['scope', 'client_id', 'project_id', 'owner_id', 'source_kind', 'campaign', 'days'],
         };
