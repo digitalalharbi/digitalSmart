@@ -123,7 +123,30 @@ final readonly class ReportCsv
             return $lines;
         }
 
-        if ($section->kind === SectionKind::Scorecard && $section->totals !== null) {
+        if ($section->kind === SectionKind::Attribution && $section->attribution !== null) {
+            $lines[] = self::row(['Figure', 'Value']);
+
+            foreach ($section->attribution->facts() as $fact) {
+                $lines[] = self::row([$fact['label'], $fact['text'] ?? 'Not available']);
+            }
+
+            $lines[] = self::row(['Campaign', 'Conversions', 'Revenue (major units)', 'Currency', 'Evidence']);
+
+            foreach ($section->attribution->rows as $row) {
+                $lines[] = self::row([
+                    $row->label,
+                    (string) $row->conversions,
+                    /* Said rather than blank: an empty cell is summed as zero by whoever opens the file next. */
+                    $row->revenueMinor === null ? 'Not available' : number_format($row->revenueMinor / 100, 2, '.', ''),
+                    $row->currency ?? '',
+                    $row->evidence->value,
+                ]);
+            }
+
+            return $lines;
+        }
+
+        if (($section->kind === SectionKind::Scorecard || $section->kind === SectionKind::Traffic) && $section->totals !== null) {
             $lines[] = self::row(['Metric', 'Value', 'Comparison', 'Change']);
 
             foreach ($section->metrics as $metric) {

@@ -8,8 +8,11 @@ import {
   Check,
   LayoutDashboard,
   LineChart,
+  Megaphone,
+  MousePointerClick,
   Plus,
   ShoppingBag,
+  Target,
   UserCheck,
   Users,
   X,
@@ -41,6 +44,7 @@ type Step = (typeof STEPS)[number];
 const ICON: Record<PresetId, LucideIcon> = {
   executive: LayoutDashboard,
   performance: Activity,
+  campaign: Megaphone,
   lead_generation: UserCheck,
   ecommerce: ShoppingBag,
   weekly: CalendarDays,
@@ -57,6 +61,8 @@ const KIND_ICON: Record<SectionKindValue, LucideIcon> = {
   store: ShoppingBag,
   lead: Users,
   creative: Images,
+  traffic: MousePointerClick,
+  attribution: Target,
 };
 
 export type WizardResult = {
@@ -69,6 +75,8 @@ export type WizardResult = {
   comparison: ComparisonModeValue;
   audience: ReportAudienceValue;
   internalNote: string | null;
+  /** The campaigns this report is about; empty for one that reads everything the client runs. */
+  campaignIds: string[];
   sections: SectionDraft[];
 };
 
@@ -81,6 +89,10 @@ type WizardProps = {
   error: string | null;
   onSubmit: (input: WizardResult) => void;
   onCancel: () => void;
+  /** Set when the wizard was opened from a campaign: the report will be about it and nothing else. */
+  campaign?: { id: string; label: string } | null;
+  /** The client that campaign belongs to, so the report is for them from the first step. */
+  initialClient?: { id: string; label: string } | null;
 };
 
 /**
@@ -106,18 +118,40 @@ export function ReportWizard({
   error,
   onSubmit,
   onCancel,
+  campaign = null,
+  initialClient = null,
 }: WizardProps) {
   const { t } = useTranslation();
   const root = useRef<HTMLElement | null>(null);
-  const [step, setStep] = useState<Step>('client');
-  const [client, setClient] = useState<{ id: string; label: string } | null>(null);
-  const [presetId, setPresetId] = useState<PresetId | null>(null);
-  const [window, setWindow] = useState<ReportWindowValue>('last_30_days');
+  /*
+   * Opened from a campaign, the wizard starts from the campaign report: the page waits for the server's vocabulary
+   * before showing it, so the preset can be built here, once, rather than applied afterwards.
+   */
+  const campaignPreset =
+    campaign !== null && vocabulary !== undefined
+      ? (PRESETS.find((entry) => entry.id === 'campaign') ?? null)
+      : null;
+  const [step, setStep] = useState<Step>(campaignPreset === null ? 'client' : 'type');
+  const [client, setClient] = useState<{ id: string; label: string } | null>(initialClient);
+  const [presetId, setPresetId] = useState<PresetId | null>(campaignPreset?.id ?? null);
+  const [window, setWindow] = useState<ReportWindowValue>(campaignPreset?.window ?? 'last_30_days');
   const [customFrom, setCustomFrom] = useState('');
   const [customUntil, setCustomUntil] = useState('');
-  const [comparison, setComparison] = useState<ComparisonModeValue>('previous_period');
-  const [sections, setSections] = useState<SectionDraft[]>([]);
-  const [name, setName] = useState('');
+  const [comparison, setComparison] = useState<ComparisonModeValue>(
+    campaignPreset?.comparison ?? 'previous_period',
+  );
+  const [sections, setSections] = useState<SectionDraft[]>(() =>
+    campaignPreset === null || vocabulary === undefined
+      ? []
+      : presetSections(campaignPreset, vocabulary, initialClient !== null),
+  );
+  const [name, setName] = useState(() =>
+    campaignPreset === null || campaign === null
+      ? ''
+      : [campaign.label, t('reports.wizard.presets.campaign.name')]
+          .filter((part) => part !== '')
+          .join(' · '),
+  );
   const [audience, setAudience] = useState<ReportAudienceValue | null>(null);
 
   /* The wizard opens below the page's own header and briefs; bring it to the top of the screen once, on opening. */
@@ -131,6 +165,10 @@ export function ReportWizard({
   const kinds = vocabulary?.sections ?? [];
   const needsDates = windows.find((entry) => entry.window === window)?.needs_dates ?? false;
   const preset = PRESETS.find((entry) => entry.id === presetId) ?? null;
+  /* Attributed revenue is internal: a report holding it cannot be written for a client, and the last step says so. */
+  const internalOnly = sections.some(
+    (section) => kinds.find((entry) => entry.kind === section.kind)?.is_client_safe === false,
+  );
 
   const choose = (next: Preset): void => {
     if (vocabulary === undefined) {
@@ -140,9 +178,9 @@ export function ReportWizard({
     setPresetId(next.id);
     setWindow(next.window);
     setComparison(next.comparison);
-    setSections(presetSections(next, vocabulary));
+    setSections(presetSections(next, vocabulary, hasClient));
     setName(
-      [client?.label, t(`reports.wizard.presets.${next.id}.name`)]
+      [campaign?.label ?? client?.label, t(`reports.wizard.presets.${next.id}.name`)]
         .filter((part): part is string => part !== undefined && part !== '')
         .join(' · '),
     );
@@ -174,7 +212,7 @@ export function ReportWizard({
     period: !needsDates || (customFrom !== '' && customUntil !== ''),
     content: sections.length > 0,
     preview: name.trim() !== '',
-    share: audience !== null,
+    share: audience !== null && !(internalOnly && audience === 'client_safe'),
   };
 
   const addable: {
@@ -189,6 +227,8 @@ export function ReportWizard({
     { key: 'campaigns', kind: 'breakdown', dimension: 'campaign', needsClient: false },
     { key: 'store', kind: 'store', needsClient: true },
     { key: 'lead', kind: 'lead', needsClient: true },
+    { key: 'traffic', kind: 'traffic', needsClient: false },
+    { key: 'attribution', kind: 'attribution', needsClient: true },
   ];
 
   return (
@@ -225,6 +265,9 @@ export function ReportWizard({
 
       {step === 'client' ? (
         <div className="flex flex-col gap-3">
+          {campaign === null ? null : (
+            <Alert tone="info">{t('reports.wizard.aboutCampaign', { name: campaign.label })}</Alert>
+          )}
           <EntityPicker
             label={t('reports.builder.client')}
             clearLabel={t('actions.clear')}
@@ -428,6 +471,7 @@ export function ReportWizard({
               <button
                 type="button"
                 aria-pressed={audience === value}
+                disabled={value === 'client_safe' && internalOnly}
                 onClick={() => setAudience(value)}
                 className={cn(
                   'border-line-subtle flex h-full w-full flex-col gap-2 rounded-2xl border p-4 text-start',
@@ -441,7 +485,9 @@ export function ReportWizard({
                   {t(`reports.wizard.audience.${value}.name`)}
                 </span>
                 <span className="text-content-secondary text-xs">
-                  {t(`reports.wizard.audience.${value}.line`)}
+                  {value === 'client_safe' && internalOnly
+                    ? t('reports.wizard.internalOnly')
+                    : t(`reports.wizard.audience.${value}.line`)}
                 </span>
               </button>
             </li>
@@ -479,6 +525,7 @@ export function ReportWizard({
                 comparison,
                 audience,
                 internalNote: null,
+                campaignIds: campaign === null ? [] : [campaign.id],
                 sections,
               });
             }}
@@ -535,7 +582,7 @@ function Mock({ kind }: { kind: SectionKindValue }) {
     );
   }
 
-  if (kind === 'store' || kind === 'lead') {
+  if (kind === 'store' || kind === 'lead' || kind === 'attribution') {
     return (
       <div className="bg-surface flex items-center gap-3 rounded-lg p-2">
         <span className="border-accent-strong size-8 shrink-0 rounded-full border-4" />

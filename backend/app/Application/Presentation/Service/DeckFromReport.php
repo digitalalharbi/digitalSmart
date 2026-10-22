@@ -116,7 +116,24 @@ final readonly class DeckFromReport
                 ),
                 notes: $notes,
             ),
-            SectionKind::Scorecard => new Slide(
+            SectionKind::Attribution => new Slide(
+                kind: SlideKind::Scorecard,
+                title: $section->title,
+                lead: null,
+                figures: array_map(
+                    static fn (array $fact): SlideFigure => new SlideFigure(
+                        label: $fact['label'],
+                        value: $fact['text'] ?? 'Not available',
+                        change: null,
+                        changeIsGood: null,
+                        sourceLabel: 'Recorded orders',
+                        unavailableReason: $fact['text'] === null ? 'There was nothing to divide by.' : null,
+                    ),
+                    $section->attribution?->facts() ?? [],
+                ),
+                notes: $notes,
+            ),
+            SectionKind::Scorecard, SectionKind::Traffic => new Slide(
                 kind: SlideKind::Scorecard,
                 title: $section->title,
                 lead: null,

@@ -196,7 +196,8 @@ final readonly class XlsxWriter implements ReportWorkbookWriter
         }
 
         $columns = match ($section->kind) {
-            SectionKind::Scorecard => $this->scorecard($sheet, $section, $line),
+            SectionKind::Scorecard, SectionKind::Traffic => $this->scorecard($sheet, $section, $line),
+            SectionKind::Attribution => $this->attribution($sheet, $section, $line),
             SectionKind::Trend => $this->trend($sheet, $section, $line),
             SectionKind::Store => $this->store($sheet, $section, $line),
             SectionKind::Lead => $this->lead($sheet, $section, $line),
@@ -296,6 +297,39 @@ final readonly class XlsxWriter implements ReportWorkbookWriter
         }
 
         return 2;
+    }
+
+    /** @return int the number of columns written */
+    private function attribution(Worksheet $sheet, RenderedSection $section, int $line): int
+    {
+        $this->headings($sheet, $line, ['Figure', 'Value']);
+        $line++;
+
+        foreach ($section->attribution?->facts() ?? [] as $fact) {
+            $sheet->setCellValueExplicit('A'.$line, $fact['label'], DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('B'.$line, $fact['text'] ?? 'Not available', DataType::TYPE_STRING);
+            $line++;
+        }
+
+        $line++;
+        $this->headings($sheet, $line, ['Campaign', 'Conversions', 'Revenue', 'Currency', 'Evidence']);
+        $line++;
+
+        foreach ($section->attribution === null ? [] : $section->attribution->rows as $row) {
+            $sheet->setCellValueExplicit('A'.$line, $row->label, DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('B'.$line, (string) $row->conversions, DataType::TYPE_NUMERIC);
+            /* The words, in the numeric column: where it is visibly not a number it refuses to be summed. */
+            if ($row->revenueMinor === null) {
+                $sheet->setCellValueExplicit('C'.$line, 'Not available', DataType::TYPE_STRING);
+            } else {
+                $sheet->setCellValueExplicit('C'.$line, (string) ($row->revenueMinor / 100), DataType::TYPE_NUMERIC);
+            }
+            $sheet->setCellValueExplicit('D'.$line, $row->currency ?? '', DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('E'.$line, $row->evidence->value, DataType::TYPE_STRING);
+            $line++;
+        }
+
+        return 5;
     }
 
     /** @return int the number of columns written */

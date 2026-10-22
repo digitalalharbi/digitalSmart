@@ -4,6 +4,36 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The campaign report: a funnel, attributed revenue, advanced settings and a page per report
+
+### Added
+- **A clicks-and-funnel section** (`traffic`): impressions, clicks, link clicks and results in a fixed order with the
+  click-through, cost-per-click and result rates beside them, read from the same ad facts as a scorecard and narrowed by
+  the report's own platform and campaign filters. A stage a platform did not report is drawn as "not tracked", never as
+  a short bar; the metric list is the server's, so no author can drop or reorder a stage.
+- **An attributed-revenue section** (`attribution`): which campaigns a client's orders came from, by what each order
+  carried (`last_recorded`, a record rather than a model), with the share of the period's revenue it explains travelling
+  with it and an amber "treat as a sample" below the reportable line. **Internal only**: a client's portal never shows
+  attribution, so a client-safe report cannot hold it (the server refuses it, the builder does not offer it, the wizard
+  disables the audience). It names its revenue authority in the column a store section uses; that column now means
+  something for exactly those two kinds, enforced by a CHECK.
+- **The campaign report preset**: figures, spend line, funnel, ad groups, top creatives and, once a client is named,
+  attribution. Opened from a campaign's own page it is scoped to that campaign and its client from the first step; a
+  scoped report keeps its campaigns on every save, and Advanced shows them with a way to read the whole client instead.
+- **Advanced report settings**: description, internal note and campaign scope sit in one disclosure that opens on its
+  own when the report already uses one.
+- **A page per report** (`/reports/:id/manage`): the report, its settings read plainly, sharing with snapshots, and
+  files and schedules. The same panels the centre has, gathered for one report at an address that can be sent.
+
+### Fixed
+- **A definition list held a row of badges** (`/reports`, flagged by axe on mobile Safari): the badges now sit beside
+  the list, not in it.
+- **End-to-end runs were cancelled at thirty minutes**: the suite (580 tests, two projects) outgrew the job's limit, so
+  #45 and #46 showed a cancelled job rather than a failed test. The limit is fifty (#47).
+
+### Not yet
+- Attribution models other than `last_recorded` stay declined, as before; a section cannot choose one.
+
 ## The reports centre: the library, what is live, what is scheduled, every frozen record, every link out
 
 ### Added

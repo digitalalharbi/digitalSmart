@@ -49,8 +49,24 @@ const vocabulary = {
       // A ratio is not additive across rows, so the server leaves it out of a ranking.
       metrics: ['spend', 'clicks', 'conversions', 'leads', 'purchases'],
     }),
-    kind({ kind: 'store', uses_metrics: false, metrics: [], metric_cap: 0 }),
+    kind({
+      kind: 'store',
+      uses_metrics: false,
+      names_revenue_source: true,
+      metrics: [],
+      metric_cap: 0,
+    }),
     kind({ kind: 'lead', uses_metrics: false, metrics: [], metric_cap: 0 }),
+    kind({ kind: 'traffic', uses_metrics: false, metrics: [], metric_cap: 0 }),
+    kind({
+      kind: 'attribution',
+      uses_metrics: false,
+      names_revenue_source: true,
+      needs_client: true,
+      is_client_safe: false,
+      metrics: [],
+      metric_cap: 0,
+    }),
   ],
 } as unknown as ReportVocabulary;
 
@@ -123,5 +139,29 @@ describe('presets', () => {
     expect(sections.find((section) => section.kind === 'scorecard')?.metrics).toEqual(
       expect.arrayContaining(['impressions', 'clicks', 'leads']),
     );
+  });
+
+  describe('the campaign report', () => {
+    const campaign = PRESETS.find((preset) => preset.id === 'campaign');
+
+    it('reads a campaign end to end, funnel included, and needs no client to start', () => {
+      expect(campaign).toBeDefined();
+      expect(campaign?.needsClient).toBe(false);
+
+      const kinds = presetSections(campaign as NonNullable<typeof campaign>, vocabulary, false).map(
+        (section) => section.kind,
+      );
+
+      expect(kinds).toContain('traffic');
+      expect(kinds).toContain('breakdown');
+      expect(kinds).not.toContain('attribution');
+    });
+
+    it("adds attributed revenue only once a client is named, from an invoiced source — never a model's", () => {
+      const sections = presetSections(campaign as NonNullable<typeof campaign>, vocabulary, true);
+      const attribution = sections.find((section) => section.kind === 'attribution');
+
+      expect(attribution?.revenue_source).toBe('salla');
+    });
   });
 });

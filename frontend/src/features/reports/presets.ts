@@ -19,7 +19,14 @@ import type {
  * are not offered for an agency-wide report.
  */
 export type PresetId =
-  'executive' | 'performance' | 'lead_generation' | 'ecommerce' | 'weekly' | 'monthly' | 'creative';
+  | 'executive'
+  | 'performance'
+  | 'campaign'
+  | 'lead_generation'
+  | 'ecommerce'
+  | 'weekly'
+  | 'monthly'
+  | 'creative';
 
 type Wanted = {
   kind: SectionKindValue;
@@ -27,6 +34,8 @@ type Wanted = {
   dimension?: string;
   /** For a creative section: which part of the creative picture it shows. */
   creativeView?: CreativeViewValue;
+  /** Left out, not weakened, when the report names no client: it reads one client's own records. */
+  needsClient?: boolean;
 };
 
 export type Preset = {
@@ -73,6 +82,28 @@ export const PRESETS: Preset[] = [
       { kind: 'breakdown', dimension: 'campaign', metrics: ['spend', 'clicks', 'conversions'] },
       { kind: 'creative', creativeView: 'top' },
       { kind: 'creative', creativeView: 'refresh' },
+    ],
+  },
+  {
+    /*
+     * One campaign (or a few), read end to end: the figures, the line, the click funnel, which ad groups carried it,
+     * the creatives behind it and — when a client is named — which of that client's orders it can be credited with.
+     * The attribution section is internal, so a report that holds it cannot be written for a client.
+     */
+    id: 'campaign',
+    window: 'last_30_days',
+    comparison: 'previous_period',
+    needsClient: false,
+    sections: [
+      {
+        kind: 'scorecard',
+        metrics: ['spend', 'impressions', 'clicks', 'ctr', 'conversions', 'cpa'],
+      },
+      { kind: 'trend', metrics: ['spend'] },
+      { kind: 'traffic' },
+      { kind: 'breakdown', dimension: 'ad_group', metrics: ['spend', 'clicks', 'conversions'] },
+      { kind: 'creative', creativeView: 'top' },
+      { kind: 'attribution', needsClient: true },
     ],
   },
   {
@@ -169,10 +200,18 @@ export function isAvailable(preset: Preset, hasClient: boolean): boolean {
  * A section is dropped, not weakened, when its shape is unknown or the store has no invoiced revenue source to start
  * from — and a metric the shape does not take is dropped from it. A section left with no metric at all is dropped.
  */
-export function presetSections(preset: Preset, vocabulary: ReportVocabulary): SectionDraft[] {
+export function presetSections(
+  preset: Preset,
+  vocabulary: ReportVocabulary,
+  hasClient = true,
+): SectionDraft[] {
   const drafts: SectionDraft[] = [];
 
   for (const wanted of preset.sections) {
+    if (wanted.needsClient === true && !hasClient) {
+      continue;
+    }
+
     const kind = vocabulary.sections.find((entry) => entry.kind === wanted.kind);
 
     if (kind === undefined) {
@@ -201,9 +240,10 @@ export function presetSections(preset: Preset, vocabulary: ReportVocabulary): Se
     }
 
     if (!kind.uses_metrics) {
-      const revenueSource = wanted.kind === 'store' ? invoicedSource(vocabulary) : null;
+      const needsSource = kind.names_revenue_source === true;
+      const revenueSource = needsSource ? invoicedSource(vocabulary) : null;
 
-      if (wanted.kind === 'store' && revenueSource === null) {
+      if (needsSource && revenueSource === null) {
         continue;
       }
 

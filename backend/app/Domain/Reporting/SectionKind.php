@@ -57,6 +57,25 @@ enum SectionKind: string
      */
     case Creative = 'creative';
 
+    /**
+     * How people moved from seeing an ad to acting on it: impressions, clicks, link clicks and results, with the rate
+     * between each pair.
+     *
+     * Read from the same ad facts as a scorecard and narrowed by the same platform and campaign filters, but fixed in
+     * shape: a funnel is an ordered set of stages, and an author who could reorder or drop one could draw a funnel that
+     * narrows and then widens. A stage a platform does not report is a gap, never a zero.
+     */
+    case Traffic = 'traffic';
+
+    /**
+     * Which campaigns a client's recorded orders arrived from, by what the order itself carried.
+     *
+     * Internal only: attribution is the one thing a client's portal deliberately never shows (`WithheldModule`), so a
+     * report written for a client cannot hold it. It names a revenue authority like a store section does, and is read
+     * for one client.
+     */
+    case Attribution = 'attribution';
+
     public function needsDimension(): bool
     {
         return $this === self::Breakdown || $this === self::Table;
@@ -65,7 +84,25 @@ enum SectionKind: string
     /** Whether the section carries ad metrics at all. A store section carries a revenue authority instead. */
     public function usesMetrics(): bool
     {
-        return $this !== self::Store && $this !== self::Lead && $this !== self::Creative;
+        return ! in_array($this, [self::Store, self::Lead, self::Creative, self::Traffic, self::Attribution], true);
+    }
+
+    /** Whether the section names a revenue authority (`revenue_source`) instead of metrics. */
+    public function namesRevenueSource(): bool
+    {
+        return $this === self::Store || $this === self::Attribution;
+    }
+
+    /** Whether the section reads one client's own records, so a report with it must name a client. */
+    public function needsClient(): bool
+    {
+        return in_array($this, [self::Store, self::Lead, self::Attribution], true);
+    }
+
+    /** Whether a report written for a client may carry this section. Attribution is the one it may not. */
+    public function isClientSafe(): bool
+    {
+        return $this !== self::Attribution;
     }
 
     /**
@@ -93,7 +130,7 @@ enum SectionKind: string
             self::Trend => 4,
             self::Breakdown => 3,
             self::Table => 8,
-            self::Store, self::Lead, self::Creative => 0,
+            self::Store, self::Lead, self::Creative, self::Traffic, self::Attribution => 0,
         };
     }
 
@@ -107,6 +144,8 @@ enum SectionKind: string
             self::Store => 'Store figures',
             self::Lead => 'Lead figures',
             self::Creative => 'Creatives',
+            self::Traffic => 'Clicks and funnel',
+            self::Attribution => 'Attributed revenue',
         };
     }
 
@@ -119,7 +158,7 @@ enum SectionKind: string
      */
     public function accepts(Metric $metric): bool
     {
-        if ($this === self::Store || $this === self::Lead || $this === self::Creative) {
+        if (! $this->usesMetrics()) {
             return false;
         }
 

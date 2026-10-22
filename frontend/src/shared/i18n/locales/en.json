@@ -2995,7 +2995,8 @@
     },
     "actions": {
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "manage": "Manage"
     },
     "view": {
       "allClients": "Across every client",
@@ -3054,7 +3055,10 @@
       "currentClient": "Chosen client",
       "revenueSource": "Whose revenue",
       "revenueSourceHint": "A store's revenue is a claim by one authority. Add a second section to show another — they are never added together.",
-      "creativeView": "What to show"
+      "creativeView": "What to show",
+      "campaignScope_one": "About {{count}} campaign",
+      "campaignScope_other": "About {{count}} campaigns",
+      "clearCampaignScope": "Read the whole client instead"
     },
     "share": {
       "title": "Snapshots and links",
@@ -3278,7 +3282,9 @@
         "platforms": "Platforms",
         "campaigns": "Campaigns",
         "store": "Store",
-        "lead": "Leads"
+        "lead": "Leads",
+        "traffic": "Clicks and funnel",
+        "attribution": "Attributed revenue"
       },
       "presets": {
         "executive": {
@@ -3308,6 +3314,10 @@
         "creative": {
           "name": "Creative performance",
           "tags": "Gallery · Top · Comparison · Fatigue · Format and platform mix"
+        },
+        "campaign": {
+          "name": "Campaign report",
+          "tags": "Figures · Funnel · Ad groups · Creatives · Attribution"
         }
       },
       "audience": {
@@ -3319,7 +3329,9 @@
           "name": "For the team",
           "line": "Stays inside the workspace."
         }
-      }
+      },
+      "aboutCampaign": "This report is about the campaign “{{name}}” and nothing else.",
+      "internalOnly": "Not available: attributed revenue is internal and never shown to a client."
     },
     "present": {
       "label": "{{name}} — presentation",
@@ -3437,6 +3449,58 @@
       "expires": "Link closes",
       "live": "Live figures · {{count}}",
       "frozen": "Frozen figures · {{count}}"
+    },
+    "traffic": {
+      "label": "Clicks and funnel",
+      "notTracked": "Not tracked",
+      "leak": "Largest drop-off",
+      "stages": {
+        "impressions": "Seen",
+        "clicks": "Clicked",
+        "link_clicks": "Link clicks",
+        "conversions": "Results"
+      },
+      "rates": {
+        "ctr": "Click-through rate",
+        "cpc": "Cost per click",
+        "conversion_rate": "Result rate"
+      }
+    },
+    "attribution": {
+      "campaign": "Campaign",
+      "conversions": "Orders",
+      "revenue": "Revenue",
+      "roas": "Return",
+      "campaigns": "Campaigns credited with orders",
+      "according": "Orders counted from {{source}}, credited to the campaign each order arrived carrying.",
+      "coverage": "of the period's revenue is explained by these campaigns (reportable from {{percent}}%).",
+      "reportable": "Reportable",
+      "sample": "Treat as a sample",
+      "unknown": "{{amount}} arrived with no marketing information. It is unknown, not zero, and is not divided among the campaigns."
+    },
+    "manage": {
+      "missingTitle": "This report is not available",
+      "missingBody": "It may have been deleted, or you may not be able to read it.",
+      "back": "Back to reports",
+      "trail": "Where you are",
+      "loading": "Report",
+      "tabsLabel": "This report",
+      "tabs": {
+        "report": "Report",
+        "settings": "Settings",
+        "sharing": "Sharing",
+        "files": "Files and schedule"
+      },
+      "settings": {
+        "client": "Client",
+        "period": "Period",
+        "comparison": "Comparison",
+        "audience": "Written for",
+        "scope": "Scope",
+        "wholeClient": "Everything the client runs",
+        "sections": "Sections"
+      },
+      "confirmDelete": "Delete this report"
     }
   },
   "sharedReport": {
@@ -4391,7 +4455,8 @@
     "where": "Where it sits",
     "tasks": "Tasks about this campaign",
     "noTasks": "No open tasks about this campaign.",
-    "performance": "Performance"
+    "performance": "Performance",
+    "createReport": "Create a report"
   },
   "backgroundWork": {
     "title": "Background work",

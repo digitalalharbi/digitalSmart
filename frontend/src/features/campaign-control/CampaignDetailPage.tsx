@@ -1,3 +1,4 @@
+import { PERMISSIONS, useSession } from '@/features/auth';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -65,6 +66,7 @@ export function CampaignDetailPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const { campaignId = '' } = useParams();
+  const { can } = useSession();
 
   const control = useQuery({
     queryKey: ['campaign-detail', campaignId] as const,
@@ -181,9 +183,27 @@ export function CampaignDetailPage() {
                 .join(' · ')
         }
         actions={
-          <Link to="/campaigns" className={buttonVariants({ variant: 'ghost' })}>
-            {t('campaignDetail.back')}
-          </Link>
+          <>
+            {row === null || !can(PERMISSIONS.reportsManage) ? null : (
+              /* A report about this campaign: the campaign report preset, scoped to it and to its client. */
+              <Link
+                to={`/reports?${new URLSearchParams({
+                  new: '1',
+                  campaign: row.id,
+                  campaign_name: row.name,
+                  ...(row.client_id === null
+                    ? {}
+                    : { client: row.client_id, client_name: row.client_name ?? '' }),
+                }).toString()}`}
+                className={buttonVariants({ variant: 'secondary' })}
+              >
+                {t('campaignDetail.createReport')}
+              </Link>
+            )}
+            <Link to="/campaigns" className={buttonVariants({ variant: 'ghost' })}>
+              {t('campaignDetail.back')}
+            </Link>
+          </>
         }
       />
 

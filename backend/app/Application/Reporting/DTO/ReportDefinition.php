@@ -53,6 +53,16 @@ final readonly class ReportDefinition
                 throw InvalidReportDefinition::leadNeedsClient();
             }
 
+            if ($section->kind === SectionKind::Attribution) {
+                if ($this->clientId === null) {
+                    throw InvalidReportDefinition::attributionNeedsClient();
+                }
+
+                if ($this->audience === ReportAudience::ClientSafe) {
+                    throw InvalidReportDefinition::attributionNotClientSafe();
+                }
+            }
+
             if ($section->kind !== SectionKind::Store) {
                 continue;
             }

@@ -11,9 +11,12 @@ use App\Application\Analytics\DTO\CreativeRow;
 use App\Application\Analytics\DTO\MetricSet;
 use App\Application\Analytics\DTO\SeriesPoint;
 use App\Application\Analytics\Service\CreativeIntelligenceReader;
+use App\Application\Attribution\Contract\AttributionReadModel;
+use App\Application\Attribution\DTO\AttributionQuery;
 use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Leads\Contract\LeadReadModel;
+use App\Application\Reporting\DTO\AttributionFigures;
 use App\Application\Reporting\DTO\CreativeSection;
 use App\Application\Reporting\DTO\LeadFigures;
 use App\Application\Reporting\DTO\RenderedReport;
@@ -28,6 +31,8 @@ use App\Domain\Advertising\CreativeFormat;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
+use App\Domain\Attribution\AttributionCoverage;
+use App\Domain\Attribution\AttributionModel;
 use App\Domain\Integration\Provider;
 use App\Domain\Reporting\Comparability;
 use App\Domain\Reporting\ComparisonMode;
@@ -60,6 +65,9 @@ use App\Domain\Shared\ValueObject\DateRange;
 final readonly class RenderReport
 {
     /** @var list<Metric> */
+    /** The funnel's stages and the rates between them, fixed: an author who could drop a stage could draw a funnel that widens. */
+    private const array TRAFFIC_METRICS = [Metric::Impressions, Metric::Clicks, Metric::LinkClicks, Metric::Conversions, Metric::Ctr, Metric::Cpc, Metric::ConversionRate];
+
     private const array CREATIVE_METRICS = [Metric::Spend, Metric::Impressions, Metric::Clicks, Metric::Ctr, Metric::Conversions, Metric::CostPerConversion, Metric::Roas];
 
     /** @var list<Metric> */
@@ -69,6 +77,7 @@ final readonly class RenderReport
         private AnalyticsReadModel $analytics,
         private StoreAnalyticsReadModel $stores,
         private LeadReadModel $leads,
+        private AttributionReadModel $attribution,
         private CreativeIntelligenceReader $creatives,
         private Clock $clock,
     ) {}
@@ -201,7 +210,7 @@ final readonly class RenderReport
          * platform or campaign of the ad platforms, so a "Meta" chip over their figures would be a claim they cannot
          * keep — they would be the whole client's, wearing a narrower label.
          */
-        if ($narrowing !== null && $narrowing->narrowsAdvertising() && in_array($section->kind, [SectionKind::Lead, SectionKind::Store], true)) {
+        if ($narrowing !== null && $narrowing->narrowsAdvertising() && in_array($section->kind, [SectionKind::Lead, SectionKind::Store, SectionKind::Attribution], true)) {
             return new RenderedSection(
                 kind: $section->kind,
                 title: $title,
@@ -214,6 +223,14 @@ final readonly class RenderReport
 
         if ($section->kind === SectionKind::Lead) {
             return $this->lead($workspaceId, $definition, $section, $period, $title, $caveats);
+        }
+
+        if ($section->kind === SectionKind::Traffic) {
+            return $this->traffic($workspaceId, $definition, $section, $period, $title, $caveats);
+        }
+
+        if ($section->kind === SectionKind::Attribution) {
+            return $this->attribution($workspaceId, $definition, $section, $period, $title, $caveats);
         }
 
         if ($section->kind === SectionKind::Creative) {
@@ -334,6 +351,106 @@ final readonly class RenderReport
             rows: $rows,
             dimension: $dimension,
             currency: $rows === [] ? null : $this->currencyOf($rows[0]->metrics),
+        );
+    }
+
+    /**
+     * Clicks and the funnel: the stages an ad's audience moved through, read from the same ad facts as a scorecard.
+     *
+     * No comparison and no invented stage. A stage the platforms did not report is carried as unavailable with its own
+     * reason, because a funnel that shows zero where nothing was measured would read as a collapse.
+     *
+     * @param  list<string>  $caveats
+     */
+    private function traffic(
+        string $workspaceId,
+        ReportDefinition $definition,
+        SectionDefinition $section,
+        DateRange $period,
+        string $title,
+        array $caveats,
+    ): RenderedSection {
+        $totals = $this->analytics->summary($workspaceId, $period, $definition->filters, self::TRAFFIC_METRICS, null);
+
+        $caveats[] = 'Impressions, clicks and results are what the ad platforms reported. A click is not a visit and a '
+            .'result is not a sale; each platform counts them its own way, so read the stages together, not as one rule.';
+
+        return new RenderedSection(
+            kind: $section->kind,
+            title: $title,
+            metrics: self::TRAFFIC_METRICS,
+            source: $totals->source,
+            isEmpty: $totals->isEmpty(),
+            caveats: array_values(array_unique($caveats)),
+            totals: $totals,
+            currency: $totals->currency,
+        );
+    }
+
+    /**
+     * Which campaigns the client's orders came from, by what each order carried.
+     *
+     * Read as `last_recorded` — the campaign an order arrived carrying, which is a record, not a model — because it is
+     * the one attribution this product can state without an opinion. Coverage is read with it and published with it.
+     *
+     * @param  list<string>  $caveats
+     */
+    private function attribution(
+        string $workspaceId,
+        ReportDefinition $definition,
+        SectionDefinition $section,
+        DateRange $period,
+        string $title,
+        array $caveats,
+    ): RenderedSection {
+        $source = $section->revenueSource;
+
+        if ($source === null || $definition->clientId === null) {
+            return new RenderedSection(
+                kind: $section->kind,
+                title: $title,
+                metrics: [],
+                source: MetricSource::Synced,
+                isEmpty: true,
+                caveats: $caveats,
+            );
+        }
+
+        $model = AttributionModel::LastRecorded;
+        $lookback = 30;
+
+        $result = $this->attribution->attribute(new AttributionQuery(
+            workspaceId: $workspaceId,
+            model: $model,
+            revenueSource: $source,
+            from: $period->start,
+            until: $period->end->setTime(23, 59, 59),
+            visibleProjectIds: null,
+            clientId: $definition->clientId,
+            lookbackDays: $lookback,
+            limit: 10,
+        ));
+
+        $figures = new AttributionFigures($model, $source, $result->coverage, $result->rows, $result->unmatchedSpendMinor, $result->spendCurrency, $lookback);
+
+        $caveats[] = 'Attributed revenue is the campaign each order arrived carrying. Orders that arrived with no marketing '
+            .'information are unknown, not zero, and are not divided among the campaigns.';
+
+        if (! $result->coverage->isReportable() && $result->coverage->conversions > 0) {
+            $caveats[] = sprintf(
+                'These campaigns describe under %d%% of the period\'s revenue, so treat the rows as a sample, not a total.',
+                AttributionCoverage::REPORTABLE_PERCENT,
+            );
+        }
+
+        return new RenderedSection(
+            kind: $section->kind,
+            title: $title,
+            metrics: [],
+            source: $source->isModelled() ? MetricSource::Estimated : MetricSource::Synced,
+            isEmpty: $figures->isEmpty(),
+            caveats: array_values(array_unique($caveats)),
+            attribution: $figures,
         );
     }
 
@@ -730,7 +847,7 @@ final readonly class RenderReport
         }
 
         return match ($section->kind) {
-            SectionKind::Scorecard => $section->kind->label(),
+            SectionKind::Scorecard, SectionKind::Traffic, SectionKind::Attribution => $section->kind->label(),
             SectionKind::Trend => sprintf('%s over time', $metric->label()),
             SectionKind::Breakdown, SectionKind::Table => $section->dimension === null
                 ? $section->kind->label()
