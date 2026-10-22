@@ -119,11 +119,14 @@ test.describe('creative sections in a shared report', () => {
         const deck = visiting.getByRole('dialog');
         await expect(deck).toBeVisible({ timeout: 30_000 });
         const forward = locale === 'en' ? 'ArrowRight' : 'ArrowLeft';
-        /* The story opens on the creative summary, right after the cover. */
-        await visiting.keyboard.press(forward);
-        await expect(
-          deck.getByRole('region', { name: /Creative summary|ملخّص المواد/ }),
-        ).toBeVisible();
+        /* The creative story opens on its summary, after the cover and the report's own figures. */
+        const summaryScreen = deck.getByRole('region', { name: /Creative summary|ملخّص المواد/ });
+
+        for (let step = 0; step < 6 && (await summaryScreen.count()) === 0; step += 1) {
+          await visiting.keyboard.press(forward);
+        }
+
+        await expect(summaryScreen).toBeVisible();
         const creativeScreen = deck.getByRole('heading', {
           name: /Top creatives|Creative performance|أفضل المواد|أداء المواد/,
         });
