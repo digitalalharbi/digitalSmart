@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Reporting\DTO;
 
 use App\Application\Analytics\DTO\CreativeRow;
+use App\Application\Analytics\DTO\MetricSet;
+use App\Application\Analytics\DTO\SeriesPoint;
 use App\Domain\Reporting\CreativeView;
 
 /**
@@ -28,5 +30,19 @@ final readonly class CreativeSection
         public bool $mixIsSpend = true,
         /** How many creatives the selection holds, of which `rows` are the ones this view shows. */
         public int $total = 0,
+        /**
+         * The scope's own totals and its daily series, from the analytics layer — the figures a hero and a trend
+         * draw. Read for the gallery view only; a second copy on every view would be the same numbers four times.
+         */
+        public ?MetricSet $summary = null,
+        /** @var list<SeriesPoint> */
+        public array $series = [],
+        /**
+         * Per platform: how many of the shown creatives, and their spend, results, click-through and cost per result
+         * — sums over rows already read, like the format mix. Filled for the platform-mix view.
+         *
+         * @var list<array{key: string, label: string, creatives: int, spend: float, results: float, ctr: ?float, cpa: ?float, currency: ?string}>
+         */
+        public array $platformMix = [],
     ) {}
 }

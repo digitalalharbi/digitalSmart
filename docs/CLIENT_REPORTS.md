@@ -150,3 +150,16 @@ with its CTR change. A video is its poster only. The refresh story runs tiring c
 format mix and comparison views are one screen each, drawn by the same components as the report page. Screens are built
 from the payload the page received, so a narrowed or frozen shared link presents exactly what it shows; the existing
 arrows, swipe, Escape and fullscreen apply.
+
+### Creative report, visual upgrade (PR C)
+
+Two more views — **gallery** (the largest creatives as media cards, with the scope's own totals and daily series from
+the analytics layer beside them) and **platform_mix** (each platform's creatives: a share ring, count, spend, results,
+CTR, CPA; money withheld across two currencies). The report page gains a **creative hero** when a gallery section is
+present: total creatives, spend, results, average CTR, average CPA (only where the layer published them), the leading
+creative by ROAS (else CTR), at most four insights (best CTR, highest ROAS, fatigue with its CTR change, most results by
+platform) and at most three recommendations (refresh with evidence; scale the ROAS leader with a cost to stand on). The
+gallery's trend switches one figure at a time — spend, CTR, CPA, results, ROAS, frequency — never two on one axis. A
+*Creative performance* preset composes all of it. Lifecycle states beyond the five verdicts (New, Learning, Scaling)
+and content analysis beyond format (hook/theme, creator, UGC vs branded) need metadata the platforms do not sync and
+are `NOT_SUPPORTED` rather than inferred.

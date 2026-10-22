@@ -43,9 +43,11 @@ test.describe('creative sections in a shared report', () => {
                 audience: 'client_safe',
                 sections: [
                   { kind: 'scorecard', metrics: ['spend', 'clicks'] },
+                  { kind: 'creative', creative_view: 'gallery' },
                   { kind: 'creative', creative_view: 'top' },
                   { kind: 'creative', creative_view: 'performance' },
                   { kind: 'creative', creative_view: 'format_mix' },
+                  { kind: 'creative', creative_view: 'platform_mix' },
                 ],
               }),
             })
@@ -88,6 +90,10 @@ test.describe('creative sections in a shared report', () => {
         await expect(visiting.getByRole('heading', { name: /^Creatives / }).first()).toBeVisible({
           timeout: 30_000,
         });
+        /* The hero: figures and the leading creative, before any section. */
+        await expect(
+          visiting.getByRole('region', { name: /Creative summary|ملخّص المواد/ }),
+        ).toBeVisible();
 
         const overflow = await visiting.evaluate(
           () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

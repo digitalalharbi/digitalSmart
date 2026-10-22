@@ -28,6 +28,7 @@ use App\Domain\Advertising\CreativeFormat;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Analytics\Dimension;
 use App\Domain\Analytics\Metric;
+use App\Domain\Integration\Provider;
 use App\Domain\Reporting\Comparability;
 use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\CreativeView;
@@ -58,6 +59,12 @@ use App\Domain\Shared\ValueObject\DateRange;
  */
 final readonly class RenderReport
 {
+    /** @var list<Metric> */
+    private const array CREATIVE_METRICS = [Metric::Spend, Metric::Impressions, Metric::Clicks, Metric::Ctr, Metric::Conversions, Metric::CostPerConversion, Metric::Roas];
+
+    /** @var list<Metric> */
+    private const array CREATIVE_TREND = [Metric::Spend, Metric::Ctr, Metric::CostPerConversion, Metric::Conversions, Metric::Roas, Metric::Frequency];
+
     public function __construct(
         private AnalyticsReadModel $analytics,
         private StoreAnalyticsReadModel $stores,
@@ -428,7 +435,7 @@ final readonly class RenderReport
             'asset',
             null,
             $view === CreativeView::Top ? 'top' : null,
-            $view === CreativeView::Refresh || $view === CreativeView::FormatMix ? 100 : $limit,
+            in_array($view, [CreativeView::Refresh, CreativeView::FormatMix, CreativeView::PlatformMix], true) ? 100 : $limit,
         );
 
         $rows = $read->rows;
@@ -474,6 +481,18 @@ final readonly class RenderReport
                 .'than sharing out money.';
         }
 
+        /*
+         * The gallery carries the scope's own totals and its days, from the analytics layer: a hero's figures and a
+         * trend's line, read once rather than added up from the rows on screen.
+         */
+        $summary = $view === CreativeView::Gallery
+            ? $this->analytics->summary($workspaceId, $period, $definition->filters, self::CREATIVE_METRICS)
+            : null;
+        $series = $view === CreativeView::Gallery
+            ? $this->analytics->series($workspaceId, $period, $definition->filters, self::CREATIVE_TREND)
+            : [];
+        $platformMix = $view === CreativeView::PlatformMix ? $this->platformMix($rows) : [];
+
         $breakdown = [];
 
         foreach ($rows as $index => $row) {
@@ -492,8 +511,56 @@ final readonly class RenderReport
             caveats: array_values(array_unique($caveats)),
             rows: $breakdown,
             currency: count($currencies) === 1 && $currencies[0] !== '' ? $currencies[0] : null,
-            creative: new CreativeSection($view, $rows, $mix, $mixIsSpend, $read->total),
+            totals: $summary,
+            series: $series,
+            creative: new CreativeSection($view, $rows, $mix, $mixIsSpend, $read->total, $summary, $series, $platformMix),
         );
+    }
+
+    /**
+     * Each platform's creatives, summed over the rows already read — a count, spend, results, and the click-through
+     * and cost per result those sums give. A platform whose creatives are paid in two currencies keeps its count and
+     * says nothing about money.
+     *
+     * @param  list<CreativeRow>  $rows
+     * @return list<array{key: string, label: string, creatives: int, spend: float, results: float, ctr: ?float, cpa: ?float, currency: ?string}>
+     */
+    private function platformMix(array $rows): array
+    {
+        $groups = [];
+
+        foreach ($rows as $row) {
+            $key = $row->info->provider;
+            $groups[$key] ??= ['key' => $key, 'label' => Provider::tryFrom($key)?->label() ?? $key, 'creatives' => 0, 'spend' => 0.0, 'results' => 0.0, 'impressions' => 0.0, 'clicks' => 0.0, 'currencies' => []];
+            $groups[$key]['creatives']++;
+            $groups[$key]['spend'] += (float) ($row->metrics->get(Metric::Spend)->value ?? 0);
+            $groups[$key]['results'] += (float) ($row->metrics->get(Metric::Conversions)->value ?? 0);
+            $groups[$key]['impressions'] += (float) ($row->metrics->get(Metric::Impressions)->value ?? 0);
+            $groups[$key]['clicks'] += (float) ($row->metrics->get(Metric::Clicks)->value ?? 0);
+            $groups[$key]['currencies'][$row->metrics->currency ?? ''] = true;
+        }
+
+        $out = [];
+
+        foreach ($groups as $group) {
+            $oneCurrency = count($group['currencies']) === 1;
+            $currency = $oneCurrency ? (string) array_key_first($group['currencies']) : null;
+
+            $out[] = [
+                'key' => $group['key'],
+                'label' => $group['label'],
+                'creatives' => $group['creatives'],
+                'spend' => $oneCurrency ? $group['spend'] : 0.0,
+                'results' => $group['results'],
+                'ctr' => $group['impressions'] > 0 ? round($group['clicks'] / $group['impressions'] * 100, 2) : null,
+                'cpa' => $oneCurrency && $group['results'] > 0 ? round($group['spend'] / $group['results'], 2) : null,
+                'currency' => $currency === '' ? null : $currency,
+            ];
+        }
+
+        usort($out, static fn (array $a, array $b): int => $b['spend'] <=> $a['spend']);
+
+        return $out;
     }
 
     /**

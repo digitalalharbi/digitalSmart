@@ -4,7 +4,8 @@ import { localeTag } from '@/shared/lib/format';
 import { formatMetric, MISSING } from '@/shared/metrics';
 import { ChartFrame } from '@/shared/ui/chart';
 import { ScrollRegion } from '@/shared/ui/scroll-region';
-import { DonutChart } from '@/shared/ui/viz';
+import { DonutChart, ProgressRing } from '@/shared/ui/viz';
+import { CreativeTrend } from './CreativeTrend';
 import type { CreativeSectionRow, RenderedSection } from './types';
 
 const SERIES = ['var(--ds-chart-1)', 'var(--ds-chart-2)', 'var(--ds-chart-3)', 'var(--ds-chart-4)'];
@@ -119,6 +120,17 @@ export function CreativeSectionView({ section }: { section: RenderedSection }) {
         ) : (
           <CreativeComparison rows={rows} />
         )
+      ) : creative.view === 'gallery' ? (
+        <div className="flex flex-col gap-5">
+          <CreativeTrend section={section} />
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {rows.map((row) => (
+              <CreativeCard key={row.key} row={row} />
+            ))}
+          </ul>
+        </div>
+      ) : creative.view === 'platform_mix' ? (
+        <PlatformMix section={section} />
       ) : creative.view === 'performance' ? (
         <ScrollRegion label={section.title}>
           <table className="w-full text-sm">
@@ -161,5 +173,79 @@ export function CreativeSectionView({ section }: { section: RenderedSection }) {
         </ul>
       )}
     </ChartFrame>
+  );
+}
+
+/**
+ * Each platform's creatives: a ring for its share, then how many, what they cost, what they returned. The share is of
+ * spend where every creative on the platform is paid in one currency, otherwise of the count — and the title says
+ * which. A platform's cost per result is left out where its money cannot be summed.
+ */
+function PlatformMix({ section }: { section: RenderedSection }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
+  const mix = section.creative?.platform_mix ?? [];
+  const bySpend =
+    mix.every((entry) => entry.currency !== null) && mix.some((entry) => entry.spend > 0);
+  const total = mix.reduce((sum, entry) => sum + (bySpend ? entry.spend : entry.creatives), 0);
+  const number = new Intl.NumberFormat(localeTag(locale));
+  const money = (value: number, currency: string | null): string =>
+    currency === null
+      ? MISSING
+      : new Intl.NumberFormat(localeTag(locale), {
+          style: 'currency',
+          currency,
+          maximumFractionDigits: 0,
+        }).format(value / 100);
+
+  if (mix.length === 0 || total <= 0) {
+    return <p className="text-content-tertiary text-sm">{t('reports.creative.emptyBody')}</p>;
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-content-tertiary text-xs">
+        {t(bySpend ? 'creatives.bySpend' : 'creatives.byCount')}
+      </p>
+      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {mix.map((entry) => (
+          <li key={entry.key} className="bg-surface-sunken flex items-center gap-3 rounded-2xl p-3">
+            <ProgressRing
+              value={bySpend ? entry.spend : entry.creatives}
+              max={total}
+              size={56}
+              tone="brand"
+              label={`${entry.label} ${t(bySpend ? 'creatives.bySpend' : 'creatives.byCount')}`}
+              centre={new Intl.NumberFormat(localeTag(locale), {
+                style: 'percent',
+                maximumFractionDigits: 0,
+              }).format((bySpend ? entry.spend : entry.creatives) / total)}
+            />
+            <dl className="grid min-w-0 flex-1 grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
+              <dt className="text-content col-span-2 truncate text-sm font-medium" dir="auto">
+                {entry.label}
+              </dt>
+              <dd className="text-content-secondary">
+                {t('reports.creative.platformCount', { count: entry.creatives })}
+              </dd>
+              <dd className="ds-numeric text-content">
+                {entry.currency === null ? MISSING : money(entry.spend, entry.currency)}
+              </dd>
+              <dd className="text-content-secondary">
+                {t('reports.creative.results')} {number.format(entry.results)}
+              </dd>
+              <dd className="ds-numeric text-content">
+                CTR {entry.ctr === null ? MISSING : `${number.format(entry.ctr)}%`}
+              </dd>
+              {entry.cpa === null ? null : (
+                <dd className="ds-numeric text-content col-span-2">
+                  CPA {money(entry.cpa * 100, entry.currency)}
+                </dd>
+              )}
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

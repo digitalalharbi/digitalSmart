@@ -19,7 +19,7 @@ import type {
  * are not offered for an agency-wide report.
  */
 export type PresetId =
-  'executive' | 'performance' | 'lead_generation' | 'ecommerce' | 'weekly' | 'monthly';
+  'executive' | 'performance' | 'lead_generation' | 'ecommerce' | 'weekly' | 'monthly' | 'creative';
 
 type Wanted = {
   kind: SectionKindValue;
@@ -98,6 +98,25 @@ export const PRESETS: Preset[] = [
         metrics: ['spend', 'impressions', 'clicks', 'purchases', 'revenue', 'roas'],
       },
       { kind: 'breakdown', dimension: 'campaign', metrics: ['spend', 'purchases'] },
+    ],
+  },
+  {
+    id: 'creative',
+    window: 'last_30_days',
+    comparison: 'previous_period',
+    needsClient: true,
+    sections: [
+      { kind: 'creative', creativeView: 'gallery' },
+      {
+        kind: 'scorecard',
+        metrics: ['impressions', 'clicks', 'ctr', 'conversions', 'cpa', 'roas'],
+      },
+      { kind: 'creative', creativeView: 'top' },
+      { kind: 'creative', creativeView: 'comparison' },
+      { kind: 'creative', creativeView: 'refresh' },
+      { kind: 'creative', creativeView: 'format_mix' },
+      { kind: 'creative', creativeView: 'platform_mix' },
+      { kind: 'creative', creativeView: 'performance' },
     ],
   },
   {

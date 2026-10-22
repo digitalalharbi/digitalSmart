@@ -45,6 +45,7 @@ const ICON: Record<PresetId, LucideIcon> = {
   ecommerce: ShoppingBag,
   weekly: CalendarDays,
   monthly: CalendarRange,
+  creative: Images,
 };
 
 /** The one-glance picture of a section kind: what it looks like, not what it is called. */
