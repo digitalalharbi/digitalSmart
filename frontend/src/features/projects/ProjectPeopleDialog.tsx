@@ -16,6 +16,7 @@ import {
 } from './api';
 import type { Project } from './types';
 import { returnFocus } from '@/shared/ui/return-focus';
+import { roleLabel } from '@/shared/lib/role-label';
 
 /**
  * Who is on a project, and who could be.
@@ -117,7 +118,9 @@ export function ProjectPeopleDialog({
                   >
                     <div className="flex flex-col">
                       <span className="text-content text-sm font-medium">{member.name}</span>
-                      <span className="text-content-tertiary text-xs">{member.role_name}</span>
+                      <span className="text-content-tertiary text-xs">
+                        {roleLabel(t, member.role_slug, member.role_name)}
+                      </span>
                     </div>
 
                     {canManage ? (
@@ -176,7 +179,7 @@ export function ProjectPeopleDialog({
                       <option value="">{t('projects.people.choose')}</option>
                       {(assignable.data ?? []).map((person) => (
                         <option key={person.user_id} value={person.user_id}>
-                          {person.name} · {person.role_name}
+                          {person.name} · {roleLabel(t, person.role_slug, person.role_name)}
                         </option>
                       ))}
                     </select>

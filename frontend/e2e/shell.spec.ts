@@ -56,8 +56,8 @@ test.describe('mobile navigation', () => {
     const drawer = page.getByRole('dialog', { name: 'Main navigation' });
     await expect(drawer).toBeVisible();
 
-    /* The drawer lists the ten areas, not every page; Performance opens on Analytics. */
-    await drawer.getByRole('link', { name: 'Performance' }).click();
+    /* The drawer lists the ten areas, not every page; Analytics opens on its first page. */
+    await drawer.getByRole('link', { name: 'Analytics' }).click();
 
     await expect(page.getByRole('heading', { level: 1, name: 'Analytics' })).toBeVisible();
     await expect(drawer).toBeHidden();

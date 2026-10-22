@@ -30,6 +30,7 @@ import {
   type MembershipStatus,
   type WorkspaceRole,
 } from './types';
+import { roleLabel } from '@/shared/lib/role-label';
 
 const STATUS_TONE = {
   active: 'success',
@@ -233,7 +234,9 @@ export function MembersPanel() {
                       ))}
                     </select>
                   ) : (
-                    <span className="text-content-secondary">{member.role_name}</span>
+                    <span className="text-content-secondary">
+                      {roleLabel(t, member.role, member.role_name)}
+                    </span>
                   )}
                 </TableCell>
                 <TableCell>
