@@ -17,7 +17,7 @@ import { reasonText } from '@/shared/lib/reason';
 import { HEALTH_TO_STATE, type CampaignRow } from './types';
 
 /** Average daily spend against a daily budget, as a bar plus the figure beside it. */
-export function BudgetBar({ row }: { row: CampaignRow }) {
+export function BudgetBar({ row }: { row: Pick<CampaignRow, 'budget_utilisation'> }) {
   const { t, i18n } = useTranslation();
   const used = row.budget_utilisation;
 

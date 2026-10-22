@@ -4,6 +4,26 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Ad Groups: a screen of their own between a campaign and its ads
+
+### Added
+- **Ad Groups is a first-class destination** in the Campaigns area (`/ad-groups`), reachable without opening a
+  campaign. Every ad group the reader may see, across clients, projects and platforms, on its **own** metric rows —
+  never its campaign's, never the sum of its ads (a test copies the money one level down and asserts nothing moves).
+- **`GET /api/ad-groups`**, through the same entity assessment the ad-group rules read, so the screen and a rule about
+  an ad group cannot disagree about what one spent. Filters: client, project, platform, account, campaign, status (its
+  own), objective, search, spent-with-no-results; sorts spend, name, cost, ROAS, CTR; the spend of everything matched,
+  per currency. Parsing is shared with the campaigns endpoint in one trait.
+- **An ad group's page** with the trail Campaigns / its campaign / the ad group, its figures, the shared trend and
+  funnel narrowed to its own rows, its budget, the audience only where the sync stored one, and the ads inside it.
+- **The parent campaign's verdict, named as the campaign's.** The product judges health once, about campaigns; an ad
+  group is not given one by running that policy over a window with no previous period.
+- **Saved views for ad groups** (a new surface; its CHECK is re-derived from the enum, reversible).
+- A shared `Breadcrumbs` and `FilterSelect`; each ad group in a campaign's tree now links to its page.
+
+### Not shown, on purpose
+- Placement: nothing here stores placements, so there is no placement section. Audience appears only when stored.
+
 ## Campaigns as an Ads Manager table: columns, filters and views an operator compares
 
 ### Added

@@ -139,6 +139,12 @@ export const BudgetControlPage = lazy(async () => ({
 export const CampaignBuilderPage = lazy(async () => ({
   default: (await import('@/features/campaign-control/CampaignBuilderPage')).CampaignBuilderPage,
 }));
+export const AdGroupsPage = lazy(async () => ({
+  default: (await import('@/features/ad-groups/AdGroupsPage')).AdGroupsPage,
+}));
+export const AdGroupDetailPage = lazy(async () => ({
+  default: (await import('@/features/ad-groups/AdGroupDetailPage')).AdGroupDetailPage,
+}));
 export const CampaignDetailPage = lazy(async () => ({
   default: (await import('@/features/campaign-control/CampaignDetailPage')).CampaignDetailPage,
 }));

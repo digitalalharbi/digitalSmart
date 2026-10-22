@@ -16,6 +16,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { EntityPicker } from '@/shared/ui/entity-picker';
 import { Input } from '@/shared/ui/input';
 import { PageHeader } from '@/shared/ui/page-header';
+import { FilterSelect } from '@/shared/ui/filter-select';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { PAGE_SIZE } from './api';
 import { CampaignCard } from './CampaignParts';
@@ -299,7 +300,7 @@ export function CampaignControlPage() {
               onChange={(event) => update({ search: event.target.value })}
             />
           </div>
-          <Select
+          <FilterSelect
             label={t('campaignControl.period')}
             value={filters.days === null ? null : String(filters.days)}
             onChange={(days) => update({ days: days === null ? null : Number(days) })}
@@ -324,7 +325,7 @@ export function CampaignControlPage() {
             options={(clients.data?.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
             isLoading={clients.isFetching}
           />
-          <Select
+          <FilterSelect
             label={t('campaignControl.provider')}
             value={filters.provider}
             onChange={(provider) => update({ provider })}
@@ -405,7 +406,7 @@ export function CampaignControlPage() {
               {t('campaignControl.mine')}
             </label>
             {(tags.data ?? []).length === 0 ? null : (
-              <Select
+              <FilterSelect
                 label={t('campaignControl.tag')}
                 value={filters.tag?.id ?? null}
                 onChange={(id) =>
@@ -420,7 +421,7 @@ export function CampaignControlPage() {
                 any={t('campaignControl.any')}
               />
             )}
-            <Select
+            <FilterSelect
               label={t('campaignControl.status')}
               value={filters.status}
               onChange={(status) => update({ status })}
@@ -430,7 +431,7 @@ export function CampaignControlPage() {
               }))}
               any={t('campaignControl.any')}
             />
-            <Select
+            <FilterSelect
               label={t('campaignControl.objective')}
               value={filters.objective}
               onChange={(objective) => update({ objective })}
@@ -440,7 +441,7 @@ export function CampaignControlPage() {
               }))}
               any={t('campaignControl.any')}
             />
-            <Select
+            <FilterSelect
               label={t('campaignControl.performance')}
               value={filters.health}
               onChange={(health) => update({ health: health as ControlFilters['health'] })}
@@ -450,7 +451,7 @@ export function CampaignControlPage() {
               }))}
               any={t('campaignControl.any')}
             />
-            <Select
+            <FilterSelect
               label={t('campaignControl.budgetState')}
               value={filters.budget}
               onChange={(budget) => update({ budget: budget as ControlFilters['budget'] })}
@@ -460,7 +461,7 @@ export function CampaignControlPage() {
               ]}
               any={t('campaignControl.any')}
             />
-            <Select
+            <FilterSelect
               label={t('campaignControl.endsWithin')}
               value={filters.endsWithin === null ? null : String(filters.endsWithin)}
               onChange={(days) => update({ endsWithin: days === null ? null : Number(days) })}
@@ -478,7 +479,7 @@ export function CampaignControlPage() {
               />
               {t('campaignControl.zeroResults')}
             </label>
-            <Select
+            <FilterSelect
               label={t('campaignControl.sort')}
               value={filters.sort}
               onChange={(sort) => update({ sort: (sort ?? 'health') as SortKey })}
@@ -583,43 +584,6 @@ export function CampaignControlPage() {
       ) : null}
       {/* Shows itself only when campaigns are waiting to be placed; closed, because it is housekeeping, not the picture. */}
       <OwnershipQueue />
-    </div>
-  );
-}
-
-function Select({
-  label,
-  value,
-  onChange,
-  options,
-  any,
-}: {
-  label: string;
-  value: string | null;
-  onChange: (value: string | null) => void;
-  options: Array<{ value: string; label: string }>;
-  any: string | null;
-}) {
-  const id = `cc-${label}`;
-
-  return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-content-secondary text-xs font-medium">
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value ?? ''}
-        onChange={(event) => onChange(event.target.value === '' ? null : event.target.value)}
-        className="bg-surface-sunken text-content h-10 rounded-full border-0 px-4 text-sm"
-      >
-        {any === null ? null : <option value="">{any}</option>}
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
     </div>
   );
 }

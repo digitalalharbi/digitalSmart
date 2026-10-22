@@ -818,7 +818,8 @@
     "automationRoutines": "Routines",
     "automationHistory": "Action history",
     "automationChanges": "Change log",
-    "creatives": "Creatives"
+    "creatives": "Creatives",
+    "adGroups": "Ad Groups"
   },
   "actions": {
     "search": "Search",
@@ -4612,5 +4613,49 @@
     "ads_other": "{{count}} ads",
     "lastDays_one": "Last {{count}} day",
     "lastDays_other": "Last {{count}} days"
+  },
+  "adGroups": {
+    "title": "Ad Groups",
+    "summary": "Ad group summary",
+    "matched": "Ad groups",
+    "spendIn": "Spend ({{currency}})",
+    "filters": "Filters",
+    "search": "Search",
+    "searchPlaceholder": "Ad group, campaign, client or project",
+    "loading": "Loading ad groups",
+    "loadFailed": "Ad groups could not be loaded.",
+    "truncated": "The largest ad groups by spend are shown; narrow the filters to see the rest.",
+    "inCampaign": "In campaign",
+    "crumbCampaigns": "Campaigns",
+    "breadcrumb": "Where you are",
+    "col": {
+      "adGroup": "Ad group",
+      "campaign": "Campaign",
+      "campaignHealth": "Campaign health"
+    },
+    "preset": {
+      "spend": "High spend",
+      "roas": "Best ROAS",
+      "noResults": "No conversions",
+      "mine": "My ad groups"
+    },
+    "empty": {
+      "none": "No ad groups yet",
+      "filtered": "No ad groups match these filters",
+      "body": "Ad groups appear here once a connected account has synced campaigns that have them."
+    },
+    "detail": {
+      "title": "Ad group",
+      "back": "All ad groups",
+      "notFound": "This ad group does not exist or is not one you may see.",
+      "kpis": "Key figures",
+      "campaignHealth": "Campaign health",
+      "trendLabel": "Daily performance of {{name}}",
+      "audience": "Audience",
+      "ads": "Ads in this ad group",
+      "noAds": "No ads have been synced for this ad group.",
+      "noCreative": "No creative",
+      "siblings": "All ad groups in this campaign"
+    }
   }
 }
