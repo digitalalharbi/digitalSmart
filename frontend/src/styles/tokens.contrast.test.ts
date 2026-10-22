@@ -166,25 +166,32 @@ describe.each(['light', 'dark'] as Mode[])('text contrast in the %s theme', (mod
     }
   });
 
-  it.each(['success', 'warning', 'danger', 'info'] as const)(
-    'reads %s on its own tinted surface',
-    (status) => {
-      /*
-       * Where a status colour is most often read: a badge. The light theme tints with a solid ramp step and the
-       * dark theme with the hue at 16% over the raised surface, so the dark value is composited before it is
-       * measured — the opaque hue is a colour no reader ever sees.
-       */
-      const raised = colour(mode, 'surface-raised');
-      const foreground = colour(mode, status, raised);
-      const background = colour(mode, `${status}-surface`, raised);
-      const ratio = contrastRatio(foreground, background);
+  it.each(
+    (['success', 'warning', 'danger', 'info'] as const).flatMap((status) =>
+      (['surface-raised', 'surface', 'workspace'] as const).map(
+        (under) => [status, under] as const,
+      ),
+    ),
+  )('reads %s on its own tinted surface, over --ds-%s', (status, under) => {
+    /*
+     * Where a status colour is most often read: a badge. The light theme tints with a solid ramp step and the
+     * dark theme with the hue at 16% over the raised surface, so the dark value is composited before it is
+     * measured — the opaque hue is a colour no reader ever sees.
+     */
+    /*
+     * Over every surface a card is painted on, not only the raised one: the badge in a table sits on `surface`,
+     * which in the light theme is a step darker than white, and a tint over it is darker than the one over white.
+     */
+    const raised = colour(mode, under);
+    const foreground = colour(mode, status, raised);
+    const background = colour(mode, `${status}-surface`, raised);
+    const ratio = contrastRatio(foreground, background);
 
-      expect(
-        ratio,
-        `--ds-${status} on --ds-${status}-surface in ${mode} is ${ratio.toFixed(2)}:1`,
-      ).toBeGreaterThanOrEqual(AA_TEXT);
-    },
-  );
+    expect(
+      ratio,
+      `--ds-${status} on --ds-${status}-surface over --ds-${under} in ${mode} is ${ratio.toFixed(2)}:1`,
+    ).toBeGreaterThanOrEqual(AA_TEXT);
+  });
 
   it('reads brand ink on the brand chip', () => {
     /*

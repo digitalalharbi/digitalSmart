@@ -126,7 +126,7 @@ const FALLBACK: ChartPalette = {
   textTertiary: '#6b6b6b',
   surface: '#ffffff',
   accent: '#c24a2c',
-  success: '#237a4d',
+  success: '#1f6f46',
   warning: '#7c5a12',
   danger: '#b03a34',
   fontFamily: 'Sora, sans-serif',

@@ -46,6 +46,10 @@ All notable changes to digitalSmart are recorded here. Format follows
 - **`/ad-groups` was wider than a phone** (a large amount in a two-column figure tile pushed the page sideways); amounts
   now wrap and the tile is tighter on a phone.
 - **The landing header did not fit at 320px**; the mark stands in for the wordmark below 420px.
+- **Green status text failed AA on a light card** (axe, `/campaigns`, `/integrations`, `/administration`): the kit's green ink measured
+  4.26:1 on its own tint over the card colour. The ink is a step deeper (`#1F6F46`), and the contrast test now measures every
+  status over every surface a badge is painted on, not only the raised one, so it fails on the next one.
+- **The appearance test assumed the app starts light**; dark is the default, so it reads where it starts.
 
 ### Where the kit does not clear AA
 The brand colour was kept and the surrounding step or tint adjusted; the contrast and palette gates were not changed.

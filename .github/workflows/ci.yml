@@ -153,8 +153,9 @@ jobs:
   e2e:
     name: End-to-end (Playwright)
     runs-on: ubuntu-latest
-    # 580 tests on two browser projects now run past thirty minutes; a timeout cancels the job and reads as a failure.
-    timeout-minutes: 50
+    # The suite plus the entry-screen compatibility specs on five browsers, and a browser install that is network-bound
+    # (one run spent half an hour in apt), so the limit leaves room: a timeout cancels the job and reads as a failure.
+    timeout-minutes: 80
     needs: [backend, frontend]
 
     services:

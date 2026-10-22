@@ -216,7 +216,7 @@
    * 3.2:1, all under AA. So in the light theme the *text* is a deeper step of each hue — same family, measured to clear
    * 4.5:1 on every surface and on its own tint — and the brand hex stays the fill (the tint is the brand hue at 12%).
    */
-  --ds-success: #237a4d;
+  --ds-success: #1f6f46;
   --ds-success-surface: rgb(63 166 114 / 0.14);
   --ds-warning: #7c5a12;
   --ds-warning-surface: rgb(212 162 58 / 0.18);
