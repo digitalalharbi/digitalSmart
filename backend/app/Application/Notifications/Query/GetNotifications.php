@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Notifications\Query;
 
 use App\Application\Notifications\Contract\NotificationBroadcaster;
+use App\Application\Notifications\Contract\NotificationDeliveryLog;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\DTO\NotificationFeed;
 use App\Application\Shared\Contract\ActorContext;
@@ -27,6 +28,7 @@ final readonly class GetNotifications
         private NotificationStore $store,
         private ActorContext $actor,
         private NotificationBroadcaster $broadcaster,
+        private NotificationDeliveryLog $deliveries,
     ) {}
 
     public function __invoke(bool $unreadOnly = false, ?int $limit = null, ?NotificationCategory $category = null): NotificationFeed
@@ -34,20 +36,28 @@ final readonly class GetNotifications
         $workspaceId = $this->actor->workspaceId()->value;
         $userId = $this->actor->userId()->value;
 
+        $notifications = $this->store->forUser(
+            $workspaceId,
+            $userId,
+            $unreadOnly,
+            max(1, min($limit ?? self::LIMIT, 200)),
+            $category,
+        );
+
         return new NotificationFeed(
-            notifications: $this->store->forUser(
-                $workspaceId,
-                $userId,
-                $unreadOnly,
-                max(1, min($limit ?? self::LIMIT, 200)),
-                $category,
-            ),
+            notifications: $notifications,
             digest: $this->store->digest($workspaceId, $userId),
             /*
              * Published so a surface can say whether it is being pushed to or is polling. A page that silently
              * polls while implying it is live is one where somebody waits for an update that never animates.
              */
             isLive: $this->broadcaster->isConfigured(),
+            /* The owner's own rows only: delivery is history, and a person's history is theirs. */
+            deliveries: $this->deliveries->forNotifications(
+                $workspaceId,
+                $userId,
+                array_map(static fn ($n): string => $n->id, $notifications),
+            ),
         );
     }
 }

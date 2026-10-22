@@ -774,9 +774,14 @@ word on whether it can deliver today), a time zone (or the workspace's), an hour
 composer narrows to the chosen client or projects and never widens. The page is tabs, count tiles, cards (icon by tab,
 severity pill, the payload's figures, one action, dismiss) and the settings panel.
 
-**History.** A row now records generated (`created_at`), read, clicked and dismissed; sent and failed belong to the
-delivery rows a channel adapter will write. Email and WhatsApp delivery do not exist yet: there is no sender
-identity and no provider credential, so nothing is marked sent that was not.
+**History, and delivery in the state it is in (PR E).** A row records generated (`created_at`), read, clicked and
+dismissed; `notification_deliveries` holds the sent/failed half, one row per notification per channel the person
+asked for — never the bell itself. `HonestChannelDelivery` is the email and WhatsApp adapter as it honestly is: it
+sends nothing and answers `awaiting_credentials` with the sentence naming what is missing (a mail provider and a
+sender identity; a WhatsApp Business API token and an approved template), or `logged` in a development checkout,
+where the message goes to the log so its shape can be read. `sent` can be written only by an adapter holding a
+provider's acknowledgement, and no such adapter exists in this repository. The feed carries each notification's
+deliveries as the owner's own history.
 
 ## A note on testing the channel
 

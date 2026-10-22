@@ -2815,6 +2815,15 @@
       "mutedHint": "A muted tab is not sent to you. It cannot widen what you are shown — only switch it off.",
       "saved": "Saved.",
       "save": "Save settings"
+    },
+    "delivery": {
+      "label": "Deliveries",
+      "status": {
+        "awaiting_credentials": "awaiting credentials",
+        "logged": "logged, not sent",
+        "sent": "sent",
+        "failed": "failed"
+      }
     }
   },
   "requests": {
