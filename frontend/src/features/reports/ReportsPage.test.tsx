@@ -791,8 +791,10 @@ describe('the reports centre', function () {
     expect(within(facts).getByText('Opens')).toBeInTheDocument();
     expect(within(facts).getByText('Last opened')).toBeInTheDocument();
     expect(within(facts).getByText('Link closes')).toBeInTheDocument();
-    expect(within(facts).getByText('Live figures · 1')).toBeInTheDocument();
-    expect(within(facts).getByText('Frozen figures · 1')).toBeInTheDocument();
+    /* The badges sit beside the list, not in it: a definition list holds only terms and definitions. */
+    expect(within(facts).queryByText('Live figures · 1')).toBeNull();
+    expect(screen.getByText('Live figures · 1')).toBeInTheDocument();
+    expect(screen.getByText('Frozen figures · 1')).toBeInTheDocument();
   });
 
   it('says a report has never been opened rather than printing a zero', async () => {
