@@ -20,7 +20,10 @@ test.describe('ad groups', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Ad Groups' })).toBeVisible();
     const first = page.locator('tbody tr').first();
     await expect(first).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole('columnheader', { name: 'Campaign health' })).toBeVisible();
+    /* The head row is hidden on a phone, where each row is a card carrying its own column labels. */
+    if ((page.viewportSize()?.width ?? 0) >= 640) {
+      await expect(page.getByRole('columnheader', { name: 'Campaign health' })).toBeVisible();
+    }
   });
 
   test('moves from an ad group to its campaign by the trail, and keeps its filters in the address', async ({
