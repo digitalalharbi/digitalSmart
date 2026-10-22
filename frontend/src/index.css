@@ -37,6 +37,10 @@
   --color-action: var(--ds-action);
   --color-action-hover: var(--ds-action-hover);
   --color-action-contrast: var(--ds-action-contrast);
+  --color-action-pressed: var(--ds-action-pressed);
+  --color-action-hover-contrast: var(--ds-action-hover-contrast);
+  --color-approve: var(--ds-approve);
+  --color-approve-contrast: var(--ds-approve-contrast);
 
   --color-success: var(--ds-success);
   --color-success-surface: var(--ds-success-surface);
@@ -293,4 +297,10 @@
     break-after: page;
     page-break-after: always;
   }
+}
+
+/* The logo shows the artwork made for the theme it is on (src/shared/ui/logo.tsx). */
+:root:not([data-theme='dark']) .ds-logo-for-dark,
+[data-theme='dark'] .ds-logo-for-light {
+  display: none;
 }

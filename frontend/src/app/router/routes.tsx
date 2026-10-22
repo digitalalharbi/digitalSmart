@@ -5,6 +5,7 @@ import { NAV_ITEMS } from '@/app/navigation';
 import { NotFoundPage } from '@/app/router/NotFoundPage';
 import { RequireSession } from '@/app/router/RequireSession';
 import { LoginPage } from '@/features/auth';
+import { LandingPage } from '@/features/entry';
 import { AdministrationPage } from '@/features/administration';
 import { IntegrationsPage } from '@/features/integrations';
 import { ClientsPage } from '@/features/clients';
@@ -116,6 +117,7 @@ const featureRoutes: RouteObject[] = NAV_ITEMS.filter((item) => item.path !== '/
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
+  { path: '/welcome', element: <LandingPage /> },
   /*
    * The client's own portal, in its own shell rather than the agency's — no sidebar of agency surfaces, no
    * notification bell. It is behind the session because a client signs in; what it shows is decided by the

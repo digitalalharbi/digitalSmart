@@ -30,9 +30,7 @@ export function KpiTile({
       >
         {label}
       </span>
-      <span className="ds-numeric text-2xl leading-tight font-semibold sm:text-[1.75rem]">
-        {value}
-      </span>
+      <span className="ds-numeric ds-figure text-2xl leading-tight sm:text-[1.75rem]">{value}</span>
       {sub === undefined ? null : (
         <span className={cn('text-xs', highlight ? 'text-white' : 'text-content-tertiary')}>
           {sub}
@@ -43,7 +41,9 @@ export function KpiTile({
 
   const shape = cn(
     'flex min-w-0 flex-col gap-1.5 rounded-3xl p-5 shadow-xs',
-    highlight ? 'bg-accent-strong text-white' : 'bg-surface text-content',
+    highlight
+      ? 'border border-transparent bg-accent-strong text-white'
+      : 'bg-surface border-line text-content border',
     className,
   );
 

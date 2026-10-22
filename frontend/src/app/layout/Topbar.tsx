@@ -5,6 +5,7 @@ import { NotificationBell } from '@/features/notifications';
 import { AccountMenu } from './AccountMenu';
 import { TopNav } from './TopNav';
 import { Button } from '@/shared/ui/button';
+import { Logo } from '@/shared/ui/logo';
 import { useUiStore, resolveTheme } from '@/shared/store/ui-store';
 import type { Locale } from '@/shared/i18n';
 
@@ -37,15 +38,8 @@ export function Topbar() {
         aria-label={t('brand.name')}
         className="bg-surface flex h-12 shrink-0 items-center gap-2.5 rounded-full ps-2 pe-5 shadow-xs"
       >
-        <span
-          aria-hidden="true"
-          className="bg-accent-strong text-accent-contrast grid size-8 place-items-center rounded-full text-xs font-bold"
-        >
-          dS
-        </span>
-        <span className="text-content hidden text-sm font-semibold sm:inline">
-          {t('brand.name')}
-        </span>
+        <Logo layout="mark" width={32} label={null} className="sm:hidden" />
+        <Logo layout="horizontal" width={118} label={null} className="hidden sm:block" />
       </Link>
 
       <div className="flex min-w-0 flex-1 justify-center">

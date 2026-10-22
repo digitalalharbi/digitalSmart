@@ -9,12 +9,12 @@ import type { ProviderSlug } from './types';
  * this role rather than letting it spread across the interface.
  */
 const MARKS: Record<ProviderSlug, { initials: string; token: string; ink: 'light' | 'dark' }> = {
-  meta: { initials: 'M', token: '--ds-platform-meta', ink: 'dark' },
+  meta: { initials: 'M', token: '--ds-platform-meta', ink: 'light' },
   google_ads: { initials: 'G', token: '--ds-platform-google', ink: 'dark' },
   tiktok: { initials: 'TT', token: '--ds-platform-tiktok', ink: 'dark' },
-  snapchat: { initials: 'S', token: '--ds-platform-snapchat', ink: 'dark' },
+  snapchat: { initials: 'S', token: '--ds-platform-snapchat', ink: 'light' },
   x: { initials: 'X', token: '--ds-platform-x', ink: 'light' },
-  linkedin: { initials: 'in', token: '--ds-platform-linkedin', ink: 'light' },
+  linkedin: { initials: 'in', token: '--ds-platform-linkedin', ink: 'dark' },
   openai: { initials: 'AI', token: '--ds-platform-openai', ink: 'dark' },
   google_analytics: { initials: 'GA', token: '--ds-platform-google-analytics', ink: 'dark' },
   google_tag_manager: { initials: 'GT', token: '--ds-platform-google-tag-manager', ink: 'light' },
@@ -73,7 +73,7 @@ export function ProviderLogo({
          * assumed white: white on a platform's yellow or orange is unreadable. The choice is per provider because
          * lightness alone does not decide it — a green and a blue of equal lightness want different ink.
          */
-        color: mark.ink === 'light' ? '#ffffff' : '#14161c',
+        color: mark.ink === 'light' ? 'var(--ds-brand-white)' : 'var(--ds-brand-ink)',
       }}
     >
       {mark.initials}

@@ -231,10 +231,10 @@ export function StoresPanel({ clientId, clients }: { clientId: string | null; cl
                     className={
                       'size-2 shrink-0 rounded-full ' +
                       (store.last_synced_at === null
-                        ? 'bg-[var(--ds-status-warning,#d97706)]'
+                        ? 'bg-warning'
                         : store.orders_synced_through === null
-                          ? 'bg-[var(--ds-status-warning,#d97706)]'
-                          : 'bg-[var(--ds-status-good,#16a34a)]')
+                          ? 'bg-warning'
+                          : 'bg-success')
                     }
                   />
                   <span className="truncate">

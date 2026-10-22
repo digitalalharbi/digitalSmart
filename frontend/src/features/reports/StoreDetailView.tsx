@@ -200,7 +200,7 @@ export function StoreDetailView({
                       key: 'unattributed',
                       label: t('reports.commerce.unattributed'),
                       value: unattributed.net_revenue,
-                      colour: 'var(--ds-border-strong, #9ca3af)',
+                      colour: 'var(--ds-border-strong)',
                     },
                   ]),
             ]}
@@ -259,7 +259,7 @@ export function StoreDetailView({
                       key: 'unknown',
                       label: t('reports.commerce.unknownCustomers'),
                       value: mix.unknown,
-                      colour: 'var(--ds-border-strong, #9ca3af)',
+                      colour: 'var(--ds-border-strong)',
                     },
                   ]
                 : []),

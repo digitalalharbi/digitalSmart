@@ -93,11 +93,14 @@ function resolve(mode: Mode, name: string): string {
     expect(value, `--ds-${name} points at --ds-${hop[1]}, which is not declared`).not.toBeNull();
   }
 
-  const hex = hexFromOklch(value ?? '');
+  /* The brand's own tokens (status hues, the orange) are authored as the kit spells them: hex. The ramps are oklch(). */
+  const hex = /^#[0-9a-f]{6}$/i.test(value ?? '')
+    ? (value ?? '').toLowerCase()
+    : hexFromOklch(value ?? '');
 
   expect(
     hex,
-    `--ds-${name} resolves to "${value ?? ''}", which is not an oklch() value`,
+    `--ds-${name} resolves to "${value ?? ''}", which is neither a hex nor an oklch() value`,
   ).not.toBeNull();
 
   return hex ?? '';

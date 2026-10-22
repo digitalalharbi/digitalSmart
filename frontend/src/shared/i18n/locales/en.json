@@ -1,7 +1,8 @@
 {
   "brand": {
     "name": "digitalSmart",
-    "by": "by Smart Code"
+    "by": "by Smart Code",
+    "tagline": "All your advertising campaigns, in one smart dashboard"
   },
   "areas": {
     "overview": "Overview",
@@ -4826,6 +4827,82 @@
       "adGroup": "Ad group",
       "siblings": "All ads in this ad group",
       "creativeIntelligence": "Creative intelligence"
+    }
+  },
+  "entry": {
+    "label": "Marketing Operating System",
+    "supportLogin": "Manage campaigns, watch performance, analyse results and share interactive reports with clients from one place.",
+    "welcome": "Welcome back",
+    "formTitleHint": "Sign in to digitalSmart",
+    "secure": "Secure connection. We never store your ad platforms' passwords.",
+    "benefits": {
+      "platforms": {
+        "title": "Every platform, followed",
+        "body": "All your ad accounts in one view."
+      },
+      "analytics": {
+        "title": "Analytics and funnel",
+        "body": "From impression to result, step by step."
+      },
+      "reports": {
+        "title": "Live, shareable reports",
+        "body": "An interactive link for your client."
+      },
+      "alerts": {
+        "title": "Alerts, faster decisions",
+        "body": "What needs you appears first."
+      }
+    },
+    "nav": {
+      "features": "Features",
+      "platforms": "Platforms",
+      "reports": "Reports",
+      "label": "Navigation"
+    },
+    "hero": {
+      "line1": "All your campaigns.",
+      "line2": "All your platforms.",
+      "line3": "One view.",
+      "tag": "Smarter decisions, faster.",
+      "support": "Manage campaigns, follow performance, analyse results, watch budgets and content, and share interactive reports with clients — from one workspace."
+    },
+    "platformsLabel": "Supported for connection and analysis",
+    "cards": {
+      "campaigns": {
+        "title": "Campaign management",
+        "body": "Follow campaigns, ad groups and ads in one place."
+      },
+      "analytics": {
+        "title": "Analytics",
+        "body": "Understand performance, funnel and results quickly."
+      },
+      "reports": {
+        "title": "Reports",
+        "body": "Give your client a live, interactive link."
+      },
+      "creative": {
+        "title": "Creative",
+        "body": "Know which creatives work and when to refresh them."
+      }
+    },
+    "preview": {
+      "label": "Product preview",
+      "sample": "Sample data",
+      "spend": "Spend",
+      "results": "Results",
+      "roas": "ROAS",
+      "active": "Active campaigns",
+      "mix": "Spend by platform",
+      "top": "Top campaigns",
+      "trend": "Spend trend",
+      "attention": "Needs attention",
+      "attentionBody": "A campaign has spent with no results for 3 days",
+      "disclaimer": "Illustrative figures only"
+    },
+    "loginHeadline": {
+      "l1": "All your campaigns.",
+      "l2": "One view.",
+      "l3": "Smarter decisions."
     }
   }
 }

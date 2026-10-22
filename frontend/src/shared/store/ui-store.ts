@@ -83,7 +83,8 @@ export const useUiStore = create<UiState>()(
       setPeriod: (period) => set({ period }),
       isPaletteOpen: false,
       setPaletteOpen: (open) => set({ isPaletteOpen: open }),
-      theme: 'system',
+      /* The brand's home is the dark theme; a visitor who has chosen otherwise keeps their choice. */
+      theme: 'dark',
       locale: detectInitialLocale(),
       isSidebarCollapsed: false,
       isMobileNavOpen: false,
