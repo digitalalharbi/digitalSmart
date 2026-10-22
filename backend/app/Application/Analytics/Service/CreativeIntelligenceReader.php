@@ -53,6 +53,7 @@ final readonly class CreativeIntelligenceReader
         ?string $verdict = null,
         int $limit = 24,
         int $offset = 0,
+        ?string $adStatus = null,
     ): CreativeIntelligence {
         $grain = $grain === 'ad' ? 'ad' : 'asset';
         $previousRange = $range->previousPeriod();
@@ -85,7 +86,7 @@ final readonly class CreativeIntelligenceReader
 
         $selected = array_values(array_filter(
             $current,
-            function (BreakdownRow $row) use ($info, $assessments, $format, $verdict): bool {
+            function (BreakdownRow $row) use ($info, $assessments, $format, $verdict, $adStatus): bool {
                 $about = $info[$row->key] ?? null;
 
                 // A row with no catalogue entry is not this workspace's, or has gone: it is not shown rather than shown unnamed.
@@ -94,6 +95,11 @@ final readonly class CreativeIntelligenceReader
                 }
 
                 if ($format !== null && $about->format !== $format) {
+                    return false;
+                }
+
+                /* An ad's own status — not its campaign's. At the grain of an asset there is none, so it narrows nothing. */
+                if ($adStatus !== null && $about->adStatus !== null && $about->adStatus !== $adStatus) {
                     return false;
                 }
 

@@ -7,6 +7,7 @@ namespace App\Interface\Http\Request\Analytics;
 use App\Application\Analytics\DTO\AnalyticsRequest;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Advertising\CreativeFormat;
+use App\Domain\Advertising\EntityStatus;
 use App\Domain\Analytics\CreativeVerdict;
 use App\Domain\Integration\Provider;
 use DateTimeImmutable;
@@ -37,6 +38,10 @@ final class CreativeQueryRequest extends FormRequest
             'account_ids.*' => ['uuid'],
             'campaign_ids' => ['sometimes', 'array'],
             'campaign_ids.*' => ['uuid'],
+            'ad_group_ids' => ['sometimes', 'array'],
+            'ad_group_ids.*' => ['uuid'],
+            'ad_ids' => ['sometimes', 'array'],
+            'ad_ids.*' => ['uuid'],
             'project_ids' => ['sometimes', 'array'],
             'project_ids.*' => ['uuid'],
             'client_id' => ['sometimes', 'nullable', 'uuid'],
@@ -44,6 +49,7 @@ final class CreativeQueryRequest extends FormRequest
             'grain' => ['sometimes', Rule::in(['asset', 'ad'])],
             'format' => ['sometimes', 'nullable', Rule::in(array_map(static fn (CreativeFormat $format): string => $format->value, CreativeFormat::cases()))],
             'verdict' => ['sometimes', 'nullable', Rule::in(array_map(static fn (CreativeVerdict $verdict): string => $verdict->value, CreativeVerdict::cases()))],
+            'ad_status' => ['sometimes', 'nullable', Rule::in(array_map(static fn (EntityStatus $status): string => $status->value, EntityStatus::cases()))],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:100'],
             'offset' => ['sometimes', 'integer', 'min:0', 'max:10000'],
         ];
@@ -91,6 +97,14 @@ final class CreativeQueryRequest extends FormRequest
     public function creativeFormat(): ?string
     {
         $value = $this->string('format')->value();
+
+        return $value === '' ? null : $value;
+    }
+
+    /** The ad's own status — meaningful at the grain of an ad; an asset is not one ad and has none. */
+    public function adStatus(): ?string
+    {
+        $value = $this->string('ad_status')->value();
 
         return $value === '' ? null : $value;
     }

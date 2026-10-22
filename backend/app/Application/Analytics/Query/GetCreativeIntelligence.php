@@ -47,6 +47,7 @@ final readonly class GetCreativeIntelligence
         ?string $verdict = null,
         int $limit = 24,
         int $offset = 0,
+        ?string $adStatus = null,
     ): CreativeIntelligence {
         $this->guard->ensure(Permission::AnalyticsView);
 
@@ -57,7 +58,7 @@ final readonly class GetCreativeIntelligence
             return new CreativeIntelligence($grain, $range, $range->previousPeriod(), [], 0, false, [], []);
         }
 
-        return $this->reader->read($this->actor->workspaceId()->value, $range, $scope, $grain, $format, $verdict, $limit, $offset);
+        return $this->reader->read($this->actor->workspaceId()->value, $range, $scope, $grain, $format, $verdict, $limit, $offset, $adStatus);
     }
 
     private function scope(AnalyticsFilters $filters): ?AnalyticsFilters

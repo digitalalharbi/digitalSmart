@@ -121,3 +121,15 @@ it('saves a view of the ad groups screen, with the filters that screen offers an
     /* `ends` is the campaigns screen's filter; an ad group has no end date of its own to offer. */
     expect($kept)->toEqual(['campaign' => 'c~Campaign', 'status' => 'active', 'zero' => '1', 'sort' => 'roas']);
 });
+
+it('saves a view of the ads screen, with the filters that screen offers and no others', function (): void {
+    ['s' => $s] = viewWorld();
+
+    $kept = $this->actingAs($s->owner)->postJson('/api/views/ads', [
+        'name' => 'Fatiguing on Meta',
+        'filters' => ['group' => 'g~Lookalike', 'verdict' => 'fatiguing', 'provider' => 'meta', 'view' => 'table', 'zero' => '1'],
+    ])->assertCreated()->json('data.filters');
+
+    /* `zero` is a campaigns and ad groups filter; an ad's read has no such question. */
+    expect($kept)->toEqual(['group' => 'g~Lookalike', 'verdict' => 'fatiguing', 'provider' => 'meta', 'view' => 'table']);
+});

@@ -819,7 +819,8 @@
     "automationHistory": "Action history",
     "automationChanges": "Change log",
     "creatives": "Creatives",
-    "adGroups": "Ad Groups"
+    "adGroups": "Ad Groups",
+    "ads": "Ads"
   },
   "actions": {
     "search": "Search",
@@ -4655,7 +4656,47 @@
       "ads": "Ads in this ad group",
       "noAds": "No ads have been synced for this ad group.",
       "noCreative": "No creative",
-      "siblings": "All ad groups in this campaign"
+      "siblings": "All ad groups in this campaign",
+      "openAds": "Open these ads as pictures"
+    }
+  },
+  "ads": {
+    "title": "Ads",
+    "summary": "Ads summary",
+    "matched": "Ads",
+    "filters": "Filters",
+    "loading": "Loading ads",
+    "loadFailed": "Ads could not be loaded.",
+    "creativeStatus": "Creative status",
+    "format": "Format",
+    "media": "Media view",
+    "inAdGroup": "In ad group",
+    "col": {
+      "preview": "Preview",
+      "ad": "Ad"
+    },
+    "preset": {
+      "top": "Top creatives",
+      "fatiguing": "Fatiguing",
+      "replace": "Needs replacing",
+      "active": "Active ads"
+    },
+    "empty": {
+      "none": "No ads yet",
+      "filtered": "No ads match these filters",
+      "body": "Ads appear here once a connected account has synced campaigns that have them."
+    },
+    "detail": {
+      "title": "Ad",
+      "back": "All ads",
+      "notFound": "This ad does not exist or is not one you may see.",
+      "kpis": "Key figures",
+      "evidence": "What changed",
+      "trendLabel": "Daily performance of {{name}}",
+      "campaign": "Campaign",
+      "adGroup": "Ad group",
+      "siblings": "All ads in this ad group",
+      "creativeIntelligence": "Creative intelligence"
     }
   }
 }

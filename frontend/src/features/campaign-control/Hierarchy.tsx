@@ -341,9 +341,13 @@ export function Hierarchy({
                           )}
                         </span>
                         <span className="flex min-w-0 flex-1 flex-col">
-                          <span className="text-content truncate text-sm" dir="auto">
+                          <Link
+                            to={`/ads/${ad.id}`}
+                            className="text-content truncate text-sm hover:underline"
+                            dir="auto"
+                          >
                             {ad.name}
-                          </span>
+                          </Link>
                           <span className="text-content-tertiary truncate text-xs">
                             {ad.creative === null ? null : (
                               <span dir="auto">{`${ad.creative.name} · `}</span>

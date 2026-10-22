@@ -236,9 +236,13 @@ export function AdGroupDetailPage() {
                       className="border-line-subtle flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3 text-sm"
                     >
                       <span className="flex min-w-0 flex-col">
-                        <span className="truncate font-medium" dir="auto">
+                        <Link
+                          to={`/ads/${ad.id}`}
+                          className="truncate font-medium hover:underline"
+                          dir="auto"
+                        >
                           {ad.name}
-                        </span>
+                        </Link>
                         <span className="text-content-tertiary text-xs">
                           {ad.creative?.format ?? t('adGroups.detail.noCreative')}
                         </span>
@@ -260,12 +264,21 @@ export function AdGroupDetailPage() {
             </CardContent>
           </Card>
 
-          <Link
-            to={adGroupsLinkFor(row.campaign)}
-            className={buttonVariants({ variant: 'secondary' })}
-          >
-            {t('adGroups.detail.siblings')}
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to={adGroupsLinkFor(row.campaign)}
+              className={buttonVariants({ variant: 'secondary' })}
+            >
+              {t('adGroups.detail.siblings')}
+            </Link>
+            {/* The ads of this one ad group, as the Ads screen shows them — pictures first. */}
+            <Link
+              to={`/ads?group=${encodeURIComponent(`${row.id}~${row.name}`)}`}
+              className={buttonVariants({ variant: 'secondary' })}
+            >
+              {t('adGroups.detail.openAds')}
+            </Link>
+          </div>
         </div>
       )}
     </div>

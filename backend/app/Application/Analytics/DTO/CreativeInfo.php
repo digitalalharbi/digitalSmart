@@ -31,5 +31,9 @@ final readonly class CreativeInfo
         public ?string $adStatus = null,
         /** The asset an ad runs, so an ad row can point at the asset row. Null when the ad has no known creative. */
         public ?string $assetKey = null,
+        /** Where the ad sits, at the grain of an ad: its ad group and its campaign, by this product's own keys. */
+        public ?string $adGroupId = null,
+        public ?string $adGroupName = null,
+        public ?string $campaignId = null,
     ) {}
 }

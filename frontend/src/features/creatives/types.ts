@@ -23,6 +23,13 @@ export type CreativeRow = {
   campaigns: string[];
   campaign_count: number;
   ad_name: string | null;
+  /** The ad's own status — only at the grain of an ad. */
+  ad_status?: string | null;
+  /** Where an ad sits, at the grain of an ad; null for an asset, which is not one ad. */
+  parents?: {
+    ad_group: { id: string; name: string | null } | null;
+    campaign: { id: string; name: string | null } | null;
+  } | null;
   metrics: {
     source: string;
     source_label: string;
@@ -52,7 +59,12 @@ export type CreativeQuery = {
   client_id?: string;
   project_ids?: string[];
   campaign_ids?: string[];
+  ad_group_ids?: string[];
+  ad_ids?: string[];
   providers?: string[];
   format?: string;
+  verdict?: string;
+  ad_status?: string;
   limit?: number;
+  offset?: number;
 };

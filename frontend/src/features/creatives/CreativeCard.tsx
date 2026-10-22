@@ -1,5 +1,6 @@
 import { AlertTriangle, Sparkles, TrendingDown, TrendingUp, Trophy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import { cn } from '@/shared/lib/cn';
 import { formatMetric, MISSING } from '@/shared/metrics';
 import type { MetricValue } from '@/shared/metrics';
@@ -37,12 +38,15 @@ export function CreativeCard({
   chosen = false,
   canChoose = false,
   onToggle,
+  href,
 }: {
   row: CreativeRow;
   chosen?: boolean;
   canChoose?: boolean;
   /** Absent where there is nothing to compare against — a report is read, not worked. */
   onToggle?: (() => void) | undefined;
+  /** Where the card's name leads — an ad's own page, when the card is an ad. */
+  href?: string | undefined;
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -77,7 +81,13 @@ export function CreativeCard({
       <div className="flex min-w-0 flex-col gap-2 p-3">
         <div className="min-w-0">
           <p className="text-content truncate text-sm font-medium" dir="auto">
-            {row.label}
+            {href === undefined ? (
+              row.label
+            ) : (
+              <Link to={href} className="hover:underline">
+                {row.label}
+              </Link>
+            )}
           </p>
           <p className="text-content-tertiary truncate text-xs" dir="auto">
             {row.format_label}

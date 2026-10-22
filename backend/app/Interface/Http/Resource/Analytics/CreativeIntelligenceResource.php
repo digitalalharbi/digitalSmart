@@ -85,6 +85,11 @@ final readonly class CreativeIntelligenceResource
             'ad_name' => $info->adName,
             'ad_status' => $info->adStatus,
             'asset_key' => $info->assetKey,
+            /* At the grain of an ad only: where it sits. An asset is not one ad, so it has no single parent. */
+            'parents' => $info->adStatus === null ? null : [
+                'ad_group' => $info->adGroupId === null ? null : ['id' => $info->adGroupId, 'name' => $info->adGroupName],
+                'campaign' => $info->campaignId === null ? null : ['id' => $info->campaignId, 'name' => $info->campaigns[0] ?? null],
+            ],
             'metrics' => self::set($row->metrics),
             'trend' => array_map(
                 static fn (SeriesPoint $point): array => [
