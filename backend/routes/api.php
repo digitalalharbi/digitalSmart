@@ -722,6 +722,9 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         ->whereUuid('report')->name('reports.shares');
     Route::post('reports/{report}/shares', [ReportController::class, 'share'])
         ->whereUuid('report')->name('reports.share');
+    /* Every link and every frozen record across the reports the reader may see — the reports centre's tabs. */
+    Route::get('report-shares', [ReportController::class, 'allShares'])->name('reports.shares.all');
+    Route::get('report-snapshots', [ReportController::class, 'allSnapshots'])->name('reports.snapshots.all');
     Route::delete('report-shares/{share}', [ReportController::class, 'revokeShare'])
         ->whereUuid('share')->name('reports.shares.revoke');
 

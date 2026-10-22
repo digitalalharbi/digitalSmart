@@ -13,7 +13,10 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { PageHeader } from '@/shared/ui/page-header';
 import { WeeklyBriefs } from '@/features/agents';
 import { EntityPicker } from '@/shared/ui/entity-picker';
+import { TabList } from '@/shared/ui/tab-list';
 import { csvUrl, xlsxUrl } from './api';
+import { LinksPanel, LivePanel, ScheduledPanel, SnapshotsPanel } from './CentrePanels';
+import { ReportTracking } from './ReportTracking';
 import { ExportsPanel } from './ExportsPanel';
 import { ReportBuilder } from './ReportBuilder';
 import { ReportCover } from './ReportCover';
@@ -21,6 +24,9 @@ import { ReportView } from './ReportView';
 import { ReportWizard } from './ReportWizard';
 import { SharePanel } from './SharePanel';
 import {
+  useAllSchedulesQuery,
+  useAllSharesQuery,
+  useAllSnapshotsQuery,
   useCreateReportMutation,
   useDeleteReportMutation,
   useRenderedReportQuery,
@@ -42,6 +48,8 @@ import {
  * saying "nobody outside can see this", and a product that made it hard to find would be a product where that
  * sentence gets said without checking.
  */
+type CentreTab = 'library' | 'live' | 'scheduled' | 'snapshots' | 'links';
+
 export function ReportsPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -58,6 +66,7 @@ export function ReportsPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<'new' | 'existing' | null>(null);
   const [freshToken, setFreshToken] = useState<string | null>(null);
+  const [tab, setTab] = useState<CentreTab>('library');
 
   const clients = useClientsQuery({ search: clientTerm, per_page: 8 });
   const vocabulary = useReportVocabularyQuery(canView);
@@ -66,6 +75,10 @@ export function ReportsPage() {
   const draft = useReportDraftQuery(editing === 'existing' ? selected : null);
   const snapshots = useSnapshotsQuery(selected);
   const shares = useSharesQuery(selected, canShare);
+
+  const allSchedules = useAllSchedulesQuery(canView && tab === 'scheduled');
+  const allSnapshots = useAllSnapshotsQuery(canView && tab === 'snapshots');
+  const allShares = useAllSharesQuery(canShare && tab === 'links');
 
   const create = useCreateReportMutation();
   const update = useUpdateReportMutation();
@@ -96,6 +109,20 @@ export function ReportsPage() {
 
   const list = reports.data ?? [];
   const current = list.find((entry) => entry.id === selected);
+  const tabs: Array<{ id: CentreTab; label: string }> = [
+    { id: 'library', label: t('reports.centre.tabs.library') },
+    { id: 'live', label: t('reports.centre.tabs.live') },
+    { id: 'scheduled', label: t('reports.centre.tabs.scheduled') },
+    { id: 'snapshots', label: t('reports.centre.tabs.snapshots') },
+    ...(canShare ? [{ id: 'links' as const, label: t('reports.centre.tabs.links') }] : []),
+  ];
+  /* A report named in another tab is read in the library, where its figures, files and links live. */
+  const open = (id: string) => {
+    setSelected(id);
+    setEditing(null);
+    setFreshToken(null);
+    setTab('library');
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -131,215 +158,244 @@ export function ReportsPage() {
         />
       </header>
 
-      <WeeklyBriefs clientId={client?.id ?? null} />
+      <TabList
+        tabs={tabs}
+        active={tab}
+        onChange={setTab}
+        label={t('reports.centre.label')}
+        idPrefix="reports-centre"
+      />
 
-      {error === null ? null : <Alert tone="danger">{error}</Alert>}
-      {reports.isError ? <Alert tone="danger">{t('reports.loadFailed')}</Alert> : null}
+      <div
+        id="reports-centre-panel"
+        role="tabpanel"
+        aria-labelledby={`reports-centre-tab-${tab}`}
+        className="flex flex-col gap-6"
+      >
+        {tab === 'live' ? (
+          <LivePanel reports={list} onOpen={open} />
+        ) : tab === 'scheduled' ? (
+          <ScheduledPanel query={allSchedules} reports={list} onOpen={open} />
+        ) : tab === 'snapshots' ? (
+          <SnapshotsPanel query={allSnapshots} onOpen={open} />
+        ) : tab === 'links' ? (
+          <LinksPanel query={allShares} onOpen={open} />
+        ) : (
+          <>
+            <WeeklyBriefs clientId={client?.id ?? null} />
 
-      {reports.isPending ? (
-        <Skeleton className="h-32 w-full" />
-      ) : list.length === 0 ? (
-        <EmptyState title={t('reports.empty.title')} description={t('reports.empty.body')} />
-      ) : (
-        <section
-          aria-label={t('reports.saved')}
-          className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
-        >
-          {list.map((entry) => (
-            <button
-              key={entry.id}
-              type="button"
-              onClick={() => {
-                setSelected(entry.id);
-                setEditing(null);
-                setFreshToken(null);
-              }}
-              aria-pressed={selected === entry.id}
-              className={cn(
-                'bg-surface border-line-subtle rounded-2xl border p-4 text-start shadow-xs',
-                'ease-standard transition-[border-color,box-shadow] duration-[var(--ds-duration-fast)]',
-                'hover:border-line-strong focus-visible:ring-accent/40 focus-visible:ring-2 focus-visible:outline-none',
-                selected === entry.id && 'border-accent ring-accent/25 ring-1',
-              )}
-            >
-              <ReportCover
-                name={entry.name}
-                client={entry.client_name ?? t('reports.view.allClients')}
-                window={entry.window_label}
-                sections={entry.section_count}
-                clientSafe={entry.audience === 'client_safe'}
-              />
-              <span className="text-content mt-3 block text-sm font-medium" dir="auto">
-                {entry.name}
-              </span>
-              <span className="text-content-tertiary mt-1 block text-xs" dir="auto">
-                {entry.client_name ?? t('reports.view.allClients')} · {entry.window_label}
-              </span>
-              <span className="mt-2 flex flex-wrap items-center gap-1.5">
-                <Badge tone={entry.audience === 'client_safe' ? 'accent' : 'neutral'}>
-                  {t(
-                    entry.audience === 'client_safe'
-                      ? 'reports.card.clientSafe'
-                      : 'reports.card.internal',
-                  )}
-                </Badge>
-                {entry.snapshot_count > 0 ? (
-                  <Badge tone="neutral">
-                    {t('reports.card.snapshots', { count: entry.snapshot_count })}
-                  </Badge>
-                ) : null}
-                {/*
+            {error === null ? null : <Alert tone="danger">{error}</Alert>}
+            {reports.isError ? <Alert tone="danger">{t('reports.loadFailed')}</Alert> : null}
+
+            {reports.isPending ? (
+              <Skeleton className="h-32 w-full" />
+            ) : list.length === 0 ? (
+              <EmptyState title={t('reports.empty.title')} description={t('reports.empty.body')} />
+            ) : (
+              <section
+                aria-label={t('reports.saved')}
+                className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+              >
+                {list.map((entry) => (
+                  <div key={entry.id} className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelected(entry.id);
+                        setEditing(null);
+                        setFreshToken(null);
+                      }}
+                      aria-pressed={selected === entry.id}
+                      className={cn(
+                        'bg-surface border-line-subtle rounded-2xl border p-4 text-start shadow-xs',
+                        'ease-standard transition-[border-color,box-shadow] duration-[var(--ds-duration-fast)]',
+                        'hover:border-line-strong focus-visible:ring-accent/40 focus-visible:ring-2 focus-visible:outline-none',
+                        selected === entry.id && 'border-accent ring-accent/25 ring-1',
+                      )}
+                    >
+                      <ReportCover
+                        name={entry.name}
+                        client={entry.client_name ?? t('reports.view.allClients')}
+                        window={entry.window_label}
+                        sections={entry.section_count}
+                        clientSafe={entry.audience === 'client_safe'}
+                      />
+                      <span className="text-content mt-3 block text-sm font-medium" dir="auto">
+                        {entry.name}
+                      </span>
+                      <span className="text-content-tertiary mt-1 block text-xs" dir="auto">
+                        {entry.client_name ?? t('reports.view.allClients')} · {entry.window_label}
+                      </span>
+                      <span className="mt-2 flex flex-wrap items-center gap-1.5">
+                        <Badge tone={entry.audience === 'client_safe' ? 'accent' : 'neutral'}>
+                          {t(
+                            entry.audience === 'client_safe'
+                              ? 'reports.card.clientSafe'
+                              : 'reports.card.internal',
+                          )}
+                        </Badge>
+                        {entry.snapshot_count > 0 ? (
+                          <Badge tone="neutral">
+                            {t('reports.card.snapshots', { count: entry.snapshot_count })}
+                          </Badge>
+                        ) : null}
+                        {/*
                   The figure somebody checks before saying "nobody outside can see this". On the card, not behind
                   a click.
                 */}
-                {entry.active_share_count > 0 ? (
-                  <Badge tone="warning">
-                    {t('reports.card.shared', {
-                      count: formatNumber(entry.active_share_count, locale),
-                    })}
-                  </Badge>
-                ) : null}
-              </span>
-            </button>
-          ))}
-        </section>
-      )}
+                        {entry.active_share_count > 0 ? (
+                          <Badge tone="warning">
+                            {t('reports.card.shared', {
+                              count: formatNumber(entry.active_share_count, locale),
+                            })}
+                          </Badge>
+                        ) : null}
+                      </span>
+                    </button>
+                    <ReportTracking report={entry} />
+                  </div>
+                ))}
+              </section>
+            )}
 
-      {editing === 'new' ? (
-        <ReportWizard
-          onSearchClients={setClientTerm}
-          isSearching={clients.isFetching}
-          vocabulary={vocabulary.data}
-          clients={(clients.data?.data ?? []).map((entry) => ({
-            id: entry.id,
-            name: entry.name,
-          }))}
-          isSaving={create.isPending}
-          error={error}
-          onSubmit={(input) => {
-            create.mutate(input, {
-              onSuccess: (saved) => {
-                setSelected(saved.id);
-                setEditing(null);
-              },
-            });
-          }}
-          onCancel={() => setEditing(null)}
-        />
-      ) : editing !== null ? (
-        <ReportBuilder
-          onSearchClients={setClientTerm}
-          isSearching={clients.isFetching}
-          /* Keyed, so switching between a new report and an edit cannot carry one's fields into the other. */
-          key={selected ?? 'existing'}
-          vocabulary={vocabulary.data}
-          clients={(clients.data?.data ?? []).map((client) => ({
-            id: client.id,
-            name: client.name,
-          }))}
-          draft={draft.data}
-          isSaving={create.isPending || update.isPending}
-          error={error}
-          onSubmit={(input) => {
-            if (editing === 'existing' && selected !== null) {
-              update.mutate(
-                { ...input, reportId: selected },
-                { onSuccess: () => setEditing(null) },
-              );
+            {editing === 'new' ? (
+              <ReportWizard
+                onSearchClients={setClientTerm}
+                isSearching={clients.isFetching}
+                vocabulary={vocabulary.data}
+                clients={(clients.data?.data ?? []).map((entry) => ({
+                  id: entry.id,
+                  name: entry.name,
+                }))}
+                isSaving={create.isPending}
+                error={error}
+                onSubmit={(input) => {
+                  create.mutate(input, {
+                    onSuccess: (saved) => {
+                      setSelected(saved.id);
+                      setEditing(null);
+                    },
+                  });
+                }}
+                onCancel={() => setEditing(null)}
+              />
+            ) : editing !== null ? (
+              <ReportBuilder
+                onSearchClients={setClientTerm}
+                isSearching={clients.isFetching}
+                /* Keyed, so switching between a new report and an edit cannot carry one's fields into the other. */
+                key={selected ?? 'existing'}
+                vocabulary={vocabulary.data}
+                clients={(clients.data?.data ?? []).map((client) => ({
+                  id: client.id,
+                  name: client.name,
+                }))}
+                draft={draft.data}
+                isSaving={create.isPending || update.isPending}
+                error={error}
+                onSubmit={(input) => {
+                  if (editing === 'existing' && selected !== null) {
+                    update.mutate(
+                      { ...input, reportId: selected },
+                      { onSuccess: () => setEditing(null) },
+                    );
 
-              return;
-            }
+                    return;
+                  }
 
-            create.mutate(input, {
-              onSuccess: (saved) => {
-                setSelected(saved.id);
-                setEditing(null);
-              },
-            });
-          }}
-          onCancel={() => setEditing(null)}
-        />
-      ) : selected === null ? (
-        <EmptyState title={t('reports.pick.title')} description={t('reports.pick.body')} />
-      ) : rendered.isPending ? (
-        <Skeleton className="h-96 w-full" />
-      ) : rendered.data === undefined ? null : (
-        <>
-          <div className="flex flex-wrap gap-2">
-            {!canManage ? null : (
+                  create.mutate(input, {
+                    onSuccess: (saved) => {
+                      setSelected(saved.id);
+                      setEditing(null);
+                    },
+                  });
+                }}
+                onCancel={() => setEditing(null)}
+              />
+            ) : selected === null ? (
+              <EmptyState title={t('reports.pick.title')} description={t('reports.pick.body')} />
+            ) : rendered.isPending ? (
+              <Skeleton className="h-96 w-full" />
+            ) : rendered.data === undefined ? null : (
               <>
-                <Button variant="secondary" size="sm" onClick={() => setEditing('existing')}>
-                  {t('reports.actions.edit')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    remove.mutate(selected, {
-                      onSuccess: () => {
-                        setSelected(null);
-                        setFreshToken(null);
-                      },
-                    });
-                  }}
-                >
-                  {t('reports.actions.delete')}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {!canManage ? null : (
+                    <>
+                      <Button variant="secondary" size="sm" onClick={() => setEditing('existing')}>
+                        {t('reports.actions.edit')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          remove.mutate(selected, {
+                            onSuccess: () => {
+                              setSelected(null);
+                              setFreshToken(null);
+                            },
+                          });
+                        }}
+                      >
+                        {t('reports.actions.delete')}
+                      </Button>
+                    </>
+                  )}
+                </div>
+
+                <ReportView
+                  report={rendered.data}
+                  csvHref={csvUrl(selected)}
+                  xlsxHref={xlsxUrl(selected)}
+                  presentable
+                />
+
+                <ExportsPanel reportId={selected} />
+
+                {!canManage ? null : (
+                  <SharePanel
+                    shares={shares.data ?? []}
+                    snapshots={snapshots.data ?? []}
+                    maxDays={vocabulary.data?.max_share_days ?? 90}
+                    canShare={canShare}
+                    isInternal={current?.audience !== 'client_safe'}
+                    freshToken={freshToken}
+                    context={{
+                      client: rendered.data.client_name,
+                      title: rendered.data.name,
+                      period: `${rendered.data.period.from} – ${rendered.data.period.until}`,
+                    }}
+                    isWorking={snapshot.isPending || share.isPending || revoke.isPending}
+                    error={error}
+                    onShare={(input) => {
+                      share.mutate(
+                        {
+                          reportId: selected,
+                          days: input.days,
+                          snapshotId: input.snapshotId,
+                          ...(input.recipientLabel === ''
+                            ? {}
+                            : { recipientLabel: input.recipientLabel }),
+                        },
+                        {
+                          /* Held in state, because it is never fetched again. */
+                          onSuccess: (created) => setFreshToken(created.token),
+                        },
+                      );
+                    }}
+                    onRevoke={(shareId, reason) => revoke.mutate({ shareId, reason })}
+                    onTakeSnapshot={(label) =>
+                      snapshot.mutate({
+                        reportId: selected,
+                        ...(label === '' ? {} : { label }),
+                      })
+                    }
+                  />
+                )}
               </>
             )}
-          </div>
-
-          <ReportView
-            report={rendered.data}
-            csvHref={csvUrl(selected)}
-            xlsxHref={xlsxUrl(selected)}
-            presentable
-          />
-
-          <ExportsPanel reportId={selected} />
-
-          {!canManage ? null : (
-            <SharePanel
-              shares={shares.data ?? []}
-              snapshots={snapshots.data ?? []}
-              maxDays={vocabulary.data?.max_share_days ?? 90}
-              canShare={canShare}
-              isInternal={current?.audience !== 'client_safe'}
-              freshToken={freshToken}
-              context={{
-                client: rendered.data.client_name,
-                title: rendered.data.name,
-                period: `${rendered.data.period.from} – ${rendered.data.period.until}`,
-              }}
-              isWorking={snapshot.isPending || share.isPending || revoke.isPending}
-              error={error}
-              onShare={(input) => {
-                share.mutate(
-                  {
-                    reportId: selected,
-                    days: input.days,
-                    snapshotId: input.snapshotId,
-                    ...(input.recipientLabel === ''
-                      ? {}
-                      : { recipientLabel: input.recipientLabel }),
-                  },
-                  {
-                    /* Held in state, because it is never fetched again. */
-                    onSuccess: (created) => setFreshToken(created.token),
-                  },
-                );
-              }}
-              onRevoke={(shareId, reason) => revoke.mutate({ shareId, reason })}
-              onTakeSnapshot={(label) =>
-                snapshot.mutate({
-                  reportId: selected,
-                  ...(label === '' ? {} : { label }),
-                })
-              }
-            />
-          )}
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

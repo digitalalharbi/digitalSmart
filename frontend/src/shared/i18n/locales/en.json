@@ -3373,6 +3373,70 @@
       "platformCount_one": "{{count}} creative",
       "platformCount_other": "{{count}} creatives",
       "platform": "Platform"
+    },
+    "centre": {
+      "label": "Reports centre",
+      "loadFailed": "This list could not be loaded.",
+      "tabs": {
+        "library": "Library",
+        "live": "Live reports",
+        "scheduled": "Scheduled",
+        "snapshots": "Snapshots",
+        "links": "Shared links"
+      },
+      "col": {
+        "report": "Report",
+        "client": "Client",
+        "links": "Live links",
+        "file": "File",
+        "cadence": "Repeats",
+        "nextRun": "Next run",
+        "lastRun": "Last run",
+        "state": "State",
+        "label": "Label",
+        "taken": "Taken",
+        "period": "Period",
+        "by": "By",
+        "recipient": "Sent to",
+        "mode": "Shows"
+      },
+      "mode": {
+        "live": "Live figures",
+        "frozen": "Frozen figures"
+      },
+      "state": {
+        "active": "Active",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      },
+      "halted": "Stopped",
+      "running": "Running",
+      "live": {
+        "emptyTitle": "No live reports",
+        "emptyBody": "A report is live when it has an open link that shows today’s figures each time it is opened."
+      },
+      "scheduled": {
+        "emptyTitle": "Nothing is scheduled",
+        "emptyBody": "Schedule a file from a report and it will appear here."
+      },
+      "snapshots": {
+        "emptyTitle": "No snapshots yet",
+        "emptyBody": "A snapshot freezes what a report said on the day it was taken."
+      },
+      "links": {
+        "emptyTitle": "No links out of the agency",
+        "emptyBody": "Nobody outside can read any of these reports right now."
+      }
+    },
+    "tracking": {
+      "label": "About {{name}}",
+      "created": "Made",
+      "views": "Opens",
+      "lastViewed": "Last opened",
+      "neverOpened": "Never opened",
+      "expires": "Link closes",
+      "live": "Live figures · {{count}}",
+      "frozen": "Frozen figures · {{count}}"
     }
   },
   "sharedReport": {

@@ -18,6 +18,8 @@ use App\Application\Reporting\DTO\SectionDefinition;
 use App\Application\Reporting\DTO\ShareView;
 use App\Application\Reporting\Query\GetReport;
 use App\Application\Reporting\Query\ListReports;
+use App\Application\Reporting\Query\ListReportShares;
+use App\Application\Reporting\Query\ListReportSnapshots;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Analytics\Dimension;
@@ -168,6 +170,27 @@ final class ReportController extends Controller
                 'label' => $snapshot['label'],
                 'taken_by_name' => $snapshot['taken_by_name'],
             ], $snapshots),
+        ]);
+    }
+
+    /** Every link out of the agency, across the reports the reader may see. */
+    public function allShares(ListReportShares $list, Clock $clock): JsonResponse
+    {
+        $now = $clock->now();
+
+        return response()->json([
+            'data' => array_map(
+                static fn (array $share): array => ReportResource::acrossShare($share, $now),
+                $list(),
+            ),
+        ]);
+    }
+
+    /** Every frozen record across the reports the reader may see. */
+    public function allSnapshots(ListReportSnapshots $list): JsonResponse
+    {
+        return response()->json([
+            'data' => array_map(ReportResource::acrossSnapshot(...), $list()),
         ]);
     }
 

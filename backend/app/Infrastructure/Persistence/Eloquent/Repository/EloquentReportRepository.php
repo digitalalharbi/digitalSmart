@@ -169,7 +169,7 @@ final readonly class EloquentReportRepository implements ReportRepository
          */
         $sectionCounts = $this->countBy('report_sections', $workspaceId, $ids);
         $snapshotCounts = $this->countBy('report_snapshots', $workspaceId, $ids);
-        $shareCounts = $this->activeShareCounts($workspaceId, $ids);
+        $shareStats = $this->shareStats($workspaceId, $ids);
 
         $summaries = [];
 
@@ -189,8 +189,15 @@ final readonly class EloquentReportRepository implements ReportRepository
                 clientName: $this->text($values['client_name'] ?? null),
                 sectionCount: $sectionCounts[$id] ?? 0,
                 snapshotCount: $snapshotCounts[$id] ?? 0,
-                activeShareCount: $shareCounts[$id] ?? 0,
+                activeShareCount: ($shareStats[$id]['live'] ?? 0) + ($shareStats[$id]['frozen'] ?? 0),
                 updatedAt: $this->date($values['updated_at'] ?? null) ?? new DateTimeImmutable('@0'),
+                createdAt: $this->date($values['created_at'] ?? null),
+                createdByName: $this->text($values['created_by_name'] ?? null),
+                viewCount: $shareStats[$id]['views'] ?? 0,
+                lastViewedAt: $shareStats[$id]['last_viewed'] ?? null,
+                nextExpiryAt: $shareStats[$id]['next_expiry'] ?? null,
+                liveShareCount: $shareStats[$id]['live'] ?? 0,
+                frozenShareCount: $shareStats[$id]['frozen'] ?? 0,
             );
         }
 
@@ -281,6 +288,87 @@ final readonly class EloquentReportRepository implements ReportRepository
 
             $snapshots[] = [
                 'id' => (string) ($values['id'] ?? ''),
+                'taken_at' => $this->date($values['taken_at'] ?? null) ?? new DateTimeImmutable('@0'),
+                'period_from' => $this->date($values['period_from'] ?? null) ?? new DateTimeImmutable('@0'),
+                'period_until' => $this->date($values['period_until'] ?? null) ?? new DateTimeImmutable('@0'),
+                'source' => MetricSource::tryFrom((string) ($values['source'] ?? '')) ?? MetricSource::Synced,
+                'label' => $this->text($values['label'] ?? null),
+                'taken_by_name' => $this->text($values['taken_by_name'] ?? null),
+            ];
+        }
+
+        return $snapshots;
+    }
+
+    public function sharesAcross(string $workspaceId, ?array $visibleProjectIds, int $limit): array
+    {
+        $rows = DB::table('report_shares as s')
+            ->join('reports as r', 'r.id', '=', 's.report_id')
+            ->leftJoin('clients as c', 'c.id', '=', 'r.client_id')
+            ->leftJoin('users as u', 'u.id', '=', 's.created_by')
+            ->where('s.workspace_id', $workspaceId)
+            ->whereIn('s.report_id', $this->scope($workspaceId, $visibleProjectIds)->select('r.id'))
+            ->orderByDesc('s.created_at')
+            ->limit($limit)
+            ->get([
+                's.id', 's.report_id', 's.snapshot_id', 's.token_hint', 's.expires_at', 's.revoked_at', 's.revoked_reason',
+                's.recipient_label', 's.view_count', 's.last_viewed_at', 's.created_at',
+                'r.name as report_name', 'c.name as client_name', 'u.name as created_by_name',
+            ]);
+
+        $shares = [];
+
+        foreach ($rows as $row) {
+            /** @var array<string, mixed> $values */
+            $values = (array) $row;
+
+            $shares[] = [
+                'id' => (string) ($values['id'] ?? ''),
+                'report_id' => (string) ($values['report_id'] ?? ''),
+                'report_name' => (string) ($values['report_name'] ?? ''),
+                'client_name' => $this->text($values['client_name'] ?? null),
+                'hint' => (string) ($values['token_hint'] ?? ''),
+                'snapshot_id' => $this->text($values['snapshot_id'] ?? null),
+                'expires_at' => $this->date($values['expires_at'] ?? null) ?? new DateTimeImmutable('@0'),
+                'revoked_at' => $this->date($values['revoked_at'] ?? null),
+                'revoked_reason' => $this->text($values['revoked_reason'] ?? null),
+                'recipient_label' => $this->text($values['recipient_label'] ?? null),
+                'view_count' => (int) ($values['view_count'] ?? 0),
+                'last_viewed_at' => $this->date($values['last_viewed_at'] ?? null),
+                'created_by_name' => $this->text($values['created_by_name'] ?? null),
+                'created_at' => $this->date($values['created_at'] ?? null) ?? new DateTimeImmutable('@0'),
+            ];
+        }
+
+        return $shares;
+    }
+
+    public function snapshotsAcross(string $workspaceId, ?array $visibleProjectIds, int $limit): array
+    {
+        $rows = DB::table('report_snapshots as s')
+            ->join('reports as r', 'r.id', '=', 's.report_id')
+            ->leftJoin('clients as c', 'c.id', '=', 'r.client_id')
+            ->leftJoin('users as u', 'u.id', '=', 's.taken_by')
+            ->where('s.workspace_id', $workspaceId)
+            ->whereIn('s.report_id', $this->scope($workspaceId, $visibleProjectIds)->select('r.id'))
+            ->orderByDesc('s.taken_at')
+            ->limit($limit)
+            ->get([
+                's.id', 's.report_id', 's.taken_at', 's.period_from', 's.period_until', 's.source', 's.label',
+                'r.name as report_name', 'c.name as client_name', 'u.name as taken_by_name',
+            ]);
+
+        $snapshots = [];
+
+        foreach ($rows as $row) {
+            /** @var array<string, mixed> $values */
+            $values = (array) $row;
+
+            $snapshots[] = [
+                'id' => (string) ($values['id'] ?? ''),
+                'report_id' => (string) ($values['report_id'] ?? ''),
+                'report_name' => (string) ($values['report_name'] ?? ''),
+                'client_name' => $this->text($values['client_name'] ?? null),
                 'taken_at' => $this->date($values['taken_at'] ?? null) ?? new DateTimeImmutable('@0'),
                 'period_from' => $this->date($values['period_from'] ?? null) ?? new DateTimeImmutable('@0'),
                 'period_until' => $this->date($values['period_until'] ?? null) ?? new DateTimeImmutable('@0'),
@@ -461,37 +549,47 @@ final readonly class EloquentReportRepository implements ReportRepository
     }
 
     /**
-     * Active shares per report.
-     *
-     * "Active" is derived here the same way `ShareState` derives it — not revoked, not expired — because a stored
-     * flag would need something to write it, and whatever that was would be the thing that failed to run.
+     * What each report's links add up to, in one query — views and the last time one was opened over *all* its links
+     * (a revoked link was still read while it lived), and the live, frozen and soonest-to-lapse among the active ones.
      *
      * @param  list<string>  $ids
-     * @return array<string, int>
+     * @return array<string, array{views: int, last_viewed: ?DateTimeImmutable, next_expiry: ?DateTimeImmutable, live: int, frozen: int}>
      */
-    private function activeShareCounts(string $workspaceId, array $ids): array
+    private function shareStats(string $workspaceId, array $ids): array
     {
         if ($ids === []) {
             return [];
         }
 
+        $now = now();
         $rows = DB::table('report_shares')
             ->where('workspace_id', $workspaceId)
             ->whereIn('report_id', $ids)
-            ->whereNull('revoked_at')
-            ->where('expires_at', '>', now())
             ->groupBy('report_id')
-            ->get(['report_id', DB::raw('count(*) as tally')]);
+            ->get([
+                'report_id',
+                DB::raw('coalesce(sum(view_count), 0) as views'),
+                DB::raw('max(last_viewed_at) as last_viewed'),
+                DB::raw('count(*) filter (where revoked_at is null and expires_at > \''.$now->toDateTimeString().'\' and snapshot_id is null) as live'),
+                DB::raw('count(*) filter (where revoked_at is null and expires_at > \''.$now->toDateTimeString().'\' and snapshot_id is not null) as frozen'),
+                DB::raw('min(expires_at) filter (where revoked_at is null and expires_at > \''.$now->toDateTimeString().'\') as next_expiry'),
+            ]);
 
-        $counts = [];
+        $stats = [];
 
         foreach ($rows as $row) {
             /** @var array<string, mixed> $values */
             $values = (array) $row;
-            $counts[(string) ($values['report_id'] ?? '')] = (int) ($values['tally'] ?? 0);
+            $stats[(string) ($values['report_id'] ?? '')] = [
+                'views' => (int) ($values['views'] ?? 0),
+                'last_viewed' => $this->date($values['last_viewed'] ?? null),
+                'next_expiry' => $this->date($values['next_expiry'] ?? null),
+                'live' => (int) ($values['live'] ?? 0),
+                'frozen' => (int) ($values['frozen'] ?? 0),
+            ];
         }
 
-        return $counts;
+        return $stats;
     }
 
     /**

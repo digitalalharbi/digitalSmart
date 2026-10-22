@@ -5,6 +5,9 @@ import type { MetricValue } from '@/shared/metrics';
 import { renderWithProviders } from '@/test/render';
 import { ReportsPage } from './ReportsPage';
 import type {
+  CentreShare,
+  CentreSnapshot,
+  ExportSchedule,
   RenderedReport,
   RenderedSection,
   ReportDraft,
@@ -45,6 +48,9 @@ const state = vi.hoisted(() => ({
   draft: null as ReportDraft | null,
   snapshots: [] as ReportSnapshot[],
   shares: [] as ReportShare[],
+  allShares: [] as CentreShare[],
+  allSnapshots: [] as CentreSnapshot[],
+  allSchedules: [] as ExportSchedule[],
   created: null as Record<string, unknown> | null,
   shared: null as Record<string, unknown> | null,
   revoked: null as Record<string, unknown> | null,
@@ -58,6 +64,9 @@ vi.mock('./api', () => ({
   fetchReportDraft: () => Promise.resolve(state.draft),
   fetchSnapshots: () => Promise.resolve(state.snapshots),
   fetchShares: () => Promise.resolve(state.shares),
+  fetchAllShares: () => Promise.resolve(state.allShares),
+  fetchAllSnapshots: () => Promise.resolve(state.allSnapshots),
+  fetchAllSchedules: () => Promise.resolve(state.allSchedules),
   fetchExports: () => Promise.resolve([]),
   fetchSchedules: () => Promise.resolve([]),
   createSchedule: () => Promise.resolve({ id: 'schedule-1' }),
@@ -271,6 +280,13 @@ function summary(overrides: Partial<ReportSummary> = {}): ReportSummary {
     snapshot_count: 2,
     active_share_count: 1,
     updated_at: '2026-10-08T09:00:00+00:00',
+    created_at: '2026-10-01T09:00:00+00:00',
+    created_by_name: 'Demo Owner',
+    view_count: 0,
+    last_viewed_at: null,
+    next_expiry_at: null,
+    live_share_count: 1,
+    frozen_share_count: 0,
     ...overrides,
   };
 }
@@ -687,5 +703,174 @@ describe('sharing one', function () {
     await renderWithProviders(<ReportsPage />);
 
     expect(await screen.findByText('Reports are not part of your access')).toBeInTheDocument();
+  });
+});
+
+describe('the reports centre', function () {
+  beforeEach(() => {
+    state.allShares = [
+      {
+        id: 'share-1',
+        hint: 'AbCdEf123456',
+        state: 'active',
+        state_label: 'Active',
+        is_frozen: false,
+        expires_at: '2026-11-08T09:00:00+00:00',
+        revoked_at: null,
+        revoked_reason: null,
+        recipient_label: 'Noura',
+        view_count: 4,
+        last_viewed_at: '2026-10-08T09:00:00+00:00',
+        created_by_name: 'Reem',
+        created_at: '2026-10-01T09:00:00+00:00',
+        report_id: 'report-1',
+        report_name: 'Monthly performance',
+        client_name: 'Alhambra',
+      },
+    ];
+    state.allSnapshots = [
+      {
+        id: 'snapshot-1',
+        taken_at: '2026-10-01T09:00:00+00:00',
+        period_from: '2026-09-01',
+        period_until: '2026-09-30',
+        source: 'synced',
+        source_label: 'Synced',
+        label: 'September close',
+        taken_by_name: 'Reem',
+        report_id: 'report-1',
+        report_name: 'Monthly performance',
+        client_name: 'Alhambra',
+      },
+    ];
+    state.allSchedules = [
+      {
+        id: 'schedule-1',
+        report_id: 'report-1',
+        kind: 'report_xlsx',
+        cadence: 'weekly',
+        hour_utc: 6,
+        weekday: 1,
+        day_of_month: null,
+        next_run_at: '2026-10-12T06:00:00+00:00',
+        last_run_at: null,
+        last_error: null,
+        is_halted: false,
+      },
+    ];
+  });
+
+  it('opens on the library, and offers the other four ways of looking at the reports', async () => {
+    await renderWithProviders(<ReportsPage />);
+    const tabs = await screen.findByRole('tablist', { name: 'Reports centre' });
+
+    expect(
+      within(tabs)
+        .getAllByRole('tab')
+        .map((tab) => tab.textContent),
+    ).toEqual(['Library', 'Live reports', 'Scheduled', 'Snapshots', 'Shared links']);
+    expect(within(tabs).getByRole('tab', { name: 'Library' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+  });
+
+  it('says what each report’s life looks like, with counts and times and nothing about a reader', async () => {
+    state.list = [
+      summary({
+        view_count: 4,
+        last_viewed_at: '2026-10-08T09:00:00+00:00',
+        next_expiry_at: '2026-11-08T09:00:00+00:00',
+        live_share_count: 1,
+        frozen_share_count: 1,
+      }),
+    ];
+    await renderWithProviders(<ReportsPage />);
+    const facts = await screen.findByLabelText('About Monthly performance');
+
+    expect(within(facts).getByText('Opens')).toBeInTheDocument();
+    expect(within(facts).getByText('Last opened')).toBeInTheDocument();
+    expect(within(facts).getByText('Link closes')).toBeInTheDocument();
+    expect(within(facts).getByText('Live figures · 1')).toBeInTheDocument();
+    expect(within(facts).getByText('Frozen figures · 1')).toBeInTheDocument();
+  });
+
+  it('says a report has never been opened rather than printing a zero', async () => {
+    state.list = [summary({ view_count: 0, last_viewed_at: null })];
+    await renderWithProviders(<ReportsPage />);
+
+    expect(await screen.findByText('Never opened')).toBeInTheDocument();
+  });
+
+  it('lists every link out of the agency, and says whether it shows live or frozen figures', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<ReportsPage />);
+
+    await user.click(await screen.findByRole('tab', { name: 'Shared links' }));
+    const table = await screen.findByRole('table', { name: 'Shared links' });
+
+    expect(within(table).getByText('Noura')).toBeInTheDocument();
+    expect(within(table).getByText('Live figures')).toBeInTheDocument();
+    expect(within(table).getByText('Active')).toBeInTheDocument();
+  });
+
+  it('does not offer the links tab to somebody who may not share', async () => {
+    permissions.current = ['reports.view'];
+    await renderWithProviders(<ReportsPage />);
+
+    await screen.findByRole('tablist', { name: 'Reports centre' });
+
+    expect(screen.queryByRole('tab', { name: 'Shared links' })).not.toBeInTheDocument();
+  });
+
+  it('lists the snapshots and the schedules, each naming its report', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<ReportsPage />);
+
+    await user.click(await screen.findByRole('tab', { name: 'Snapshots' }));
+    expect(
+      within(await screen.findByRole('table', { name: 'Snapshots' })).getByText('September close'),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Scheduled' }));
+    const scheduled = await screen.findByRole('table', { name: 'Scheduled' });
+
+    expect(within(scheduled).getByText('Monthly performance')).toBeInTheDocument();
+    expect(within(scheduled).getByText('Running')).toBeInTheDocument();
+  });
+
+  it('opens a report named in another tab in the library', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<ReportsPage />);
+
+    await user.click(await screen.findByRole('tab', { name: 'Live reports' }));
+    await user.click(await screen.findByRole('button', { name: 'Monthly performance' }));
+
+    expect(screen.getByRole('tab', { name: 'Library' })).toHaveAttribute('aria-selected', 'true');
+    expect(await screen.findByRole('heading', { name: 'Monthly performance' })).toBeInTheDocument();
+  });
+
+  it('says plainly when a tab has nothing in it', async () => {
+    state.allSchedules = [];
+    const user = userEvent.setup();
+    await renderWithProviders(<ReportsPage />);
+
+    await user.click(await screen.findByRole('tab', { name: 'Scheduled' }));
+
+    expect(await screen.findByText('Nothing is scheduled')).toBeInTheDocument();
+  });
+
+  it('moves between tabs with the arrow keys', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<ReportsPage />);
+    const library = await screen.findByRole('tab', { name: 'Library' });
+
+    library.focus();
+    await user.keyboard('{ArrowRight}');
+
+    expect(screen.getByRole('tab', { name: 'Live reports' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
   });
 });
