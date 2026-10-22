@@ -159,7 +159,8 @@ export function NotificationCard({
             <span className="text-content-tertiary text-xs" dir="auto">
               {scope !== ''
                 ? scope
-                : item.subject.label !== null
+                : /* The title is said once, above; a subject that merely repeats it gives way to the kind. */
+                  item.subject.label !== null && item.subject.label !== item.title
                   ? item.subject.label
                   : item.kind_label}
               {item.actor_name === null ? '' : ` · ${item.actor_name}`}
@@ -236,11 +237,11 @@ export function NotificationCard({
           <button
             type="button"
             onClick={onDismiss}
+            aria-label={`${t('notifications.dismiss')} — ${item.title}`}
             className="text-content-tertiary hover:text-content ms-auto inline-flex items-center gap-1 text-sm"
           >
             <X aria-hidden className="size-3.5" />
             {t('notifications.dismiss')}
-            <span className="sr-only"> — {item.title}</span>
           </button>
         </div>
       </div>
