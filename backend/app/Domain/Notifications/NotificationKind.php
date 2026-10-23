@@ -41,6 +41,25 @@ enum NotificationKind: string
      */
     case LeadAssigned = 'lead_assigned';
 
+    /**
+     * A lead is closing on the response time the project promised, and nobody has tried to reach it.
+     *
+     * Separate from the assignment: that one says a lead arrived, this one says it is about to be late.
+     */
+    case LeadSlaApproaching = 'lead_sla_approaching';
+
+    /** The response time elapsed with no attempt. Worse than approaching, so it may repeat sooner and louder. */
+    case LeadSlaOverdue = 'lead_sla_overdue';
+
+    /** A lead somebody owns was judged worth pursuing. News for the owner, not a task. */
+    case LeadQualified = 'lead_qualified';
+
+    /** An appointment was booked against a lead the recipient owns. */
+    case LeadAppointmentBooked = 'lead_appointment_booked';
+
+    /** A lead the recipient owns became a sale. */
+    case LeadSaleCompleted = 'lead_sale_completed';
+
     /** A change is waiting for a decision. Everyone who can actually decide it, and nobody else. */
     case ApprovalRequested = 'approval_requested';
 
@@ -158,6 +177,11 @@ enum NotificationKind: string
         return match ($this) {
             self::TaskAssigned => 'A task was assigned to you',
             self::LeadAssigned => 'A lead is waiting for you',
+            self::LeadSlaApproaching => 'A lead is close to its response time',
+            self::LeadSlaOverdue => 'A lead is past its response time',
+            self::LeadQualified => 'A lead was qualified',
+            self::LeadAppointmentBooked => 'An appointment was booked',
+            self::LeadSaleCompleted => 'A lead became a sale',
             self::ApprovalRequested => 'A change is waiting for your decision',
             self::ApprovalDecided => 'Your request was answered',
             self::ApprovalEnacted => 'An approved change was carried out',
@@ -197,7 +221,12 @@ enum NotificationKind: string
              * record. See `PermissionAwareRecipientResolver` — the visibility check matters here more than
              * anywhere, because an assignment names one person deliberately.
              */
-            self::LeadAssigned => Permission::LeadsView,
+            self::LeadAssigned,
+            self::LeadSlaApproaching,
+            self::LeadSlaOverdue,
+            self::LeadQualified,
+            self::LeadAppointmentBooked,
+            self::LeadSaleCompleted => Permission::LeadsView,
             self::ApprovalRequested => Permission::ApprovalsDecide,
             self::ApprovalDecided, self::ApprovalEnacted => Permission::ApprovalsView,
             /*
@@ -236,6 +265,11 @@ enum NotificationKind: string
         return match ($this) {
             self::TaskAssigned,
             self::LeadAssigned,
+            self::LeadSlaApproaching,
+            self::LeadSlaOverdue,
+            self::LeadQualified,
+            self::LeadAppointmentBooked,
+            self::LeadSaleCompleted,
             self::ClientRequestSubmitted,
             self::ClientRequestMoved,
             self::ClientRequestNeedsInformation,
@@ -268,6 +302,8 @@ enum NotificationKind: string
         return $this === self::TaskAssigned
             /* Somebody is waiting for a reply, and the clock on them started when they enquired. */
             || $this === self::LeadAssigned
+            || $this === self::LeadSlaApproaching
+            || $this === self::LeadSlaOverdue
             || $this === self::ApprovalRequested
             || $this === self::ClientRequestSubmitted
             || $this === self::ClientRequestReplied
@@ -293,7 +329,12 @@ enum NotificationKind: string
     {
         return match ($this) {
             self::TaskAssigned => NotificationSubject::Task,
-            self::LeadAssigned => NotificationSubject::Lead,
+            self::LeadAssigned,
+            self::LeadSlaApproaching,
+            self::LeadSlaOverdue,
+            self::LeadQualified,
+            self::LeadAppointmentBooked,
+            self::LeadSaleCompleted => NotificationSubject::Lead,
             self::ApprovalRequested, self::ApprovalDecided, self::ApprovalEnacted => NotificationSubject::Approval,
             self::ClientRequestSubmitted,
             self::ClientRequestMoved,

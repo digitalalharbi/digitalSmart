@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Tracking\Command;
 
+use App\Application\Leads\Command\AutomateNewLead;
 use App\Application\Leads\Contract\LeadRepository;
 use App\Application\Leads\DTO\LeadInput;
 use App\Application\Shared\Contract\Clock;
@@ -45,6 +46,7 @@ final readonly class SubmitForm
         private OpaqueTokens $tokens,
         private Clock $clock,
         private ConversionDispatcher $conversions,
+        private AutomateNewLead $automate,
     ) {}
 
     /**
@@ -93,14 +95,14 @@ final readonly class SubmitForm
 
         /* A test visit leaves its submission for the debug console and makes no lead: it is not a person. */
         if ($form->createsLead && $class !== TrafficClass::Test) {
-            $this->createLead($form, $record, $attribution, $now);
+            $this->createLead($form, $record, $attribution, $now, $record->locale);
         }
 
         return $response;
     }
 
     /** @param array{utm: array<string, string>, click_ids: array<string, string>, referrer_host: ?string, landing_path: ?string} $attribution */
-    private function createLead(FormView $form, FormSubmissionRecord $record, array $attribution, DateTimeImmutable $now): void
+    private function createLead(FormView $form, FormSubmissionRecord $record, array $attribution, DateTimeImmutable $now, string $locale): void
     {
         try {
             [$core, $custom] = $this->mapped($form, $record->payload);
@@ -139,6 +141,9 @@ final readonly class SubmitForm
                     'lead-'.$lead->id, $record->visitorId ?? '', $record->consent, $record->trafficClass, $now,
                 );
                 $this->conversions->enqueue(new DispatchContext($form->workspaceId(), $form->projectId, TrackingEventName::LeadCreated, 'lead-'.$lead->id, $record->consent, $record->trafficClass, $record->clickIds, $now, $lead->id));
+
+                /* Only a lead this submission made: a repeat that found the same person is not handed out twice. */
+                ($this->automate)($form->workspaceId(), $lead, $locale, $now);
             }
         } catch (Throwable $e) {
             report($e);

@@ -65,6 +65,9 @@ Schedule::command('access:sync')
  */
 Schedule::command('tracking:purge')->dailyAt('04:15')->withoutOverlapping()->runInBackground();
 
+/* Response times are minutes long, so this looks every five: a lead is flagged within one run of crossing a line. */
+Schedule::command('leads:sla-alerts')->everyFiveMinutes()->withoutOverlapping()->runInBackground();
+
 /*
  * Digests: one summary per person instead of N alerts.
  *

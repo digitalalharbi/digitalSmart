@@ -6,6 +6,7 @@ namespace App\Application\Leads\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Leads\Contract\LeadRepository;
+use App\Application\Leads\Service\LeadProgressAnnouncer;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -15,6 +16,7 @@ use App\Application\Tracking\Service\ConversionDispatcher;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Notifications\NotificationKind;
 use App\Domain\Tracking\TrackingEventName;
 use DateTimeImmutable;
 use InvalidArgumentException;
@@ -37,6 +39,7 @@ final readonly class RecordLeadMilestone
         private Clock $clock,
         private AuditRecorder $audit,
         private ConversionDispatcher $conversions,
+        private LeadProgressAnnouncer $progress,
     ) {}
 
     public function __invoke(string $leadId, string $type, ?string $note = null, ?DateTimeImmutable $at = null): void
@@ -45,7 +48,9 @@ final readonly class RecordLeadMilestone
 
         $workspaceId = $this->actor->workspaceId()->value;
 
-        if ($this->leads->find($workspaceId, $this->visibility->visibleProjectIds(), $leadId) === null) {
+        $lead = $this->leads->find($workspaceId, $this->visibility->visibleProjectIds(), $leadId);
+
+        if ($lead === null) {
             throw ResourceNotFound::of('Lead');
         }
 
@@ -69,5 +74,9 @@ final readonly class RecordLeadMilestone
         ));
 
         $this->conversions->forLead($workspaceId, $leadId, TrackingEventName::from($type), $when);
+
+        if ($type === 'appointment_booked') {
+            $this->progress->announce($lead, NotificationKind::LeadAppointmentBooked);
+        }
     }
 }

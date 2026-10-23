@@ -104,6 +104,8 @@ use App\Application\Intelligence\Service\AnalysisAssembler;
 use App\Application\Intelligence\Service\FigureScanner;
 use App\Application\Intelligence\Service\Narrator;
 use App\Application\Journeys\Contract\JourneyReadModel;
+use App\Application\Leads\Automation\LeadAutomationRepository;
+use App\Application\Leads\Automation\LeadFollowUpReadModel;
 use App\Application\Leads\Contract\CrmReadAdapter;
 use App\Application\Leads\Contract\LeadReadModel;
 use App\Application\Leads\Contract\LeadRepository;
@@ -285,6 +287,8 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFormRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFormSubmissionStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFunnelRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadAutomationRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadFollowUpReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLinkEconomicsReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMeasurementSourceRepository;
@@ -477,6 +481,8 @@ final class AppServiceProvider extends ServiceProvider
         AccessRequestRepository::class => EloquentAccessRequestRepository::class,
         TrackingLinkRepository::class => EloquentTrackingLinkRepository::class,
         CampaignBindingResolver::class => EloquentCampaignBindingResolver::class,
+        LeadAutomationRepository::class => EloquentLeadAutomationRepository::class,
+        LeadFollowUpReadModel::class => EloquentLeadFollowUpReadModel::class,
         LinkEconomicsReadModel::class => EloquentLinkEconomicsReadModel::class,
         TrackingEventStore::class => EloquentTrackingEventStore::class,
         OpaqueTokens::class => RandomOpaqueTokens::class,

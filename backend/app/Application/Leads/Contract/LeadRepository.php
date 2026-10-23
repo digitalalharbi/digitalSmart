@@ -67,7 +67,7 @@ interface LeadRepository
         ?string $note = null,
     ): LeadView;
 
-    public function assign(string $workspaceId, string $id, ?string $ownerId, string $actorId): LeadView;
+    public function assign(string $workspaceId, string $id, ?string $ownerId, ?string $actorId, string $reason = 'manual'): LeadView;
 
     /** Set what a lead is worth. Never inferred from an average of other leads. */
     public function setValue(

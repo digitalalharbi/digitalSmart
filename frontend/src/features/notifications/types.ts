@@ -25,6 +25,11 @@
 export type NotificationKindValue =
   | 'task_assigned'
   | 'lead_assigned'
+  | 'lead_sla_approaching'
+  | 'lead_sla_overdue'
+  | 'lead_qualified'
+  | 'lead_appointment_booked'
+  | 'lead_sale_completed'
   | 'approval_requested'
   | 'approval_decided'
   | 'approval_enacted'

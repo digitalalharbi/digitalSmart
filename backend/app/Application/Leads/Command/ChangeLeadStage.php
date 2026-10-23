@@ -7,6 +7,7 @@ namespace App\Application\Leads\Command;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Leads\Contract\LeadRepository;
 use App\Application\Leads\DTO\LeadView;
+use App\Application\Leads\Service\LeadProgressAnnouncer;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -18,6 +19,7 @@ use App\Domain\Audit\AuditEntry;
 use App\Domain\Leads\Exception\InvalidLeadTransition;
 use App\Domain\Leads\LeadSourceKind;
 use App\Domain\Leads\LeadStage;
+use App\Domain\Notifications\NotificationKind;
 use App\Domain\Tracking\TrackingEventName;
 
 /**
@@ -46,6 +48,7 @@ final readonly class ChangeLeadStage
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private ConversionDispatcher $conversions,
+        private LeadProgressAnnouncer $progress,
     ) {}
 
     public function __invoke(
@@ -111,6 +114,7 @@ final readonly class ChangeLeadStage
 
             if ($event !== null) {
                 $this->conversions->forLead($workspaceId, $leadId, $event);
+                $this->progress->announce($lead, $event === TrackingEventName::SaleCompleted ? NotificationKind::LeadSaleCompleted : NotificationKind::LeadQualified);
             }
         }
 

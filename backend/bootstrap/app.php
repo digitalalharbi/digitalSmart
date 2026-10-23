@@ -17,6 +17,7 @@ use App\Interface\Console\PerformanceDigestsCommand;
 use App\Interface\Console\PruneExportsCommand;
 use App\Interface\Console\PurgeTrackingCommand;
 use App\Interface\Console\RaiseAlertsCommand;
+use App\Interface\Console\RaiseLeadSlaAlertsCommand;
 use App\Interface\Console\ReadStores;
 use App\Interface\Console\RunAgentsCommand;
 use App\Interface\Console\RunAutomationRulesCommand;
@@ -63,6 +64,7 @@ return Application::configure(basePath: dirname(__DIR__))
         DemoAgencyCommand::class,
         PruneExportsCommand::class,
         PurgeTrackingCommand::class,
+        RaiseLeadSlaAlertsCommand::class,
         RunReportSchedulesCommand::class,
         ReadStores::class,
         SyncAccessCatalogue::class,
