@@ -30,11 +30,7 @@ export function TrackingAreaPage() {
           { id: 'links', label: t('tracking.area.links') },
         ]}
       />
-      <div
-        role="tabpanel"
-        id={`tracking-area-panel-${active}`}
-        aria-labelledby={`tracking-area-tab-${active}`}
-      >
+      <div role="tabpanel" id="tracking-area-panel" aria-labelledby={`tracking-area-tab-${active}`}>
         {active === 'links' ? (
           <div className="ds-page">
             <PageHeader
