@@ -177,6 +177,7 @@ use App\Application\Tracking\Contract\TrackingAnalyticsReadModel;
 use App\Application\Tracking\Contract\TrackingEventStore;
 use App\Application\Tracking\Contract\TrackingHealthReadModel;
 use App\Application\Tracking\Contract\TrackingLinkRepository;
+use App\Application\Tracking\Contract\TrackingOperationsReadModel;
 use App\Application\Tracking\Contract\TrackingPolicyRepository;
 use App\Application\Tracking\Contract\TrackingRetentionStore;
 use App\Application\Tracking\Contract\TrackingSettingsRepository;
@@ -317,6 +318,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingAnalytics
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingEventStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingHealthReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingLinkRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingOperationsReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingPolicyRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingRetentionStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingSettingsRepository;
@@ -484,6 +486,7 @@ final class AppServiceProvider extends ServiceProvider
         LeadAutomationRepository::class => EloquentLeadAutomationRepository::class,
         LeadFollowUpReadModel::class => EloquentLeadFollowUpReadModel::class,
         LinkEconomicsReadModel::class => EloquentLinkEconomicsReadModel::class,
+        TrackingOperationsReadModel::class => EloquentTrackingOperationsReadModel::class,
         TrackingEventStore::class => EloquentTrackingEventStore::class,
         OpaqueTokens::class => RandomOpaqueTokens::class,
         FormRepository::class => EloquentFormRepository::class,

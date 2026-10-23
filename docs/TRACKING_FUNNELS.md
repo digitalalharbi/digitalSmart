@@ -247,3 +247,16 @@ visitor → POST /api/public/forms/{token}/submit → form_submissions → [crea
 - Notification kinds added: `lead_sla_approaching`, `lead_sla_overdue`, `lead_qualified`, `lead_appointment_booked`,
   `lead_sale_completed` (all need `leads.view`; sentences carry no prospect detail).
 - Not built: business-hours clocks (the promise runs on elapsed time), reassignment on SLA breach.
+
+## Revenue & operations C — the operations view and the ROI report
+
+- `GET /api/tracking/analytics/operations`. `LinkPerformanceCalculator` is the one place a link's funnel, spend, costs and
+  revenue are assembled (the link panel, this view and the report all call it).
+- KPI costs are computed **per currency over priced links** (spend basis DIRECT or ALLOCATED); `tracked` counts are over all
+  links. With a link filter the hero funnel adds counts across the chosen links and omits times (a median of medians is not a median).
+- `AttentionRules` is pure and thresholded: minimum clicks (30), leads for a rate (10), a step's base (5), links to compare (3).
+- Team rows come from `TrackingOperationsReadModel::responseByOwner`: leads of the project's forms, the first move out of `new`
+  (attempt), first contact, SLA share on the attempt. No activity or presence data exists to show.
+- Report views: `roi`, `campaign_funnel`, `lead_quality`, `sales_funnel`, `response` (CHECK re-derived from the enum). They read
+  the same calculator with no actor, so a shared link renders them.
+- Not built: form and owner filters on the whole view; ROAS from CRM-won or platform-reported revenue (neither is joined to a link).
