@@ -103,6 +103,15 @@ final class InvalidReportDefinition extends RuntimeException
         );
     }
 
+    /** A tracking section that does not say which view of the tracking it shows. */
+    public static function trackingViewRequired(): self
+    {
+        return new self(
+            'A tracking section needs to say what it shows: link performance, form performance, the funnel, lead follow-up or tracking health.',
+            'tracking_view_required',
+        );
+    }
+
     /** A custom window with no dates. */
     public static function datesRequired(): self
     {

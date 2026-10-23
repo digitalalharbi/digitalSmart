@@ -12,6 +12,17 @@ import { returnFocus } from '@/shared/ui/return-focus';
 import { useSaveLinkMutation } from './api';
 import type { LinkDraft } from './types';
 
+const CHANNELS = [
+  'paid',
+  'organic',
+  'email',
+  'sms',
+  'offline_qr',
+  'referral',
+  'direct',
+  'other',
+] as const;
+
 const PLATFORMS = ['snapchat', 'tiktok', 'meta', 'google_ads', 'x', 'linkedin'] as const;
 
 /** The default naming: the platform, the campaign and the creative say what each parameter is without anybody typing it. */
@@ -37,6 +48,7 @@ export function LinkBuilder({
     name: '',
     destination_url: '',
     platform: 'snapchat',
+    channel: 'paid',
     campaign: '',
     ad_group: '',
     ad: '',
@@ -56,6 +68,7 @@ export function LinkBuilder({
       name: form.name,
       destination_url: form.destination_url,
       platform: form.platform,
+      channel: form.channel,
       template_patterns: DEFAULT_PATTERNS,
       ...(form.campaign ? { campaign: form.campaign } : {}),
       ...(form.ad_group ? { ad_group: form.ad_group } : {}),
@@ -151,6 +164,25 @@ export function LinkBuilder({
                   {PLATFORMS.map((p) => (
                     <option key={p} value={p}>
                       {t(`tracking.links.platforms.${p}`)}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
+            <Field
+              label={t('tracking.links.builder.channel')}
+              hint={t('tracking.links.builder.channelHint')}
+            >
+              {(f) => (
+                <select
+                  {...f}
+                  className="border-line bg-surface text-content h-11 w-full min-w-0 truncate rounded-lg border px-3 text-[16px] md:h-10 md:text-sm"
+                  value={form.channel}
+                  onChange={(e) => set('channel')(e.target.value)}
+                >
+                  {CHANNELS.map((c) => (
+                    <option key={c} value={c}>
+                      {t(`tracking.links.channels.${c}`)}
                     </option>
                   ))}
                 </select>

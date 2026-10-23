@@ -201,3 +201,21 @@ visitor → POST /api/public/forms/{token}/submit → form_submissions → [crea
   `tracking_daily_rollups` (a count per day, event, traffic class and link), deletes them and their sessions, strips the
   visitor/session/touchpoint identifiers from older submissions (the submission and its lead are kept) and click identifiers
   from older dispatches.
+
+## PR F — reports, QR and the edges
+
+- **Report section.** `SectionKind::Tracking` with a `TrackingView` (`links`, `forms`, `funnel`, `follow_up`, `health`). A
+  tracking section is refused without a view, and with an unknown one. `EloquentTrackingReportReader` reuses the same
+  analytics and health read models the Tracking area reads, so a report and the screen cannot disagree, and returns a fixed
+  table: `columns` and `rows`, each cell a number, a word or null. Null renders as "not reported" in the page, the CSV
+  and the workbook; a funnel step no page reported is null, not 0.
+- **Client-safe.** Nothing in a tracking table identifies a person, a link or a record. `TrackingSectionTest` asserts that the
+  internal render and the shared payload contain no lead name, phone number, destination host, link token, click id, form
+  token or project id, and that another client's report reads only its own client.
+- **QR.** Drawn client-side (`QrCode.tsx`, medium error correction, four-module quiet zone). A link meant for print is created
+  with channel `offline_qr`; its scans are ordinary clicks of the same short link.
+- **Calls.** `CallTrackingAdapter` and `CallEvidence` are a contract only. The caller's number is not a field.
+- **WhatsApp.** `whatsapp_click` is not a lead. `whatsapp_conversation_started` has no evidence source here (it needs
+  WhatsApp's own webhook) and is refused from the browser beacon.
+- **Browsers.** `tracking-forms.spec.ts` is in the compatibility set: Chromium, Mobile Safari, Firefox, WebKit, Mobile
+  Chromium. Not covered: real devices and a manual screen-reader pass.

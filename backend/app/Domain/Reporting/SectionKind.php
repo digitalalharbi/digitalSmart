@@ -76,6 +76,16 @@ enum SectionKind: string
      */
     case Attribution = 'attribution';
 
+    /**
+     * A view of the client's first-party tracking — link performance, form performance, the funnel, lead follow-up or
+     * tracking health.
+     *
+     * A fixed table per view (`TrackingView`), read for the whole client and narrowed by nothing a visitor chooses. It holds
+     * counts and states only: no link address, no token, no lead, no answer, no event payload — which is what makes it
+     * safe to send a client.
+     */
+    case Tracking = 'tracking';
+
     public function needsDimension(): bool
     {
         return $this === self::Breakdown || $this === self::Table;
@@ -84,7 +94,7 @@ enum SectionKind: string
     /** Whether the section carries ad metrics at all. A store section carries a revenue authority instead. */
     public function usesMetrics(): bool
     {
-        return ! in_array($this, [self::Store, self::Lead, self::Creative, self::Traffic, self::Attribution], true);
+        return ! in_array($this, [self::Store, self::Lead, self::Creative, self::Traffic, self::Attribution, self::Tracking], true);
     }
 
     /** Whether the section names a revenue authority (`revenue_source`) instead of metrics. */
@@ -96,7 +106,7 @@ enum SectionKind: string
     /** Whether the section reads one client's own records, so a report with it must name a client. */
     public function needsClient(): bool
     {
-        return in_array($this, [self::Store, self::Lead, self::Attribution], true);
+        return in_array($this, [self::Store, self::Lead, self::Attribution, self::Tracking], true);
     }
 
     /** Whether a report written for a client may carry this section. Attribution is the one it may not. */
@@ -130,7 +140,7 @@ enum SectionKind: string
             self::Trend => 4,
             self::Breakdown => 3,
             self::Table => 8,
-            self::Store, self::Lead, self::Creative, self::Traffic, self::Attribution => 0,
+            self::Store, self::Lead, self::Creative, self::Traffic, self::Attribution, self::Tracking => 0,
         };
     }
 
@@ -146,6 +156,7 @@ enum SectionKind: string
             self::Creative => 'Creatives',
             self::Traffic => 'Clicks and funnel',
             self::Attribution => 'Attributed revenue',
+            self::Tracking => 'Tracking',
         };
     }
 

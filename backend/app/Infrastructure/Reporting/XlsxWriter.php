@@ -201,6 +201,7 @@ final readonly class XlsxWriter implements ReportWorkbookWriter
             SectionKind::Trend => $this->trend($sheet, $section, $line),
             SectionKind::Store => $this->store($sheet, $section, $line),
             SectionKind::Lead => $this->lead($sheet, $section, $line),
+            SectionKind::Tracking => $this->tracking($sheet, $section, $line),
             default => $this->breakdown($sheet, $section, $line),
         };
 
@@ -231,6 +232,39 @@ final readonly class XlsxWriter implements ReportWorkbookWriter
         }
 
         return $notes;
+    }
+
+    /** @return int the number of columns written */
+    private function tracking(Worksheet $sheet, RenderedSection $section, int $line): int
+    {
+        $table = $section->tracking;
+
+        if ($table === null) {
+            return 1;
+        }
+
+        $this->headings($sheet, $line, array_map(static fn (array $c): string => $c['label'], $table->columns));
+        $line++;
+
+        foreach ($table->rows as $row) {
+            foreach ($table->columns as $i => $column) {
+                $cell = Coordinate::stringFromColumnIndex($i + 1).$line;
+                $value = $row[$column['key']] ?? null;
+
+                if ($value === null) {
+                    /* Visibly not a number, so it refuses to be summed. */
+                    $sheet->setCellValueExplicit($cell, 'Not reported', DataType::TYPE_STRING);
+                } elseif (is_int($value) || is_float($value)) {
+                    $sheet->setCellValue($cell, $value);
+                } else {
+                    $sheet->setCellValueExplicit($cell, (string) $value, DataType::TYPE_STRING);
+                }
+            }
+
+            $line++;
+        }
+
+        return count($table->columns);
     }
 
     /** @return int the number of columns written */

@@ -70,3 +70,15 @@ it('lets a browser report only behaviour, never an outcome', function (): void {
     expect(TrackingEventName::browserValues())->toContain('landing_view', 'form_start', 'whatsapp_click')
         ->and(TrackingEventName::WhatsAppClick->isConversionLike())->toBeFalse();
 });
+
+it('has no source for a conversation started in WhatsApp and no implementation of call tracking', function (): void {
+    expect(TrackingEventName::browserValues())->not->toContain('whatsapp_conversation_started')
+        ->and(TrackingEventName::WhatsAppConversationStarted->isBrowserReportable())->toBeFalse()
+        ->and(TrackingEventName::WhatsAppClick->isConversionLike())->toBeFalse()
+        ->and(class_exists(App\Infrastructure\Tracking\CallTracking::class))->toBeFalse();
+
+    $answered = new App\Domain\Tracking\CallEvidence('provider', 'c1', new DateTimeImmutable('2026-10-01'), 40, true, null, null);
+    $hangUp = new App\Domain\Tracking\CallEvidence('provider', 'c2', new DateTimeImmutable('2026-10-01'), 0, true, null, null);
+
+    expect($answered->wasAnswered())->toBeTrue()->and($hangUp->wasAnswered())->toBeFalse();
+});

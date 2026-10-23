@@ -123,6 +123,20 @@ final readonly class ReportCsv
             return $lines;
         }
 
+        if ($section->kind === SectionKind::Tracking && $section->tracking !== null) {
+            $lines[] = self::row(array_map(static fn (array $c): string => $c['label'], $section->tracking->columns));
+
+            foreach ($section->tracking->rows as $row) {
+                /* Said rather than blank: an empty cell is summed as zero by whoever opens the file next. */
+                $lines[] = self::row(array_map(
+                    static fn (array $c): string => ($row[$c['key']] ?? null) === null ? 'Not reported' : (string) $row[$c['key']],
+                    $section->tracking->columns,
+                ));
+            }
+
+            return $lines;
+        }
+
         if ($section->kind === SectionKind::Attribution && $section->attribution !== null) {
             $lines[] = self::row(['Figure', 'Value']);
 

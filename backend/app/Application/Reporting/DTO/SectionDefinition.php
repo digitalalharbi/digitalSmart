@@ -10,6 +10,7 @@ use App\Domain\Commerce\RevenueSource;
 use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\Exception\InvalidReportDefinition;
 use App\Domain\Reporting\SectionKind;
+use App\Domain\Reporting\TrackingView;
 
 /** One block of a report, as defined rather than as rendered. */
 final readonly class SectionDefinition
@@ -25,6 +26,8 @@ final readonly class SectionDefinition
         public ?RevenueSource $revenueSource = null,
         /** Which part of the creative picture a creative section shows; null for every other kind. */
         public ?CreativeView $creativeView = null,
+        /** Which view of the client's tracking a tracking section shows; null for every other kind. */
+        public ?TrackingView $trackingView = null,
     ) {}
 
     /**
@@ -44,6 +47,14 @@ final readonly class SectionDefinition
         if ($this->kind === SectionKind::Attribution) {
             if ($this->revenueSource === null) {
                 throw InvalidReportDefinition::attributionNeedsSource();
+            }
+
+            return;
+        }
+
+        if ($this->kind === SectionKind::Tracking) {
+            if ($this->trackingView === null) {
+                throw InvalidReportDefinition::trackingViewRequired();
             }
 
             return;

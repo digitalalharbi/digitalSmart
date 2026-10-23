@@ -21,6 +21,7 @@ use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
+use App\Domain\Reporting\TrackingView;
 use App\Domain\Shared\ValueObject\DateRange;
 use DateTimeImmutable;
 use Exception;
@@ -402,6 +403,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                 'row_limit' => $section->rowLimit,
                 'revenue_source' => $section->revenueSource?->value,
                 'creative_view' => $section->creativeView?->value,
+                'tracking_view' => $section->trackingView?->value,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -448,6 +450,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                     : null,
                 revenueSource: RevenueSource::tryFrom((string) ($values['revenue_source'] ?? '')),
                 creativeView: CreativeView::tryFrom((string) ($values['creative_view'] ?? '')),
+                trackingView: TrackingView::tryFrom((string) ($values['tracking_view'] ?? '')),
             );
         }
 

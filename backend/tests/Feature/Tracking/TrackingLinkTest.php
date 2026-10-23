@@ -230,3 +230,11 @@ it('saves and lists link templates, accepting only utm parameters', function ():
 
     expect($this->actingAs($scenario->owner)->getJson('/api/tracking/link-templates')->json('data.0.name'))->toBe('Paid social');
 });
+
+it('refuses to let a browser say that a WhatsApp conversation started, or that a lead was made', function (): void {
+    foreach (['whatsapp_conversation_started', 'lead_created', 'sale_completed', 'form_submit'] as $name) {
+        $this->call('POST', '/api/public/track', [], [], [], ['CONTENT_TYPE' => 'text/plain'], json_encode(['event' => $name, 'event_id' => 'x-'.$name, 'session' => 'sss'], JSON_THROW_ON_ERROR))->assertStatus(202);
+    }
+
+    expect(DB::table('tracking_events')->whereIn('name', ['whatsapp_conversation_started', 'lead_created', 'sale_completed', 'form_submit'])->count())->toBe(0);
+});

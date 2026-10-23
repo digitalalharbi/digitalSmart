@@ -4,6 +4,29 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Tracking & Funnels, part F: tracking in reports, QR codes, and the edges
+
+### Added
+- **A `tracking` report section** with five fixed views — link performance, form performance, funnel, lead follow-up and
+  tracking health — for the report's client. Each is a table of counts, rates and states: a link is named by its label and
+  never its address or token, no lead or answer is named, no internal id leaves the server, so it is client-safe by
+  construction and a share link carries the same. A step no page reported is "not reported", never zero. It reaches the
+  CSV, the workbook and the generated deck, and the report builder offers it with a view chooser. Internal and client-safe
+  reports alike need a client, and read only that client (tenant-isolated, tested).
+- **QR codes for a link**: drawn in the browser from the short address (a pinned `qrcode-generator`, nothing sent anywhere),
+  downloadable as SVG, black on white whatever the theme. A scan opens the short link and is counted as a click, so a link
+  made for print takes the **QR channel** (new chooser in the link builder), keeping its scans apart from online clicks.
+- **A call-tracking contract** (`CallTrackingAdapter`, `CallEvidence`) with no implementation: no provider is connected, so
+  no call is recorded or inferred from a click. A test pins that a browser cannot report `whatsapp_conversation_started`,
+  a lead, a sale or a form submission.
+- **Browser gate**: the public form spec now also runs on Firefox, WebKit and Mobile Chromium (with Chromium and Mobile
+  Safari): axe clean and no sideways scroll on all five.
+
+### Not built, stated plainly
+- Cost per lead / qualified lead, CAC and ROAS **per link**: a link is not bound to a campaign, so there is no spend to divide.
+- Automatic owner, task and notification when a lead is made (the lead is made and counted; routing is not).
+- Live delivery to any provider (`BLOCKED_EXTERNAL`); TikTok and LinkedIn documentation unread; X and OpenAI unsupported.
+
 ## Tracking & Funnels, part E: conversion mapping, dispatch, consent and retention
 
 ### Added

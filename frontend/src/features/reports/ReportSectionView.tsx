@@ -16,6 +16,7 @@ import {
   readChartPalette,
   seriesColour,
 } from '@/shared/ui/chart';
+import { TrackingSectionView } from './TrackingSectionView';
 import { AttributionSectionView } from './AttributionSectionView';
 import { CreativeSectionView } from './CreativeSectionView';
 import { LeadSectionView } from './LeadSectionView';
@@ -217,6 +218,10 @@ export function ReportSectionView({ section, sparks }: ReportSectionViewProps) {
 
   if (section.kind === 'attribution') {
     return <AttributionSectionView section={section} />;
+  }
+
+  if (section.kind === 'tracking') {
+    return <TrackingSectionView section={section} />;
   }
 
   /*

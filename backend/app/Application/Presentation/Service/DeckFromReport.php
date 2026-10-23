@@ -133,6 +133,13 @@ final readonly class DeckFromReport
                 ),
                 notes: $notes,
             ),
+            SectionKind::Tracking => new Slide(
+                kind: SlideKind::Scorecard,
+                title: $section->title,
+                lead: null,
+                figures: $this->trackingFigures($section),
+                notes: $notes,
+            ),
             SectionKind::Scorecard, SectionKind::Traffic => new Slide(
                 kind: SlideKind::Scorecard,
                 title: $section->title,
@@ -337,5 +344,46 @@ final readonly class DeckFromReport
             lead: 'Read out, not skipped. Each of these changes what a figure on the previous slides means.',
             paragraphs: $points,
         );
+    }
+
+    /**
+     * A tracking table as slide figures: the first column names the figure, the rest are its value. A missing value is said,
+     * never drawn as zero.
+     *
+     * @return list<SlideFigure>
+     */
+    private function trackingFigures(RenderedSection $section): array
+    {
+        $table = $section->tracking;
+
+        if ($table === null) {
+            return [];
+        }
+
+        $figures = [];
+        $columns = array_slice($table->columns, 1);
+
+        foreach (array_slice($table->rows, 0, 12) as $row) {
+            $first = $table->columns[0]['key'] ?? '';
+            $parts = [];
+            $missing = false;
+
+            foreach ($columns as $column) {
+                $cell = $row[$column['key']] ?? null;
+                $missing = $missing || $cell === null;
+                $parts[] = count($columns) === 1 ? ($cell === null ? 'Not reported' : (string) $cell) : sprintf('%s %s', $column['label'], $cell === null ? 'not reported' : (string) $cell);
+            }
+
+            $figures[] = new SlideFigure(
+                label: (string) ($row[$first] ?? ''),
+                value: implode(' · ', $parts),
+                change: null,
+                changeIsGood: null,
+                sourceLabel: 'First-party tracking',
+                unavailableReason: $missing ? 'A step was not reported by the destination page.' : null,
+            );
+        }
+
+        return $figures;
     }
 }

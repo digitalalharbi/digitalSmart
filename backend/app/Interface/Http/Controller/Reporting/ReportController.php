@@ -32,6 +32,7 @@ use App\Domain\Reporting\Exception\InvalidShare;
 use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
+use App\Domain\Reporting\TrackingView;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Resource\Reporting\ReportCsv;
 use App\Interface\Http\Resource\Reporting\ReportResource;
@@ -384,6 +385,13 @@ final class ReportController extends Controller
                 return $this->unknown('creative view', CreativeView::values());
             }
 
+            $trackingValue = is_string($entry['tracking_view'] ?? null) ? $entry['tracking_view'] : '';
+            $trackingView = TrackingView::tryFrom($trackingValue);
+
+            if ($trackingValue !== '' && $trackingView === null) {
+                return $this->unknown('tracking view', TrackingView::values());
+            }
+
             $sections[] = new SectionDefinition(
                 kind: $kind,
                 metrics: $metrics,
@@ -396,6 +404,7 @@ final class ReportController extends Controller
                     : null,
                 revenueSource: $revenueSource,
                 creativeView: $creativeView,
+                trackingView: $trackingView,
             );
         }
 

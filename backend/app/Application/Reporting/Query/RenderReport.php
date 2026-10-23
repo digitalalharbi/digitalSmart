@@ -16,6 +16,7 @@ use App\Application\Attribution\DTO\AttributionQuery;
 use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Leads\Contract\LeadReadModel;
+use App\Application\Reporting\Contract\TrackingReportReader;
 use App\Application\Reporting\DTO\AttributionFigures;
 use App\Application\Reporting\DTO\CreativeSection;
 use App\Application\Reporting\DTO\LeadFigures;
@@ -79,6 +80,7 @@ final readonly class RenderReport
         private LeadReadModel $leads,
         private AttributionReadModel $attribution,
         private CreativeIntelligenceReader $creatives,
+        private TrackingReportReader $tracking,
         private Clock $clock,
     ) {}
 
@@ -223,6 +225,10 @@ final readonly class RenderReport
 
         if ($section->kind === SectionKind::Lead) {
             return $this->lead($workspaceId, $definition, $section, $period, $title, $caveats);
+        }
+
+        if ($section->kind === SectionKind::Tracking) {
+            return $this->tracking($workspaceId, $definition, $section, $period, $title, $caveats);
         }
 
         if ($section->kind === SectionKind::Traffic) {
@@ -451,6 +457,47 @@ final readonly class RenderReport
             isEmpty: $figures->isEmpty(),
             caveats: array_values(array_unique($caveats)),
             attribution: $figures,
+        );
+    }
+
+    /**
+     * A tracking section: one view of the client's first-party tracking over the period.
+     *
+     * Read for the whole client by `TrackingReportReader`, which returns counts and states only. The source is `Live`
+     * because the product itself recorded these events — and the section says so only as far as that is true: a step a
+     * destination page never reported is a gap in its table, not a zero.
+     *
+     * @param  list<string>  $caveats
+     */
+    private function tracking(
+        string $workspaceId,
+        ReportDefinition $definition,
+        SectionDefinition $section,
+        DateRange $period,
+        string $title,
+        array $caveats,
+    ): RenderedSection {
+        if ($definition->clientId === null || $section->trackingView === null) {
+            return new RenderedSection(
+                kind: $section->kind,
+                title: $title,
+                metrics: [],
+                source: MetricSource::Synced,
+                isEmpty: true,
+                caveats: $caveats,
+            );
+        }
+
+        $read = $this->tracking->read($workspaceId, $definition->clientId, $section->trackingView, $period->start, $period->end->setTime(23, 59, 59));
+
+        return new RenderedSection(
+            kind: $section->kind,
+            title: $title,
+            metrics: [],
+            source: MetricSource::Live,
+            isEmpty: $read['section']->isEmpty(),
+            caveats: array_values(array_unique([...$caveats, ...$read['caveats']])),
+            tracking: $read['section'],
         );
     }
 
@@ -832,6 +879,10 @@ final readonly class RenderReport
 
         if ($section->kind === SectionKind::Lead) {
             return 'Leads';
+        }
+
+        if ($section->kind === SectionKind::Tracking) {
+            return $section->trackingView?->label() ?? $section->kind->label();
         }
 
         if ($section->kind === SectionKind::Creative) {

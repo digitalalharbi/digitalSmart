@@ -1994,6 +1994,11 @@
       "copy": "Copy the address of {{name}}",
       "copied": "Copied",
       "copyShort": "Copy",
+      "showQr": "QR code",
+      "hideQr": "Hide QR code",
+      "qrDownload": "Download SVG",
+      "qrAlt": "QR code for {{name}}",
+      "qrNote": "Scanning it opens the short link, so a scan is counted as a click. Give a printed code its own link with the QR channel, so its scans are not mixed with online clicks.",
       "clicks": "Clicks",
       "visitors": "Visitors",
       "landingViews": "Page views",
@@ -2033,10 +2038,22 @@
         "ad": "Ad",
         "utmNote": "Campaign parameters are added automatically from the platform, campaign and creative.",
         "create": "Create link",
-        "failed": "The link could not be saved."
+        "failed": "The link could not be saved.",
+        "channel": "Channel",
+        "channelHint": "A printed code should use the QR channel, so its scans are reported apart from online clicks."
       },
       "showFunnel": "Show funnel",
-      "hideFunnel": "Hide funnel"
+      "hideFunnel": "Hide funnel",
+      "channels": {
+        "paid": "Paid",
+        "organic": "Organic",
+        "email": "Email",
+        "sms": "SMS",
+        "offline_qr": "QR code (print)",
+        "referral": "Referral",
+        "direct": "Direct",
+        "other": "Other"
+      }
     },
     "forms": {
       "intro": "A form is the page where a visitor leaves their details. A submission is kept here, and can create a lead.",
@@ -3509,6 +3526,7 @@
       "revenueSource": "Whose revenue",
       "revenueSourceHint": "A store's revenue is a claim by one authority. Add a second section to show another — they are never added together.",
       "creativeView": "What to show",
+      "trackingView": "What to show",
       "campaignScope_one": "About {{count}} campaign",
       "campaignScope_other": "About {{count}} campaigns",
       "clearCampaignScope": "Read the whole client instead"
@@ -3737,7 +3755,8 @@
         "store": "Store",
         "lead": "Leads",
         "traffic": "Clicks and funnel",
-        "attribution": "Attributed revenue"
+        "attribution": "Attributed revenue",
+        "tracking": "Tracking and funnels"
       },
       "presets": {
         "executive": {

@@ -13,6 +13,7 @@ import { periodOfDays } from '../funnels/duration';
 import { FunnelView } from '../funnels/FunnelView';
 import { useLinksQuery, useSetLinkStatusMutation } from './api';
 import { LinkBuilder } from './LinkBuilder';
+import { QrCode } from './QrCode';
 import type { Counted, TrackingLink } from './types';
 
 /** A count, or why there is none. Never a zero standing in for "we cannot know". */
@@ -55,6 +56,7 @@ function LinkCard({ link, canManage }: { link: TrackingLink; canManage: boolean 
   const setStatus = useSetLinkStatusMutation();
   const [copied, setCopied] = useState(false);
   const [showFunnel, setShowFunnel] = useState(false);
+  const [showQr, setShowQr] = useState(false);
   const counts = link.counts;
 
   const copy = () => {
@@ -125,9 +127,20 @@ function LinkCard({ link, canManage }: { link: TrackingLink; canManage: boolean 
         </p>
       ) : null}
 
+      {showQr ? <QrCode address={link.short_url} name={link.name} /> : null}
       {showFunnel ? <LinkFunnel link={link} /> : null}
 
       <div className="flex flex-wrap justify-end gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="max-md:h-11"
+          aria-expanded={showQr}
+          onClick={() => setShowQr((v) => !v)}
+        >
+          {showQr ? t('tracking.links.hideQr') : t('tracking.links.showQr')}
+        </Button>
         <Button
           type="button"
           variant="ghost"
