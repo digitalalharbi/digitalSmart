@@ -4,7 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { api, ApiError } from '@/shared/api/client';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
-import { beacon, eventId } from './beacon';
+import { beacon, eventId, pushToDataLayer } from './beacon';
 import { isShown } from './visibility';
 import type { FormField, PublicForm, SubmitResult } from './types';
 
@@ -221,7 +221,9 @@ export function PublicFormPage() {
   useEffect(() => {
     if (form.data && !viewed.current) {
       viewed.current = true;
-      beacon({ touchpoint, event: 'form_view', event_id: eventId(), meta: { form_token: token } });
+      const id = eventId();
+      pushToDataLayer(form.data.data_layer['form_view'], id);
+      beacon({ touchpoint, event: 'form_view', event_id: id, meta: { form_token: token } });
     }
   }, [form.data, touchpoint, token]);
 
@@ -258,6 +260,7 @@ export function PublicFormPage() {
     onSuccess: (result) => {
       setDone(result);
       setErrors({});
+      pushToDataLayer(form.data?.data_layer['form_submit'], submissionId.current);
 
       if (result.redirect_url) {
         window.setTimeout(() => window.location.assign(result.redirect_url ?? '/'), 1500);
@@ -282,7 +285,9 @@ export function PublicFormPage() {
   const change = (key: string, value: string) => {
     if (!started.current) {
       started.current = true;
-      beacon({ touchpoint, event: 'form_start', event_id: eventId(), meta: { field_key: key } });
+      const id = eventId();
+      pushToDataLayer(form.data?.data_layer['form_start'], id);
+      beacon({ touchpoint, event: 'form_start', event_id: id, meta: { field_key: key } });
     }
     setValues((v) => ({ ...v, [key]: value }));
     setErrors((e) => {

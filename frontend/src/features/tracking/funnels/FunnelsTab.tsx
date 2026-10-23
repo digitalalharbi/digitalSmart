@@ -22,7 +22,7 @@ import { FunnelView } from './FunnelView';
 import { DIMENSIONS, type Dimension, type StoredFunnel } from './types';
 
 const SELECT =
-  'border-line bg-surface text-content h-11 rounded-lg border px-3 text-[16px] md:h-10 md:text-sm';
+  'border-line bg-surface text-content h-11 w-full min-w-0 truncate rounded-lg border px-3 text-[16px] md:h-10 md:text-sm';
 
 function Stat({ label, value, note }: { label: string; value: string; note?: string | undefined }) {
   return (
@@ -60,7 +60,7 @@ export function FunnelsTab() {
     <div className="flex flex-col gap-5">
       <p className="text-content-secondary max-w-prose text-sm">{t('tracking.funnels.intro')}</p>
 
-      <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+      <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
         <EntityPicker
           label={t('tracking.links.builder.project')}
           clearLabel={t('actions.clear')}
@@ -77,7 +77,7 @@ export function FunnelsTab() {
           }))}
           isLoading={projects.isFetching}
         />
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
+        <label className="-mx-1 flex min-w-0 flex-col gap-1.5 overflow-x-clip px-1 text-sm font-medium">
           {t('tracking.funnels.period')}
           <select className={SELECT} value={days} onChange={(e) => setDays(Number(e.target.value))}>
             {[7, 30, 90].map((d) => (
@@ -87,7 +87,7 @@ export function FunnelsTab() {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
+        <label className="-mx-1 flex min-w-0 flex-col gap-1.5 overflow-x-clip px-1 text-sm font-medium">
           {t('tracking.funnels.funnel')}
           <select
             className={SELECT}

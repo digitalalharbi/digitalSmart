@@ -36,3 +36,20 @@ export function eventId(): string {
     .join('')
     .slice(0, 24);
 }
+
+/**
+ * Push a mapped event to the visitor's own `dataLayer`, for Tag Manager to pick up. Carries the event id and nothing a
+ * visitor typed. Does nothing when the project mapped no name for the event or the page has no `dataLayer` to push to.
+ */
+export function pushToDataLayer(name: string | undefined, id: string): void {
+  try {
+    const layer = (window as unknown as { dataLayer?: unknown[] }).dataLayer;
+
+    if (name !== undefined && name !== '') {
+      const target = layer ?? ((window as unknown as { dataLayer: unknown[] }).dataLayer = []);
+      target.push({ event: name, ds_event_id: id });
+    }
+  } catch {
+    /* a data layer problem is never the visitor's */
+  }
+}

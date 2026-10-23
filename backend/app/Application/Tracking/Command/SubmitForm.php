@@ -85,7 +85,8 @@ final readonly class SubmitForm
 
         $this->events->recordServerEvent($form->workspaceId(), $form->projectId, $touchpoint, $touchpoint?->trackingLinkId, TrackingEventName::FormSubmit, $eventId, $visitor, $state, $class, $now);
 
-        if ($form->createsLead) {
+        /* A test visit leaves its submission for the debug console and makes no lead: it is not a person. */
+        if ($form->createsLead && $class !== TrafficClass::Test) {
             $this->createLead($form, $record, $attribution, $now);
         }
 

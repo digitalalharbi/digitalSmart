@@ -4,10 +4,12 @@ import { PageHeader } from '@/shared/ui/page-header';
 import { TabList } from '@/shared/ui/tab-list';
 import { FormsTab } from './forms/FormsTab';
 import { FunnelsTab } from './funnels/FunnelsTab';
+import { EventsTab } from './health/EventsTab';
+import { HealthTab } from './health/HealthTab';
 import { LinksTab } from './links/LinksTab';
 import { TrackingCenterPage } from './TrackingCenterPage';
 
-type Tab = 'overview' | 'links' | 'forms' | 'funnels';
+type Tab = 'overview' | 'links' | 'forms' | 'funnels' | 'events' | 'health';
 
 /**
  * Tracking & Funnels.
@@ -15,14 +17,13 @@ type Tab = 'overview' | 'links' | 'forms' | 'funnels';
  * The area's tabs arrive as the things behind them do: today the health overview that already existed, and the links
  * an advertisement points at. A tab with nothing behind it would be a promise, and this product does not make those.
  */
+const TABS: Tab[] = ['overview', 'links', 'forms', 'funnels', 'events', 'health'];
+
 export function TrackingAreaPage() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const requested = params.get('tab');
-  const active: Tab =
-    requested === 'links' || requested === 'forms' || requested === 'funnels'
-      ? requested
-      : 'overview';
+  const active: Tab = TABS.find((tab) => tab === requested) ?? 'overview';
 
   return (
     <div className="flex flex-col gap-4">
@@ -36,6 +37,8 @@ export function TrackingAreaPage() {
           { id: 'links', label: t('tracking.area.links') },
           { id: 'forms', label: t('tracking.area.forms') },
           { id: 'funnels', label: t('tracking.area.funnels') },
+          { id: 'events', label: t('tracking.area.events') },
+          { id: 'health', label: t('tracking.area.health') },
         ]}
       />
       <div role="tabpanel" id="tracking-area-panel" aria-labelledby={`tracking-area-tab-${active}`}>
@@ -45,7 +48,17 @@ export function TrackingAreaPage() {
               title={t('tracking.area.title')}
               description={t('tracking.area.description')}
             />
-            {active === 'links' ? <LinksTab /> : active === 'forms' ? <FormsTab /> : <FunnelsTab />}
+            {active === 'links' ? (
+              <LinksTab />
+            ) : active === 'forms' ? (
+              <FormsTab />
+            ) : active === 'funnels' ? (
+              <FunnelsTab />
+            ) : active === 'events' ? (
+              <EventsTab />
+            ) : (
+              <HealthTab />
+            )}
           </div>
         ) : (
           <TrackingCenterPage />

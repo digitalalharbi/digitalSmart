@@ -1817,20 +1817,51 @@
       "delete": "Delete this conversion"
     },
     "events": {
-      "purchase": "Purchase",
-      "generate_lead": "Lead",
-      "form_submit": "Form submitted",
-      "sign_up": "Sign-up",
-      "add_to_cart": "Add to cart",
-      "begin_checkout": "Checkout started",
-      "view_item": "Product view",
-      "whatsapp_click": "WhatsApp click",
-      "phone_click": "Phone click",
-      "form_start": "Form started",
-      "page_view": "Page view",
-      "session_start": "Session start",
-      "app_install": "App install",
-      "custom_event": "Custom event"
+      "intro": "Watch a test visit happen in real time, and connect the destination page to Tag Manager.",
+      "test": {
+        "title": "Test tracking",
+        "body": "A test visit behaves like a real one, is kept and labelled, counts nowhere and creates no lead. Nothing is sent to any provider.",
+        "link": "Tracking link",
+        "choose": "Choose a link",
+        "start": "Start a test visit",
+        "open": "Open this address on the page you want to test:",
+        "label": "Test traffic",
+        "failed": "The test could not be started."
+      },
+      "console": {
+        "title": "Event console",
+        "waiting": "Waiting for the first event. Open the test address.",
+        "cols": {
+          "time": "Time",
+          "event": "Event",
+          "source": "Source",
+          "status": "Status",
+          "id": "Event id",
+          "destination": "Destination"
+        },
+        "sources": {
+          "first_party": "Page",
+          "server": "digitalSmart",
+          "test": "Test"
+        },
+        "statuses": {
+          "valid": "Counted",
+          "suspected_bot": "Likely automated",
+          "duplicate": "Repeat",
+          "test": "Test"
+        }
+      },
+      "dataLayer": {
+        "title": "Data layer events",
+        "body": "The event names pushed to the page’s data layer for Tag Manager to listen to. Leave a name unchanged to keep the default.",
+        "name": "Data layer name for {{event}}",
+        "save": "Save names",
+        "failed": "The names could not be saved."
+      },
+      "snippet": {
+        "title": "Landing page snippet",
+        "body": "Paste this on the destination page. It reports the landing view and exposes dsTrack(); it never reads what a visitor types."
+      }
     },
     "evidence": {
       "last_event_at": "Last event",
@@ -1950,7 +1981,9 @@
       "overview": "Overview",
       "links": "Links",
       "forms": "Forms",
-      "funnels": "Funnels"
+      "funnels": "Funnels",
+      "events": "Events",
+      "health": "Health"
     },
     "links": {
       "intro": "A tracking link sends a visitor to your page and records the visit first. Use it as the address in the advertisement.",
@@ -2215,6 +2248,53 @@
       "record": {
         "appointment_booked": "Record an appointment",
         "opportunity_created": "Record an opportunity"
+      }
+    },
+    "health": {
+      "intro": "Is the tracking working? Every verdict shows what it rests on; nothing is green without evidence.",
+      "scope": "Scope",
+      "wholeProject": "Whole project",
+      "attention_one": "{{count}} item needs attention.",
+      "attention_other": "{{count}} items need attention.",
+      "groups": {
+        "source": "First-party",
+        "destination": "Destinations",
+        "browser": "Browser pixels",
+        "server": "Server conversions",
+        "quality": "Quality"
+      },
+      "states": {
+        "LIVE": "Live",
+        "SYNCED": "Synced",
+        "STALE": "Stale",
+        "PARTIAL": "Partial",
+        "SANDBOX": "Sandbox",
+        "MANUAL": "Manual",
+        "ESTIMATED": "Estimated",
+        "ATTRIBUTED": "Attributed",
+        "NOT_CONFIGURED": "Not configured",
+        "AWAITING_CREDENTIALS": "Awaiting credentials",
+        "UNSUPPORTED": "Unsupported"
+      },
+      "checks": {
+        "first_party": "First-party events",
+        "gtm": "Google Tag Manager",
+        "ga4": "Google Analytics 4",
+        "meta_browser": "Meta — browser",
+        "meta_server": "Meta — server",
+        "tiktok_browser": "TikTok — browser",
+        "tiktok_server": "TikTok — server",
+        "snapchat_browser": "Snapchat — browser",
+        "snapchat_server": "Snapchat — server",
+        "linkedin_browser": "LinkedIn — browser",
+        "linkedin_server": "LinkedIn — server",
+        "google_conversion": "Google conversion path",
+        "x_server": "X",
+        "openai_server": "ChatGPT / OpenAI Ads",
+        "click_ids": "Click identifiers",
+        "deduplication": "Deduplication",
+        "attribution": "Attribution evidence",
+        "consent": "Consent readiness"
       }
     }
   },

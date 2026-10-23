@@ -159,13 +159,16 @@ use App\Application\Tags\Contract\TagStore;
 use App\Application\Tracking\Command\FollowTrackingLink;
 use App\Application\Tracking\Command\SaveForm;
 use App\Application\Tracking\Command\SaveTrackingLink;
+use App\Application\Tracking\Command\StartTrackingTest;
 use App\Application\Tracking\Contract\FormRepository;
 use App\Application\Tracking\Contract\FormSubmissionStore;
 use App\Application\Tracking\Contract\FunnelRepository;
 use App\Application\Tracking\Contract\OpaqueTokens;
 use App\Application\Tracking\Contract\TrackingAnalyticsReadModel;
 use App\Application\Tracking\Contract\TrackingEventStore;
+use App\Application\Tracking\Contract\TrackingHealthReadModel;
 use App\Application\Tracking\Contract\TrackingLinkRepository;
+use App\Application\Tracking\Contract\TrackingSettingsRepository;
 use App\Application\Workspace\Contract\AssignedWorkRepository;
 use App\Application\Workspace\Contract\MemberDirectory;
 use App\Application\Workspace\Contract\MemberReadModel;
@@ -294,7 +297,9 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTaskRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentToolCallLog;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingEventStore;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingHealthReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingLinkRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingSettingsRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
 use App\Infrastructure\Persistence\RandomOpaqueTokens;
@@ -456,6 +461,8 @@ final class AppServiceProvider extends ServiceProvider
         TrackingEventStore::class => EloquentTrackingEventStore::class,
         OpaqueTokens::class => RandomOpaqueTokens::class,
         FormRepository::class => EloquentFormRepository::class,
+        TrackingSettingsRepository::class => EloquentTrackingSettingsRepository::class,
+        TrackingHealthReadModel::class => EloquentTrackingHealthReadModel::class,
         FunnelRepository::class => EloquentFunnelRepository::class,
         TrackingAnalyticsReadModel::class => EloquentTrackingAnalyticsReadModel::class,
         FormSubmissionStore::class => EloquentFormSubmissionStore::class,
@@ -585,7 +592,7 @@ final class AppServiceProvider extends ServiceProvider
          * The tools, behind one gateway. Adding a tool is adding a line here; nothing in the gateway knows the set.
          * The caller holder is shared so a proposal records who really made it.
          */
-        $this->app->when([SaveTrackingLink::class, FollowTrackingLink::class, SaveForm::class])->needs('$ownHosts')->give(static function (): array {
+        $this->app->when([SaveTrackingLink::class, FollowTrackingLink::class, SaveForm::class, StartTrackingTest::class])->needs('$ownHosts')->give(static function (): array {
             $hosts = [];
 
             foreach ([config('app.url'), config('app.frontend_url'), config('digitalsmart.tracking.public_base_url')] as $url) {
