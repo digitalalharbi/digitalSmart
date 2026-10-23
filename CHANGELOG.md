@@ -4,6 +4,24 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Tracking & Funnels, part C: funnels, breakdowns, a lead's tracked path and follow-up
+
+### Added
+- **Funnel builder and analytics** (Tracking → Funnels): ten stages from the click to the sale, chosen in the journey's
+  own order so every rate divides by the step before it; a standard lead funnel for projects with none of their own;
+  counts, rate from the previous step, drop-off, median wait, overall rate; a funnel per link from its card.
+- **Honest gaps:** a step the destination page never reported is *Not reported* with its reason, not zero; a rate that would
+  exceed 100 % says an earlier step is not being recorded instead of showing it; automated visits are excluded and counted.
+- **Breakdowns** by platform, campaign, ad group, ad, creative, device, browser, referrer, UTM source, landing page, date, hour.
+- **Tracked path on a lead:** the visit, page, form and pipeline events in order, each with where it was reported; and a
+  sentence when nothing was tracked rather than the implication that nothing happened.
+- **Follow-up report:** contact rate, answer-time target, not-yet-answered and overdue, median time to first attempt and
+  to first contact, qualified.
+- **Appointments and opportunities** can be recorded against a lead (history events; the stage is not moved).
+
+### Not yet
+- Spend-based figures per link (CPL, CPQL, CAC, ROAS) and automatic assignment / task / notification on lead creation.
+
 ## Tracking & Funnels, part B: forms, submissions and the lead they make
 
 ### Added

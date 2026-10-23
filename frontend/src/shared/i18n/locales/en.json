@@ -1949,7 +1949,8 @@
       "tabs": "Tracking sections",
       "overview": "Overview",
       "links": "Links",
-      "forms": "Forms"
+      "forms": "Forms",
+      "funnels": "Funnels"
     },
     "links": {
       "intro": "A tracking link sends a visitor to your page and records the visit first. Use it as the address in the advertisement.",
@@ -1999,7 +2000,9 @@
         "utmNote": "Campaign parameters are added automatically from the platform, campaign and creative.",
         "create": "Create link",
         "failed": "The link could not be saved."
-      }
+      },
+      "showFunnel": "Show funnel",
+      "hideFunnel": "Hide funnel"
     },
     "forms": {
       "intro": "A form is the page where a visitor leaves their details. A submission is kept here, and can create a lead.",
@@ -2091,6 +2094,127 @@
         "addField": "Add a field",
         "save": "Save form",
         "failed": "The form could not be saved."
+      }
+    },
+    "funnels": {
+      "title": "Funnel",
+      "intro": "Where visitors from your tracking links go next: the page, the form, the lead and what the team did with it.",
+      "period": "Period",
+      "lastDays_one": "Last {{count}} day",
+      "lastDays_other": "Last {{count}} days",
+      "funnel": "Funnel",
+      "standard": "Standard lead funnel",
+      "failed": "The figures could not be loaded.",
+      "pick": {
+        "title": "Choose a project",
+        "body": "A funnel is read for one project at a time."
+      },
+      "count": "Count",
+      "conversion": "From previous",
+      "dropOff": "Dropped",
+      "median": "Median wait",
+      "overall": "Overall: {{value}} reach the last step.",
+      "excluded_one": "{{count}} visit was marked as likely automated and left out.",
+      "excluded_other": "{{count}} visits were marked as likely automated and left out.",
+      "truncated": "This period has more visits than can be shown at once; the figures cover the earliest ones.",
+      "units": {
+        "session": "visits",
+        "submission": "submissions",
+        "lead": "leads"
+      },
+      "sources": {
+        "link_click": "Link click",
+        "landing_view": "Landing view",
+        "form_start": "Form started",
+        "form_submit": "Form submitted",
+        "lead_created": "Lead created",
+        "lead_contacted": "Lead reached",
+        "lead_qualified": "Lead qualified",
+        "appointment_booked": "Appointment",
+        "opportunity_created": "Opportunity",
+        "sale_completed": "Sale"
+      },
+      "builder": {
+        "new": "New funnel",
+        "edit": "Edit {{name}}",
+        "name": "Funnel name",
+        "stages": "Stages",
+        "order": "Stages always follow the journey, from the click to the sale.",
+        "save": "Save funnel",
+        "delete": "Delete",
+        "failed": "The funnel could not be saved."
+      },
+      "followUp": {
+        "title": "Follow-up",
+        "leads": "Leads",
+        "contactRate": "Reached",
+        "sla": "Reached within {{minutes}} min",
+        "uncontacted": "Not yet answered",
+        "overdue_one": "{{count}} waiting longer than the target",
+        "overdue_other": "{{count}} waiting longer than the target",
+        "firstAttempt": "Median time to first attempt",
+        "firstContact": "Median time to first contact",
+        "qualified": "Qualified"
+      },
+      "breakdown": {
+        "title": "Breakdown",
+        "by": "By",
+        "empty": "No visits in this period.",
+        "dash": "A dash means the destination page did not report that step.",
+        "cols": {
+          "key": "Group",
+          "sessions": "Visits",
+          "landing": "Page views",
+          "starts": "Form starts",
+          "submissions": "Submissions",
+          "leads": "Leads",
+          "qualified": "Qualified",
+          "sales": "Sales"
+        }
+      },
+      "dimensions": {
+        "platform": "Platform",
+        "campaign": "Campaign",
+        "ad_group": "Ad group",
+        "ad": "Ad",
+        "creative": "Creative",
+        "device": "Device",
+        "browser": "Browser",
+        "referrer": "Referrer",
+        "utm_source": "UTM source",
+        "landing": "Landing page",
+        "date": "Date",
+        "hour": "Hour"
+      }
+    },
+    "path": {
+      "title": "Tracked path",
+      "failed": "The path could not be loaded.",
+      "events": {
+        "link_click": "Clicked the tracking link",
+        "landing_view": "Viewed the landing page",
+        "form_view": "Saw the form",
+        "form_start": "Started the form",
+        "form_submit": "Submitted the form",
+        "whatsapp_click": "Tapped WhatsApp",
+        "lead_created": "Lead created",
+        "lead_assigned": "Assigned",
+        "lead_contact_attempt": "Contact attempted",
+        "lead_contacted": "Reached",
+        "lead_qualified": "Qualified",
+        "appointment_booked": "Appointment booked",
+        "opportunity_created": "Opportunity created",
+        "sale_completed": "Sale completed",
+        "lead_lost": "Lost"
+      },
+      "sources": {
+        "first_party": "Reported by the page",
+        "server": "Recorded by digitalSmart",
+        "lead_pipeline": "Lead pipeline"
+      },
+      "record": {
+        "appointment_booked": "Record an appointment",
+        "opportunity_created": "Record an opportunity"
       }
     }
   },

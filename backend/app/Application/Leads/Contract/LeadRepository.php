@@ -78,6 +78,13 @@ interface LeadRepository
         string $actorId,
     ): LeadView;
 
+    /**
+     * Record that an appointment was booked or an opportunity opened. A fact about the lead's life, kept in its history.
+     *
+     * @param  'appointment_booked'|'opportunity_created'  $type
+     */
+    public function recordMilestone(string $workspaceId, string $id, string $type, string $actorId, ?string $note, ?DateTimeImmutable $at): void;
+
     public function addNote(string $workspaceId, string $id, string $note, string $actorId): LeadView;
 
     /**

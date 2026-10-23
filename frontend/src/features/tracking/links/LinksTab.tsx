@@ -8,6 +8,9 @@ import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { useFunnelAnalyticsQuery } from '../funnels/api';
+import { periodOfDays } from '../funnels/duration';
+import { FunnelView } from '../funnels/FunnelView';
 import { useLinksQuery, useSetLinkStatusMutation } from './api';
 import { LinkBuilder } from './LinkBuilder';
 import type { Counted, TrackingLink } from './types';
@@ -33,10 +36,25 @@ function Figure({ label, counted }: { label: string; counted: Counted }) {
   );
 }
 
+/** The funnel for one link, read only when asked for: it is a heavier query than the counts above it. */
+function LinkFunnel({ link }: { link: TrackingLink }) {
+  const { t } = useTranslation();
+  const funnel = useFunnelAnalyticsQuery(link.project.id, null, link.id, periodOfDays(30));
+
+  return funnel.isPending ? (
+    <Skeleton className="h-32 w-full" />
+  ) : funnel.isError ? (
+    <Alert tone="danger">{t('tracking.funnels.failed')}</Alert>
+  ) : (
+    <FunnelView funnel={funnel.data} />
+  );
+}
+
 function LinkCard({ link, canManage }: { link: TrackingLink; canManage: boolean }) {
   const { t } = useTranslation();
   const setStatus = useSetLinkStatusMutation();
   const [copied, setCopied] = useState(false);
+  const [showFunnel, setShowFunnel] = useState(false);
   const counts = link.counts;
 
   const copy = () => {
@@ -107,8 +125,20 @@ function LinkCard({ link, canManage }: { link: TrackingLink; canManage: boolean 
         </p>
       ) : null}
 
-      {canManage ? (
-        <div className="flex justify-end">
+      {showFunnel ? <LinkFunnel link={link} /> : null}
+
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="max-md:h-11"
+          aria-expanded={showFunnel}
+          onClick={() => setShowFunnel((v) => !v)}
+        >
+          {showFunnel ? t('tracking.links.hideFunnel') : t('tracking.links.showFunnel')}
+        </Button>
+        {canManage ? (
           <Button
             type="button"
             variant="secondary"
@@ -124,8 +154,8 @@ function LinkCard({ link, canManage }: { link: TrackingLink; canManage: boolean 
           >
             {link.status === 'active' ? t('tracking.links.pause') : t('tracking.links.resume')}
           </Button>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </Card>
   );
 }
