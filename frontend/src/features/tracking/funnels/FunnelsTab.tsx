@@ -60,7 +60,7 @@ export function FunnelsTab() {
     <div className="flex flex-col gap-5">
       <p className="text-content-secondary max-w-prose text-sm">{t('tracking.funnels.intro')}</p>
 
-      <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+      <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
         <EntityPicker
           label={t('tracking.links.builder.project')}
           clearLabel={t('actions.clear')}
