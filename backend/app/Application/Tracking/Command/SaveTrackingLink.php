@@ -9,6 +9,7 @@ use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Exception\ResourceNotFound;
+use App\Application\Tracking\Contract\CampaignBindingResolver;
 use App\Application\Tracking\Contract\OpaqueTokens;
 use App\Application\Tracking\Contract\TrackingLinkRepository;
 use App\Application\Tracking\DTO\TrackingLinkInput;
@@ -39,6 +40,7 @@ final readonly class SaveTrackingLink
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
+        private CampaignBindingResolver $bindings,
         private array $ownHosts = [],
     ) {}
 
@@ -62,13 +64,31 @@ final readonly class SaveTrackingLink
             throw new TrackingRefused($e->getMessage(), 0, $e);
         }
 
+        if ($input->conversionGoal !== null && ! in_array($input->conversionGoal, ['lead', 'qualified', 'appointment', 'sale'], true)) {
+            throw new TrackingRefused('Unknown conversion goal.');
+        }
+
+        /*
+         * The hierarchy is checked against what the product holds. A bound link takes its platform, account and the names
+         * of its entities from there; a link that names nothing stays unbound and nothing is guessed on its behalf.
+         */
+        $binding = $this->bindings->resolve(
+            $workspaceId, $input->projectId, $input->platform, $input->externalAccountId,
+            $input->campaignId, $input->adGroupId, $input->adId, $input->creativeId,
+        );
+        $platform = $binding->platform ?? $input->platform;
+        $campaignName = $binding->campaignName ?? $input->campaign;
+        $adGroupName = $binding->adGroupName ?? $input->adGroup;
+        $adName = $binding->adName ?? $input->ad;
+        $creativeName = $binding->creativeName ?? $input->creative;
+
         $generated = LinkTemplate::render($input->templatePatterns, [
-            'platform' => $input->platform,
+            'platform' => $platform,
             'project' => null,
-            'campaign' => $input->campaign,
-            'ad_group' => $input->adGroup,
-            'ad' => $input->ad,
-            'creative' => $input->creative,
+            'campaign' => $campaignName,
+            'ad_group' => $adGroupName,
+            'ad' => $adName,
+            'creative' => $creativeName,
         ]);
         $utm = [];
 
@@ -97,12 +117,17 @@ final readonly class SaveTrackingLink
             'project_id' => $input->projectId,
             'client_id' => $clientId,
             'name' => $input->name,
-            'platform' => $input->platform,
-            'external_account_id' => $input->externalAccountId,
-            'campaign' => $input->campaign,
-            'ad_group' => $input->adGroup,
-            'ad' => $input->ad,
-            'creative' => $input->creative,
+            'platform' => $platform,
+            'external_account_id' => $binding->externalAccountId ?? $input->externalAccountId,
+            'campaign' => $campaignName,
+            'ad_group' => $adGroupName,
+            'ad' => $adName,
+            'creative' => $creativeName,
+            'campaign_id' => $binding?->campaignId,
+            'ad_group_id' => $binding?->adGroupId,
+            'ad_id' => $binding?->adId,
+            'creative_id' => $binding?->creativeId,
+            'conversion_goal' => $input->conversionGoal,
             'channel' => $input->channel,
             'destination_url' => $destination->value,
             'utm_source' => $utm['utm_source'] ?? null,
@@ -135,7 +160,10 @@ final readonly class SaveTrackingLink
             auditableType: 'tracking_link',
             auditableId: $link->id,
             summary: sprintf('%s tracking link "%s"', $id === null ? 'Created' : 'Changed', $link->name),
-            changes: ['project_id' => $link->projectId, 'platform' => $link->platform, 'destination_host' => $destination->host],
+            changes: [
+                'project_id' => $link->projectId, 'platform' => $link->platform, 'destination_host' => $destination->host,
+                'campaign_id' => $link->campaignId, 'ad_group_id' => $link->adGroupId, 'ad_id' => $link->adId,
+            ],
         ));
 
         return $link;

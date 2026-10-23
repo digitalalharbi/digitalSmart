@@ -36,6 +36,12 @@ final readonly class TrackingLinkView
         public ?string $notes,
         public DateTimeImmutable $createdAt,
         public ?LinkCounts $counts = null,
+        public ?string $campaignId = null,
+        public ?string $adGroupId = null,
+        public ?string $adId = null,
+        public ?string $creativeId = null,
+        public ?string $externalAccountId = null,
+        public ?string $conversionGoal = null,
     ) {}
 
     public function withCounts(LinkCounts $counts): self
@@ -45,6 +51,7 @@ final readonly class TrackingLinkView
             $this->name, $this->platform, $this->campaign, $this->adGroup, $this->ad, $this->creative, $this->channel,
             $this->destinationUrl, $this->utm, $this->customParams, $this->objective, $this->status, $this->expiresAt,
             $this->notes, $this->createdAt, $counts,
+            $this->campaignId, $this->adGroupId, $this->adId, $this->creativeId, $this->externalAccountId, $this->conversionGoal,
         );
     }
 }

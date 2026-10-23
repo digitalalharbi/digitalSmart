@@ -219,3 +219,18 @@ visitor → POST /api/public/forms/{token}/submit → form_submissions → [crea
   WhatsApp's own webhook) and is refused from the browser beacon.
 - **Browsers.** `tracking-forms.spec.ts` is in the compatibility set: Chromium, Mobile Safari, Firefox, WebKit, Mobile
   Chromium. Not covered: real devices and a manual screen-reader pass.
+
+## Revenue & operations A — campaign binding and cost
+
+- **Binding.** `tracking_links.campaign_id / ad_group_id / ad_id / creative_id` (nullable, `ON DELETE SET NULL`), with a CHECK that a level
+  cannot be named without the one above it. `CampaignBindingResolver` is the single place the hierarchy is checked.
+- **Spend scope.** A link's spend is the spend of the entity it is bound to at that entity's own level; the campaign row is
+  never the sum of its ads. DIRECT = no competing link. A competitor is another link on the same entity or a link bound
+  inside it. UNAVAILABLE is the default and carries its reason. ALLOCATED is opt-in (`allocate=clicks`), same-entity only,
+  labelled with method, share and low confidence.
+- **Cost.** `CostMetrics` divides spend by a count of the same link: null with a reason for missing spend, unreported count or
+  zero count. A zero *spend* still prices a unit at zero (that is a fact).
+- **Revenue.** Two sources, shown apart: `lead_value` (won value recorded on the link's leads) and `store_attributed` (paid
+  orders carrying the link's campaign tag, last-recorded evidence, only when the tag is unique to the link). ROAS per source,
+  one currency, spend that is DIRECT or ALLOCATED.
+- **Not here:** CRM won revenue and platform-reported revenue per link — neither is joined to a tracking link.

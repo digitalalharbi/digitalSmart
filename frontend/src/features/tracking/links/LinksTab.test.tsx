@@ -8,6 +8,8 @@ const links: { data: TrackingLink[] | undefined } = { data: undefined };
 
 vi.mock('./api', () => ({
   useLinksQuery: () => ({ isPending: false, isError: false, data: links.data }),
+  useBindingOptions: () => ({ data: [], isFetching: false }),
+  useLinkPerformanceQuery: () => ({ isPending: true, isError: false, data: undefined }),
   useSetLinkStatusMutation: () => ({ isPending: false, mutate: vi.fn() }),
   useSaveLinkMutation: () => ({
     isPending: false,
@@ -36,6 +38,15 @@ function link(overrides: Partial<TrackingLink> = {}): TrackingLink {
     ad_group: null,
     ad: null,
     creative: null,
+    binding: {
+      external_account_id: null,
+      campaign_id: null,
+      ad_group_id: null,
+      ad_id: null,
+      creative_id: null,
+      level: null,
+    },
+    conversion_goal: null,
     channel: 'paid',
     destination_url: 'https://shop.example.com',
     utm: {},

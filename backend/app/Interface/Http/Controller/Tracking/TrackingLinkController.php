@@ -11,6 +11,7 @@ use App\Application\Tracking\DTO\LinkCounts;
 use App\Application\Tracking\DTO\TrackingLinkInput;
 use App\Application\Tracking\DTO\TrackingLinkView;
 use App\Application\Tracking\Exception\TrackingRefused;
+use App\Application\Tracking\Query\GetLinkPerformance;
 use App\Application\Tracking\Query\ListTrackingLinks;
 use App\Domain\Tracking\LinkStatus;
 use App\Interface\Http\Controller\Controller;
@@ -59,6 +60,51 @@ final class TrackingLinkController extends Controller
         return response()->json(['data' => ['status' => $data['status']]]);
     }
 
+    public function performance(Request $request, string $link, GetLinkPerformance $performance): JsonResponse
+    {
+        $data = $request->validate([
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d'],
+            'allocate' => ['nullable', 'string', 'in:clicks'],
+        ]);
+
+        try {
+            $result = $performance(
+                $link,
+                isset($data['from']) ? new DateTimeImmutable((string) $data['from']) : null,
+                isset($data['to']) ? new DateTimeImmutable((string) $data['to']) : null,
+                ($data['allocate'] ?? null) === 'clicks',
+            );
+        } catch (TrackingRefused $e) {
+            abort(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage());
+        }
+
+        return response()->json(['data' => $this->performanceResource($result)]);
+    }
+
+    public function bindingOptions(Request $request, GetLinkPerformance $performance): JsonResponse
+    {
+        $data = $request->validate([
+            'project_id' => ['required', 'uuid'],
+            'level' => ['required', 'string', 'in:accounts,campaigns,ad_groups,ads'],
+            'parent_id' => ['nullable', 'uuid'],
+            'q' => ['nullable', 'string', 'max:80'],
+        ]);
+
+        try {
+            $options = $performance->options(
+                (string) $data['project_id'],
+                (string) $data['level'],
+                isset($data['parent_id']) ? (string) $data['parent_id'] : null,
+                isset($data['q']) ? (string) $data['q'] : null,
+            );
+        } catch (TrackingRefused $e) {
+            abort(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage());
+        }
+
+        return response()->json(['data' => $options]);
+    }
+
     public function templates(ListTrackingLinks $list): JsonResponse
     {
         return response()->json(['data' => $list->templates()]);
@@ -89,6 +135,11 @@ final class TrackingLinkController extends Controller
             'destination_url' => ['required', 'string', 'max:2048'],
             'platform' => ['nullable', 'string', 'max:32'],
             'external_account_id' => ['nullable', 'uuid'],
+            'campaign_id' => ['nullable', 'uuid'],
+            'ad_group_id' => ['nullable', 'uuid'],
+            'ad_id' => ['nullable', 'uuid'],
+            'creative_id' => ['nullable', 'uuid'],
+            'conversion_goal' => ['nullable', 'string', 'in:lead,qualified,appointment,sale'],
             'campaign' => ['nullable', 'string', 'max:190'],
             'ad_group' => ['nullable', 'string', 'max:190'],
             'ad' => ['nullable', 'string', 'max:190'],
@@ -128,10 +179,38 @@ final class TrackingLinkController extends Controller
                 objective: $text('objective'),
                 expiresAt: isset($data['expires_at']) ? new DateTimeImmutable((string) $data['expires_at']) : null,
                 notes: $text('notes'),
+                campaignId: $text('campaign_id'),
+                adGroupId: $text('ad_group_id'),
+                adId: $text('ad_id'),
+                creativeId: $text('creative_id'),
+                conversionGoal: $text('conversion_goal'),
             ), $id);
         } catch (TrackingRefused $e) {
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage());
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $r
+     * @return array<string, mixed>
+     */
+    private function performanceResource(array $r): array
+    {
+        /** @var \App\Domain\Tracking\Cost\LinkSpend $spend */
+        $spend = $r['spend'];
+
+        return [
+            ...$r,
+            'spend' => [
+                'basis' => $spend->basis->value,
+                'minor' => $spend->minor,
+                'currency' => $spend->currency,
+                'level' => $spend->level,
+                'reason' => $spend->reason,
+                'days_reported' => $spend->daysReported,
+                'allocation' => $spend->allocation,
+            ],
+        ];
     }
 
     private function id(Request $request, string $key): ?string
@@ -157,6 +236,15 @@ final class TrackingLinkController extends Controller
             'ad_group' => $l->adGroup,
             'ad' => $l->ad,
             'creative' => $l->creative,
+            'binding' => [
+                'external_account_id' => $l->externalAccountId,
+                'campaign_id' => $l->campaignId,
+                'ad_group_id' => $l->adGroupId,
+                'ad_id' => $l->adId,
+                'creative_id' => $l->creativeId,
+                'level' => $l->adId !== null ? 'ad' : ($l->adGroupId !== null ? 'ad_group' : ($l->campaignId !== null ? 'campaign' : null)),
+            ],
+            'conversion_goal' => $l->conversionGoal,
             'channel' => $l->channel,
             'destination_url' => $l->destinationUrl,
             'utm' => (object) $l->utm,

@@ -226,7 +226,16 @@ final readonly class EloquentTrackingLinkRepository implements TrackingLinkRepos
             is_string($row->expires_at) ? new DateTimeImmutable($row->expires_at) : null,
             is_string($row->notes) ? $row->notes : null,
             new DateTimeImmutable((string) $row->created_at),
+            null,
+            $this->id($row->campaign_id ?? null), $this->id($row->ad_group_id ?? null), $this->id($row->ad_id ?? null),
+            $this->id($row->creative_id ?? null), $this->id($row->external_account_id ?? null),
+            is_string($row->conversion_goal ?? null) ? $row->conversion_goal : null,
         );
+    }
+
+    private function id(mixed $value): ?string
+    {
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     /** @return array<string, string> */

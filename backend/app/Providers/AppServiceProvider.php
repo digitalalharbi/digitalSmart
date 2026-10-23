@@ -161,12 +161,14 @@ use App\Application\Tracking\Command\FollowTrackingLink;
 use App\Application\Tracking\Command\SaveForm;
 use App\Application\Tracking\Command\SaveTrackingLink;
 use App\Application\Tracking\Command\StartTrackingTest;
+use App\Application\Tracking\Contract\CampaignBindingResolver;
 use App\Application\Tracking\Contract\ConversionMappingRepository;
 use App\Application\Tracking\Contract\ConversionSender;
 use App\Application\Tracking\Contract\DispatchQueue;
 use App\Application\Tracking\Contract\FormRepository;
 use App\Application\Tracking\Contract\FormSubmissionStore;
 use App\Application\Tracking\Contract\FunnelRepository;
+use App\Application\Tracking\Contract\LinkEconomicsReadModel;
 use App\Application\Tracking\Contract\OpaqueTokens;
 use App\Application\Tracking\Contract\ProviderDispatchStore;
 use App\Application\Tracking\Contract\TrackingAnalyticsReadModel;
@@ -267,6 +269,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAssignedWorkRepos
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAutomationRuleRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCampaignAssignmentRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCampaignBindingResolver;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCampaignDraftRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientOffboarding;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
@@ -283,6 +286,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFormSubmissionSto
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFunnelRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLinkEconomicsReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMeasurementSourceRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMemberDirectory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMembershipRepository;
@@ -472,6 +476,8 @@ final class AppServiceProvider extends ServiceProvider
         TagStore::class => EloquentTagStore::class,
         AccessRequestRepository::class => EloquentAccessRequestRepository::class,
         TrackingLinkRepository::class => EloquentTrackingLinkRepository::class,
+        CampaignBindingResolver::class => EloquentCampaignBindingResolver::class,
+        LinkEconomicsReadModel::class => EloquentLinkEconomicsReadModel::class,
         TrackingEventStore::class => EloquentTrackingEventStore::class,
         OpaqueTokens::class => RandomOpaqueTokens::class,
         FormRepository::class => EloquentFormRepository::class,

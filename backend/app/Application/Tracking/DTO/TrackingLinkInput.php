@@ -30,5 +30,10 @@ final readonly class TrackingLinkInput
         public ?string $objective = null,
         public ?DateTimeImmutable $expiresAt = null,
         public ?string $notes = null,
+        public ?string $campaignId = null,
+        public ?string $adGroupId = null,
+        public ?string $adId = null,
+        public ?string $creativeId = null,
+        public ?string $conversionGoal = null,
     ) {}
 }
