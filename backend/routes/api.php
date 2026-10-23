@@ -71,6 +71,8 @@ use App\Interface\Http\Controller\SurfaceView\SurfaceViewController;
 use App\Interface\Http\Controller\System\HealthController;
 use App\Interface\Http\Controller\System\SyncStatusController;
 use App\Interface\Http\Controller\Tags\TagController;
+use App\Interface\Http\Controller\Tracking\PublicTrackingController;
+use App\Interface\Http\Controller\Tracking\TrackingLinkController;
 use App\Interface\Http\Controller\Workspace\MemberController;
 use App\Interface\Http\Controller\Workspace\RoleController;
 use App\Interface\Http\Middleware\BindActorContext;
@@ -164,9 +166,26 @@ Route::post('public/access-requests', [AccessRequestController::class, 'store'])
     ->middleware('throttle:access-requests')
     ->name('access_requests.store');
 
+/*
+ * Tracking links and what happens after one is followed. Public, unauthenticated and rate limited per address; the
+ * redirect reads its destination from the stored link, never from the request, and both answer without disclosing a tenant.
+ */
+Route::get('r/{token}', [PublicTrackingController::class, 'follow'])
+    ->where('token', '[A-Za-z0-9]{10}')->middleware('throttle:tracking')->name('tracking.follow');
+Route::post('public/track', [PublicTrackingController::class, 'event'])
+    ->middleware('throttle:tracking')->name('tracking.event');
+
 // --------------------------------------------------------- Authenticated ---
 Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::class])->group(function (): void {
     /* Answering them: administrators of the workspace the request was made to, who can add people. */
+    Route::get('tracking/links', [TrackingLinkController::class, 'index'])->name('tracking.links.index');
+    Route::post('tracking/links', [TrackingLinkController::class, 'store'])->name('tracking.links.store');
+    Route::get('tracking/links/{link}', [TrackingLinkController::class, 'show'])->whereUuid('link')->name('tracking.links.show');
+    Route::put('tracking/links/{link}', [TrackingLinkController::class, 'update'])->whereUuid('link')->name('tracking.links.update');
+    Route::post('tracking/links/{link}/status', [TrackingLinkController::class, 'status'])->whereUuid('link')->name('tracking.links.status');
+    Route::get('tracking/link-templates', [TrackingLinkController::class, 'templates'])->name('tracking.templates.index');
+    Route::post('tracking/link-templates', [TrackingLinkController::class, 'saveTemplate'])->name('tracking.templates.store');
+
     Route::get('access-requests', [AccessRequestController::class, 'index'])->name('access_requests.index');
     Route::post('access-requests/{accessRequest}/review', [AccessRequestController::class, 'review'])
         ->whereUuid('accessRequest')->name('access_requests.review');

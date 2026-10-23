@@ -62,6 +62,8 @@ return [
         'shared_reports' => (int) env('RATE_LIMIT_SHARED_REPORTS', 20),
         /* Requests for an account, keyed by address. Anybody needing more than five a minute is not asking for an account. */
         'access_requests' => (int) env('RATE_LIMIT_ACCESS_REQUESTS', 5),
+        /* Public tracking links and beacons, keyed by address. */
+        'tracking' => (int) env('RATE_LIMIT_TRACKING', 240),
     ],
 
     /*
@@ -109,6 +111,19 @@ return [
     */
     'access_requests' => [
         'workspace_slug' => env('ACCESS_REQUESTS_WORKSPACE_SLUG'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tracking
+    |--------------------------------------------------------------------------
+    |
+    | `public_base_url` is the origin short links are shown under. It must reach this application's `/api/r/{token}`
+    | route (a branded domain can point at it); until set, links are shown under APP_URL.
+    |
+    */
+    'tracking' => [
+        'public_base_url' => env('TRACKING_PUBLIC_BASE_URL', env('APP_URL', 'http://localhost').'/api'),
     ],
 
 ];

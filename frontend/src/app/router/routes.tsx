@@ -53,7 +53,7 @@ import {
   ApprovalLinkPage,
   StoreAnalyticsPage,
   StoresRollupPage,
-  TrackingCenterPage,
+  TrackingAreaPage,
 } from '@/app/router/lazyPages';
 import { SurfaceFallback } from '@/app/router/SurfaceFallback';
 import { PortalLanding, PortalRedirectGuard } from '@/app/router/portalGuards';
@@ -79,7 +79,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/dashboards': deferred(<DashboardsPage />),
   '/media-planner': deferred(<MediaPlannerPage />),
   '/budget-calculator': deferred(<BudgetCalculatorPage />),
-  '/tracking': deferred(<TrackingCenterPage />),
+  '/tracking': deferred(<TrackingAreaPage />),
   '/leads': deferred(<LeadCentrePage />),
   '/attribution': deferred(<AttributionPage />),
   '/creative-hub': deferred(<CreativeHubPage />),

@@ -156,6 +156,11 @@ use App\Application\System\Contract\DeploymentRecord;
 use App\Application\System\Contract\RepositoryStatusSource;
 use App\Application\System\Query\GetSystemHealth;
 use App\Application\Tags\Contract\TagStore;
+use App\Application\Tracking\Command\FollowTrackingLink;
+use App\Application\Tracking\Command\SaveTrackingLink;
+use App\Application\Tracking\Contract\OpaqueTokens;
+use App\Application\Tracking\Contract\TrackingEventStore;
+use App\Application\Tracking\Contract\TrackingLinkRepository;
 use App\Application\Workspace\Contract\AssignedWorkRepository;
 use App\Application\Workspace\Contract\MemberDirectory;
 use App\Application\Workspace\Contract\MemberReadModel;
@@ -279,8 +284,11 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTagStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTaskRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentToolCallLog;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingEventStore;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingLinkRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
+use App\Infrastructure\Persistence\RandomOpaqueTokens;
 use App\Infrastructure\Presentation\PptxWriter;
 use App\Infrastructure\Reporting\EloquentReportShareStore;
 use App\Infrastructure\Reporting\XlsxWriter;
@@ -435,6 +443,9 @@ final class AppServiceProvider extends ServiceProvider
         ShortcutStore::class => EloquentShortcutStore::class,
         TagStore::class => EloquentTagStore::class,
         AccessRequestRepository::class => EloquentAccessRequestRepository::class,
+        TrackingLinkRepository::class => EloquentTrackingLinkRepository::class,
+        TrackingEventStore::class => EloquentTrackingEventStore::class,
+        OpaqueTokens::class => RandomOpaqueTokens::class,
         ClientOffboarding::class => EloquentClientOffboarding::class,
         DigestStore::class => EloquentDigestStore::class,
         ConnectionDirectory::class => EloquentConnectionDirectory::class,
@@ -561,6 +572,19 @@ final class AppServiceProvider extends ServiceProvider
          * The tools, behind one gateway. Adding a tool is adding a line here; nothing in the gateway knows the set.
          * The caller holder is shared so a proposal records who really made it.
          */
+        $this->app->when([SaveTrackingLink::class, FollowTrackingLink::class])->needs('$ownHosts')->give(static function (): array {
+            $hosts = [];
+
+            foreach ([config('app.url'), config('app.frontend_url'), config('digitalsmart.tracking.public_base_url')] as $url) {
+                $host = is_string($url) ? parse_url($url, PHP_URL_HOST) : null;
+
+                if (is_string($host) && $host !== '') {
+                    $hosts[] = strtolower($host);
+                }
+            }
+
+            return array_values(array_unique($hosts));
+        });
         $this->app->singleton(ToolCaller::class);
         $this->app->bind(ToolGateway::class, static fn ($app): ToolGateway => new ToolGateway(
             [
