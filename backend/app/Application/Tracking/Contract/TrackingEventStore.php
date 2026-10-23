@@ -39,6 +39,27 @@ interface TrackingEventStore
     public function touchpoint(string $touchpointId): ?Touchpoint;
 
     /**
+     * What the click that began a touchpoint's session carried: campaign parameters, click identifiers, the referrer.
+     *
+     * @return array{utm: array<string, string>, click_ids: array<string, string>, referrer_host: ?string, landing_path: ?string}
+     */
+    public function attributionOf(Touchpoint $touchpoint): array;
+
+    /** Record an event this product wrote itself (a submission, a lead). False for a repeat of the same event id. */
+    public function recordServerEvent(
+        string $workspaceId,
+        string $projectId,
+        ?Touchpoint $touchpoint,
+        ?string $trackingLinkId,
+        TrackingEventName $name,
+        string $eventId,
+        string $visitorId,
+        ConsentState $consent,
+        TrafficClass $class,
+        DateTimeImmutable $at,
+    ): bool;
+
+    /**
      * Record a browser-reported event once. Returns false for a repeat of an event id already kept.
      *
      * @param  array<string, scalar>  $metadata  already reduced to the keys that may be kept

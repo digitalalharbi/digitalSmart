@@ -4,6 +4,25 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Tracking & Funnels, part B: forms, submissions and the lead they make
+
+### Added
+- **Form builder** (Tracking → Forms): eleven field types, Arabic and English labels, required, validation, options,
+  defaults, one show-when rule per field, a lead-field mapping per field (name, email, phone, message, or a custom key),
+  thank-you message per language, optional validated redirect, theme and button colour. Stacked editing for a phone.
+- **Public form** at `/f/{token}`: right to left or left to right from the form's own language (with a switch),
+  one column, 16 px inputs, 44 px targets, safe areas, accessible errors, a hidden honeypot. Reports `form_view`,
+  `form_start` and `form_validation_error` (field key and error code only — never an answer).
+- **Submissions are the record** (`form_submissions`): answers as given, the touchpoint, link, campaign parameters,
+  click identifiers, consent and traffic class. A repeated event id is one submission.
+- **Submission → lead** through the existing lead system: Saudi phone normalisation and 24-hour de-duplication apply, the
+  lead carries the campaign the visit came from, project-specific answers land in `leads.custom`, and `lead_created` is
+  written once.
+
+### Safety
+- The server validates and drops anything the form does not define or the visitor could not see; unpublished and unknown
+  forms answer identically; the public definition names no workspace, client or project and no lead mapping.
+
 ## Tracking & Funnels, part A: tracking links, a safe redirect and a first-party event store
 
 First of six bounded pull requests (`docs/TRACKING_FUNNELS.md`). Nothing is dispatched to any provider, and nothing is

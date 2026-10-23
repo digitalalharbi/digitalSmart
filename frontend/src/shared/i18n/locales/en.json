@@ -1948,7 +1948,8 @@
       "description": "Where an advertisement leads, what happened next, and whether any of it is being measured.",
       "tabs": "Tracking sections",
       "overview": "Overview",
-      "links": "Links"
+      "links": "Links",
+      "forms": "Forms"
     },
     "links": {
       "intro": "A tracking link sends a visitor to your page and records the visit first. Use it as the address in the advertisement.",
@@ -1998,6 +1999,98 @@
         "utmNote": "Campaign parameters are added automatically from the platform, campaign and creative.",
         "create": "Create link",
         "failed": "The link could not be saved."
+      }
+    },
+    "forms": {
+      "intro": "A form is the page where a visitor leaves their details. A submission is kept here, and can create a lead.",
+      "create": "New form",
+      "failed": "The forms could not be loaded.",
+      "empty": {
+        "title": "No forms yet",
+        "body": "Build a form for a project, publish it, and use its address as the landing page."
+      },
+      "fields": "Fields",
+      "submissions": "Submissions",
+      "createsLead": "Creates leads",
+      "copy": "Copy the address of {{name}}",
+      "open": "Open {{name}}",
+      "edit": "Edit",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "statusFailed": "The status could not be changed.",
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "types": {
+        "text": "Short text",
+        "email": "Email",
+        "phone": "Phone",
+        "number": "Number",
+        "textarea": "Long text",
+        "select": "Dropdown",
+        "radio": "Single choice",
+        "checkbox": "Checkbox",
+        "date": "Date",
+        "hidden": "Hidden",
+        "consent": "Consent"
+      },
+      "targets": {
+        "name": "Lead name",
+        "email": "Lead email",
+        "phone": "Lead phone",
+        "message": "Lead message",
+        "custom": "Custom lead field"
+      },
+      "operators": {
+        "equals": "is",
+        "not_equals": "is not",
+        "in": "is one of",
+        "filled": "is answered"
+      },
+      "themes": {
+        "auto": "Follow the visitor’s device",
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "builder": {
+        "newTitle": "New form",
+        "editTitle": "Edit {{name}}",
+        "name": "Form name",
+        "locale": "Default language",
+        "theme": "Appearance",
+        "thankYouAr": "Thank-you message (Arabic)",
+        "thankYouEn": "Thank-you message (English)",
+        "redirect": "After submitting, go to",
+        "redirectHint": "Optional. A public web page; private addresses are refused.",
+        "accent": "Button colour",
+        "accentHint": "Optional hex colour, for example #C24A2C.",
+        "createsLead": "Create a lead from each submission",
+        "createsLeadHint": "Needs a field mapped to the lead’s name and one mapped to its phone or email.",
+        "fieldN": "Field {{n}}",
+        "type": "Type",
+        "key": "Key",
+        "keyHint": "Letters, numbers and underscores.",
+        "required": "Required",
+        "labelAr": "Label (Arabic)",
+        "labelEn": "Label (English)",
+        "options": "Options",
+        "optionsHint": "One per line: value | Arabic label | English label.",
+        "mapsTo": "Fills",
+        "mapsToHint": "Which lead field this answer goes to.",
+        "mapsNone": "Nothing",
+        "customKey": "Custom field key",
+        "showWhen": "Show when",
+        "always": "Always shown",
+        "operator": "Condition",
+        "value": "Value",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "remove": "Remove",
+        "addField": "Add a field",
+        "save": "Save form",
+        "failed": "The form could not be saved."
       }
     }
   },

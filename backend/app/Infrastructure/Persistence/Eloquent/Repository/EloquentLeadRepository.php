@@ -100,6 +100,7 @@ final readonly class EloquentLeadRepository implements LeadRepository
                 'landing_page' => $input->landingPage,
                 'referrer' => $input->attribution->referrer,
                 'received_at' => $input->receivedAt,
+                'custom' => $input->custom,
             ]);
 
             $this->recordEvent($lead, 'received', occurredAt: $input->receivedAt);
@@ -648,6 +649,14 @@ final readonly class EloquentLeadRepository implements LeadRepository
             }
         }
 
+        /* Answers a follow-up adds are kept; one already given is never overwritten by a later arrival. */
+        $custom = is_array($lead->getAttribute('custom')) ? $lead->getAttribute('custom') : [];
+        $merged = [...$input->custom, ...$custom];
+
+        if ($merged !== $custom) {
+            $attributes['custom'] = $merged;
+        }
+
         /** @var AttributionEvidence $current */
         $current = $lead->getAttribute('attribution_evidence');
 
@@ -872,6 +881,7 @@ final readonly class EloquentLeadRepository implements LeadRepository
                 ? null
                 : (string) $lead->getAttribute('merged_into_id'),
             mergedAt: $lead->getAttribute('merged_at'),
+            custom: $this->customOf($lead),
             /*
              * Counted rather than loaded. A surface needs to say "two other enquiries are on this record" so a
              * reader is not surprised by a history longer than one arrival; it does not need the rows.
@@ -881,5 +891,20 @@ final readonly class EloquentLeadRepository implements LeadRepository
                 ->where('merged_into_id', $lead->getKey())
                 ->count(),
         );
+    }
+
+    /** @return array<string, string> */
+    private function customOf(Lead $lead): array
+    {
+        $raw = $lead->getAttribute('custom');
+        $out = [];
+
+        foreach (is_array($raw) ? $raw : [] as $key => $value) {
+            if (is_scalar($value)) {
+                $out[(string) $key] = (string) $value;
+            }
+        }
+
+        return $out;
     }
 }

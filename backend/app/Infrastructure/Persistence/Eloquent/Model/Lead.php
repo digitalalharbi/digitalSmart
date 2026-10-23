@@ -31,7 +31,7 @@ final class Lead extends Model
         'attribution_evidence', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content',
         'utm_term', 'click_identifier', 'landing_page', 'referrer',
         'received_at', 'first_contacted_at', 'qualified_at', 'closed_at',
-        'merged_into_id', 'merged_at', 'merged_by_id',
+        'merged_into_id', 'merged_at', 'merged_by_id', 'custom',
     ];
 
     /**
@@ -76,6 +76,7 @@ final class Lead extends Model
             'stage' => LeadStage::class,
             'attribution_evidence' => AttributionEvidence::class,
             'value_minor' => 'integer',
+            'custom' => 'array',
             'received_at' => 'immutable_datetime',
             'first_contacted_at' => 'immutable_datetime',
             'qualified_at' => 'immutable_datetime',

@@ -58,6 +58,7 @@ final readonly class LeadResource
             'confidence' => $lead->evidence->confidence(),
             'utm_source' => $lead->utmSource,
             'utm_campaign' => $lead->utmCampaign,
+            'custom' => (object) $lead->custom,
             'received_at' => $lead->receivedAt->format(DATE_ATOM),
             'first_contacted_at' => $lead->firstContactedAt?->format(DATE_ATOM),
             'qualified_at' => $lead->qualifiedAt?->format(DATE_ATOM),

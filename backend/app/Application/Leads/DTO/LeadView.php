@@ -53,6 +53,12 @@ final readonly class LeadView
         public ?DateTimeImmutable $mergedAt = null,
         /** How many other leads were merged into this one. Zero for almost every lead. */
         public int $absorbedCount = 0,
+        /**
+         * Project-specific answers collected by a form, by key.
+         *
+         * @var array<string, string>
+         */
+        public array $custom = [],
     ) {}
 
     /**

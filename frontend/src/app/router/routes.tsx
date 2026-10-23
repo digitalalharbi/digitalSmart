@@ -54,6 +54,7 @@ import {
   StoreAnalyticsPage,
   StoresRollupPage,
   TrackingAreaPage,
+  PublicFormPage,
 } from '@/app/router/lazyPages';
 import { SurfaceFallback } from '@/app/router/SurfaceFallback';
 import { PortalLanding, PortalRedirectGuard } from '@/app/router/portalGuards';
@@ -138,6 +139,7 @@ export const routes: RouteObject[] = [
    * email and has no account to be sent to a sign-in screen for. The token is in the path and nothing else is.
    */
   { path: '/shared-reports/:token', element: deferred(<SharedReportPage />) },
+  { path: '/f/:token', element: deferred(<PublicFormPage />) },
   /* A one-time approval link from WhatsApp or email: no session, the link is the credential, and it decides only on a press. */
   { path: '/approve/:token', element: deferred(<ApprovalLinkPage />) },
   {

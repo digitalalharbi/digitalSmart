@@ -7,7 +7,7 @@ and is updated by each.
 | PR | Scope | Status |
 |---|---|---|
 | A | Tracking links, redirect, visitor/session/touchpoint, event store, UTM and click-ID capture, bot marking | `IMPLEMENTED_NOT_VERIFIED` until merged and CI-green |
-| B | Form builder, public forms, submissions, submission → lead | not started |
+| B | Form builder, public forms, submissions, submission → lead | `IMPLEMENTED_NOT_VERIFIED` until merged and CI-green |
 | C | Funnel builder and analytics, journey timeline | not started |
 | D | Tracking health, debug mode, GTM / GA4 destination | not started |
 | E | Provider conversion mapping, async dispatch, browser/server dedup, consent policy, retention | not started |
@@ -77,3 +77,35 @@ Events are marked, never deleted; counts exclude everything but `valid`, and the
 
 Raw events are not kept indefinitely. The configurable retention job and the aggregate tables arrive with PR E; until then
 no raw event is exported or dispatched, and nothing here is described as anonymised.
+
+## PR B — forms, submissions and the lead they make
+
+```
+builder (Forms tab) → publish → /f/{token}  (SPA, public)  →  GET /api/public/forms/{token}   (sanitised definition)
+visitor → POST /api/public/forms/{token}/submit → form_submissions → [creates_lead] → leads (one lead system) → lead_created
+```
+
+- **Tables:** `forms`, `form_fields`, `form_submissions`; `leads.custom` (jsonb) for project-specific answers (city, budget,
+  property type). `form_submissions` is the system of record — answers are kept exactly as given, even if the lead is later
+  merged. No spreadsheet is involved anywhere.
+- **Field types:** text, email, phone, number, textarea, select, radio, checkbox, date, hidden, consent. Each has an Arabic
+  and an English label, placeholder, help text, required flag, validation (`min_length`, `max_length`, `min`, `max`),
+  default, options and one **visibility rule** (`field` + `equals | not_equals | in | filled` + value). The same rule is
+  evaluated by the page and by the server (`FieldVisibility` / `isShown`); a field hidden by its rule is never required and
+  its value is dropped.
+- **Mapping:** each field may fill `name`, `email`, `phone`, `message` or `custom.<key>` on the lead. A form that creates
+  leads must map a name and a phone or email, checked when saved and again when published.
+- **Server judges:** only fields the form defines and that were visible are kept; unknown keys are dropped. Phone numbers
+  accept Arabic-Indic digits and are stored as digits; the existing Saudi phone normalisation and 24-hour de-duplication
+  then apply, so the same person submitting twice is one lead (`lead_created` is written once).
+- **The lead carries the visit:** campaign parameters, click identifier and referrer come from the touchpoint's click event,
+  not from the page. A touchpoint from another project is ignored.
+- **Public surface:** unpublished, archived and unknown tokens answer the same 404. The public definition contains no
+  workspace, client or project id, no `maps_to`, no internal notes. Redirect-after-submit is validated like a link
+  destination. A hidden `website` field catches scripts; rate limit and body limit as for the beacon.
+- **Privacy in the event store:** the page reports `form_view`, `form_start`, `form_validation_error` with a field *key* and
+  an error *code* only. Answers reach `form_submissions` (and the lead) and never `tracking_events` (tested).
+- **Mobile / RTL:** one column, 16 px inputs, 44 px targets, `dir`/`lang` from the form's own language with a switch, safe
+  areas; verified with axe and a no-sideways-scroll check on Chromium and Mobile Safari.
+- **Not in B:** consent *policy*, retention, funnels, owner assignment/SLA, journey timeline rows from submissions (C),
+  provider dispatch (E). Consent is recorded as given and `unknown` otherwise.
