@@ -8,6 +8,7 @@ use App\Application\Tracking\Command\DeleteFunnel;
 use App\Application\Tracking\Command\SaveFunnel;
 use App\Application\Tracking\Exception\TrackingRefused;
 use App\Application\Tracking\Query\GetTrackingAnalytics;
+use App\Application\Tracking\Query\GetTrackingOperations;
 use App\Interface\Http\Controller\Controller;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -91,6 +92,32 @@ final class TrackingAnalyticsController extends Controller
 
         return $this->run(fn (): array => $read->followUp(
             (string) $data['project_id'], $this->day($data, 'from'), $this->day($data, 'to'), (int) ($data['sla_minutes'] ?? 60),
+        ));
+    }
+
+    public function operations(Request $request, GetTrackingOperations $read): JsonResponse
+    {
+        $data = $request->validate([
+            'project_id' => ['required', 'uuid'],
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d'],
+            'platform' => ['nullable', 'string', 'max:32'],
+            'campaign_id' => ['nullable', 'uuid'],
+            'ad_group_id' => ['nullable', 'uuid'],
+            'ad_id' => ['nullable', 'uuid'],
+            'link_id' => ['nullable', 'uuid'],
+            'funnel_id' => ['nullable', 'uuid'],
+            'allocate' => ['nullable', 'string', 'in:clicks'],
+        ]);
+        $pick = static fn (string $k): ?string => isset($data[$k]) && is_string($data[$k]) && $data[$k] !== '' ? $data[$k] : null;
+
+        return $this->run(fn (): array => $read(
+            (string) $data['project_id'], $this->day($data, 'from'), $this->day($data, 'to'),
+            [
+                'platform' => $pick('platform'), 'campaign_id' => $pick('campaign_id'), 'ad_group_id' => $pick('ad_group_id'),
+                'ad_id' => $pick('ad_id'), 'link_id' => $pick('link_id'), 'funnel_id' => $pick('funnel_id'),
+            ],
+            ($data['allocate'] ?? null) === 'clicks',
         ));
     }
 

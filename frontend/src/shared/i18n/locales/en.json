@@ -1985,7 +1985,8 @@
       "events": "Events",
       "health": "Health",
       "conversions": "Conversions",
-      "followup": "Lead queue"
+      "followup": "Lead queue",
+      "operations": "Operations"
     },
     "links": {
       "intro": "A tracking link sends a visitor to your page and records the visit first. Use it as the address in the advertisement.",
@@ -2515,6 +2516,110 @@
         "save": "Save",
         "saved": "Saved.",
         "failed": "Could not save."
+      }
+    },
+    "ops": {
+      "intro": "Are advertising and follow-up working together? Every figure shows what it rests on; a figure nothing supports is not reported.",
+      "failed": "The operations view could not be read.",
+      "all": "All",
+      "period": "Period",
+      "lastDays_one": "Last {{count}} day",
+      "lastDays_other": "Last {{count}} days",
+      "filterCampaign": "Campaign",
+      "filterAdGroup": "Ad group",
+      "filterAd": "Ad",
+      "truncated": "This project has more links than are read at once; the {{count}} newest are shown.",
+      "noPricedLinks": "No link has spend that can be credited to it alone, so costs are not shown. Bind a link to its campaign to price it.",
+      "pricedNote": "Costs in {{currency}} are over the {{count}} link(s) with spend of their own; {{unpriced}} link(s) have none and are not in them.",
+      "noAttempts": "Nobody has tried a lead yet.",
+      "noPromise": "This project has not set a response time.",
+      "noLeadsYet": "No leads yet.",
+      "noQualifiedYet": "No qualified leads yet.",
+      "noSalesYet": "No sales yet.",
+      "noRevenue": "No won value is recorded.",
+      "noStoreOrders": "No store order carries these links.",
+      "kpi": {
+        "leads": "Tracked leads",
+        "leadsHint_one": "from {{count}} click",
+        "leadsHint_other": "from {{count}} clicks",
+        "qualified": "Qualified leads",
+        "appointments": "Appointments",
+        "sales": "Sales",
+        "medianAttempt": "Median time to first try",
+        "sla": "Tried inside the promise",
+        "spend": "Spend",
+        "cpl": "Cost per lead",
+        "cpql": "Cost per qualified lead",
+        "cac": "Cost per sale",
+        "wonValue": "Won value recorded",
+        "roasWon": "Return (won value)",
+        "storeValue": "Store orders",
+        "roasStore": "Return (store orders)"
+      },
+      "funnel": "From click to sale",
+      "chosenFunnel": "Counts add across the chosen links; times between steps are only shown for the whole project.",
+      "linksTable": "Links, campaigns and results",
+      "cols": {
+        "link": "Link",
+        "platform": "Platform",
+        "campaign": "Campaign › ad group › ad",
+        "spend": "Spend",
+        "clicks": "Clicks",
+        "leads": "Leads",
+        "qualified": "Qualified",
+        "appointments": "Appointments",
+        "sales": "Sales",
+        "cpl": "Cost per lead",
+        "cpql": "Per qualified",
+        "cac": "Cost per sale",
+        "sla": "Tried in time",
+        "tracking": "Tracking"
+      },
+      "trackingState": {
+        "ok": "Reporting",
+        "page_not_reporting": "Page not reporting",
+        "no_clicks": "No clicks"
+      },
+      "team": "Team follow-up",
+      "teamNote": "Counts and times of leads, nothing else: no activity, presence or screen data is recorded.",
+      "teamCols": {
+        "person": "Person",
+        "assigned": "Assigned",
+        "contacted": "Reached",
+        "qualified": "Qualified",
+        "medianAttempt": "Median first try",
+        "medianContact": "Median first reach",
+        "slaShare": "Tried in time",
+        "overdue": "Overdue"
+      },
+      "attribution": "How the leads are attributed",
+      "attrNote": "Five readings of one pipeline, shown side by side and never added together.",
+      "attr": {
+        "platform": "Platform-reported results",
+        "first": "Leads with a known first touch",
+        "last": "Leads from a tracked touch",
+        "ours": "Attributed by digitalSmart",
+        "outcome": "Sales"
+      },
+      "attrNoLeads": "No leads in this period.",
+      "attrCoverage": "{{coverage}}% of leads came through a tracked touch ({{confidence}} confidence); {{missing}} did not and are missing evidence.",
+      "confidence": {
+        "none": "no",
+        "low": "low",
+        "medium": "medium",
+        "high": "high"
+      },
+      "attention": "Worth a look",
+      "attentionNone": "Nothing stands out in these figures — or there is not yet enough to say.",
+      "attn": {
+        "spend_no_leads": "{{subject}}: spend and clicks, but no leads",
+        "spend_not_attributable": "{{subject}}: its campaign has spend that cannot be credited to one link",
+        "tracking_coverage": "{{subject}}: clicks arrive but the page is not reporting views",
+        "low_qualification": "{{subject}}: few of its leads are qualified",
+        "qualified_few_appointments": "{{subject}}: few qualified leads reach an appointment",
+        "appointments_few_sales": "{{subject}}: few appointments become sales",
+        "high_cpl": "{{subject}}: cost per lead is well above the other links",
+        "slow_follow_up": "Leads are not being tried inside the promised time"
       }
     }
   },

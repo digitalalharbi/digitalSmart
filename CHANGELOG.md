@@ -4,6 +4,30 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Tracking revenue & operations, part C: are advertising and follow-up working together?
+
+### Added
+- **An Operations view** (Tracking → Operations) for a project and a period, narrowed by platform, campaign, ad group, ad and link:
+  leads, qualified, appointments, sales, the median time to a first try and the share tried inside the promised time; spend and
+  the costs per lead, qualified lead and sale; revenue; a funnel from click to sale; a table of every link with its campaign,
+  spend and its basis, results and costs; the team's follow-up; five readings of how leads are attributed; and observations.
+- **Costs are over the links that have spend, and only those.** A cost per lead whose spend came from some links and whose leads
+  came from all of them would describe nothing, so the leads shown beside a cost are those of the priced links, per currency;
+  the count of every tracked lead is shown separately. With no priced link the view says so instead of showing costs.
+- **Revenue sources stay apart** (won value recorded on leads; store orders carrying the link's tag), each with its own return.
+- **Team follow-up** is counts and times of leads — assigned, reached, qualified, median first try and first reach, share tried
+  in time, overdue — per person on the project. Nothing else about anybody is recorded or shown.
+- **Attribution side by side**: what the platforms report for the bound entities, leads with a known first touch, leads from a
+  tracked touch, leads digitalSmart attributes, and sales — with coverage, confidence and how many leads lack the evidence.
+- **Observations with their figures**: spend and clicks with no leads, a campaign whose spend cannot be credited to one link, a
+  page that is not reporting, low qualification, few appointments from qualified leads, few sales from appointments, a cost per
+  lead well above the other links', and follow-up that is mostly late. None appears without enough figures behind it.
+- **Five client-safe report views**: tracking ROI, campaign-to-lead funnel, lead quality, sales funnel and response performance.
+  Counts, rates, costs and states only: no name, number, token or id, and no person.
+
+### Not yet
+- Filters by form and by owner (the team table is per owner); a per-link response-time view beyond the share tried in time.
+
 ## Tracking revenue & operations, part B: new leads are handed out, and the response time is watched
 
 ### Added

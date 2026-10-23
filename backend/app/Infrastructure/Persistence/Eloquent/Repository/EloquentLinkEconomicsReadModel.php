@@ -59,20 +59,24 @@ final readonly class EloquentLinkEconomicsReadModel implements LinkEconomicsRead
         };
         $label = ['campaign' => 'campaign', 'ad_group' => 'ad group', 'ad' => 'ad'][$level];
 
-        if ($deeper > 0) {
-            return LinkSpend::unavailable(sprintf('Other links are bound inside this %s, so its spend is not exclusive to this link.', $label), $level);
-        }
-
-        if ($peers > 0 && ! $allocateByClicks) {
-            return LinkSpend::unavailable(sprintf('%d other link%s bound to the same %s; its spend cannot be assigned to one of them. Allocation by tracked clicks can be asked for.', $peers, $peers === 1 ? ' is' : 's are', $label), $level);
-        }
-
         $rows = DB::table('daily_metrics')
             ->where('workspace_id', $workspaceId)->where('entity_type', $level)->where('entity_id', $entityId)
             ->where('date', '>=', $from->format('Y-m-d'))->where('date', '<', $to->format('Y-m-d'))
             ->whereNotNull('spend_minor')
             ->selectRaw('currency, sum(spend_minor) as spend, count(*) as days')
             ->groupBy('currency')->get();
+
+        if ($deeper > 0) {
+            $reason = sprintf('Other links are bound inside this %s, so its spend is not exclusive to this link.', $label);
+
+            return $rows->count() === 1 && $rows->first() instanceof stdClass ? LinkSpend::shared($reason, $level, (int) $rows->first()->spend) : LinkSpend::unavailable($reason, $level);
+        }
+
+        if ($peers > 0 && ! $allocateByClicks) {
+            $reason = sprintf('%d other link%s bound to the same %s; its spend cannot be assigned to one of them. Allocation by tracked clicks can be asked for.', $peers, $peers === 1 ? ' is' : 's are', $label);
+
+            return $rows->count() === 1 && $rows->first() instanceof stdClass ? LinkSpend::shared($reason, $level, (int) $rows->first()->spend) : LinkSpend::unavailable($reason, $level);
+        }
 
         if ($rows->isEmpty()) {
             return LinkSpend::unavailable(sprintf('The %s reported no spend in this period.', $label), $level);

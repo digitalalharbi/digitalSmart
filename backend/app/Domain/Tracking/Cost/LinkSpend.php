@@ -24,6 +24,8 @@ final readonly class LinkSpend
         public ?string $reason,
         public ?int $daysReported,
         public ?array $allocation,
+        /** For an unavailable spend that exists but is shared: how much the entity spent, which is not this link's. */
+        public ?int $sharedMinor = null,
     ) {}
 
     public static function direct(int $minor, string $currency, string $level, int $daysReported): self
@@ -40,5 +42,11 @@ final readonly class LinkSpend
     public static function unavailable(string $reason, ?string $level = null): self
     {
         return new self(SpendBasis::Unavailable, null, null, $level, $reason, null, null);
+    }
+
+    /** Spend exists for the entity but cannot be credited to this link; the amount is kept so it can be reported as unattributed. */
+    public static function shared(string $reason, string $level, int $minor): self
+    {
+        return new self(SpendBasis::Unavailable, null, null, $level, $reason, null, null, $minor);
     }
 }

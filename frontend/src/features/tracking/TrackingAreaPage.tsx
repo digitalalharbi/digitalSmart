@@ -9,10 +9,19 @@ import { FunnelsTab } from './funnels/FunnelsTab';
 import { EventsTab } from './health/EventsTab';
 import { HealthTab } from './health/HealthTab';
 import { LinksTab } from './links/LinksTab';
+import { OperationsTab } from './operations/OperationsTab';
 import { TrackingCenterPage } from './TrackingCenterPage';
 
 type Tab =
-  'overview' | 'links' | 'forms' | 'funnels' | 'followup' | 'events' | 'conversions' | 'health';
+  | 'overview'
+  | 'links'
+  | 'forms'
+  | 'funnels'
+  | 'followup'
+  | 'operations'
+  | 'events'
+  | 'conversions'
+  | 'health';
 
 /**
  * Tracking & Funnels.
@@ -26,6 +35,7 @@ const TABS: Tab[] = [
   'forms',
   'funnels',
   'followup',
+  'operations',
   'events',
   'conversions',
   'health',
@@ -50,6 +60,7 @@ export function TrackingAreaPage() {
           { id: 'forms', label: t('tracking.area.forms') },
           { id: 'funnels', label: t('tracking.area.funnels') },
           { id: 'followup', label: t('tracking.area.followup') },
+          { id: 'operations', label: t('tracking.area.operations') },
           { id: 'events', label: t('tracking.area.events') },
           { id: 'conversions', label: t('tracking.area.conversions') },
           { id: 'health', label: t('tracking.area.health') },
@@ -70,6 +81,8 @@ export function TrackingAreaPage() {
               <FunnelsTab />
             ) : active === 'followup' ? (
               <FollowUpTab />
+            ) : active === 'operations' ? (
+              <OperationsTab />
             ) : active === 'events' ? (
               <EventsTab />
             ) : active === 'conversions' ? (

@@ -213,6 +213,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::delete('tracking/funnels/{funnel}', [TrackingAnalyticsController::class, 'deleteFunnel'])->whereUuid('funnel')->name('tracking.funnels.destroy');
     Route::get('tracking/analytics/funnel', [TrackingAnalyticsController::class, 'funnel'])->name('tracking.analytics.funnel');
     Route::get('tracking/analytics/breakdown', [TrackingAnalyticsController::class, 'breakdown'])->name('tracking.analytics.breakdown');
+    Route::get('tracking/analytics/operations', [TrackingAnalyticsController::class, 'operations'])->name('tracking.analytics.operations');
     Route::get('tracking/analytics/follow-up', [TrackingAnalyticsController::class, 'followUp'])->name('tracking.analytics.follow_up');
     Route::get('leads/{lead}/timeline', [TrackingAnalyticsController::class, 'leadTimeline'])->whereUuid('lead')->name('leads.timeline');
     Route::post('leads/{lead}/milestones', [LeadController::class, 'milestone'])->whereUuid('lead')->name('leads.milestone');

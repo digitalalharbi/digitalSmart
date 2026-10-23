@@ -12,6 +12,11 @@ enum TrackingView: string
     case Funnel = 'funnel';
     case FollowUp = 'follow_up';
     case Health = 'health';
+    case Roi = 'roi';
+    case CampaignFunnel = 'campaign_funnel';
+    case LeadQuality = 'lead_quality';
+    case SalesFunnel = 'sales_funnel';
+    case Response = 'response';
 
     public function label(): string
     {
@@ -21,6 +26,11 @@ enum TrackingView: string
             self::Funnel => 'Funnel',
             self::FollowUp => 'Lead follow-up',
             self::Health => 'Tracking health',
+            self::Roi => 'Tracking ROI',
+            self::CampaignFunnel => 'Campaign-to-lead funnel',
+            self::LeadQuality => 'Lead quality',
+            self::SalesFunnel => 'Sales funnel',
+            self::Response => 'Response performance',
         };
     }
 

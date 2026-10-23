@@ -8,6 +8,10 @@ use App\Application\Reporting\Contract\TrackingReportReader;
 use App\Application\Reporting\DTO\TrackingSection;
 use App\Application\Tracking\Contract\TrackingAnalyticsReadModel;
 use App\Application\Tracking\Contract\TrackingHealthReadModel;
+use App\Application\Tracking\Contract\TrackingLinkRepository;
+use App\Application\Tracking\Contract\TrackingOperationsReadModel;
+use App\Application\Tracking\Service\LinkPerformanceCalculator;
+use App\Domain\Advertising\ValueObject\CurrencyExponent;
 use App\Domain\Reporting\TrackingView;
 use App\Domain\Tracking\Funnel\FunnelCalculator;
 use App\Domain\Tracking\Funnel\FunnelCohort;
@@ -29,6 +33,9 @@ final readonly class EloquentTrackingReportReader implements TrackingReportReade
     public function __construct(
         private TrackingAnalyticsReadModel $analytics,
         private TrackingHealthReadModel $health,
+        private TrackingLinkRepository $links,
+        private LinkPerformanceCalculator $performance,
+        private TrackingOperationsReadModel $operations,
     ) {}
 
     public function read(string $workspaceId, string $clientId, TrackingView $view, DateTimeImmutable $from, DateTimeImmutable $until): array
@@ -39,6 +46,11 @@ final readonly class EloquentTrackingReportReader implements TrackingReportReade
             TrackingView::Funnel => $this->funnel($workspaceId, $clientId, $from, $until),
             TrackingView::FollowUp => $this->followUp($workspaceId, $clientId, $from, $until),
             TrackingView::Health => $this->healthView($workspaceId, $clientId, $until),
+            TrackingView::Roi => $this->roi($workspaceId, $clientId, $from, $until),
+            TrackingView::CampaignFunnel => $this->campaignFunnel($workspaceId, $clientId, $from, $until),
+            TrackingView::LeadQuality => $this->leadQuality($workspaceId, $clientId, $from, $until),
+            TrackingView::SalesFunnel => $this->salesFunnel($workspaceId, $clientId, $from, $until),
+            TrackingView::Response => $this->response($workspaceId, $clientId, $from, $until),
         };
     }
 
@@ -196,6 +208,217 @@ final readonly class EloquentTrackingReportReader implements TrackingReportReade
         return [
             'section' => new TrackingSection(TrackingView::FollowUp, [['key' => 'figure', 'label' => 'Figure'], ['key' => 'value', 'label' => 'Value']], $leads === 0 ? [] : $rows),
             'caveats' => ['Leads from this client’s forms only. No lead is named. Medians are the middle of each project’s median, not of every lead.'],
+        ];
+    }
+
+    /**
+     * Every link of the client with its performance, so the five views below agree with each other and with the link page.
+     *
+     * @return list<array{name: string, platform: ?string, campaign: ?string, p: array<string, mixed>}>
+     */
+    private function performances(string $workspaceId, string $clientId, DateTimeImmutable $from, DateTimeImmutable $until): array
+    {
+        $end = $until->modify('+1 second');
+        $out = [];
+
+        foreach (array_slice($this->links->list($workspaceId, null, null, $clientId, null), 0, 60) as $link) {
+            $out[] = ['name' => $link->name, 'platform' => $link->platform, 'campaign' => $link->campaign, 'p' => ($this->performance)($link, $workspaceId, $from, $end, false)];
+        }
+
+        return $out;
+    }
+
+    private function major(?int $minor, ?string $currency): ?float
+    {
+        return $minor === null || $currency === null ? null : round($minor / (10 ** CurrencyExponent::for($currency)), 2);
+    }
+
+    /** @return array{section: TrackingSection, caveats: list<string>} */
+    private function roi(string $workspaceId, string $clientId, DateTimeImmutable $from, DateTimeImmutable $until): array
+    {
+        $rows = [];
+
+        foreach ($this->performances($workspaceId, $clientId, $from, $until) as $r) {
+            $p = $r['p'];
+            $spend = $p['spend'];
+            $c = $p['counts'];
+            $cur = $spend->currency;
+            $lead = $p['revenue']['lead_value'] ?? null;
+            $store = $p['revenue']['store_attributed'] ?? null;
+
+            $rows[] = [
+                'link' => $r['name'], 'platform' => $r['platform'], 'currency' => $cur,
+                'spend' => $this->major($spend->minor, $cur),
+                'leads' => $c['lead_created'] ?? null,
+                'cost_per_lead' => $this->major($p['costs']['cpl']['minor'] ?? null, $cur),
+                'sales' => $c['sale_completed'] ?? null,
+                'cost_per_sale' => $this->major($p['costs']['cac']['minor'] ?? null, $cur),
+                'recorded_won_value' => $this->major($lead['minor'] ?? null, $lead['currency'] ?? null),
+                'return_on_spend' => $lead['roas']['value'] ?? null,
+                'store_orders_value' => $this->major($store['minor'] ?? null, $store['currency'] ?? null),
+                'store_return_on_spend' => $store['roas']['value'] ?? null,
+            ];
+        }
+
+        return [
+            'section' => new TrackingSection(TrackingView::Roi, [
+                ['key' => 'link', 'label' => 'Link'], ['key' => 'platform', 'label' => 'Platform'], ['key' => 'currency', 'label' => 'Currency'],
+                ['key' => 'spend', 'label' => 'Spend'], ['key' => 'leads', 'label' => 'Leads'], ['key' => 'cost_per_lead', 'label' => 'Cost per lead'],
+                ['key' => 'sales', 'label' => 'Sales'], ['key' => 'cost_per_sale', 'label' => 'Cost per sale'],
+                ['key' => 'recorded_won_value', 'label' => 'Won value recorded on leads'], ['key' => 'return_on_spend', 'label' => 'Return on spend (won value)'],
+                ['key' => 'store_orders_value', 'label' => 'Store orders carrying the link'], ['key' => 'store_return_on_spend', 'label' => 'Return on spend (store orders)'],
+            ], $rows),
+            'caveats' => [
+                'Spend is the advertising platform’s spend for what a link is bound to, shown only where it belongs to that link alone. A figure that cannot be credited to one link is not reported.',
+                'The two revenue columns are different kinds of evidence and are never added. A return needs spend and revenue in the same currency.',
+            ],
+        ];
+    }
+
+    /** @return array{section: TrackingSection, caveats: list<string>} */
+    private function campaignFunnel(string $workspaceId, string $clientId, DateTimeImmutable $from, DateTimeImmutable $until): array
+    {
+        $by = [];
+
+        foreach ($this->performances($workspaceId, $clientId, $from, $until) as $r) {
+            $key = $r['campaign'] ?? 'Not bound to a campaign';
+            $c = $r['p']['counts'];
+            $g = &$by[$key];
+            $g ??= ['campaign' => $key, 'clicks' => 0, 'landing_views' => 0, 'landing_gap' => false, 'leads' => 0];
+            $g['clicks'] += (int) ($c['link_click'] ?? 0);
+            $g['leads'] += (int) ($c['lead_created'] ?? 0);
+
+            if (($c['landing_view'] ?? null) === null) {
+                $g['landing_gap'] = true;
+            } else {
+                $g['landing_views'] += (int) $c['landing_view'];
+            }
+
+            unset($g);
+        }
+
+        $rows = array_values(array_map(static fn (array $g): array => [
+            'campaign' => $g['campaign'], 'clicks' => $g['clicks'],
+            'landing_views' => $g['landing_gap'] ? null : $g['landing_views'],
+            'leads' => $g['leads'],
+            'click_to_lead' => $g['clicks'] === 0 ? null : round($g['leads'] / $g['clicks'] * 100, 1),
+        ], $by));
+
+        return [
+            'section' => new TrackingSection(TrackingView::CampaignFunnel, [
+                ['key' => 'campaign', 'label' => 'Campaign'], ['key' => 'clicks', 'label' => 'Clicks'], ['key' => 'landing_views', 'label' => 'Landing views'],
+                ['key' => 'leads', 'label' => 'Leads'], ['key' => 'click_to_lead', 'label' => 'Click to lead (%)'],
+            ], $rows),
+            'caveats' => ['Landing views are reported by the destination page; where a page does not report them they are shown as not reported.'],
+        ];
+    }
+
+    /** @return array{section: TrackingSection, caveats: list<string>} */
+    private function leadQuality(string $workspaceId, string $clientId, DateTimeImmutable $from, DateTimeImmutable $until): array
+    {
+        $row = DB::selectOne(
+            "SELECT count(*) AS leads,
+                count(*) FILTER (WHERE first_contacted_at IS NOT NULL) AS reached,
+                count(*) FILTER (WHERE qualified_at IS NOT NULL) AS qualified,
+                count(*) FILTER (WHERE stage = 'disqualified') AS disqualified,
+                count(*) FILTER (WHERE stage = 'won') AS won
+             FROM leads WHERE workspace_id = ? AND client_id = ? AND source_kind = 'form_submission' AND merged_into_id IS NULL
+                AND received_at >= ? AND received_at < ?",
+            [$workspaceId, $clientId, $from->format('Y-m-d H:i:sP'), $until->format('Y-m-d H:i:sP')],
+        );
+        $n = (int) ($row->leads ?? 0);
+        $reached = (int) ($row->reached ?? 0);
+        $rate = static fn (int $part, int $of): ?float => $of === 0 ? null : round($part / $of * 100, 1);
+        $rows = $n === 0 ? [] : [
+            ['figure' => 'Leads', 'value' => $n],
+            ['figure' => 'Reached', 'value' => $reached],
+            ['figure' => 'Qualified', 'value' => (int) $row->qualified],
+            ['figure' => 'Not a fit', 'value' => (int) $row->disqualified],
+            ['figure' => 'Qualified, of leads reached (%)', 'value' => $rate((int) $row->qualified, $reached)],
+            ['figure' => 'Became a sale', 'value' => (int) $row->won],
+        ];
+
+        return [
+            'section' => new TrackingSection(TrackingView::LeadQuality, [['key' => 'figure', 'label' => 'Figure'], ['key' => 'value', 'label' => 'Value']], $rows),
+            'caveats' => ['Leads from this client’s forms only; no lead is named. A lead nobody has reached yet is not counted as unqualified.'],
+        ];
+    }
+
+    /** @return array{section: TrackingSection, caveats: list<string>} */
+    private function salesFunnel(string $workspaceId, string $clientId, DateTimeImmutable $from, DateTimeImmutable $until): array
+    {
+        $sum = ['lead_created' => 0, 'lead_qualified' => 0, 'appointment_booked' => 0, 'sale_completed' => 0];
+
+        foreach ($this->performances($workspaceId, $clientId, $from, $until) as $r) {
+            foreach ($sum as $k => $_) {
+                $sum[$k] += (int) ($r['p']['counts'][$k] ?? 0);
+            }
+        }
+
+        $labels = ['lead_created' => 'Lead', 'lead_qualified' => 'Qualified', 'appointment_booked' => 'Appointment', 'sale_completed' => 'Sale'];
+        $rows = [];
+        $previous = null;
+
+        foreach ($sum as $k => $count) {
+            $rows[] = ['step' => $labels[$k], 'count' => $count, 'rate' => $previous === null || $previous === 0 || $count > $previous ? null : round($count / $previous * 100, 1)];
+            $previous = $count;
+        }
+
+        return [
+            'section' => new TrackingSection(TrackingView::SalesFunnel, [
+                ['key' => 'step', 'label' => 'Step'], ['key' => 'count', 'label' => 'Count'], ['key' => 'rate', 'label' => 'From the previous step (%)'],
+            ], $sum['lead_created'] === 0 ? [] : $rows),
+            'caveats' => ['Counts are of leads from tracked links. An open opportunity is not a sale and is not counted as one.'],
+        ];
+    }
+
+    /** @return array{section: TrackingSection, caveats: list<string>} */
+    private function response(string $workspaceId, string $clientId, DateTimeImmutable $from, DateTimeImmutable $until): array
+    {
+        $leads = 0;
+        $met = 0;
+        $anyPromise = false;
+        $attempt = [];
+        $contact = [];
+
+        foreach ($this->projects($workspaceId, $clientId) as $projectId) {
+            $sla = DB::table('lead_automation_settings')->where('project_id', $projectId)->value('sla_minutes');
+            $r = $this->operations->response($workspaceId, $projectId, $from, $until, is_numeric($sla) ? (int) $sla : null);
+            $leads += $r['leads'];
+
+            if ($r['met_sla'] !== null) {
+                $anyPromise = true;
+                $met += $r['met_sla'];
+            }
+
+            if ($r['median_attempt_seconds'] !== null) {
+                $attempt[] = $r['median_attempt_seconds'];
+            }
+
+            if ($r['median_contact_seconds'] !== null) {
+                $contact[] = $r['median_contact_seconds'];
+            }
+        }
+
+        $median = static function (array $v): ?float {
+            if ($v === []) {
+                return null;
+            }
+
+            sort($v);
+
+            return round($v[intdiv(count($v), 2)] / 3600, 1);
+        };
+        $rows = $leads === 0 ? [] : [
+            ['figure' => 'Leads', 'value' => $leads],
+            ['figure' => 'Tried inside the promised time (%)', 'value' => $anyPromise ? round($met / $leads * 100, 1) : null],
+            ['figure' => 'Median hours to the first attempt', 'value' => $median($attempt)],
+            ['figure' => 'Median hours to reach the lead', 'value' => $median($contact)],
+        ];
+
+        return [
+            'section' => new TrackingSection(TrackingView::Response, [['key' => 'figure', 'label' => 'Figure'], ['key' => 'value', 'label' => 'Value']], $rows),
+            'caveats' => ['Aggregates only: no person is named. Where a project made no response-time promise, the share tried inside it is not reported.'],
         ];
     }
 
