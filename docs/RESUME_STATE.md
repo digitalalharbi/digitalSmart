@@ -22,7 +22,7 @@ disagree, Git is right.
 | Notifications | **VERIFIED by CI** (#36, #37, #40; main `41a6d9a`): severity by rule, a tab per kind, dedup/cooldown, daily/weekly/monthly performance digests at nine in workspace time, the centre with history and per-person settings, the ten alerts raised hourly from the product's own signals. Email/WhatsApp delivery (#41) is `AWAITING_CREDENTIALS`: one honest row per channel, nothing sent, `sent` unwritable by any adapter here. |
 | Campaign operations | **VERIFIED by CI**: navigation + Arabic vocabulary (#42), campaign table (#43), Ad Groups (#44), Ads (#45), reports centre (#46; main `4a07cd4`). In review: PR 6 — campaign report preset, funnel and attributed-revenue sections, advanced settings, a page per report. |
 | Visual restructure | PR #11 merged. Brand kit applied, sign-in screen and one-screen landing page (`/welcome`) in review on `feat/brand-identity`; nothing merged. Remaining: heavy-form audit beyond the client form, creative thumbnails from real assets (none exist), a measured before/after table. |
-| Tracking & Funnels | Six-PR chain (`docs/TRACKING_FUNNELS.md`). PR A (links, safe redirect, first-party event store) in review on `feat/tracking-funnels`. B forms, C funnels, D health/debug, E dispatch/mapping, F reports/QR follow. Nothing dispatched to any provider. |
+| Tracking & Funnels | Six-PR chain (`docs/TRACKING_FUNNELS.md`): A merged; B–F in review in order (links/redirect/events, forms→leads, funnels, health/debug, dispatch/mapping, reports/QR). Nothing dispatched to any provider; live delivery `BLOCKED_EXTERNAL`. |
 | Sessions | Each session works on its own branch and worktree; the shared folder is not scratch space. |
 
 ### Last verified gates (local)

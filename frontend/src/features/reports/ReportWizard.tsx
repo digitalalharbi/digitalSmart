@@ -10,6 +10,7 @@ import {
   LineChart,
   Megaphone,
   MousePointerClick,
+  Route,
   Plus,
   ShoppingBag,
   Target,
@@ -63,6 +64,7 @@ const KIND_ICON: Record<SectionKindValue, LucideIcon> = {
   creative: Images,
   traffic: MousePointerClick,
   attribution: Target,
+  tracking: Route,
 };
 
 export type WizardResult = {
@@ -229,6 +231,7 @@ export function ReportWizard({
     { key: 'lead', kind: 'lead', needsClient: true },
     { key: 'traffic', kind: 'traffic', needsClient: false },
     { key: 'attribution', kind: 'attribution', needsClient: true },
+    { key: 'tracking', kind: 'tracking', needsClient: true },
   ];
 
   return (
@@ -582,7 +585,7 @@ function Mock({ kind }: { kind: SectionKindValue }) {
     );
   }
 
-  if (kind === 'store' || kind === 'lead' || kind === 'attribution') {
+  if (kind === 'store' || kind === 'lead' || kind === 'attribution' || kind === 'tracking') {
     return (
       <div className="bg-surface flex items-center gap-3 rounded-lg p-2">
         <span className="border-accent-strong size-8 shrink-0 rounded-full border-4" />

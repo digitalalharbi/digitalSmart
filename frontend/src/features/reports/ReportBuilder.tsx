@@ -388,6 +388,10 @@ export function ReportBuilder({
                                     entry.kind === 'creative'
                                       ? (section.creative_view ?? 'top')
                                       : null,
+                                  tracking_view:
+                                    entry.kind === 'tracking'
+                                      ? (section.tracking_view ?? 'links')
+                                      : null,
                                   metrics: keep.slice(0, entry.metric_cap),
                                   dimension: entry.needs_dimension
                                     ? (section.dimension ?? 'provider')
@@ -434,6 +438,20 @@ export function ReportBuilder({
                             key={entry.view}
                             isSelected={section.creative_view === entry.view}
                             onSelect={() => updateSection(index, { creative_view: entry.view })}
+                          >
+                            {entry.label}
+                          </Choice>
+                        ))}
+                      </div>
+                    </ChoiceGroup>
+                  ) : section.kind === 'tracking' ? (
+                    <ChoiceGroup label={t('reports.builder.trackingView')}>
+                      <div className="flex flex-wrap gap-2">
+                        {(vocabulary?.tracking_views ?? []).map((entry) => (
+                          <Choice
+                            key={entry.view}
+                            isSelected={section.tracking_view === entry.view}
+                            onSelect={() => updateSection(index, { tracking_view: entry.view })}
                           >
                             {entry.label}
                           </Choice>

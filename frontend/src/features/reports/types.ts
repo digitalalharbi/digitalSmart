@@ -37,7 +37,10 @@ export type SectionKindValue =
   | 'lead'
   | 'creative'
   | 'traffic'
-  | 'attribution';
+  | 'attribution'
+  | 'tracking';
+
+export type TrackingViewValue = 'links' | 'forms' | 'funnel' | 'follow_up' | 'health';
 
 export type CreativeViewValue =
   'top' | 'performance' | 'format_mix' | 'comparison' | 'refresh' | 'gallery' | 'platform_mix';
@@ -112,6 +115,8 @@ export type ReportVocabulary = {
   revenue_sources: RevenueSourceInfo[];
   /** The parts of the creative picture a creative section can show. */
   creative_views?: { view: CreativeViewValue; label: string }[];
+  /** The parts of a client's first-party tracking a tracking section can show. */
+  tracking_views?: { view: TrackingViewValue; label: string }[];
   max_share_days: number;
 };
 
@@ -157,6 +162,14 @@ export type RenderedSection = {
   creative?: CreativeSectionData | null;
   /** Which campaigns a client's orders came from, with how much of the period that explains. */
   attribution?: AttributionSectionData | null;
+  /** One fixed table of the client's first-party tracking. A cell is a number, a word, or null for "not reported". */
+  tracking?: TrackingSectionData | null;
+};
+
+export type TrackingSectionData = {
+  view: TrackingViewValue;
+  columns: { key: string; label: string }[];
+  rows: Record<string, string | number | null>[];
 };
 
 export type AttributionSectionData = {
@@ -400,6 +413,8 @@ export type SectionDraft = {
   revenue_source?: string | null;
   /** Which part of the creative picture a creative section shows. */
   creative_view?: CreativeViewValue | null;
+  /** Which part of the client's tracking a tracking section shows. */
+  tracking_view?: TrackingViewValue | null;
 };
 
 export type ReportDraft = {

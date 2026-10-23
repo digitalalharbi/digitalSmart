@@ -34,6 +34,7 @@ use App\Domain\Reporting\ReportAudience;
 use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
 use App\Domain\Reporting\ShareState;
+use App\Domain\Reporting\TrackingView;
 use App\Interface\Http\Resource\Analytics\MetricValueResource;
 use DateTimeImmutable;
 
@@ -118,6 +119,10 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'is_invoiced' => $source->isInvoiced(),
                 'is_modelled' => $source->isModelled(),
             ], RevenueSource::cases()),
+            'tracking_views' => array_map(static fn (TrackingView $view): array => [
+                'view' => $view->value,
+                'label' => $view->label(),
+            ], TrackingView::cases()),
             'creative_views' => array_map(static fn (CreativeView $view): array => [
                 'view' => $view->value,
                 'label' => $view->label(),
@@ -287,6 +292,7 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'row_limit' => $section->rowLimit,
                 'revenue_source' => $section->revenueSource?->value,
                 'creative_view' => $section->creativeView?->value,
+                'tracking_view' => $section->trackingView?->value,
             ], $definition->sections),
             'created_by_name' => $report->createdByName,
             'updated_at' => $report->updatedAt->format(DateTimeImmutable::ATOM),
@@ -352,6 +358,11 @@ final readonly class ReportResource implements SnapshotSerialiser
             ], $section->store->figures()),
             'store_detail' => $section->store === null ? null : self::storeDetail($section->store),
             'lead' => $section->lead === null ? null : self::lead($section->lead),
+            'tracking' => $section->tracking === null ? null : [
+                'view' => $section->tracking->view->value,
+                'columns' => $section->tracking->columns,
+                'rows' => $section->tracking->rows,
+            ],
             'creative' => $section->creative === null ? null : self::creative($section->creative),
             'attribution' => $section->attribution === null ? null : self::attribution($section->attribution),
             'totals' => $section->totals === null ? null : self::metricSet($section->totals),

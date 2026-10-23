@@ -54,6 +54,8 @@ final readonly class RenderedSection
         /** Present for a creative section: the creatives of its view, never a platform identifier. */
         public ?CreativeSection $creative = null,
         public ?AttributionFigures $attribution = null,
+        /** Present for a tracking section: counts and states of the client's first-party tracking, never a record. */
+        public ?TrackingSection $tracking = null,
     ) {}
 
     public function requiresLabel(): bool

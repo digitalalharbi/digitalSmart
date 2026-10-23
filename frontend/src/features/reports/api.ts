@@ -82,6 +82,7 @@ function body(input: ReportInput): Record<string, unknown> {
       ...(section.row_limit === null ? {} : { row_limit: section.row_limit }),
       ...(section.revenue_source == null ? {} : { revenue_source: section.revenue_source }),
       ...(section.creative_view == null ? {} : { creative_view: section.creative_view }),
+      ...(section.tracking_view == null ? {} : { tracking_view: section.tracking_view }),
     })),
   };
 }

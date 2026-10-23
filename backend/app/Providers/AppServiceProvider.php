@@ -139,6 +139,7 @@ use App\Application\Reporting\Contract\ReportRepository;
 use App\Application\Reporting\Contract\ReportShareStore;
 use App\Application\Reporting\Contract\ReportWorkbookWriter;
 use App\Application\Reporting\Contract\SnapshotSerialiser;
+use App\Application\Reporting\Contract\TrackingReportReader;
 use App\Application\Search\Contract\SearchReadModel;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\ActorContextBinder;
@@ -316,6 +317,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReade
 use App\Infrastructure\Persistence\RandomOpaqueTokens;
 use App\Infrastructure\Presentation\PptxWriter;
 use App\Infrastructure\Reporting\EloquentReportShareStore;
+use App\Infrastructure\Reporting\EloquentTrackingReportReader;
 use App\Infrastructure\Reporting\XlsxWriter;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
@@ -473,6 +475,7 @@ final class AppServiceProvider extends ServiceProvider
         TrackingEventStore::class => EloquentTrackingEventStore::class,
         OpaqueTokens::class => RandomOpaqueTokens::class,
         FormRepository::class => EloquentFormRepository::class,
+        TrackingReportReader::class => EloquentTrackingReportReader::class,
         ConversionMappingRepository::class => EloquentConversionMappingRepository::class,
         ProviderDispatchStore::class => EloquentProviderDispatchStore::class,
         TrackingPolicyRepository::class => EloquentTrackingPolicyRepository::class,
