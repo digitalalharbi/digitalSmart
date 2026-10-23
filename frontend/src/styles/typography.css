@@ -3,12 +3,10 @@
  *
  * Two scripts, treated as equals rather than one as a translation of the other.
  *
- * Latin  — Inter Variable. Tight optical tracking at display sizes, excellent
- *          tabular figures, which an analytics product leans on constantly.
- * Arabic — IBM Plex Sans Arabic. A genuine UI Arabic with real weights, proper
- *          glyph shaping and a generous x-height. The previous build *named*
- *          these families without loading them, so Arabic silently fell back to
- *          a system face and read cramped.
+ * Latin  — Sora (the brand kit's own variable file, `src/assets/fonts/Sora-Variable.ttf`). Used for words, and above
+ *          all for figures: KPIs, money, percentages, chart labels and table numbers. It carries `tnum`, so a column
+ *          of figures aligns, and its digits are the Latin digits this product always shows, in Arabic too.
+ * Arabic — IBM Plex Sans Arabic. A genuine UI Arabic with real weights, proper glyph shaping and a generous x-height.
  *
  * The two scripts do not share metrics, and pretending they do is the usual
  * cause of cramped Arabic:
@@ -21,7 +19,19 @@
  */
 
 /*
- * The font files themselves are imported from src/main.tsx. A bare @import of
+ * Sora is declared here, from the brand kit's own file. Variable, so one file carries every weight the interface
+ * asks for. `swap` so text is never invisible while it loads; the fallback is a system face with similar metrics.
+ */
+@font-face {
+  font-family: 'Sora';
+  src: url('../assets/fonts/Sora-Variable.ttf') format('truetype');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * The Arabic font files are imported from src/main.tsx. A bare @import of
  * a node_modules stylesheet from inside an imported stylesheet is not resolved
  * here, and fails silently — which is how the previous build ended up naming
  * two families it never loaded.
@@ -30,16 +40,14 @@
 :root {
   /* ---------------------------------------------------------- families ---- */
   --ds-font-sans:
-    'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    'Sora', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   /*
-   * DIN Next Arabic is the preferred Arabic UI face and is first in the stack, but it is a commercial font whose
-   * licence this project does not hold, so no file is shipped: where a licensed copy is installed on the machine it
-   * is used, and everywhere else IBM Plex Sans Arabic (open licence, real weights) carries the interface. To adopt it
-   * properly, add the licensed files and an @font-face for 'DIN Next Arabic' — nothing else changes.
+   * The approved Arabic face is IBM Plex Sans Arabic, from the same open-licence family as the kit's files (SIL OFL
+   * 1.1). The previous stack put a commercial face first that this project never held a licence for; it is gone, so
+   * what the brand approved is what every reader gets.
    */
   --ds-font-arabic:
-    'DIN Next Arabic', 'IBM Plex Sans Arabic', 'Noto Sans Arabic', ui-sans-serif, system-ui,
-    sans-serif;
+    'IBM Plex Sans Arabic', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
   --ds-font-mono:
     'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --ds-font-body-en: var(--ds-font-sans);
@@ -50,7 +58,7 @@
   /*
    * Mixed runs are the normal case here: Arabic prose carrying Latin brand
    * names, platform names, currency codes and IDs. Listing Arabic first lets it
-   * claim the Arabic range while Inter picks up the Latin, so a sentence does
+   * claim the Arabic range while Sora picks up the Latin, so a sentence does
    * not visibly change typeface mid-word.
    */
   --ds-font-mixed: var(--ds-font-arabic), var(--ds-font-sans);
@@ -210,6 +218,8 @@
  * is documented in docs/DESIGN_SYSTEM.md rather than left as a surprise.
  */
 @utility ds-numeric {
+  /* Figures are Sora in both languages: the brand's face for numbers, money and percentages. */
+  font-family: var(--ds-font-sans);
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings:
     'tnum' 1,
@@ -221,7 +231,8 @@
 @utility ds-figure {
   font-family: var(--ds-font-sans);
   font-size: var(--ds-text-3xl);
-  font-weight: var(--ds-weight-semibold);
+  /* Sora 700: the weight the brand sets a primary figure in. */
+  font-weight: var(--ds-weight-bold);
   line-height: var(--ds-leading-tight);
   letter-spacing: var(--ds-tracking-display);
   font-variant-numeric: tabular-nums lining-nums;

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Interface\Http\Controller\Access\AccessRequestController;
 use App\Interface\Http\Controller\Activity\ActivityController;
 use App\Interface\Http\Controller\Advertising\AdGroupController;
 use App\Interface\Http\Controller\Advertising\CampaignBlueprintController;
@@ -152,8 +153,24 @@ Route::get('shared-reports/{token}', SharedReportController::class)
     ->where('token', '[A-Fa-f0-9]{96}')
     ->name('shared_reports.show');
 
+/*
+ * Asking for an account, from the public landing page. Unauthenticated by nature, so: its own limit per address, a
+ * hidden field a person never fills, and an answer that is the same whether or not anything was stored.
+ */
+Route::get('public/access-requests', [AccessRequestController::class, 'open'])
+    ->middleware('throttle:access-requests')
+    ->name('access_requests.open');
+Route::post('public/access-requests', [AccessRequestController::class, 'store'])
+    ->middleware('throttle:access-requests')
+    ->name('access_requests.store');
+
 // --------------------------------------------------------- Authenticated ---
 Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::class])->group(function (): void {
+    /* Answering them: administrators of the workspace the request was made to, who can add people. */
+    Route::get('access-requests', [AccessRequestController::class, 'index'])->name('access_requests.index');
+    Route::post('access-requests/{accessRequest}/review', [AccessRequestController::class, 'review'])
+        ->whereUuid('accessRequest')->name('access_requests.review');
+
     Route::get('auth/me', [SessionController::class, 'show'])->name('auth.me');
     Route::post('auth/logout', [SessionController::class, 'destroy'])->name('auth.logout');
     /*

@@ -7,10 +7,10 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
     <div
       className={cn(
         /*
-         * A white card floating on the workspace: no border, a 24px radius and barely any shadow. The separation
-         * is the surface step — white on `--ds-workspace` — exactly as in the reference.
+         * A card on the workspace: a hairline in the brand's border colour, a 20px radius and barely any
+         * shadow. The separation is the surface step plus that hairline.
          */
-        'bg-surface rounded-3xl shadow-xs',
+        'bg-surface border-line rounded-3xl border shadow-xs',
         'ease-standard transition-shadow duration-[var(--ds-duration-base)]',
         className,
       )}

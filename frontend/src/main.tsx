@@ -4,13 +4,12 @@ import { App } from '@/app/App';
 import { applyDocumentLocale, i18next, initI18n } from '@/shared/i18n';
 import { applyTheme, useUiStore } from '@/shared/store/ui-store';
 /*
- * Self-hosted type. Inter is variable, so one file covers every weight; IBM
- * Plex Sans Arabic ships static weights, and only the four the interface uses
- * are pulled in. Loading these from JS means Vite fingerprints and preloads
- * them — a bare CSS @import of node_modules resolved to nothing.
+ * Self-hosted type. Sora, the Latin and figures face, is declared in styles/typography.css from the brand kit's own
+ * variable file. IBM Plex Sans Arabic ships static weights, all five the brand lists (Light to Bold). Loading these
+ * from JS means Vite fingerprints and preloads them — a bare CSS @import of node_modules resolved to nothing.
  */
-import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
+import '@fontsource/ibm-plex-sans-arabic/300.css';
 import '@fontsource/ibm-plex-sans-arabic/400.css';
 import '@fontsource/ibm-plex-sans-arabic/500.css';
 import '@fontsource/ibm-plex-sans-arabic/600.css';

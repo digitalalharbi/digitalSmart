@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Access\Contract\AccessRequestRepository;
 use App\Application\Access\Contract\AccessSynchroniser;
 use App\Application\Activity\Contract\ActivityReadModel;
 use App\Application\Advertising\Command\RequestCampaignStatusChange as RequestStatusChangeUseCase;
@@ -238,6 +239,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentRoleReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSearchReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentStoreAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSyncCandidateSource;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAccessRequestRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentApprovalRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAssignedWorkRepository;
@@ -432,6 +434,7 @@ final class AppServiceProvider extends ServiceProvider
         SearchReadModel::class => EloquentSearchReadModel::class,
         ShortcutStore::class => EloquentShortcutStore::class,
         TagStore::class => EloquentTagStore::class,
+        AccessRequestRepository::class => EloquentAccessRequestRepository::class,
         ClientOffboarding::class => EloquentClientOffboarding::class,
         DigestStore::class => EloquentDigestStore::class,
         ConnectionDirectory::class => EloquentConnectionDirectory::class,

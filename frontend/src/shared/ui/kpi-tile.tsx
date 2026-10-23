@@ -30,7 +30,8 @@ export function KpiTile({
       >
         {label}
       </span>
-      <span className="ds-numeric text-2xl leading-tight font-semibold sm:text-[1.75rem]">
+      {/* A long amount wraps rather than pushing the page wider than a phone. */}
+      <span className="ds-numeric ds-figure text-xl leading-tight [overflow-wrap:anywhere] sm:text-[1.75rem]">
         {value}
       </span>
       {sub === undefined ? null : (
@@ -42,8 +43,10 @@ export function KpiTile({
   );
 
   const shape = cn(
-    'flex min-w-0 flex-col gap-1.5 rounded-3xl p-5 shadow-xs',
-    highlight ? 'bg-accent-strong text-white' : 'bg-surface text-content',
+    'flex min-w-0 flex-col gap-1.5 rounded-3xl p-4 shadow-xs sm:p-5',
+    highlight
+      ? 'border border-transparent bg-accent-strong text-white'
+      : 'bg-surface border-line text-content border',
     className,
   );
 

@@ -153,8 +153,9 @@ jobs:
   e2e:
     name: End-to-end (Playwright)
     runs-on: ubuntu-latest
-    # 580 tests on two browser projects now run past thirty minutes; a timeout cancels the job and reads as a failure.
-    timeout-minutes: 50
+    # The suite plus the entry-screen compatibility specs on five browsers, and a browser install that is network-bound
+    # (one run spent half an hour in apt), so the limit leaves room: a timeout cancels the job and reads as a failure.
+    timeout-minutes: 80
     needs: [backend, frontend]
 
     services:
@@ -212,6 +213,9 @@ jobs:
             echo "RATE_LIMIT_API_GUEST=1000"
             echo "RATE_LIMIT_API_USER=1000"
             echo "RATE_LIMIT_HEALTH=1000"
+            # The landing page takes requests for an account for the demo workspace, so the flow is exercised.
+            echo "ACCESS_REQUESTS_WORKSPACE_SLUG=demo-smart-code"
+            echo "RATE_LIMIT_ACCESS_REQUESTS=500"
           } >> .env
           php artisan key:generate
           php artisan migrate --force
@@ -232,7 +236,7 @@ jobs:
 
       - name: Install Playwright browsers
         working-directory: frontend
-        run: npx playwright install --with-deps chromium webkit
+        run: npx playwright install --with-deps chromium webkit firefox
 
       - name: Run end-to-end tests
         working-directory: frontend

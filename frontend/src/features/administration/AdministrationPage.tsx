@@ -5,6 +5,7 @@ import { HealthPanel } from '@/features/overview';
 import { Alert } from '@/shared/ui/alert';
 import { PageHeader } from '@/shared/ui/page-header';
 import { cn } from '@/shared/lib/cn';
+import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { AuditPanel } from './AuditPanel';
 import { MembersPanel } from './MembersPanel';
 import { OperationsPanel } from './OperationsPanel';
@@ -12,7 +13,7 @@ import { RolesPanel } from './RolesPanel';
 import { SyncIndicator } from './SyncIndicator';
 import { SetupPanel } from './SetupPanel';
 
-type Section = 'people' | 'roles' | 'setup' | 'audit' | 'health' | 'diagnostics';
+type Section = 'people' | 'requests' | 'roles' | 'setup' | 'audit' | 'health' | 'diagnostics';
 
 /**
  * Administration, in the order an administrator thinks.
@@ -27,6 +28,7 @@ export function AdministrationPage() {
   const [params, setParams] = useSearchParams();
 
   const canSeePeople = can(PERMISSIONS.usersView);
+  const canAnswerRequests = can(PERMISSIONS.usersInvite);
   const canSeeAudit = can(PERMISSIONS.auditView);
   const canSeeOperations = can(PERMISSIONS.workspacesView);
 
@@ -47,6 +49,7 @@ export function AdministrationPage() {
       label: t('administration.group.workspace'),
       items: [
         { id: 'people', label: t('administration.people'), visible: canSeePeople },
+        { id: 'requests', label: t('administration.requests.title'), visible: canAnswerRequests },
         { id: 'roles', label: t('administration.rolesTitle'), visible: canSeePeople },
         { id: 'setup', label: t('administration.setup'), visible: true },
       ],
@@ -104,6 +107,7 @@ export function AdministrationPage() {
 
         <div className="min-w-0">
           {active === 'people' ? <MembersPanel /> : null}
+          {active === 'requests' ? <AccessRequestsPanel /> : null}
           {active === 'roles' ? <RolesPanel /> : null}
           {active === 'setup' ? <SetupPanel /> : null}
           {active === 'audit' ? <AuditPanel /> : null}

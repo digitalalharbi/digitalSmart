@@ -66,6 +66,27 @@ function raw(mode: Mode, name: string): string {
   return hopped ?? '';
 }
 
+/**
+ * A token's colour as an opaque hex. The brand's own values are authored as hex or `rgb(r g b / a)` — exactly as the
+ * brand kit spells them — and the product's older ramps as `oklch()`; all three are read here, and any alpha is left
+ * for the caller to composite.
+ */
+function toHex(value: string): string | null {
+  const hex = /^#([0-9a-f]{6})$/i.exec(value.trim());
+
+  if (hex !== null) {
+    return `#${(hex[1] ?? '').toLowerCase()}`;
+  }
+
+  const rgb = /^rgba?\(\s*(\d+)\s+(\d+)\s+(\d+)/i.exec(value.trim());
+
+  if (rgb !== null) {
+    return `#${[rgb[1], rgb[2], rgb[3]].map((channel) => Number(channel).toString(16).padStart(2, '0')).join('')}`;
+  }
+
+  return hexFromOklch(value);
+}
+
 /** Composite one colour over another, which is what the browser does with an alpha fill. */
 function over(foreground: string, alpha: number, backdrop: string): string {
   const [fr, fg, fb] = linearFromHex(foreground);
@@ -91,9 +112,12 @@ function over(foreground: string, alpha: number, backdrop: string): string {
 function colour(mode: Mode, name: string, backdrop?: string): string {
   const value = raw(mode, name);
   const alpha = /\/\s*([\d.]+)\s*\)$/.exec(value)?.[1];
-  const hex = hexFromOklch(value);
+  const hex = toHex(value);
 
-  expect(hex, `--ds-${name} resolves to "${value}", which is not an oklch() value`).not.toBeNull();
+  expect(
+    hex,
+    `--ds-${name} resolves to "${value}", which is not a hex, rgb() or oklch() value`,
+  ).not.toBeNull();
 
   if (alpha === undefined) {
     return hex ?? '';
@@ -142,25 +166,32 @@ describe.each(['light', 'dark'] as Mode[])('text contrast in the %s theme', (mod
     }
   });
 
-  it.each(['success', 'warning', 'danger', 'info'] as const)(
-    'reads %s on its own tinted surface',
-    (status) => {
-      /*
-       * Where a status colour is most often read: a badge. The light theme tints with a solid ramp step and the
-       * dark theme with the hue at 16% over the raised surface, so the dark value is composited before it is
-       * measured — the opaque hue is a colour no reader ever sees.
-       */
-      const raised = colour(mode, 'surface-raised');
-      const foreground = colour(mode, status, raised);
-      const background = colour(mode, `${status}-surface`, raised);
-      const ratio = contrastRatio(foreground, background);
+  it.each(
+    (['success', 'warning', 'danger', 'info'] as const).flatMap((status) =>
+      (['surface-raised', 'surface', 'workspace'] as const).map(
+        (under) => [status, under] as const,
+      ),
+    ),
+  )('reads %s on its own tinted surface, over --ds-%s', (status, under) => {
+    /*
+     * Where a status colour is most often read: a badge. The light theme tints with a solid ramp step and the
+     * dark theme with the hue at 16% over the raised surface, so the dark value is composited before it is
+     * measured — the opaque hue is a colour no reader ever sees.
+     */
+    /*
+     * Over every surface a card is painted on, not only the raised one: the badge in a table sits on `surface`,
+     * which in the light theme is a step darker than white, and a tint over it is darker than the one over white.
+     */
+    const raised = colour(mode, under);
+    const foreground = colour(mode, status, raised);
+    const background = colour(mode, `${status}-surface`, raised);
+    const ratio = contrastRatio(foreground, background);
 
-      expect(
-        ratio,
-        `--ds-${status} on --ds-${status}-surface in ${mode} is ${ratio.toFixed(2)}:1`,
-      ).toBeGreaterThanOrEqual(AA_TEXT);
-    },
-  );
+    expect(
+      ratio,
+      `--ds-${status} on --ds-${status}-surface over --ds-${under} in ${mode} is ${ratio.toFixed(2)}:1`,
+    ).toBeGreaterThanOrEqual(AA_TEXT);
+  });
 
   it('reads brand ink on the brand chip', () => {
     /*
@@ -184,6 +215,26 @@ describe.each(['light', 'dark'] as Mode[])('text contrast in the %s theme', (mod
       ratio,
       `action-contrast on action in ${mode} is ${ratio.toFixed(2)}:1`,
     ).toBeGreaterThanOrEqual(AA_TEXT);
+  });
+
+  it('reads a button label on every state of the primary action', () => {
+    /*
+     * The brand's primary action is the orange, in four states. White on the kit's hover orange in the dark theme is
+     * 3.5:1, so the label turns to the page black there; this holds the pair that results, and the pressed state,
+     * which are the two a hand sees only for a moment and a test must therefore not forget.
+     */
+    for (const [label, fill] of [
+      ['action-hover-contrast', 'action-hover'],
+      ['action-contrast', 'action-pressed'],
+      ['approve-contrast', 'approve'],
+    ] as const) {
+      const ratio = contrastRatio(colour(mode, label), colour(mode, fill));
+
+      expect(
+        ratio,
+        `--ds-${label} on --ds-${fill} in ${mode} is ${ratio.toFixed(2)}:1`,
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+    }
   });
 
   it('reads a small label on the strong accent, and the orange itself as a mark', () => {

@@ -6,6 +6,8 @@ import { setUnauthenticatedHandler } from '@/shared/api/client';
 
 const router = createBrowserRouter(routes);
 
+const PUBLIC_PATHS = new Set(['/', '/welcome', '/login', '/request-access']);
+
 export function App() {
   useEffect(() => {
     /*
@@ -14,7 +16,12 @@ export function App() {
      * leaving a shell full of failing requests.
      */
     setUnauthenticatedHandler(() => {
-      if (window.location.pathname !== '/login') {
+      /*
+       * The public pages are where a signed-out person is meant to be: the home address shows them the marketing page
+       * (see `RequireSession`), and sign-in, the request form and the welcome alias need no session. Sending them from
+       * there to sign-in would make the home page unreachable.
+       */
+      if (!PUBLIC_PATHS.has(window.location.pathname)) {
         void router.navigate('/login', { replace: true });
       }
     });

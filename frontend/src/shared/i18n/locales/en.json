@@ -1,7 +1,8 @@
 {
   "brand": {
     "name": "digitalSmart",
-    "by": "by Smart Code"
+    "by": "by Smart Code",
+    "tagline": "All your advertising campaigns, in one smart dashboard"
   },
   "areas": {
     "overview": "Overview",
@@ -1264,6 +1265,26 @@
       "main": "Main",
       "deploy": "Deploy",
       "unavailable": "Status unavailable"
+    },
+    "requests": {
+      "title": "Account requests",
+      "subtitle": "People who asked for an account from the landing page.",
+      "filter": "Show requests that are",
+      "failed": "Could not load the requests.",
+      "emptyTitle": "Nothing here",
+      "emptyBody": "No requests in this state.",
+      "status": {
+        "pending": "New",
+        "contacted": "Contacted",
+        "approved": "Approved",
+        "declined": "Declined"
+      },
+      "act": {
+        "contacted": "Mark as contacted",
+        "approved": "Approve",
+        "declined": "Decline"
+      },
+      "approveNote": "Approving a request creates no account. Add the person from People, where their one-time password is shown."
     }
   },
   "integrations": {
@@ -4826,6 +4847,107 @@
       "adGroup": "Ad group",
       "siblings": "All ads in this ad group",
       "creativeIntelligence": "Creative intelligence"
+    }
+  },
+  "entry": {
+    "label": "The smart marketing management system",
+    "supportLogin": "Built for companies and agencies that require complete clarity on their advertising results.",
+    "welcome": "Welcome back",
+    "formTitleHint": "Sign in to digitalSmart",
+    "secure": "Secure connection. We never store your ad platforms' passwords.",
+    "nav": {
+      "platforms": "Platforms",
+      "label": "Navigation",
+      "idea": "About",
+      "why": "Features"
+    },
+    "hero": {
+      "line1": "All your campaigns on one platform.",
+      "line2": "With precise visibility into performance and spend.",
+      "tag": "The smart ad management system",
+      "support": "Built for companies and agencies that require complete clarity on their advertising results.",
+      "sub": "Track campaign performance, make decisions with confidence, and share reports with your clients in one click."
+    },
+    "platformsLabel": "Supports the platforms you advertise on",
+    "preview": {
+      "label": "Product preview",
+      "sample": "Sample data",
+      "spend": "Spend",
+      "results": "Results",
+      "roas": "ROAS",
+      "active": "Active campaigns",
+      "mix": "Spend by platform",
+      "top": "Top campaigns",
+      "trend": "Spend trend",
+      "attention": "Needs attention",
+      "attentionBody": "A campaign has spent with no results for 3 days",
+      "disclaimer": "Illustrative figures only"
+    },
+    "loginHeadline": {
+      "l1": "All your campaigns.",
+      "l2": "One platform.",
+      "l3": "Precise visibility into performance and spend."
+    },
+    "ask": "Request your account",
+    "noAccount": "Don't have an account?",
+    "request": {
+      "title": "Request an account",
+      "subtitle": "Tell us about yourself and what you need. Our team will review the request and get in touch.",
+      "need": "What do you need?",
+      "name": "Full name",
+      "company": "Company (optional)",
+      "phone": "Mobile (optional)",
+      "message": "Anything we should know? (optional)",
+      "send": "Send the request",
+      "sending": "Sending…",
+      "promise": "This is a request, not a registration. No account is opened until our team has reviewed it.",
+      "doneTitle": "Your request has been received",
+      "doneBody": "Our team will review it and get in touch. There is no need to send it again.",
+      "back": "Back to the home page",
+      "failed": "We could not send your request. Check your connection and try again.",
+      "closedTitle": "Requests are currently closed",
+      "closedBody": "We are not accepting new account requests at the moment. If you already have an account, you can sign in."
+    },
+    "needs": {
+      "self_managed": {
+        "title": "I manage my own campaigns",
+        "line": "I follow them all in one place."
+      },
+      "agency_clients": {
+        "title": "I manage campaigns for my clients",
+        "line": "I give them clear, reliable results."
+      },
+      "ad_services": {
+        "title": "I need advertising services",
+        "line": "I hand them to specialists and follow the results."
+      }
+    },
+    "start": {
+      "reviewed": "Every request is reviewed before an account is opened."
+    },
+    "promises": {
+      "platforms": {
+        "title": "Every platform on one screen",
+        "line": "Snapchat, TikTok, Meta, Google, X, LinkedIn and ChatGPT, without switching or spreadsheets."
+      },
+      "alerts": {
+        "title": "Proactive alerts",
+        "line": "We flag waste and growth opportunities early, before they affect your results."
+      },
+      "reports": {
+        "title": "Professional reports for your clients",
+        "line": "A ready link in your company's identity that gives the client a clear picture and greater confidence."
+      },
+      "creative": {
+        "title": "Know which ads perform best",
+        "line": "We show you the winning and declining ads, so creative decisions rest on real results."
+      }
+    }
+  },
+  "app": {
+    "mobileTabs": {
+      "label": "Quick navigation",
+      "more": "More"
     }
   }
 }

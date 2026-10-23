@@ -60,6 +60,8 @@ return [
          * needing more is not reading a report. The endpoint is unauthenticated, so this is the only limit on it.
          */
         'shared_reports' => (int) env('RATE_LIMIT_SHARED_REPORTS', 20),
+        /* Requests for an account, keyed by address. Anybody needing more than five a minute is not asking for an account. */
+        'access_requests' => (int) env('RATE_LIMIT_ACCESS_REQUESTS', 5),
     ],
 
     /*
@@ -93,6 +95,20 @@ return [
          * longer than this has already cost the reader more than its paragraph is worth.
          */
         'timeout' => (int) env('ANTHROPIC_TIMEOUT', 20),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Requests for an account
+    |--------------------------------------------------------------------------
+    |
+    | The public landing page can take a request for an account for exactly one workspace — the agency that runs this
+    | installation — named here by its slug. Unset, the installation takes none: the form is not offered and a stray
+    | request is dropped. A request is never visible outside the workspace it was made to.
+    |
+    */
+    'access_requests' => [
+        'workspace_slug' => env('ACCESS_REQUESTS_WORKSPACE_SLUG'),
     ],
 
 ];

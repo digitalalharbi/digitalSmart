@@ -105,7 +105,7 @@ export const seriesDashes = [
  * chart never flashes a colour the design system does not contain.
  */
 const FALLBACK: ChartPalette = {
-  series: ['#3860bb', '#8a2b60', '#b3910b', '#036819', '#00a68f', '#b2511e', '#a37fde', '#a73e3b'],
+  series: ['#c24a2c', '#3860bb', '#00a68f', '#b3910b', '#8a2b60', '#036819', '#a37fde', '#a73e3b'],
   steps: ['#8cb3ff', '#729cf3', '#5985e4', '#406dd6', '#3159b8', '#244699'],
   poles: {
     low: '#3860bb',
@@ -114,22 +114,22 @@ const FALLBACK: ChartPalette = {
     highWeak: '#e79b92',
     high: '#a73e3b',
   },
-  grid: 'rgba(17, 24, 39, 0.08)',
+  grid: 'rgba(20, 20, 20, 0.08)',
   axis: '#9ca3af',
-  axisLabel: '#6b7280',
+  axisLabel: '#6b6b6b',
   tooltipSurface: '#ffffff',
-  tooltipBorder: 'rgba(17, 24, 39, 0.12)',
+  tooltipBorder: 'rgba(20, 20, 20, 0.12)',
   comparison: '#9ca3af',
-  threshold: '#6b7280',
-  textPrimary: '#111827',
-  textSecondary: '#4b5563',
-  textTertiary: '#6b7280',
+  threshold: '#6b6b6b',
+  textPrimary: '#141414',
+  textSecondary: '#525252',
+  textTertiary: '#6b6b6b',
   surface: '#ffffff',
-  accent: '#4f46e5',
-  success: '#0d7a4a',
-  warning: '#c5760d',
-  danger: '#c02730',
-  fontFamily: 'Inter, sans-serif',
+  accent: '#c24a2c',
+  success: '#1f6f46',
+  warning: '#7c5a12',
+  danger: '#b03a34',
+  fontFamily: 'Sora, sans-serif',
 };
 
 function readVar(style: CSSStyleDeclaration, name: string, fallback: string): string {

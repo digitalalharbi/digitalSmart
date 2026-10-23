@@ -5,14 +5,7 @@ import { formatMetric, MISSING } from '@/shared/metrics';
 import type { AnalyticsPayload, BreakdownRowPayload } from '@/shared/metrics';
 import { DonutChart } from '@/shared/ui/viz';
 
-const COLOURS = [
-  'var(--ds-chart-1)',
-  'var(--ds-chart-2)',
-  'var(--ds-chart-3)',
-  'var(--ds-chart-4)',
-  'var(--ds-chart-5)',
-  'var(--ds-chart-6)',
-];
+import { platformOutline, platformSeriesColour } from '@/shared/ui/chart/platformColours';
 
 /** The figures a platform card carries, in the order they are read — each only if the platform reports it. */
 const FIGURES = ['conversions', 'cpa', 'roas', 'ctr'] as const;
@@ -68,7 +61,8 @@ export function PlatformPanel({
               key: row.key,
               label: row.label,
               value: spendOf(row),
-              colour: COLOURS[index] ?? 'var(--ds-chart-6)',
+              colour: platformSeriesColour(row.key, index),
+              outline: platformOutline(row.key),
             }))}
             centre={{
               value: new Intl.NumberFormat(localeTag(i18n.language), {
@@ -109,7 +103,12 @@ export function PlatformPanel({
                     <span
                       aria-hidden
                       className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: COLOURS[index] ?? 'var(--ds-chart-6)' }}
+                      style={{
+                        backgroundColor: platformSeriesColour(row.key, index),
+                        ...(platformOutline(row.key) === undefined
+                          ? {}
+                          : { boxShadow: `0 0 0 1px ${platformOutline(row.key) ?? ''}` }),
+                      }}
                     />
                     <span className="text-content min-w-0 flex-1 truncate text-sm font-semibold">
                       {row.label}

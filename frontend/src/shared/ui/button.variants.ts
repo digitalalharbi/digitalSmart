@@ -8,7 +8,10 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-action text-action-contrast hover:bg-action-hover active:translate-y-px',
+        primary:
+          'bg-action text-action-contrast hover:bg-action-hover hover:text-action-hover-contrast active:bg-action-pressed active:text-action-contrast',
+        /* Approve is the one decision that is not orange: ink on the page, so it reads differently from a command. */
+        approve: 'bg-approve text-approve-contrast hover:brightness-95 active:brightness-90',
         secondary:
           'bg-surface-sunken text-content hover:bg-surface-active active:bg-surface-active',
         ghost: 'text-content-secondary hover:bg-surface-hover hover:text-content',

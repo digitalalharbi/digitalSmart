@@ -32,8 +32,8 @@ export function AreaTabs() {
                   'block rounded-full px-3.5 py-1.5 text-sm font-medium whitespace-nowrap',
                   'ease-standard transition-colors duration-[var(--ds-duration-fast)]',
                   isActive
-                    ? 'bg-surface-active text-content'
-                    : 'text-content-secondary hover:bg-surface-hover hover:text-content',
+                    ? 'bg-approve text-approve-contrast'
+                    : 'bg-surface-sunken text-content-secondary hover:bg-surface-hover hover:text-content',
                 )
               }
             >

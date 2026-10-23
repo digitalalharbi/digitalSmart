@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { MobileNavDrawer } from './MobileNavDrawer';
+import { MobileTabBar } from './MobileTabBar';
 import { SandboxNotice } from './SandboxNotice';
 import { IconRail } from './IconRail';
 import { CommandPalette } from './CommandPalette';
@@ -30,12 +31,14 @@ export function AppShell() {
       </a>
 
       <MobileNavDrawer />
+      <MobileTabBar />
 
       <div className="bg-workspace relative flex min-h-dvh flex-col lg:min-h-[calc(100dvh-2.5rem)] lg:rounded-[var(--ds-radius-workspace)]">
         <Topbar />
         <CommandPalette />
 
-        <div className="flex flex-1 items-start gap-5 px-[var(--ds-page-gutter)] pb-10 lg:px-6 lg:pb-12">
+        {/* Room under the content for the phone's tab bar, so the last card is never behind it. */}
+        <div className="flex flex-1 items-start gap-5 px-[var(--ds-page-gutter)] pb-28 lg:px-6 lg:pb-12">
           <aside className="sticky top-24 hidden shrink-0 lg:block">
             <IconRail />
           </aside>

@@ -7,6 +7,8 @@ export type DonutSegment = {
   value: number;
   /** A CSS colour, normally a design token: `var(--ds-success)`. */
   colour: string;
+  /** An edge for a colour that is close to the surface it sits on (a near-white on white, a deep tone on graphite). */
+  outline?: string | undefined;
 };
 
 /**
@@ -75,17 +77,30 @@ export function DonutChart({
                 offset += length;
 
                 return (
-                  <circle
-                    key={segment.key}
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    fill="none"
-                    stroke={segment.colour}
-                    strokeWidth={thickness}
-                    strokeDasharray={`${String(dash)} ${String(circumference - dash)}`}
-                    strokeDashoffset={-start}
-                  />
+                  <g key={segment.key}>
+                    {segment.outline === undefined ? null : (
+                      <circle
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        fill="none"
+                        stroke={segment.outline}
+                        strokeWidth={thickness + 2}
+                        strokeDasharray={`${String(dash + 2)} ${String(circumference - dash - 2)}`}
+                        strokeDashoffset={-start + 1}
+                      />
+                    )}
+                    <circle
+                      cx={size / 2}
+                      cy={size / 2}
+                      r={radius}
+                      fill="none"
+                      stroke={segment.colour}
+                      strokeWidth={thickness}
+                      strokeDasharray={`${String(dash)} ${String(circumference - dash)}`}
+                      strokeDashoffset={-start}
+                    />
+                  </g>
                 );
               })}
         </svg>
@@ -122,7 +137,12 @@ export function DonutChart({
                 <span
                   aria-hidden
                   className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: segment.colour }}
+                  style={{
+                    backgroundColor: segment.colour,
+                    ...(segment.outline === undefined
+                      ? {}
+                      : { boxShadow: `0 0 0 1px ${segment.outline}` }),
+                  }}
                 />
                 <span className="truncate">{segment.label}</span>
               </span>

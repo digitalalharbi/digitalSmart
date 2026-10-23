@@ -336,7 +336,7 @@ export function seriesColour(
 ): string {
   const slot = Math.min(index, SERIES_CAP[form] - 1);
 
-  return palette.series[slot] ?? palette.series[0] ?? '#3860bb';
+  return palette.series[slot] ?? palette.series[0] ?? '#c24a2c';
 }
 
 /** A step of the ordinal ramp, for a scale whose order is its meaning. */

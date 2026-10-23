@@ -20,11 +20,16 @@ test.describe('application shell', () => {
   });
 
   test('switches appearance and persists it across a reload', async ({ page }) => {
+    /* Dark is the default for a new visitor, so the test reads where it starts rather than assuming a side. */
+    const html = page.locator('html');
+    const before = (await html.getAttribute('data-theme')) === 'dark' ? 'dark' : 'light';
+    const after = before === 'dark' ? 'light' : 'dark';
+
     await page.getByRole('button', { name: 'Switch appearance' }).click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(html).toHaveAttribute('data-theme', after);
 
     await page.reload();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(html).toHaveAttribute('data-theme', after);
   });
 
   /*

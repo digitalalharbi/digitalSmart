@@ -35,14 +35,14 @@ async function typography(page: Page) {
 }
 
 test.describe('Latin typography', () => {
-  test('loads Inter and tightens display text', async ({ page }) => {
+  test('loads Sora, the brand face, and tightens display text', async ({ page }) => {
     await page.goto('/login');
     await page.waitForFunction(() => document.fonts.status === 'loaded');
 
     const type = await typography(page);
 
-    expect(type.loaded).toContain('Inter Variable');
-    expect(type.body?.family).toBe('Inter Variable');
+    expect(type.loaded).toContain('Sora');
+    expect(type.body?.family).toBe('Sora');
     // Latin display text takes optical tightening well.
     expect(type.h1?.tracking).not.toBe('normal');
   });

@@ -41,3 +41,7 @@ backend/bootstrap/cache/*.php
 .idea/
 .vscode/
 *.swp
+
+# The unzipped brand kit is a working copy, not part of the application: it carries fonts and source files for
+# print and social that the app does not ship. The assets the app uses are copied into frontend/ by path.
+/brand/

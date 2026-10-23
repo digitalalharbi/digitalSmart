@@ -38,11 +38,40 @@ genuine re-mapping rather than an inversion.
 `data-theme="light" | "dark"` on `<html>`, applied before first paint to avoid a flash.
 The preference (`light`/`dark`/`system`) persists per viewer.
 
+## The approved brand
+
+Source: the digitalSmart Brand Kit. **Dark is the default theme; light is kept.** The kit's values are tokens in
+`src/styles/tokens.css` inside the existing OKLCH system — there is no second theme.
+
+| Role | Dark | Light |
+|---|---|---|
+| Page / card / secondary | `#0D0D0D` / `#171717` / `#1F1F1F` | `#FFFFFF` / `#F5F5F4` / `#E5E5E5` |
+| Border | `#2A2A2A` | `#E5E5E5` |
+| Text / muted | `#F5F5F5` / `#A3A3A3` | `#141414` / `#525252` |
+| Primary action | `#C24A2C` (hover steps by theme, pressed `#9E3A21`) | same |
+
+- **Orange is controlled emphasis**: primary actions, the active navigation item, primary progress, the one primary
+  figure on a page, a selected state. It never replaces a semantic warning or danger. Approve is ink on the page.
+- **Logo**: `Logo` loads the kit's SVGs untouched. Never drawn from text or CSS, never recoloured, shadowed or given a
+  gradient, never split ("digital" / "Smart"). Minimum 100px wide (horizontal, stacked) and 16px (mark).
+- **Type**: Sora for Latin text, figures, money and percentages; IBM Plex Sans Arabic for Arabic. Latin digits in both
+  languages so figures reconcile with platform dashboards.
+- **Where the kit does not clear AA**, the brand colour is kept and the surrounding surface or step is adjusted; the
+  exceptions and the reasons are in `CHANGELOG.md`. The contrast and palette gates are unchanged.
+- **Entry screens** (`/`, `/welcome`, `/login`): one screen on a desktop (no scroll either way at 1920×1080, 1600×900,
+  1440×900, 1366×768, 1280×720, 1024×768); on a phone the page may scroll down, never sideways, from 320px up. At shorter
+  heights supporting copy steps aside, never the logo, headline, platforms or the way in. Fields are 16px and controls
+  44px on touch; browser zoom is never disabled; the page keeps clear of the notch (`ds-safe-area`). Copy sells what the
+  buyer gains in formal Arabic and says nothing about how it is done. `e2e/entry-screens.spec.ts` is the gate across
+  Chromium, Firefox, WebKit, Mobile Safari and Mobile Chromium.
+
 ## Platform colours — strict rule
 
-The UI is **not** a rainbow of ad-platform brands. `--ds-platform-*` exists for small
-identifier chips, icons and legend swatches only. Platform colours never become
-surfaces, navigation, or default chart series. Chart series use the brand-anchored
+The UI is **not** a rainbow of ad-platform brands. `--ds-platform-*` holds the approved
+platform palette (Meta `#C24A2C`, Google `#F5F5F5`, Snapchat `#7A2E1E`, TikTok `#A3A3A3`,
+LinkedIn `#E9A08A`, X `#4A4A4A`), named once in `shared/ui/chart/platformColours.ts`. It is
+for identifier chips, legend swatches and platform-mix marks; colour follows the platform,
+never its rank. Platform colours never become surfaces or navigation. Chart series use the brand-anchored
 categorical sequence, which stays legible for colour-vision deficiency and in both
 themes.
 

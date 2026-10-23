@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/lib/cn';
+import { Logo } from '@/shared/ui/logo';
 import { NavIcon } from './NavIcon';
 import { useAreas } from './useAreas';
 
@@ -16,17 +17,8 @@ export function Sidebar() {
 
   return (
     <nav aria-label={t('a11y.mainNavigation')} className="flex h-full flex-col gap-5 px-3 py-5">
-      <div className="flex items-center gap-2.5 px-2">
-        <span
-          aria-hidden="true"
-          className="bg-accent-strong text-accent-contrast grid size-9 shrink-0 place-items-center rounded-xl text-sm font-bold"
-        >
-          dS
-        </span>
-        <span className="flex min-w-0 flex-col leading-tight">
-          <span className="text-content truncate text-sm font-semibold">{t('brand.name')}</span>
-          <span className="text-content-tertiary truncate text-[0.6875rem]">{t('brand.by')}</span>
-        </span>
+      <div className="flex items-center px-2">
+        <Logo layout="horizontal" width={132} label={t('brand.name')} />
       </div>
 
       <div className="flex flex-1 flex-col gap-1 overflow-y-auto">
