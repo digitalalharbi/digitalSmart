@@ -358,7 +358,8 @@ describe('working the pipeline', function (): void {
         moveLead($setup, $lead, 'qualified')->assertOk();
         moveLead($setup, $lead, 'won')->assertOk();
 
-        $events = DB::table('lead_events')->where('lead_id', $lead)->orderBy('occurred_at')->get();
+        /* `occurred_at` has one-second resolution, so a lead received and moved inside one second ties; the ids are time-ordered UUIDs and break it. */
+        $events = DB::table('lead_events')->where('lead_id', $lead)->orderBy('occurred_at')->orderBy('id')->get();
 
         /*
          * "Who qualified this, and when" is a question about events. A table holding only the current stage
