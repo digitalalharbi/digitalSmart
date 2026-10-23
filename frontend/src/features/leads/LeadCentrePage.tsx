@@ -18,6 +18,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import type { MetricValue } from '@/shared/metrics';
 import { BreakdownChart, type BreakdownRow } from './BreakdownChart';
 import { LeadsGlance } from './LeadsGlance';
+import { LeadTrackedPath } from '@/features/tracking';
 import { JourneyPanel } from './JourneyPanel';
 import { CrmReadPanel } from './CrmReadPanel';
 import { LeadHistoryPanel } from './LeadHistoryPanel';
@@ -393,6 +394,9 @@ export function LeadCentrePage() {
             isLoading={selectedLead !== null && journey.isPending}
             leadName={selected?.name ?? null}
           />
+          {selectedLead === null ? null : (
+            <LeadTrackedPath key={selectedLead} leadId={selectedLead} canManage={canManage} />
+          )}
 
           {/*
             Beside the journey rather than in the pipeline row, because that is where somebody is already

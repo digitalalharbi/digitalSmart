@@ -109,3 +109,33 @@ visitor → POST /api/public/forms/{token}/submit → form_submissions → [crea
   areas; verified with axe and a no-sideways-scroll check on Chromium and Mobile Safari.
 - **Not in B:** consent *policy*, retention, funnels, owner assignment/SLA, journey timeline rows from submissions (C),
   provider dispatch (E). Consent is recorded as given and `unknown` otherwise.
+
+## PR C — funnels, breakdowns, the tracked path and follow-up
+
+- **Funnel stages are a closed list** (`FunnelSource`): `link_click, landing_view, form_start, form_submit, lead_created,
+  lead_contacted, lead_qualified, appointment_booked, opportunity_created, sale_completed`. A stored funnel
+  (`funnels`, per project) picks from it **in that order** — the journey's order — which is what makes every rate divide by
+  the stage before it. There is no way to choose another denominator. A project with no funnel gets the standard lead funnel.
+- **Cohort funnel.** The population is the *visits* (valid sessions) in a window, optionally for one link. Each visit carries
+  what became of it: landing / form-start events, its submission, its lead, and that lead's own timestamps. Counts per unit:
+  visits, submissions, distinct leads. Everything is `valid` traffic; the number of excluded visits is returned beside it.
+- **Honesty rules (all in `FunnelCalculator`, unit-tested):** a step a destination page reports (landing, form start) is
+  `null` + reason when there were clicks and the page reported nothing; a rate is `null` + reason when the step before it
+  is empty, unreported, or is *smaller than this one* (an earlier step is not being recorded); the overall rate is last ÷
+  first, never anything else; medians are over journeys that reached both steps in order, so a lead merged into an older
+  contact cannot produce a negative wait. Capped at 100 000 visits (`truncated` says so).
+- **Appointment and opportunity** are new `lead_events` types recorded by a person (`POST /api/leads/{lead}/milestones`,
+  needs `leads.manage`; never in the future; they do not move the stage).
+- **Breakdowns** by platform, campaign, ad group, ad, creative (from the link), device, browser, referrer, UTM source,
+  landing path, date and hour (UTC). The dimension is chosen from a closed list. No city or precise location is collected,
+  so none is offered.
+- **The tracked path of a lead** (`GET /api/leads/{lead}/timeline`): the click, landing, form and submission events of the
+  sessions that submitted for this lead, plus its pipeline events — each with its source and evidence. A lead with no tracked
+  visit says *earlier touchpoints may have happened; they were not recorded here* instead of showing a bare creation.
+- **Follow-up** (`GET /api/tracking/analytics/follow-up`): leads, contact rate, SLA compliance against a chosen target
+  (default 60 min — a query parameter, not a stored promise), not yet answered / overdue, median time to first *attempt*
+  (the first move out of "new") and to first *contact* (the existing `first_contacted_at`, set only when somebody got through),
+  qualified. Attempts and contacts stay the two different facts the lead system already distinguishes.
+- **Not in C:** spend-joined metrics (CPL, CPQL, CAC, ROAS per link) — no campaign binding exists on a link yet, so they are
+  not computed rather than approximated by name; automatic owner assignment / task / notification on lead creation; both
+  stay open and are reported as such in the final acceptance.

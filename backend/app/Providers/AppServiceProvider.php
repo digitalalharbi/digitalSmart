@@ -161,7 +161,9 @@ use App\Application\Tracking\Command\SaveForm;
 use App\Application\Tracking\Command\SaveTrackingLink;
 use App\Application\Tracking\Contract\FormRepository;
 use App\Application\Tracking\Contract\FormSubmissionStore;
+use App\Application\Tracking\Contract\FunnelRepository;
 use App\Application\Tracking\Contract\OpaqueTokens;
+use App\Application\Tracking\Contract\TrackingAnalyticsReadModel;
 use App\Application\Tracking\Contract\TrackingEventStore;
 use App\Application\Tracking\Contract\TrackingLinkRepository;
 use App\Application\Workspace\Contract\AssignedWorkRepository;
@@ -266,6 +268,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentEventDefinitionRe
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFormRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFormSubmissionStore;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFunnelRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMeasurementSourceRepository;
@@ -289,6 +292,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSyncJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTagStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTaskRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentToolCallLog;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingEventStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingLinkRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
@@ -452,6 +456,8 @@ final class AppServiceProvider extends ServiceProvider
         TrackingEventStore::class => EloquentTrackingEventStore::class,
         OpaqueTokens::class => RandomOpaqueTokens::class,
         FormRepository::class => EloquentFormRepository::class,
+        FunnelRepository::class => EloquentFunnelRepository::class,
+        TrackingAnalyticsReadModel::class => EloquentTrackingAnalyticsReadModel::class,
         FormSubmissionStore::class => EloquentFormSubmissionStore::class,
         ClientOffboarding::class => EloquentClientOffboarding::class,
         DigestStore::class => EloquentDigestStore::class,

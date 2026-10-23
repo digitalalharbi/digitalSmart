@@ -262,6 +262,14 @@ final readonly class EloquentLeadRepository implements LeadRepository
         });
     }
 
+    public function recordMilestone(string $workspaceId, string $id, string $type, string $actorId, ?string $note, ?DateTimeImmutable $at): void
+    {
+        /** @var Lead $lead */
+        $lead = Lead::query()->where('workspace_id', $workspaceId)->whereKey($id)->firstOrFail();
+
+        $this->recordEvent($lead, $type, actorId: $actorId, note: $note, occurredAt: $at);
+    }
+
     public function addNote(string $workspaceId, string $id, string $note, string $actorId): LeadView
     {
         return DB::transaction(function () use ($workspaceId, $id, $note, $actorId): LeadView {

@@ -10,6 +10,7 @@ use App\Application\Leads\Command\AssignLead;
 use App\Application\Leads\Command\ChangeLeadStage;
 use App\Application\Leads\Command\MergeLeads;
 use App\Application\Leads\Command\RecordLead;
+use App\Application\Leads\Command\RecordLeadMilestone;
 use App\Application\Leads\Command\SetLeadValue;
 use App\Application\Leads\Command\SyncCrmDeals;
 use App\Application\Leads\DTO\LeadDuplicateRow;
@@ -178,6 +179,24 @@ final class LeadController extends Controller
     }
 
     /** Write down what happened. Goes into the lead's own history with its author and its time. */
+    public function milestone(string $lead, Request $request, RecordLeadMilestone $record): JsonResponse
+    {
+        $data = $request->validate([
+            'type' => ['required', 'string', 'in:'.implode(',', RecordLeadMilestone::TYPES)],
+            'note' => ['nullable', 'string', 'max:500'],
+            'occurred_at' => ['nullable', 'date'],
+        ]);
+
+        $record(
+            $lead,
+            (string) $data['type'],
+            isset($data['note']) ? (string) $data['note'] : null,
+            isset($data['occurred_at']) ? new DateTimeImmutable((string) $data['occurred_at']) : null,
+        );
+
+        return response()->json(['data' => ['recorded' => true]], Response::HTTP_CREATED);
+    }
+
     public function note(string $lead, Request $request, AddLeadNote $addNote): JsonResponse
     {
         return response()->json([
