@@ -46,7 +46,7 @@ function DataLayer({ projectId, canManage }: { projectId: string; canManage: boo
   const names = { ...snippet.data.data_layer, ...edits };
 
   return (
-    <Card className="flex flex-col gap-4 p-4 sm:p-5">
+    <Card className="flex min-w-0 flex-col gap-4 p-4 sm:p-5">
       <div>
         <h2 className="text-content text-base font-semibold">
           {t('tracking.events.dataLayer.title')}
@@ -109,7 +109,7 @@ function DataLayer({ projectId, canManage }: { projectId: string; canManage: boo
         <pre
           dir="ltr"
           tabIndex={0}
-          className="bg-surface-sunken text-content max-h-64 overflow-auto rounded-xl p-3 text-xs"
+          className="bg-surface-sunken text-content max-h-64 max-w-full overflow-auto rounded-xl p-3 text-xs"
         >
           {snippet.data.snippet}
         </pre>
@@ -135,7 +135,7 @@ export function EventsTab() {
   );
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-w-0 flex-col gap-5">
       <p className="text-content-secondary max-w-prose text-sm">{t('tracking.events.intro')}</p>
 
       <ProjectScope
@@ -155,7 +155,7 @@ export function EventsTab() {
       ) : (
         <>
           {canManage ? (
-            <Card className="flex flex-col gap-4 p-4 sm:p-5">
+            <Card className="flex min-w-0 flex-col gap-4 p-4 sm:p-5">
               <h2 className="text-content text-base font-semibold">
                 {t('tracking.events.test.title')}
               </h2>
@@ -206,7 +206,7 @@ export function EventsTab() {
           ) : null}
 
           {test !== null ? (
-            <Card className="flex flex-col gap-3 p-4 sm:p-5">
+            <Card className="flex min-w-0 flex-col gap-3 p-4 sm:p-5">
               <h2 className="text-content text-base font-semibold">
                 {t('tracking.events.console.title')}
               </h2>
@@ -220,7 +220,7 @@ export function EventsTab() {
                 </p>
               ) : (
                 <div
-                  className="overflow-x-auto"
+                  className="max-w-full min-w-0 overflow-x-auto"
                   role="region"
                   tabIndex={0}
                   aria-label={t('tracking.events.console.title')}
