@@ -1983,7 +1983,8 @@
       "forms": "Forms",
       "funnels": "Funnels",
       "events": "Events",
-      "health": "Health"
+      "health": "Health",
+      "conversions": "Conversions"
     },
     "links": {
       "intro": "A tracking link sends a visitor to your page and records the visit first. Use it as the address in the advertisement.",
@@ -2295,6 +2296,83 @@
         "deduplication": "Deduplication",
         "attribution": "Attribution evidence",
         "consent": "Consent readiness"
+      }
+    },
+    "dispatch": {
+      "intro": "Which event at a provider each digitalSmart event becomes. A mapping exists only where the provider’s own documentation allows one; nothing is sent from test traffic, bots, visitors who did not consent, or through a provider that is not connected.",
+      "providers": "What each provider documents",
+      "mappings": "Mappings",
+      "noMappings": "No mapping yet. Until one exists nothing is sent anywhere.",
+      "source": "Documentation",
+      "simulated": "Simulated (sandbox)",
+      "noProviderAnswer": "No answer from the provider",
+      "received": "Provider confirmed receipt",
+      "notReceived": "Provider did not confirm",
+      "retry": "Send again",
+      "support": {
+        "DOCUMENTED": "Documented",
+        "UNVERIFIED": "Not verified",
+        "UNSUPPORTED": "Unsupported"
+      },
+      "channel": {
+        "server": "server event",
+        "offline": "offline conversion"
+      },
+      "status": {
+        "pending": "Queued",
+        "sent": "Sent",
+        "failed": "Failed",
+        "skipped": "Not sent",
+        "unknown": "Outcome unknown"
+      },
+      "skip": {
+        "consent": "The visitor did not consent",
+        "test_traffic": "Test traffic",
+        "suspected_bot": "Likely automated traffic",
+        "duplicate_traffic": "Repeat traffic",
+        "no_click_id": "No click identifier this provider needs",
+        "not_connected": "The provider is not connected",
+        "live_transport_blocked": "Live delivery is not available yet",
+        "no_tracked_visit": "This lead has no tracked visit"
+      },
+      "form": {
+        "event": "digitalSmart event",
+        "provider": "Provider",
+        "providerEvent": "Provider event",
+        "save": "Save mapping",
+        "failed": "The mapping could not be saved."
+      },
+      "policy": {
+        "title": "Consent and retention",
+        "consent": "Consent policy",
+        "retention": "Keep raw events for (days)",
+        "retentionHint": "Between 30 and 1095. After that they are rolled up into daily counts and deleted.",
+        "days_one": "{{count}} day",
+        "days_other": "{{count}} days",
+        "save": "Save",
+        "failed": "The policy could not be saved.",
+        "options": {
+          "required": "Consent required",
+          "not_required": "Consent not required"
+        },
+        "hint": {
+          "required": "Only visits that granted consent are sent to advertising platforms.",
+          "not_required": "Visits are sent unless the visitor said no. This is your statement about your audience, not legal advice."
+        }
+      },
+      "log": {
+        "title": "Dispatch log",
+        "note": "Every conversion that matched a mapping is listed, including the ones that were not sent and why. After an unknown outcome nothing is retried automatically.",
+        "empty": "Nothing has matched a mapping yet.",
+        "cols": {
+          "time": "Time",
+          "event": "Event",
+          "provider": "Provider",
+          "status": "Status",
+          "detail": "Detail",
+          "evidence": "Provider’s answer",
+          "actions": "Actions"
+        }
       }
     }
   },

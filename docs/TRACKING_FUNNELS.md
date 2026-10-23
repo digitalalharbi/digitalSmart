@@ -10,7 +10,7 @@ and is updated by each.
 | B | Form builder, public forms, submissions, submission → lead | `IMPLEMENTED_NOT_VERIFIED` until merged and CI-green |
 | C | Funnel builder and analytics, journey timeline | not started |
 | D | Tracking health, debug mode, GTM / GA4 destination | `IMPLEMENTED_NOT_VERIFIED` until merged and CI-green |
-| E | Provider conversion mapping, async dispatch, browser/server dedup, consent policy, retention | not started |
+| E | Provider conversion mapping, async dispatch, browser/server dedup, consent policy, retention | `IMPLEMENTED_NOT_VERIFIED` until merged and CI-green |
 | F | Report sections, QR, mobile/browser hardening | not started |
 
 Nothing here is `LIVE_VERIFIED` for any provider. No provider receives anything from this module yet.
@@ -165,3 +165,39 @@ visitor → POST /api/public/forms/{token}/submit → form_submissions → [crea
   shown in the **event console** (time, event, source, status, event id, destination — polled every two seconds), is left out
   of every count and funnel, and creates **no lead**. Nothing is ever sent to a provider from test traffic; there is no
   dispatch yet, and the console says *not dispatched* rather than leaving the column blank.
+
+## PR E — conversion mapping, dispatch, consent and retention
+
+- **Provider capability catalogue** (`ProviderConversionCatalogue`, read on 2026-10-23, source URL stored with each entry):
+  - **Meta — DOCUMENTED:** Conversions API; `event_name` is a standard *or custom* name, so the name is not validated here
+    (the standard list was not read); browser and server copies de-duplicate on event name + `event_id` within 48 hours.
+  - **Snapchat — DOCUMENTED:** Conversions API with a closed list of event names (there is **no** lead event — `SIGN_UP` or a
+    `CUSTOM_EVENT_n`); `event_id` + `event_name` de-duplicate, and the pixel's `client_dedup_id` must equal `event_id`.
+  - **Google Ads — DOCUMENTED, with a caveat:** offline click conversions (`UploadClickConversions`) need a `gclid`, `gbraid`
+    or `wbraid` and a conversion action of type `UPLOAD_CLICKS`. Google states that from 2026-06-15 the method fails for a
+    developer token that has not already used it and points new integrations at the Data Manager API, which has **not** been
+    read — so a new token may be refused. A lead with no Google click identifier is *skipped*, not guessed.
+  - **TikTok, LinkedIn — UNVERIFIED:** an events API exists but its documentation could not be read in a machine-readable form;
+    nothing can be mapped. **X, ChatGPT / OpenAI Ads — UNSUPPORTED.**
+- **Mapping** (`conversion_mappings`): a digitalSmart event (`form_submit lead_created lead_qualified appointment_booked
+  opportunity_created sale_completed`) → a provider event the catalogue accepts. Refusals name what the provider does document.
+- **Dispatch** (`provider_event_dispatches`): one row for **every** conversion that matched a mapping — sent, failed, unknown,
+  or **skipped with its reason** (`consent`, `test_traffic`, `suspected_bot`, `duplicate_traffic`, `no_click_id`,
+  `not_connected`, `live_transport_blocked`, `no_tracked_visit`) — unique per mapping and event id, so a repeat is one
+  dispatch. Later stages of a lead (`lead_qualified`, `appointment_booked`, `opportunity_created`, `sale_completed`) are
+  *offline* conversions carrying the consent, traffic class and click identifiers of the visit that produced the lead, with the
+  deterministic id `lead-{lead}-{event}`.
+- **Browser + server de-duplication:** the page pushes the submission's `event_id` to the data layer and the server dispatches
+  the same id. `server_sent_at` is recorded; `provider_received` and `deduplicated` stay **null** unless a provider's own
+  response says so — they are never inferred from our sending.
+- **Retries:** transient failures retry with backoff (6 tries, same event id); a rejection is final; an `unknown` outcome
+  (a request that may have been applied) is **never retried automatically** — a person retries it, with the same event id.
+- **Sending:** the only sender simulates, for **sandbox** credentials, and says so (`source_state = SANDBOX`). A connection
+  with live credentials is `live_transport_blocked`: a live sender per provider needs that provider's approved app, the
+  account owner's authorisation and a real account to verify against — `BLOCKED_EXTERNAL`. Nothing is `LIVE_VERIFIED`.
+- **Consent policy** per project: `required` (default; only granted consent is sent) or `not_required` (the owner's statement
+  about their audience — not legal advice). A visitor who denied is never sent under either.
+- **Retention** per project (30–1095 days, default 400): `tracking:purge` (daily 04:15) rolls raw events older than that into
+  `tracking_daily_rollups` (a count per day, event, traffic class and link), deletes them and their sessions, strips the
+  visitor/session/touchpoint identifiers from older submissions (the submission and its lead are kept) and click identifiers
+  from older dispatches.

@@ -15,6 +15,7 @@ use App\Interface\Console\CommissionProvider;
 use App\Interface\Console\DemoAgencyCommand;
 use App\Interface\Console\PerformanceDigestsCommand;
 use App\Interface\Console\PruneExportsCommand;
+use App\Interface\Console\PurgeTrackingCommand;
 use App\Interface\Console\RaiseAlertsCommand;
 use App\Interface\Console\ReadStores;
 use App\Interface\Console\RunAgentsCommand;
@@ -61,6 +62,7 @@ return Application::configure(basePath: dirname(__DIR__))
         CommissionProvider::class,
         DemoAgencyCommand::class,
         PruneExportsCommand::class,
+        PurgeTrackingCommand::class,
         RunReportSchedulesCommand::class,
         ReadStores::class,
         SyncAccessCatalogue::class,

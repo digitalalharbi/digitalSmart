@@ -11,9 +11,11 @@ use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Exception\ResourceNotFound;
+use App\Application\Tracking\Service\ConversionDispatcher;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
+use App\Domain\Tracking\TrackingEventName;
 use DateTimeImmutable;
 use InvalidArgumentException;
 
@@ -34,6 +36,7 @@ final readonly class RecordLeadMilestone
         private VisibilityResolver $visibility,
         private Clock $clock,
         private AuditRecorder $audit,
+        private ConversionDispatcher $conversions,
     ) {}
 
     public function __invoke(string $leadId, string $type, ?string $note = null, ?DateTimeImmutable $at = null): void
@@ -64,5 +67,7 @@ final readonly class RecordLeadMilestone
             summary: $type === 'appointment_booked' ? 'Recorded an appointment' : 'Recorded an opportunity',
             changes: ['milestone' => $type],
         ));
+
+        $this->conversions->forLead($workspaceId, $leadId, TrackingEventName::from($type), $when);
     }
 }

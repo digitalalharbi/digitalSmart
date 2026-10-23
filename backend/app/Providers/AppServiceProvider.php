@@ -160,15 +160,22 @@ use App\Application\Tracking\Command\FollowTrackingLink;
 use App\Application\Tracking\Command\SaveForm;
 use App\Application\Tracking\Command\SaveTrackingLink;
 use App\Application\Tracking\Command\StartTrackingTest;
+use App\Application\Tracking\Contract\ConversionMappingRepository;
+use App\Application\Tracking\Contract\ConversionSender;
+use App\Application\Tracking\Contract\DispatchQueue;
 use App\Application\Tracking\Contract\FormRepository;
 use App\Application\Tracking\Contract\FormSubmissionStore;
 use App\Application\Tracking\Contract\FunnelRepository;
 use App\Application\Tracking\Contract\OpaqueTokens;
+use App\Application\Tracking\Contract\ProviderDispatchStore;
 use App\Application\Tracking\Contract\TrackingAnalyticsReadModel;
 use App\Application\Tracking\Contract\TrackingEventStore;
 use App\Application\Tracking\Contract\TrackingHealthReadModel;
 use App\Application\Tracking\Contract\TrackingLinkRepository;
+use App\Application\Tracking\Contract\TrackingPolicyRepository;
+use App\Application\Tracking\Contract\TrackingRetentionStore;
 use App\Application\Tracking\Contract\TrackingSettingsRepository;
+use App\Application\Tracking\Service\SandboxConversionSender;
 use App\Application\Workspace\Contract\AssignedWorkRepository;
 use App\Application\Workspace\Contract\MemberDirectory;
 use App\Application\Workspace\Contract\MemberReadModel;
@@ -264,6 +271,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientOffboarding
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRequestRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCommerceStore;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentConversionMappingRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCreativeRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDashboardRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDigestStore;
@@ -284,6 +292,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectMemberRepo
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProjectRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProposalHistory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderDispatchStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentReportRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentRuleExecutionLog;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
@@ -299,6 +308,8 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingAnalytics
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingEventStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingHealthReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingLinkRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingPolicyRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingRetentionStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingSettingsRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
@@ -318,6 +329,7 @@ use App\Infrastructure\System\LaravelApplicationInfo;
 use App\Infrastructure\System\QueueHealthProbe;
 use App\Interface\Export\ReportExportRenderer;
 use App\Interface\Http\Resource\Reporting\ReportResource;
+use App\Interface\Queue\QueuedDispatches;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -461,6 +473,12 @@ final class AppServiceProvider extends ServiceProvider
         TrackingEventStore::class => EloquentTrackingEventStore::class,
         OpaqueTokens::class => RandomOpaqueTokens::class,
         FormRepository::class => EloquentFormRepository::class,
+        ConversionMappingRepository::class => EloquentConversionMappingRepository::class,
+        ProviderDispatchStore::class => EloquentProviderDispatchStore::class,
+        TrackingPolicyRepository::class => EloquentTrackingPolicyRepository::class,
+        DispatchQueue::class => QueuedDispatches::class,
+        TrackingRetentionStore::class => EloquentTrackingRetentionStore::class,
+        ConversionSender::class => SandboxConversionSender::class,
         TrackingSettingsRepository::class => EloquentTrackingSettingsRepository::class,
         TrackingHealthReadModel::class => EloquentTrackingHealthReadModel::class,
         FunnelRepository::class => EloquentFunnelRepository::class,
