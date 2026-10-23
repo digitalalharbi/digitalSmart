@@ -39,6 +39,9 @@ export const BudgetCalculatorPage = lazy(async () => ({
   default: (await import('@/features/budgets/BudgetCalculatorPage')).BudgetCalculatorPage,
 }));
 
+export const PublicFormPage = lazy(async () => ({
+  default: (await import('@/features/tracking/forms/PublicFormPage')).PublicFormPage,
+}));
 export const TrackingAreaPage = lazy(async () => ({
   default: (await import('@/features/tracking/TrackingAreaPage')).TrackingAreaPage,
 }));

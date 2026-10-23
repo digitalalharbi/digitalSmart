@@ -67,6 +67,49 @@ final readonly class EloquentTrackingEventStore implements TrackingEventStore
         );
     }
 
+    public function attributionOf(Touchpoint $touchpoint): array
+    {
+        $row = DB::table('tracking_events')
+            ->where('touchpoint_id', $touchpoint->touchpointId)->where('name', TrackingEventName::LinkClick->value)->first();
+
+        if (! $row instanceof stdClass) {
+            return ['utm' => [], 'click_ids' => [], 'referrer_host' => null, 'landing_path' => null];
+        }
+
+        $strings = static function (mixed $json): array {
+            $decoded = is_string($json) ? json_decode($json, true) : [];
+            $out = [];
+
+            foreach (is_array($decoded) ? $decoded : [] as $key => $value) {
+                if (is_scalar($value)) {
+                    $out[(string) $key] = (string) $value;
+                }
+            }
+
+            return $out;
+        };
+
+        return [
+            'utm' => $strings($row->utm),
+            'click_ids' => $strings($row->click_ids),
+            'referrer_host' => is_string($row->referrer_host) ? $row->referrer_host : null,
+            'landing_path' => is_string($row->landing_path) ? $row->landing_path : null,
+        ];
+    }
+
+    public function recordServerEvent(
+        string $workspaceId, string $projectId, ?Touchpoint $touchpoint, ?string $trackingLinkId, TrackingEventName $name,
+        string $eventId, string $visitorId, ConsentState $consent, TrafficClass $class, DateTimeImmutable $at,
+    ): bool {
+        return DB::table('tracking_events')->insertOrIgnore([
+            'id' => (string) Str::uuid7(), 'workspace_id' => $workspaceId, 'project_id' => $projectId,
+            'tracking_link_id' => $trackingLinkId, 'event_id' => mb_substr($eventId, 0, 40), 'name' => $name->value,
+            'visitor_id' => $visitorId, 'session_id' => $touchpoint?->sessionId, 'touchpoint_id' => $touchpoint?->touchpointId,
+            'source' => 'server', 'traffic_class' => $class->value, 'consent_state' => $consent->value,
+            'utm' => '{}', 'click_ids' => '{}', 'metadata' => '{}', 'occurred_at' => $at->format('Y-m-d H:i:sP'),
+        ]) > 0;
+    }
+
     public function recordBrowserEvent(Touchpoint $touchpoint, TrackingEventName $name, string $eventId, ConsentState $consent, ?string $landingPath, array $metadata, DateTimeImmutable $at): bool
     {
         $when = $at->format('Y-m-d H:i:sP');

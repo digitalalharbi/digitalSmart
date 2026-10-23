@@ -2,10 +2,11 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 import { PageHeader } from '@/shared/ui/page-header';
 import { TabList } from '@/shared/ui/tab-list';
+import { FormsTab } from './forms/FormsTab';
 import { LinksTab } from './links/LinksTab';
 import { TrackingCenterPage } from './TrackingCenterPage';
 
-type Tab = 'overview' | 'links';
+type Tab = 'overview' | 'links' | 'forms';
 
 /**
  * Tracking & Funnels.
@@ -16,7 +17,8 @@ type Tab = 'overview' | 'links';
 export function TrackingAreaPage() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
-  const active: Tab = params.get('tab') === 'links' ? 'links' : 'overview';
+  const requested = params.get('tab');
+  const active: Tab = requested === 'links' || requested === 'forms' ? requested : 'overview';
 
   return (
     <div className="flex flex-col gap-4">
@@ -28,16 +30,17 @@ export function TrackingAreaPage() {
         tabs={[
           { id: 'overview', label: t('tracking.area.overview') },
           { id: 'links', label: t('tracking.area.links') },
+          { id: 'forms', label: t('tracking.area.forms') },
         ]}
       />
       <div role="tabpanel" id="tracking-area-panel" aria-labelledby={`tracking-area-tab-${active}`}>
-        {active === 'links' ? (
+        {active !== 'overview' ? (
           <div className="ds-page">
             <PageHeader
               title={t('tracking.area.title')}
               description={t('tracking.area.description')}
             />
-            <LinksTab />
+            {active === 'links' ? <LinksTab /> : <FormsTab />}
           </div>
         ) : (
           <TrackingCenterPage />

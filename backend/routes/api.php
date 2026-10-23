@@ -71,6 +71,8 @@ use App\Interface\Http\Controller\SurfaceView\SurfaceViewController;
 use App\Interface\Http\Controller\System\HealthController;
 use App\Interface\Http\Controller\System\SyncStatusController;
 use App\Interface\Http\Controller\Tags\TagController;
+use App\Interface\Http\Controller\Tracking\FormController;
+use App\Interface\Http\Controller\Tracking\PublicFormController;
 use App\Interface\Http\Controller\Tracking\PublicTrackingController;
 use App\Interface\Http\Controller\Tracking\TrackingLinkController;
 use App\Interface\Http\Controller\Workspace\MemberController;
@@ -172,6 +174,10 @@ Route::post('public/access-requests', [AccessRequestController::class, 'store'])
  */
 Route::get('r/{token}', [PublicTrackingController::class, 'follow'])
     ->where('token', '[A-Za-z0-9]{10}')->middleware('throttle:tracking')->name('tracking.follow');
+Route::get('public/forms/{token}', [PublicFormController::class, 'show'])
+    ->where('token', '[A-Za-z0-9]{12}')->middleware('throttle:tracking')->name('tracking.forms.public');
+Route::post('public/forms/{token}/submit', [PublicFormController::class, 'submit'])
+    ->where('token', '[A-Za-z0-9]{12}')->middleware('throttle:tracking')->name('tracking.forms.submit');
 Route::post('public/track', [PublicTrackingController::class, 'event'])
     ->middleware('throttle:tracking')->name('tracking.event');
 
@@ -183,6 +189,11 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::get('tracking/links/{link}', [TrackingLinkController::class, 'show'])->whereUuid('link')->name('tracking.links.show');
     Route::put('tracking/links/{link}', [TrackingLinkController::class, 'update'])->whereUuid('link')->name('tracking.links.update');
     Route::post('tracking/links/{link}/status', [TrackingLinkController::class, 'status'])->whereUuid('link')->name('tracking.links.status');
+    Route::get('tracking/forms', [FormController::class, 'index'])->name('tracking.forms.index');
+    Route::post('tracking/forms', [FormController::class, 'store'])->name('tracking.forms.store');
+    Route::get('tracking/forms/{form}', [FormController::class, 'show'])->whereUuid('form')->name('tracking.forms.show');
+    Route::put('tracking/forms/{form}', [FormController::class, 'update'])->whereUuid('form')->name('tracking.forms.update');
+    Route::post('tracking/forms/{form}/status', [FormController::class, 'status'])->whereUuid('form')->name('tracking.forms.status');
     Route::get('tracking/link-templates', [TrackingLinkController::class, 'templates'])->name('tracking.templates.index');
     Route::post('tracking/link-templates', [TrackingLinkController::class, 'saveTemplate'])->name('tracking.templates.store');
 

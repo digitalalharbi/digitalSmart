@@ -53,5 +53,11 @@ final readonly class LeadInput
          * on it would make every turnaround figure wrong by however long the integration took to arrive.
          */
         public ?DateTimeImmutable $crmClosedAt = null,
+        /**
+         * Project-specific answers a form collected (city, budget, property type), by key.
+         *
+         * @var array<string, string>
+         */
+        public array $custom = [],
     ) {}
 }

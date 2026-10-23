@@ -157,7 +157,10 @@ use App\Application\System\Contract\RepositoryStatusSource;
 use App\Application\System\Query\GetSystemHealth;
 use App\Application\Tags\Contract\TagStore;
 use App\Application\Tracking\Command\FollowTrackingLink;
+use App\Application\Tracking\Command\SaveForm;
 use App\Application\Tracking\Command\SaveTrackingLink;
+use App\Application\Tracking\Contract\FormRepository;
+use App\Application\Tracking\Contract\FormSubmissionStore;
 use App\Application\Tracking\Contract\OpaqueTokens;
 use App\Application\Tracking\Contract\TrackingEventStore;
 use App\Application\Tracking\Contract\TrackingLinkRepository;
@@ -261,6 +264,8 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDashboardReposito
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentDigestStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentEventDefinitionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFormRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFormSubmissionStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentMeasurementSourceRepository;
@@ -446,6 +451,8 @@ final class AppServiceProvider extends ServiceProvider
         TrackingLinkRepository::class => EloquentTrackingLinkRepository::class,
         TrackingEventStore::class => EloquentTrackingEventStore::class,
         OpaqueTokens::class => RandomOpaqueTokens::class,
+        FormRepository::class => EloquentFormRepository::class,
+        FormSubmissionStore::class => EloquentFormSubmissionStore::class,
         ClientOffboarding::class => EloquentClientOffboarding::class,
         DigestStore::class => EloquentDigestStore::class,
         ConnectionDirectory::class => EloquentConnectionDirectory::class,
@@ -572,7 +579,7 @@ final class AppServiceProvider extends ServiceProvider
          * The tools, behind one gateway. Adding a tool is adding a line here; nothing in the gateway knows the set.
          * The caller holder is shared so a proposal records who really made it.
          */
-        $this->app->when([SaveTrackingLink::class, FollowTrackingLink::class])->needs('$ownHosts')->give(static function (): array {
+        $this->app->when([SaveTrackingLink::class, FollowTrackingLink::class, SaveForm::class])->needs('$ownHosts')->give(static function (): array {
             $hosts = [];
 
             foreach ([config('app.url'), config('app.frontend_url'), config('digitalsmart.tracking.public_base_url')] as $url) {
