@@ -65,9 +65,11 @@ final readonly class GetTrackingHealthReport
 
         foreach (self::PROVIDERS as $slug => $provider) {
             $connection = $this->connections->agencyConnection($workspaceId, $provider);
+            $sandbox = $connection !== null && $connection->credentials()->isSandbox($provider->requiredCredentialKeys());
             $connections[$slug] = [
-                'connected' => $connection !== null && $connection->status() === ConnectionStatus::Connected,
-                'sandbox' => $connection !== null && $connection->credentials()->isSandbox($provider->requiredCredentialKeys()),
+                /* Sandbox credentials are never "authorised", so a configured sandbox connection counts; a live one must be Connected. */
+                'connected' => $connection !== null && ($connection->status() === ConnectionStatus::Connected || ($sandbox && $connection->status() === ConnectionStatus::Configured)),
+                'sandbox' => $sandbox,
                 'unsupported' => $provider->apiStatus() === ProviderApiStatus::Unavailable,
             ];
         }

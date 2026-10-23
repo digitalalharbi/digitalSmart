@@ -60,6 +60,12 @@ Schedule::command('access:sync')
     ->runInBackground();
 
 /*
+ * Raw tracking events are not kept for ever. Daily and quiet, after the nightly syncs, so a day's events are never rolled up
+ * while they are still being read.
+ */
+Schedule::command('tracking:purge')->dailyAt('04:15')->withoutOverlapping()->runInBackground();
+
+/*
  * Digests: one summary per person instead of N alerts.
  *
  * Staggered after the sync passes they summarise. Morning campaigns land before the working day; budgets

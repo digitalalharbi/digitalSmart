@@ -4,6 +4,24 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Tracking & Funnels, part E: conversion mapping, dispatch, consent and retention
+
+### Added
+- **Conversions tab:** what each provider's own documentation allows (with the source and the date it was read), the mappings
+  a project has made, the consent and retention policy, and a dispatch log. Snapchat's documented event names, Meta's custom
+  or standard names and Google's conversion actions can be mapped; TikTok and LinkedIn (documentation not read) and X and
+  ChatGPT Ads (no path) cannot, and the page says why.
+- **Dispatch with a reason for every no:** a conversion that matches a mapping is recorded as sent, failed, unknown or skipped
+  — test traffic, bots, visitors without consent, a missing Google click identifier, a provider that is not connected. Later
+  lead stages go as offline conversions with the visit's identifiers, once each.
+- **Browser/server de-duplication architecture:** the form's event id is pushed to the data layer and dispatched to the
+  provider; whether a provider received or de-duplicated it is recorded only when the provider says so.
+- **Consent policy and retention per project;** `tracking:purge` rolls old raw events into daily counts and strips identifiers.
+
+### Honest limits
+- Delivery is simulated for sandbox credentials and says so. No live sender exists (`BLOCKED_EXTERNAL`); nothing is
+  `LIVE_VERIFIED`. An outcome of "unknown" is never retried automatically.
+
 ## Tracking & Funnels, part D: tracking health, a test console, and the data layer
 
 ### Added

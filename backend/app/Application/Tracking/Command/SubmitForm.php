@@ -12,9 +12,11 @@ use App\Application\Tracking\Contract\FormRepository;
 use App\Application\Tracking\Contract\FormSubmissionStore;
 use App\Application\Tracking\Contract\OpaqueTokens;
 use App\Application\Tracking\Contract\TrackingEventStore;
+use App\Application\Tracking\DTO\DispatchContext;
 use App\Application\Tracking\DTO\FormSubmissionRecord;
 use App\Application\Tracking\DTO\FormView;
 use App\Application\Tracking\DTO\Touchpoint;
+use App\Application\Tracking\Service\ConversionDispatcher;
 use App\Domain\Commerce\OrderAttribution;
 use App\Domain\Leads\LeadSourceKind;
 use App\Domain\Tracking\ConsentState;
@@ -42,6 +44,7 @@ final readonly class SubmitForm
         private IdentifierGenerator $ids,
         private OpaqueTokens $tokens,
         private Clock $clock,
+        private ConversionDispatcher $conversions,
     ) {}
 
     /**
@@ -84,6 +87,9 @@ final readonly class SubmitForm
         }
 
         $this->events->recordServerEvent($form->workspaceId(), $form->projectId, $touchpoint, $touchpoint?->trackingLinkId, TrackingEventName::FormSubmit, $eventId, $visitor, $state, $class, $now);
+
+        /* The submission's own event id is the one the page pushed to its data layer, so a provider can de-duplicate the two. */
+        $this->conversions->enqueue(new DispatchContext($form->workspaceId(), $form->projectId, TrackingEventName::FormSubmit, $eventId, $state, $class, $attribution['click_ids'], $now));
 
         /* A test visit leaves its submission for the debug console and makes no lead: it is not a person. */
         if ($form->createsLead && $class !== TrafficClass::Test) {
@@ -132,6 +138,7 @@ final readonly class SubmitForm
                     $form->workspaceId(), $form->projectId, null, $record->trackingLinkId, TrackingEventName::LeadCreated,
                     'lead-'.$lead->id, $record->visitorId ?? '', $record->consent, $record->trafficClass, $now,
                 );
+                $this->conversions->enqueue(new DispatchContext($form->workspaceId(), $form->projectId, TrackingEventName::LeadCreated, 'lead-'.$lead->id, $record->consent, $record->trafficClass, $record->clickIds, $now, $lead->id));
             }
         } catch (Throwable $e) {
             report($e);

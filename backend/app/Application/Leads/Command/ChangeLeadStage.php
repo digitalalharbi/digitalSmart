@@ -11,12 +11,14 @@ use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Exception\ResourceNotFound;
+use App\Application\Tracking\Service\ConversionDispatcher;
 use App\Domain\Access\Permission;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Leads\Exception\InvalidLeadTransition;
 use App\Domain\Leads\LeadSourceKind;
 use App\Domain\Leads\LeadStage;
+use App\Domain\Tracking\TrackingEventName;
 
 /**
  * Move a lead through the pipeline.
@@ -43,6 +45,7 @@ final readonly class ChangeLeadStage
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
+        private ConversionDispatcher $conversions,
     ) {}
 
     public function __invoke(
@@ -94,6 +97,22 @@ final readonly class ChangeLeadStage
                 'reason' => $reason,
             ],
         ));
+
+        /*
+         * A later moment in the lead's life may be a conversion an advertiser wants told. Only a real change counts, and only
+         * these two stages mean something to a provider; the dispatcher records what it did with each mapping either way.
+         */
+        if ($existing->stage !== $stage) {
+            $event = match ($stage) {
+                LeadStage::Qualified => TrackingEventName::LeadQualified,
+                LeadStage::Won => TrackingEventName::SaleCompleted,
+                default => null,
+            };
+
+            if ($event !== null) {
+                $this->conversions->forLead($workspaceId, $leadId, $event);
+            }
+        }
 
         return $lead;
     }
