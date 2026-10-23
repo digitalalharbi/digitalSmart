@@ -161,7 +161,7 @@ export function EventsTab() {
               </h2>
               <p className="text-content-secondary text-sm">{t('tracking.events.test.body')}</p>
               <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
+                <label className="-mx-1 flex min-w-0 flex-col gap-1.5 overflow-x-clip px-1 text-sm font-medium">
                   {t('tracking.events.test.link')}
                   <select
                     className="border-line bg-surface text-content h-11 w-full min-w-0 truncate rounded-lg border px-3 text-[16px] md:h-10 md:text-sm"

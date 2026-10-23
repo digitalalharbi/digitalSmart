@@ -77,7 +77,7 @@ export function FunnelsTab() {
           }))}
           isLoading={projects.isFetching}
         />
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
+        <label className="-mx-1 flex min-w-0 flex-col gap-1.5 overflow-x-clip px-1 text-sm font-medium">
           {t('tracking.funnels.period')}
           <select className={SELECT} value={days} onChange={(e) => setDays(Number(e.target.value))}>
             {[7, 30, 90].map((d) => (
@@ -87,7 +87,7 @@ export function FunnelsTab() {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
+        <label className="-mx-1 flex min-w-0 flex-col gap-1.5 overflow-x-clip px-1 text-sm font-medium">
           {t('tracking.funnels.funnel')}
           <select
             className={SELECT}
