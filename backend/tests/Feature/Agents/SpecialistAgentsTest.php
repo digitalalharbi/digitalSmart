@@ -27,7 +27,11 @@ function runAgent(SyncedWorkspace $w, string $which): void
 /** Give one live ad a click-through that halves this week. Returns the ad. */
 function tireAnAd(SyncedWorkspace $w, float $recentClicksPer1000 = 5.0): Ad
 {
-    $ad = Ad::query()->firstOrFail();
+    // An ad whose campaign has figures of its own to copy; an arbitrary first ad may belong to a campaign with none.
+    $ad = Ad::query()
+        ->whereIn('campaign_id', DB::table('daily_metrics')->where('entity_type', 'campaign')->select('campaign_id'))
+        ->orderBy('id')
+        ->firstOrFail();
     $ad->forceFill(['status' => 'active'])->save();
     Campaign::query()->whereKey($ad->getAttribute('campaign_id'))->update(['status' => 'active']);
 
