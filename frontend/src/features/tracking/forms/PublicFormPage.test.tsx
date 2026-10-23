@@ -10,6 +10,7 @@ const calls = vi.hoisted(() => ({
   get: vi.fn(),
   post: vi.fn(),
   beacon: vi.fn(),
+  layer: vi.fn(),
 }));
 
 vi.mock('@/shared/api/client', () => {
@@ -23,7 +24,11 @@ vi.mock('@/shared/api/client', () => {
 
   return { ApiError, api: { get: calls.get, post: calls.post } };
 });
-vi.mock('./beacon', () => ({ beacon: calls.beacon, eventId: () => 'evt-0123456789' }));
+vi.mock('./beacon', () => ({
+  beacon: calls.beacon,
+  eventId: () => 'evt-0123456789',
+  pushToDataLayer: calls.layer,
+}));
 
 function field(overrides: Partial<PublicForm['fields'][number]>): PublicForm['fields'][number] {
   return {
@@ -52,6 +57,11 @@ const FORM: PublicForm = {
   theme: 'auto',
   accent: null,
   logo_url: null,
+  data_layer: {
+    form_view: 'ds_form_view',
+    form_start: 'ds_form_start',
+    form_submit: 'ds_form_submit',
+  },
   fields: [
     field({}),
     field({ key: 'phone', type: 'phone', label_ar: 'الجوال', label_en: 'Mobile' }),
@@ -101,6 +111,7 @@ describe('PublicFormPage', () => {
     expect(calls.beacon).toHaveBeenCalledWith(
       expect.objectContaining({ event: 'form_view', touchpoint: 'TPTPTPTPTPTPTPTPTPTP' }),
     );
+    expect(calls.layer).toHaveBeenCalledWith('ds_form_view', 'evt-0123456789');
     expect(document.body.textContent).not.toMatch(/workspace|project_id|maps_to/i);
   });
 

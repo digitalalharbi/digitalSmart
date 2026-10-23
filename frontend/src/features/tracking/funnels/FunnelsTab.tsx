@@ -22,7 +22,7 @@ import { FunnelView } from './FunnelView';
 import { DIMENSIONS, type Dimension, type StoredFunnel } from './types';
 
 const SELECT =
-  'border-line bg-surface text-content h-11 rounded-lg border px-3 text-[16px] md:h-10 md:text-sm';
+  'border-line bg-surface text-content h-11 w-full min-w-0 truncate rounded-lg border px-3 text-[16px] md:h-10 md:text-sm';
 
 function Stat({ label, value, note }: { label: string; value: string; note?: string | undefined }) {
   return (

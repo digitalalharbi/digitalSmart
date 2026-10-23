@@ -9,7 +9,7 @@ and is updated by each.
 | A | Tracking links, redirect, visitor/session/touchpoint, event store, UTM and click-ID capture, bot marking | `IMPLEMENTED_NOT_VERIFIED` until merged and CI-green |
 | B | Form builder, public forms, submissions, submission → lead | `IMPLEMENTED_NOT_VERIFIED` until merged and CI-green |
 | C | Funnel builder and analytics, journey timeline | not started |
-| D | Tracking health, debug mode, GTM / GA4 destination | not started |
+| D | Tracking health, debug mode, GTM / GA4 destination | `IMPLEMENTED_NOT_VERIFIED` until merged and CI-green |
 | E | Provider conversion mapping, async dispatch, browser/server dedup, consent policy, retention | not started |
 | F | Report sections, QR, mobile/browser hardening | not started |
 
@@ -139,3 +139,29 @@ visitor → POST /api/public/forms/{token}/submit → form_submissions → [crea
 - **Not in C:** spend-joined metrics (CPL, CPQL, CAC, ROAS per link) — no campaign binding exists on a link yet, so they are
   not computed rather than approximated by name; automatic owner assignment / task / notification on lead creation; both
   stay open and are reported as such in the final acceptance.
+
+## PR D — tracking health, the test console, and Tag Manager / GA4
+
+- **Health** (`GET /api/tracking/health`, per project or per link): sixteen-plus checks in five groups — first-party, destinations
+  (GTM, GA4), browser pixels, server conversions, quality (click identifiers, deduplication, attribution, consent). States
+  are the shared vocabulary `LIVE SYNCED STALE PARTIAL SANDBOX MANUAL ESTIMATED ATTRIBUTED NOT_CONFIGURED
+  AWAITING_CREDENTIALS UNSUPPORTED`; each carries its **evidence** so a reader can disagree.
+- **What is never green:** a provider **pixel** — digitalSmart does not observe a pixel fire in a browser, so every browser
+  channel is `NOT_CONFIGURED` with how to verify it in the provider's own tool. A **server** channel is
+  `AWAITING_CREDENTIALS` with no connection, `SANDBOX` with sandbox credentials, `UNSUPPORTED` where no server path is
+  documented (X, OpenAI Ads), and `NOT_CONFIGURED` when connected but nothing is mapped — which is true until PR E.
+  **Deduplication** is `NOT_CONFIGURED`: it is claimed only when a provider confirms both copies.
+- **First-party** is `LIVE` (event in 24 h), `SYNCED` (this week), `STALE` (older), `PARTIAL` (clicks recorded, no landing
+  page reporting — the snippet is missing) or `NOT_CONFIGURED`. Click-identifier coverage and attribution coverage are `LIVE`/
+  `ATTRIBUTED` at or above 70 % and `PARTIAL` below it; consent is `PARTIAL` while any visit is `unknown`.
+- **GA4 is read-only.** The current integration reads a property; it has no write path, so digitalSmart does **not** send
+  GA4 events and says so in the check. Events reach GA4 through Tag Manager.
+- **GTM** is the browser event layer, not the source of truth. A project's data layer names default to `ds_<event>` (the
+  prefix keeps them off GTM's built-in names) and can be overridden per project (`tracking_settings`); names beginning
+  `gtm` are refused. The generated **snippet** reads the touchpoint from the link, reports `landing_view`, pushes the mapped
+  event to `dataLayer` and exposes `dsTrack()`; it never reads or sends what a visitor types. The public form pushes
+  `form_view`, `form_start` and `form_submit` with the same map.
+- **Test tracking:** `POST /api/tracking/links/{link}/test` starts a visit marked `test`. Everything that follows is kept and
+  shown in the **event console** (time, event, source, status, event id, destination — polled every two seconds), is left out
+  of every count and funnel, and creates **no lead**. Nothing is ever sent to a provider from test traffic; there is no
+  dispatch yet, and the console says *not dispatched* rather than leaving the column blank.

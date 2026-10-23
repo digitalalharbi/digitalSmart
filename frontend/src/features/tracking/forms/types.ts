@@ -85,6 +85,8 @@ export type PublicForm = {
   theme: 'auto' | 'light' | 'dark';
   accent: string | null;
   logo_url: string | null;
+  /** Browser event => the data layer event name the project chose, for Tag Manager to listen to. */
+  data_layer: Record<string, string>;
   fields: FormField[];
 };
 

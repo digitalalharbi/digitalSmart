@@ -4,6 +4,27 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Tracking & Funnels, part D: tracking health, a test console, and the data layer
+
+### Added
+- **Tracking health** (Tracking → Health), per project or per link: first-party events, Tag Manager, GA4, each provider's
+  browser and server channel, the Google conversion path, click-identifier coverage, deduplication, attribution evidence
+  and consent readiness — each as `LIVE`, `SYNCED`, `STALE`, `PARTIAL`, `SANDBOX`, `ATTRIBUTED`, `NOT_CONFIGURED`,
+  `AWAITING_CREDENTIALS` or `UNSUPPORTED`, with the evidence behind it. A provider pixel is never shown as working
+  (digitalSmart cannot observe one), and nothing is green without evidence.
+- **Test tracking** (Tracking → Events): start a test visit for a link, open its address on the page being tested, and
+  watch the events arrive in a live console. Test traffic is labelled, counted nowhere, creates no lead and is never sent
+  anywhere.
+- **Data layer for Tag Manager:** per-project event names (`ds_<event>` by default, collisions with Tag Manager's own names
+  refused), a landing-page snippet that reports the view and exposes `dsTrack()`, and the same names pushed by the public form.
+
+### Honest about GA4
+- The GA4 integration reads and does not write; health says so, and events reach GA4 through Tag Manager.
+
+### Fixed
+- A long link name in a `<select>` made the page 4–10 px wider than a phone in WebKit (the selected text overflowed its own
+  box); selects in the tracking area now truncate.
+
 ## Tracking & Funnels, part C: funnels, breakdowns, a lead's tracked path and follow-up
 
 ### Added

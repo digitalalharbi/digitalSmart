@@ -1966,20 +1966,51 @@
       "delete": "احذف هذا التحويل"
     },
     "events": {
-      "purchase": "شراء",
-      "generate_lead": "عميل محتمل",
-      "form_submit": "إرسال نموذج",
-      "sign_up": "تسجيل",
-      "add_to_cart": "إضافة إلى السلة",
-      "begin_checkout": "بدء الدفع",
-      "view_item": "مشاهدة منتج",
-      "whatsapp_click": "نقرة واتساب",
-      "phone_click": "نقرة هاتف",
-      "form_start": "بدء نموذج",
-      "page_view": "مشاهدة صفحة",
-      "session_start": "بدء جلسة",
-      "app_install": "تثبيت تطبيق",
-      "custom_event": "حدث مخصّص"
+      "intro": "شاهد زيارة تجريبية وهي تحدث لحظة بلحظة، واربط صفحة الوجهة بـ Tag Manager.",
+      "test": {
+        "title": "اختبار التتبع",
+        "body": "تتصرف الزيارة التجريبية كزيارة حقيقية، وتُحفظ وتوسَم، ولا تدخل في أي عدّاد ولا تُنشئ عميلاً محتملاً. ولا يُرسل شيء إلى أي مزوّد.",
+        "link": "رابط التتبع",
+        "choose": "اختر رابطاً",
+        "start": "بدء زيارة تجريبية",
+        "open": "افتح هذا العنوان على الصفحة التي تريد اختبارها:",
+        "label": "زيارة تجريبية",
+        "failed": "تعذّر بدء الاختبار."
+      },
+      "console": {
+        "title": "سجل الأحداث",
+        "waiting": "بانتظار أول حدث. افتح عنوان الاختبار.",
+        "cols": {
+          "time": "الوقت",
+          "event": "الحدث",
+          "source": "المصدر",
+          "status": "الحالة",
+          "id": "معرّف الحدث",
+          "destination": "الوجهة"
+        },
+        "sources": {
+          "first_party": "الصفحة",
+          "server": "digitalSmart",
+          "test": "اختبار"
+        },
+        "statuses": {
+          "valid": "محتسب",
+          "suspected_bot": "يُرجَّح أنه آلي",
+          "duplicate": "مكرر",
+          "test": "اختبار"
+        }
+      },
+      "dataLayer": {
+        "title": "أحداث طبقة البيانات",
+        "body": "أسماء الأحداث التي تُدفع إلى طبقة بيانات الصفحة ليستمع إليها Tag Manager. اترك الاسم كما هو للإبقاء على الافتراضي.",
+        "name": "اسم طبقة البيانات للحدث {{event}}",
+        "save": "حفظ الأسماء",
+        "failed": "تعذّر حفظ الأسماء."
+      },
+      "snippet": {
+        "title": "مقتطف صفحة الهبوط",
+        "body": "الصقه في صفحة الوجهة. يُبلغ عن مشاهدة الصفحة ويوفّر الدالة dsTrack()، ولا يقرأ أبداً ما يكتبه الزائر."
+      }
     },
     "evidence": {
       "last_event_at": "آخر حدث",
@@ -2099,7 +2130,9 @@
       "overview": "نظرة عامة",
       "links": "الروابط",
       "forms": "النماذج",
-      "funnels": "المسارات"
+      "funnels": "المسارات",
+      "events": "الأحداث",
+      "health": "الصحة"
     },
     "links": {
       "intro": "يوجّه رابط التتبع الزائر إلى صفحتك ويسجّل الزيارة أولاً. استخدمه عنواناً في الإعلان.",
@@ -2380,6 +2413,57 @@
       "record": {
         "appointment_booked": "تسجيل موعد",
         "opportunity_created": "تسجيل فرصة"
+      }
+    },
+    "health": {
+      "intro": "هل التتبع يعمل؟ يعرض كل حكم ما يستند إليه، ولا شيء يُعدّ سليماً دون دليل.",
+      "scope": "النطاق",
+      "wholeProject": "المشروع كله",
+      "attention_zero": "لا شيء يحتاج إلى انتباه.",
+      "attention_one": "عنصر واحد يحتاج إلى انتباه.",
+      "attention_two": "عنصران يحتاجان إلى انتباه.",
+      "attention_few": "{{count}} عناصر تحتاج إلى انتباه.",
+      "attention_many": "{{count}} عنصراً يحتاج إلى انتباه.",
+      "attention_other": "{{count}} عنصر يحتاج إلى انتباه.",
+      "groups": {
+        "source": "بيانات الطرف الأول",
+        "destination": "الوجهات",
+        "browser": "بكسلات المتصفح",
+        "server": "التحويلات من الخادم",
+        "quality": "الجودة"
+      },
+      "states": {
+        "LIVE": "مباشر",
+        "SYNCED": "متزامن",
+        "STALE": "قديم",
+        "PARTIAL": "جزئي",
+        "SANDBOX": "تجريبي",
+        "MANUAL": "يدوي",
+        "ESTIMATED": "تقديري",
+        "ATTRIBUTED": "منسوب",
+        "NOT_CONFIGURED": "غير مهيأ",
+        "AWAITING_CREDENTIALS": "بانتظار الاعتماد",
+        "UNSUPPORTED": "غير مدعوم"
+      },
+      "checks": {
+        "first_party": "أحداث الطرف الأول",
+        "gtm": "Google Tag Manager",
+        "ga4": "Google Analytics 4",
+        "meta_browser": "ميتا — المتصفح",
+        "meta_server": "ميتا — الخادم",
+        "tiktok_browser": "تيك توك — المتصفح",
+        "tiktok_server": "تيك توك — الخادم",
+        "snapchat_browser": "سناب شات — المتصفح",
+        "snapchat_server": "سناب شات — الخادم",
+        "linkedin_browser": "لينكدإن — المتصفح",
+        "linkedin_server": "لينكدإن — الخادم",
+        "google_conversion": "مسار تحويلات جوجل",
+        "x_server": "إكس",
+        "openai_server": "ChatGPT / OpenAI Ads",
+        "click_ids": "معرّفات النقر",
+        "deduplication": "إزالة التكرار",
+        "attribution": "أدلة النسب",
+        "consent": "جاهزية الموافقة"
       }
     }
   },

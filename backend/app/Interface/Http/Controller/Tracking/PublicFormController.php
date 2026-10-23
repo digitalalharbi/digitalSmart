@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Interface\Http\Controller\Tracking;
 
 use App\Application\Tracking\Command\SubmitForm;
+use App\Application\Tracking\Contract\TrackingSettingsRepository;
 use App\Application\Tracking\Query\GetPublicForm;
 use App\Domain\Tracking\ConsentState;
+use App\Domain\Tracking\DataLayerMap;
 use App\Interface\Http\Controller\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class PublicFormController extends Controller
 {
-    public function show(string $token, GetPublicForm $get): JsonResponse
+    public function show(string $token, GetPublicForm $get, TrackingSettingsRepository $settings): JsonResponse
     {
         $form = $get($token);
 
@@ -34,6 +36,8 @@ final class PublicFormController extends Controller
             'theme' => $form->theme,
             'accent' => $form->accent,
             'logo_url' => $form->logoUrl,
+            /* Names only: what the page pushes to the visitor's own data layer. No project is named. */
+            'data_layer' => DataLayerMap::resolve($settings->dataLayerOverrides($form->projectId)),
             'fields' => array_map(static function ($f): array {
                 /* The public gets what it needs to draw and validate: never `maps_to`, which names the lead's fields. */
                 $field = FormController::field($f);
