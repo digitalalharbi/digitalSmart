@@ -2040,7 +2040,19 @@
         "create": "Create link",
         "failed": "The link could not be saved.",
         "channel": "Channel",
-        "channelHint": "A printed code should use the QR channel, so its scans are reported apart from online clicks."
+        "channelHint": "A printed code should use the QR channel, so its scans are reported apart from online clicks.",
+        "adSource": "Advertising source",
+        "pickProjectFirst": "Choose a project to bind this link to one of its campaigns.",
+        "account": "Ad account",
+        "notBound": "Not bound to a campaign",
+        "pickOne": "Choose a campaign",
+        "wholeCampaign": "The whole campaign",
+        "wholeAdGroup": "The whole ad group",
+        "inherited": "Platform and account come from {{campaign}}; the link takes its names from it.",
+        "manual": "No synced campaign? Name it by hand",
+        "goal": "Conversion goal",
+        "goalHint": "What a good result from this link is. It does not change how anything is counted.",
+        "noGoal": "None chosen"
       },
       "showFunnel": "Show funnel",
       "hideFunnel": "Hide funnel",
@@ -2053,6 +2065,12 @@
         "referral": "Referral",
         "direct": "Direct",
         "other": "Other"
+      },
+      "goals": {
+        "lead": "A lead",
+        "qualified": "A qualified lead",
+        "appointment": "An appointment",
+        "sale": "A sale"
       }
     },
     "forms": {
@@ -2390,6 +2408,49 @@
           "evidence": "Provider’s answer",
           "actions": "Actions"
         }
+      }
+    },
+    "performance": {
+      "show": "Cost and return",
+      "hide": "Hide cost and return",
+      "spend": "Spend (30 days)",
+      "failed": "The cost figures could not be read.",
+      "roas": "Return on spend",
+      "allocate": "Allocate shared spend by tracked clicks",
+      "sourcesNote": "Revenue sources are shown apart and never added together. A return on spend needs a real spend, revenue in the same currency and the same period.",
+      "level": "read at the {{level}}",
+      "levels": {
+        "campaign": "campaign",
+        "ad_group": "ad group",
+        "ad": "ad"
+      },
+      "basis": {
+        "DIRECT": "Direct",
+        "ALLOCATED": "Allocated",
+        "UNAVAILABLE": "Not available"
+      },
+      "allocation": "Allocated by {{method}}: {{share}}% share, {{confidence}} confidence.",
+      "methods": {
+        "tracked_clicks": "tracked clicks"
+      },
+      "confidence": {
+        "low": "low",
+        "medium": "medium"
+      },
+      "costs": {
+        "cpc": "Cost per click",
+        "cost_per_landing_view": "Per landing view",
+        "cost_per_form_start": "Per form start",
+        "cpl": "Cost per lead",
+        "cost_per_contacted_lead": "Per contacted lead",
+        "cpql": "Per qualified lead",
+        "cost_per_appointment": "Per appointment",
+        "cost_per_opportunity": "Per opportunity",
+        "cac": "Cost per sale"
+      },
+      "revenue": {
+        "lead_value": "Won value recorded on leads",
+        "store_attributed": "Store orders carrying the link’s tag"
       }
     }
   },

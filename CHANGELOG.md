@@ -4,6 +4,30 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Tracking revenue & operations, part A: links bound to campaigns, and what they cost
+
+### Added
+- **A link can be bound to the campaign hierarchy the product already holds** — ad account, campaign, ad group, ad, and the
+  ad's creative — at the most specific level known. The ad decides its ad group, campaign and creative; the campaign decides
+  the platform and account; anything typed beside them must agree or the link is refused. The account must be connected to
+  the link's project and a campaign assigned to another project is refused. Nothing is copied: spend is read from the
+  campaign hierarchy's own daily metrics.
+- **The link builder** shows the chain as dependent selectors (account → campaign → ad group → ad), each offered only once its
+  parent is chosen, inside a closed "Advertising source" section; typing names by hand is still there for a campaign that
+  has not synced. A link also states a **conversion goal** and a channel (QR for print).
+- **Spend with an honest label.** `GET /api/tracking/links/{id}/performance` credits a link with the spend of the entity it is
+  bound to, read at that entity's own level, as **DIRECT** only when nothing competes for it. Another link on the same entity,
+  or one bound inside it, makes it **UNAVAILABLE** with the reason. **ALLOCATED** exists only when asked for
+  (`allocate=clicks`), and says its method, the share and a low confidence. Spend in two currencies is never added.
+- **Cost metrics** — per click, landing view, form start, lead, contacted lead, qualified lead, appointment, opportunity and
+  sale — from the link's own funnel counts. No spend, an unreported count or a count of zero gives *no figure and the reason*,
+  never zero. **Return on spend** is computed per revenue source, never blended: won values recorded on the link's leads, and
+  paid store orders carrying the link's campaign tag (only when no other link shares the tag), and only in one currency.
+- A **Cost and return** panel on each link.
+
+### Not yet
+- Lead assignment, tasks, response-time targets and the operations views (next parts).
+
 ## Tracking & Funnels, part F: tracking in reports, QR codes, and the edges
 
 ### Added
