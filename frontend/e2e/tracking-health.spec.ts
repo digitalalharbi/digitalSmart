@@ -73,6 +73,25 @@ test.describe('tracking health and test console', () => {
     await expect(
       page.getByRole('textbox', { name: 'Data layer name for form_submit' }),
     ).toHaveValue('ds_form_submit');
+    const offenders = await page.evaluate(() => {
+      const width = document.documentElement.clientWidth;
+      const scrolls = (el: Element | null): boolean => {
+        for (let node = el; node && node !== document.body; node = node.parentElement) {
+          if (/(auto|scroll|hidden)/.test(getComputedStyle(node).overflowX)) return true;
+        }
+        return false;
+      };
+
+      return [...document.querySelectorAll('body *')]
+        .filter((el) => el.getBoundingClientRect().right > width + 1 && !scrolls(el))
+        .slice(0, 8)
+        .map(
+          (el) =>
+            `${el.tagName}.${String(el.className).slice(0, 50)} right=${String(Math.round(el.getBoundingClientRect().right))} text=${(el.textContent ?? '').slice(0, 40)}`,
+        );
+    });
+
+    expect(offenders, 'elements drawn past the screen').toEqual([]);
     await expectNoSidewaysScroll(page);
   });
 });
