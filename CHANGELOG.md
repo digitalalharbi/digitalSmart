@@ -4,6 +4,33 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Tracking & Funnels, part A: tracking links, a safe redirect and a first-party event store
+
+First of six bounded pull requests (`docs/TRACKING_FUNNELS.md`). Nothing is dispatched to any provider, and nothing is
+`LIVE_VERIFIED`.
+
+### Added
+- **Tracking links** belonging to a project: name, platform, campaign, ad group, ad, creative, channel, destination,
+  UTMs, custom parameters, expiry, pause. The short address is opaque (`/r/{token}`), never a UUID. Reusable templates
+  (`{{platform}} {{campaign}} {{creative}} …`) fill the UTMs.
+- **A safe redirect.** The destination is validated when saved (public http/https only; no credentials; nothing aimed at
+  localhost, a private or link-local address, a single-label host or this installation) and read from the stored link,
+  never from the request. A missing, paused or expired link answers one identical bare 404.
+- **Visitor, session, touchpoint and event store** (`tracking_sessions`, `tracking_events`): the click and session start
+  are recorded by the product; a destination page reports `landing_view`, `form_view`, `form_start`, `form_step_completed`,
+  `form_validation_error`, `whatsapp_click` through a `text/plain` beacon. Outcomes (`form_submit`, `lead_*`,
+  `sale_completed`) cannot be reported from a browser. A repeat event id is one event.
+- **Documented click identifiers only** (`gclid gbraid wbraid fbclid ttclid ScCid li_fat_id twclid`), kept as evidence and
+  forwarded to the destination.
+- **Conservative bot marking** (user-agent only, never deletion, never claimed certain) with `valid | suspected_bot |
+  duplicate | test`; counts exclude all but valid and show how many were excluded.
+- **Tracking → Links tab** inside the existing `/tracking` page: build a link, copy its address, see clicks, visitors,
+  page views and click-identifier coverage. A figure the product cannot know is *Not reported* with its reason, never 0.
+
+### Privacy
+- No form values, no fingerprinting (coarse device/browser classes only), landing paths stored without query or fragment,
+  first-party HttpOnly visitor cookie, rate-limited public endpoints.
+
 ## The approved brand, a home page that sells, a sign-in screen and a phone bar
 
 ### Changed

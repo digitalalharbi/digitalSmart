@@ -1942,7 +1942,64 @@
       "measurement_id_not_in_container": "Wrong measurement ID",
       "intent_signal_as_conversion": "Intent counted as conversion"
     },
-    "showMore": "+{{count}} more"
+    "showMore": "+{{count}} more",
+    "area": {
+      "title": "Tracking & Funnels",
+      "description": "Where an advertisement leads, what happened next, and whether any of it is being measured.",
+      "tabs": "Tracking sections",
+      "overview": "Overview",
+      "links": "Links"
+    },
+    "links": {
+      "intro": "A tracking link sends a visitor to your page and records the visit first. Use it as the address in the advertisement.",
+      "create": "New tracking link",
+      "failed": "The links could not be loaded.",
+      "notReported": "Not reported",
+      "copy": "Copy the address of {{name}}",
+      "copied": "Copied",
+      "copyShort": "Copy",
+      "clicks": "Clicks",
+      "visitors": "Visitors",
+      "landingViews": "Page views",
+      "clickIds": "With a click identifier",
+      "excluded_one": "{{count}} visit was marked as likely automated and left out.",
+      "excluded_other": "{{count}} visits were marked as likely automated and left out.",
+      "pause": "Pause",
+      "resume": "Resume",
+      "empty": {
+        "title": "No tracking links yet",
+        "body": "Make a link for each advertisement, so every visit can be traced back to it."
+      },
+      "status": {
+        "active": "Active",
+        "paused": "Paused",
+        "archived": "Archived"
+      },
+      "platforms": {
+        "snapchat": "Snapchat",
+        "tiktok": "TikTok",
+        "meta": "Meta",
+        "google_ads": "Google Ads",
+        "x": "X",
+        "linkedin": "LinkedIn"
+      },
+      "builder": {
+        "title": "New tracking link",
+        "body": "The address in the advertisement is generated for you. The destination is fixed when you save.",
+        "project": "Project",
+        "name": "Link name",
+        "destination": "Destination page",
+        "destinationHint": "A public web page. Addresses on a private network are refused.",
+        "platform": "Platform",
+        "campaign": "Campaign",
+        "creative": "Creative",
+        "adGroup": "Ad group",
+        "ad": "Ad",
+        "utmNote": "Campaign parameters are added automatically from the platform, campaign and creative.",
+        "create": "Create link",
+        "failed": "The link could not be saved."
+      }
+    }
   },
   "commerce": {
     "title": "Store revenue",
