@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import { PageHeader } from '@/shared/ui/page-header';
 import { TabList } from '@/shared/ui/tab-list';
 import { ConversionsTab } from './conversions/ConversionsTab';
+import { FollowUpTab } from './followup/FollowUpTab';
 import { FormsTab } from './forms/FormsTab';
 import { FunnelsTab } from './funnels/FunnelsTab';
 import { EventsTab } from './health/EventsTab';
@@ -10,7 +11,8 @@ import { HealthTab } from './health/HealthTab';
 import { LinksTab } from './links/LinksTab';
 import { TrackingCenterPage } from './TrackingCenterPage';
 
-type Tab = 'overview' | 'links' | 'forms' | 'funnels' | 'events' | 'conversions' | 'health';
+type Tab =
+  'overview' | 'links' | 'forms' | 'funnels' | 'followup' | 'events' | 'conversions' | 'health';
 
 /**
  * Tracking & Funnels.
@@ -18,7 +20,16 @@ type Tab = 'overview' | 'links' | 'forms' | 'funnels' | 'events' | 'conversions'
  * The area's tabs arrive as the things behind them do: today the health overview that already existed, and the links
  * an advertisement points at. A tab with nothing behind it would be a promise, and this product does not make those.
  */
-const TABS: Tab[] = ['overview', 'links', 'forms', 'funnels', 'events', 'conversions', 'health'];
+const TABS: Tab[] = [
+  'overview',
+  'links',
+  'forms',
+  'funnels',
+  'followup',
+  'events',
+  'conversions',
+  'health',
+];
 
 export function TrackingAreaPage() {
   const { t } = useTranslation();
@@ -38,6 +49,7 @@ export function TrackingAreaPage() {
           { id: 'links', label: t('tracking.area.links') },
           { id: 'forms', label: t('tracking.area.forms') },
           { id: 'funnels', label: t('tracking.area.funnels') },
+          { id: 'followup', label: t('tracking.area.followup') },
           { id: 'events', label: t('tracking.area.events') },
           { id: 'conversions', label: t('tracking.area.conversions') },
           { id: 'health', label: t('tracking.area.health') },
@@ -56,6 +68,8 @@ export function TrackingAreaPage() {
               <FormsTab />
             ) : active === 'funnels' ? (
               <FunnelsTab />
+            ) : active === 'followup' ? (
+              <FollowUpTab />
             ) : active === 'events' ? (
               <EventsTab />
             ) : active === 'conversions' ? (

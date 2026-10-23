@@ -24,6 +24,7 @@ final class Lead extends Model
 
     /** @var list<string> */
     protected $fillable = [
+        'assignment_reason',
         'workspace_id', 'client_id', 'project_id', 'source_kind', 'source_detail',
         'store_order_id', 'measurement_source_id', 'external_id',
         'name', 'email', 'phone', 'email_key', 'phone_key', 'message',

@@ -234,3 +234,16 @@ visitor → POST /api/public/forms/{token}/submit → form_submissions → [crea
   orders carrying the link's campaign tag, last-recorded evidence, only when the tag is unique to the link). ROAS per source,
   one currency, spend that is DIRECT or ALLOCATED.
 - **Not here:** CRM won revenue and platform-reported revenue per link — neither is joined to a tracking link.
+
+## Revenue & operations B — lead automation and the response time
+
+- `lead_automation_settings` (per project), `lead_round_robin` (the pointer, locked while choosing), `leads.assignment_reason`.
+- `AutomateNewLead` runs as the system from `SubmitForm`, only for a lead that submission created, and each step (assign, task,
+  notify) is its own attempt: a failure is reported and cannot undo the lead.
+- `LeadSla::judge` is pure: elapsed time is absolute, `APPROACHING_AT = 0.75`, the promise is judged on the **attempt** (the lead's
+  first move out of `new`, the same definition the follow-up report uses), contact is separate. The workspace time zone only
+  decides how a deadline is written (`due_at`, the task's due date).
+- Queue groups are exclusive; "no response" is an attempt more than 24 hours old with no contact.
+- Notification kinds added: `lead_sla_approaching`, `lead_sla_overdue`, `lead_qualified`, `lead_appointment_booked`,
+  `lead_sale_completed` (all need `leads.view`; sentences carry no prospect detail).
+- Not built: business-hours clocks (the promise runs on elapsed time), reassignment on SLA breach.

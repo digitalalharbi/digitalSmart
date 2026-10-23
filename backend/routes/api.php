@@ -73,6 +73,7 @@ use App\Interface\Http\Controller\System\SyncStatusController;
 use App\Interface\Http\Controller\Tags\TagController;
 use App\Interface\Http\Controller\Tracking\ConversionController;
 use App\Interface\Http\Controller\Tracking\FormController;
+use App\Interface\Http\Controller\Tracking\LeadAutomationController;
 use App\Interface\Http\Controller\Tracking\PublicFormController;
 use App\Interface\Http\Controller\Tracking\PublicTrackingController;
 use App\Interface\Http\Controller\Tracking\TrackingAnalyticsController;
@@ -194,6 +195,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::get('tracking/links/{link}/performance', [TrackingLinkController::class, 'performance'])->whereUuid('link')->name('tracking.links.performance');
     Route::get('tracking/binding-options', [TrackingLinkController::class, 'bindingOptions'])->name('tracking.binding_options');
     Route::post('tracking/links/{link}/status', [TrackingLinkController::class, 'status'])->whereUuid('link')->name('tracking.links.status');
+    Route::get('tracking/follow-up', [LeadAutomationController::class, 'show'])->name('tracking.follow_up.show');
+    Route::put('tracking/follow-up/settings', [LeadAutomationController::class, 'update'])->name('tracking.follow_up.settings');
     Route::get('tracking/health', [TrackingHealthController::class, 'health'])->name('tracking.health');
     Route::post('tracking/links/{link}/test', [TrackingHealthController::class, 'startTest'])->whereUuid('link')->name('tracking.links.test');
     Route::get('tracking/debug/events', [TrackingHealthController::class, 'events'])->name('tracking.debug.events');

@@ -1984,7 +1984,8 @@
       "funnels": "Funnels",
       "events": "Events",
       "health": "Health",
-      "conversions": "Conversions"
+      "conversions": "Conversions",
+      "followup": "Lead queue"
     },
     "links": {
       "intro": "A tracking link sends a visitor to your page and records the visit first. Use it as the address in the advertisement.",
@@ -2451,6 +2452,69 @@
       "revenue": {
         "lead_value": "Won value recorded on leads",
         "store_attributed": "Store orders carrying the link’s tag"
+      }
+    },
+    "followUp": {
+      "intro": "What the team still has to answer, and what this project does about a new lead.",
+      "failed": "The follow-up queue could not be read.",
+      "emptyTitle": "Nobody is waiting",
+      "emptyBody": "No open lead from this project needs follow-up right now.",
+      "unnamed": "A lead",
+      "noSource": "Unknown source",
+      "arrived": "arrived {{when}}",
+      "unassigned": "Not assigned",
+      "heldBy": "With {{name}}",
+      "dueBy": "answer by {{when}}",
+      "more_one": "and {{count}} more",
+      "more_other": "and {{count}} more",
+      "groups": {
+        "overdue": "Past the response time",
+        "approaching": "Close to the response time",
+        "new": "New",
+        "attempted": "Tried, not reached",
+        "no_response": "No response",
+        "qualified": "Qualified"
+      },
+      "sla": {
+        "within": "Within time",
+        "approaching": "Close",
+        "overdue": "Overdue",
+        "attempted": "Tried",
+        "contacted": "Reached"
+      },
+      "reasons": {
+        "manual": "set by a person",
+        "project_default": "project default",
+        "round_robin": "rota",
+        "automation": "project rule"
+      },
+      "modes": {
+        "none": "Leave unassigned",
+        "specific": "A chosen person",
+        "project_default": "The project’s default person",
+        "round_robin": "Take turns"
+      },
+      "settings": {
+        "title": "New leads",
+        "body": "What happens the moment a tracked form makes a lead. It only ever hands a lead to somebody who can open it.",
+        "enabled": "Handle new leads automatically",
+        "assignment": "Give each new lead to",
+        "assignmentHint": "Taking turns shares leads across everybody who may be given them, in a fixed order.",
+        "owner": "Person",
+        "ownerHint": "Only people who can open this project’s leads are listed.",
+        "pickOwner": "Choose a person",
+        "sla": "Response time",
+        "slaHint": "How long a lead may wait for a first attempt. Reaching the lead is measured separately.",
+        "minutes_one": "{{count}} min",
+        "minutes_other": "{{count}} min",
+        "noPromise": "None",
+        "createTask": "Open a task for each new lead",
+        "titleAr": "Task title (Arabic)",
+        "titleEn": "Task title (English)",
+        "notify": "Tell the person who gets the lead",
+        "save": "Save",
+        "saved": "Saved.",
+        "failed": "Could not save."
       }
     }
   },

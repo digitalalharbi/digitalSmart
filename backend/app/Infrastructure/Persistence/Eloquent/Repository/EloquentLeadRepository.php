@@ -226,14 +226,14 @@ final readonly class EloquentLeadRepository implements LeadRepository
         });
     }
 
-    public function assign(string $workspaceId, string $id, ?string $ownerId, string $actorId): LeadView
+    public function assign(string $workspaceId, string $id, ?string $ownerId, ?string $actorId, string $reason = 'manual'): LeadView
     {
-        return DB::transaction(function () use ($workspaceId, $id, $ownerId, $actorId): LeadView {
+        return DB::transaction(function () use ($workspaceId, $id, $ownerId, $actorId, $reason): LeadView {
             /** @var Lead $lead */
             $lead = Lead::query()->where('workspace_id', $workspaceId)->whereKey($id)->firstOrFail();
 
-            $lead->update(['owner_id' => $ownerId]);
-            $this->recordEvent($lead, 'assigned', actorId: $actorId);
+            $lead->update(['owner_id' => $ownerId, 'assignment_reason' => $ownerId === null ? null : $reason]);
+            $this->recordEvent($lead, 'assigned', actorId: $actorId, note: $ownerId === null ? null : 'reason:'.$reason);
 
             return $this->toView($this->reload($lead));
         });

@@ -4,6 +4,30 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Tracking revenue & operations, part B: new leads are handed out, and the response time is watched
+
+### Added
+- **Per-project lead automation** (Tracking → Lead queue): when a tracked form makes a lead the project can give it to a chosen
+  person, to the project's default person, or take turns across everybody who may be given its leads; open a task for it
+  (Arabic and English title, priority, due on the day its response time falls due in the workspace's time zone); and tell the owner. It
+  reuses the lead's owner, the task board and the notification centre — there is no second automation engine.
+- **Only people who can open the project's leads are ever given one**: an active member who can read leads and either sees every
+  project or is on this one. A named person who stops qualifying is skipped, not forced. A reason is recorded on the lead (manual,
+  project default, rota, project rule).
+- **The rota is deterministic and transaction-safe**: members in a fixed order, the next after the last one used, chosen under
+  a lock on the project's pointer so two leads arriving together never get the same person.
+- **A response-time promise per project** (minutes to a first attempt). A lead is *within*, *approaching* (three quarters gone
+  with no attempt), *overdue*, *attempted* or *reached*. An attempt is never counted as reaching the lead; both are kept.
+- **A queue** of what the team still has to do — overdue, close to the response time, new, tried and not reached, no response
+  (tried over a day ago), qualified — with who holds each lead and when it must be answered by.
+- **Alerts** every five minutes (`leads:sla-alerts`): close to the response time, and past it, to the owner or — with no owner — to
+  everyone who may read the project's leads; and to the owner when their lead is qualified, has an appointment or is sold. All
+  through the existing notification centre, with its de-duplication, cooldown, severity and mute settings. No notification or task
+  carries a name, number or message.
+
+### Not changed
+- Whether automation is on defaults to off for every project; a project that never opens the tab behaves exactly as before.
+
 ## Tracking revenue & operations, part A: links bound to campaigns, and what they cost
 
 ### Added
