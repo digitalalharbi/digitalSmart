@@ -213,6 +213,9 @@ enum AuditAction: string
     /* Somebody who asked for an account was answered: contacted, approved or declined. Nothing is created by it. */
     case AccessRequestReviewed = 'access.request_reviewed';
 
+    /* Somebody who belongs to several workspaces changed which one they are working in. */
+    case WorkspaceSwitched = 'workspace.switched';
+
     /* The operating life of a request for access or a general enquiry. None of them carries the person's details. */
     case AccessRequestCreated = 'access.request_created';
     case AccessRequestAssigned = 'access.request_assigned';
@@ -236,6 +239,8 @@ enum AuditAction: string
             self::UserLoggedIn,
             self::UserLoginFailed,
             self::UserLoggedOut,
+            /* Which tenant a session is acting in is a security fact, like signing in. */
+            self::WorkspaceSwitched,
             self::UserPasswordChanged,
             self::WorkspaceMemberRoleChanged,
             self::WorkspaceMemberSuspended,

@@ -8,6 +8,7 @@ use App\Application\Shared\DTO\Paginated;
 use App\Application\Shared\DTO\Pagination;
 use App\Application\Workspace\Contract\MemberReadModel;
 use App\Application\Workspace\DTO\MemberView;
+use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceId;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -59,6 +60,9 @@ final class EloquentMemberReadModel implements MemberReadModel
 
         if ($status !== null && $status !== '') {
             $query->where('workspace_members.status', $status);
+        } else {
+            /* People who left are a filter away, not mixed into the people who are here. */
+            $query->where('workspace_members.status', '<>', MembershipStatus::Revoked->value);
         }
 
         $total = (clone $query)->count();

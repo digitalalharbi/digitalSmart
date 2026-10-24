@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Languages, Moon, PanelsTopLeft, Search, Sun } from 'lucide-react';
 import { NotificationBell } from '@/features/notifications';
 import { AccountMenu } from './AccountMenu';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { TopNav } from './TopNav';
 import { Button } from '@/shared/ui/button';
 import { Logo } from '@/shared/ui/logo';
@@ -85,7 +86,8 @@ export function Topbar() {
         </Button>
       </div>
 
-      <div className="bg-surface h-12 shrink-0 rounded-full shadow-xs">
+      <div className="bg-surface flex h-12 min-w-0 shrink items-center rounded-full shadow-xs">
+        <WorkspaceSwitcher />
         <AccountMenu />
       </div>
     </header>

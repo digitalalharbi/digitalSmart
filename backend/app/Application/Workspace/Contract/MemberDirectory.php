@@ -39,5 +39,7 @@ interface MemberDirectory
         ?UserId $existing,
         /** A password the person chose themselves, so nobody else ever knows it. Null generates the one-time password. */
         ?string $chosenPassword = null,
+        /** Who let them in, recorded on the membership. */
+        ?UserId $invitedBy = null,
     ): InvitedMember;
 }

@@ -10,6 +10,9 @@ enum MembershipStatus: string
     case Active = 'active';
     case Suspended = 'suspended';
 
+    /** Ended. The row is kept as the record of who was here; inviting the person again reactivates it. */
+    case Revoked = 'revoked';
+
     /** Only an active member may act in the workspace. */
     public function grantsAccess(): bool
     {

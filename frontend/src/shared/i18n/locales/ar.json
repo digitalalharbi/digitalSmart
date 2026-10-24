@@ -5464,7 +5464,17 @@
       "watch": "للمتابعة"
     },
     "clientBudget": "لا ميزانية خاصة بهذا المشروع؛ المعروض هو ميزانية العميل.",
-    "clientBudgetShort": "ميزانية العميل"
+    "clientBudgetShort": "ميزانية العميل",
+    "switcher": "المساحة: {{name}}. تبديل المساحة",
+    "yours": "مساحاتك",
+    "switchFailed": "تعذّر التبديل. حاول مرة أخرى.",
+    "current": "(الحالية)",
+    "type": {
+      "agency": "وكالة",
+      "brand": "علامة تجارية",
+      "freelancer": "مستقل",
+      "internal_team": "فريق داخلي"
+    }
   },
   "campaignDetail": {
     "title": "الحملة",

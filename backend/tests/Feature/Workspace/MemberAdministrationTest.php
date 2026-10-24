@@ -134,7 +134,8 @@ it('removes a member but keeps their account and audit trail', function (): void
         ->assertOk()
         ->assertJsonPath('data.released.total', 0);
 
-    expect(WorkspaceMember::query()->where('user_id', $buyer->getKey())->exists())->toBeFalse()
+    /* Revoked, not deleted: the row is the record of who was here, and it grants nothing. */
+    expect(WorkspaceMember::query()->where('user_id', $buyer->getKey())->value('status'))->toBe('revoked')
         ->and($buyer->fresh())->not->toBeNull();
 });
 

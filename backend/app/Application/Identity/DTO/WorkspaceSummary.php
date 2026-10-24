@@ -15,5 +15,7 @@ final readonly class WorkspaceSummary
         public string $defaultCurrency,
         public string $defaultLocale,
         public string $timezone,
+        /** What kind of organisation it is. Changes wording and defaults, never authorization. */
+        public string $type = 'agency',
     ) {}
 }

@@ -5112,7 +5112,17 @@
       "watch": "Watch"
     },
     "clientBudget": "This project has no budget of its own; showing the client’s.",
-    "clientBudgetShort": "Client budget"
+    "clientBudgetShort": "Client budget",
+    "switcher": "Workspace: {{name}}. Switch workspace",
+    "yours": "Your workspaces",
+    "switchFailed": "Could not switch. Try again.",
+    "current": "(current)",
+    "type": {
+      "agency": "Agency",
+      "brand": "Brand",
+      "freelancer": "Freelancer",
+      "internal_team": "Internal team"
+    }
   },
   "campaignDetail": {
     "title": "Campaign",

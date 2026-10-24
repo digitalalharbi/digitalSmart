@@ -4,6 +4,29 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## SaaS program, PR B: one identity in many workspaces, and a switcher that leaves nothing behind
+
+### Added
+- **A workspace switcher** in the top bar for anybody in more than one workspace: each workspace with its type and the role held
+  there. A switch removes every cached read of the previous workspace, forgets the client/project context and opens the new
+  workspace's home.
+- **Workspace type** (agency, brand, freelancer, internal team), published in the session. It changes wording later; never what
+  anybody may do.
+- **Switching is audited** (`workspace.switched`) in the workspace entered.
+- A demo brand workspace the demo owner belongs to as an administrator, so the switch can be seen and tested.
+
+### Changed
+- **Removing a member revokes the membership instead of deleting it.** The row stays as the record of who was here and who took
+  them out (`revoked_at`, `revoked_by`); the directory hides it unless asked; inviting the person again reactivates the same row.
+- Adding somebody records who invited them (`invited_by`, `invited_at`).
+
+### Fixed
+- **A switch could be undone by a request already in flight.** The active workspace lived only in the session, which is written
+  back whole after every request; a poll that started before a switch wrote the old workspace back, and the browser reloaded into
+  the tenant it had just left (found by the new end-to-end test on Firefox). It now lives in its own encrypted cookie, written
+  only by sign-in and a switch, and re-checked against membership on every request.
+- **A switch left the previous workspace on screen** until the new answers arrived, and kept the old client/project context.
+
 ## Access requests & communication: from a visitor's question to a first sign-in
 
 ### Added

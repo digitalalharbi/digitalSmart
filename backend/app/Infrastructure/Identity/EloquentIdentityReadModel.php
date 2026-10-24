@@ -87,7 +87,7 @@ final class EloquentIdentityReadModel implements IdentityReadModel
             ->join('roles', 'roles.id', '=', 'workspace_members.role_id')
             ->select([
                 'workspaces.id', 'workspaces.name', 'workspaces.slug',
-                'workspaces.default_currency', 'workspaces.default_locale', 'workspaces.timezone',
+                'workspaces.default_currency', 'workspaces.default_locale', 'workspaces.timezone', 'workspaces.type',
                 'roles.slug as role_slug', 'roles.name as role_name',
             ])
             ->where('workspace_members.user_id', $userId->value)
@@ -104,6 +104,7 @@ final class EloquentIdentityReadModel implements IdentityReadModel
                 defaultCurrency: (string) $row->default_currency,
                 defaultLocale: (string) $row->default_locale,
                 timezone: (string) $row->timezone,
+                type: (string) $row->type,
             ))
             ->values()
             ->all();
