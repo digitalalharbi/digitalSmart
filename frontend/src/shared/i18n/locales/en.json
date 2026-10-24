@@ -2731,6 +2731,29 @@
       "pending": "Pending",
       "refunds": "Refunded",
       "attributed": "Attributed revenue"
+    },
+    "ledger": {
+      "title": "Revenue ledger",
+      "hint": "What customers were charged is each provider's own order total, which includes shipping and tax where the provider includes them. The parts below are shown beside it, never subtracted from it: shipping, tax and fees follow each provider's rules.",
+      "caption": "Charged, refunded and net",
+      "total": "Charged to customers",
+      "refunded": "Refunded",
+      "net": "After refunds",
+      "partsCaption": "What the totals were made of, as the provider reported it",
+      "part": "Part",
+      "amount": "Amount",
+      "reported": "Orders reporting",
+      "parts": {
+        "subtotal": "Items before discount",
+        "discount": "Discount",
+        "shipping": "Shipping",
+        "tax": "Tax"
+      },
+      "notReported": "Not reported",
+      "coverage": "{{reporting}} of {{counted}}",
+      "nothingToCheck": "No order reported all four parts, so they could not be checked against the total. That is not the same as saying they add up.",
+      "reconciles": "The parts add up to the total on all {{checked}} orders that reported them.",
+      "doesNotReconcile": "On {{off}} of the {{checked}} orders that reported all four parts, they do not add up to the total ({{amount}} apart in all). The provider's total may include a fee or rounding the breakdown does not carry."
     }
   },
   "chart": {

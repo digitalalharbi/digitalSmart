@@ -93,6 +93,31 @@ export type CustomerMix = {
   buckets: { recency: 'new' | 'returning' | 'unknown'; label: string }[];
 };
 
+/**
+ * What the totals were made of. A component's `amount_minor` is **null** when no counted order reported it — not zero — and
+ * `orders_reporting` against `orders_counted` says how much of the period it covers. `reconciles` is null when no order reported
+ * enough to be checked.
+ */
+export type RevenueLedger = {
+  currency: string;
+  orders: number;
+  total_minor: number;
+  refunded_minor: number;
+  net_minor: number;
+  components: {
+    key: 'subtotal' | 'discount' | 'shipping' | 'tax';
+    amount_minor: number | null;
+    orders_reporting: number;
+    orders_counted: number;
+  }[];
+  reconciliation: {
+    orders_checked: number;
+    orders_off: number;
+    unexplained_minor: number | null;
+    reconciles: boolean | null;
+  };
+};
+
 export type StoreAnalytics = {
   from: string;
   until: string;
@@ -102,6 +127,8 @@ export type StoreAnalytics = {
   by_product: RevenueBreakdownRow[];
   daily: DailyRevenuePoint[];
   customer_mix: CustomerMix;
+  /** Absent where the audience was not given it (the client portal's revenue module). */
+  ledger?: RevenueLedger;
 };
 
 export type CommerceQuery = {

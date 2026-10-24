@@ -80,6 +80,7 @@ final readonly class GetStoreAnalytics
             customerMix: $this->analytics->customerMix($query),
             from: $from,
             until: $until,
+            ledger: $this->analytics->ledger($query),
         );
     }
 }
