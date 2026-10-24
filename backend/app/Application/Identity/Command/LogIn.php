@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Identity\Command;
 
+use App\Application\Access\Contract\AccessRequestRepository;
 use App\Application\Identity\Contract\Authenticator;
 use App\Application\Identity\Contract\IdentityReadModel;
 use App\Application\Identity\DTO\AuthenticatedUser;
@@ -12,6 +13,7 @@ use App\Application\Shared\Contract\AuditRecorder;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Identity\Email;
+use DateTimeImmutable;
 
 final readonly class LogIn
 {
@@ -19,6 +21,7 @@ final readonly class LogIn
         private Authenticator $authenticator,
         private IdentityReadModel $identities,
         private AuditRecorder $audit,
+        private AccessRequestRepository $accessRequests,
     ) {}
 
     public function __invoke(Email $email, string $password, bool $remember = false): AuthenticatedUser
@@ -59,6 +62,9 @@ final readonly class LogIn
             auditableId: $userId->value,
             summary: 'Signed in.',
         ));
+
+        /* If this person arrived through an invitation, this is the first time they have used the account it made. */
+        $this->accessRequests->recordFirstLogin($userId->value, new DateTimeImmutable);
 
         return $this->identities->authenticatedUser($userId, $workspaceId)
             ?? throw AuthenticationFailed::invalidCredentials();

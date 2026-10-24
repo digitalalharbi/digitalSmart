@@ -911,7 +911,8 @@
     "automationChanges": "سجل التغييرات",
     "creatives": "المواد الإبداعية",
     "adGroups": "المجموعات الإعلانية",
-    "ads": "الإعلانات"
+    "ads": "الإعلانات",
+    "accessRequests": "طلبات الوصول"
   },
   "actions": {
     "search": "بحث",
@@ -1395,26 +1396,6 @@
       "main": "الفرع الرئيسي",
       "deploy": "النشر",
       "unavailable": "الحالة غير متاحة"
-    },
-    "requests": {
-      "title": "طلبات الحسابات",
-      "subtitle": "أشخاص طلبوا حسابًا من الصفحة التسويقية.",
-      "filter": "اعرض الطلبات التي حالتها",
-      "failed": "تعذّر تحميل الطلبات.",
-      "emptyTitle": "لا شيء هنا",
-      "emptyBody": "لا طلبات في هذه الحالة.",
-      "status": {
-        "pending": "جديد",
-        "contacted": "تم التواصل",
-        "approved": "مقبول",
-        "declined": "مرفوض"
-      },
-      "act": {
-        "contacted": "تم التواصل",
-        "approved": "قبول",
-        "declined": "رفض"
-      },
-      "approveNote": "قبول الطلب لا ينشئ حسابًا. أضف الشخص من «الأشخاص»، حيث تظهر كلمة مروره المؤقتة."
     }
   },
   "integrations": {
@@ -5957,7 +5938,7 @@
       "l2": "في منصة واحدة.",
       "l3": "برؤية دقيقة للأداء والإنفاق."
     },
-    "ask": "اطلب حسابك",
+    "ask": "طلب حساب",
     "noAccount": "ليس لديك حساب؟",
     "request": {
       "title": "طلب إنشاء حساب",
@@ -5975,7 +5956,24 @@
       "back": "العودة إلى الصفحة الرئيسية",
       "failed": "تعذّر إرسال طلبك. تحقق من الاتصال وحاول مرة أخرى.",
       "closedTitle": "استقبال الطلبات متوقف حاليًا",
-      "closedBody": "لا نستقبل طلبات حسابات جديدة في الوقت الحالي. إن كان لديك حساب، يمكنك تسجيل الدخول."
+      "closedBody": "لا نستقبل طلبات حسابات جديدة في الوقت الحالي. إن كان لديك حساب، يمكنك تسجيل الدخول.",
+      "contactTitle": "تواصل معنا",
+      "contactSubtitle": "اطرح سؤالًا أو اطلب عرضًا توضيحيًا، وسيرد عليك فريقنا.",
+      "kind": "ما موضوع طلبك؟",
+      "kinds": {
+        "account_access": "طلب حساب",
+        "general_enquiry": "استفسار عام",
+        "demo_request": "عرض توضيحي أو استشارة",
+        "partnership": "شراكة",
+        "other": "أخرى"
+      },
+      "jobTitle": "المسمى الوظيفي (اختياري)",
+      "preferred": "أفضل وسيلة للتواصل",
+      "contacts": {
+        "email": "البريد",
+        "phone": "الهاتف",
+        "whatsapp": "واتساب"
+      }
     },
     "needs": {
       "self_managed": {
@@ -6017,6 +6015,222 @@
     "mobileTabs": {
       "label": "التنقل السريع",
       "more": "المزيد"
+    }
+  },
+  "access": {
+    "title": "طلبات الوصول",
+    "subtitle": "أشخاص طلبوا حسابًا أو أرسلوا استفسارًا: من يتولّاها، وما جرى، وما بقي.",
+    "forbidden": "ليست لديك صلاحية الرد على طلبات الوصول.",
+    "failed": "تعذّر تحميل الطلبات.",
+    "unassigned": "غير مُسندة",
+    "none": "لا يوجد بعد",
+    "duplicate": "احتمال تكرار",
+    "tabs": {
+      "label": "الطلبات حسب الحالة",
+      "new": "جديدة",
+      "follow_up": "تحتاج متابعة",
+      "waiting": "بانتظار الرد",
+      "approved": "مقبولة",
+      "rejected": "مرفوضة",
+      "closed": "مغلقة"
+    },
+    "empty": {
+      "title": "لا شيء هنا",
+      "body": "لا طلبات في هذه الحالة."
+    },
+    "status": {
+      "new": "جديد",
+      "contacted": "تم التواصل",
+      "waiting_for_reply": "بانتظار الرد",
+      "qualified": "مؤهَّل",
+      "approved": "مقبول",
+      "rejected": "مرفوض",
+      "closed": "مغلق"
+    },
+    "kind": {
+      "account_access": "طلب حساب",
+      "general_enquiry": "استفسار عام",
+      "demo_request": "عرض توضيحي أو استشارة",
+      "partnership": "شراكة",
+      "other": "أخرى"
+    },
+    "need": {
+      "self_managed": "إدارة حملاتي",
+      "agency_clients": "إدارة حملات لعملائي",
+      "ad_services": "خدمات إعلانية"
+    },
+    "contact": {
+      "email": "البريد",
+      "phone": "الهاتف",
+      "whatsapp": "واتساب"
+    },
+    "sla": {
+      "within": "ضمن وقت الرد",
+      "approaching": "يقترب من وقت الرد",
+      "overdue": "تجاوز وقت الرد",
+      "attempted": "جرت المحاولة ولم يتم الوصول",
+      "contacted": "تم الوصول",
+      "closed": "أُغلق"
+    },
+    "fields": {
+      "contact": "يفضّل",
+      "created": "الاستلام",
+      "owner": "المسؤول",
+      "lastContact": "آخر تواصل",
+      "nextFollowUp": "المتابعة التالية",
+      "email": "البريد",
+      "phone": "الهاتف",
+      "company": "الشركة",
+      "jobTitle": "المسمى الوظيفي",
+      "need": "الاحتياج",
+      "message": "الرسالة"
+    },
+    "settings": {
+      "title": "وقت الرد والمسؤول الافتراضي",
+      "response": "الرد خلال",
+      "owner": "المسؤول الافتراضي",
+      "nobody": "لا أحد",
+      "minutes_zero": "{{count}} دقيقة",
+      "minutes_one": "دقيقة",
+      "minutes_two": "دقيقتان",
+      "minutes_few": "{{count}} دقائق",
+      "minutes_many": "{{count}} دقيقة",
+      "minutes_other": "{{count}} دقيقة"
+    },
+    "figures": {
+      "title_zero": "آخر {{count}} يوم",
+      "title_one": "آخر يوم",
+      "title_two": "آخر يومين",
+      "title_few": "آخر {{count}} أيام",
+      "title_many": "آخر {{count}} يومًا",
+      "title_other": "آخر {{count}} يوم",
+      "new": "طلبات جديدة",
+      "contacted": "تم الوصول إليهم",
+      "qualified": "مؤهَّلة",
+      "approved": "مقبولة",
+      "rejected": "مرفوضة",
+      "median": "وسيط أول محاولة",
+      "sla": "ضمن وقت الرد",
+      "acceptance": "دعوات مقبولة",
+      "noData": "لا بيانات بعد",
+      "over_zero": "من {{count}}",
+      "over_one": "من واحد",
+      "over_two": "من اثنين",
+      "over_few": "من {{count}}",
+      "over_many": "من {{count}}",
+      "over_other": "من {{count}}"
+    },
+    "detail": {
+      "trail": "موقعك",
+      "failed": "تعذّر تحميل هذا الطلب.",
+      "contact": "التواصل",
+      "work": "العمل",
+      "record": "سجّل ما تم",
+      "move": "انقل الطلب",
+      "decision": "القرار",
+      "timeline": "السجل الزمني",
+      "linked": "احتمال تكرار"
+    },
+    "actions": {
+      "email_sent": "تسجيل إرسال بريد",
+      "call_attempted": "تسجيل محاولة اتصال",
+      "contacted": "تسجيل تم التواصل",
+      "whatsapp_contacted": "تسجيل تواصل واتساب",
+      "schedule": "جدولة المتابعة",
+      "addNote": "إضافة ملاحظة",
+      "approve": "قبول",
+      "reject": "رفض",
+      "confirmReject": "رفض الطلب",
+      "cancel": "إلغاء"
+    },
+    "move": {
+      "waiting_for_reply": "بانتظار الرد",
+      "qualified": "مؤهَّل",
+      "closed": "إغلاق"
+    },
+    "contactNote": "ملاحظة (اختياري)",
+    "note": "ملاحظة داخلية",
+    "followUp": "المتابعة في",
+    "delivery": "إرسال البريد: {{email}}. إرسال واتساب: {{whatsapp}}. هذه الأزرار تسجّل ما فعلته؛ لا يُرسَل شيء من هنا.",
+    "deliveryState": {
+      "awaiting_credentials": "بانتظار بيانات الاعتماد"
+    },
+    "reason": "السبب",
+    "reasonInternal": "داخلي. لا يظهر للشخص أبدًا.",
+    "messageForPerson": "رسالة للشخص (اختياري)",
+    "messageNotSent": "تُحفظ على الطلب. لا يُرسَل شيء من هنا.",
+    "approveNote": "القبول لا ينشئ حسابًا. أنشئ دعوة بعده؛ ولا يوجد الحساب إلا عندما يقبلها الشخص.",
+    "roles": {
+      "admin": "مدير النظام",
+      "project-manager": "مدير المشاريع",
+      "media-buyer": "مسؤول الحملات",
+      "creative": "المصمم",
+      "client-viewer": "العميل"
+    },
+    "invitation": {
+      "role": "الدور",
+      "projects": "الوصول إلى المشاريع",
+      "noProjects": "لا مشاريع للاختيار منها.",
+      "create": "إنشاء الدعوة",
+      "recreate": "إنشاء دعوة جديدة",
+      "once": "انسخ هذا الرابط الآن. يظهر مرة واحدة فقط ولا يمكن عرضه مجددًا.",
+      "copy": "نسخ الرابط",
+      "copied": "تم النسخ",
+      "markShared": "أرسلته",
+      "awaiting": "إرسال البريد بانتظار بيانات الاعتماد: أرسل الرابط بنفسك ثم سجّل أنك فعلت.",
+      "expires": "ينتهي الرابط {{when}}.",
+      "done": "قُبلت الدعوة وأصبح الحساب موجودًا."
+    },
+    "milestones": {
+      "title": "بعد القبول",
+      "approved": "تم القبول",
+      "invited": "أُنشئت الدعوة",
+      "shared": "سُلّم الرابط (كما سُجّل)",
+      "opened": "فُتحت صفحة الدعوة",
+      "accepted": "قُبلت الدعوة",
+      "account": "أُنشئ الحساب",
+      "firstLogin": "أول تسجيل دخول",
+      "note": "تُظهر كل خطوة ما ثبت فقط. الشرطة تعني أنها لم تحدث أو لا يمكن رؤيتها."
+    },
+    "event": {
+      "created": "استُلم الطلب",
+      "owner_assigned": "تغيّر المسؤول",
+      "status_changed": "تغيّرت الحالة",
+      "email_sent": "سُجّل إرسال بريد",
+      "call_attempted": "جرت محاولة اتصال",
+      "contacted": "تم التواصل",
+      "whatsapp_contacted": "تم التواصل عبر واتساب",
+      "note": "ملاحظة",
+      "follow_up_scheduled": "جُدولت متابعة",
+      "approved": "تم القبول",
+      "rejected": "تم الرفض",
+      "duplicate_linked": "رُبط كاحتمال تكرار",
+      "invitation_created": "أُنشئت الدعوة",
+      "invitation_shared": "سُلّم الرابط",
+      "invitation_opened": "فُتحت صفحة الدعوة",
+      "invitation_accepted": "قُبلت الدعوة",
+      "first_login": "أول تسجيل دخول"
+    },
+    "accept": {
+      "title": "اقبل دعوتك",
+      "hello": "أهلًا {{name}}. اختر كلمة مرور لفتح حسابك.",
+      "password": "اختر كلمة مرور",
+      "passwordHint_zero": "{{count}} حرف على الأقل.",
+      "passwordHint_one": "حرف واحد على الأقل.",
+      "passwordHint_two": "حرفان على الأقل.",
+      "passwordHint_few": "{{count}} أحرف على الأقل.",
+      "passwordHint_many": "{{count}} حرفًا على الأقل.",
+      "passwordHint_other": "{{count}} حرف على الأقل.",
+      "again": "أعد كتابة كلمة المرور",
+      "mismatch": "كلمتا المرور مختلفتان.",
+      "existing": "لديك حساب بالفعل. القبول يضيف هذه المساحة إليه دون تغيير كلمة مرورك.",
+      "submit": "قبول وفتح حسابي",
+      "working": "جارٍ الفتح…",
+      "doneTitle": "حسابك جاهز",
+      "doneBody": "يمكنك تسجيل الدخول الآن بكلمة المرور التي اخترتها.",
+      "invalidTitle": "هذه الدعوة غير صالحة",
+      "invalidBody": "قد تكون انتهت أو استُخدمت أو سُحبت. اطلب دعوة جديدة ممن دعاك.",
+      "failed": "تعذّر فتح هذه الدعوة. تحقق من الاتصال وحاول مرة أخرى."
     }
   }
 }

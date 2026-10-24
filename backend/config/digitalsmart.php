@@ -62,6 +62,7 @@ return [
         'shared_reports' => (int) env('RATE_LIMIT_SHARED_REPORTS', 20),
         /* Requests for an account, keyed by address. Anybody needing more than five a minute is not asking for an account. */
         'access_requests' => (int) env('RATE_LIMIT_ACCESS_REQUESTS', 5),
+        'invitations' => (int) env('RATE_LIMIT_INVITATIONS', 30),
         /* Public tracking links and beacons, keyed by address. */
         'tracking' => (int) env('RATE_LIMIT_TRACKING', 240),
     ],

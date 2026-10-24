@@ -335,6 +335,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     phase: 'Phase 20',
   },
   {
+    path: '/access-requests',
+    labelKey: 'nav.accessRequests',
+    icon: 'MailQuestion',
+    section: 'system',
+    phase: 'Phase 1',
+    /* The people who may add people are the ones who answer people asking to be added. */
+    permission: 'users.invite',
+  },
+  {
     path: '/administration',
     labelKey: 'nav.administration',
     icon: 'Settings2',

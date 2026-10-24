@@ -821,7 +821,8 @@
     "automationChanges": "Change log",
     "creatives": "Creatives",
     "adGroups": "Ad Groups",
-    "ads": "Ads"
+    "ads": "Ads",
+    "accessRequests": "Access requests"
   },
   "actions": {
     "search": "Search",
@@ -1265,26 +1266,6 @@
       "main": "Main",
       "deploy": "Deploy",
       "unavailable": "Status unavailable"
-    },
-    "requests": {
-      "title": "Account requests",
-      "subtitle": "People who asked for an account from the landing page.",
-      "filter": "Show requests that are",
-      "failed": "Could not load the requests.",
-      "emptyTitle": "Nothing here",
-      "emptyBody": "No requests in this state.",
-      "status": {
-        "pending": "New",
-        "contacted": "Contacted",
-        "approved": "Approved",
-        "declined": "Declined"
-      },
-      "act": {
-        "contacted": "Mark as contacted",
-        "approved": "Approve",
-        "declined": "Decline"
-      },
-      "approveNote": "Approving a request creates no account. Add the person from People, where their one-time password is shown."
     }
   },
   "integrations": {
@@ -5587,7 +5568,24 @@
       "back": "Back to the home page",
       "failed": "We could not send your request. Check your connection and try again.",
       "closedTitle": "Requests are currently closed",
-      "closedBody": "We are not accepting new account requests at the moment. If you already have an account, you can sign in."
+      "closedBody": "We are not accepting new account requests at the moment. If you already have an account, you can sign in.",
+      "contactTitle": "Contact us",
+      "contactSubtitle": "Ask a question or ask for a demo. Our team will get back to you.",
+      "kind": "What is this about?",
+      "kinds": {
+        "account_access": "Request an account",
+        "general_enquiry": "General enquiry",
+        "demo_request": "Demo or consultation",
+        "partnership": "Partnership",
+        "other": "Other"
+      },
+      "jobTitle": "Job title (optional)",
+      "preferred": "Best way to reach you",
+      "contacts": {
+        "email": "Email",
+        "phone": "Phone",
+        "whatsapp": "WhatsApp"
+      }
     },
     "needs": {
       "self_managed": {
@@ -5629,6 +5627,206 @@
     "mobileTabs": {
       "label": "Quick navigation",
       "more": "More"
+    }
+  },
+  "access": {
+    "title": "Requests for access",
+    "subtitle": "People who asked for an account or sent an enquiry — who has them, what was tried, and what is left to do.",
+    "forbidden": "You do not have permission to answer requests for access.",
+    "failed": "Could not load the requests.",
+    "unassigned": "Unassigned",
+    "none": "None yet",
+    "duplicate": "Possible duplicate",
+    "tabs": {
+      "label": "Requests by state",
+      "new": "New",
+      "follow_up": "Needs follow-up",
+      "waiting": "Waiting",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "closed": "Closed"
+    },
+    "empty": {
+      "title": "Nothing here",
+      "body": "No requests in this state."
+    },
+    "status": {
+      "new": "New",
+      "contacted": "Contacted",
+      "waiting_for_reply": "Waiting for reply",
+      "qualified": "Qualified",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "closed": "Closed"
+    },
+    "kind": {
+      "account_access": "Account request",
+      "general_enquiry": "General enquiry",
+      "demo_request": "Demo or consultation",
+      "partnership": "Partnership",
+      "other": "Other"
+    },
+    "need": {
+      "self_managed": "Manage own campaigns",
+      "agency_clients": "Manage campaigns for clients",
+      "ad_services": "Advertising services"
+    },
+    "contact": {
+      "email": "Email",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp"
+    },
+    "sla": {
+      "within": "Within response time",
+      "approaching": "Close to response time",
+      "overdue": "Past response time",
+      "attempted": "Tried, not reached",
+      "contacted": "Reached",
+      "closed": "Put away"
+    },
+    "fields": {
+      "contact": "Prefers",
+      "created": "Received",
+      "owner": "Owner",
+      "lastContact": "Last contact",
+      "nextFollowUp": "Next follow-up",
+      "email": "Email",
+      "phone": "Phone",
+      "company": "Company",
+      "jobTitle": "Job title",
+      "need": "Needs",
+      "message": "Message"
+    },
+    "settings": {
+      "title": "Response time and default owner",
+      "response": "Respond within",
+      "owner": "Default owner",
+      "nobody": "Nobody",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes"
+    },
+    "figures": {
+      "title_one": "Last {{count}} day",
+      "title_other": "Last {{count}} days",
+      "new": "New requests",
+      "contacted": "Reached",
+      "qualified": "Qualified",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "median": "Median first try",
+      "sla": "Within response time",
+      "acceptance": "Invitations accepted",
+      "noData": "No data yet",
+      "over_one": "of {{count}}",
+      "over_other": "of {{count}}"
+    },
+    "detail": {
+      "trail": "Where you are",
+      "failed": "Could not load this request.",
+      "contact": "Contact",
+      "work": "Work",
+      "record": "Record what was done",
+      "move": "Move the request",
+      "decision": "Decision",
+      "timeline": "Timeline",
+      "linked": "Possible duplicates"
+    },
+    "actions": {
+      "email_sent": "Mark email sent",
+      "call_attempted": "Mark call attempted",
+      "contacted": "Mark contacted",
+      "whatsapp_contacted": "Mark WhatsApp contacted",
+      "schedule": "Schedule follow-up",
+      "addNote": "Add note",
+      "approve": "Approve",
+      "reject": "Reject",
+      "confirmReject": "Reject the request",
+      "cancel": "Cancel"
+    },
+    "move": {
+      "waiting_for_reply": "Waiting for reply",
+      "qualified": "Qualified",
+      "closed": "Close"
+    },
+    "contactNote": "Note (optional)",
+    "note": "Internal note",
+    "followUp": "Follow up on",
+    "delivery": "Email delivery: {{email}}. WhatsApp delivery: {{whatsapp}}. These buttons record what you did; nothing is sent from here.",
+    "deliveryState": {
+      "awaiting_credentials": "awaiting credentials"
+    },
+    "reason": "Reason",
+    "reasonInternal": "Internal. Never shown to the person.",
+    "messageForPerson": "Message for the person (optional)",
+    "messageNotSent": "Kept on the request. Nothing is sent from here.",
+    "approveNote": "Approving does not create an account. Make an invitation next; the account exists only when the person accepts it.",
+    "roles": {
+      "admin": "Administrator",
+      "project-manager": "Project manager",
+      "media-buyer": "Media buyer",
+      "creative": "Creative",
+      "client-viewer": "Client"
+    },
+    "invitation": {
+      "role": "Role",
+      "projects": "Project access",
+      "noProjects": "No projects to choose from.",
+      "create": "Make the invitation",
+      "recreate": "Make a new invitation",
+      "once": "Copy this link now. It is shown once and cannot be shown again.",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "markShared": "I have sent it",
+      "awaiting": "Email delivery is awaiting credentials: send the link yourself, then say that you did.",
+      "expires": "The link expires {{when}}.",
+      "done": "The invitation was accepted and the account exists."
+    },
+    "milestones": {
+      "title": "After approval",
+      "approved": "Approved",
+      "invited": "Invitation made",
+      "shared": "Link handed over (as recorded)",
+      "opened": "Invitation page opened",
+      "accepted": "Invitation accepted",
+      "account": "Account created",
+      "firstLogin": "First sign-in",
+      "note": "Each step shows only what was evidenced. A dash means it has not happened or cannot be seen."
+    },
+    "event": {
+      "created": "Request received",
+      "owner_assigned": "Owner changed",
+      "status_changed": "Status changed",
+      "email_sent": "Email marked as sent",
+      "call_attempted": "Call attempted",
+      "contacted": "Contacted",
+      "whatsapp_contacted": "WhatsApp contacted",
+      "note": "Note",
+      "follow_up_scheduled": "Follow-up scheduled",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "duplicate_linked": "Linked as a possible duplicate",
+      "invitation_created": "Invitation made",
+      "invitation_shared": "Link handed over",
+      "invitation_opened": "Invitation page opened",
+      "invitation_accepted": "Invitation accepted",
+      "first_login": "First sign-in"
+    },
+    "accept": {
+      "title": "Accept your invitation",
+      "hello": "Welcome, {{name}}. Choose a password to open your account.",
+      "password": "Choose a password",
+      "passwordHint_one": "At least {{count}} character.",
+      "passwordHint_other": "At least {{count}} characters.",
+      "again": "Repeat the password",
+      "mismatch": "The two passwords are different.",
+      "existing": "You already have an account. Accepting adds this workspace to it; your password does not change.",
+      "submit": "Accept and open my account",
+      "working": "Opening…",
+      "doneTitle": "Your account is ready",
+      "doneBody": "You can sign in now with the password you chose.",
+      "invalidTitle": "This invitation is not valid",
+      "invalidBody": "It may have expired, been used, or been withdrawn. Ask the person who invited you for a new one.",
+      "failed": "Could not open this invitation. Check your connection and try again."
     }
   }
 }

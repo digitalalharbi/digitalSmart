@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { CircleCheck } from 'lucide-react';
 import { ApiError } from '@/shared/api/client';
@@ -11,7 +11,16 @@ import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
 import { Logo } from '@/shared/ui/logo';
 import { cn } from '@/shared/lib/cn';
-import { ACCESS_NEEDS, useAccessOpenQuery, useSubmitAccessRequest, type AccessNeed } from './api';
+import {
+  ACCESS_NEEDS,
+  PREFERRED_CONTACTS,
+  REQUEST_KINDS,
+  useAccessOpenQuery,
+  useSubmitAccessRequest,
+  type AccessNeed,
+  type PreferredContact,
+  type RequestKind,
+} from './api';
 import { NeedPicker } from './NeedPicker';
 import { PreferenceSwitches } from './PreferenceSwitches';
 
@@ -24,6 +33,9 @@ import { PreferenceSwitches } from './PreferenceSwitches';
 export function RequestAccessPage() {
   const { t, i18n } = useTranslation();
   const [params] = useSearchParams();
+  const location = useLocation();
+  /* `/contact` is the same form opened as a question; `/request-access` is the request for an account. */
+  const contacting = location.pathname === '/contact';
   const open = useAccessOpenQuery();
   const submit = useSubmitAccessRequest();
 
@@ -31,6 +43,9 @@ export function RequestAccessPage() {
   const [need, setNeed] = useState<AccessNeed>(
     ACCESS_NEEDS.find((entry) => entry === asked) ?? 'self_managed',
   );
+  const [kind, setKind] = useState<RequestKind>(contacting ? 'general_enquiry' : 'account_access');
+  const [preferred, setPreferred] = useState<PreferredContact>('email');
+  const [jobTitle, setJobTitle] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
@@ -46,6 +61,9 @@ export function RequestAccessPage() {
     event.preventDefault();
 
     submit.mutate({
+      kind,
+      jobTitle,
+      preferredContact: preferred,
       name,
       email,
       company,
@@ -102,14 +120,37 @@ export function RequestAccessPage() {
         ) : (
           <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate={false}>
             <div className="flex flex-col gap-1.5">
-              <h1 className="text-2xl font-bold">{t('entry.request.title')}</h1>
-              <p className="text-content-secondary text-sm">{t('entry.request.subtitle')}</p>
+              <h1 className="text-2xl font-bold">
+                {contacting ? t('entry.request.contactTitle') : t('entry.request.title')}
+              </h1>
+              <p className="text-content-secondary text-sm">
+                {contacting ? t('entry.request.contactSubtitle') : t('entry.request.subtitle')}
+              </p>
             </div>
 
             {refusal === null ? null : <Alert tone="danger">{refusal}</Alert>}
             {failed ? <Alert tone="danger">{t('entry.request.failed')}</Alert> : null}
 
-            <NeedPicker value={need} onChange={setNeed} name={t('entry.request.need')} />
+            <Field label={t('entry.request.kind')}>
+              {(field) => (
+                <select
+                  {...field}
+                  value={kind}
+                  onChange={(event) => setKind(event.target.value as RequestKind)}
+                  className="border-line bg-surface text-content h-11 w-full min-w-0 truncate rounded-xl border px-3 text-base"
+                >
+                  {REQUEST_KINDS.map((entry) => (
+                    <option key={entry} value={entry}>
+                      {t(`entry.request.kinds.${entry}`)}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
+
+            {kind === 'account_access' ? (
+              <NeedPicker value={need} onChange={setNeed} name={t('entry.request.need')} />
+            ) : null}
 
             <Field label={t('entry.request.name')} required>
               {(field) => (
@@ -137,7 +178,7 @@ export function RequestAccessPage() {
                 />
               )}
             </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label={t('entry.request.company')}>
                 {(field) => (
                   <Input
@@ -159,6 +200,35 @@ export function RequestAccessPage() {
                     autoComplete="tel"
                     maxLength={40}
                   />
+                )}
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label={t('entry.request.jobTitle')}>
+                {(field) => (
+                  <Input
+                    {...field}
+                    value={jobTitle}
+                    onChange={(event) => setJobTitle(event.target.value)}
+                    autoComplete="organization-title"
+                    maxLength={120}
+                  />
+                )}
+              </Field>
+              <Field label={t('entry.request.preferred')}>
+                {(field) => (
+                  <select
+                    {...field}
+                    value={preferred}
+                    onChange={(event) => setPreferred(event.target.value as PreferredContact)}
+                    className="border-line bg-surface text-content h-11 w-full min-w-0 truncate rounded-xl border px-3 text-base"
+                  >
+                    {PREFERRED_CONTACTS.map((entry) => (
+                      <option key={entry} value={entry}>
+                        {t(`entry.request.contacts.${entry}`)}
+                      </option>
+                    ))}
+                  </select>
                 )}
               </Field>
             </div>

@@ -197,3 +197,15 @@ export const AiCenterPage = lazy(async () => ({
 export const CreativesPage = lazy(async () => ({
   default: (await import('@/features/creatives/CreativesPage')).CreativesPage,
 }));
+
+export const AccessRequestsPage = lazy(async () => ({
+  default: (await import('@/features/access/AccessRequestsPage')).AccessRequestsPage,
+}));
+
+export const AccessRequestDetailPage = lazy(async () => ({
+  default: (await import('@/features/access/AccessRequestDetailPage')).AccessRequestDetailPage,
+}));
+
+export const InvitationPage = lazy(async () => ({
+  default: (await import('@/features/access/InvitationPage')).InvitationPage,
+}));

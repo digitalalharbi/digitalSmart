@@ -34,6 +34,8 @@ enum NotificationSubject: string
 
     case MeasurementSource = 'measurement_source';
 
+    case AccessRequest = 'access_request';
+
     public function table(): string
     {
         return match ($this) {
@@ -47,6 +49,7 @@ enum NotificationSubject: string
             self::Budget => 'budgets',
             self::Creative => 'creatives',
             self::MeasurementSource => 'measurement_sources',
+            self::AccessRequest => 'access_requests',
         };
     }
 
@@ -65,6 +68,8 @@ enum NotificationSubject: string
             self::Digest => 'kind',
             self::Export => 'filename',
             self::Campaign, self::Budget, self::Creative, self::MeasurementSource => 'name',
+            /* Not the person's name: the label is shown in a bell, and the bell is not where a stranger's details belong. */
+            self::AccessRequest => 'kind',
         };
     }
 
@@ -82,6 +87,7 @@ enum NotificationSubject: string
             self::Budget => '/budget-control',
             self::Creative => '/creatives',
             self::MeasurementSource => '/tracking',
+            self::AccessRequest => '/access-requests',
         };
     }
 
@@ -98,6 +104,7 @@ enum NotificationSubject: string
             self::Budget => 'Budget',
             self::Creative => 'Creative',
             self::MeasurementSource => 'Measurement source',
+            self::AccessRequest => 'Request',
         };
     }
 
