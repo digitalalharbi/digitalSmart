@@ -7,6 +7,7 @@ namespace App\Application\Project\Command;
 use App\Application\Project\Contract\ProjectReadModel;
 use App\Application\Project\DTO\ProjectInput;
 use App\Application\Project\DTO\ProjectView;
+use App\Application\Saas\EntitlementGuard;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -20,6 +21,7 @@ use App\Domain\Client\Repository\ClientRepository;
 use App\Domain\Project\Project;
 use App\Domain\Project\ProjectId;
 use App\Domain\Project\Repository\ProjectRepository;
+use App\Domain\Saas\Limit;
 use App\Domain\Shared\ValueObject\Slug;
 use DateTimeImmutable;
 
@@ -33,6 +35,7 @@ final readonly class CreateProject
         private ActorContext $actor,
         private IdentifierGenerator $ids,
         private AuditRecorder $audit,
+        private EntitlementGuard $entitlements,
     ) {}
 
     public function __invoke(ProjectInput $input): ProjectView
@@ -62,7 +65,7 @@ final readonly class CreateProject
             isDemo: $input->isDemo,
         );
 
-        $this->projects->save($project);
+        $this->entitlements->claim(Limit::Projects, fn () => $this->projects->save($project));
 
         $this->audit->record(new AuditEntry(
             workspaceId: $workspaceId,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Integration\Command;
 
+use App\Application\Saas\EntitlementGuard;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -21,6 +22,7 @@ use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
 use App\Domain\Integration\ProviderConnectionId;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
+use App\Domain\Saas\Limit;
 use SensitiveParameter;
 
 /**
@@ -43,6 +45,7 @@ final readonly class ConnectClientProvider
         private ActorContext $actor,
         private IdentifierGenerator $ids,
         private AuditRecorder $audit,
+        private EntitlementGuard $entitlements,
     ) {}
 
     /** @param array<string, string> $credentialValues */
@@ -71,7 +74,7 @@ final readonly class ConnectClientProvider
             credentials: new Credentials($credentialValues),
         );
 
-        $this->connections->save($connection);
+        $this->entitlements->claim(Limit::ProviderConnections, fn () => $this->connections->save($connection));
 
         $this->audit->record(new AuditEntry(
             workspaceId: $workspaceId,

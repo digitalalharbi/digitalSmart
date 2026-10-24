@@ -8,12 +8,14 @@ use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Export\Contract\ExportJobStore;
 use App\Application\Export\DTO\ExportView;
 use App\Application\Reporting\Contract\ReportRepository;
+use App\Application\Saas\EntitlementGuard;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Export\ExportKind;
+use App\Domain\Saas\Limit;
 
 /**
  * Ask for a heavy file. Returns at once with a queued job; the work happens on the `reports` queue.
@@ -30,6 +32,7 @@ final readonly class RequestExport
         private ActorContext $actor,
         private VisibilityResolver $visibility,
         private Clock $clock,
+        private EntitlementGuard $entitlements,
     ) {}
 
     public function __invoke(ExportKind $kind, string $subjectId): ExportView
@@ -41,6 +44,6 @@ final readonly class RequestExport
         $this->reports->find($workspaceId, $this->visibility->visibleProjectIds(), $subjectId)
             ?? throw ResourceNotFound::of('Report');
 
-        return $this->jobs->create($workspaceId, $this->actor->userId()->value, $kind, $subjectId, $this->clock->now());
+        return $this->entitlements->claim(Limit::ExportsMonthly, fn (): ExportView => $this->jobs->create($workspaceId, $this->actor->userId()->value, $kind, $subjectId, $this->clock->now()));
     }
 }

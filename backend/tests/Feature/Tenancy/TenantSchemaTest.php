@@ -35,6 +35,9 @@ const GLOBAL_TABLES = [
     'permissions' => 'the permission catalogue, the same for every tenant',
     'permission_role' => 'joins a tenant role (which carries workspace_id) to the global catalogue',
     'creative_specs' => 'platform specifications, the same for every tenant and read-only through the API',
+    'plans' => 'the plan catalogue, the same for every tenant; a workspace points at one through workspace_subscriptions',
+    'plan_features' => 'which features a catalogue plan includes',
+    'plan_limits' => 'the limits of a catalogue plan',
     'personal_access_tokens' => 'Sanctum tokens, scoped to the user who owns them and to the mcp ability',
     'sessions' => 'framework sessions; the active workspace is re-checked against membership on every request',
     'password_reset_tokens' => 'framework table; unused (there is no reset flow)',
@@ -59,6 +62,7 @@ function tenantSafeUniques(): array
 
     return [
         'access_invitations(token_hash)' => $token,
+        'plans(code)' => 'a catalogue plan code, global by design',
         'approval_links(token_hash)' => $token,
         'report_shares(token_hash)' => $token,
         'forms(public_token)' => $token,

@@ -10,6 +10,7 @@ use App\Application\Access\DTO\AccessRequestView;
 use App\Application\Access\DTO\InvitationView;
 use App\Application\Access\Exception\AccessRequestRefused;
 use App\Application\Project\Contract\ProjectMemberRepository;
+use App\Application\Saas\EntitlementGuard;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -29,6 +30,7 @@ use App\Domain\Identity\Email;
 use App\Domain\Identity\UserId;
 use App\Domain\Project\ProjectId;
 use App\Domain\Project\Repository\ProjectRepository;
+use App\Domain\Saas\SeatType;
 use App\Domain\Workspace\WorkspaceId;
 
 /**
@@ -60,6 +62,7 @@ final readonly class ManageAccessInvitation
         private AuditRecorder $audit,
         private Clock $clock,
         private IdentifierGenerator $ids,
+        private EntitlementGuard $entitlements,
     ) {}
 
     /**
@@ -213,7 +216,8 @@ final readonly class ManageAccessInvitation
             return false;
         }
 
-        $member = $this->directory->add(
+        // The seat is claimed when it is taken, not when the link is made: a link nobody accepts uses no room.
+        $member = $this->entitlements->claim(SeatType::defaultFor($invitation->roleSlug)->countsAgainst(), fn () => $this->directory->add(
             $workspace,
             $invitation->name,
             $email,
@@ -221,7 +225,7 @@ final readonly class ManageAccessInvitation
             $existing,
             $existing === null ? $password : null,
             $invitation->createdBy !== null ? new UserId($invitation->createdBy) : null,
-        );
+        ), $invitation->workspaceId);
 
         $userId = new UserId($member->userId);
 

@@ -7,6 +7,7 @@ namespace App\Application\Client\Command;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Client\DTO\ClientInput;
 use App\Application\Client\DTO\ClientView;
+use App\Application\Saas\EntitlementGuard;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -20,6 +21,7 @@ use App\Domain\Client\ClientId;
 use App\Domain\Client\ClientProfile;
 use App\Domain\Client\Repository\ClientRepository;
 use App\Domain\Identity\Email;
+use App\Domain\Saas\Limit;
 use App\Domain\Shared\ValueObject\Slug;
 
 final readonly class CreateClient
@@ -31,6 +33,7 @@ final readonly class CreateClient
         private ActorContext $actor,
         private IdentifierGenerator $ids,
         private AuditRecorder $audit,
+        private EntitlementGuard $entitlements,
     ) {}
 
     public function __invoke(ClientInput $input): ClientView
@@ -58,7 +61,8 @@ final readonly class CreateClient
             isDemo: $input->isDemo,
         );
 
-        $this->clients->save($client);
+        // Counted and saved under one lock, so two people adding the last client the plan allows cannot both succeed.
+        $this->entitlements->claim(Limit::Clients, fn () => $this->clients->save($client));
 
         $this->audit->record(new AuditEntry(
             workspaceId: $workspaceId,

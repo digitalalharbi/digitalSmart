@@ -9,11 +9,14 @@ use App\Application\Intelligence\DTO\Narrative;
 use App\Application\Intelligence\DTO\NarrativeBrief;
 use App\Application\Intelligence\Service\FigureScanner;
 use App\Application\Intelligence\Service\Narrator;
+use App\Application\Saas\EntitlementGuard;
 use App\Application\Shared\Contract\AuthorizationGuard;
+use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Intelligence\AssistantMode;
 use App\Domain\Intelligence\Finding;
 use App\Domain\Intelligence\FindingSeverity;
 use App\Domain\Intelligence\QuestionIntent;
+use App\Domain\Saas\Limit;
 use App\Domain\Shared\ValueObject\DateRange;
 
 /**
@@ -35,6 +38,8 @@ final readonly class Ask
         private Narrator $narrator,
         private FigureScanner $figures,
         private AuthorizationGuard $guard,
+        private EntitlementGuard $entitlements,
+        private IdentifierGenerator $ids,
     ) {}
 
     public function __invoke(
@@ -44,6 +49,8 @@ final readonly class Ask
         string $question,
     ): AnalysisView {
         $this->guard->ensure(AssistantMode::Ask->requires());
+        // A question is a request whether or not it is understood: counted once, refused when the month's allowance is spent.
+        $this->entitlements->meter(Limit::AiRequestsMonthly, $this->ids->generate());
 
         $intent = QuestionIntent::match($question);
         $analysis = ($this->analyse)($clientId, $clientName, $period);

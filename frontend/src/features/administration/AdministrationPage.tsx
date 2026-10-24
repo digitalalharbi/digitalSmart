@@ -8,11 +8,12 @@ import { cn } from '@/shared/lib/cn';
 import { AuditPanel } from './AuditPanel';
 import { MembersPanel } from './MembersPanel';
 import { OperationsPanel } from './OperationsPanel';
+import { PlanPanel } from './PlanPanel';
 import { RolesPanel } from './RolesPanel';
 import { SyncIndicator } from './SyncIndicator';
 import { SetupPanel } from './SetupPanel';
 
-type Section = 'people' | 'roles' | 'setup' | 'audit' | 'health' | 'diagnostics';
+type Section = 'people' | 'roles' | 'plan' | 'setup' | 'audit' | 'health' | 'diagnostics';
 
 /**
  * Administration, in the order an administrator thinks.
@@ -29,6 +30,7 @@ export function AdministrationPage() {
   const canSeePeople = can(PERMISSIONS.usersView);
   const canSeeAudit = can(PERMISSIONS.auditView);
   const canSeeOperations = can(PERMISSIONS.workspacesView);
+  const canSeePlan = can(PERMISSIONS.workspacesUpdate);
 
   if (!canSeePeople && !canSeeAudit && !canSeeOperations) {
     return (
@@ -48,6 +50,7 @@ export function AdministrationPage() {
       items: [
         { id: 'people', label: t('administration.people'), visible: canSeePeople },
         { id: 'roles', label: t('administration.rolesTitle'), visible: canSeePeople },
+        { id: 'plan', label: t('plan.title'), visible: canSeePlan },
         { id: 'setup', label: t('administration.setup'), visible: true },
       ],
     },
@@ -105,6 +108,7 @@ export function AdministrationPage() {
         <div className="min-w-0">
           {active === 'people' ? <MembersPanel /> : null}
           {active === 'roles' ? <RolesPanel /> : null}
+          {active === 'plan' ? <PlanPanel /> : null}
           {active === 'setup' ? <SetupPanel /> : null}
           {active === 'audit' ? <AuditPanel /> : null}
           {active === 'health' ? <OperationsPanel part="health" /> : null}
