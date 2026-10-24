@@ -62,6 +62,8 @@ use App\Application\Budget\Contract\BudgetControlReadModel;
 use App\Application\Budget\Contract\BudgetRepository;
 use App\Application\Budget\Contract\BudgetSpendReadModel;
 use App\Application\Campaign\Contract\BlueprintRepository;
+use App\Application\Campaign\Contract\CreatePlanPayloads;
+use App\Application\Campaign\Contract\LaunchFacts;
 use App\Application\Client\Contract\ClientOffboarding;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Client\Contract\ClientVisibility;
@@ -213,7 +215,9 @@ use App\Infrastructure\Agents\EloquentAgentReadModel;
 use App\Infrastructure\Agents\EloquentAgentRunLog;
 use App\Infrastructure\Agents\EloquentFindingLog;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
+use App\Infrastructure\Campaign\DocumentedPayloadDrafts;
 use App\Infrastructure\Campaign\EloquentBlueprintRepository;
+use App\Infrastructure\Campaign\EloquentLaunchFacts;
 use App\Infrastructure\Commerce\CommerceSyncAdapterRegistry;
 use App\Infrastructure\Commerce\Sandbox\CommerceFixtures;
 use App\Infrastructure\Commerce\StoreOrderMapperRegistry;
@@ -621,6 +625,8 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(PlatformReadModel::class, EloquentPlatformReadModel::class);
         $this->app->bind(WorkspaceCreator::class, EloquentWorkspaceCreator::class);
         $this->app->bind(BlueprintRepository::class, EloquentBlueprintRepository::class);
+        $this->app->bind(LaunchFacts::class, EloquentLaunchFacts::class);
+        $this->app->bind(CreatePlanPayloads::class, DocumentedPayloadDrafts::class);
 
         /* Email and WhatsApp deliveries, in the state they are in: nothing is sent, and the row says why. */
         $this->app->bind(NotificationChannelDelivery::class, static fn (): NotificationChannelDelivery => new HonestChannelDelivery(

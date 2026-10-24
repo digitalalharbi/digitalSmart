@@ -103,20 +103,48 @@ export type PlanOptions = {
   creatives: Array<{ id: string; title: string; state: string; provider: string | null }>;
 };
 
-export type PlatformTranslation = {
-  provider: string;
-  objective: string | null;
-  daily_budget_minor: number;
-  currency: string;
-  creates: string;
-  fields: Array<{
-    field: string;
-    support: 'supported' | 'partial' | 'unsupported';
-    note: string | null;
+export type PreflightState =
+  'ready' | 'warning' | 'blocked' | 'awaiting_credentials' | 'blocked_external' | 'unsupported';
+
+export type PreflightCheck = {
+  key: string;
+  state: PreflightState;
+  message: string;
+  fix: string | null;
+};
+
+export type LaunchPlan = {
+  blueprint_id: string;
+  version: number;
+  state: PreflightState;
+  can_create: boolean;
+  checks: PreflightCheck[];
+  totals: Array<{ currency: string; budget_minor: number }>;
+  providers: Array<{
+    state: PreflightState;
+    checks: PreflightCheck[];
+    plan: {
+      provider: string;
+      external_account_id: string;
+      account_name: string;
+      account_currency: string | null;
+      campaigns: number;
+      ad_groups: number;
+      ads: number;
+      budget_type: 'daily' | 'lifetime';
+      budget_minor: number;
+      currency: string;
+      starts_at: string;
+      ends_at: string | null;
+      objective: string | null;
+      conversion: string | null;
+      destination: string | null;
+      initial_state: string;
+      delivers_by_default: boolean;
+      warnings: string[];
+      blocked_fields: string[];
+    };
   }>;
-  paused_on_create: string | null;
-  delivers_by_default: boolean;
-  access: string | null;
 };
 
 const KEY = ['campaign-plans'] as const;
@@ -189,17 +217,16 @@ export function usePlanOptionsQuery(projectId: string) {
   });
 }
 
-export function usePlanTranslationQuery(
+export function useLaunchPlanQuery(
   id: string | undefined,
   version: number | undefined,
   enabled: boolean,
 ) {
   return useQuery({
-    queryKey: [...KEY, 'translation', id, version],
+    queryKey: [...KEY, 'launch-plan', id, version],
     enabled: enabled && id !== undefined,
     queryFn: async () =>
-      (await api.get<{ data: PlatformTranslation[] }>(`/campaign-plans/${String(id)}/translation`))
-        .data.data,
+      (await api.get<{ data: LaunchPlan }>(`/campaign-plans/${String(id)}/launch-plan`)).data.data,
   });
 }
 

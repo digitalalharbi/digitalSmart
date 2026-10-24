@@ -63,7 +63,10 @@ test('a campaign plan is kept from its first step, submitted, and shows each pla
 
   // Launch plan: each platform's own words, created without delivering.
   await page.getByRole('button', { name: 'Next' }).click();
-  await expect(page.getByText('Created without delivering').first()).toBeVisible(SLOW);
+  await expect(page.getByText('Initial state on the platform').first()).toBeVisible(SLOW);
+  await expect(
+    page.getByText('Creation is stopped until the checks below are resolved.'),
+  ).toBeVisible();
   await expectNoViolations(page, 'the launch plan');
 
   await page.goto('/campaigns/plans');

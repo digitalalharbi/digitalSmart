@@ -1898,7 +1898,7 @@ Claude Code must keep this section or `docs/RESUME_STATE.md` current after each 
 | C — Plans / Entitlements / Seats | IN_REVIEW | (this PR) | — | Feature + Limit catalogues, 4 plans, `feature:` on 74 routes, locked quota claims, idempotent meters, seats, append-only overrides, `saas:plan`/`saas:override`, Plan & usage page. `docs/ENTITLEMENTS.md`. |
 | D — Subscription / Control Plane | IN_REVIEW | (this PR) | — | Six states with write/schedule behaviour, console-only operators, `/platform` console (workspaces, plan, override, state, create), subscription notice. Impersonation not built. `docs/PLATFORM.md`. |
 | E — Campaign Blueprint | IN_REVIEW | (this PR) | — | Kept, stateful plans (12 states, versioned) referencing bound accounts, tracking links, conversions and Creative Hub; 10-step wizard; capability registry 26 keys × 7 platforms from a 2026-10-24 documentation audit. `docs/CAMPAIGN_LAUNCH.md`. |
-| F — Translation / Preflight | NOT_STARTED | — | — | |
+| F — Translation / Preflight | IN_REVIEW | (this PR) | — | ProviderCreatePlan per account, documented payload drafts paused at every level, read-only preflight with six states and a fix for each, per-currency totals, launch-plan UI. `docs/CAMPAIGN_LAUNCH.md`. |
 | G — Provider Creation | NOT_STARTED | — | — | |
 | H — Activation / Hardening | NOT_STARTED | — | — | |
 
