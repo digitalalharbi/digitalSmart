@@ -10,12 +10,12 @@ use App\Infrastructure\Persistence\Eloquent\Model\ProjectMember;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\WorkspaceScenario;
 
-function activityEntry(WorkspaceScenario $s, AuditAction $action, string $type, string $id, string $summary): void
+function activityEntry(WorkspaceScenario $s, AuditAction $action, string $type, string $id, string $summary, ?Carbon\CarbonInterface $at = null): void
 {
     DB::table('audit_logs')->insert([
         'id' => (string) Illuminate\Support\Str::uuid(), 'workspace_id' => $s->workspace->getKey(), 'actor_id' => $s->owner->getKey(),
         'action' => $action->value, 'auditable_type' => $type, 'auditable_id' => $id, 'summary' => $summary,
-        'changes' => '{}', 'context' => '{}', 'created_at' => now(),
+        'changes' => '{}', 'context' => '{}', 'created_at' => $at ?? now(),
     ]);
 }
 
@@ -79,7 +79,9 @@ it('reads one project’s events even when the agency has had a great many since
     $quiet = Project::factory()->forClient(Client::factory()->create(['workspace_id' => $ws]))->create();
     $busy = Project::factory()->forClient(Client::factory()->create(['workspace_id' => $ws]))->create();
 
-    activityEntry($s, AuditAction::ProjectStatusChanged, 'project', (string) $quiet->getKey(), 'The quiet one moved');
+    // An hour earlier: all 121 rows written inside one second would tie on created_at, and ties between random ids
+    // fall in any order, so the quiet event could land among the newest thirty.
+    activityEntry($s, AuditAction::ProjectStatusChanged, 'project', (string) $quiet->getKey(), 'The quiet one moved', now()->subHour());
 
     foreach (range(1, 120) as $n) {
         activityEntry($s, AuditAction::ProjectStatusChanged, 'project', (string) $busy->getKey(), 'Busy event '.$n);
