@@ -6018,30 +6018,8 @@
     "actionFailed": "That could not be done.",
     "reviewHint": "Submitting asks for review. Approving a plan comes next and still creates nothing on a platform by itself.",
     "launchHint": "How each platform will read this plan. Nothing is created or checked against a platform here; creating campaigns needs approval and the platform's own access.",
-    "noAccountsYet": "Choose at least one ad account to see the launch plan.",
     "noObjective": "No matching objective",
-    "perDay": "a day",
     "deliversByDefault": "This platform starts new campaigns delivering unless told otherwise. It will always be created paused.",
-    "pausedOnCreate": "Created without delivering",
-    "field": {
-      "goal": "Objective",
-      "daily_budget": "Daily budget",
-      "schedule": "Schedule",
-      "countries": "Countries",
-      "age": "Age",
-      "gender": "Gender",
-      "languages": "Languages",
-      "interests": "Interests",
-      "headline": "Headline",
-      "primary_text": "Primary text",
-      "call_to_action": "Call to action",
-      "platform": "Platform"
-    },
-    "support": {
-      "supported": "supported",
-      "partial": "taken differently",
-      "unsupported": "not supported"
-    },
     "saveFailed": "The plan could not be saved.",
     "back": "Back",
     "saveDraft": "Save draft",
@@ -6065,6 +6043,29 @@
       "active": "Active",
       "failed": "Failed",
       "cancelled": "Cancelled"
+    }
+  },
+  "launchPlan": {
+    "failed": "The launch plan could not be built.",
+    "canCreate": "Nothing stops creation.",
+    "cannotCreate": "Creation is stopped until the checks below are resolved.",
+    "totals": "Planned budgets, per currency:",
+    "planChecks": "Checks for the whole plan",
+    "writes": "Planned writes",
+    "writesValue": "{{campaigns}} campaign, {{adGroups}} ad group, {{ads}} ad(s)",
+    "budget": "Budget",
+    "schedule": "Schedule",
+    "objective": "Platform objective",
+    "conversion": "Conversion",
+    "destination": "Where people land",
+    "initialState": "Initial state on the platform",
+    "state": {
+      "ready": "Ready",
+      "warning": "Warning",
+      "blocked": "Blocked",
+      "awaiting_credentials": "Awaiting credentials",
+      "blocked_external": "Waiting on the platform",
+      "unsupported": "Not supported"
     }
   }
 }

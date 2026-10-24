@@ -63,7 +63,7 @@ final readonly class ReadBlueprints
 
     /**
      * The saved plan in each targeted platform's own words, field by field, with how that platform takes a campaign that must not
-     * deliver. A first look at the launch plan; nothing is created or validated against a platform here.
+     * deliver. The first step of the launch plan ({@see BuildLaunchPlan}); nothing is created or validated against a platform here.
      *
      * @return list<array<string, mixed>>
      */

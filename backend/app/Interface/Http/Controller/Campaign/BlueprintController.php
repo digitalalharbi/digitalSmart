@@ -7,10 +7,13 @@ namespace App\Interface\Http\Controller\Campaign;
 use App\Application\Campaign\Command\ManageBlueprint;
 use App\Application\Campaign\DTO\BlueprintInput;
 use App\Application\Campaign\DTO\BlueprintView;
+use App\Application\Campaign\Query\BuildLaunchPlan;
 use App\Application\Campaign\Query\GetCapabilityRegistry;
 use App\Application\Campaign\Query\ReadBlueprints;
 use App\Domain\Advertising\Blueprint\BlueprintStatus;
 use App\Domain\Advertising\Blueprint\LaunchObjective;
+use App\Domain\Advertising\Launch\PreflightCheck;
+use App\Domain\Advertising\Launch\ProviderCreatePlan;
 use App\Domain\Integration\Capability\ProviderCapabilityRegistry;
 use App\Interface\Http\Controller\Controller;
 use DateTimeImmutable;
@@ -39,9 +42,24 @@ final class BlueprintController extends Controller
         return response()->json(['data' => [...$this->view($result['blueprint']), 'missing' => $result['missing']]]);
     }
 
-    public function translation(string $blueprint, ReadBlueprints $read): JsonResponse
+    public function launchPlan(string $blueprint, BuildLaunchPlan $build): JsonResponse
     {
-        return response()->json(['data' => $read->translation($blueprint)]);
+        $plan = $build($blueprint);
+        $check = static fn (PreflightCheck $c): array => ['key' => $c->key, 'state' => $c->state->value, 'message' => $c->message, 'fix' => $c->fix];
+
+        return response()->json(['data' => [
+            'blueprint_id' => $plan['blueprint_id'],
+            'version' => $plan['version'],
+            'state' => $plan['state']->value,
+            'can_create' => ! $plan['state']->stopsCreation(),
+            'checks' => array_map($check, $plan['checks']),
+            'totals' => array_map(static fn (string $currency, int $minor): array => ['currency' => $currency, 'budget_minor' => $minor], array_keys($plan['totals']), array_values($plan['totals'])),
+            'providers' => array_map(static fn (array $p): array => [
+                'state' => $p['state']->value,
+                'plan' => self::createPlan($p['plan']),
+                'checks' => array_map($check, $p['checks']),
+            ], $plan['providers']),
+        ]]);
     }
 
     public function options(Request $request, ReadBlueprints $read): JsonResponse
@@ -83,6 +101,34 @@ final class BlueprintController extends Controller
         $reason = (string) $request->validate(['reason' => ['required', 'string', 'max:1000']])['reason'];
 
         return response()->json(['data' => $this->view($manage->cancel($blueprint, $reason))]);
+    }
+
+    /** @return array<string, mixed> */
+    private static function createPlan(ProviderCreatePlan $p): array
+    {
+        return [
+            'provider' => $p->provider->value,
+            'external_account_id' => $p->externalAccountId,
+            'account_name' => $p->accountName,
+            'account_currency' => $p->accountCurrency,
+            'campaigns' => $p->campaigns,
+            'ad_groups' => $p->adGroups,
+            'ads' => $p->ads,
+            'creatives' => $p->creatives,
+            'budget_type' => $p->budgetType,
+            'budget_minor' => $p->budgetMinor,
+            'currency' => $p->currency,
+            'starts_at' => $p->startsAt->format(DateTimeInterface::ATOM),
+            'ends_at' => $p->endsAt?->format(DateTimeInterface::ATOM),
+            'objective' => $p->objective,
+            'conversion' => $p->conversion,
+            'destination' => $p->destination,
+            'initial_state' => $p->initialState,
+            'delivers_by_default' => $p->deliversByDefault,
+            'warnings' => $p->warnings,
+            'blocked_fields' => $p->blockedFields,
+            'payload' => (object) $p->payload,
+        ];
     }
 
     private function input(Request $request): BlueprintInput

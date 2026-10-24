@@ -83,22 +83,58 @@ vi.mock('@/shared/api/client', async (importOriginal) => {
     ensureCsrfCookie: () => Promise.resolve(),
     api: {
       get: (url: string) => {
-        if (url.endsWith('/translation')) {
+        if (url.endsWith('/launch-plan')) {
           return Promise.resolve({
             data: {
-              data: [
-                {
-                  provider: 'tiktok',
-                  objective: 'LEAD_GENERATION',
-                  daily_budget_minor: 50000,
-                  currency: 'SAR',
-                  creates: 'unverified',
-                  fields: [{ field: 'goal', support: 'supported', note: null }],
-                  paused_on_create: 'operation_status=DISABLE',
-                  delivers_by_default: true,
-                  access: 'app review',
-                },
-              ],
+              data: {
+                blueprint_id: 'plan-1',
+                version: 2,
+                state: 'awaiting_credentials',
+                can_create: false,
+                checks: [
+                  {
+                    key: 'creatives',
+                    state: 'blocked',
+                    message: 'No creative is assigned, so no ad can be made.',
+                    fix: 'Assign at least one Creative Hub request.',
+                  },
+                ],
+                totals: [{ currency: 'SAR', budget_minor: 50000 }],
+                providers: [
+                  {
+                    state: 'awaiting_credentials',
+                    checks: [
+                      {
+                        key: 'connection',
+                        state: 'awaiting_credentials',
+                        message: 'The TikTok Ads connection holds sandbox credentials.',
+                        fix: 'Connect the real TikTok Ads account.',
+                      },
+                    ],
+                    plan: {
+                      provider: 'tiktok',
+                      external_account_id: 'a1',
+                      account_name: 'SANDBOX — TikTok',
+                      account_currency: 'SAR',
+                      campaigns: 1,
+                      ad_groups: 1,
+                      ads: 1,
+                      budget_type: 'daily',
+                      budget_minor: 50000,
+                      currency: 'SAR',
+                      starts_at: '2026-12-01T00:00:00+00:00',
+                      ends_at: null,
+                      objective: 'LEAD_GENERATION',
+                      conversion: null,
+                      destination: 'https://example.test',
+                      initial_state: 'operation_status=DISABLE',
+                      delivers_by_default: true,
+                      warnings: [],
+                      blocked_fields: [],
+                    },
+                  },
+                ],
+              },
             },
           });
         }
@@ -162,12 +198,16 @@ describe('CampaignPlanWizard', () => {
     }
 
     expect(state.puts).toEqual([]);
-    expect(await screen.findByRole('article', { name: 'TikTok Ads' })).toHaveTextContent(
-      'LEAD_GENERATION',
-    );
+    const tiktok = await screen.findByRole('article', { name: 'TikTok Ads — SANDBOX — TikTok' });
+    expect(tiktok).toHaveTextContent('LEAD_GENERATION');
+    expect(tiktok).toHaveTextContent('1 campaign, 1 ad group, 1 ad(s)');
     expect(
       screen.getByText(/starts new campaigns delivering unless told otherwise/),
     ).toBeInTheDocument();
     expect(screen.getByText('operation_status=DISABLE')).toBeInTheDocument();
+    expect(screen.getByText('Connect the real TikTok Ads account.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Creation is stopped until the checks below are resolved.'),
+    ).toBeInTheDocument();
   });
 });
