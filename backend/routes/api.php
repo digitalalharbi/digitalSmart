@@ -762,7 +762,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         Route::get('campaign-plans/options', [BlueprintController::class, 'options'])->name('campaign-plans.options');
         Route::post('campaign-plans', [BlueprintController::class, 'store'])->name('campaign-plans.store');
         Route::get('campaign-plans/{blueprint}', [BlueprintController::class, 'show'])->whereUuid('blueprint')->name('campaign-plans.show');
-        Route::get('campaign-plans/{blueprint}/translation', [BlueprintController::class, 'translation'])->whereUuid('blueprint')->name('campaign-plans.translation');
+        Route::get('campaign-plans/{blueprint}/launch-plan', [BlueprintController::class, 'launchPlan'])->whereUuid('blueprint')->name('campaign-plans.launch-plan');
         Route::put('campaign-plans/{blueprint}', [BlueprintController::class, 'update'])->whereUuid('blueprint')->name('campaign-plans.update');
         Route::post('campaign-plans/{blueprint}/submit', [BlueprintController::class, 'submit'])->whereUuid('blueprint')->name('campaign-plans.submit');
         Route::post('campaign-plans/{blueprint}/return', [BlueprintController::class, 'returnToDraft'])->whereUuid('blueprint')->name('campaign-plans.return');

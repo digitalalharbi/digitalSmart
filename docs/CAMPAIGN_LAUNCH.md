@@ -1,8 +1,8 @@
 # Campaign launch
 
 PRs E–G of the SaaS chain (`docs/SAAS_CAMPAIGN_MASTER.md`). How a campaign goes from an idea to campaigns on several platforms,
-created paused, read back, and only then activated. **PR E — the plan and the capability registry — is what exists so far**;
-translation and preflight (F) and approval with queued creation (G) follow.
+created paused, read back, and only then activated. **PR E (the plan and the capability registry) and PR F (the launch plan
+and its preflight) exist**; approval with queued creation (G) follows.
 
 ## The plan (campaign blueprint)
 
@@ -49,11 +49,46 @@ may view. A reader sees plans for the projects they can see. Approving, creating
 permissions, added with PR G and not granted to every media buyer. Planning is part of the **campaign launch** feature
 (`docs/ENTITLEMENTS.md`): a workspace whose plan lacks it is refused with `feature_not_in_plan`.
 
-### The launch-plan step
+## The launch plan and its preflight (PR F)
 
-The wizard's last step reads `/api/campaign-plans/{id}/translation`: the saved plan in each targeted platform's own objective,
-field by field — supported, taken differently, or not at all — with how that platform is told not to deliver. It is a first look;
-the exact planned writes and their preflight are PR F.
+`GET /api/campaign-plans/{id}/launch-plan`, the wizard's last step. **Read-only**: it validates without creating, and never creates
+a campaign to find out whether one could be created.
+
+```
+plan → each platform's translation → ProviderCreatePlan per ad account → payload draft in the platform's own field names
+     → preflight checks per account and for the whole plan → one state
+```
+
+**Per ad account, exactly what would be written** (`ProviderCreatePlan`): one campaign, one ad group, one ad per assigned creative;
+the budget (a daily budget split across accounts in minor units, nothing lost); the schedule; the platform's own objective; the
+conversion; where people land; and the **initial state** — the platform's documented non-delivering value, sent explicitly at every
+level, including where the platform would default to it. The payload draft (`DocumentedPayloadDrafts`) uses each platform's field
+names from the 2026-10-24 reading; it is what PR G's adapters start from, never sent from here. **Budgets are totalled per currency,
+never across currencies.**
+
+**Preflight states**: `ready`, `warning` (can go ahead; read why), `blocked` (the workspace must fix it), `awaiting_credentials`
+(sandbox credentials), `blocked_external` (waiting on the platform), `unsupported` (not confirmed in the platform's documentation;
+nothing attempted). Every non-ready check says why and what fixes it. Creation is stopped by anything from `awaiting_credentials` up;
+a plan is as ready as its worst check.
+
+| Check | Where | Not ready when |
+|---|---|---|
+| Plan quota | plan | the workspace's plan includes no campaign launches |
+| Accounts, dates, landing | plan | no account; a start in the past; nowhere to land (blocked) or plain HTTP (warning) |
+| Tracking link | plan | paused, expired or gone |
+| Creatives | plan | none assigned or none with a file (blocked); not approved yet (warning) |
+| Conversion | plan | a results objective with no conversion (warning) |
+| Binding | account | the account is no longer bound to the project |
+| Connection | account | sandbox credentials (`awaiting_credentials`); not connected (blocked); real credentials but no live create ever confirmed (`blocked_external`, naming the access the platform requires) |
+| Account, currency, time zone | account | inactive; another currency than the plan (blocked); another time zone (warning) |
+| `campaign.create`, `ad_group.create`, `ad.create` | account | not documented by the platform (`unsupported`) |
+| Objective | account | the platform has none for this intent (`unsupported`); a near match (warning, with the platform's own note) |
+| Targeting, placement | account | a field used that the platform does not document (warning: left out until confirmed); free-text interests (warning: matched by a person) |
+| Conversion optimisation | account | not documented (`unsupported`); the project sends no conversions to that platform yet (warning) |
+| Platform validation | account | the platform documents validation without creating, but only real credentials can call it (`awaiting_credentials`) |
+| Initial state | account | always ready; names the paused value and whether the platform delivers by default |
+
+Budget minimums are not checked: no platform's minimum was read, and an invented rule would be worse than none.
 
 ## Provider capability registry
 
