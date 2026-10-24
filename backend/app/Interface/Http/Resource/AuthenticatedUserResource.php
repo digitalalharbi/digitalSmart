@@ -44,6 +44,8 @@ final class AuthenticatedUserResource extends JsonResource
              * single thing this person can do.
              */
             'must_choose_password' => $user->mustChoosePassword,
+            'is_platform_operator' => $user->isPlatformOperator,
+            'subscription' => $user->subscription,
         ];
     }
 

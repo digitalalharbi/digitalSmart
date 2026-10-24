@@ -11,6 +11,7 @@ use App\Application\Commerce\DTO\StoreRecord;
 use App\Application\Commerce\DTO\StoreView;
 use App\Domain\Integration\Provider;
 use App\Domain\Workspace\WorkspaceId;
+use App\Infrastructure\Saas\RunningWorkspaces;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Database\Query\Builder;
@@ -90,7 +91,7 @@ final readonly class EloquentStoreDirectory implements StoreDirectory
     /** @return list<StoreReadTarget> */
     public function readTargets(?WorkspaceId $workspaceId = null): array
     {
-        $query = DB::table('stores')->where('is_active', true);
+        $query = RunningWorkspaces::only(DB::table('stores')->where('is_active', true), 'stores.workspace_id');
 
         if ($workspaceId !== null) {
             $query->where('workspace_id', $workspaceId->value);

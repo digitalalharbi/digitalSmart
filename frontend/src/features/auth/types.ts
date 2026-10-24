@@ -34,6 +34,20 @@ export type AuthenticatedUser = {
    * thing the reader can do.
    */
   must_choose_password: boolean;
+  /** May open the platform console. Grants nothing inside any workspace. */
+  is_platform_operator?: boolean;
+  /** The active workspace's subscription; a paused workspace says so on every screen. */
+  subscription?: SubscriptionState | null;
+};
+
+export type SubscriptionStatus =
+  'trial' | 'active' | 'past_due' | 'grace' | 'suspended' | 'cancelled';
+
+export type SubscriptionState = {
+  status: SubscriptionStatus;
+  reason: string | null;
+  trial_ends_at: string | null;
+  grace_ends_at: string | null;
 };
 
 export type Credentials = {

@@ -233,6 +233,11 @@ enum AuditAction: string
      */
     case WorkspacePlanChanged = 'workspace.plan_changed';
     case WorkspaceEntitlementOverridden = 'workspace.entitlement_overridden';
+    case WorkspaceSubscriptionChanged = 'workspace.subscription_changed';
+    /* A tenant created from the platform console, with its owner. */
+    case WorkspaceCreated = 'workspace.created';
+    /* Somebody was made, or stopped being, a platform operator. Recorded against no workspace. */
+    case PlatformOperatorChanged = 'platform.operator_changed';
 
     public function group(): string
     {
@@ -248,6 +253,10 @@ enum AuditAction: string
             self::UserLoggedOut,
             /* Which tenant a session is acting in is a security fact, like signing in. */
             self::WorkspaceSwitched,
+            /* Who may operate the platform, and a workspace being stopped or started, are access facts. */
+            self::PlatformOperatorChanged,
+            self::WorkspaceSubscriptionChanged,
+            self::WorkspaceCreated,
             self::UserPasswordChanged,
             self::WorkspaceMemberRoleChanged,
             self::WorkspaceMemberSuspended,

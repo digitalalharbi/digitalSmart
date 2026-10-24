@@ -36,7 +36,12 @@ final readonly class GetWorkspacePlan
     {
         $this->guard->ensure(Permission::WorkspacesUpdate);
 
-        $workspaceId = $this->actor->workspaceId()->value;
+        return $this->forWorkspace($this->actor->workspaceId()->value);
+    }
+
+    /** The same view for a named workspace, for the platform console, which authorises its caller itself. */
+    public function forWorkspace(string $workspaceId): WorkspacePlanView
+    {
         $entitlements = $this->store->forWorkspace($workspaceId);
         $now = $this->clock->now();
 

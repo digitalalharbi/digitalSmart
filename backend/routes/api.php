@@ -57,6 +57,7 @@ use App\Interface\Http\Controller\Operations\ApprovalController;
 use App\Interface\Http\Controller\Operations\ApprovalLinkController;
 use App\Interface\Http\Controller\Operations\ClientRequestController;
 use App\Interface\Http\Controller\Operations\TaskController;
+use App\Interface\Http\Controller\Platform\PlatformController;
 use App\Interface\Http\Controller\Portal\ClientPortalController;
 use App\Interface\Http\Controller\Portal\PortalConfigurationController;
 use App\Interface\Http\Controller\Portfolio\PortfolioController;
@@ -84,6 +85,7 @@ use App\Interface\Http\Controller\Workspace\MemberController;
 use App\Interface\Http\Controller\Workspace\RoleController;
 use App\Interface\Http\Controller\Workspace\WorkspacePlanController;
 use App\Interface\Http\Middleware\BindActorContext;
+use App\Interface\Http\Middleware\EnsureWorkspaceWritable;
 use App\Interface\Http\Middleware\RestrictMcpTokens;
 use Illuminate\Support\Facades\Route;
 
@@ -196,7 +198,20 @@ Route::post('public/track', [PublicTrackingController::class, 'event'])
     ->middleware('throttle:tracking')->name('tracking.event');
 
 // --------------------------------------------------------- Authenticated ---
-Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::class])->group(function (): void {
+/*
+ * The platform console. Not inside the workspace group: an operator acts on tenants from outside them, and no workspace's state or
+ * plan can stop the platform from resuming it. Each action authorises the caller as an operator in the application layer.
+ */
+Route::middleware(['auth:sanctum', RestrictMcpTokens::class])->prefix('platform')->name('platform.')->group(function (): void {
+    Route::get('workspaces', [PlatformController::class, 'index'])->name('workspaces.index');
+    Route::post('workspaces', [PlatformController::class, 'store'])->name('workspaces.store');
+    Route::get('workspaces/{workspace}', [PlatformController::class, 'show'])->whereUuid('workspace')->name('workspaces.show');
+    Route::post('workspaces/{workspace}/plan', [PlatformController::class, 'plan'])->whereUuid('workspace')->name('workspaces.plan');
+    Route::post('workspaces/{workspace}/overrides', [PlatformController::class, 'override'])->whereUuid('workspace')->name('workspaces.overrides');
+    Route::post('workspaces/{workspace}/status', [PlatformController::class, 'status'])->whereUuid('workspace')->name('workspaces.status');
+});
+
+Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::class, EnsureWorkspaceWritable::class])->group(function (): void {
     /* Answering them: administrators of the workspace the request was made to, who can add people. */
     Route::get('tracking/links', [TrackingLinkController::class, 'index'])->name('tracking.links.index');
     Route::post('tracking/links', [TrackingLinkController::class, 'store'])->name('tracking.links.store');

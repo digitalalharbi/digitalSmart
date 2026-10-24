@@ -13,6 +13,7 @@ use App\Domain\Integration\SyncTarget;
 use App\Domain\Project\ProjectId;
 use App\Domain\Workspace\WorkspaceId;
 use App\Infrastructure\Persistence\Eloquent\Model\ProjectIntegrationBinding as BindingModel;
+use App\Infrastructure\Saas\RunningWorkspaces;
 use DateTimeImmutable;
 use DateTimeInterface;
 
@@ -77,6 +78,7 @@ final class EloquentIntegrationBindingRepository implements IntegrationBindingRe
         $query = BindingModel::query()
             ->join('external_accounts', 'external_accounts.id', '=', 'project_integration_bindings.external_account_id')
             ->where('project_integration_bindings.sync_enabled', true)
+            ->tap(static fn ($q) => RunningWorkspaces::only($q, 'project_integration_bindings.workspace_id'))
             ->when(
                 $workspaceId instanceof WorkspaceId,
                 fn ($q) => $q->where('project_integration_bindings.workspace_id', $workspaceId?->value),

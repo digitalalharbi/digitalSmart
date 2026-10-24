@@ -45,3 +45,8 @@ gets there is `docs/SAAS_CAMPAIGN_MASTER.md`; tenant isolation is `docs/TENANCY.
 
 What a workspace has — its plan, the features in it, its limits and seats, and any override — is in `docs/ENTITLEMENTS.md`. It
 sits beside permissions and never replaces them.
+
+## The platform console and subscription states (PR D)
+
+How Smart Code operates tenants — operators, the `/platform` console, creating a workspace — and what each subscription state
+does to a workspace: `docs/PLATFORM.md`.

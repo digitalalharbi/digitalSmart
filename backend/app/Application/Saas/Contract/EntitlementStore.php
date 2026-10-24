@@ -6,6 +6,9 @@ namespace App\Application\Saas\Contract;
 
 use App\Application\Saas\DTO\Entitlements;
 use App\Application\Saas\DTO\OverrideRecord;
+use App\Application\Saas\DTO\SubscriptionState;
+use App\Domain\Saas\SubscriptionStatus;
+use DateTimeImmutable;
 
 interface EntitlementStore
 {
@@ -24,4 +27,16 @@ interface EntitlementStore
 
     /** @return list<OverrideRecord> newest first */
     public function overrides(string $workspaceId, int $limit = 50): array;
+
+    /** The workspace's subscription state; `active` for a workspace with no subscription row. */
+    public function subscription(string $workspaceId): SubscriptionState;
+
+    public function changeStatus(
+        string $workspaceId,
+        SubscriptionStatus $status,
+        ?DateTimeImmutable $trialEndsAt,
+        ?DateTimeImmutable $graceEndsAt,
+        ?string $reason,
+        string $changedBy,
+    ): void;
 }

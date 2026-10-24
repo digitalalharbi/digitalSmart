@@ -30,5 +30,13 @@ final readonly class AuthenticatedUser
          * reader a wall of refusals instead of the one thing they can do.
          */
         public bool $mustChoosePassword = false,
+        /** May operate the platform console. Grants nothing inside any workspace. */
+        public bool $isPlatformOperator = false,
+        /**
+         * The active workspace's subscription, so a paused workspace can say so on every screen rather than through a refusal.
+         *
+         * @var array{status: string, reason: string|null, trial_ends_at: string|null, grace_ends_at: string|null}|null
+         */
+        public ?array $subscription = null,
     ) {}
 }
