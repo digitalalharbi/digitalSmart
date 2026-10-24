@@ -6,6 +6,8 @@ use App\Application\Identity\Exception\AuthenticationFailed;
 use App\Application\Integration\Exception\ProviderNotConfigured;
 use App\Application\Integration\Exception\ProviderRequestFailed;
 use App\Application\Integration\Exception\ProviderUnavailable;
+use App\Application\Saas\Exception\FeatureNotEntitled;
+use App\Application\Saas\Exception\QuotaExceeded;
 use App\Application\Shared\Exception\AuthorizationDenied;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Application\Workspace\Exception\LastOwnerProtected;
@@ -23,10 +25,13 @@ use App\Interface\Console\ReadStores;
 use App\Interface\Console\RunAgentsCommand;
 use App\Interface\Console\RunAutomationRulesCommand;
 use App\Interface\Console\RunReportSchedulesCommand;
+use App\Interface\Console\SaasOverrideCommand;
+use App\Interface\Console\SaasPlanCommand;
 use App\Interface\Console\SyncAccessCatalogue;
 use App\Interface\Console\SyncAdvertisingData;
 use App\Interface\Http\Middleware\AssignRequestId;
 use App\Interface\Http\Middleware\AuthenticateSessionForSpa;
+use App\Interface\Http\Middleware\EnsureFeature;
 use App\Interface\Http\Middleware\RequireChosenPassword;
 use App\Interface\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\AuthenticationException;
@@ -56,6 +61,8 @@ return Application::configure(basePath: dirname(__DIR__))
         attributes: ['middleware' => ['web', 'auth']],
     )
     ->withCommands([
+        SaasPlanCommand::class,
+        SaasOverrideCommand::class,
         BuildDigestsCommand::class,
         PerformanceDigestsCommand::class,
         RaiseAlertsCommand::class,
@@ -75,6 +82,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // First-party SPA authentication: Sanctum's stateful guard on /api.
         $middleware->statefulApi();
+
+        /* `feature:<key>`: the workspace's plan must include it. See `EnsureFeature`. */
+        $middleware->alias(['feature' => EnsureFeature::class]);
 
         $middleware->api(prepend: [
             AssignRequestId::class,
@@ -158,6 +168,27 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(static fn (ResourceNotFound $exception): Response => response()->json([
             'message' => $exception->getMessage(),
         ], Response::HTTP_NOT_FOUND));
+
+        /*
+         * A feature the workspace's plan does not include: nobody in it can use this, so it is not a permission refusal. The
+         * feature and plan are named so the page can say what would unlock it.
+         */
+        $exceptions->render(static fn (FeatureNotEntitled $exception): Response => response()->json([
+            'message' => $exception->getMessage(),
+            'code' => 'feature_not_in_plan',
+            'feature' => $exception->feature->value,
+            'plan' => $exception->planCode,
+        ], Response::HTTP_FORBIDDEN));
+
+        /* A limit reached: what was used, what is allowed, and when a monthly limit resets. Nothing existing is touched. */
+        $exceptions->render(static fn (QuotaExceeded $exception): Response => response()->json([
+            'message' => $exception->getMessage(),
+            'code' => 'quota_exceeded',
+            'limit' => $exception->limit->value,
+            'used' => $exception->used,
+            'allowed' => $exception->allowed,
+            'resets_at' => $exception->resetsAt?->format(DATE_ATOM),
+        ], Response::HTTP_CONFLICT));
 
         // A broken business rule is a 422 with a stable machine-readable code.
         $exceptions->render(static fn (DomainException $exception): Response => response()->json([

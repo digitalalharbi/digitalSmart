@@ -40,3 +40,8 @@ gets there is `docs/SAAS_CAMPAIGN_MASTER.md`; tenant isolation is `docs/TENANCY.
   cleared on a switch.
 - `e2e/workspace-switcher.spec.ts` — the demo owner switches between the demo agency and the demo brand, sees only that
   tenant's clients, and the switcher fits a 375px phone (Chromium, Firefox, WebKit, Mobile Safari, Mobile Chromium).
+
+## Plans, features and limits (PR C)
+
+What a workspace has — its plan, the features in it, its limits and seats, and any override — is in `docs/ENTITLEMENTS.md`. It
+sits beside permissions and never replaces them.

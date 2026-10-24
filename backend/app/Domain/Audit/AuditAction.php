@@ -227,6 +227,13 @@ enum AuditAction: string
     case AccessInvitationCreated = 'access.invitation_created';
     case AccessInvitationAccepted = 'access.invitation_accepted';
 
+    /*
+     * What a workspace may use changed. Named after the operator who did it, because nobody inside the workspace did: the plan
+     * and its overrides are set from outside, and the trail has to say so.
+     */
+    case WorkspacePlanChanged = 'workspace.plan_changed';
+    case WorkspaceEntitlementOverridden = 'workspace.entitlement_overridden';
+
     public function group(): string
     {
         return explode('.', $this->value)[0];

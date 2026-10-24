@@ -6,6 +6,7 @@ namespace App\Infrastructure\Workspace;
 
 use App\Domain\Access\Permission as PermissionEnum;
 use App\Domain\Access\SystemRole;
+use App\Domain\Saas\PlanCatalogue;
 use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceType;
 use App\Infrastructure\Persistence\Eloquent\Model\Permission;
@@ -54,6 +55,23 @@ final readonly class WorkspaceProvisioner
                 'status' => MembershipStatus::Active->value,
                 'joined_at' => now(),
             ]);
+
+            /*
+             * Every workspace starts on the installation's default plan, recorded rather than implied, so "which plan is this on" has
+             * a row to point at. Skipped only where the plan catalogue has not been migrated yet.
+             */
+            $planId = DB::table('plans')->where('code', (string) config('digitalsmart.saas.default_plan', PlanCatalogue::AGENCY))->value('id');
+
+            if ($planId !== null) {
+                DB::table('workspace_subscriptions')->insert([
+                    'workspace_id' => $workspace->getKey(),
+                    'plan_id' => $planId,
+                    'assigned_at' => now(),
+                    'assigned_by' => 'provisioning',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             return $workspace;
         });

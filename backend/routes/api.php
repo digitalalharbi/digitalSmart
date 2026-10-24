@@ -82,6 +82,7 @@ use App\Interface\Http\Controller\Tracking\TrackingHealthController;
 use App\Interface\Http\Controller\Tracking\TrackingLinkController;
 use App\Interface\Http\Controller\Workspace\MemberController;
 use App\Interface\Http\Controller\Workspace\RoleController;
+use App\Interface\Http\Controller\Workspace\WorkspacePlanController;
 use App\Interface\Http\Middleware\BindActorContext;
 use App\Interface\Http\Middleware\RestrictMcpTokens;
 use Illuminate\Support\Facades\Route;
@@ -216,21 +217,21 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::delete('tracking/conversions/mappings/{mapping}', [ConversionController::class, 'deleteMapping'])->whereUuid('mapping')->name('tracking.conversions.mappings.destroy');
     Route::put('tracking/settings/policy', [ConversionController::class, 'savePolicy'])->name('tracking.settings.policy');
     Route::post('tracking/conversions/dispatches/{dispatch}/retry', [ConversionController::class, 'retry'])->whereUuid('dispatch')->name('tracking.conversions.retry');
-    Route::get('tracking/funnels', [TrackingAnalyticsController::class, 'funnels'])->name('tracking.funnels.index');
-    Route::post('tracking/funnels', [TrackingAnalyticsController::class, 'saveFunnel'])->name('tracking.funnels.store');
-    Route::put('tracking/funnels/{funnel}', [TrackingAnalyticsController::class, 'saveFunnel'])->whereUuid('funnel')->name('tracking.funnels.update');
-    Route::delete('tracking/funnels/{funnel}', [TrackingAnalyticsController::class, 'deleteFunnel'])->whereUuid('funnel')->name('tracking.funnels.destroy');
+    Route::get('tracking/funnels', [TrackingAnalyticsController::class, 'funnels'])->name('tracking.funnels.index')->middleware('feature:tracking_funnels');
+    Route::post('tracking/funnels', [TrackingAnalyticsController::class, 'saveFunnel'])->name('tracking.funnels.store')->middleware('feature:tracking_funnels');
+    Route::put('tracking/funnels/{funnel}', [TrackingAnalyticsController::class, 'saveFunnel'])->whereUuid('funnel')->name('tracking.funnels.update')->middleware('feature:tracking_funnels');
+    Route::delete('tracking/funnels/{funnel}', [TrackingAnalyticsController::class, 'deleteFunnel'])->whereUuid('funnel')->name('tracking.funnels.destroy')->middleware('feature:tracking_funnels');
     Route::get('tracking/analytics/funnel', [TrackingAnalyticsController::class, 'funnel'])->name('tracking.analytics.funnel');
     Route::get('tracking/analytics/breakdown', [TrackingAnalyticsController::class, 'breakdown'])->name('tracking.analytics.breakdown');
     Route::get('tracking/analytics/operations', [TrackingAnalyticsController::class, 'operations'])->name('tracking.analytics.operations');
     Route::get('tracking/analytics/follow-up', [TrackingAnalyticsController::class, 'followUp'])->name('tracking.analytics.follow_up');
     Route::get('leads/{lead}/timeline', [TrackingAnalyticsController::class, 'leadTimeline'])->whereUuid('lead')->name('leads.timeline');
     Route::post('leads/{lead}/milestones', [LeadController::class, 'milestone'])->whereUuid('lead')->name('leads.milestone');
-    Route::get('tracking/forms', [FormController::class, 'index'])->name('tracking.forms.index');
-    Route::post('tracking/forms', [FormController::class, 'store'])->name('tracking.forms.store');
-    Route::get('tracking/forms/{form}', [FormController::class, 'show'])->whereUuid('form')->name('tracking.forms.show');
-    Route::put('tracking/forms/{form}', [FormController::class, 'update'])->whereUuid('form')->name('tracking.forms.update');
-    Route::post('tracking/forms/{form}/status', [FormController::class, 'status'])->whereUuid('form')->name('tracking.forms.status');
+    Route::get('tracking/forms', [FormController::class, 'index'])->name('tracking.forms.index')->middleware('feature:tracking_forms');
+    Route::post('tracking/forms', [FormController::class, 'store'])->name('tracking.forms.store')->middleware('feature:tracking_forms');
+    Route::get('tracking/forms/{form}', [FormController::class, 'show'])->whereUuid('form')->name('tracking.forms.show')->middleware('feature:tracking_forms');
+    Route::put('tracking/forms/{form}', [FormController::class, 'update'])->whereUuid('form')->name('tracking.forms.update')->middleware('feature:tracking_forms');
+    Route::post('tracking/forms/{form}/status', [FormController::class, 'status'])->whereUuid('form')->name('tracking.forms.status')->middleware('feature:tracking_forms');
     Route::get('tracking/link-templates', [TrackingLinkController::class, 'templates'])->name('tracking.templates.index');
     Route::post('tracking/link-templates', [TrackingLinkController::class, 'saveTemplate'])->name('tracking.templates.store');
 
@@ -262,6 +263,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         ->middleware('throttle:auth')
         ->name('auth.password');
 
+    Route::get('workspace/plan', WorkspacePlanController::class)->name('workspace.plan');
     Route::post('workspaces/{workspace}/activate', WorkspaceSwitchController::class)
         ->whereUuid('workspace')
         ->name('workspaces.activate');
@@ -347,7 +349,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::get('analytics/catalogue', MetricCatalogueController::class)->name('analytics.catalogue');
 
     /* Creatives, by asset or by ad: the same engine as `analytics`, grouped by what ran. */
-    Route::get('analytics/creatives', CreativeIntelligenceController::class)->name('analytics.creatives');
+    Route::get('analytics/creatives', CreativeIntelligenceController::class)->name('analytics.creatives')->middleware('feature:creative_intelligence');
 
     /*
      * Saved views: a stored analytics query. The preset is stored rather than the
@@ -511,7 +513,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      * Read a CRM's deals as leads. A **read**: the CRM owns a deal's stage and nothing here writes one back, which
      * is why `POST /api/leads/{lead}/stage` refuses a CRM-sourced lead. See docs/CRM.md.
      */
-    Route::post('leads/crm-sync', [LeadController::class, 'syncCrm'])->name('leads.crm_sync');
+    Route::post('leads/crm-sync', [LeadController::class, 'syncCrm'])->name('leads.crm_sync')->middleware('feature:crm');
 
     /*
      * Attribution. The catalogue first, so a client never hard-codes the model vocabulary and so the
@@ -519,41 +521,41 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      * missing.
      */
     Route::get('attribution/models', [AttributionController::class, 'models'])
-        ->name('attribution.models');
+        ->name('attribution.models')->middleware('feature:attribution');
     Route::get('attribution/comparison', [AttributionController::class, 'comparison'])
-        ->name('attribution.comparison');
-    Route::get('attribution', [AttributionController::class, 'show'])->name('attribution.show');
+        ->name('attribution.comparison')->middleware('feature:attribution');
+    Route::get('attribution', [AttributionController::class, 'show'])->name('attribution.show')->middleware('feature:attribution');
 
     /*
      * Creative operations. The vocabulary first, so a board never carries its own copy of the legal moves —
      * a front end that did would offer a drop target the server refuses.
      */
-    Route::get('creative/vocabulary', [CreativeController::class, 'vocabulary'])->name('creative.vocabulary');
-    Route::get('creative/specs', [CreativeController::class, 'specs'])->name('creative.specs');
-    Route::get('creative/board', [CreativeController::class, 'board'])->name('creative.board');
-    Route::post('creative', [CreativeController::class, 'store'])->name('creative.store');
+    Route::get('creative/vocabulary', [CreativeController::class, 'vocabulary'])->name('creative.vocabulary')->middleware('feature:creative_operations');
+    Route::get('creative/specs', [CreativeController::class, 'specs'])->name('creative.specs')->middleware('feature:creative_operations');
+    Route::get('creative/board', [CreativeController::class, 'board'])->name('creative.board')->middleware('feature:creative_operations');
+    Route::post('creative', [CreativeController::class, 'store'])->name('creative.store')->middleware('feature:creative_operations');
     Route::get('creative/{creative}', [CreativeController::class, 'show'])
-        ->whereUuid('creative')->name('creative.show');
+        ->whereUuid('creative')->name('creative.show')->middleware('feature:creative_operations');
     /*
      * Who is making it. The column existed from the composer onwards and nothing could change it, so a brief
      * could never be handed to anybody — see `OwnerDirectory` for who is eligible and why.
      */
     Route::get('creative/{creative}/owners', [CreativeController::class, 'owners'])
-        ->whereUuid('creative')->name('creative.owners');
+        ->whereUuid('creative')->name('creative.owners')->middleware('feature:creative_operations');
     Route::post('creative/{creative}/owner', [CreativeController::class, 'assign'])
-        ->whereUuid('creative')->name('creative.assign');
+        ->whereUuid('creative')->name('creative.assign')->middleware('feature:creative_operations');
     Route::post('creative/{creative}/state', [CreativeController::class, 'move'])
-        ->whereUuid('creative')->name('creative.move');
+        ->whereUuid('creative')->name('creative.move')->middleware('feature:creative_operations');
     Route::post('creative/{creative}/versions', [CreativeController::class, 'addVersion'])
-        ->whereUuid('creative')->name('creative.versions.store');
+        ->whereUuid('creative')->name('creative.versions.store')->middleware('feature:creative_operations');
     Route::post('creative/{creative}/comments', [CreativeController::class, 'comment'])
-        ->whereUuid('creative')->name('creative.comments.store');
+        ->whereUuid('creative')->name('creative.comments.store')->middleware('feature:creative_operations');
     /*
      * The decision is on a **version**, and the route says so. A path under the request would invite an
      * endpoint that approves "the request", which is the one thing an approval trail must not record.
      */
     Route::post('creative-versions/{version}/decision', [CreativeController::class, 'decide'])
-        ->whereUuid('version')->name('creative.versions.decide');
+        ->whereUuid('version')->name('creative.versions.decide')->middleware('feature:creative_operations');
     // ------------------------------------------------------------- Operations ---
     /*
      * The board's own vocabulary: columns, legal moves, the priority scale and the due buckets. Fetched
@@ -684,7 +686,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      * permission, with the proposal's fingerprint checked against the one approved — see docs/PROVIDER_WRITES.md.
      */
     Route::post('approvals/{approval}/carry-out', [ApprovalController::class, 'carryOut'])
-        ->whereUuid('approval')->name('approvals.carry_out');
+        ->whereUuid('approval')->name('approvals.carry_out')->middleware('feature:provider_writes');
 
     /*
      * One person's history. Enquiries and orders only: the marketing touches before them need event-level data
@@ -698,24 +700,24 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      * total measure different things and there is no total across them that means anything.
      */
     Route::get('commerce/analytics', StoreAnalyticsController::class)
-        ->name('commerce.analytics');
-    Route::get('commerce/rollup', StoreRollupController::class)->name('commerce.rollup');
+        ->name('commerce.analytics')->middleware('feature:commerce');
+    Route::get('commerce/rollup', StoreRollupController::class)->name('commerce.rollup')->middleware('feature:commerce');
 
     /*
      * The stores a workspace reads. Reading the list needs `analytics.view` — "where does this figure come from
      * and how old is it" is part of reading the figure — while discovering, connecting and reading a store need
      * `workspaces.update`, because each spends the workspace's credentials on somebody else's API.
      */
-    Route::get('commerce/stores', [StoreController::class, 'index'])->name('commerce.stores.index');
+    Route::get('commerce/stores', [StoreController::class, 'index'])->name('commerce.stores.index')->middleware('feature:commerce');
     Route::get('commerce/stores/connectable', [StoreController::class, 'connectable'])
-        ->name('commerce.stores.connectable');
-    Route::post('commerce/stores', [StoreController::class, 'store'])->name('commerce.stores.store');
+        ->name('commerce.stores.connectable')->middleware('feature:commerce');
+    Route::post('commerce/stores', [StoreController::class, 'store'])->name('commerce.stores.store')->middleware('feature:commerce');
     /*
      * The reconciliation read, by hand. Webhooks are faster and are not sufficient — one dropped delivery and a
      * client's revenue is quietly short for that window — and `commerce:sync` is the same read on a schedule.
      */
     Route::post('commerce/stores/{store}/read', [StoreController::class, 'read'])
-        ->whereUuid('store')->name('commerce.stores.read');
+        ->whereUuid('store')->name('commerce.stores.read')->middleware('feature:commerce');
 
     Route::get('measurement/containers', [MeasurementController::class, 'containers'])
         ->name('measurement.containers');
@@ -734,38 +736,38 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         ->whereUuid('view')->name('surface_views.destroy');
 
     /* digitalSmart's own MCP server, and the tokens an AI client signs in with. */
-    Route::get('agents/overview', [AgentOverviewController::class, 'show'])->name('agents.overview');
-    Route::get('agents/status', [AgentOverviewController::class, 'status'])->name('agents.status');
-    Route::post('agents/run', [AgentOverviewController::class, 'run'])->middleware('throttle:6,1')->name('agents.run');
+    Route::get('agents/overview', [AgentOverviewController::class, 'show'])->name('agents.overview')->middleware('feature:agents');
+    Route::get('agents/status', [AgentOverviewController::class, 'status'])->name('agents.status')->middleware('feature:agents');
+    Route::post('agents/run', [AgentOverviewController::class, 'run'])->middleware('throttle:6,1')->name('agents.run')->middleware('feature:agents');
     Route::post('campaigns/bulk', CampaignBulkController::class)->middleware('throttle:10,1')->name('campaigns.bulk');
     Route::post('campaign-blueprints/preview', [CampaignBlueprintController::class, 'preview'])->name('blueprints.preview');
     Route::post('campaign-blueprints/drafts', [CampaignBlueprintController::class, 'drafts'])->middleware('throttle:10,1')->name('blueprints.drafts');
-    Route::get('agents/findings', [AgentFindingsController::class, 'index'])->name('agents.findings');
-    Route::post('agents/ask', [AgentFindingsController::class, 'ask'])->middleware('throttle:6,1')->name('agents.ask');
-    Route::get('agents/models', [ModelRoutingController::class, 'show'])->name('agents.models');
-    Route::put('agents/models', [ModelRoutingController::class, 'update'])->middleware('throttle:10,1')->name('agents.models.update');
-    Route::post('mcp', McpController::class)->middleware('throttle:60,1')->name('mcp.rpc');
-    Route::get('mcp/tokens', [McpTokenController::class, 'index'])->name('mcp.tokens.index');
-    Route::post('mcp/tokens', [McpTokenController::class, 'store'])->name('mcp.tokens.store');
-    Route::delete('mcp/tokens/{token}', [McpTokenController::class, 'destroy'])->name('mcp.tokens.destroy');
+    Route::get('agents/findings', [AgentFindingsController::class, 'index'])->name('agents.findings')->middleware('feature:agents');
+    Route::post('agents/ask', [AgentFindingsController::class, 'ask'])->middleware('throttle:6,1')->name('agents.ask')->middleware('feature:agents');
+    Route::get('agents/models', [ModelRoutingController::class, 'show'])->name('agents.models')->middleware('feature:agents');
+    Route::put('agents/models', [ModelRoutingController::class, 'update'])->middleware('throttle:10,1')->name('agents.models.update')->middleware('feature:agents');
+    Route::post('mcp', McpController::class)->middleware('throttle:60,1')->name('mcp.rpc')->middleware('feature:agents');
+    Route::get('mcp/tokens', [McpTokenController::class, 'index'])->name('mcp.tokens.index')->middleware('feature:agents');
+    Route::post('mcp/tokens', [McpTokenController::class, 'store'])->name('mcp.tokens.store')->middleware('feature:agents');
+    Route::delete('mcp/tokens/{token}', [McpTokenController::class, 'destroy'])->name('mcp.tokens.destroy')->middleware('feature:agents');
 
     /* Targets and limits for a client or a project: what good means, and what no agent may cross. */
     Route::get('operating-rules', [OperatingRulesController::class, 'show'])->name('operating_rules.show');
     Route::put('operating-rules', [OperatingRulesController::class, 'update'])->name('operating_rules.update');
 
     /* Rules over campaigns: their only outcome is an item in the attention queue. */
-    Route::get('automation/rules', [AutomationRuleController::class, 'index'])->name('automation.rules.index');
-    Route::post('automation/rules/bulk', [AutomationRuleController::class, 'bulk'])->middleware('throttle:20,1')->name('automation.rules.bulk');
-    Route::post('automation/rules/simulate', [AutomationRuleController::class, 'simulate'])->middleware('throttle:20,1')->name('automation.rules.simulate');
-    Route::get('automation/summary', [AutomationRuleController::class, 'summary'])->name('automation.summary');
-    Route::get('automation/history', [AutomationRuleController::class, 'history'])->name('automation.history');
-    Route::get('automation/changes', [AutomationRuleController::class, 'changeLog'])->name('automation.changes');
-    Route::get('automation/capabilities', [AutomationRuleController::class, 'capabilities'])->name('automation.capabilities');
-    Route::post('automation/rules', [AutomationRuleController::class, 'store'])->name('automation.rules.store');
+    Route::get('automation/rules', [AutomationRuleController::class, 'index'])->name('automation.rules.index')->middleware('feature:automation');
+    Route::post('automation/rules/bulk', [AutomationRuleController::class, 'bulk'])->middleware('throttle:20,1')->name('automation.rules.bulk')->middleware('feature:automation');
+    Route::post('automation/rules/simulate', [AutomationRuleController::class, 'simulate'])->middleware('throttle:20,1')->name('automation.rules.simulate')->middleware('feature:automation');
+    Route::get('automation/summary', [AutomationRuleController::class, 'summary'])->name('automation.summary')->middleware('feature:automation');
+    Route::get('automation/history', [AutomationRuleController::class, 'history'])->name('automation.history')->middleware('feature:automation');
+    Route::get('automation/changes', [AutomationRuleController::class, 'changeLog'])->name('automation.changes')->middleware('feature:automation');
+    Route::get('automation/capabilities', [AutomationRuleController::class, 'capabilities'])->name('automation.capabilities')->middleware('feature:automation');
+    Route::post('automation/rules', [AutomationRuleController::class, 'store'])->name('automation.rules.store')->middleware('feature:automation');
     Route::put('automation/rules/{rule}', [AutomationRuleController::class, 'update'])
-        ->whereUuid('rule')->name('automation.rules.update');
+        ->whereUuid('rule')->name('automation.rules.update')->middleware('feature:automation');
     Route::delete('automation/rules/{rule}', [AutomationRuleController::class, 'destroy'])
-        ->whereUuid('rule')->name('automation.rules.destroy');
+        ->whereUuid('rule')->name('automation.rules.destroy')->middleware('feature:automation');
 
     Route::get('activity', ActivityController::class)->name('activity.index');
 
@@ -829,18 +831,18 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      * `PUT /portals/{client}` carrying a state, a reason and a module list together.
      */
     Route::get('portals/vocabulary', [PortalConfigurationController::class, 'vocabulary'])
-        ->name('portals.vocabulary');
-    Route::get('portals', [PortalConfigurationController::class, 'index'])->name('portals.index');
+        ->name('portals.vocabulary')->middleware('feature:client_portal');
+    Route::get('portals', [PortalConfigurationController::class, 'index'])->name('portals.index')->middleware('feature:client_portal');
     Route::get('portals/{client}', [PortalConfigurationController::class, 'show'])
-        ->whereUuid('client')->name('portals.show');
+        ->whereUuid('client')->name('portals.show')->middleware('feature:client_portal');
     Route::post('portals/{client}/enable', [PortalConfigurationController::class, 'enable'])
-        ->whereUuid('client')->name('portals.enable');
+        ->whereUuid('client')->name('portals.enable')->middleware('feature:client_portal');
     Route::post('portals/{client}/suspend', [PortalConfigurationController::class, 'suspend'])
-        ->whereUuid('client')->name('portals.suspend');
+        ->whereUuid('client')->name('portals.suspend')->middleware('feature:client_portal');
     Route::post('portals/{client}/resume', [PortalConfigurationController::class, 'resume'])
-        ->whereUuid('client')->name('portals.resume');
+        ->whereUuid('client')->name('portals.resume')->middleware('feature:client_portal');
     Route::put('portals/{client}/modules', [PortalConfigurationController::class, 'modules'])
-        ->whereUuid('client')->name('portals.modules');
+        ->whereUuid('client')->name('portals.modules')->middleware('feature:client_portal');
 
     /*
      * The client's own side. Authorization is the portal's module grants, not a role: a module that is not exposed
@@ -850,17 +852,17 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      * Agency staff holding `portal.view` read the same routes as a preview, through the same code, and every
      * response says `is_preview` so a preview cannot be mistaken for their own view of the product.
      */
-    Route::get('portal', [ClientPortalController::class, 'index'])->name('portal.index');
+    Route::get('portal', [ClientPortalController::class, 'index'])->name('portal.index')->middleware('feature:client_portal');
     Route::get('portal/{client}/performance', [ClientPortalController::class, 'performance'])
-        ->whereUuid('client')->name('portal.performance');
+        ->whereUuid('client')->name('portal.performance')->middleware('feature:client_portal');
     Route::get('portal/{client}/revenue', [ClientPortalController::class, 'revenue'])
-        ->whereUuid('client')->name('portal.revenue');
+        ->whereUuid('client')->name('portal.revenue')->middleware('feature:client_portal');
     Route::get('portal/{client}/reports', [ClientPortalController::class, 'reports'])
-        ->whereUuid('client')->name('portal.reports');
+        ->whereUuid('client')->name('portal.reports')->middleware('feature:client_portal');
     Route::get('portal/{client}/reports/{report}', [ClientPortalController::class, 'report'])
-        ->whereUuid('client')->whereUuid('report')->name('portal.report');
+        ->whereUuid('client')->whereUuid('report')->name('portal.report')->middleware('feature:client_portal');
     Route::get('portal/{client}/tracking', [ClientPortalController::class, 'tracking'])
-        ->whereUuid('client')->name('portal.tracking');
+        ->whereUuid('client')->name('portal.tracking')->middleware('feature:client_portal');
 
     // ------------------------------------------------------------- Assistant ---
     /*
@@ -871,13 +873,13 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      * of it — see `AssistantResource`.
      */
     Route::get('assistant/vocabulary', [AssistantController::class, 'vocabulary'])
-        ->name('assistant.vocabulary');
-    Route::get('assistant/analyse', [AssistantController::class, 'analyse'])->name('assistant.analyse');
-    Route::post('assistant/ask', [AssistantController::class, 'ask'])->name('assistant.ask');
+        ->name('assistant.vocabulary')->middleware('feature:ai');
+    Route::get('assistant/analyse', [AssistantController::class, 'analyse'])->name('assistant.analyse')->middleware('feature:ai');
+    Route::post('assistant/ask', [AssistantController::class, 'ask'])->name('assistant.ask')->middleware('feature:ai');
     /* Proposes a report definition and saves nothing: the reporting module is where a person decides. */
-    Route::get('assistant/report', [AssistantController::class, 'report'])->name('assistant.report');
+    Route::get('assistant/report', [AssistantController::class, 'report'])->name('assistant.report')->middleware('feature:ai');
     Route::get('assistant/findings/{code}', [AssistantController::class, 'investigate'])
-        ->where('code', '[a-z0-9_.-]+')->name('assistant.investigate');
+        ->where('code', '[a-z0-9_.-]+')->name('assistant.investigate')->middleware('feature:ai');
 
     // --------------------------------------------------------- Presentations ---
     /*
@@ -886,11 +888,11 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
      * see docs/PRESENTATIONS.md.
      */
     Route::get('presentations/vocabulary', [PresentationController::class, 'vocabulary'])
-        ->name('presentations.vocabulary');
+        ->name('presentations.vocabulary')->middleware('feature:presentations');
     Route::get('presentations/{kind}', [PresentationController::class, 'show'])
-        ->where('kind', '[a-z_]+')->name('presentations.show');
+        ->where('kind', '[a-z_]+')->name('presentations.show')->middleware('feature:presentations');
     Route::get('presentations/{kind}/pptx', [PresentationController::class, 'download'])
-        ->where('kind', '[a-z_]+')->name('presentations.download');
+        ->where('kind', '[a-z_]+')->name('presentations.download')->middleware('feature:presentations');
 
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])

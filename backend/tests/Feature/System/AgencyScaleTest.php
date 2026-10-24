@@ -200,7 +200,8 @@ it('issues the same number of statements over a bigger agency: lead centre, comm
     $ceilings = [
         '/api/leads/centre' => 10,
         '/api/leads?limit=50' => 6,
-        '/api/commerce/rollup?revenue_source=salla' => 6,
+        /* +2 since commerce became a plan feature: the plan's features and its overrides, read once per request. */
+        '/api/commerce/rollup?revenue_source=salla' => 8,
         '/api/measurement/agency-health' => 7,
         '/api/activity' => 6,
         '/api/benchmarks' => 8,
@@ -294,7 +295,8 @@ it('keeps the agency views within their stated query budget', function (): void 
         '/api/analytics?preset=28d&metrics[]=spend&dimension=provider&limit=10' => 8,
         '/api/leads?limit=50' => 7,
         '/api/leads/centre' => 10,
-        '/api/commerce/rollup?revenue_source=salla' => 6,
+        /* +2 since commerce became a plan feature: the plan's features and its overrides, read once per request. */
+        '/api/commerce/rollup?revenue_source=salla' => 8,
         '/api/clients?per_page=25' => 7,
         '/api/projects?per_page=25' => 7,
     ];

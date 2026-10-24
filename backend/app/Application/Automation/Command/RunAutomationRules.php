@@ -16,6 +16,8 @@ use App\Application\Automation\Contract\RuleExecutionLog;
 use App\Application\Automation\DTO\RuleView;
 use App\Application\Automation\RuleCapability;
 use App\Application\Automation\RuleEvaluator;
+use App\Application\Saas\EntitlementGuard;
+use App\Application\Saas\Exception\QuotaExceeded;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\ActorContextBinder;
 use App\Application\Shared\Contract\Clock;
@@ -23,6 +25,8 @@ use App\Domain\Advertising\AdEntityType;
 use App\Domain\Automation\RuleAction;
 use App\Domain\Automation\RuleMode;
 use App\Domain\Identity\UserId;
+use App\Domain\Saas\Feature;
+use App\Domain\Saas\Limit;
 use App\Domain\Workspace\WorkspaceId;
 use DateTimeImmutable;
 use Throwable;
@@ -70,6 +74,7 @@ final readonly class RunAutomationRules
         private Clock $clock,
         private RuleCapability $capability,
         private ActorContext $actor,
+        private EntitlementGuard $entitlements,
     ) {}
 
     /** @return array{workspaces: int, rules: int, acted: int, refused: int} */
@@ -78,6 +83,10 @@ final readonly class RunAutomationRules
         $totals = ['workspaces' => 0, 'rules' => 0, 'acted' => 0, 'refused' => 0];
 
         foreach ($this->runs->workspaces($workspaceId) as $workspace) {
+            if (! $this->mayRun($workspace)) {
+                continue;
+            }
+
             $totals['workspaces']++;
             $run = null;
 
@@ -137,6 +146,25 @@ final readonly class RunAutomationRules
         }
 
         return $campaigns->assessEntities($rule->level(), $filter, $rule->adGroupIds, $rule->adIds, $rule->windowDays);
+    }
+
+    /**
+     * A workspace whose plan has no automation, or whose month of rule runs is spent, is passed over: its rules stay as they are
+     * and run again when the plan or the month allows. Nothing is switched off.
+     */
+    private function mayRun(string $workspace): bool
+    {
+        if (! $this->entitlements->entitlements($workspace)->has(Feature::Automation)) {
+            return false;
+        }
+
+        try {
+            $this->entitlements->ensureCapacity(Limit::AutomationRunsMonthly, 1, $workspace);
+        } catch (QuotaExceeded) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

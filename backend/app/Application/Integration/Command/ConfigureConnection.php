@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Integration\Command;
 
+use App\Application\Saas\EntitlementGuard;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -17,6 +18,7 @@ use App\Domain\Integration\Provider;
 use App\Domain\Integration\ProviderConnection;
 use App\Domain\Integration\ProviderConnectionId;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
+use App\Domain\Saas\Limit;
 use SensitiveParameter;
 
 /**
@@ -34,6 +36,7 @@ final readonly class ConfigureConnection
         private ActorContext $actor,
         private IdentifierGenerator $ids,
         private AuditRecorder $audit,
+        private EntitlementGuard $entitlements,
     ) {}
 
     /** @param array<string, string> $credentialValues */
@@ -74,7 +77,12 @@ final readonly class ConfigureConnection
             $action = AuditAction::IntegrationConnected;
         }
 
-        $this->connections->save($connection);
+        if ($existing instanceof ProviderConnection) {
+            $this->connections->save($connection);
+        } else {
+            // Replacing credentials uses no new room; only a new connection counts against the plan.
+            $this->entitlements->claim(Limit::ProviderConnections, fn () => $this->connections->save($connection));
+        }
 
         $this->audit->record(new AuditEntry(
             workspaceId: $workspaceId,

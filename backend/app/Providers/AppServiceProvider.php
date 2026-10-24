@@ -143,6 +143,9 @@ use App\Application\Reporting\Contract\ReportShareStore;
 use App\Application\Reporting\Contract\ReportWorkbookWriter;
 use App\Application\Reporting\Contract\SnapshotSerialiser;
 use App\Application\Reporting\Contract\TrackingReportReader;
+use App\Application\Saas\Contract\CapacityLock;
+use App\Application\Saas\Contract\EntitlementStore;
+use App\Application\Saas\Contract\UsageReader;
 use App\Application\Search\Contract\SearchReadModel;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\ActorContextBinder;
@@ -331,6 +334,9 @@ use App\Infrastructure\Presentation\PptxWriter;
 use App\Infrastructure\Reporting\EloquentReportShareStore;
 use App\Infrastructure\Reporting\EloquentTrackingReportReader;
 use App\Infrastructure\Reporting\XlsxWriter;
+use App\Infrastructure\Saas\EloquentEntitlementStore;
+use App\Infrastructure\Saas\EloquentUsageReader;
+use App\Infrastructure\Saas\PostgresCapacityLock;
 use App\Infrastructure\Support\SystemClock;
 use App\Infrastructure\Support\Uuid7Generator;
 use App\Infrastructure\System\CacheHealthProbe;
@@ -598,6 +604,11 @@ final class AppServiceProvider extends ServiceProvider
         foreach (self::BINDINGS as $abstract => $concrete) {
             $this->app->bind($abstract, $concrete);
         }
+
+        /* Scoped: one per request or job, so its memo of a workspace's entitlements never outlives the request that read them. */
+        $this->app->scoped(EntitlementStore::class, EloquentEntitlementStore::class);
+        $this->app->bind(UsageReader::class, EloquentUsageReader::class);
+        $this->app->bind(CapacityLock::class, PostgresCapacityLock::class);
 
         /* Email and WhatsApp deliveries, in the state they are in: nothing is sent, and the row says why. */
         $this->app->bind(NotificationChannelDelivery::class, static fn (): NotificationChannelDelivery => new HonestChannelDelivery(

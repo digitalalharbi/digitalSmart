@@ -9,6 +9,7 @@ use App\Application\Workspace\DTO\InvitedMember;
 use App\Domain\Access\RoleId;
 use App\Domain\Identity\Email;
 use App\Domain\Identity\UserId;
+use App\Domain\Saas\SeatType;
 use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceId;
 use App\Infrastructure\Persistence\Eloquent\Model\Role;
@@ -85,6 +86,10 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
              */
             $membership = [
                 'role_id' => $roleId->value,
+                /* The seat follows the role somebody joins in; changing a role later never changes a seat. */
+                'seat_type' => SeatType::defaultFor(
+                    ($slug = DB::table('roles')->where('id', $roleId->value)->value('slug')) === null ? null : (string) $slug,
+                )->value,
                 /*
                  * `Active`, not `Invited`. A member in that state cannot sign in at all — `grantsAccess()` is
                  * false and they resolve to no workspace — so without an email-based activation route it would

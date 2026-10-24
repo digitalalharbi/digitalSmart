@@ -4,6 +4,31 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## SaaS program, PR C: plans, features, limits and seats
+
+### Added
+- **One feature catalogue and one limit catalogue** (`Feature`, 27; `Limit`, 13), and four plans — Starter, Growth, Agency,
+  Enterprise — with no prices in the domain. Ten features are in every plan and cannot be switched off.
+- **A permission is not an entitlement.** 74 routes carry `feature:<key>`; a workspace without the feature gets `403
+  feature_not_in_plan` naming it and the plan, whatever the person's role. The automation runner passes over a workspace whose
+  plan has no automation or whose month of runs is spent.
+- **Limits that refuse the next one and never touch the last.** Clients, projects, new platform connections, team and client
+  seats, exports and AI questions are checked and written under one per-workspace lock, so the last unit cannot be taken twice;
+  a refusal is `409 quota_exceeded` with what is used, what is allowed and when a monthly limit resets. Visitor events and form
+  submissions are counted and never refused. Campaign launches report "not measured yet" until launches exist.
+- **Usage is derived or recorded once.** From the rows that already exist wherever possible; otherwise one `usage_events` row per
+  event key, summed into `usage_meters`.
+- **Seats**: `full`, `limited`, `client`, `guest` on each membership, counted against team or client seats; a client viewer takes a
+  client seat. Claimed when an invitation is accepted, not when it is made.
+- **Overrides** for one workspace, append-only with the previous value, reason, operator and time; `inherit` hands a key back to
+  the plan. `saas:plan` and `saas:override` refuse without an operator and a reason and write to the audit trail.
+- **Administration → Plan & usage**: the plan, used against allowed for every limit, the features, and the overrides; a downgraded
+  workspace is told it is over its plan and that nothing was removed.
+
+### Not changed
+- Every existing workspace is on the default plan (`SAAS_DEFAULT_PLAN`, `agency` when unset), which has every feature it had
+  before this PR. A downgrade removes nothing. Details: `docs/ENTITLEMENTS.md`.
+
 ## SaaS program, PR B: one identity in many workspaces, and a switcher that leaves nothing behind
 
 ### Added

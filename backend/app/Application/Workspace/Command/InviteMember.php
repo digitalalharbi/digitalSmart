@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Workspace\Command;
 
+use App\Application\Saas\EntitlementGuard;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -17,6 +18,7 @@ use App\Domain\Access\SystemRole;
 use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Identity\Email;
+use App\Domain\Saas\SeatType;
 
 /**
  * Add a colleague to the workspace.
@@ -49,6 +51,7 @@ final readonly class InviteMember
         private AuthorizationGuard $guard,
         private ActorContext $actor,
         private AuditRecorder $audit,
+        private EntitlementGuard $entitlements,
     ) {}
 
     public function __invoke(string $name, Email $email, string $roleSlug): InvitedMember
@@ -76,7 +79,10 @@ final readonly class InviteMember
             throw MemberNotAdded::alreadyAMember();
         }
 
-        $invited = $this->directory->add($workspaceId, $name, $email, $roleId, $existing, null, $this->actor->userId());
+        $invited = $this->entitlements->claim(
+            SeatType::defaultFor($roleSlug)->countsAgainst(),
+            fn () => $this->directory->add($workspaceId, $name, $email, $roleId, $existing, null, $this->actor->userId()),
+        );
 
         $this->audit->record(new AuditEntry(
             workspaceId: $workspaceId,
