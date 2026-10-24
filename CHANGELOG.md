@@ -4,6 +4,21 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## SaaS program, PR F: the launch plan — exactly what would be written, and every check before it
+
+### Added
+- **`GET /api/campaign-plans/{id}/launch-plan`**, the wizard's last step: per ad account, one campaign, one ad group and one ad per
+  creative, with budget, schedule, the platform's own objective, conversion, destination and the documented non-delivering value;
+  a payload draft in each platform's field names, paused at every level; budgets totalled per currency, never across.
+- **Preflight**, read-only and deterministic: plan quota, accounts, dates, landing page, tracking link, creatives, conversion; and
+  per account binding, connection, account status, currency, time zone, documented create capabilities, objective, targeting,
+  placement, conversion optimisation and platform validation — each `ready`, `warning`, `blocked`, `awaiting_credentials`,
+  `blocked_external` or `unsupported`, with what fixes it. Sandbox connections say so; real credentials with no confirmed live
+  create say the platform's access is still unproven. Nothing is created to find out.
+
+### Removed
+- The interim per-platform translation route; the launch plan carries it.
+
 ## SaaS program, PR E: a campaign planned once and kept, and what every platform's documentation says it can do
 
 ### Added

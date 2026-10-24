@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
-import { Check, CircleSlash, Minus } from 'lucide-react';
 import { useSession, PERMISSIONS } from '@/features/auth';
 import { useProjectsQuery } from '@/features/projects';
 import { ApiError } from '@/shared/api/client';
@@ -23,10 +22,10 @@ import {
   usePlanActionMutation,
   usePlanOptionsQuery,
   usePlanQuery,
-  usePlanTranslationQuery,
   useSavePlanMutation,
   type PlanInput,
 } from './api';
+import { LaunchPlanView } from './LaunchPlanView';
 
 const STEPS = [
   'project',
@@ -42,7 +41,6 @@ const STEPS = [
 ] as const;
 type Step = (typeof STEPS)[number];
 
-const SUPPORT_ICON = { supported: Check, partial: Minus, unsupported: CircleSlash } as const;
 const selectClass =
   'border-line bg-surface text-content h-11 w-full rounded-lg border px-3 text-base sm:text-sm focus-visible:ring-accent/40 focus-visible:ring-2 focus-visible:outline-none';
 
@@ -126,7 +124,6 @@ export function CampaignPlanWizard() {
   const [reason, setReason] = useState('');
   const options = usePlanOptionsQuery(input.project_id);
   const plan = existing.data;
-  const translation = usePlanTranslationQuery(plan?.id, plan?.version, step === 'launch');
 
   /*
    * The form follows the saved plan whenever a new version of it arrives — adjusted while rendering, as React recommends, rather
@@ -812,75 +809,7 @@ export function CampaignPlanWizard() {
         ) : null}
 
         {step === 'launch' && plan !== undefined ? (
-          <div className="flex flex-col gap-4">
-            <Alert tone="info">{t('campaignPlan.launchHint')}</Alert>
-            {translation.isPending ? <Skeleton className="h-40 w-full" /> : null}
-            {translation.data?.length === 0 ? (
-              <p className="text-content-secondary text-sm">{t('campaignPlan.noAccountsYet')}</p>
-            ) : null}
-            {(translation.data ?? []).map((platform) => (
-              <article
-                key={platform.provider}
-                aria-label={providerName(platform.provider)}
-                className="border-border flex flex-col gap-3 rounded-2xl border p-4"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-content text-base font-semibold">
-                    {providerName(platform.provider)}
-                  </h3>
-                  <span className="text-content-secondary text-sm">
-                    {platform.objective ?? t('campaignPlan.noObjective')} ·{' '}
-                    {formatMinor(platform.daily_budget_minor, platform.currency, i18n.language)}{' '}
-                    {t('campaignPlan.perDay')}
-                  </span>
-                </div>
-                {platform.delivers_by_default ? (
-                  <Alert tone="warning">{t('campaignPlan.deliversByDefault')}</Alert>
-                ) : null}
-                {platform.paused_on_create !== null ? (
-                  <p className="text-content-secondary text-xs">
-                    {t('campaignPlan.pausedOnCreate')}:{' '}
-                    <span dir="ltr">{platform.paused_on_create}</span>
-                  </p>
-                ) : null}
-                <ul className="grid gap-1 text-sm sm:grid-cols-2">
-                  {platform.fields.map((field) => {
-                    const Icon = SUPPORT_ICON[field.support];
-
-                    return (
-                      <li key={field.field} className="flex items-start gap-2">
-                        <Icon
-                          aria-hidden
-                          className={cn(
-                            'mt-0.5 size-4 shrink-0',
-                            field.support === 'supported'
-                              ? 'text-success'
-                              : field.support === 'partial'
-                                ? 'text-warning'
-                                : 'text-content-tertiary',
-                          )}
-                        />
-                        <span>
-                          <span className="text-content">
-                            {t(`campaignPlan.field.${field.field}`, field.field)}
-                          </span>
-                          <span className="sr-only">
-                            {' '}
-                            — {t(`campaignPlan.support.${field.support}`)}
-                          </span>
-                          {field.note !== null ? (
-                            <span className="text-content-tertiary block text-xs">
-                              {field.note}
-                            </span>
-                          ) : null}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </article>
-            ))}
-          </div>
+          <LaunchPlanView planId={plan.id} version={plan.version} />
         ) : null}
 
         {save.isError ? (
