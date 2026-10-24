@@ -29,6 +29,7 @@ use App\Interface\Http\Controller\Budget\BudgetControlController;
 use App\Interface\Http\Controller\Budget\BudgetController;
 use App\Interface\Http\Controller\Budget\ForecastController;
 use App\Interface\Http\Controller\Budget\PacingController;
+use App\Interface\Http\Controller\Campaign\BlueprintController;
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Client\OffboardingController;
 use App\Interface\Http\Controller\Commerce\StoreAnalyticsController;
@@ -755,6 +756,18 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::get('agents/status', [AgentOverviewController::class, 'status'])->name('agents.status')->middleware('feature:agents');
     Route::post('agents/run', [AgentOverviewController::class, 'run'])->middleware('throttle:6,1')->name('agents.run')->middleware('feature:agents');
     Route::post('campaigns/bulk', CampaignBulkController::class)->middleware('throttle:10,1')->name('campaigns.bulk');
+    /* Campaign plans: kept, stateful, provider-neutral. Planning is part of campaign launch, so the plan must include it. */
+    Route::middleware('feature:campaign_launch')->group(function (): void {
+        Route::get('campaign-plans', [BlueprintController::class, 'index'])->name('campaign-plans.index');
+        Route::get('campaign-plans/options', [BlueprintController::class, 'options'])->name('campaign-plans.options');
+        Route::post('campaign-plans', [BlueprintController::class, 'store'])->name('campaign-plans.store');
+        Route::get('campaign-plans/{blueprint}', [BlueprintController::class, 'show'])->whereUuid('blueprint')->name('campaign-plans.show');
+        Route::get('campaign-plans/{blueprint}/translation', [BlueprintController::class, 'translation'])->whereUuid('blueprint')->name('campaign-plans.translation');
+        Route::put('campaign-plans/{blueprint}', [BlueprintController::class, 'update'])->whereUuid('blueprint')->name('campaign-plans.update');
+        Route::post('campaign-plans/{blueprint}/submit', [BlueprintController::class, 'submit'])->whereUuid('blueprint')->name('campaign-plans.submit');
+        Route::post('campaign-plans/{blueprint}/return', [BlueprintController::class, 'returnToDraft'])->whereUuid('blueprint')->name('campaign-plans.return');
+        Route::post('campaign-plans/{blueprint}/cancel', [BlueprintController::class, 'cancel'])->whereUuid('blueprint')->name('campaign-plans.cancel');
+    });
     Route::post('campaign-blueprints/preview', [CampaignBlueprintController::class, 'preview'])->name('blueprints.preview');
     Route::post('campaign-blueprints/drafts', [CampaignBlueprintController::class, 'drafts'])->middleware('throttle:10,1')->name('blueprints.drafts');
     Route::get('agents/findings', [AgentFindingsController::class, 'index'])->name('agents.findings')->middleware('feature:agents');
@@ -912,6 +925,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     // ------------------------------------------------------------ Integrations ---
     Route::get('integrations/providers', [ProviderController::class, 'index'])
         ->name('integrations.providers.index');
+    Route::get('integrations/capabilities', [BlueprintController::class, 'capabilities'])->name('integrations.capabilities');
     Route::get('integrations/readiness', [ProviderController::class, 'readiness'])
         ->name('integrations.readiness');
     Route::put('integrations/providers/{provider}', [ProviderController::class, 'configure'])

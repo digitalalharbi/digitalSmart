@@ -32,6 +32,7 @@ const TENANT_PARAM_TABLES = [
     'report' => 'reports',
     'accessRequest' => 'access_requests',
     'clientRequest' => 'client_requests',
+    'blueprint' => 'campaign_blueprints',
     'approval' => 'approval_requests',
     'budget' => 'budgets',
     'creative' => 'creative_requests',
@@ -165,6 +166,12 @@ function seedForeignGaps(): void
     ])->assertCreated();
     $as->postJson('/api/views/campaign_control', ['name' => 'Foreign surface view', 'filters' => ['status' => 'active']])->assertCreated();
     $as->postJson('/api/tags', ['name' => 'Foreign tag'])->assertCreated();
+    $binding = DB::table('project_integration_bindings')->where('workspace_id', $workspace)->orderBy('id')->first(['project_id', 'external_account_id']);
+    $as->postJson('/api/campaign-plans', [
+        'project_id' => $binding?->project_id, 'name' => 'Foreign plan', 'objective' => 'traffic', 'budget_type' => 'daily', 'budget_minor' => 10_000,
+        'currency' => 'SAR', 'starts_at' => '2027-01-01', 'external_account_ids' => [$binding?->external_account_id], 'landing_url' => 'https://shop.example.com/x',
+        'targeting' => ['countries' => ['SA']], 'placement' => ['mode' => 'automatic'], 'ad_copy' => ['headline' => 'Foreign'], 'creative_request_ids' => [],
+    ])->assertCreated();
     $as->postJson('/api/tracking/links', ['project_id' => $project, 'name' => 'Foreign link', 'destination_url' => 'https://shop.example.com/x'])->assertCreated();
     $as->postJson('/api/tracking/forms', [
         'project_id' => $project, 'name' => 'Foreign form', 'creates_lead' => true,

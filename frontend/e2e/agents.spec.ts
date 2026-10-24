@@ -72,31 +72,6 @@ test('a rule that opens tasks needs trust 3, and level 4 cannot be chosen', asyn
   await expect(page.getByLabel('Trust').locator('option[value="2"]')).toBeDisabled();
 });
 
-test('the builder shows each platform’s limits and makes paused drafts with launch requests', async ({
-  page,
-}) => {
-  await signIn(page, ACCOUNTS.owner);
-  await page.goto('/campaigns/new');
-
-  await page.getByLabel('Campaign name').fill('E2E Ramadan Sale');
-  await page.getByRole('button', { name: 'Next' }).click();
-  await page.getByLabel('Starts').fill('2026-11-01');
-  await page.getByRole('button', { name: 'Next' }).click();
-  await page.getByRole('button', { name: 'Next' }).click();
-  await page.getByLabel('Headline').fill('Up to 40% off');
-  await page.getByLabel('Primary text').fill('Shop before Eid.');
-  await page.getByRole('button', { name: 'Next' }).click();
-  await page.getByRole('button', { name: 'LinkedIn Ads' }).click();
-  await page.getByRole('button', { name: 'Next' }).click();
-
-  await expect(page.getByRole('table')).toBeVisible(SLOW);
-  await expect(page.getByText(/Fixed age buckets/)).toBeVisible();
-
-  await page.getByLabel('Project').selectOption({ index: 1 });
-  await page.getByRole('button', { name: 'Create paused drafts' }).click();
-  await expect(page.getByText(/paused drafts created/)).toBeVisible(SLOW);
-});
-
 test('a one-time approval link decides nothing when it is not a real link', async ({ page }) => {
   await page.goto(`/approve/${'A'.repeat(43)}`);
   await page.getByRole('button', { name: 'Approve' }).click();

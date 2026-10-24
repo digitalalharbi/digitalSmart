@@ -73,6 +73,10 @@ export const PERMISSIONS = {
    * — this only decides whether the button is drawn.
    */
   providerWritesExecute: 'provider_writes.execute',
+  campaignBlueprintsView: 'campaign_blueprints.view',
+  campaignBlueprintsCreate: 'campaign_blueprints.create',
+  campaignBlueprintsUpdate: 'campaign_blueprints.update',
+  campaignBlueprintsSubmit: 'campaign_blueprints.submit',
   /*
    * Three, and the split is what makes a client portal possible: `view` opens the agency's intake queue, which
    * carries internal notes, while `submit` only lets somebody raise a request and read the client-facing side of

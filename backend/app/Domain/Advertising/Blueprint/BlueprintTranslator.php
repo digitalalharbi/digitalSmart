@@ -53,7 +53,7 @@ final class BlueprintTranslator
                 'daily_budget_minor' => $b->budgetFor($provider),
                 'currency' => $b->currency,
                 'creates' => 'not_supported',
-                'fields' => [['field' => 'platform', 'support' => FieldSupport::Unsupported->value, 'note' => 'No advertising API this product can plan against.']],
+                'fields' => [['field' => 'platform', 'support' => FieldSupport::Unsupported->value, 'note' => $provider === Provider::OpenAI ? 'ChatGPT Ads publishes an advertiser API (v1); this product has no translator or adapter for it yet.' : 'No advertising API this product can plan against.']],
                 'payload' => [],
             ];
         }

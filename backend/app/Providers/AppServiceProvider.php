@@ -61,6 +61,7 @@ use App\Application\Budget\Contract\BenchmarkReadModel;
 use App\Application\Budget\Contract\BudgetControlReadModel;
 use App\Application\Budget\Contract\BudgetRepository;
 use App\Application\Budget\Contract\BudgetSpendReadModel;
+use App\Application\Campaign\Contract\BlueprintRepository;
 use App\Application\Client\Contract\ClientOffboarding;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Client\Contract\ClientVisibility;
@@ -212,6 +213,7 @@ use App\Infrastructure\Agents\EloquentAgentReadModel;
 use App\Infrastructure\Agents\EloquentAgentRunLog;
 use App\Infrastructure\Agents\EloquentFindingLog;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
+use App\Infrastructure\Campaign\EloquentBlueprintRepository;
 use App\Infrastructure\Commerce\CommerceSyncAdapterRegistry;
 use App\Infrastructure\Commerce\Sandbox\CommerceFixtures;
 use App\Infrastructure\Commerce\StoreOrderMapperRegistry;
@@ -618,6 +620,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(PlatformOperators::class, EloquentPlatformOperators::class);
         $this->app->bind(PlatformReadModel::class, EloquentPlatformReadModel::class);
         $this->app->bind(WorkspaceCreator::class, EloquentWorkspaceCreator::class);
+        $this->app->bind(BlueprintRepository::class, EloquentBlueprintRepository::class);
 
         /* Email and WhatsApp deliveries, in the state they are in: nothing is sent, and the row says why. */
         $this->app->bind(NotificationChannelDelivery::class, static fn (): NotificationChannelDelivery => new HonestChannelDelivery(

@@ -1,0 +1,89 @@
+# Campaign launch
+
+PRs E–G of the SaaS chain (`docs/SAAS_CAMPAIGN_MASTER.md`). How a campaign goes from an idea to campaigns on several platforms,
+created paused, read back, and only then activated. **PR E — the plan and the capability registry — is what exists so far**;
+translation and preflight (F) and approval with queued creation (G) follow.
+
+## The plan (campaign blueprint)
+
+`campaign_blueprints`, edited through **Campaigns → Campaign plans** (`/campaigns/plans`, `/campaigns/new`) and
+`/api/campaign-plans`. One campaign, described once, before any platform's vocabulary, and kept:
+
+| | |
+|---|---|
+| Who and where | workspace, client, project |
+| What for | one of eight intents — awareness, reach, traffic, engagement, video, leads, sales, app installs (`LaunchObjective`) |
+| Money and time | daily or lifetime budget in minor units, one currency, start, end (a lifetime budget needs one) |
+| Where it runs | ad accounts **bound to the project** (`campaign_blueprint_targets`) |
+| Where people land | a tracking link of the project (its UTMs used as they are) or a landing page |
+| What counts | a conversion definition of the client |
+| Who sees it | countries, ages, gender, languages, interests — intent, translated per platform |
+| Where it appears | automatic, or a list of placements |
+| What they see | Creative Hub requests of the client (`campaign_blueprint_creatives`) and the ad copy |
+| The record | status, version, created by, submitted by and when, approved by and when |
+
+**Nothing is copied and nothing is trusted.** Every reference is checked against the project on every save: an ad account that
+is not bound to the project is refused (`account_not_bound`) — the binding is the only way a project may touch an account — and a
+tracking link, conversion or creative from another project or client is refused (`reference_outside_project`). A plan holds no
+credential.
+
+**A plan never touches a platform.** Saving, submitting, returning and cancelling write only the plan and the audit trail.
+
+### States
+
+`draft → ready_for_review → approved → queued → creating → created_paused → verified → activation_pending → active`, with
+`partial`, `failed` and `cancelled` beside them (`BlueprintStatus`). **`approved` means a person approved the plan, never that
+anything exists on a platform**; each later state is written only by the step that observed it, and `verified` only after a
+read-back.
+
+- A plan can be edited in `draft` and `ready_for_review`. Editing one under review sends it back to draft, clears its submission
+  and bumps its **version** — so an approval (PR G) can only ever name the version its approver read.
+- Submitting needs at least one ad account, a tracking link or landing page, a country and a headline; the refusal lists what is
+  missing. A conversion and creatives are not required to be reviewed — the preflight (F) says what each platform needs.
+- Returning to draft and cancelling need a reason, kept on the plan.
+
+### Who may
+
+`campaign_blueprints.view`, `.create`, `.update`, `.submit`: owners, administrators, project managers and media buyers; creatives
+may view. A reader sees plans for the projects they can see. Approving, creating on a platform and activating are separate
+permissions, added with PR G and not granted to every media buyer. Planning is part of the **campaign launch** feature
+(`docs/ENTITLEMENTS.md`): a workspace whose plan lacks it is refused with `feature_not_in_plan`.
+
+### The launch-plan step
+
+The wizard's last step reads `/api/campaign-plans/{id}/translation`: the saved plan in each targeted platform's own objective,
+field by field — supported, taken differently, or not at all — with how that platform is told not to deliver. It is a first look;
+the exact planned writes and their preflight are PR F.
+
+## Provider capability registry
+
+`App\Domain\Integration\Capability\ProviderCapabilityRegistry`, served at `GET /api/integrations/capabilities`. Twenty-six keys —
+`campaign.create` to `readback` — for each of Meta, Google Ads, TikTok, Snapchat, LinkedIn, X and ChatGPT Ads, each `documented`,
+`unverified`, `unsupported` or `blocked_external`, with the official page it was read on, the API version and the date.
+**`unverified` is not a weaker `documented`**: nothing may be attempted on it. The status and budget writes the product already
+carries out keep their evidence in `ProviderEntityWrites`, so there is one source for what is attempted.
+
+### What the documentation audit of 2026-10-24 found
+
+Read on each platform's own developer documentation (Meta v25.0/v26.0, Google Ads v26, TikTok v1.3, Snapchat v1, LinkedIn
+202610, X v12, ChatGPT Ads v1):
+
+- **Every platform can create campaigns paused, but two deliver unless told otherwise.** TikTok's `operation_status` defaults to
+  `ENABLE` at campaign, ad group and ad level, and X's campaign `entity_status` defaults to `ACTIVE`. Several official examples
+  create live objects (LinkedIn `ACTIVE`, ChatGPT Ads `active`, Google ad groups and ads `ENABLED`). Every create this product
+  makes must send the paused value explicitly; the registry names it per platform (`paused_on_create`, `delivers_by_default`).
+- **Validation without creating** is documented only by Meta (`execution_options=["validate_only"]`) and Google Ads
+  (`validate_only`). Everywhere else the preflight is local and deterministic.
+- **Native idempotency** is documented only by TikTok (`request_id` on campaign create, ten seconds) and ChatGPT Ads
+  (`Idempotency-Key`). Elsewhere the product's own idempotency reference and a read-back must prevent duplicates.
+- **ChatGPT Ads now has a public advertiser API** (`https://api.ads.openai.com/v1`). The product's earlier "no published API"
+  status for it is out of date; the registry records the evidence, and no translator or adapter for it exists yet.
+- **TikTok** stops supporting non-Search Legacy Manual Flow Sales, App Promotion and Lead Generation campaigns on its create
+  endpoints from 2027-01-01.
+- **Every live write needs access only the owner can obtain** — Meta Full access through App Review for other businesses'
+  accounts, a Google Ads developer token at Basic or Standard, TikTok and X app review, LinkedIn Advertising API approval, a
+  ChatGPT Ads account with an approved brand review. Until then creation stays `BLOCKED_EXTERNAL` in practice whatever the
+  documentation says.
+
+Some pages were read through a summarising fetch and two version numbers conflict on the platforms' own pages; anything not stated
+on a page read is `unverified`. The registry is re-read before each creation adapter is built (PR G).

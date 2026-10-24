@@ -239,6 +239,13 @@ enum AuditAction: string
     /* Somebody was made, or stopped being, a platform operator. Recorded against no workspace. */
     case PlatformOperatorChanged = 'platform.operator_changed';
 
+    /* A campaign plan's life before any platform hears of it. */
+    case CampaignBlueprintCreated = 'campaign_blueprint.created';
+    case CampaignBlueprintUpdated = 'campaign_blueprint.updated';
+    case CampaignBlueprintSubmitted = 'campaign_blueprint.submitted';
+    case CampaignBlueprintReturned = 'campaign_blueprint.returned';
+    case CampaignBlueprintCancelled = 'campaign_blueprint.cancelled';
+
     public function group(): string
     {
         return explode('.', $this->value)[0];

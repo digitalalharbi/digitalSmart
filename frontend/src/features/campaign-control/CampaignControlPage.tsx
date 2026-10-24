@@ -186,6 +186,9 @@ export function CampaignControlPage() {
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Link to="/campaigns/plans" className={buttonVariants({ variant: 'secondary' })}>
+              {t('builder.cta_plans')}
+            </Link>
             <SavedViewsMenu
               surface="campaign_control"
               current={Object.fromEntries(toParams({ ...filters, offset: 0 }))}
