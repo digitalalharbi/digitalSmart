@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\DB;
 /** Scoped through a parent: table → the column and the tenant-owned table it cascades from. */
 const TRANSITIVE_TABLES = [
     'automation_rule_streaks' => ['rule_id', 'automation_rules'],
+    'campaign_blueprint_creatives' => ['blueprint_id', 'campaign_blueprints'],
+    'campaign_blueprint_targets' => ['blueprint_id', 'campaign_blueprints'],
     'creative_assets' => ['creative_id', 'creatives'],
     'dashboard_widgets' => ['dashboard_id', 'dashboards'],
     'form_fields' => ['form_id', 'forms'],
@@ -63,6 +65,8 @@ function tenantSafeUniques(): array
     return [
         'access_invitations(token_hash)' => $token,
         'plans(code)' => 'a catalogue plan code, global by design',
+        'campaign_blueprint_targets(blueprint_id,external_account_id)' => $ownedBy('campaign_blueprints'),
+        'campaign_blueprint_creatives(blueprint_id,creative_request_id)' => $ownedBy('campaign_blueprints'),
         'approval_links(token_hash)' => $token,
         'report_shares(token_hash)' => $token,
         'forms(public_token)' => $token,

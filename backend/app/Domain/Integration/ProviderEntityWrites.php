@@ -135,6 +135,12 @@ final class ProviderEntityWrites
     }
 
     /** Why a platform cannot take a change at a level, in its own words where it said so. */
+    /** Whether the platform's documentation says plainly that this change does not exist — as opposed to nobody having read it. */
+    public static function isNotOffered(Provider $provider, WriteOperation $operation): bool
+    {
+        return isset(self::NOT_OFFERED[$provider->value][$operation->value]);
+    }
+
     public static function notOffered(Provider $provider, WriteOperation $operation): ?string
     {
         if (self::support($provider, $operation) === WriteSupport::Documented) {

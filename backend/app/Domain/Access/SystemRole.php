@@ -105,6 +105,10 @@ enum SystemRole: string
                 Permission::PortalView,
                 Permission::PortalManage,
                 Permission::ProviderWritesExecute,
+                Permission::CampaignBlueprintsView,
+                Permission::CampaignBlueprintsCreate,
+                Permission::CampaignBlueprintsUpdate,
+                Permission::CampaignBlueprintsSubmit,
                 Permission::AuditView,
             ],
 
@@ -171,6 +175,10 @@ enum SystemRole: string
                 Permission::PortalView,
                 Permission::PortalManage,
                 Permission::ProviderWritesExecute,
+                Permission::CampaignBlueprintsView,
+                Permission::CampaignBlueprintsCreate,
+                Permission::CampaignBlueprintsUpdate,
+                Permission::CampaignBlueprintsSubmit,
                 Permission::AuditView,
             ],
 
@@ -243,9 +251,15 @@ enum SystemRole: string
                  * cannot proceed without, not the keyboard it is typed on.
                  */
                 Permission::ProviderWritesExecute,
+                Permission::CampaignBlueprintsView,
+                Permission::CampaignBlueprintsCreate,
+                Permission::CampaignBlueprintsUpdate,
+                Permission::CampaignBlueprintsSubmit,
             ],
 
             self::Creative => [
+                /* A creative reads the plan their work is for; writing it is the media side's. */
+                Permission::CampaignBlueprintsView,
                 Permission::WorkspacesView,
                 Permission::UsersView,
                 Permission::ClientsView,

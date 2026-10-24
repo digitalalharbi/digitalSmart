@@ -120,6 +120,12 @@ enum Permission: string
      */
     case ProviderWritesExecute = 'provider_writes.execute';
 
+    /* A campaign planned once, before any platform. Approving and carrying out a launch are separate permissions (PR G). */
+    case CampaignBlueprintsView = 'campaign_blueprints.view';
+    case CampaignBlueprintsCreate = 'campaign_blueprints.create';
+    case CampaignBlueprintsUpdate = 'campaign_blueprints.update';
+    case CampaignBlueprintsSubmit = 'campaign_blueprints.submit';
+
     // Client portal
     /*
      * Two permissions, and the split matters more here than anywhere else in this enum.
@@ -196,6 +202,10 @@ enum Permission: string
             self::ReportsManage => 'Build, change and delete reports, and take snapshots',
             self::ReportsShare => 'Create and revoke links that let somebody outside the workspace read a report',
             self::ProviderWritesExecute => 'Carry out an approved change on an advertising platform',
+            self::CampaignBlueprintsView => 'View campaign plans',
+            self::CampaignBlueprintsCreate => 'Start a campaign plan',
+            self::CampaignBlueprintsUpdate => 'Edit a campaign plan',
+            self::CampaignBlueprintsSubmit => 'Submit a campaign plan for review',
             self::PortalView => 'See which surfaces each client\'s portal exposes',
             self::PortalManage => 'Switch a client\'s portal on or off, and change which surfaces it exposes',
             self::PortalRead => 'Read a client portal as the client, for the clients you are assigned to',

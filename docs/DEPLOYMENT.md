@@ -45,6 +45,8 @@ $PRODUCTION_PATH/
    `npm ci && npm run build` (the Vite dev server never runs in production).
 3. **Migrate, forward only** — `php artisan migrate --force`. If it fails the deploy stops: the previous release is
    still live and nothing is restarted.
+   Then `php artisan access:sync`, so every workspace's system roles hold the permissions the release adds before anybody
+   reaches a screen that needs them (idempotent; roles a workspace created for itself are untouched).
 4. **Caches** — `optimize:clear`, `config:cache`, `route:cache`, `view:cache`.
 5. **Switch** `current` atomically (`ln -sfn` + `mv -T`).
 6. **Reload** — PHP-FPM (if named), `horizon:terminate` (the supervisor restarts it on `current`), `queue:restart`,
