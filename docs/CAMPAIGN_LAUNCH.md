@@ -1,8 +1,8 @@
 # Campaign launch
 
 PRs E–G of the SaaS chain (`docs/SAAS_CAMPAIGN_MASTER.md`). How a campaign goes from an idea to campaigns on several platforms,
-created paused, read back, and only then activated. **PR E (the plan and the capability registry) and PR F (the launch plan
-and its preflight) exist**; approval with queued creation (G) follows.
+created paused, read back, and only then activated. **PR E (the plan and the capability registry), PR F (the launch plan
+and its preflight) and PR G (approval and queued creation) exist**; activation (H) follows.
 
 ## The plan (campaign blueprint)
 
@@ -46,7 +46,8 @@ read-back.
 
 `campaign_blueprints.view`, `.create`, `.update`, `.submit`: owners, administrators, project managers and media buyers; creatives
 may view. A reader sees plans for the projects they can see. Approving, creating on a platform and activating are separate
-permissions, added with PR G and not granted to every media buyer. Planning is part of the **campaign launch** feature
+permissions (`campaign_launch.approve`, `.execute`, `.activate`): administrators hold all three, project managers may approve,
+media buyers none. Planning is part of the **campaign launch** feature
 (`docs/ENTITLEMENTS.md`): a workspace whose plan lacks it is refused with `feature_not_in_plan`.
 
 ## The launch plan and its preflight (PR F)
@@ -122,3 +123,43 @@ Read on each platform's own developer documentation (Meta v25.0/v26.0, Google Ad
 
 Some pages were read through a summarising fetch and two version numbers conflict on the platforms' own pages; anything not stated
 on a page read is `unverified`. The registry is re-read before each creation adapter is built (PR G).
+
+## Approval and creation (PR G)
+
+```
+approved plan → launch (fingerprint re-checked, quota claimed) → one execution per account, queued
+             → worker: create paused → read back → verified → reconciled into campaigns / ad groups / ads → audit
+```
+
+- **Approve** (`POST /api/campaign-plans/{id}/approve`, `campaign_launch.approve`): refused while any preflight check is `blocked`.
+  The approval records a **fingerprint** of the plan's version and every planned write. Approving creates nothing.
+- **Launch** (`POST /api/campaign-plans/{id}/launch`, `campaign_launch.execute`, 202): the launch plan is rebuilt and fingerprinted;
+  if anything changed since approval — an edit, an account's name or currency, a translation — the approval is withdrawn, the plan
+  goes back to review (`approval_stale`), and nothing is created. Otherwise one `campaign_launches` row keeps the approved launch
+  plan as it was, the monthly launch quota is claimed, and each account gets a `campaign_launch_executions` row with a **stable
+  idempotency reference** (a hash of the launch and the account):
+
+  | Account's preflight | Execution |
+  |---|---|
+  | ready, warning, awaiting credentials | `queued` — handed to the worker |
+  | waiting on the platform (`blocked_external`) | `blocked_external` — not attempted, no call made |
+  | unsupported | `skipped` — not attempted |
+
+- **Never synchronous**: every creation runs on the queue (`CreateCampaignJob`, one try — the queue never repeats a create).
+- **Created is not verified.** A platform answering with ids moves an execution to `created`; it becomes `verified` only after the
+  campaign, ad group and ads are read back and match the plan (status, budget, currency, schedule, objective, hierarchy). A
+  mismatch is `readback_mismatch`, and nothing is changed automatically. Only a verified creation is written into the product's own
+  `campaigns`, `ad_groups` and `ads` (keyed on the platform's ids, assigned to the project, paused, labelled with its source), so
+  the next sync updates those rows instead of adding a copy, and analytics reads the same structures.
+- **Unknown is never retried blindly.** A request that got no answer is `unknown`. `POST /api/launch-executions/{id}/reconcile` looks
+  on the platform for what that reference created: found, it is attached and verified like a first creation; not found, it becomes
+  `failed` with `not_created` — the only state `retry` accepts. A retry reuses the same reference.
+- **Partial launches keep what was created.** All accounts verified: the plan is `verified`. Some created: `partial`. None: `failed`.
+  Nothing already created is deleted.
+- **What runs today.** A sandbox connection runs the sandbox creator: the whole path executes, and every outcome, record and audit
+  entry is labelled **SANDBOX**. A connection with real credentials is recorded `blocked_external` and **no platform is called**: no
+  live creation adapter exists yet and no platform has confirmed this product's write access. The live adapters start from the
+  payload drafts and the registry, and need the access each platform requires (see "What the documentation audit of 2026-10-24 found" above) — `BLOCKED_EXTERNAL`.
+- **Audit**: approval, start (fingerprint, version, counts), every account's result (provider, account, status, source, provider ids,
+  read-back, classification, idempotency reference) and every reconcile and retry. No credential or token is recorded anywhere.
+

@@ -125,6 +125,10 @@ enum Permission: string
     case CampaignBlueprintsCreate = 'campaign_blueprints.create';
     case CampaignBlueprintsUpdate = 'campaign_blueprints.update';
     case CampaignBlueprintsSubmit = 'campaign_blueprints.submit';
+    /* Approving a launch, creating it on the platforms, and switching it on are three acts and three permissions. */
+    case CampaignLaunchApprove = 'campaign_launch.approve';
+    case CampaignLaunchExecute = 'campaign_launch.execute';
+    case CampaignLaunchActivate = 'campaign_launch.activate';
 
     // Client portal
     /*
@@ -206,6 +210,9 @@ enum Permission: string
             self::CampaignBlueprintsCreate => 'Start a campaign plan',
             self::CampaignBlueprintsUpdate => 'Edit a campaign plan',
             self::CampaignBlueprintsSubmit => 'Submit a campaign plan for review',
+            self::CampaignLaunchApprove => 'Approve a campaign plan for launch',
+            self::CampaignLaunchExecute => 'Create an approved campaign on the advertising platforms, paused',
+            self::CampaignLaunchActivate => 'Switch on a created campaign',
             self::PortalView => 'See which surfaces each client\'s portal exposes',
             self::PortalManage => 'Switch a client\'s portal on or off, and change which surfaces it exposes',
             self::PortalRead => 'Read a client portal as the client, for the clients you are assigned to',

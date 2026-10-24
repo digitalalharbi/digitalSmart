@@ -271,3 +271,68 @@ export function usePlanActionMutation(id: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
   });
 }
+
+export type LaunchExecution = {
+  id: string;
+  launch_id: string;
+  provider: string;
+  external_account_id: string;
+  attempt: number;
+  status:
+    | 'queued'
+    | 'creating'
+    | 'created'
+    | 'verified'
+    | 'readback_mismatch'
+    | 'failed'
+    | 'unknown'
+    | 'skipped'
+    | 'blocked_external';
+  source: 'live' | 'sandbox' | null;
+  provider_ids: { campaign: string | null; ad_group: string | null; ads: string[] };
+  readback: { found: boolean; mismatches: string[] } | null;
+  failure_classification: string | null;
+  message: string | null;
+  may_retry: boolean;
+  may_reconcile: boolean;
+};
+
+export function useLaunchesQuery(id: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: [...KEY, 'launches', id],
+    enabled: enabled && id !== undefined,
+    queryFn: async () =>
+      (await api.get<{ data: LaunchExecution[] }>(`/campaign-plans/${String(id)}/launches`)).data
+        .data,
+    /* Creation runs on a worker; while anything is still running, look again. */
+    refetchInterval: (query) =>
+      (query.state.data ?? []).some((e) => ['queued', 'creating', 'created'].includes(e.status))
+        ? 3000
+        : false,
+  });
+}
+
+export function useLaunchActionMutation(planId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (action: 'approve' | 'launch') => {
+      await ensureCsrfCookie();
+      return (await api.post<{ data: unknown }>(`/campaign-plans/${planId}/${action}`)).data.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
+export function useExecutionActionMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, action }: { id: string; action: 'reconcile' | 'retry' }) => {
+      await ensureCsrfCookie();
+      return (await api.post<{ data: LaunchExecution }>(`/launch-executions/${id}/${action}`)).data
+        .data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
+  });
+}

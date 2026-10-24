@@ -1899,7 +1899,7 @@ Claude Code must keep this section or `docs/RESUME_STATE.md` current after each 
 | D — Subscription / Control Plane | IN_REVIEW | (this PR) | — | Six states with write/schedule behaviour, console-only operators, `/platform` console (workspaces, plan, override, state, create), subscription notice. Impersonation not built. `docs/PLATFORM.md`. |
 | E — Campaign Blueprint | IN_REVIEW | (this PR) | — | Kept, stateful plans (12 states, versioned) referencing bound accounts, tracking links, conversions and Creative Hub; 10-step wizard; capability registry 26 keys × 7 platforms from a 2026-10-24 documentation audit. `docs/CAMPAIGN_LAUNCH.md`. |
 | F — Translation / Preflight | IN_REVIEW | (this PR) | — | ProviderCreatePlan per account, documented payload drafts paused at every level, read-only preflight with six states and a fix for each, per-currency totals, launch-plan UI. `docs/CAMPAIGN_LAUNCH.md`. |
-| G — Provider Creation | NOT_STARTED | — | — | |
+| G — Provider Creation | IN_REVIEW | (this PR) | — | Fingerprinted approval, queued per-account executions with idempotency references, create paused → read back → verified → reconciled; unknown never blindly retried; partial keeps creations; sandbox labelled, real credentials blocked_external with no call. `docs/CAMPAIGN_LAUNCH.md`. |
 | H — Activation / Hardening | NOT_STARTED | — | — | |
 
 ---

@@ -11,6 +11,8 @@ final readonly class AccountFacts
         public string $id,
         public string $provider,
         public string $name,
+        /** The platform's own id for the account. */
+        public string $platformAccountId,
         public ?string $currency,
         public ?string $timezone,
         public string $status,

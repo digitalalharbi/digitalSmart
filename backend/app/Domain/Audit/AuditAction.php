@@ -245,6 +245,12 @@ enum AuditAction: string
     case CampaignBlueprintSubmitted = 'campaign_blueprint.submitted';
     case CampaignBlueprintReturned = 'campaign_blueprint.returned';
     case CampaignBlueprintCancelled = 'campaign_blueprint.cancelled';
+    /* Launching: approved, started, each account's result, and recovery of an unknown outcome. */
+    case CampaignLaunchApproved = 'campaign_launch.approved';
+    case CampaignLaunchStarted = 'campaign_launch.started';
+    case CampaignLaunchExecuted = 'campaign_launch.executed';
+    case CampaignLaunchReconciled = 'campaign_launch.reconciled';
+    case CampaignLaunchRetried = 'campaign_launch.retried';
 
     public function group(): string
     {
@@ -263,6 +269,10 @@ enum AuditAction: string
             /* Who may operate the platform, and a workspace being stopped or started, are access facts. */
             self::PlatformOperatorChanged,
             self::WorkspaceSubscriptionChanged,
+            /* Creating campaigns on a client's ad accounts is a write to somebody else's money. */
+            self::CampaignLaunchApproved,
+            self::CampaignLaunchStarted,
+            self::CampaignLaunchExecuted,
             self::WorkspaceCreated,
             self::UserPasswordChanged,
             self::WorkspaceMemberRoleChanged,

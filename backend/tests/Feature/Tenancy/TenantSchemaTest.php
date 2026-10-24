@@ -67,6 +67,8 @@ function tenantSafeUniques(): array
         'plans(code)' => 'a catalogue plan code, global by design',
         'campaign_blueprint_targets(blueprint_id,external_account_id)' => $ownedBy('campaign_blueprints'),
         'campaign_blueprint_creatives(blueprint_id,creative_request_id)' => $ownedBy('campaign_blueprints'),
+        'campaign_launch_executions(launch_id,external_account_id)' => $ownedBy('campaign_launches'),
+        'campaign_launch_executions(idempotency_reference)' => 'a hash of the launch id and the account, unique across the installation on purpose',
         'approval_links(token_hash)' => $token,
         'report_shares(token_hash)' => $token,
         'forms(public_token)' => $token,
