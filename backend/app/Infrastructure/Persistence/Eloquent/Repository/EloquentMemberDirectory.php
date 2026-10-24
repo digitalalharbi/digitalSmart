@@ -43,6 +43,7 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
         ?UserId $existing,
         ?string $chosenPassword = null,
         ?UserId $invitedBy = null,
+        ?SeatType $seat = null,
     ): InvitedMember {
         $oneTime = $chosenPassword ?? Str::random(self::ONE_TIME_LENGTH);
 
@@ -55,6 +56,7 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
             $oneTime,
             $chosenPassword,
             $invitedBy,
+            $seat,
         ): InvitedMember {
             if ($existing === null) {
                 /** @var User $user */
@@ -87,9 +89,9 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
             $membership = [
                 'role_id' => $roleId->value,
                 /* The seat follows the role somebody joins in; changing a role later never changes a seat. */
-                'seat_type' => SeatType::defaultFor(
+                'seat_type' => ($seat ?? SeatType::defaultFor(
                     ($slug = DB::table('roles')->where('id', $roleId->value)->value('slug')) === null ? null : (string) $slug,
-                )->value,
+                ))->value,
                 /*
                  * `Active`, not `Invited`. A member in that state cannot sign in at all — `grantsAccess()` is
                  * false and they resolve to no workspace — so without an email-based activation route it would

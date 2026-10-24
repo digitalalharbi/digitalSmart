@@ -768,7 +768,13 @@
     "LEADS_DECLINE_MORE": "العملاء المحتملون في تراجع لدى {{count}} عملاء.",
     "LEADS_LOW_QUALITY_MORE": "جودة العملاء المحتملين منخفضة لدى {{count}} عملاء.",
     "RULE_REJECTED": "{{rule}}: رفضتها المنصة.",
-    "RULE_ENDS_SOON": "{{rule}}: تنتهي خلال {{days}} أيام."
+    "RULE_ENDS_SOON": "{{rule}}: تنتهي خلال {{days}} أيام.",
+    "LAUNCH_UNKNOWN": "نتيجة الإنشاء غير معروفة: تحقّق من المنصة قبل أي إعادة — {{name}}",
+    "LAUNCH_READBACK_MISMATCH": "أُنشئت وتختلف عن الخطة — {{name}}",
+    "LAUNCH_ACTIVATION_FAILED": "لم تُفعَّل — {{name}}",
+    "LAUNCH_PARTIAL": "أُنشئت جزئياً والباقي يحتاج قراراً — {{name}}",
+    "LAUNCH_ACTIVATION_PENDING": "بانتظار الموافقة على التفعيل — {{name}}",
+    "LAUNCH_APPROVAL_PENDING": "بانتظار الموافقة — {{name}}"
   },
   "agentFindings": {
     "winner": "الأفضل في الحملة",
@@ -4825,7 +4831,8 @@
       "requests": "الطلبات",
       "tasks": "المهام",
       "automation": "القواعد",
-      "agents": "الوكلاء"
+      "agents": "الوكلاء",
+      "launches": "إطلاق الحملات"
     }
   },
   "activity": {
@@ -6447,7 +6454,9 @@
       "active": "نشطة",
       "failed": "فشلت",
       "cancelled": "ملغاة"
-    }
+    },
+    "platformFilter": "المنصة",
+    "anyPlatform": "أي منصة"
   },
   "launchPlan": {
     "failed": "تعذّر بناء خطة الإطلاق.",
@@ -6490,6 +6499,29 @@
       "failed": "فشلت",
       "unknown": "النتيجة غير معروفة",
       "skipped": "لم تُجرَّب",
+      "blocked_external": "بانتظار المنصة"
+    }
+  },
+  "activation": {
+    "request": "طلب التفعيل",
+    "waiting": "بانتظار موافقة من يملك صلاحية تفعيل الحملات.",
+    "title": "الموافقة على تفعيل هذه الحملات",
+    "accounts": "المنصات والحسابات",
+    "budget": "الميزانية",
+    "schedule": "الجدول",
+    "conversion": "التحويل",
+    "tracking": "التتبع",
+    "audience": "الجمهور",
+    "confirm": "قرأت ما سيبدأ عرضه والإنفاق عليه، في كل الحسابات أعلاه.",
+    "approve": "تفعيل",
+    "label": "العرض",
+    "status": {
+      "pending": "بانتظار الموافقة",
+      "activating": "قيد التفعيل",
+      "sending": "قيد التفعيل، بانتظار المنصة",
+      "active": "مفعّلة وأكدت المنصة",
+      "failed": "لم تُفعَّل",
+      "unknown": "النتيجة غير معروفة، تحقق من المنصة",
       "blocked_external": "بانتظار المنصة"
     }
   }

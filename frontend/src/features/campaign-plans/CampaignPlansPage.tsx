@@ -12,14 +12,29 @@ import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { usePlansQuery, type PlanStatus } from './api';
 
-const STATUSES: PlanStatus[] = ['draft', 'ready_for_review', 'approved', 'cancelled'];
+/* The states an agency works a launch through, in order. */
+const STATUSES: PlanStatus[] = [
+  'draft',
+  'ready_for_review',
+  'approved',
+  'creating',
+  'partial',
+  'verified',
+  'activation_pending',
+  'active',
+  'failed',
+  'cancelled',
+];
+const PROVIDERS = ['meta', 'google_ads', 'tiktok', 'snapchat', 'linkedin', 'x', 'openai'] as const;
 
 /** Every campaign plan the reader may see, newest first, with where each stands. */
 export function CampaignPlansPage() {
   const { t, i18n } = useTranslation();
   const { can } = useSession();
   const [status, setStatus] = useState<string | null>(null);
-  const plans = usePlansQuery(status ?? '');
+  const [provider, setProvider] = useState<string | null>(null);
+  const plans = usePlansQuery({ status: status ?? '', provider: provider ?? '' });
+  const counts = plans.data?.meta.counts ?? {};
 
   return (
     <div className="ds-page">
@@ -34,14 +49,50 @@ export function CampaignPlansPage() {
           ) : null
         }
       />
-      <div className="max-w-xs">
-        <FilterSelect
-          label={t('campaignPlan.statusFilter')}
-          value={status}
-          onChange={setStatus}
-          any={t('campaignPlan.anyStatus')}
-          options={STATUSES.map((value) => ({ value, label: t(`campaignPlan.status.${value}`) }))}
-        />
+      <div className="flex flex-col gap-3">
+        <div
+          role="group"
+          aria-label={t('campaignPlan.statusFilter')}
+          className="flex gap-2 overflow-x-auto pb-1"
+        >
+          <button
+            type="button"
+            aria-pressed={status === null}
+            onClick={() => setStatus(null)}
+            className={
+              status === null
+                ? 'bg-action text-action-contrast min-h-11 shrink-0 rounded-full px-4 text-sm'
+                : 'bg-surface text-content-secondary min-h-11 shrink-0 rounded-full px-4 text-sm'
+            }
+          >
+            {t('campaignPlan.anyStatus')}
+          </button>
+          {STATUSES.map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={status === value}
+              onClick={() => setStatus(value)}
+              className={
+                status === value
+                  ? 'bg-action text-action-contrast min-h-11 shrink-0 rounded-full px-4 text-sm'
+                  : 'bg-surface text-content-secondary min-h-11 shrink-0 rounded-full px-4 text-sm'
+              }
+            >
+              {t(`campaignPlan.status.${value}`)}{' '}
+              <span className="ds-numeric ms-1">{counts[value] ?? 0}</span>
+            </button>
+          ))}
+        </div>
+        <div className="max-w-xs">
+          <FilterSelect
+            label={t('campaignPlan.platformFilter')}
+            value={provider}
+            onChange={setProvider}
+            any={t('campaignPlan.anyPlatform')}
+            options={PROVIDERS.map((value) => ({ value, label: providerName(value) }))}
+          />
+        </div>
       </div>
       {plans.isError ? <Alert tone="danger">{t('campaignPlan.loadFailed')}</Alert> : null}
       {plans.isPending ? <Skeleton className="h-40 w-full" /> : null}

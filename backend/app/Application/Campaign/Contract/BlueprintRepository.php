@@ -57,9 +57,10 @@ interface BlueprintRepository
 
     /**
      * @param  list<string>|null  $visibleProjectIds
-     * @return array{rows: list<BlueprintView>, total: int}
+     * @param  array{status?: string|null, project_id?: string|null, client_id?: string|null, provider?: string|null, owner_id?: string|null}  $filters
+     * @return array{rows: list<BlueprintView>, total: int, counts: array<string, int>}
      */
-    public function list(string $workspaceId, ?array $visibleProjectIds, ?string $status, ?string $projectId, int $page, int $perPage): array;
+    public function list(string $workspaceId, ?array $visibleProjectIds, array $filters, int $page, int $perPage): array;
 
     /**
      * What a plan for this project can be made of: its bound ad accounts, its tracking links, the client's conversions and the

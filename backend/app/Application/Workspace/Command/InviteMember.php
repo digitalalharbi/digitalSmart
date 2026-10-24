@@ -54,7 +54,7 @@ final readonly class InviteMember
         private EntitlementGuard $entitlements,
     ) {}
 
-    public function __invoke(string $name, Email $email, string $roleSlug): InvitedMember
+    public function __invoke(string $name, Email $email, string $roleSlug, ?SeatType $seat = null): InvitedMember
     {
         $this->guard->ensure(Permission::UsersInvite);
 
@@ -79,9 +79,15 @@ final readonly class InviteMember
             throw MemberNotAdded::alreadyAMember();
         }
 
+        $seat ??= SeatType::defaultFor($roleSlug);
+
+        if (! $seat->fitsRole($roleSlug)) {
+            throw MemberNotAdded::seatDoesNotFitRole();
+        }
+
         $invited = $this->entitlements->claim(
-            SeatType::defaultFor($roleSlug)->countsAgainst(),
-            fn () => $this->directory->add($workspaceId, $name, $email, $roleId, $existing, null, $this->actor->userId()),
+            $seat->countsAgainst(),
+            fn () => $this->directory->add($workspaceId, $name, $email, $roleId, $existing, null, $this->actor->userId(), $seat),
         );
 
         $this->audit->record(new AuditEntry(

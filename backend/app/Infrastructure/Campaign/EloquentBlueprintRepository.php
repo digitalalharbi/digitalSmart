@@ -168,15 +168,26 @@ final readonly class EloquentBlueprintRepository implements BlueprintRepository
         return $row instanceof stdClass ? $this->hydrate([$row])[0] : null;
     }
 
-    public function list(string $workspaceId, ?array $visibleProjectIds, ?string $status, ?string $projectId, int $page, int $perPage): array
+    public function list(string $workspaceId, ?array $visibleProjectIds, array $filters, int $page, int $perPage): array
     {
-        $query = $this->base($workspaceId, $visibleProjectIds)
-            ->when($status !== null && $status !== '', static fn (Builder $q) => $q->where('bp.status', $status))
-            ->when($projectId !== null && Str::isUuid($projectId), static fn (Builder $q) => $q->where('bp.project_id', $projectId));
+        $uuid = static fn (?string $v): ?string => $v !== null && Str::isUuid($v) ? $v : null;
+        $narrowed = fn (): Builder => $this->base($workspaceId, $visibleProjectIds)
+            ->when($uuid($filters['project_id'] ?? null) !== null, static fn (Builder $q) => $q->where('bp.project_id', $filters['project_id']))
+            ->when($uuid($filters['client_id'] ?? null) !== null, static fn (Builder $q) => $q->where('bp.client_id', $filters['client_id']))
+            ->when($uuid($filters['owner_id'] ?? null) !== null, static fn (Builder $q) => $q->where('bp.created_by', $filters['owner_id']))
+            ->when(($filters['provider'] ?? null) !== null && $filters['provider'] !== '', static fn (Builder $q) => $q->whereExists(
+                static fn ($sub) => $sub->select(DB::raw(1))->from('campaign_blueprint_targets as t')->whereColumn('t.blueprint_id', 'bp.id')->where('t.provider', $filters['provider']),
+            ));
+
+        /* Counts by state over everything the other filters match, so the tabs say how many each holds before one is chosen. */
+        $counts = $narrowed()->reorder()->select('bp.status')->selectRaw('count(*) as n')->groupBy('bp.status')->pluck('n', 'status')
+            ->map(static fn (mixed $n): int => (int) $n)->all();
+
+        $query = $narrowed()->when(($filters['status'] ?? null) !== null && $filters['status'] !== '', static fn (Builder $q) => $q->where('bp.status', $filters['status']));
         $total = (clone $query)->count();
         $rows = array_values(array_filter($query->orderByDesc('bp.updated_at')->orderBy('bp.id')->forPage($page, $perPage)->get()->all(), static fn (mixed $r): bool => $r instanceof stdClass));
 
-        return ['rows' => $this->hydrate($rows), 'total' => $total];
+        return ['rows' => $this->hydrate($rows), 'total' => $total, 'counts' => $counts];
     }
 
     public function options(string $workspaceId, string $projectId): array

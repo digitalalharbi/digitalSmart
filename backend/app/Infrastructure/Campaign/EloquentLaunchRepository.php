@@ -6,6 +6,7 @@ namespace App\Infrastructure\Campaign;
 
 use App\Application\Campaign\Contract\LaunchRepository;
 use App\Application\Campaign\DTO\ExecutionRecord;
+use App\Domain\Advertising\Launch\ActivationStatus;
 use App\Domain\Advertising\Launch\ExecutionStatus;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
@@ -96,6 +97,44 @@ final readonly class EloquentLaunchRepository implements LaunchRepository
             ->update([...$fields, 'updated_at' => now()]) === 1;
     }
 
+    public function transitionActivation(string $workspaceId, string $id, ActivationStatus $from, array $fields): bool
+    {
+        return DB::table('campaign_launch_executions')
+            ->where('workspace_id', $workspaceId)->where('id', $id)->where('activation_status', $from->value)
+            ->update([...$fields, 'updated_at' => now()]) === 1;
+    }
+
+    public function issues(string $workspaceId, ?array $visibleProjectIds, int $limit): array
+    {
+        $scope = static fn (Builder $q) => $visibleProjectIds === null ? $q : $q->whereIn('bp.project_id', $visibleProjectIds);
+        $plans = $scope(DB::table('campaign_blueprints as bp')
+            ->join('clients as c', 'c.id', '=', 'bp.client_id')->join('projects as p', 'p.id', '=', 'bp.project_id')
+            ->where('bp.workspace_id', $workspaceId)->whereIn('bp.status', ['ready_for_review', 'activation_pending', 'partial'])
+            ->orderBy('bp.updated_at')->limit($limit)
+            ->select(['bp.status as kind', 'bp.id as blueprint_id', 'bp.name', 'bp.client_id', 'c.name as client_name', 'bp.project_id', 'p.name as project_name', DB::raw('null as provider'), 'bp.updated_at as since']));
+
+        $executions = $scope(DB::table('campaign_launch_executions as e')
+            ->join('campaign_launches as l', 'l.id', '=', 'e.launch_id')
+            ->join('campaign_blueprints as bp', 'bp.id', '=', 'l.blueprint_id')
+            ->join('clients as c', 'c.id', '=', 'bp.client_id')->join('projects as p', 'p.id', '=', 'bp.project_id')
+            ->where('e.workspace_id', $workspaceId)
+            ->where(static fn (Builder $q) => $q->whereIn('e.status', ['unknown', 'readback_mismatch'])->orWhereIn('e.activation_status', ['failed', 'unknown']))
+            ->orderBy('e.updated_at')->limit($limit)
+            ->select([DB::raw("case when e.activation_status = 'failed' then 'activation_failed' when e.activation_status = 'unknown' then 'activation_unknown' else e.status end as kind"), 'bp.id as blueprint_id', 'bp.name', 'bp.client_id', 'c.name as client_name', 'bp.project_id', 'p.name as project_name', 'e.provider', 'e.updated_at as since']));
+
+        return array_values(array_map(static fn (stdClass $r): array => [
+            'kind' => (string) $r->kind,
+            'blueprint_id' => (string) $r->blueprint_id,
+            'name' => (string) $r->name,
+            'client_id' => (string) $r->client_id,
+            'client_name' => (string) $r->client_name,
+            'project_id' => (string) $r->project_id,
+            'project_name' => (string) $r->project_name,
+            'provider' => $r->provider === null ? null : (string) $r->provider,
+            'since' => (string) $r->since,
+        ], array_values(array_filter([...$plans->get()->all(), ...$executions->get()->all()], static fn (mixed $r): bool => $r instanceof stdClass))));
+    }
+
     private function base(string $workspaceId): Builder
     {
         return DB::table('campaign_launch_executions as e')
@@ -128,6 +167,9 @@ final readonly class EloquentLaunchRepository implements LaunchRepository
             message: $r->message === null ? null : (string) $r->message,
             requestStartedAt: $date($r->request_started_at),
             requestFinishedAt: $date($r->request_finished_at),
+            activationStatus: $r->activation_status === null ? null : ActivationStatus::from((string) $r->activation_status),
+            activationMessage: $r->activation_message === null ? null : (string) $r->activation_message,
+            activatedAt: $date($r->activated_at),
         );
     }
 }

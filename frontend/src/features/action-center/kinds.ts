@@ -36,6 +36,8 @@ export const STREAM_TYPE: Record<AttentionStreamValue, ActionType | null> = {
   agents: 'task',
   /* Pending approvals are shown as decisions, from the approvals queue itself, so they are not counted twice. */
   approvals: null,
+  /* A launch waiting on somebody is about campaigns. */
+  launches: 'campaign',
 };
 
 /** The kind of one item: by stream, except an agent's finding, which is the kind of thing it is about. */
