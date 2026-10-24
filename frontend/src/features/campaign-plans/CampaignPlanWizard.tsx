@@ -26,6 +26,7 @@ import {
   useSavePlanMutation,
   type PlanInput,
 } from './api';
+import { ActivationApproval } from './ActivationApproval';
 import { LaunchExecutions } from './LaunchExecutions';
 import { LaunchPlanView } from './LaunchPlanView';
 
@@ -842,6 +843,26 @@ export function CampaignPlanWizard() {
                   {t('launch.create')}
                 </Button>
               </div>
+            ) : null}
+            {plan.status === 'verified' && can(PERMISSIONS.campaignLaunchExecute) ? (
+              <Button
+                variant="secondary"
+                className="self-start"
+                disabled={launchAction.isPending}
+                onClick={() => launchAction.mutate('activation')}
+              >
+                {t('activation.request')}
+              </Button>
+            ) : null}
+            {plan.status === 'activation_pending' && can(PERMISSIONS.campaignLaunchActivate) ? (
+              <ActivationApproval
+                plan={plan}
+                pending={launchAction.isPending}
+                onApprove={() => launchAction.mutate('activate')}
+              />
+            ) : null}
+            {plan.status === 'activation_pending' && !can(PERMISSIONS.campaignLaunchActivate) ? (
+              <Alert tone="info">{t('activation.waiting')}</Alert>
             ) : null}
             <LaunchExecutions
               planId={plan.id}

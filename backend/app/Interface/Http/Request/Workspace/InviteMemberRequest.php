@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Interface\Http\Request\Workspace;
 
 use App\Domain\Access\SystemRole;
+use App\Domain\Saas\SeatType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -35,6 +36,8 @@ final class InviteMemberRequest extends FormRequest
              * a validation error on the form rather than a `404` from the role lookup.
              */
             'role' => ['required', 'string', Rule::in(SystemRole::values())],
+            /* The commercial seat; left out, it follows the role. A seat never grants a permission. */
+            'seat_type' => ['nullable', 'string', Rule::in(SeatType::values())],
         ];
     }
 }

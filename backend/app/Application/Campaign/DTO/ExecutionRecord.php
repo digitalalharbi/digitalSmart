@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Campaign\DTO;
 
+use App\Domain\Advertising\Launch\ActivationStatus;
 use App\Domain\Advertising\Launch\ExecutionStatus;
 use DateTimeImmutable;
 
@@ -33,5 +34,8 @@ final readonly class ExecutionRecord
         public ?string $message,
         public ?DateTimeImmutable $requestStartedAt,
         public ?DateTimeImmutable $requestFinishedAt,
+        public ?ActivationStatus $activationStatus = null,
+        public ?string $activationMessage = null,
+        public ?DateTimeImmutable $activatedAt = null,
     ) {}
 }

@@ -769,6 +769,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         Route::post('campaign-plans/{blueprint}/cancel', [BlueprintController::class, 'cancel'])->whereUuid('blueprint')->name('campaign-plans.cancel');
         Route::post('campaign-plans/{blueprint}/approve', [LaunchController::class, 'approve'])->whereUuid('blueprint')->name('campaign-plans.approve');
         Route::post('campaign-plans/{blueprint}/launch', [LaunchController::class, 'launch'])->whereUuid('blueprint')->middleware('throttle:10,1')->name('campaign-plans.launch');
+        Route::post('campaign-plans/{blueprint}/activation', [LaunchController::class, 'requestActivation'])->whereUuid('blueprint')->name('campaign-plans.activation');
+        Route::post('campaign-plans/{blueprint}/activate', [LaunchController::class, 'activate'])->whereUuid('blueprint')->middleware('throttle:10,1')->name('campaign-plans.activate');
         Route::get('campaign-plans/{blueprint}/launches', [LaunchController::class, 'index'])->whereUuid('blueprint')->name('campaign-plans.launches');
         Route::post('launch-executions/{execution}/reconcile', [LaunchController::class, 'reconcile'])->whereUuid('execution')->name('launch-executions.reconcile');
         Route::post('launch-executions/{execution}/retry', [LaunchController::class, 'retry'])->whereUuid('execution')->name('launch-executions.retry');

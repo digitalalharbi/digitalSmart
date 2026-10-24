@@ -7,6 +7,7 @@ namespace App\Interface\Http\Controller\Campaign;
 use App\Application\Campaign\DTO\ExecutionRecord;
 use App\Application\Campaign\Launch\ApproveCampaignPlan;
 use App\Application\Campaign\Launch\LaunchCampaignPlan;
+use App\Application\Campaign\Launch\ManageActivation;
 use App\Application\Campaign\Launch\RecoverExecution;
 use App\Application\Campaign\Query\ReadLaunches;
 use App\Interface\Http\Controller\Controller;
@@ -24,6 +25,18 @@ final class LaunchController extends Controller
     public function launch(string $blueprint, LaunchCampaignPlan $launch): JsonResponse
     {
         return response()->json(['data' => $launch($blueprint)], 202);
+    }
+
+    public function requestActivation(string $blueprint, ManageActivation $activation): JsonResponse
+    {
+        $activation->request($blueprint);
+
+        return response()->json(null, 204);
+    }
+
+    public function activate(string $blueprint, ManageActivation $activation): JsonResponse
+    {
+        return response()->json(['data' => $activation->approve($blueprint)], 202);
     }
 
     public function index(string $blueprint, ReadLaunches $read): JsonResponse
@@ -60,6 +73,9 @@ final class LaunchController extends Controller
             'may_reconcile' => $e->status->value === 'unknown',
             'request_started_at' => $e->requestStartedAt?->format(DateTimeInterface::ATOM),
             'request_finished_at' => $e->requestFinishedAt?->format(DateTimeInterface::ATOM),
+            'activation_status' => $e->activationStatus?->value,
+            'activation_message' => $e->activationMessage,
+            'activated_at' => $e->activatedAt?->format(DateTimeInterface::ATOM),
         ];
     }
 }

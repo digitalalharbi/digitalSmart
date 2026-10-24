@@ -66,6 +66,15 @@ final readonly class EloquentCampaignReconciler implements CampaignReconciler
         });
     }
 
+    public function markActive(ExecutionRecord $execution): void
+    {
+        foreach (['campaigns' => [$execution->providerCampaignId], 'ad_groups' => [$execution->providerAdGroupId], 'ads' => $execution->providerAdIds] as $table => $ids) {
+            DB::table($table)->where('external_account_id', $execution->externalAccountId)
+                ->whereIn('external_id', array_values(array_filter($ids)))
+                ->update(['status' => EntityStatus::Active->value, 'updated_at' => now()]);
+        }
+    }
+
     /** @param array<string, mixed> $values */
     private function upsert(string $table, ExecutionRecord $execution, string $externalId, array $values): string
     {

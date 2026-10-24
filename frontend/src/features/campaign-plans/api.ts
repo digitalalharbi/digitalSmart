@@ -184,13 +184,16 @@ export function planToInput(plan: Plan): PlanInput {
   };
 }
 
-export function usePlansQuery(status: string) {
+export function usePlansQuery(filters: { status: string; provider: string }) {
   return useQuery({
-    queryKey: [...KEY, 'list', status],
+    queryKey: [...KEY, 'list', filters],
     queryFn: async () =>
       (
-        await api.get<{ data: Plan[]; meta: { total: number } }>('/campaign-plans', {
-          params: { status: status || undefined },
+        await api.get<{
+          data: Plan[];
+          meta: { total: number; counts: Partial<Record<PlanStatus, number>> };
+        }>('/campaign-plans', {
+          params: { status: filters.status || undefined, provider: filters.provider || undefined },
         })
       ).data,
   });
@@ -295,6 +298,8 @@ export type LaunchExecution = {
   message: string | null;
   may_retry: boolean;
   may_reconcile: boolean;
+  activation_status: 'pending' | 'activating' | 'active' | 'failed' | 'blocked_external' | null;
+  activation_message: string | null;
 };
 
 export function useLaunchesQuery(id: string | undefined, enabled: boolean) {
@@ -316,7 +321,7 @@ export function useLaunchActionMutation(planId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (action: 'approve' | 'launch') => {
+    mutationFn: async (action: 'approve' | 'launch' | 'activation' | 'activate') => {
       await ensureCsrfCookie();
       return (await api.post<{ data: unknown }>(`/campaign-plans/${planId}/${action}`)).data.data;
     },

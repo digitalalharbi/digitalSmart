@@ -32,6 +32,14 @@ enum SeatType: string
         return $roleSlug === SystemRole::ClientViewer->value ? self::Client : self::Full;
     }
 
+    /** A client's people take client or guest seats; the agency's take full or limited ones. A seat never grants a role. */
+    public function fitsRole(string $roleSlug): bool
+    {
+        $client = $roleSlug === SystemRole::ClientViewer->value;
+
+        return $client === in_array($this, [self::Client, self::Guest], true);
+    }
+
     /** @return list<string> */
     public static function values(): array
     {

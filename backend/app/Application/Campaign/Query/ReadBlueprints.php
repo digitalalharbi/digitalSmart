@@ -28,12 +28,17 @@ final readonly class ReadBlueprints
         private VisibilityResolver $visibility,
     ) {}
 
-    /** @return array{rows: list<BlueprintView>, total: int} */
-    public function list(?string $status, ?string $projectId, int $page): array
+    /**
+     * The plans the reader may see, narrowed, with how many sit in each state.
+     *
+     * @param  array{status?: string|null, project_id?: string|null, client_id?: string|null, provider?: string|null, owner_id?: string|null}  $filters
+     * @return array{rows: list<BlueprintView>, total: int, counts: array<string, int>}
+     */
+    public function list(array $filters, int $page): array
     {
         $this->guard->ensure(Permission::CampaignBlueprintsView);
 
-        return $this->blueprints->list($this->actor->workspaceId()->value, $this->visibility->visibleProjectIds(), $status, $projectId, max(1, $page), 25);
+        return $this->blueprints->list($this->actor->workspaceId()->value, $this->visibility->visibleProjectIds(), $filters, max(1, $page), 25);
     }
 
     /** @return array{blueprint: BlueprintView, missing: list<string>} */

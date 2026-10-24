@@ -24,4 +24,13 @@ interface LaunchRepository
 
     /** @param array<string, mixed> $fields */
     public function updateExecution(string $workspaceId, string $id, array $fields): void;
+
+    /**
+     * What in the launch path is waiting on somebody: plans awaiting approval or activation, and accounts whose creation is unknown,
+     * failed, partial, mismatched, or whose activation failed.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return list<array{kind: string, blueprint_id: string, name: string, client_id: string, client_name: string, project_id: string, project_name: string, provider: string|null, since: string}>
+     */
+    public function issues(string $workspaceId, ?array $visibleProjectIds, int $limit): array;
 }

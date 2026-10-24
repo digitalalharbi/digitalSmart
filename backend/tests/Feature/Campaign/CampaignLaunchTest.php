@@ -202,3 +202,112 @@ it('records real credentials as waiting on the platform, and calls nothing', fun
     $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'failed');
     expect(DB::table('campaigns')->where('external_id', 'like', 'SANDBOX-%')->count())->toBe(0);
 });
+
+/*
+| Activation: created paused and verified first, then asked for, then approved by somebody who may switch campaigns on, then
+| confirmed by the platform. Active only after that confirmation.
+*/
+
+/** An activator that fails for the providers listed in the script. */
+final class ScriptedActivator implements App\Application\Campaign\Contract\CampaignActivator
+{
+    /** @var list<string> */
+    public static array $failFor = [];
+
+    public function activate(CreationRequest $request, string $campaignId, string $adGroupId, array $adIds): App\Domain\Advertising\Launch\ActivationOutcome
+    {
+        if (in_array($request->plan->provider->value, self::$failFor, true)) {
+            throw new RuntimeException('timeout');
+        }
+
+        return (new App\Infrastructure\Campaign\RoutingCampaignActivator)->activate($request, $campaignId, $adGroupId, $adIds);
+    }
+}
+
+/** @return array{scene: array<string, mixed>, id: string, owner: User} */
+function verifiedPlan(): array
+{
+    $plan = approvedPlan();
+    test()->actingAs($plan['owner'])->postJson("/api/campaign-plans/{$plan['id']}/launch")->assertStatus(202);
+
+    return $plan;
+}
+
+it('switches a verified launch on in two acts, and calls it active only once the platform confirms', function (): void {
+    ['id' => $id, 'owner' => $owner] = verifiedPlan();
+
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activation")->assertNoContent();
+    $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'activation_pending');
+    expect(DB::table('campaigns')->where('external_id', 'like', 'SANDBOX-CAMPAIGN-%')->pluck('status')->unique()->all())->toBe(['paused']);
+
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activate")->assertStatus(202)->assertJsonPath('data.queued', 2);
+
+    $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'active');
+    $executions = $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}/launches")->json('data');
+    expect(array_column($executions, 'activation_status'))->toBe(['active', 'active'])
+        ->and(DB::table('campaigns')->where('external_id', 'like', 'SANDBOX-CAMPAIGN-%')->pluck('status')->unique()->all())->toBe(['active'])
+        ->and(DB::table('audit_logs')->where('action', 'campaign_activation.executed')->count())->toBe(2);
+});
+
+it('refuses to switch on what was not created and verified, and keeps activation its own permission', function (): void {
+    ['scene' => $s, 'id' => $id, 'owner' => $owner] = approvedPlan();
+
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activation")->assertUnprocessable()->assertJsonPath('code', 'invalid_transition');
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/launch")->assertStatus(202);
+
+    Auth::forgetGuards();
+    $pm = $s['w']->scenario->addMember(SystemRole::ProjectManager);
+    DB::table('project_members')->insert(['id' => (string) Str::uuid7(), 'project_id' => $s['project']->getKey(), 'user_id' => $pm->getKey(),
+        'role_id' => $s['w']->scenario->role(SystemRole::ProjectManager)->getKey(), 'created_at' => now(), 'updated_at' => now()]);
+    $this->actingAs($pm)->postJson("/api/campaign-plans/{$id}/activation")->assertForbidden();
+
+    Auth::forgetGuards();
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activation")->assertNoContent();
+    Auth::forgetGuards();
+    $this->actingAs($pm)->postJson("/api/campaign-plans/{$id}/activate")->assertForbidden();
+});
+
+it('does not call a plan active while part of it is not, and lets the failed part be approved again', function (): void {
+    app()->bind(App\Application\Campaign\Contract\CampaignActivator::class, ScriptedActivator::class);
+    ScriptedActivator::$failFor = ['google_ads'];
+    ['id' => $id, 'owner' => $owner] = verifiedPlan();
+
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activation")->assertNoContent();
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activate")->assertStatus(202);
+
+    $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'activation_pending')->assertJsonPath('data.status_reason', 'Active on 1 of 2 accounts.');
+
+    ScriptedActivator::$failFor = [];
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activate")->assertStatus(202)->assertJsonPath('data.queued', 1);
+    $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'active');
+});
+
+it('raises launch problems in the attention queue, with an unknown outcome as critical', function (): void {
+    ScriptedCreator::$script = ['google_ads' => 'throw'];
+    ['id' => $id, 'owner' => $owner] = approvedPlan();
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/launch")->assertStatus(202);
+
+    $items = collect((array) $this->actingAs($owner)->getJson('/api/attention')->assertOk()->json('data'))->where('stream', 'launches');
+
+    expect($items->pluck('severity')->all())->toContain('critical')
+        ->and($items->pluck('reason.code')->all())->toContain('LAUNCH_UNKNOWN', 'LAUNCH_PARTIAL');
+});
+
+it('filters plans by platform and status, and counts each state', function (): void {
+    ['id' => $id, 'owner' => $owner] = approvedPlan();
+
+    $this->actingAs($owner)->getJson('/api/campaign-plans?provider=meta')->assertOk()->assertJsonPath('meta.counts.approved', 1)->assertJsonCount(1, 'data');
+    $this->actingAs($owner)->getJson('/api/campaign-plans?provider=tiktok')->assertOk()->assertJsonCount(0, 'data');
+    $this->actingAs($owner)->getJson('/api/campaign-plans?status=draft')->assertOk()->assertJsonCount(0, 'data')->assertJsonPath('meta.counts.approved', 1);
+});
+
+it('takes a seat type on an invitation that fits the role, and refuses one that does not', function (): void {
+    ['owner' => $owner] = approvedPlan();
+
+    $this->actingAs($owner)->postJson('/api/members', ['name' => 'Client', 'email' => 'c@example.test', 'role' => 'client-viewer', 'seat_type' => 'full'])
+        ->assertUnprocessable()->assertJsonPath('code', 'member_not_added');
+    $this->actingAs($owner)->postJson('/api/members', ['name' => 'Part-time buyer', 'email' => 'p@example.test', 'role' => 'media-buyer', 'seat_type' => 'limited'])
+        ->assertSuccessful();
+
+    expect(DB::table('workspace_members as m')->join('users as u', 'u.id', '=', 'm.user_id')->where('u.email', 'p@example.test')->value('m.seat_type'))->toBe('limited');
+});

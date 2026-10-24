@@ -14,6 +14,7 @@ use App\Application\Workspace\Query\CountHeldWork;
 use App\Application\Workspace\Query\ListMembers;
 use App\Domain\Identity\Email;
 use App\Domain\Identity\UserId;
+use App\Domain\Saas\SeatType;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Request\Workspace\ChangeMemberRoleRequest;
 use App\Interface\Http\Request\Workspace\ChangeMemberStatusRequest;
@@ -42,6 +43,7 @@ final class MemberController extends Controller
             $request->string('name')->value(),
             new Email($request->string('email')->value()),
             $request->string('role')->value(),
+            SeatType::tryFrom($request->string('seat_type')->value()),
         );
 
         return response()->json([

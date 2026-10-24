@@ -12,4 +12,9 @@ final readonly class QueuedLaunches implements LaunchQueue
     {
         CreateCampaignJob::dispatch($workspaceId, $executionId, $executedBy)->afterCommit();
     }
+
+    public function pushActivation(string $workspaceId, string $executionId, string $approvedBy): void
+    {
+        ActivateCampaignJob::dispatch($workspaceId, $executionId, $approvedBy)->afterCommit();
+    }
 }

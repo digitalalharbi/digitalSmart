@@ -690,7 +690,13 @@
     "LEADS_DECLINE_MORE": "Leads are falling for {{count}} clients.",
     "LEADS_LOW_QUALITY_MORE": "Lead quality is low for {{count}} clients.",
     "RULE_REJECTED": "{{rule}}: rejected by the platform.",
-    "RULE_ENDS_SOON": "{{rule}}: ends in {{days}} days."
+    "RULE_ENDS_SOON": "{{rule}}: ends in {{days}} days.",
+    "LAUNCH_UNKNOWN": "Creation outcome unknown: check the platform before anything is retried — {{name}}",
+    "LAUNCH_READBACK_MISMATCH": "Created, and it differs from the plan — {{name}}",
+    "LAUNCH_ACTIVATION_FAILED": "Not switched on — {{name}}",
+    "LAUNCH_PARTIAL": "Partly created; the rest needs a decision — {{name}}",
+    "LAUNCH_ACTIVATION_PENDING": "Waiting for approval to switch on — {{name}}",
+    "LAUNCH_APPROVAL_PENDING": "Waiting for approval — {{name}}"
   },
   "agentFindings": {
     "winner": "Best in campaign",
@@ -4502,7 +4508,8 @@
       "requests": "Requests",
       "tasks": "Tasks",
       "automation": "Rules",
-      "agents": "Agents"
+      "agents": "Agents",
+      "launches": "campaign launches"
     }
   },
   "activity": {
@@ -6043,7 +6050,9 @@
       "active": "Active",
       "failed": "Failed",
       "cancelled": "Cancelled"
-    }
+    },
+    "platformFilter": "Platform",
+    "anyPlatform": "Any platform"
   },
   "launchPlan": {
     "failed": "The launch plan could not be built.",
@@ -6086,6 +6095,27 @@
       "failed": "Failed",
       "unknown": "Outcome unknown",
       "skipped": "Not attempted",
+      "blocked_external": "Waiting on the platform"
+    }
+  },
+  "activation": {
+    "request": "Ask to switch on",
+    "waiting": "Waiting for somebody who may switch campaigns on to approve it.",
+    "title": "Approve switching these campaigns on",
+    "accounts": "Platforms and accounts",
+    "budget": "Budget",
+    "schedule": "Schedule",
+    "conversion": "Conversion",
+    "tracking": "Tracking",
+    "audience": "Audience",
+    "confirm": "I have read what will start delivering and spending, on every account above.",
+    "approve": "Switch on",
+    "label": "Delivery",
+    "status": {
+      "pending": "Waiting for approval",
+      "activating": "Switching on",
+      "active": "On, confirmed by the platform",
+      "failed": "Not switched on",
       "blocked_external": "Waiting on the platform"
     }
   }

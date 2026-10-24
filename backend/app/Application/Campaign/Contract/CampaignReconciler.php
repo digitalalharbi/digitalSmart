@@ -15,4 +15,7 @@ use App\Domain\Advertising\MetricSource;
 interface CampaignReconciler
 {
     public function reconcile(ExecutionRecord $execution, ProviderCreatePlan $plan, string $name, MetricSource $source): void;
+
+    /** The platform confirmed the campaign is on: the product's own rows for it read active. */
+    public function markActive(ExecutionRecord $execution): void;
 }

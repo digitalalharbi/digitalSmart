@@ -48,6 +48,7 @@ use App\Application\Attention\Source\ApprovalAttentionSource;
 use App\Application\Attention\Source\AutomationAttentionSource;
 use App\Application\Attention\Source\BudgetAttentionSource;
 use App\Application\Attention\Source\CampaignAttentionSource;
+use App\Application\Attention\Source\LaunchAttentionSource;
 use App\Application\Attention\Source\RequestAttentionSource;
 use App\Application\Attention\Source\TaskAttentionSource;
 use App\Application\Attention\Source\TrackingAttentionSource;
@@ -61,6 +62,7 @@ use App\Application\Budget\Contract\BudgetControlReadModel;
 use App\Application\Budget\Contract\BudgetRepository;
 use App\Application\Budget\Contract\BudgetSpendReadModel;
 use App\Application\Campaign\Contract\BlueprintRepository;
+use App\Application\Campaign\Contract\CampaignActivator;
 use App\Application\Campaign\Contract\CampaignCreator;
 use App\Application\Campaign\Contract\CampaignReconciler;
 use App\Application\Campaign\Contract\CreatePlanPayloads;
@@ -223,6 +225,7 @@ use App\Infrastructure\Campaign\EloquentBlueprintRepository;
 use App\Infrastructure\Campaign\EloquentCampaignReconciler;
 use App\Infrastructure\Campaign\EloquentLaunchFacts;
 use App\Infrastructure\Campaign\EloquentLaunchRepository;
+use App\Infrastructure\Campaign\RoutingCampaignActivator;
 use App\Infrastructure\Campaign\RoutingCampaignCreator;
 use App\Infrastructure\Commerce\CommerceSyncAdapterRegistry;
 use App\Infrastructure\Commerce\Sandbox\CommerceFixtures;
@@ -402,6 +405,7 @@ final class AppServiceProvider extends ServiceProvider
         ApprovalAttentionSource::class,
         RequestAttentionSource::class,
         TaskAttentionSource::class,
+        LaunchAttentionSource::class,
     ];
 
     /** Probes composing the system health report, in display order. */
@@ -634,6 +638,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(CreatePlanPayloads::class, DocumentedPayloadDrafts::class);
         $this->app->bind(LaunchRepository::class, EloquentLaunchRepository::class);
         $this->app->bind(CampaignCreator::class, RoutingCampaignCreator::class);
+        $this->app->bind(CampaignActivator::class, RoutingCampaignActivator::class);
         $this->app->bind(CampaignReconciler::class, EloquentCampaignReconciler::class);
         $this->app->bind(LaunchQueue::class, QueuedLaunches::class);
 
