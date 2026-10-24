@@ -1,29 +1,19 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { Check, ChevronsUpDown, KeyRound, LogOut } from 'lucide-react';
+import { ChevronsUpDown, KeyRound, LogOut } from 'lucide-react';
 import { useState } from 'react';
-import {
-  PasswordDialog,
-  useLogoutMutation,
-  useSession,
-  useSwitchWorkspaceMutation,
-} from '@/features/auth';
+import { PasswordDialog, useLogoutMutation, useSession } from '@/features/auth';
 import { Button } from '@/shared/ui/button';
-import { roleLabel } from '@/shared/lib/role-label';
 
 /**
- * Identity, workspace switching and sign-out.
- *
- * Switching workspace is a server call: membership is re-verified and every
- * cached query for the previous workspace is discarded.
+ * Identity, password and sign-out. Switching workspace lives in `WorkspaceSwitcher`, beside this menu.
  */
 export function AccountMenu() {
   const { t } = useTranslation();
   const { user } = useSession();
   const navigate = useNavigate();
   const logout = useLogoutMutation();
-  const switchWorkspace = useSwitchWorkspaceMutation();
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   if (!user) {
@@ -81,40 +71,6 @@ export function AccountMenu() {
               {t('account.signOutFailed')}
             </p>
           ) : null}
-
-          <DropdownMenu.Separator className="bg-line-subtle my-1 h-px" />
-
-          <DropdownMenu.Label className="text-content-tertiary px-2.5 py-1 text-xs">
-            {t('account.workspaces')}
-          </DropdownMenu.Label>
-
-          {user.workspaces.map((workspace) => {
-            const isActive = workspace.id === user.active_workspace?.id;
-
-            return (
-              <DropdownMenu.Item
-                key={workspace.id}
-                disabled={switchWorkspace.isPending}
-                onSelect={() => {
-                  if (!isActive) {
-                    switchWorkspace.mutate(workspace.id);
-                  }
-                }}
-                className="text-content hover:bg-surface-hover focus:bg-surface-hover flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-none"
-              >
-                <Check
-                  className={isActive ? 'text-content-brand' : 'invisible'}
-                  aria-hidden={!isActive}
-                />
-                <span className="flex min-w-0 flex-col">
-                  <span className="truncate">{workspace.name}</span>
-                  <span className="text-content-tertiary text-xs">
-                    {roleLabel(t, workspace.role, workspace.role_name)}
-                  </span>
-                </span>
-              </DropdownMenu.Item>
-            );
-          })}
 
           <DropdownMenu.Separator className="bg-line-subtle my-1 h-px" />
 

@@ -1,8 +1,12 @@
 /** Mirrors the backend contract of GET /api/auth/me (see docs/API.md). */
+export type WorkspaceType = 'agency' | 'brand' | 'freelancer' | 'internal_team';
+
 export type WorkspaceSummary = {
   id: string;
   name: string;
   slug: string;
+  /** What kind of organisation. Changes wording and defaults, never what anybody may do. */
+  type: WorkspaceType;
   role: string;
   role_name: string;
   default_currency: string;

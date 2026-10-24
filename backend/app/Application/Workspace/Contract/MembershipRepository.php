@@ -18,7 +18,8 @@ interface MembershipRepository
 
     public function changeStatus(WorkspaceId $workspaceId, UserId $userId, MembershipStatus $status): void;
 
-    public function remove(WorkspaceId $workspaceId, UserId $userId): bool;
+    /** Revoke the membership. The row is kept; inviting the person again reactivates it. */
+    public function remove(WorkspaceId $workspaceId, UserId $userId, ?UserId $by = null): bool;
 
     public function findRoleIdBySlug(WorkspaceId $workspaceId, string $slug): ?RoleId;
 

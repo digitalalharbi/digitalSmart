@@ -20,7 +20,7 @@ final class Workspace extends Model
     use SoftDeletes;
 
     /** @var list<string> */
-    protected $fillable = ['name', 'slug', 'default_locale', 'default_currency', 'timezone', 'settings'];
+    protected $fillable = ['name', 'slug', 'default_locale', 'default_currency', 'timezone', 'type', 'settings'];
 
     /** @return HasMany<WorkspaceMember, $this> */
     public function members(): HasMany

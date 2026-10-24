@@ -16,6 +16,7 @@ use App\Interface\Http\Middleware\BindActorContext;
 use App\Interface\Http\Request\Identity\ChangePasswordRequest;
 use App\Interface\Http\Request\Identity\LogInRequest;
 use App\Interface\Http\Resource\AuthenticatedUserResource;
+use App\Interface\Http\Support\WorkspaceCookie;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,15 +43,15 @@ final class SessionController extends Controller
             $request->session()->put(BindActorContext::SESSION_KEY, $user->activeWorkspace->id);
         }
 
-        return AuthenticatedUserResource::make($user)->response();
+        $response = AuthenticatedUserResource::make($user)->response();
+
+        return $user->activeWorkspace === null ? $response : $response->withCookie(WorkspaceCookie::make($user->activeWorkspace->id));
     }
 
     /** The current session's user, workspaces and effective permissions. */
     public function show(Request $request, GetAuthenticatedUser $getUser): JsonResponse
     {
-        $workspaceId = $request->hasSession()
-            ? $request->session()->get(BindActorContext::SESSION_KEY)
-            : null;
+        $workspaceId = BindActorContext::requested($request);
 
         $user = $getUser(
             new UserId((string) $request->user()?->getAuthIdentifier()),
@@ -83,12 +84,10 @@ final class SessionController extends Controller
     /** Sign out and invalidate the session. */
     public function destroy(Request $request, LogOut $logOut): JsonResponse
     {
-        $workspaceId = $request->hasSession()
-            ? $request->session()->get(BindActorContext::SESSION_KEY)
-            : null;
+        $workspaceId = BindActorContext::requested($request);
 
         $logOut(is_string($workspaceId) ? new WorkspaceId($workspaceId) : null);
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return (new JsonResponse(null, Response::HTTP_NO_CONTENT))->withCookie(WorkspaceCookie::forget());
     }
 }

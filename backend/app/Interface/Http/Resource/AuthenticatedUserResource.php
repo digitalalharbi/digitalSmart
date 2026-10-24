@@ -54,6 +54,7 @@ final class AuthenticatedUserResource extends JsonResource
             'id' => $workspace->id,
             'name' => $workspace->name,
             'slug' => $workspace->slug,
+            'type' => $workspace->type,
             'role' => $workspace->roleSlug,
             'role_name' => $workspace->roleName,
             'default_currency' => $workspace->defaultCurrency,

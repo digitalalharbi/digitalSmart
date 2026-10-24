@@ -32,6 +32,7 @@ final class EloquentRoleReadModel implements RoleReadModel
 
         $members = DB::table('workspace_members')
             ->where('workspace_id', $workspaceId->value)
+            ->where('status', '<>', 'revoked')
             ->groupBy('role_id')
             ->selectRaw('role_id, count(*) as total')
             ->pluck('total', 'role_id');

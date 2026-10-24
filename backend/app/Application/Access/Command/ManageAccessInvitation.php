@@ -220,6 +220,7 @@ final readonly class ManageAccessInvitation
             new RoleId($invitation->roleId),
             $existing,
             $existing === null ? $password : null,
+            $invitation->createdBy !== null ? new UserId($invitation->createdBy) : null,
         );
 
         $userId = new UserId($member->userId);

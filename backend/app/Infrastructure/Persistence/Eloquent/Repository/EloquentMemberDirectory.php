@@ -13,7 +13,6 @@ use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceId;
 use App\Infrastructure\Persistence\Eloquent\Model\Role;
 use App\Infrastructure\Persistence\Eloquent\Model\User;
-use App\Infrastructure\Persistence\Eloquent\Model\WorkspaceMember;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -42,6 +41,7 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
         RoleId $roleId,
         ?UserId $existing,
         ?string $chosenPassword = null,
+        ?UserId $invitedBy = null,
     ): InvitedMember {
         $oneTime = $chosenPassword ?? Str::random(self::ONE_TIME_LENGTH);
 
@@ -53,6 +53,7 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
             $existing,
             $oneTime,
             $chosenPassword,
+            $invitedBy,
         ): InvitedMember {
             if ($existing === null) {
                 /** @var User $user */
@@ -78,9 +79,11 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
                  */
             }
 
-            WorkspaceMember::query()->create([
-                'workspace_id' => $workspaceId->value,
-                'user_id' => $user->getKey(),
+            /*
+             * One row per person per workspace: somebody whose membership was revoked is let back in on the same row,
+             * so their history in this workspace stays one history.
+             */
+            $membership = [
                 'role_id' => $roleId->value,
                 /*
                  * `Active`, not `Invited`. A member in that state cannot sign in at all — `grantsAccess()` is
@@ -89,7 +92,26 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
                  */
                 'status' => MembershipStatus::Active->value,
                 'joined_at' => now(),
-            ]);
+                'invited_by' => $invitedBy?->value,
+                'invited_at' => $invitedBy === null ? null : now(),
+                'revoked_at' => null,
+                'revoked_by' => null,
+                'updated_at' => now(),
+            ];
+            $existingRow = DB::table('workspace_members')
+                ->where('workspace_id', $workspaceId->value)->where('user_id', $user->getKey())->value('id');
+
+            if (is_string($existingRow)) {
+                DB::table('workspace_members')->where('id', $existingRow)->update($membership);
+            } else {
+                DB::table('workspace_members')->insert([
+                    ...$membership,
+                    'id' => (string) Str::uuid7(),
+                    'workspace_id' => $workspaceId->value,
+                    'user_id' => $user->getKey(),
+                    'created_at' => now(),
+                ]);
+            }
 
             /** @var string $roleSlug */
             $roleSlug = Role::query()->whereKey($roleId->value)->value('slug') ?? '';

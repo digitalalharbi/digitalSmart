@@ -23,6 +23,8 @@ final class EloquentMembershipRepository implements MembershipRepository
             ->join('roles', 'roles.id', '=', 'workspace_members.role_id')
             ->where('workspace_members.workspace_id', $workspaceId->value)
             ->where('workspace_members.user_id', $userId->value)
+            /* A revoked membership is the record of somebody who left, not a membership. */
+            ->where('workspace_members.status', '<>', MembershipStatus::Revoked->value)
             ->first([
                 'workspace_members.role_id', 'workspace_members.status', 'roles.slug as role_slug',
             ]);
@@ -64,12 +66,18 @@ final class EloquentMembershipRepository implements MembershipRepository
             ->update(['status' => $status->value]);
     }
 
-    public function remove(WorkspaceId $workspaceId, UserId $userId): bool
+    public function remove(WorkspaceId $workspaceId, UserId $userId, ?UserId $by = null): bool
     {
+        /* Revoked, not deleted: the row stays as the record of who was here and who took them out. */
         return WorkspaceMember::query()
             ->where('workspace_id', $workspaceId->value)
             ->where('user_id', $userId->value)
-            ->delete() > 0;
+            ->where('status', '<>', MembershipStatus::Revoked->value)
+            ->update([
+                'status' => MembershipStatus::Revoked->value,
+                'revoked_at' => now(),
+                'revoked_by' => $by?->value,
+            ]) > 0;
     }
 
     public function findRoleIdBySlug(WorkspaceId $workspaceId, string $slug): ?RoleId

@@ -96,6 +96,12 @@ Private disk only; read back through an endpoint that re-applies the reader's ac
 stored with). No tenant file has a public URL. Presentations are rendered on request and not stored. The only public files
 are a user's avatar (identity, not tenant data) and the product's own assets.
 
+## The active workspace (PR B)
+
+A browser works in one workspace at a time. The choice lives in an encrypted, HTTP-only cookie (`ds_workspace`) written only by
+sign-in and a switch, and is re-checked against an active membership on every request; the session copy is a fallback. It used to
+live only in the session, which a request already in flight could write back over a switch. See `docs/SAAS.md`.
+
 ## Cache, realtime, search
 
 - **Cache** holds no tenant data today (a health sentinel and the public GitHub status). A tenant-dependent cache key must

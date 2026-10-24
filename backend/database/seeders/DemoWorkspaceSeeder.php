@@ -80,6 +80,7 @@ use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
 use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceId;
+use App\Domain\Workspace\WorkspaceType;
 use App\Infrastructure\Persistence\Eloquent\Model\Client;
 use App\Infrastructure\Persistence\Eloquent\Model\ExternalAccount;
 use App\Infrastructure\Persistence\Eloquent\Model\Project;
@@ -197,9 +198,48 @@ final class DemoWorkspaceSeeder extends Seeder
 
         $actor->clear();
 
+        $this->demoBrandWorkspace($owner);
+
         $this->command?->info('Demo workspace seeded. Sign in with any '.
             'demo address and the password "'.self::PASSWORD.'".');
         $this->command?->warn('Performance figures are SANDBOX fixtures, not real spend.');
+    }
+
+    /**
+     * A second, small workspace the demo owner also belongs to — a brand running its own marketing — so the workspace
+     * switcher has somewhere to go and the demo shows one person holding a different role in a different tenant.
+     *
+     * Joined after the agency, so a fresh sign-in still lands in the agency: the default is the earliest membership.
+     */
+    private function demoBrandWorkspace(User $owner): void
+    {
+        $brandOwner = $this->user(['name' => 'Demo Brand Owner', 'email' => 'brand-owner@demo.digitalsmart.test', 'role' => SystemRole::Owner]);
+
+        $brand = $this->provisioner->provision(
+            name: 'DEMO — Alhambra In-house',
+            slug: 'demo-alhambra-brand',
+            owner: $brandOwner,
+            defaultCurrency: 'SAR',
+            timezone: 'Asia/Riyadh',
+            type: WorkspaceType::Brand,
+        );
+
+        $roles = $this->provisioner->createSystemRoles($brand);
+
+        WorkspaceMember::query()->updateOrCreate(
+            ['workspace_id' => $brand->getKey(), 'user_id' => $owner->getKey()],
+            [
+                /* An administrator here, an owner at the agency: one person, a different role in each tenant. */
+                'role_id' => $roles[SystemRole::Admin->value]->getKey(),
+                'status' => MembershipStatus::Active->value,
+                'joined_at' => now()->addMinute(),
+            ],
+        );
+
+        Client::query()->updateOrCreate(
+            ['workspace_id' => $brand->getKey(), 'slug' => 'alhambra-own-brand'],
+            ['name' => 'DEMO — Alhambra (own brand)', 'status' => 'active', 'is_demo' => true],
+        );
     }
 
     /**

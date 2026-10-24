@@ -7,6 +7,7 @@ namespace App\Infrastructure\Workspace;
 use App\Domain\Access\Permission as PermissionEnum;
 use App\Domain\Access\SystemRole;
 use App\Domain\Workspace\MembershipStatus;
+use App\Domain\Workspace\WorkspaceType;
 use App\Infrastructure\Persistence\Eloquent\Model\Permission;
 use App\Infrastructure\Persistence\Eloquent\Model\Role;
 use App\Infrastructure\Persistence\Eloquent\Model\User;
@@ -30,8 +31,9 @@ final readonly class WorkspaceProvisioner
         string $defaultCurrency = 'SAR',
         string $defaultLocale = 'en',
         string $timezone = 'UTC',
+        WorkspaceType $type = WorkspaceType::Agency,
     ): Workspace {
-        return DB::transaction(function () use ($name, $slug, $owner, $defaultCurrency, $defaultLocale, $timezone): Workspace {
+        return DB::transaction(function () use ($name, $slug, $owner, $defaultCurrency, $defaultLocale, $timezone, $type): Workspace {
             /** @var Workspace $workspace */
             $workspace = Workspace::query()->create([
                 'name' => $name,
@@ -39,6 +41,7 @@ final readonly class WorkspaceProvisioner
                 'default_currency' => strtoupper($defaultCurrency),
                 'default_locale' => $defaultLocale,
                 'timezone' => $timezone,
+                'type' => $type->value,
                 'settings' => [],
             ]);
 

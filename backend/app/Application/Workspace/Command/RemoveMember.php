@@ -61,7 +61,7 @@ final readonly class RemoveMember
             throw LastOwnerProtected::cannotSuspend();
         }
 
-        if (! $this->memberships->remove($workspaceId, $userId)) {
+        if (! $this->memberships->remove($workspaceId, $userId, $this->actor->userId())) {
             throw ResourceNotFound::of('Member');
         }
 

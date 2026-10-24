@@ -76,7 +76,7 @@ final readonly class InviteMember
             throw MemberNotAdded::alreadyAMember();
         }
 
-        $invited = $this->directory->add($workspaceId, $name, $email, $roleId, $existing);
+        $invited = $this->directory->add($workspaceId, $name, $email, $roleId, $existing, null, $this->actor->userId());
 
         $this->audit->record(new AuditEntry(
             workspaceId: $workspaceId,

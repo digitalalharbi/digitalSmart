@@ -1893,8 +1893,8 @@ Claude Code must keep this section or `docs/RESUME_STATE.md` current after each 
 
 | Slice | Status | PR | Main SHA | Notes |
 |---|---|---:|---|---|
-| A — Tenant Isolation | IN_REVIEW | (this PR) | — | Matrix + schema guard; 6 findings fixed (one high: cross-tenant project members). `docs/TENANCY.md`, ADR 7. |
-| B — Multi-workspace Identity | NOT_STARTED | — | — | |
+| A — Tenant Isolation | MERGED | #61 | e0fa0d6 | Matrix + schema guard; 6 findings fixed (one high: cross-tenant project members). `docs/TENANCY.md`, ADR 7. |
+| B — Multi-workspace Identity | IN_REVIEW | (this PR) | — | Revoked memberships kept; workspace type; audited switch; active workspace in its own cookie (fixes an in-flight session race); top-bar switcher. `docs/SAAS.md`. |
 | C — Plans / Entitlements / Seats | NOT_STARTED | — | — | |
 | D — Subscription / Control Plane | NOT_STARTED | — | — | |
 | E — Campaign Blueprint | NOT_STARTED | — | — | |

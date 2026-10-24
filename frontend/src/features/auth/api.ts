@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ensureCsrfCookie, abortInFlightRequests } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
+import { useUiStore } from '@/shared/store/ui-store';
 import type { AuthenticatedUser, Credentials, PasswordChange } from './types';
 
 async function fetchSession(): Promise<AuthenticatedUser> {
@@ -91,9 +92,14 @@ export function useSwitchWorkspaceMutation() {
       return response.data.data;
     },
     onSuccess: (user) => {
+      /*
+       * Everything else was scoped to the previous workspace, so it is removed rather than refreshed: an invalidated query
+       * keeps showing the old tenant's data until the new answer arrives. The client and project context goes too — it
+       * names things that do not exist in the workspace just entered.
+       */
+      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'auth' });
+      useUiStore.getState().setContext({ client: null, project: null });
       queryClient.setQueryData(queryKeys.auth.session(), user);
-      // Everything else was scoped to the previous workspace.
-      void queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] !== 'auth' });
     },
   });
 }

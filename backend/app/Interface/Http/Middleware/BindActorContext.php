@@ -25,10 +25,34 @@ final readonly class BindActorContext
 {
     public const SESSION_KEY = 'active_workspace_id';
 
+    /**
+     * The workspace a browser is working in, in a cookie of its own.
+     *
+     * The session alone was not enough: the session driver writes the whole payload back at the end of **every** request, so
+     * a request that started before a switch (a notification poll, say) and finished after it wrote the old workspace back
+     * over the new one — the browser then reloaded into the tenant it had just left. Only sign-in and a switch ever send this
+     * cookie, so nothing in flight can undo them. Encrypted, HTTP-only, and still re-checked against membership on every read.
+     */
+    public const COOKIE = 'ds_workspace';
+
     public function __construct(
         private ActorContextBinder $binder,
         private IdentityReadModel $identities,
     ) {}
+
+    /** The workspace this request asked to work in — the cookie first, then the session — before membership is checked. */
+    public static function requested(Request $request): ?string
+    {
+        $cookie = $request->cookie(self::COOKIE);
+
+        if (is_string($cookie) && $cookie !== '') {
+            return $cookie;
+        }
+
+        $stored = $request->hasSession() ? $request->session()->get(self::SESSION_KEY) : null;
+
+        return is_string($stored) && $stored !== '' ? $stored : null;
+    }
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -59,15 +83,13 @@ final readonly class BindActorContext
 
     private function resolveWorkspaceId(Request $request, UserId $userId): ?WorkspaceId
     {
-        if ($request->hasSession()) {
-            $stored = $request->session()->get(self::SESSION_KEY);
+        $requested = self::requested($request);
 
-            if (is_string($stored) && $stored !== '') {
-                $candidate = new WorkspaceId($stored);
+        if ($requested !== null && preg_match('/^[0-9a-f-]{36}$/i', $requested) === 1) {
+            $candidate = new WorkspaceId($requested);
 
-                if ($this->identities->isMemberOf($userId, $candidate)) {
-                    return $candidate;
-                }
+            if ($this->identities->isMemberOf($userId, $candidate)) {
+                return $candidate;
             }
         }
 
