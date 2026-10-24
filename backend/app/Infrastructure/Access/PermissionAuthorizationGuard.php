@@ -7,8 +7,10 @@ namespace App\Infrastructure\Access;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Exception\AuthorizationDenied;
+use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Project\ProjectId;
+use Illuminate\Support\Facades\DB;
 
 final readonly class PermissionAuthorizationGuard implements AuthorizationGuard
 {
@@ -47,6 +49,21 @@ final readonly class PermissionAuthorizationGuard implements AuthorizationGuard
         $permissions = $this->actor->permissions();
 
         if ($permissions->has(Permission::ProjectsViewAll)) {
+            /*
+             * "Every project" means every project **in the active workspace**. Returning here without asking which
+             * workspace the project is in let an owner of one tenant list the members of another tenant's project by
+             * its id (found by the tenant route matrix). Answered as not found, so the id's existence is not confirmed.
+             */
+            $inWorkspace = DB::table('projects')
+                ->where('id', $projectId->value)
+                ->where('workspace_id', $this->actor->workspaceId()->value)
+                ->whereNull('deleted_at')
+                ->exists();
+
+            if (! $inWorkspace) {
+                throw ResourceNotFound::of('Project');
+            }
+
             return;
         }
 

@@ -8,6 +8,9 @@ use DateTimeImmutable;
 
 interface ShortcutStore
 {
+    /** Whether the thing exists in this workspace. A pin or a recent is never a reference into another tenant. */
+    public function belongs(string $workspaceId, string $type, string $id): bool;
+
     public function pin(string $workspaceId, string $userId, string $type, string $id, DateTimeImmutable $at): void;
 
     public function unpin(string $workspaceId, string $userId, string $type, string $id): void;

@@ -43,6 +43,10 @@ final class ShortcutController extends Controller
             return $this->unknown();
         }
 
+        if (! $store->belongs($actor->workspaceId()->value, $type, $id)) {
+            return $this->notFound();
+        }
+
         $store->pin($actor->workspaceId()->value, $actor->userId()->value, $type, $id, $clock->now());
 
         return response()->json(null, Response::HTTP_NO_CONTENT);
@@ -52,6 +56,11 @@ final class ShortcutController extends Controller
     {
         if (! in_array($type, self::TYPES, true)) {
             return $this->unknown();
+        }
+
+        /* Idempotent for this workspace's own things; another workspace's id is not found, never a quiet success. */
+        if (! $store->belongs($actor->workspaceId()->value, $type, $id)) {
+            return $this->notFound();
         }
 
         $store->unpin($actor->workspaceId()->value, $actor->userId()->value, $type, $id);
@@ -67,6 +76,10 @@ final class ShortcutController extends Controller
             return $this->unknown();
         }
 
+        if (! $store->belongs($actor->workspaceId()->value, (string) $validated['type'], (string) $validated['id'])) {
+            return $this->notFound();
+        }
+
         $store->touch(
             $actor->workspaceId()->value,
             $actor->userId()->value,
@@ -77,6 +90,12 @@ final class ShortcutController extends Controller
         );
 
         return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /** Not found rather than forbidden: the answer must not confirm that an id exists in another workspace. */
+    private function notFound(): JsonResponse
+    {
+        return response()->json(['message' => 'Not found.'], Response::HTTP_NOT_FOUND);
     }
 
     private function unknown(): JsonResponse
