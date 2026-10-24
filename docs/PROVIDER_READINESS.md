@@ -105,6 +105,13 @@ documents one (the ad group): no bid write exists, so no rule, request or button
 - TikTok: Smart+ ad-group budget and per-level status pages; the allow-list requirement for Smart+.
 - Manual-campaign `/campaign/update/` budget fields were not re-read in this pass.
 
+## Campaign creation (2026-10-24)
+
+Creation, targeting, placement, conversion optimisation, validation, idempotency and read-back were read on each platform's own
+documentation for the campaign launch path. The per-key states with their pages are in the provider capability registry
+(`GET /api/integrations/capabilities`); the findings that change behaviour — TikTok and X deliver by default, only Meta and Google
+validate without creating, ChatGPT Ads now publishes an advertiser API — are in `docs/CAMPAIGN_LAUNCH.md`.
+
 ## Production
 
 `AWAITING_SERVER_ACCESS` — see `docs/DEPLOYMENT.md`. Once access exists: deploy `main`, migrate, build the frontend,

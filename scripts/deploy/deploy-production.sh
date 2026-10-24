@@ -101,6 +101,9 @@ ARTISAN=(php "$RELEASE/backend/artisan")
 # ---------------------------------------------------------------- database: forward only, and stop on failure
 say "Migrations"
 "${ARTISAN[@]}" migrate --force || fail "migrations failed — the previous release is still live and nothing was restarted"
+# Every workspace's system roles gain the permissions this release adds, before anybody reaches a screen that needs them.
+# Idempotent and converging: system roles match the code exactly; roles a workspace created for itself are untouched.
+"${ARTISAN[@]}" access:sync || fail "role permissions could not be brought up to date — the previous release is still live"
 
 say "Caches"
 "${ARTISAN[@]}" optimize:clear

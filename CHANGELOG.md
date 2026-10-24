@@ -4,6 +4,30 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## SaaS program, PR E: a campaign planned once and kept, and what every platform's documentation says it can do
+
+### Added
+- **Campaign plans** (`/campaigns/plans`, `/campaigns/new`, `/api/campaign-plans`): one campaign described once — eight intents,
+  daily or lifetime budget, dates, the project's bound ad accounts, a tracking link or landing page, a conversion, audience,
+  placement, Creative Hub requests and copy — saved from the first step and edited across ten steps. Every reference is checked
+  against the project on every save; an unbound ad account or another project's link, conversion or creative is refused. Nothing
+  is sent to any platform.
+- **Twelve plan states**, with `approved` meaning only that a person approved the plan. Editing a plan under review returns it to
+  draft with a new version; submitting lists what is missing; returning and cancelling need a reason. Four permissions; creatives
+  read only; planning is part of the campaign launch feature.
+- **A provider capability registry** of 26 keys × 7 platforms, each documented, unverified, unsupported or blocked externally,
+  with the official page, version and date, read on 2026-10-24 (`GET /api/integrations/capabilities`). Status and budget writes
+  keep their existing evidence. The wizard's launch-plan step shows each platform's translation and how it is created paused.
+- **A deploy now runs `access:sync`** after migrating, so new permissions reach existing workspaces with the release.
+
+### Found by the documentation audit
+- TikTok and X start new campaigns delivering unless told otherwise; only Meta and Google document validation without creating;
+  ChatGPT Ads now publishes an advertiser API (`docs/CAMPAIGN_LAUNCH.md`).
+
+### Removed
+- The stateless builder at `/campaigns/new` and its "create paused drafts" step; the plan replaces it, and PR G replaces drafts with
+  approval of a kept plan. The old `/api/campaign-blueprints/*` endpoints remain until then.
+
 ## SaaS program, PR D: a platform console, and a subscription that can pause a workspace without losing it
 
 ### Added
