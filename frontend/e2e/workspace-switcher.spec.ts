@@ -15,15 +15,14 @@ test.describe('workspace switcher', () => {
 
     const switcher = page.getByRole('button', { name: /Switch workspace/ });
 
-    await expect(switcher).toContainText('DEMO — Smart Code Agency');
+    /* The name is in the button's accessible name at every width; it is drawn only where the header has room. */
+    await expect(switcher).toHaveAccessibleName(/DEMO — Smart Code Agency/);
     await switcher.click();
     await page.getByRole('menuitem', { name: /DEMO — Alhambra In-house/ }).click();
 
-    await expect(page.getByRole('button', { name: /Switch workspace/ })).toContainText(
-      'Alhambra In-house',
-      {
-        timeout: 30_000,
-      },
+    await expect(page.getByRole('button', { name: /Switch workspace/ })).toHaveAccessibleName(
+      /Alhambra In-house/,
+      { timeout: 30_000 },
     );
     await page.goto('/clients');
     await expect(page.getByText('DEMO — Alhambra (own brand)').first()).toBeVisible({
@@ -33,11 +32,9 @@ test.describe('workspace switcher', () => {
 
     await page.getByRole('button', { name: /Switch workspace/ }).click();
     await page.getByRole('menuitem', { name: /DEMO — Smart Code Agency/ }).click();
-    await expect(page.getByRole('button', { name: /Switch workspace/ })).toContainText(
-      'Smart Code Agency',
-      {
-        timeout: 30_000,
-      },
+    await expect(page.getByRole('button', { name: /Switch workspace/ })).toHaveAccessibleName(
+      /Smart Code Agency/,
+      { timeout: 30_000 },
     );
   });
 
