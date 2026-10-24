@@ -22,9 +22,11 @@ import {
   usePlanActionMutation,
   usePlanOptionsQuery,
   usePlanQuery,
+  useLaunchActionMutation,
   useSavePlanMutation,
   type PlanInput,
 } from './api';
+import { LaunchExecutions } from './LaunchExecutions';
 import { LaunchPlanView } from './LaunchPlanView';
 
 const STEPS = [
@@ -118,6 +120,8 @@ export function CampaignPlanWizard() {
   const projects = useProjectsQuery({ per_page: 100 });
   const save = useSavePlanMutation();
   const action = usePlanActionMutation(planId ?? '');
+  const launchAction = useLaunchActionMutation(planId ?? '');
+  const [understood, setUnderstood] = useState(false);
   const [step, setStep] = useState<Step>('project');
   const [input, setInput] = useState<PlanInput>(emptyInput);
   const [budget, setBudget] = useState('500');
@@ -768,6 +772,14 @@ export function CampaignPlanWizard() {
               <Alert tone="danger">{failure(action.error, t('campaignPlan.actionFailed'))}</Alert>
             ) : null}
             <div className="flex flex-wrap gap-2">
+              {plan.status === 'ready_for_review' && can(PERMISSIONS.campaignLaunchApprove) ? (
+                <Button
+                  onClick={() => launchAction.mutate('approve')}
+                  disabled={launchAction.isPending}
+                >
+                  {t('launch.approve')}
+                </Button>
+              ) : null}
               {plan.status === 'draft' && can(PERMISSIONS.campaignBlueprintsSubmit) ? (
                 <Button
                   onClick={() => action.mutate({ action: 'submit' })}
@@ -809,9 +821,38 @@ export function CampaignPlanWizard() {
         ) : null}
 
         {step === 'launch' && plan !== undefined ? (
-          <LaunchPlanView planId={plan.id} version={plan.version} />
+          <div className="flex flex-col gap-4">
+            <LaunchPlanView planId={plan.id} version={plan.version} />
+            {plan.status === 'approved' && can(PERMISSIONS.campaignLaunchExecute) ? (
+              <div className="border-border flex flex-col gap-3 rounded-2xl border p-4">
+                <label className="flex min-h-11 items-start gap-3 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={understood}
+                    onChange={(event) => setUnderstood(event.target.checked)}
+                    className="mt-1"
+                  />
+                  <span className="text-content">{t('launch.confirm')}</span>
+                </label>
+                <Button
+                  className="self-start"
+                  disabled={!understood || launchAction.isPending}
+                  onClick={() => launchAction.mutate('launch')}
+                >
+                  {t('launch.create')}
+                </Button>
+              </div>
+            ) : null}
+            <LaunchExecutions
+              planId={plan.id}
+              canExecute={can(PERMISSIONS.campaignLaunchExecute)}
+            />
+          </div>
         ) : null}
 
+        {launchAction.isError ? (
+          <Alert tone="danger">{failure(launchAction.error, t('campaignPlan.actionFailed'))}</Alert>
+        ) : null}
         {save.isError ? (
           <Alert tone="danger">{failure(save.error, t('campaignPlan.saveFailed'))}</Alert>
         ) : null}

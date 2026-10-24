@@ -43,6 +43,15 @@ interface BlueprintRepository
 
     public function setStatus(string $workspaceId, string $id, BlueprintStatus $status, ?string $reason, ?string $byUserId): void;
 
+    /** Record an approval of exactly this fingerprint and version. */
+    public function approve(string $workspaceId, string $id, string $byUserId, string $fingerprint, int $version): void;
+
+    /** The approval no longer applies; the plan goes back to review. */
+    public function withdrawApproval(string $workspaceId, string $id, string $reason): void;
+
+    /** @return array{fingerprint: string|null, version: int|null} */
+    public function approval(string $workspaceId, string $id): array;
+
     /** @param list<string>|null $visibleProjectIds null: every project */
     public function find(string $workspaceId, string $id, ?array $visibleProjectIds): ?BlueprintView;
 

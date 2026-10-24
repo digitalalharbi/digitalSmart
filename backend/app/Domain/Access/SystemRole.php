@@ -109,6 +109,9 @@ enum SystemRole: string
                 Permission::CampaignBlueprintsCreate,
                 Permission::CampaignBlueprintsUpdate,
                 Permission::CampaignBlueprintsSubmit,
+                Permission::CampaignLaunchApprove,
+                Permission::CampaignLaunchExecute,
+                Permission::CampaignLaunchActivate,
                 Permission::AuditView,
             ],
 
@@ -179,6 +182,8 @@ enum SystemRole: string
                 Permission::CampaignBlueprintsCreate,
                 Permission::CampaignBlueprintsUpdate,
                 Permission::CampaignBlueprintsSubmit,
+                /* A project manager signs off the plan; creating it on the platforms and switching it on are an administrator's. */
+                Permission::CampaignLaunchApprove,
                 Permission::AuditView,
             ],
 

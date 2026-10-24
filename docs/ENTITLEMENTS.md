@@ -63,7 +63,7 @@ rule runs is spent. Its rules stay as they are and run again when there is room.
 | ai_requests_monthly | `usage_meters`, one per question, idempotent by event key | the next question is refused |
 | tracking_events_monthly, form_submissions_monthly | rows since the 1st | **counted, never refused** |
 | storage_bytes | attachment bytes | shown |
-| campaign_launches_monthly | — (launches arrive with PRs E–G) | `used` is `null`: "not measured yet" |
+| campaign_launches_monthly | launches started since the 1st | the next launch is refused |
 
 Nothing is estimated. Usage is derived from the rows that already record the thing, or recorded once per event key in
 `usage_events` and summed into `usage_meters`.

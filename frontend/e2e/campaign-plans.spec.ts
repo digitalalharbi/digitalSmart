@@ -61,6 +61,12 @@ test('a campaign plan is kept from its first step, submitted, and shows each pla
   await page.getByRole('button', { name: 'Submit for review' }).click();
   await expect(page.getByText('Ready for review').first()).toBeVisible(SLOW);
 
+  // Approving is refused while the preflight has something to fix — here, no creative with a file — and says so.
+  await page.getByRole('button', { name: 'Approve for launch' }).click();
+  await expect(
+    page.getByText(/cannot be approved or launched while the preflight has something to fix/),
+  ).toBeVisible(SLOW);
+
   // Launch plan: each platform's own words, created without delivering.
   await page.getByRole('button', { name: 'Next' }).click();
   await expect(page.getByText('Initial state on the platform').first()).toBeVisible(SLOW);

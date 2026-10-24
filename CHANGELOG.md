@@ -4,6 +4,25 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## SaaS program, PR G: approval, queued creation, read-back and recovery
+
+### Added
+- **Approval names a fingerprint** of the plan's version and every planned write; it is refused while the preflight has anything to
+  fix, and creates nothing. Three permissions: approve (administrators, project managers), create and activate (administrators).
+- **Launching re-checks the fingerprint** — a plan whose writes changed after approval goes back to review — claims the monthly
+  launch quota, and queues one execution per account with a stable idempotency reference. Accounts waiting on the platform are
+  recorded and not attempted; unsupported ones are skipped.
+- **Create paused, read back, then verified**; only verified creations are reconciled into the existing campaign, ad group and ad
+  tables, assigned to the project. A mismatch is reported, never auto-corrected.
+- **Unknown outcomes are reconciled before any retry**; a retry reuses the same reference. **Partial launches keep what was created.**
+- The wizard approves, confirms and creates, and shows each account's execution with reconcile or retry where — and only where —
+  either is safe.
+- Sandbox connections run the whole path labelled SANDBOX; real credentials are recorded `blocked_external` with no platform called
+  (no live adapter, platform write access unconfirmed).
+
+### Removed
+- The old stateless builder's endpoints (`/api/campaign-blueprints/*`) and their use case; existing `campaign_drafts` rows are kept.
+
 ## SaaS program, PR F: the launch plan — exactly what would be written, and every check before it
 
 ### Added

@@ -1898,8 +1898,8 @@ Claude Code must keep this section or `docs/RESUME_STATE.md` current after each 
 | C — Plans / Entitlements / Seats | MERGED | #63 | d623534 | Feature + Limit catalogues, 4 plans, `feature:` on 74 routes, locked quota claims, idempotent meters, seats, append-only overrides, `saas:plan`/`saas:override`, Plan & usage page. `docs/ENTITLEMENTS.md`. |
 | D — Subscription / Control Plane | MERGED | #64 | 74b297f | Six states with write/schedule behaviour, console-only operators, `/platform` console (workspaces, plan, override, state, create), subscription notice. Impersonation not built. `docs/PLATFORM.md`. |
 | E — Campaign Blueprint | MERGED | #65 | 4a45f81 | Kept, stateful plans (12 states, versioned) referencing bound accounts, tracking links, conversions and Creative Hub; 10-step wizard; capability registry 26 keys × 7 platforms from a 2026-10-24 documentation audit. `docs/CAMPAIGN_LAUNCH.md`. |
-| F — Translation / Preflight | IN_REVIEW | (this PR) | — | ProviderCreatePlan per account, documented payload drafts paused at every level, read-only preflight with six states and a fix for each, per-currency totals, launch-plan UI. `docs/CAMPAIGN_LAUNCH.md`. |
-| G — Provider Creation | NOT_STARTED | — | — | |
+| F — Translation / Preflight | MERGED | #66 | 2d88a94 | ProviderCreatePlan per account, documented payload drafts paused at every level, read-only preflight with six states and a fix for each, per-currency totals, launch-plan UI. `docs/CAMPAIGN_LAUNCH.md`. |
+| G — Provider Creation | IN_REVIEW | (this PR) | — | Fingerprinted approval, queued per-account executions with idempotency references, create paused → read back → verified → reconciled; unknown never blindly retried; partial keeps creations; sandbox labelled, real credentials blocked_external with no call. `docs/CAMPAIGN_LAUNCH.md`. |
 | H — Activation / Hardening | NOT_STARTED | — | — | |
 
 ---

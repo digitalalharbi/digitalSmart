@@ -26,7 +26,7 @@ final readonly class EloquentLaunchFacts implements LaunchFacts
         }
 
         $row = DB::table('external_accounts')->where('workspace_id', $workspaceId)->where('id', $externalAccountId)
-            ->first(['id', 'provider', 'name', 'currency', 'timezone', 'status', 'provider_connection_id']);
+            ->first(['id', 'provider', 'external_id', 'name', 'currency', 'timezone', 'status', 'provider_connection_id']);
 
         if (! $row instanceof stdClass) {
             return null;
@@ -39,6 +39,7 @@ final readonly class EloquentLaunchFacts implements LaunchFacts
             id: (string) $row->id,
             provider: $provider->value,
             name: (string) $row->name,
+            platformAccountId: (string) $row->external_id,
             currency: $row->currency === null ? null : (string) $row->currency,
             timezone: $row->timezone === null ? null : (string) $row->timezone,
             status: (string) $row->status,
