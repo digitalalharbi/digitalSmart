@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Eloquent\ReadModel;
 
 use App\Application\Integration\Contract\SyncCandidateSource;
+use App\Domain\Integration\ConnectionStatus;
 use App\Domain\Integration\Provider;
 use App\Domain\Integration\Sync\SyncCandidate;
 use App\Domain\Workspace\WorkspaceId;
@@ -23,6 +24,13 @@ final readonly class EloquentSyncCandidateSource implements SyncCandidateSource
         /** @var list<stdClass> $rows */
         $rows = DB::table('external_accounts as a')
             ->join('provider_connections as pc', 'pc.id', '=', 'a.provider_connection_id')
+            /*
+             * A candidate is an account that is actually being synced. A disconnected connection (never configured, or revoked with its
+             * credentials destroyed) has nothing to authenticate with, so listing its accounts only queued a job per account per hour
+             * that failed and wrote a provider error — noise from something an operator did on purpose. `expired` and `error` stay:
+             * they still hold credentials and may recover on the next try, and their failures are exactly what the monitor is for.
+             */
+            ->whereNotIn('pc.status', [ConnectionStatus::NotConfigured->value, ConnectionStatus::Revoked->value])
             ->whereExists(static fn ($q) => $q->from('project_integration_bindings as b')
                 ->whereColumn('b.external_account_id', 'a.id')
                 ->where('b.sync_enabled', true))
