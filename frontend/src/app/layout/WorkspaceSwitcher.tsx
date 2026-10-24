@@ -35,10 +35,17 @@ export function WorkspaceSwitcher() {
           aria-label={t('workspace.switcher', { name: active?.name ?? '' })}
         >
           <Building2 aria-hidden className="text-content-tertiary size-4 shrink-0" />
-          <span className="text-content max-w-28 truncate text-sm font-medium sm:max-w-44">
+          {/*
+            The name only where the header has room for it. Beside the navigation pill on a laptop it squeezed the
+            pill's links below the WCAG 2.2 target size; the button keeps its accessible name either way.
+          */}
+          <span className="text-content hidden max-w-44 truncate text-sm font-medium 2xl:inline">
             {active?.name}
           </span>
-          <ChevronsUpDown aria-hidden className="text-content-tertiary size-4 shrink-0" />
+          <ChevronsUpDown
+            aria-hidden
+            className="text-content-tertiary hidden size-4 shrink-0 2xl:block"
+          />
         </Button>
       </DropdownMenu.Trigger>
 
