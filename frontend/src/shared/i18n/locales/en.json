@@ -6067,5 +6067,26 @@
       "blocked_external": "Waiting on the platform",
       "unsupported": "Not supported"
     }
+  },
+  "launch": {
+    "approve": "Approve for launch",
+    "confirm": "I understand this creates the campaigns paused on every account above, using the plan exactly as approved. Nothing delivers until somebody switches it on.",
+    "create": "Create paused campaigns",
+    "executionsTitle": "Creation, account by account",
+    "sandbox": "SANDBOX",
+    "reconcile": "Check the platform",
+    "retry": "Try again",
+    "actionFailed": "That could not be done.",
+    "status": {
+      "queued": "Queued",
+      "creating": "Creating",
+      "created": "Created, not yet read back",
+      "verified": "Created paused and read back",
+      "readback_mismatch": "Created — differs from the plan",
+      "failed": "Failed",
+      "unknown": "Outcome unknown",
+      "skipped": "Not attempted",
+      "blocked_external": "Waiting on the platform"
+    }
   }
 }

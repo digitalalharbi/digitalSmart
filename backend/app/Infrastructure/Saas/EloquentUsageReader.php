@@ -23,7 +23,7 @@ final readonly class EloquentUsageReader implements UsageReader
     /** The workspace's own agent member is not a person and takes no seat. */
     public const string AGENT_EMAILS = '%@agents.digitalsmart.invalid';
 
-    public function used(string $workspaceId, Limit $limit, DateTimeImmutable $now): ?int
+    public function used(string $workspaceId, Limit $limit, DateTimeImmutable $now): int
     {
         $from = $now->setTimezone(new DateTimeZone('UTC'))->modify('first day of this month')->setTime(0, 0)->format('Y-m-d H:i:sP');
 
@@ -41,7 +41,7 @@ final readonly class EloquentUsageReader implements UsageReader
             Limit::AiRequestsMonthly => (int) (DB::table('usage_meters')->where('workspace_id', $workspaceId)->where('meter', $limit->value)->where('period', substr($from, 0, 7))->value('value') ?? 0),
             Limit::StorageBytes => (int) DB::table('client_request_attachments')->where('workspace_id', $workspaceId)->sum('byte_size')
                 + (int) DB::table('export_jobs')->where('workspace_id', $workspaceId)->whereNotNull('byte_size')->where(static fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))->sum('byte_size'),
-            Limit::CampaignLaunchesMonthly => null,
+            Limit::CampaignLaunchesMonthly => DB::table('campaign_launches')->where('workspace_id', $workspaceId)->where('created_at', '>=', $from)->count(),
         };
     }
 

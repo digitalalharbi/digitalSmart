@@ -95,6 +95,10 @@ final readonly class EloquentBlueprintRepository implements BlueprintRepository
                 'status_reason' => null,
                 'submitted_by' => null,
                 'submitted_at' => null,
+                'approved_by' => null,
+                'approved_at' => null,
+                'approved_fingerprint' => null,
+                'approved_version' => null,
                 'version' => DB::raw('version + 1'),
                 'updated_at' => now(),
             ]);
@@ -111,10 +115,46 @@ final readonly class EloquentBlueprintRepository implements BlueprintRepository
         }
 
         if ($status === BlueprintStatus::Draft) {
-            $values += ['submitted_by' => null, 'submitted_at' => null, 'approved_by' => null, 'approved_at' => null];
+            $values += ['submitted_by' => null, 'submitted_at' => null, 'approved_by' => null, 'approved_at' => null, 'approved_fingerprint' => null, 'approved_version' => null];
         }
 
         DB::table('campaign_blueprints')->where('workspace_id', $workspaceId)->where('id', $id)->update($values);
+    }
+
+    public function approve(string $workspaceId, string $id, string $byUserId, string $fingerprint, int $version): void
+    {
+        DB::table('campaign_blueprints')->where('workspace_id', $workspaceId)->where('id', $id)->update([
+            'status' => BlueprintStatus::Approved->value,
+            'status_reason' => null,
+            'approved_by' => $byUserId,
+            'approved_at' => now(),
+            'approved_fingerprint' => $fingerprint,
+            'approved_version' => $version,
+            'updated_at' => now(),
+        ]);
+    }
+
+    public function withdrawApproval(string $workspaceId, string $id, string $reason): void
+    {
+        DB::table('campaign_blueprints')->where('workspace_id', $workspaceId)->where('id', $id)->update([
+            'status' => BlueprintStatus::ReadyForReview->value,
+            'status_reason' => $reason,
+            'approved_by' => null,
+            'approved_at' => null,
+            'approved_fingerprint' => null,
+            'approved_version' => null,
+            'updated_at' => now(),
+        ]);
+    }
+
+    public function approval(string $workspaceId, string $id): array
+    {
+        $row = DB::table('campaign_blueprints')->where('workspace_id', $workspaceId)->where('id', $id)->first(['approved_fingerprint', 'approved_version']);
+
+        return [
+            'fingerprint' => $row instanceof stdClass && $row->approved_fingerprint !== null ? (string) $row->approved_fingerprint : null,
+            'version' => $row instanceof stdClass && $row->approved_version !== null ? (int) $row->approved_version : null,
+        ];
     }
 
     public function find(string $workspaceId, string $id, ?array $visibleProjectIds): ?BlueprintView

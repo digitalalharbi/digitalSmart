@@ -138,6 +138,9 @@ vi.mock('@/shared/api/client', async (importOriginal) => {
             },
           });
         }
+        if (url.endsWith('/launches')) {
+          return Promise.resolve({ data: { data: [] } });
+        }
         if (url.endsWith('/options')) {
           return Promise.resolve({
             data: { data: { accounts: [], tracking_links: [], conversions: [], creatives: [] } },

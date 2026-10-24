@@ -12,7 +12,6 @@ use App\Application\Advertising\Command\RequestCampaignStatusChange as RequestSt
 use App\Application\Advertising\Contract\AdvertisingStore;
 use App\Application\Advertising\Contract\CampaignAssignmentRepository;
 use App\Application\Advertising\Contract\CampaignControlReadModel;
-use App\Application\Advertising\Contract\CampaignDraftRepository;
 use App\Application\Advertising\Contract\CampaignHierarchyReadModel;
 use App\Application\Advertising\Contract\SyncAdapterRegistry as SyncAdapterRegistryContract;
 use App\Application\Advertising\Contract\SyncJournal;
@@ -62,8 +61,12 @@ use App\Application\Budget\Contract\BudgetControlReadModel;
 use App\Application\Budget\Contract\BudgetRepository;
 use App\Application\Budget\Contract\BudgetSpendReadModel;
 use App\Application\Campaign\Contract\BlueprintRepository;
+use App\Application\Campaign\Contract\CampaignCreator;
+use App\Application\Campaign\Contract\CampaignReconciler;
 use App\Application\Campaign\Contract\CreatePlanPayloads;
 use App\Application\Campaign\Contract\LaunchFacts;
+use App\Application\Campaign\Contract\LaunchQueue;
+use App\Application\Campaign\Contract\LaunchRepository;
 use App\Application\Client\Contract\ClientOffboarding;
 use App\Application\Client\Contract\ClientReadModel;
 use App\Application\Client\Contract\ClientVisibility;
@@ -217,7 +220,10 @@ use App\Infrastructure\Agents\EloquentFindingLog;
 use App\Infrastructure\Audit\DatabaseAuditRecorder;
 use App\Infrastructure\Campaign\DocumentedPayloadDrafts;
 use App\Infrastructure\Campaign\EloquentBlueprintRepository;
+use App\Infrastructure\Campaign\EloquentCampaignReconciler;
 use App\Infrastructure\Campaign\EloquentLaunchFacts;
+use App\Infrastructure\Campaign\EloquentLaunchRepository;
+use App\Infrastructure\Campaign\RoutingCampaignCreator;
 use App\Infrastructure\Commerce\CommerceSyncAdapterRegistry;
 use App\Infrastructure\Commerce\Sandbox\CommerceFixtures;
 use App\Infrastructure\Commerce\StoreOrderMapperRegistry;
@@ -287,7 +293,6 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAutomationRuleRep
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentBudgetRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCampaignAssignmentRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCampaignBindingResolver;
-use App\Infrastructure\Persistence\Eloquent\Repository\EloquentCampaignDraftRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientOffboarding;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentClientRequestRepository;
@@ -362,6 +367,7 @@ use App\Infrastructure\System\QueueHealthProbe;
 use App\Interface\Export\ReportExportRenderer;
 use App\Interface\Http\Resource\Reporting\ReportResource;
 use App\Interface\Queue\QueuedDispatches;
+use App\Interface\Queue\QueuedLaunches;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -543,7 +549,6 @@ final class AppServiceProvider extends ServiceProvider
         RuleExecutionLog::class => EloquentRuleExecutionLog::class,
         ApprovalLinkRepository::class => EloquentApprovalLinkRepository::class,
         ModelCredentialStore::class => EloquentModelCredentialStore::class,
-        CampaignDraftRepository::class => EloquentCampaignDraftRepository::class,
         AgentReadModel::class => EloquentAgentReadModel::class,
         ToolCallLog::class => EloquentToolCallLog::class,
         ExportFileStorage::class => LocalExportFileStorage::class,
@@ -627,6 +632,10 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(BlueprintRepository::class, EloquentBlueprintRepository::class);
         $this->app->bind(LaunchFacts::class, EloquentLaunchFacts::class);
         $this->app->bind(CreatePlanPayloads::class, DocumentedPayloadDrafts::class);
+        $this->app->bind(LaunchRepository::class, EloquentLaunchRepository::class);
+        $this->app->bind(CampaignCreator::class, RoutingCampaignCreator::class);
+        $this->app->bind(CampaignReconciler::class, EloquentCampaignReconciler::class);
+        $this->app->bind(LaunchQueue::class, QueuedLaunches::class);
 
         /* Email and WhatsApp deliveries, in the state they are in: nothing is sent, and the row says why. */
         $this->app->bind(NotificationChannelDelivery::class, static fn (): NotificationChannelDelivery => new HonestChannelDelivery(

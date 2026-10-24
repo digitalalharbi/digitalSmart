@@ -8,6 +8,7 @@ use Database\Seeders\DemoAgencySeeder;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route as Router;
+use Illuminate\Support\Str;
 use Tests\Support\WorkspaceScenario;
 
 /*
@@ -33,6 +34,7 @@ const TENANT_PARAM_TABLES = [
     'accessRequest' => 'access_requests',
     'clientRequest' => 'client_requests',
     'blueprint' => 'campaign_blueprints',
+    'execution' => 'campaign_launch_executions',
     'approval' => 'approval_requests',
     'budget' => 'budgets',
     'creative' => 'creative_requests',
@@ -172,6 +174,13 @@ function seedForeignGaps(): void
         'currency' => 'SAR', 'starts_at' => '2027-01-01', 'external_account_ids' => [$binding?->external_account_id], 'landing_url' => 'https://shop.example.com/x',
         'targeting' => ['countries' => ['SA']], 'placement' => ['mode' => 'automatic'], 'ad_copy' => ['headline' => 'Foreign'], 'creative_request_ids' => [],
     ])->assertCreated();
+    // A launch of it, written directly: approving needs a creative with a file, which this fixture has no reason to make.
+    $plan = DB::table('campaign_blueprints')->where('workspace_id', $workspace)->where('name', 'Foreign plan')->first(['id', 'client_id', 'project_id']);
+    $launch = (string) Str::uuid7();
+    DB::table('campaign_launches')->insert(['id' => $launch, 'workspace_id' => $workspace, 'client_id' => $plan?->client_id, 'project_id' => $plan?->project_id,
+        'blueprint_id' => $plan?->id, 'blueprint_version' => 1, 'fingerprint' => str_repeat('a', 64), 'snapshot' => '{}', 'created_at' => now(), 'updated_at' => now()]);
+    DB::table('campaign_launch_executions')->insert(['id' => (string) Str::uuid7(), 'workspace_id' => $workspace, 'launch_id' => $launch, 'provider' => 'meta',
+        'external_account_id' => $binding?->external_account_id, 'idempotency_reference' => str_repeat('b', 64), 'status' => 'unknown', 'created_at' => now(), 'updated_at' => now()]);
     $as->postJson('/api/tracking/links', ['project_id' => $project, 'name' => 'Foreign link', 'destination_url' => 'https://shop.example.com/x'])->assertCreated();
     $as->postJson('/api/tracking/forms', [
         'project_id' => $project, 'name' => 'Foreign form', 'creates_lead' => true,
