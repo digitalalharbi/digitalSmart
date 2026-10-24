@@ -251,6 +251,10 @@ enum AuditAction: string
     case CampaignLaunchExecuted = 'campaign_launch.executed';
     case CampaignLaunchReconciled = 'campaign_launch.reconciled';
     case CampaignLaunchRetried = 'campaign_launch.retried';
+    /* Switching on: asked for, approved, and each account's confirmed result. */
+    case CampaignActivationRequested = 'campaign_activation.requested';
+    case CampaignActivationApproved = 'campaign_activation.approved';
+    case CampaignActivationExecuted = 'campaign_activation.executed';
 
     public function group(): string
     {
@@ -273,6 +277,8 @@ enum AuditAction: string
             self::CampaignLaunchApproved,
             self::CampaignLaunchStarted,
             self::CampaignLaunchExecuted,
+            self::CampaignActivationApproved,
+            self::CampaignActivationExecuted,
             self::WorkspaceCreated,
             self::UserPasswordChanged,
             self::WorkspaceMemberRoleChanged,

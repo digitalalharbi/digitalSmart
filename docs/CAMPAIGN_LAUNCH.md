@@ -2,7 +2,7 @@
 
 PRs E–G of the SaaS chain (`docs/SAAS_CAMPAIGN_MASTER.md`). How a campaign goes from an idea to campaigns on several platforms,
 created paused, read back, and only then activated. **PR E (the plan and the capability registry), PR F (the launch plan
-and its preflight) and PR G (approval and queued creation) exist**; activation (H) follows.
+and its preflight), PR G (approval and queued creation) and PR H (activation and operations) exist**.
 
 ## The plan (campaign blueprint)
 
@@ -168,4 +168,44 @@ approved plan → launch (fingerprint re-checked, quota claimed) → one executi
   payload drafts and the registry, and need the access each platform requires (see "What the documentation audit of 2026-10-24 found" above) — `BLOCKED_EXTERNAL`.
 - **Audit**: approval, start (fingerprint, version, counts), every account's result (provider, account, status, source, provider ids,
   read-back, classification, idempotency reference) and every reconcile and retry. No credential or token is recorded anywhere.
+
+## Activation (PR H)
+
+Creating and switching on are separate acts. After a launch is **verified**:
+
+1. **Ask** (`POST /api/campaign-plans/{id}/activation`, `campaign_launch.execute`): the plan becomes `activation_pending`; every
+   verified account is marked pending. Nothing is switched on.
+2. **Approve** (`POST /api/campaign-plans/{id}/activate`, `campaign_launch.activate` — administrators — and the campaign launch
+   feature): the approval screen shows platform, account, budget, schedule, conversion, tracking and audience, and its button stays
+   disabled until the approver confirms they have read it. Each account is re-checked — the platform must document
+   `campaign.activate` and the account must still be bound to the project — and a refused account is left paused with the reason.
+3. **Activate** on the queue (`ActivateCampaignJob`, one try): the account is switched on and read back. Only a confirmed read-back
+   makes it `active`, and only then do the product's own campaign, ad group and ad rows read active.
+   **Ambiguous outcomes are `unknown`, never `failed`.** Taking the job is one conditional update (`activating` → `sending`), so
+   two workers or two approvals send one request. A request that gets no answer may have switched a campaign on — and spending — so
+   it is `unknown`: the plan stays `activation_pending` saying so, Needs attention carries it as critical
+   (`LAUNCH_ACTIVATION_UNKNOWN`), approving again sends nothing for that account, and only reconcile settles it. Reconcile reads the
+   platform and changes nothing: found on, it is confirmed like any activation; reported paused, it becomes `failed` and may be
+   approved again; a platform that cannot be asked leaves it `unknown`. An "active" answer that observed nothing is not a
+   confirmation. The platform's record is saved before the product's own rows are changed.
+
+The plan is `active` only when every verified account is confirmed active. Partly: it stays `activation_pending`, saying "Active on
+N of M accounts", and the failed accounts can be approved again. None: back to `verified` with the reason. A sandbox connection is
+switched on in the sandbox, labelled SANDBOX; real credentials are recorded `blocked_external` with no platform called.
+
+## Operations and attention (PR H)
+
+- **Campaign plans** (`/campaigns/plans`) is the agency's launch board: tabs for every state from draft to active and failed, each
+  with its count, and filters by platform (the API also narrows by client, project and owner). Counts are computed over whatever the
+  other filters match.
+- **Needs attention** (the home screen's queue and Today) carries a `launches` stream, for anybody who may view plans: a creation
+  whose outcome is unknown (critical — something may exist on a client's account that nobody has looked at), a read-back that
+  differs from the plan (critical), a failed activation, a partial launch, and plans waiting for approval or for activation. Each
+  item comes from a record, never a guess.
+- **Existing platform writes** — pause, resume, daily budget — already run through the same architecture: their evidence is the
+  write table the registry reads (`ProviderEntityWrites`), they need `provider_writes.execute` and the `provider_writes` plan feature
+  (`feature:` middleware on the carry-out route), every change goes through an approval with a fingerprint
+  (`docs/PROVIDER_WRITES.md`), and every attempt is audited before it leaves.
+- **Suspending a workspace never pauses its campaigns on the platforms** (`docs/PLATFORM.md`): it stops this product's own writes
+  and scheduled work. Pausing a client's campaigns is an explicit, approved write, never a side effect of billing.
 

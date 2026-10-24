@@ -15,7 +15,8 @@ export type AttentionStreamValue =
   | 'requests'
   | 'tasks'
   | 'automation'
-  | 'agents';
+  | 'agents'
+  | 'launches';
 
 export type AttentionItem = {
   id: string;

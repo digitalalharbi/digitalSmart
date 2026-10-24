@@ -8,6 +8,7 @@ use App\Application\Workspace\DTO\InvitedMember;
 use App\Domain\Access\RoleId;
 use App\Domain\Identity\Email;
 use App\Domain\Identity\UserId;
+use App\Domain\Saas\SeatType;
 use App\Domain\Workspace\WorkspaceId;
 
 /**
@@ -41,5 +42,7 @@ interface MemberDirectory
         ?string $chosenPassword = null,
         /** Who let them in, recorded on the membership. */
         ?UserId $invitedBy = null,
+        /** The commercial seat. Null takes the one the role implies. */
+        ?SeatType $seat = null,
     ): InvitedMember;
 }

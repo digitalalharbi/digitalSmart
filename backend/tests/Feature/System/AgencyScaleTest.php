@@ -286,7 +286,8 @@ it('keeps the agency views within their stated query budget', function (): void 
          * 19 rather than 20 keeps this entry at the +1 it adopted when the queue was halved, rather than
          * the +2 the rest of the file uses. A third stream added without thought should still show up here.
          */
-        '/api/attention' => 19,
+        /* 21 since the campaign-launch stream (SaaS H): two constant reads — plans waiting, executions in trouble — on the measured 18, plus the +1 slack. */
+        '/api/attention' => 21,
         '/api/budgets/control' => 9,
         '/api/portfolio' => 18,
         '/api/search?q=Scale' => 8,

@@ -4,6 +4,26 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## SaaS program, PR H: activation, the launch board, launch problems on the home screen, and the acceptance reports
+
+### Added
+- **Activation in two acts**: somebody asks, an administrator approves on a screen that shows every account, budget, schedule,
+  conversion, tracking and audience and stays disabled until they confirm they read it; a worker switches each account on and
+  reads it back. Active only on confirmation; the plan is active only when every account is. Accounts whose platform does not
+  document activation, or no longer bound to the project, stay paused with the reason.
+- **The launch board**: plan states from draft to active and failed as tabs with counts, a platform filter, and client, project and
+  owner filters in the API.
+- **A launches stream in Needs attention**: unknown creation outcomes and read-back mismatches as critical, failed activations,
+  partial launches, and plans waiting for approval or activation.
+- **Seat type on an invitation**, refused where it does not fit the role.
+- **Operator logs** for quota refusals and launches that did not verify — ids and states only.
+- **Acceptance reports**: `docs/SAAS_ACCEPTANCE.md`, `docs/TENANT_ISOLATION_ACCEPTANCE.md`, `docs/CAMPAIGN_LAUNCH_ACCEPTANCE.md`,
+  each with its external blockers.
+
+### Stated plainly
+- Suspending a workspace never pauses its campaigns on the platforms. Nothing is `LIVE_VERIFIED`: creation and activation run end
+  to end on sandbox connections, labelled SANDBOX, and are recorded `blocked_external` with no call for real credentials.
+
 ## SaaS program, PR G: approval, queued creation, read-back and recovery
 
 ### Added

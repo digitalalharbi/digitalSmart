@@ -57,6 +57,19 @@ vi.mock('@/shared/api/client', async (importOriginal) => {
                 may_retry: true,
                 may_reconcile: false,
               },
+              {
+                ...base,
+                id: 'e4',
+                provider: 'snapchat',
+                status: 'verified',
+                source: 'sandbox',
+                message: null,
+                may_retry: false,
+                may_reconcile: true,
+                activation_status: 'unknown',
+                activation_message: 'The platform did not answer.',
+                provider_ids: { campaign: 'SANDBOX-CAMPAIGN-4', ad_group: null, ads: [] },
+              },
             ],
           },
         }),
@@ -84,5 +97,18 @@ describe('LaunchExecutions', () => {
 
     await screen.findAllByRole('listitem');
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('shows an unanswered switch-on as unknown and offers to check the platform, not to switch on again', async () => {
+    await renderWithProviders(<LaunchExecutions planId="p1" canExecute />);
+
+    const items = await screen.findAllByRole('listitem');
+    const snapchat = items[3] as HTMLElement;
+
+    expect(within(snapchat).getByText(/Outcome unknown, check the platform/)).toBeInTheDocument();
+    expect(
+      within(snapchat).getByRole('button', { name: 'Check the platform' }),
+    ).toBeInTheDocument();
+    expect(within(snapchat).queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
   });
 });

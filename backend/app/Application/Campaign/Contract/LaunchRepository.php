@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Campaign\Contract;
 
 use App\Application\Campaign\DTO\ExecutionRecord;
+use App\Domain\Advertising\Launch\ActivationStatus;
 use App\Domain\Advertising\Launch\ExecutionStatus;
 
 interface LaunchRepository
@@ -32,4 +33,20 @@ interface LaunchRepository
      * @param  array<string, mixed>  $fields
      */
     public function transition(string $workspaceId, string $id, ExecutionStatus $from, array $fields): bool;
+
+    /**
+     * The same compare-and-set for the activation half of the record: it moves only if `activation_status` is still `$from`.
+     *
+     * @param  array<string, mixed>  $fields
+     */
+    public function transitionActivation(string $workspaceId, string $id, ActivationStatus $from, array $fields): bool;
+
+    /**
+     * What in the launch path is waiting on somebody: plans awaiting approval or activation, and accounts whose creation is unknown,
+     * failed, partial, mismatched, or whose activation failed.
+     *
+     * @param  list<string>|null  $visibleProjectIds
+     * @return list<array{kind: string, blueprint_id: string, name: string, client_id: string, client_name: string, project_id: string, project_name: string, provider: string|null, since: string}>
+     */
+    public function issues(string $workspaceId, ?array $visibleProjectIds, int $limit): array;
 }

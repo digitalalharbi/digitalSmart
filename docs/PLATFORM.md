@@ -24,6 +24,9 @@ workspace.
   it). A trial or grace end date passing is shown to the operator, who decides. When billing exists, it calls the same
   `ChangeSubscriptionStatus` use case an operator does.
 - Every existing workspace was migrated as `active`; nothing about it changed.
+- **Suspending never pauses campaigns on the platforms.** It stops this product's writes and scheduled work; the client's live
+  campaigns keep running exactly as they were. Pausing them is an explicit, approved platform write (`docs/PROVIDER_WRITES.md`),
+  never a side effect of a subscription state.
 
 ## Platform operators
 

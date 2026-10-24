@@ -267,3 +267,197 @@ it('lets exactly one caller take an execution, and offers reconcile for a worker
     $this->actingAs($owner)->postJson("/api/launch-executions/{$google['id']}/reconcile")->assertOk()->assertJsonPath('data.status', 'failed');
     expect($creating->isTerminal())->toBeFalse();
 });
+
+/*
+| Activation: created paused and verified first, then asked for, then approved by somebody who may switch campaigns on, then
+| confirmed by the platform. Active only after that confirmation.
+*/
+
+/** An activator scripted per provider: no answer (throws), a refusal, or — for the lookup — a failure to ask. */
+final class ScriptedActivator implements App\Application\Campaign\Contract\CampaignActivator
+{
+    /** @var list<string> providers whose activation request gets no answer */
+    public static array $failFor = [];
+
+    /** @var list<string> providers whose activation request is refused */
+    public static array $refuseFor = [];
+
+    /** @var list<string> providers whose platform cannot be read */
+    public static array $unreadableFor = [];
+
+    /** @var int how many activation requests actually left */
+    public static int $sent = 0;
+
+    public function activate(CreationRequest $request, string $campaignId, string $adGroupId, array $adIds): App\Domain\Advertising\Launch\ActivationOutcome
+    {
+        self::$sent++;
+
+        if (in_array($request->plan->provider->value, self::$failFor, true)) {
+            throw new RuntimeException('timeout');
+        }
+
+        if (in_array($request->plan->provider->value, self::$refuseFor, true)) {
+            return new App\Domain\Advertising\Launch\ActivationOutcome(App\Domain\Advertising\Launch\ActivationStatus::Failed, MetricSource::Sandbox, [], 'The platform refused to switch it on.');
+        }
+
+        return (new App\Infrastructure\Campaign\RoutingCampaignActivator)->activate($request, $campaignId, $adGroupId, $adIds);
+    }
+
+    public function read(CreationRequest $request, string $campaignId, string $adGroupId, array $adIds): App\Domain\Advertising\Launch\ActivationOutcome
+    {
+        if (in_array($request->plan->provider->value, self::$unreadableFor, true)) {
+            throw new RuntimeException('lookup refused');
+        }
+
+        return (new App\Infrastructure\Campaign\RoutingCampaignActivator)->read($request, $campaignId, $adGroupId, $adIds);
+    }
+}
+
+/** @return array{scene: array<string, mixed>, id: string, owner: User} */
+function verifiedPlan(): array
+{
+    $plan = approvedPlan();
+    test()->actingAs($plan['owner'])->postJson("/api/campaign-plans/{$plan['id']}/launch")->assertStatus(202);
+
+    return $plan;
+}
+
+it('switches a verified launch on in two acts, and calls it active only once the platform confirms', function (): void {
+    ['id' => $id, 'owner' => $owner] = verifiedPlan();
+
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activation")->assertNoContent();
+    $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'activation_pending');
+    expect(DB::table('campaigns')->where('external_id', 'like', 'SANDBOX-CAMPAIGN-%')->pluck('status')->unique()->all())->toBe(['paused']);
+
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activate")->assertStatus(202)->assertJsonPath('data.queued', 2);
+
+    $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'active');
+    $executions = $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}/launches")->json('data');
+    expect(array_column($executions, 'activation_status'))->toBe(['active', 'active'])
+        ->and(DB::table('campaigns')->where('external_id', 'like', 'SANDBOX-CAMPAIGN-%')->pluck('status')->unique()->all())->toBe(['active'])
+        ->and(DB::table('audit_logs')->where('action', 'campaign_activation.executed')->count())->toBe(2);
+});
+
+it('refuses to switch on what was not created and verified, and keeps activation its own permission', function (): void {
+    ['scene' => $s, 'id' => $id, 'owner' => $owner] = approvedPlan();
+
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activation")->assertUnprocessable()->assertJsonPath('code', 'invalid_transition');
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/launch")->assertStatus(202);
+
+    Auth::forgetGuards();
+    $pm = $s['w']->scenario->addMember(SystemRole::ProjectManager);
+    DB::table('project_members')->insert(['id' => (string) Str::uuid7(), 'project_id' => $s['project']->getKey(), 'user_id' => $pm->getKey(),
+        'role_id' => $s['w']->scenario->role(SystemRole::ProjectManager)->getKey(), 'created_at' => now(), 'updated_at' => now()]);
+    $this->actingAs($pm)->postJson("/api/campaign-plans/{$id}/activation")->assertForbidden();
+
+    Auth::forgetGuards();
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activation")->assertNoContent();
+    Auth::forgetGuards();
+    $this->actingAs($pm)->postJson("/api/campaign-plans/{$id}/activate")->assertForbidden();
+});
+
+it('does not call a plan active while part of it is not, and lets the failed part be approved again', function (): void {
+    app()->bind(App\Application\Campaign\Contract\CampaignActivator::class, ScriptedActivator::class);
+    ScriptedActivator::$refuseFor = ['google_ads'];
+    ['id' => $id, 'owner' => $owner] = verifiedPlan();
+
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activation")->assertNoContent();
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activate")->assertStatus(202);
+
+    $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'activation_pending')->assertJsonPath('data.status_reason', 'Active on 1 of 2 accounts.');
+
+    ScriptedActivator::$refuseFor = [];
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activate")->assertStatus(202)->assertJsonPath('data.queued', 1);
+    $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'active');
+});
+
+it('raises launch problems in the attention queue, with an unknown outcome as critical', function (): void {
+    ScriptedCreator::$script = ['google_ads' => 'throw'];
+    ['id' => $id, 'owner' => $owner] = approvedPlan();
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/launch")->assertStatus(202);
+
+    $items = collect((array) $this->actingAs($owner)->getJson('/api/attention')->assertOk()->json('data'))->where('stream', 'launches');
+
+    expect($items->pluck('severity')->all())->toContain('critical')
+        ->and($items->pluck('reason.code')->all())->toContain('LAUNCH_UNKNOWN', 'LAUNCH_PARTIAL');
+});
+
+it('filters plans by platform and status, and counts each state', function (): void {
+    ['id' => $id, 'owner' => $owner] = approvedPlan();
+
+    $this->actingAs($owner)->getJson('/api/campaign-plans?provider=meta')->assertOk()->assertJsonPath('meta.counts.approved', 1)->assertJsonCount(1, 'data');
+    $this->actingAs($owner)->getJson('/api/campaign-plans?provider=tiktok')->assertOk()->assertJsonCount(0, 'data');
+    $this->actingAs($owner)->getJson('/api/campaign-plans?status=draft')->assertOk()->assertJsonCount(0, 'data')->assertJsonPath('meta.counts.approved', 1);
+});
+
+it('takes a seat type on an invitation that fits the role, and refuses one that does not', function (): void {
+    ['owner' => $owner] = approvedPlan();
+
+    $this->actingAs($owner)->postJson('/api/members', ['name' => 'Client', 'email' => 'c@example.test', 'role' => 'client-viewer', 'seat_type' => 'full'])
+        ->assertUnprocessable()->assertJsonPath('code', 'member_not_added');
+    $this->actingAs($owner)->postJson('/api/members', ['name' => 'Part-time buyer', 'email' => 'p@example.test', 'role' => 'media-buyer', 'seat_type' => 'limited'])
+        ->assertSuccessful();
+
+    expect(DB::table('workspace_members as m')->join('users as u', 'u.id', '=', 'm.user_id')->where('u.email', 'p@example.test')->value('m.seat_type'))->toBe('limited');
+});
+
+it('treats an activation nobody answered as unknown, never repeats it blindly, and settles it only by reading the platform', function (): void {
+    app()->bind(App\Application\Campaign\Contract\CampaignActivator::class, ScriptedActivator::class);
+    ScriptedActivator::$failFor = ['google_ads'];
+    ScriptedActivator::$refuseFor = ScriptedActivator::$unreadableFor = [];
+    ScriptedActivator::$sent = 0;
+    ['id' => $id, 'owner' => $owner] = verifiedPlan();
+
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activation")->assertNoContent();
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activate")->assertStatus(202);
+
+    $by = array_column((array) $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}/launches")->json('data'), null, 'provider');
+    expect($by['google_ads']['activation_status'])->toBe('unknown')->and($by['google_ads']['may_reconcile'])->toBeTrue()
+        ->and($by['meta']['activation_status'])->toBe('active')
+        // The unanswered account is not marked active in the product's own tables.
+        ->and(DB::table('campaigns')->where('external_id', $by['google_ads']['provider_ids']['campaign'])->value('status'))->toBe('paused');
+    $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'activation_pending');
+    expect((string) $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->json('data.status_reason'))->toContain('unknown');
+
+    $items = collect((array) $this->actingAs($owner)->getJson('/api/attention')->json('data'))->where('stream', 'launches');
+    expect($items->pluck('reason.code')->all())->toContain('LAUNCH_ACTIVATION_UNKNOWN');
+
+    // Approving again sends nothing for an account whose outcome is unknown.
+    $sentBefore = ScriptedActivator::$sent;
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activate")->assertStatus(202)->assertJsonPath('data.queued', 0);
+    expect(ScriptedActivator::$sent)->toBe($sentBefore);
+
+    // A platform that cannot be read leaves it unknown.
+    ScriptedActivator::$unreadableFor = ['google_ads'];
+    $this->actingAs($owner)->postJson("/api/launch-executions/{$by['google_ads']['id']}/reconcile")->assertOk()->assertJsonPath('data.activation_status', 'unknown');
+
+    // Read, and reported still paused: a proven failure that may be approved again — and then it is switched on and confirmed.
+    ScriptedActivator::$unreadableFor = [];
+    ScriptedActivator::$failFor = [];
+    $this->actingAs($owner)->postJson("/api/launch-executions/{$by['google_ads']['id']}/reconcile")->assertOk()->assertJsonPath('data.activation_status', 'failed');
+    expect(ScriptedActivator::$sent)->toBe($sentBefore);
+    $this->actingAs($owner)->postJson("/api/campaign-plans/{$id}/activate")->assertStatus(202)->assertJsonPath('data.queued', 1);
+    $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}")->assertJsonPath('data.status', 'active');
+});
+
+it('lets exactly one worker send an activation, and refuses to call an activation without a read-back active', function (): void {
+    ['id' => $id, 'owner' => $owner] = verifiedPlan();
+    $execution = (array) $this->actingAs($owner)->getJson("/api/campaign-plans/{$id}/launches")->json('data.0');
+    $workspace = (string) DB::table('campaign_launch_executions')->where('id', $execution['id'])->value('workspace_id');
+    $repository = app(App\Application\Campaign\Contract\LaunchRepository::class);
+    DB::table('campaign_launch_executions')->where('id', $execution['id'])->update(['activation_status' => 'activating']);
+
+    expect($repository->transitionActivation($workspace, $execution['id'], App\Domain\Advertising\Launch\ActivationStatus::Activating, ['activation_status' => 'sending']))->toBeTrue()
+        ->and($repository->transitionActivation($workspace, $execution['id'], App\Domain\Advertising\Launch\ActivationStatus::Activating, ['activation_status' => 'sending']))->toBeFalse();
+
+    // An "active" answer that observed nothing is not a confirmation.
+    $record = $repository->execution($workspace, $execution['id']);
+    expect($record)->not->toBeNull();
+    assert($record !== null);
+    app(App\Application\Campaign\Launch\ExecuteActivation::class)->settle(
+        $record,
+        new App\Domain\Advertising\Launch\ActivationOutcome(App\Domain\Advertising\Launch\ActivationStatus::Active, MetricSource::Sandbox, [], null),
+        'meta', 'Plan', (string) $owner->getKey(),
+    );
+    expect(DB::table('campaign_launch_executions')->where('id', $execution['id'])->value('activation_status'))->toBe('unknown');
+});

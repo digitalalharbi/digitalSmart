@@ -200,6 +200,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ], Response::HTTP_UNPROCESSABLE_ENTITY));
 
         /* A limit reached: what was used, what is allowed, and when a monthly limit resets. Nothing existing is touched. */
+        /* A refusal is an operator signal too: which limit was hit and how full it was, and nothing about who or what. */
+        $exceptions->report(static function (QuotaExceeded $exception): bool {
+            logger()->info('saas.quota_refused', ['limit' => $exception->limit->value, 'used' => $exception->used, 'allowed' => $exception->allowed]);
+
+            return false;
+        });
         $exceptions->render(static fn (QuotaExceeded $exception): Response => response()->json([
             'message' => $exception->getMessage(),
             'code' => 'quota_exceeded',

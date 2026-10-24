@@ -91,7 +91,8 @@ stops answering; nothing it made is deleted.
 `workspace_members.seat_type`: `full`, `limited`, `client`, `guest`. Full and limited count against `internal_users`; client and
 guest against `client_users`. A person joining as a client viewer takes a client seat, anybody else a full seat. A seat is not a
 role: changing somebody's role never changes their seat. The seat is claimed when an invitation is **accepted**, not when it is
-made — a link nobody uses takes no room.
+made — a link nobody uses takes no room. Adding a member may name the seat (`seat_type`); a client viewer takes a client or guest seat and
+everybody else a full or limited one, and a seat that does not fit the role is refused.
 
 ## Overrides
 

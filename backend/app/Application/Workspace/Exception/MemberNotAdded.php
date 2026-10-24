@@ -28,4 +28,9 @@ final class MemberNotAdded extends DomainException
     {
         return new self('Add them in another role first, then change it. Making somebody an owner is a separate decision, and the owner role is the one that can remove other owners.');
     }
+
+    public static function seatDoesNotFitRole(): self
+    {
+        return new self('A client viewer takes a client or guest seat; everybody else takes a full or limited seat.');
+    }
 }

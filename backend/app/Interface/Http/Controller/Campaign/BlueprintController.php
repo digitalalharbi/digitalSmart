@@ -26,13 +26,15 @@ final class BlueprintController extends Controller
 {
     public function index(Request $request, ReadBlueprints $read): JsonResponse
     {
-        $result = $read->list(
-            $request->string('status')->toString() ?: null,
-            $request->string('project_id')->toString() ?: null,
-            $request->integer('page', 1),
-        );
+        $filters = [];
 
-        return response()->json(['data' => array_map($this->view(...), $result['rows']), 'meta' => ['total' => $result['total']]]);
+        foreach (['status', 'project_id', 'client_id', 'provider', 'owner_id'] as $key) {
+            $filters[$key] = $request->string($key)->toString() ?: null;
+        }
+
+        $result = $read->list($filters, $request->integer('page', 1));
+
+        return response()->json(['data' => array_map($this->view(...), $result['rows']), 'meta' => ['total' => $result['total'], 'counts' => (object) $result['counts']]]);
     }
 
     public function show(string $blueprint, ReadBlueprints $read): JsonResponse

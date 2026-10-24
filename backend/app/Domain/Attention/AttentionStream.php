@@ -27,6 +27,7 @@ enum AttentionStream: string
     case Tasks = 'tasks';
     case Automation = 'automation';
     case Agents = 'agents';
+    case Launches = 'launches';
 
     /**
      * Everything the reader needs before this stream is consulted. All of them, not any.
@@ -50,6 +51,7 @@ enum AttentionStream: string
             self::Tasks => [Permission::TasksView],
             self::Automation => [Permission::AnalyticsView],
             self::Agents => [Permission::AnalyticsView],
+            self::Launches => [Permission::CampaignBlueprintsView],
         };
     }
 
@@ -64,6 +66,7 @@ enum AttentionStream: string
             self::Tasks => 'tasks',
             self::Automation => 'rules',
             self::Agents => 'agents',
+            self::Launches => 'campaign launches',
         };
     }
 
@@ -79,6 +82,7 @@ enum AttentionStream: string
             self::Tasks => '/tasks',
             self::Automation => '/automation',
             self::Agents => '/today',
+            self::Launches => '/campaigns/plans',
         };
     }
 

@@ -22,6 +22,7 @@ use App\Domain\Audit\AuditAction;
 use App\Domain\Audit\AuditEntry;
 use App\Domain\Identity\UserId;
 use App\Domain\Workspace\WorkspaceId;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -42,6 +43,7 @@ final readonly class ExecuteCreation
         private AuditRecorder $audit,
         private Clock $clock,
         private BlueprintRepository $blueprints,
+        private LoggerInterface $log,
     ) {}
 
     public function __invoke(string $workspaceId, string $executionId, string $executedBy): void
@@ -167,6 +169,18 @@ final readonly class ExecuteCreation
                 'idempotency_reference' => $execution->idempotencyReference,
             ],
         ));
+
+        /* Operators see launch problems without opening a workspace: ids and states only, never a name, a credential or a figure. */
+        if (in_array($fields['status'], [ExecutionStatus::Failed->value, ExecutionStatus::Unknown->value, ExecutionStatus::ReadbackMismatch->value, ExecutionStatus::BlockedExternal->value], true)) {
+            $this->log->warning('campaign_launch.execution_not_verified', [
+                'workspace_id' => $execution->workspaceId,
+                'execution_id' => $execution->id,
+                'provider' => $plan->provider->value,
+                'status' => $fields['status'],
+                'classification' => $outcome->classification,
+                'source' => $outcome->source->value,
+            ]);
+        }
 
         $this->progress->settle($execution->workspaceId, $execution->blueprintId);
     }

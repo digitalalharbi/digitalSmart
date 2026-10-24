@@ -15,6 +15,7 @@ use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
+use App\Domain\Advertising\Launch\ActivationStatus;
 use App\Domain\Advertising\Launch\ExecutionStatus;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Audit\AuditAction;
@@ -35,6 +36,7 @@ final readonly class RecoverExecution
         private LaunchRepository $launches,
         private CampaignCreator $creator,
         private ExecuteCreation $execute,
+        private ReconcileActivation $activation,
         private LaunchQueue $queue,
         private AuthorizationGuard $guard,
         private ActorContext $actor,
@@ -46,6 +48,13 @@ final readonly class RecoverExecution
     {
         $this->guard->ensure(Permission::CampaignLaunchExecute);
         $execution = $this->load($executionId);
+
+        /* A creation that is verified but whose switch-on is unknown is reconciled by reading the platform, never by creating. */
+        if ($execution->activationStatus === ActivationStatus::Unknown) {
+            ($this->activation)($execution);
+
+            return $this->load($executionId);
+        }
 
         if (! $this->mayReconcile($execution)) {
             throw BlueprintRefused::notReconcilable($execution->status->value);
@@ -131,6 +140,10 @@ final readonly class RecoverExecution
     /** Unknown, or `creating` for so long that its worker must be gone. */
     public function mayReconcile(ExecutionRecord $execution): bool
     {
+        if ($execution->activationStatus === ActivationStatus::Unknown) {
+            return true;
+        }
+
         if ($execution->status === ExecutionStatus::Unknown) {
             return true;
         }

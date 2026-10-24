@@ -79,6 +79,14 @@ export function LaunchExecutions({ planId, canExecute }: { planId: string; canEx
                   {execution.provider_ids.campaign}
                 </p>
               ) : null}
+              {execution.activation_status !== null ? (
+                <p className="text-content text-xs">
+                  {t('activation.label')}: {t(`activation.status.${execution.activation_status}`)}
+                  {execution.activation_message !== null
+                    ? ` — ${execution.activation_message}`
+                    : ''}
+                </p>
+              ) : null}
               {execution.message !== null ? (
                 <p className="text-content-secondary">{execution.message}</p>
               ) : null}
