@@ -4,6 +4,32 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## SaaS program, PR A: tenant isolation, audited and made executable
+
+### Added
+- **An executable tenant matrix** (`tests/Feature/Tenancy/TenantRouteMatrixTest.php`): the owner of a fresh workspace calls
+  every authenticated route that takes an identifier with another workspace's identifiers (152 calls) and every list,
+  search and filtered read with another workspace's ids as filters. Any 2xx, any 5xx, or any foreign id or client name in a
+  response fails it; a new route the matrix cannot source fails it too.
+- **A schema guard** (`TenantSchemaTest`): every table carries `workspace_id`, cascades from a parent that does, or is declared
+  global with a reason; every unique constraint on a tenant table names the tenant or a tenant-owned parent.
+- `docs/TENANCY.md` (the model, the defences, every finding, jobs, files, cache, realtime) and
+  [ADR 7](docs/adr/0007-postgresql-row-level-security.md) — row-level security evaluated, not enabled now, with the rollout that
+  would make it safe. `docs/SAAS_CAMPAIGN_MASTER.md` is the program's brief and progress table.
+
+### Fixed — found by the matrix
+- **Another workspace's project members were readable** (`GET /projects/{id}/members`: names, emails, roles) by anybody holding
+  `projects.view_all`: workspace-wide visibility skipped the check that the project is in the active workspace. Fixed once in
+  `ensureProjectVisible`, which also closed `/assignable` and `/integrations`.
+- **Pins and recents stored references to another workspace's client, project or campaign**; now refused as not found.
+- **One report's snapshots and links** were read in the controller with no permission or visibility check; now `ReadReportHistory`.
+- A client's portfolio page, and marking a saved view opened, answered 200 for ids that were not the reader's; now not found.
+- **Two agencies registering the same shop**: the second agency's webhook delivery was dropped as a redelivery because the
+  journal's unique key ignored the workspace. The key now includes it.
+
+### Changed
+- New attachments and exports are stored under `workspaces/{workspace_id}/…`; existing files keep their stored path.
+
 ## Access requests & communication: from a visitor's question to a first sign-in
 
 ### Added

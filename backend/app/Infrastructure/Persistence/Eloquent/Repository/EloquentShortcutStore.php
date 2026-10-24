@@ -14,6 +14,18 @@ final readonly class EloquentShortcutStore implements ShortcutStore
 {
     public function __construct(private IdentifierGenerator $ids) {}
 
+    public function belongs(string $workspaceId, string $type, string $id): bool
+    {
+        $table = match ($type) {
+            'client' => 'clients',
+            'project' => 'projects',
+            'campaign' => 'campaigns',
+            default => null,
+        };
+
+        return $table !== null && DB::table($table)->where('id', $id)->where('workspace_id', $workspaceId)->exists();
+    }
+
     public function pin(string $workspaceId, string $userId, string $type, string $id, DateTimeImmutable $at): void
     {
         DB::table('user_pins')->insertOrIgnore([

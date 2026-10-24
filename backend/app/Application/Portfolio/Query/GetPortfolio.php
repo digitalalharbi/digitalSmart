@@ -10,10 +10,12 @@ use App\Application\Advertising\Query\GetCampaignControl;
 use App\Application\Analytics\Contract\VisibilityResolver;
 use App\Application\Budget\DTO\BudgetControlRow;
 use App\Application\Budget\Query\GetBudgetControl;
+use App\Application\Client\Contract\ClientVisibility;
 use App\Application\Measurement\Query\GetTrackingHealth;
 use App\Application\Portfolio\Contract\PortfolioReadModel;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
+use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Advertising\CampaignHealth;
 
@@ -38,6 +40,7 @@ final readonly class GetPortfolio
         private AuthorizationGuard $guard,
         private ActorContext $actor,
         private VisibilityResolver $visibility,
+        private ClientVisibility $clients,
     ) {}
 
     /** @return array<string, mixed> */
@@ -48,6 +51,11 @@ final readonly class GetPortfolio
         $permissions = $this->actor->permissions();
         $workspace = $this->actor->workspaceId()->value;
         $visible = $this->visibility->visibleProjectIds();
+
+        /* A client's page is a page about one of this workspace's clients the reader may see — anything else is not found. */
+        if ($clientId !== null && ! $this->clients->isVisible($workspace, $visible, $clientId)) {
+            throw ResourceNotFound::of('Client');
+        }
 
         $filter = new CampaignControlFilter(clientIds: $clientId === null ? [] : [$clientId]);
         /* The shared period, where it is one the campaign read knows; otherwise its default. The window is published. */

@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Interface\Http\Controller\Dashboard;
 
 use App\Application\Dashboard\Command\DeleteSavedView;
+use App\Application\Dashboard\Command\MarkViewOpened;
 use App\Application\Dashboard\Command\SaveView;
-use App\Application\Dashboard\Contract\SavedViewRepository;
 use App\Application\Dashboard\DTO\SavedViewView;
 use App\Application\Dashboard\Query\ListSavedViews;
-use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Request\Dashboard\SavedViewRequest;
@@ -62,9 +61,9 @@ final class SavedViewController extends Controller
      * Separate from reading it, so the ordering in the picker reflects what someone
      * actually uses rather than what a background refresh happened to fetch.
      */
-    public function touch(string $view, SavedViewRepository $views, ActorContext $actor): JsonResponse
+    public function touch(string $view, MarkViewOpened $opened): JsonResponse
     {
-        $views->touchLastUsed($actor->workspaceId()->value, $view);
+        $opened($view);
 
         return response()->json(status: Response::HTTP_NO_CONTENT);
     }
