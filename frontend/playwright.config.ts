@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /** The specs the extra browsers run. Everything else runs on `chromium` and `mobile-safari` only. */
 const COMPATIBILITY =
-  /(entry-screens|mobile-shell|tracking-forms|tracking-links|tracking-followup|tracking-operations)\.spec\.ts$/;
+  /(entry-screens|mobile-shell|tracking-forms|tracking-links|tracking-followup|tracking-operations|access-requests)\.spec\.ts$/;
 
 const PORT = Number.parseInt(process.env.VITE_DEV_PORT ?? '5174', 10);
 

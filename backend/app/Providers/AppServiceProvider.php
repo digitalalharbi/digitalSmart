@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Access\Contract\AccessInvitationRepository;
 use App\Application\Access\Contract\AccessRequestRepository;
 use App\Application\Access\Contract\AccessSynchroniser;
 use App\Application\Activity\Contract\ActivityReadModel;
@@ -265,6 +266,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentRoleReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSearchReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentStoreAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentSyncCandidateSource;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAccessInvitationRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAccessRequestRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentAdvertisingStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentApprovalRepository;
@@ -481,6 +483,7 @@ final class AppServiceProvider extends ServiceProvider
         ShortcutStore::class => EloquentShortcutStore::class,
         TagStore::class => EloquentTagStore::class,
         AccessRequestRepository::class => EloquentAccessRequestRepository::class,
+        AccessInvitationRepository::class => EloquentAccessInvitationRepository::class,
         TrackingLinkRepository::class => EloquentTrackingLinkRepository::class,
         CampaignBindingResolver::class => EloquentCampaignBindingResolver::class,
         LeadAutomationRepository::class => EloquentLeadAutomationRepository::class,

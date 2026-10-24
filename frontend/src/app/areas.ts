@@ -100,7 +100,13 @@ export const AREAS: readonly Area[] = [
     key: 'settings',
     labelKey: 'areas.settings',
     icon: 'Settings2',
-    paths: ['/administration', '/ai-center', '/client-portal', '/notifications'],
+    paths: [
+      '/administration',
+      '/access-requests',
+      '/ai-center',
+      '/client-portal',
+      '/notifications',
+    ],
   },
 ];
 

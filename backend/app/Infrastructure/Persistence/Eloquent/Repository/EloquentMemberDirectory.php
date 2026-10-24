@@ -41,8 +41,9 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
         Email $email,
         RoleId $roleId,
         ?UserId $existing,
+        ?string $chosenPassword = null,
     ): InvitedMember {
-        $oneTime = Str::random(self::ONE_TIME_LENGTH);
+        $oneTime = $chosenPassword ?? Str::random(self::ONE_TIME_LENGTH);
 
         return DB::transaction(function () use (
             $workspaceId,
@@ -51,6 +52,7 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
             $roleId,
             $existing,
             $oneTime,
+            $chosenPassword,
         ): InvitedMember {
             if ($existing === null) {
                 /** @var User $user */
@@ -65,7 +67,7 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
                  * Must be replaced before anything else can be done. Without this the flow would be "an
                  * administrator knows your password indefinitely", which is not a flow worth shipping.
                  */
-                $user->forceFill(['must_change_password' => true])->saveQuietly();
+                $user->forceFill(['must_change_password' => $chosenPassword === null])->saveQuietly();
             } else {
                 /** @var User $user */
                 $user = User::query()->whereKey($existing->value)->firstOrFail();
@@ -101,7 +103,7 @@ final readonly class EloquentMemberDirectory implements MemberDirectory
                  * The existing-account case returns no password, because none was created: the person already
                  * has one, and inventing a string to show the administrator would be a lie about what happened.
                  */
-                oneTimePassword: $existing === null ? $oneTime : '',
+                oneTimePassword: $existing === null && $chosenPassword === null ? $oneTime : '',
             );
         });
     }

@@ -6,7 +6,7 @@ import { setUnauthenticatedHandler } from '@/shared/api/client';
 
 const router = createBrowserRouter(routes);
 
-const PUBLIC_PATHS = new Set(['/', '/welcome', '/login', '/request-access']);
+const PUBLIC_PATHS = new Set(['/', '/welcome', '/login', '/request-access', '/contact']);
 
 export function App() {
   useEffect(() => {

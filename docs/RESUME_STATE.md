@@ -23,6 +23,7 @@ disagree, Git is right.
 | Campaign operations | **VERIFIED by CI**: navigation + Arabic vocabulary (#42), campaign table (#43), Ad Groups (#44), Ads (#45), reports centre (#46; main `4a07cd4`). In review: PR 6 — campaign report preset, funnel and attributed-revenue sections, advanced settings, a page per report. |
 | Visual restructure | PR #11 merged. Brand kit applied, sign-in screen and one-screen landing page (`/welcome`) in review on `feat/brand-identity`; nothing merged. Remaining: heavy-form audit beyond the client form, creative thumbnails from real assets (none exist), a measured before/after table. |
 | Tracking & Funnels | Six-PR chain (`docs/TRACKING_FUNNELS.md`): A merged; B–F in review in order (links/redirect/events, forms→leads, funnels, health/debug, dispatch/mapping, reports/QR). Nothing dispatched to any provider; live delivery `BLOCKED_EXTERNAL`. |
+| Access requests | Request → inbox → contact → approve/reject → invitation → account on acceptance → first sign-in (`docs/ACCESS_REQUESTS.md`). Email/WhatsApp delivery `AWAITING_CREDENTIALS`; nothing is shown as sent. |
 | Sessions | Each session works on its own branch and worktree; the shared folder is not scratch space. |
 
 ### Last verified gates (local)

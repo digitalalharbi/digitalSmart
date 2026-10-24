@@ -172,6 +172,21 @@ enum NotificationKind: string
     /** A live campaign is delivering well below its budget or its earlier pace. */
     case CampaignUnderDelivering = 'campaign_under_delivering';
 
+    /** Somebody outside asked for an account or sent an enquiry. */
+    case AccessRequestReceived = 'access_request_received';
+
+    /** A request nobody has answered is close to the response time the workspace promised. */
+    case AccessRequestApproaching = 'access_request_approaching';
+
+    /** Past it. */
+    case AccessRequestOverdue = 'access_request_overdue';
+
+    /** A request for an account was approved; an invitation is the next step. */
+    case AccessRequestApproved = 'access_request_approved';
+
+    /** An invitation was made and nobody has accepted it. */
+    case AccessInvitationPending = 'access_invitation_pending';
+
     public function label(): string
     {
         return match ($this) {
@@ -203,6 +218,11 @@ enum NotificationKind: string
             self::CreativeFatigue => 'A creative is wearing out',
             self::CampaignEnded => 'A campaign ended',
             self::CampaignUnderDelivering => 'A campaign is under-delivering',
+            self::AccessRequestReceived => 'A request arrived',
+            self::AccessRequestApproaching => 'A request is close to its response time',
+            self::AccessRequestOverdue => 'A request is past its response time',
+            self::AccessRequestApproved => 'A request for an account was approved',
+            self::AccessInvitationPending => 'An invitation has not been accepted',
         };
     }
 
@@ -256,6 +276,12 @@ enum NotificationKind: string
             self::BudgetNearLimit => Permission::BudgetsView,
             self::TrackingFailure => Permission::TrackingView,
             self::CreativeFatigue => Permission::CreativeView,
+            /* The people who may answer a request for access are the ones who may be told about it. */
+            self::AccessRequestReceived,
+            self::AccessRequestApproaching,
+            self::AccessRequestOverdue,
+            self::AccessRequestApproved,
+            self::AccessInvitationPending => Permission::UsersInvite,
         };
     }
 
@@ -274,7 +300,12 @@ enum NotificationKind: string
             self::ClientRequestMoved,
             self::ClientRequestNeedsInformation,
             self::ClientRequestAnswered,
-            self::ClientRequestReplied => NotificationCategory::Work,
+            self::ClientRequestReplied,
+            self::AccessRequestReceived,
+            self::AccessRequestApproaching,
+            self::AccessRequestOverdue,
+            self::AccessRequestApproved,
+            self::AccessInvitationPending => NotificationCategory::Work,
             self::ApprovalRequested, self::ApprovalDecided, self::ApprovalEnacted => NotificationCategory::Approvals,
             self::DigestReady, self::ExportReady => NotificationCategory::Reports,
             self::PerformanceDigest,
@@ -304,6 +335,10 @@ enum NotificationKind: string
             || $this === self::LeadAssigned
             || $this === self::LeadSlaApproaching
             || $this === self::LeadSlaOverdue
+            || $this === self::AccessRequestReceived
+            || $this === self::AccessRequestApproaching
+            || $this === self::AccessRequestOverdue
+            || $this === self::AccessInvitationPending
             || $this === self::ApprovalRequested
             || $this === self::ClientRequestSubmitted
             || $this === self::ClientRequestReplied
@@ -353,6 +388,11 @@ enum NotificationKind: string
             self::BudgetNearLimit => NotificationSubject::Budget,
             self::TrackingFailure => NotificationSubject::MeasurementSource,
             self::CreativeFatigue => NotificationSubject::Creative,
+            self::AccessRequestReceived,
+            self::AccessRequestApproaching,
+            self::AccessRequestOverdue,
+            self::AccessRequestApproved,
+            self::AccessInvitationPending => NotificationSubject::AccessRequest,
         };
     }
 

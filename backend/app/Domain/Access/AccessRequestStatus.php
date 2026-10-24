@@ -5,26 +5,36 @@ declare(strict_types=1);
 namespace App\Domain\Access;
 
 /**
- * Where a request for an account stands.
+ * Where a request for access or an enquiry stands with the people answering it.
  *
- * Approving one **creates nothing**: it records that somebody decided to say yes, and the person who decided then adds
- * the member through the ordinary flow. There is no sender identity to deliver an invitation, so an approval that
- * quietly made an account would be an account whose owner nobody had told.
+ * Only what the people answering decide lives here. What happens to an account request *afterwards* — an invitation made,
+ * shared, opened, accepted, a first sign-in — are milestones with their own times on the request, not further statuses: one
+ * column cannot say "approved" and "accepted" and "has signed in" at once without losing which came first.
  */
 enum AccessRequestStatus: string
 {
-    case Pending = 'pending';
+    case New = 'new';
     case Contacted = 'contacted';
+    case WaitingForReply = 'waiting_for_reply';
+    case Qualified = 'qualified';
     case Approved = 'approved';
-    case Declined = 'declined';
+    case Rejected = 'rejected';
+    case Closed = 'closed';
 
-    /** Approved and declined are decisions; moving off one would make the record say two things in turn. */
+    /** Still being worked: a decision has not been made and the matter has not been put away. */
+    public function isOpen(): bool
+    {
+        return in_array($this, [self::New, self::Contacted, self::WaitingForReply, self::Qualified], true);
+    }
+
     public function canMoveTo(self $next): bool
     {
-        return match ($this) {
-            self::Pending => $next !== self::Pending,
-            self::Contacted => $next === self::Approved || $next === self::Declined,
-            self::Approved, self::Declined => false,
+        return match (true) {
+            $this === $next => false,
+            $this->isOpen() => $next !== self::New,
+            /* An approved request is put away once its invitation is dealt with; nothing else follows. */
+            $this === self::Approved => $next === self::Closed,
+            default => false,
         };
     }
 

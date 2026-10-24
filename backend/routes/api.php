@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Interface\Http\Controller\Access\AccessInvitationController;
 use App\Interface\Http\Controller\Access\AccessRequestController;
 use App\Interface\Http\Controller\Activity\ActivityController;
 use App\Interface\Http\Controller\Advertising\AdGroupController;
@@ -171,6 +172,14 @@ Route::get('public/access-requests', [AccessRequestController::class, 'open'])
 Route::post('public/access-requests', [AccessRequestController::class, 'store'])
     ->middleware('throttle:access-requests')
     ->name('access_requests.store');
+Route::get('public/invitations/{token}', [AccessInvitationController::class, 'show'])
+    ->middleware('throttle:invitations')
+    ->where('token', '[A-Fa-f0-9]{96}')
+    ->name('invitations.show');
+Route::post('public/invitations/{token}/accept', [AccessInvitationController::class, 'accept'])
+    ->middleware('throttle:invitations')
+    ->where('token', '[A-Fa-f0-9]{96}')
+    ->name('invitations.accept');
 
 /*
  * Tracking links and what happens after one is followed. Public, unauthenticated and rate limited per address; the
@@ -226,8 +235,18 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::post('tracking/link-templates', [TrackingLinkController::class, 'saveTemplate'])->name('tracking.templates.store');
 
     Route::get('access-requests', [AccessRequestController::class, 'index'])->name('access_requests.index');
-    Route::post('access-requests/{accessRequest}/review', [AccessRequestController::class, 'review'])
-        ->whereUuid('accessRequest')->name('access_requests.review');
+    Route::get('access-requests/figures', [AccessRequestController::class, 'figures'])->name('access_requests.figures');
+    Route::put('access-requests/settings', [AccessRequestController::class, 'saveSettings'])->name('access_requests.settings');
+    Route::get('access-requests/{accessRequest}', [AccessRequestController::class, 'show'])->whereUuid('accessRequest')->name('access_requests.show');
+    Route::post('access-requests/{accessRequest}/assign', [AccessRequestController::class, 'assign'])->whereUuid('accessRequest')->name('access_requests.assign');
+    Route::post('access-requests/{accessRequest}/contact', [AccessRequestController::class, 'contact'])->whereUuid('accessRequest')->name('access_requests.contact');
+    Route::post('access-requests/{accessRequest}/notes', [AccessRequestController::class, 'note'])->whereUuid('accessRequest')->name('access_requests.note');
+    Route::post('access-requests/{accessRequest}/follow-up', [AccessRequestController::class, 'followUp'])->whereUuid('accessRequest')->name('access_requests.follow_up');
+    Route::post('access-requests/{accessRequest}/status', [AccessRequestController::class, 'status'])->whereUuid('accessRequest')->name('access_requests.status');
+    Route::post('access-requests/{accessRequest}/approve', [AccessRequestController::class, 'approve'])->whereUuid('accessRequest')->name('access_requests.approve');
+    Route::post('access-requests/{accessRequest}/reject', [AccessRequestController::class, 'reject'])->whereUuid('accessRequest')->name('access_requests.reject');
+    Route::post('access-requests/{accessRequest}/invitation', [AccessInvitationController::class, 'store'])->whereUuid('accessRequest')->name('access_requests.invitation');
+    Route::post('access-requests/{accessRequest}/invitation/shared', [AccessInvitationController::class, 'shared'])->whereUuid('accessRequest')->name('access_requests.invitation_shared');
 
     Route::get('auth/me', [SessionController::class, 'show'])->name('auth.me');
     Route::post('auth/logout', [SessionController::class, 'destroy'])->name('auth.logout');

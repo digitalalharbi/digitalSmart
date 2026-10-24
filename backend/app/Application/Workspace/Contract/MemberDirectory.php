@@ -37,5 +37,7 @@ interface MemberDirectory
         Email $email,
         RoleId $roleId,
         ?UserId $existing,
+        /** A password the person chose themselves, so nobody else ever knows it. Null generates the one-time password. */
+        ?string $chosenPassword = null,
     ): InvitedMember;
 }

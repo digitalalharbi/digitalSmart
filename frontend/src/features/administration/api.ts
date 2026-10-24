@@ -3,8 +3,6 @@ import { api, ensureCsrfCookie } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { Paginated } from '@/shared/api/types';
 import type {
-  AccessRequest,
-  AccessRequestStatus,
   AuditEntry,
   HeldWork,
   InvitedMember,
@@ -172,35 +170,5 @@ export function useInviteMemberMutation() {
       return response.data.data;
     },
     onSuccess: () => void invalidate(),
-  });
-}
-
-/** Requests for an account made from the public landing page, newest first, with how many sit in each state. */
-export function useAccessRequestsQuery(status: AccessRequestStatus | null) {
-  return useQuery({
-    queryKey: ['access-requests', status] as const,
-    queryFn: async (): Promise<{
-      rows: AccessRequest[];
-      counts: Record<AccessRequestStatus, number>;
-    }> => {
-      const { data } = await api.get<{
-        data: AccessRequest[];
-        meta: { counts: Record<AccessRequestStatus, number> };
-      }>('/access-requests', { params: status === null ? {} : { status } });
-
-      return { rows: data.data, counts: data.meta.counts };
-    },
-  });
-}
-
-export function useReviewAccessRequestMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: { id: string; status: AccessRequestStatus }): Promise<void> => {
-      await ensureCsrfCookie();
-      await api.post(`/access-requests/${input.id}/review`, { status: input.status });
-    },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['access-requests'] }),
   });
 }

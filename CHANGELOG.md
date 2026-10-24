@@ -4,6 +4,33 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Access requests & communication: from a visitor's question to a first sign-in
+
+### Added
+- **The request form grows into an enquiry workflow** (`/request-access`, and `/contact` for a question): account request, general enquiry, demo or
+  consultation, partnership, other; job title; preferred contact (email, phone, WhatsApp). The visitor always gets one generic answer — a repeat, a
+  honeypot hit or a closed intake look the same — and no account is ever created from the form.
+- **An inbox** (Settings → Access requests): new, needs follow-up, waiting, approved, rejected, closed; owner, kind, contact method, last contact, next
+  follow-up and the response-time state on each card; **a request's page** with contact details, an owner, contact attempts, notes, a follow-up date, a
+  timeline, possible duplicates and the decision.
+- **Contact is recorded, never claimed**: "email sent / call attempted / contacted / WhatsApp contacted" record what a person says they did. Email and
+  WhatsApp delivery say `awaiting_credentials`; nothing is shown as sent.
+- **A response-time promise** per workspace and a default owner, judged by the lead pipeline's own rule (attempted is not reached), with alerts through
+  the notification centre: received, approaching, overdue, approved, and an invitation not accepted after two days.
+- **Approve, then invite.** Approving an account request creates nobody. An invitation is a separate act with a role and project access: a one-time link
+  (hashed, shown once, seven days) that the team hands over; the invited person chooses their own password on `/invite/…`, and **only then** does an account
+  exist. Opened, accepted, account created and first sign-in are each recorded only when they happen. Rejecting needs an internal reason that is shown nowhere public.
+- **Possible duplicates** (same email or phone within 30 days) are kept and linked, not dropped.
+- **Small operational figures**: new, reached, qualified, approved, rejected, median first try, response-time compliance and invitation acceptance — each
+  with its denominator, and "no data yet" instead of a rate over nothing.
+
+### Changed
+- The old Administration → Account requests panel (pending/contacted/approved/declined) is replaced by the inbox; existing rows become `new` / `rejected`.
+- The landing page's Arabic call to action reads «طلب حساب».
+
+### Fixed
+- Found by the new axe check on the inbox: a tab panel pointed at a tab id that did not exist, and a figures list held a paragraph.
+
 ## Tracking revenue & operations, part C: are advertising and follow-up working together?
 
 ### Added

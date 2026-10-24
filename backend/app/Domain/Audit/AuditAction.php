@@ -213,6 +213,17 @@ enum AuditAction: string
     /* Somebody who asked for an account was answered: contacted, approved or declined. Nothing is created by it. */
     case AccessRequestReviewed = 'access.request_reviewed';
 
+    /* The operating life of a request for access or a general enquiry. None of them carries the person's details. */
+    case AccessRequestCreated = 'access.request_created';
+    case AccessRequestAssigned = 'access.request_assigned';
+    case AccessRequestStatusChanged = 'access.request_status_changed';
+    case AccessRequestContacted = 'access.request_contacted';
+    case AccessRequestNoted = 'access.request_noted';
+    case AccessRequestApproved = 'access.request_approved';
+    case AccessRequestRejected = 'access.request_rejected';
+    case AccessInvitationCreated = 'access.invitation_created';
+    case AccessInvitationAccepted = 'access.invitation_accepted';
+
     public function group(): string
     {
         return explode('.', $this->value)[0];
@@ -228,6 +239,10 @@ enum AuditAction: string
             self::UserPasswordChanged,
             self::WorkspaceMemberRoleChanged,
             self::WorkspaceMemberSuspended,
+            /* Granting somebody a way in, and somebody taking it, are access events. */
+            self::AccessRequestApproved,
+            self::AccessInvitationCreated,
+            self::AccessInvitationAccepted,
             // Credentials and data-access grants are security events: who
             // connected a platform, and who let a project read an ad account.
             self::IntegrationConnected,

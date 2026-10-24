@@ -92,22 +92,3 @@ export type HeldWork = {
   creative_requests: number;
   total: number;
 };
-
-export type AccessRequestStatus = 'pending' | 'contacted' | 'approved' | 'declined';
-
-export type AccessRequest = {
-  id: string;
-  name: string;
-  email: string;
-  company: string | null;
-  phone: string | null;
-  need: 'self_managed' | 'agency_clients' | 'ad_services';
-  need_label: string;
-  message: string | null;
-  locale: string;
-  status: AccessRequestStatus;
-  created_at: string;
-  reviewed_at: string | null;
-  reviewed_by_name: string | null;
-  review_note: string | null;
-};

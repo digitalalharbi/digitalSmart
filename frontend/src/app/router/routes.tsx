@@ -55,6 +55,9 @@ import {
   StoresRollupPage,
   TrackingAreaPage,
   PublicFormPage,
+  AccessRequestsPage,
+  AccessRequestDetailPage,
+  InvitationPage,
 } from '@/app/router/lazyPages';
 import { SurfaceFallback } from '@/app/router/SurfaceFallback';
 import { PortalLanding, PortalRedirectGuard } from '@/app/router/portalGuards';
@@ -95,6 +98,7 @@ const IMPLEMENTED: Record<string, ReactElement> = {
   '/tasks': deferred(<OperationsPage />),
   '/approvals': deferred(<ApprovalsPage />),
   '/client-requests': deferred(<RequestsPage />),
+  '/access-requests': deferred(<AccessRequestsPage />),
   '/reports': deferred(<ReportsPage />),
   '/client-portal': deferred(<PortalPage />),
   '/ai-assistant': deferred(<AssistantPage />),
@@ -119,6 +123,10 @@ export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
   { path: '/welcome', element: <LandingPage /> },
   { path: '/request-access', element: <RequestAccessPage /> },
+  /* The same form, opened as a question rather than a request for an account. */
+  { path: '/contact', element: <RequestAccessPage /> },
+  /* The link an invited person is given: no session, and the token in the path is the credential. */
+  { path: '/invite/:token', element: deferred(<InvitationPage />) },
   /*
    * The client's own portal, in its own shell rather than the agency's — no sidebar of agency surfaces, no
    * notification bell. It is behind the session because a client signs in; what it shows is decided by the
@@ -158,6 +166,7 @@ export const routes: RouteObject[] = [
       { path: 'reports/:reportId/manage', element: deferred(<ReportManagePage />) },
       { path: 'ad-groups/:adGroupId', element: deferred(<AdGroupDetailPage />) },
       { path: 'ads/:adId', element: deferred(<AdDetailPage />) },
+      { path: 'access-requests/:id', element: deferred(<AccessRequestDetailPage />) },
       { path: 'clients/:clientId', element: deferred(<ClientPortfolioPage />) },
       { path: 'projects/:projectId', element: deferred(<ProjectWorkspacePage />) },
       { path: 'projects/:projectId/setup', element: deferred(<ProjectSetupPage />) },
