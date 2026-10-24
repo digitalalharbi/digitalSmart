@@ -209,3 +209,7 @@ export const AccessRequestDetailPage = lazy(async () => ({
 export const InvitationPage = lazy(async () => ({
   default: (await import('@/features/access/InvitationPage')).InvitationPage,
 }));
+
+export const PlatformPage = lazy(async () => ({
+  default: (await import('@/features/platform')).PlatformPage,
+}));

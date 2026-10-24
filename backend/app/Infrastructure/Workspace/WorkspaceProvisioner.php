@@ -35,46 +35,65 @@ final readonly class WorkspaceProvisioner
         WorkspaceType $type = WorkspaceType::Agency,
     ): Workspace {
         return DB::transaction(function () use ($name, $slug, $owner, $defaultCurrency, $defaultLocale, $timezone, $type): Workspace {
-            /** @var Workspace $workspace */
-            $workspace = Workspace::query()->create([
-                'name' => $name,
-                'slug' => $slug,
-                'default_currency' => strtoupper($defaultCurrency),
-                'default_locale' => $defaultLocale,
-                'timezone' => $timezone,
-                'type' => $type->value,
-                'settings' => [],
-            ]);
-
-            $roles = $this->createSystemRoles($workspace);
+            $workspace = $this->provisionWithoutOwner($name, $slug, $defaultCurrency, $defaultLocale, $timezone, $type);
 
             WorkspaceMember::query()->create([
                 'workspace_id' => $workspace->getKey(),
                 'user_id' => $owner->getKey(),
-                'role_id' => $roles[SystemRole::Owner->value]->getKey(),
+                'role_id' => DB::table('roles')->where('workspace_id', $workspace->getKey())->where('slug', SystemRole::Owner->value)->value('id'),
                 'status' => MembershipStatus::Active->value,
                 'joined_at' => now(),
             ]);
 
-            /*
-             * Every workspace starts on the installation's default plan, recorded rather than implied, so "which plan is this on" has
-             * a row to point at. Skipped only where the plan catalogue has not been migrated yet.
-             */
-            $planId = DB::table('plans')->where('code', (string) config('digitalsmart.saas.default_plan', PlanCatalogue::AGENCY))->value('id');
-
-            if ($planId !== null) {
-                DB::table('workspace_subscriptions')->insert([
-                    'workspace_id' => $workspace->getKey(),
-                    'plan_id' => $planId,
-                    'assigned_at' => now(),
-                    'assigned_by' => 'provisioning',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
             return $workspace;
         });
+    }
+
+    /**
+     * The workspace, its roles and its plan, for a caller that adds the owner itself in the same transaction — the platform
+     * console, which may be creating the owner's account at the same time. Never committed on its own: a workspace with no owner
+     * is a tenant nobody can administer.
+     */
+    public function provisionWithoutOwner(
+        string $name,
+        string $slug,
+        string $defaultCurrency = 'SAR',
+        string $defaultLocale = 'en',
+        string $timezone = 'UTC',
+        WorkspaceType $type = WorkspaceType::Agency,
+        ?string $planCode = null,
+    ): Workspace {
+        /** @var Workspace $workspace */
+        $workspace = Workspace::query()->create([
+            'name' => $name,
+            'slug' => $slug,
+            'default_currency' => strtoupper($defaultCurrency),
+            'default_locale' => $defaultLocale,
+            'timezone' => $timezone,
+            'type' => $type->value,
+            'settings' => [],
+        ]);
+
+        $this->createSystemRoles($workspace);
+
+        /*
+         * Every workspace starts on a plan, recorded rather than implied, so "which plan is this on" has a row to point at.
+         * Skipped only where the plan catalogue has not been migrated yet.
+         */
+        $planId = DB::table('plans')->where('code', $planCode ?? (string) config('digitalsmart.saas.default_plan', PlanCatalogue::AGENCY))->value('id');
+
+        if ($planId !== null) {
+            DB::table('workspace_subscriptions')->insert([
+                'workspace_id' => $workspace->getKey(),
+                'plan_id' => $planId,
+                'assigned_at' => now(),
+                'assigned_by' => 'provisioning',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return $workspace;
     }
 
     /**

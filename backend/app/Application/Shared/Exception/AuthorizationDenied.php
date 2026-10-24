@@ -40,6 +40,12 @@ final class AuthorizationDenied extends RuntimeException
         ));
     }
 
+    /** The platform console is for platform operators; membership of any workspace grants nothing there. */
+    public static function notPlatformOperator(): self
+    {
+        return new self('Only a platform operator can do this.');
+    }
+
     /** The caller holds no active membership of any workspace. */
     public static function noActiveWorkspace(): self
     {

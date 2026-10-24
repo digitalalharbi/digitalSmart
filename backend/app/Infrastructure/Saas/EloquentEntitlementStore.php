@@ -7,9 +7,11 @@ namespace App\Infrastructure\Saas;
 use App\Application\Saas\Contract\EntitlementStore;
 use App\Application\Saas\DTO\Entitlements;
 use App\Application\Saas\DTO\OverrideRecord;
+use App\Application\Saas\DTO\SubscriptionState;
 use App\Domain\Saas\Feature;
 use App\Domain\Saas\Limit;
 use App\Domain\Saas\PlanCatalogue;
+use App\Domain\Saas\SubscriptionStatus;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -142,6 +144,53 @@ final class EloquentEntitlementStore implements EntitlementStore
         }
 
         return $out;
+    }
+
+    public function subscription(string $workspaceId): SubscriptionState
+    {
+        $row = DB::table('workspace_subscriptions')->where('workspace_id', $workspaceId)
+            ->first(['status', 'trial_ends_at', 'grace_ends_at', 'status_reason', 'status_changed_at', 'status_changed_by']);
+
+        if (! $row instanceof stdClass) {
+            return new SubscriptionState(SubscriptionStatus::Active, null, null, null, null, null);
+        }
+
+        $date = static fn (mixed $v): ?DateTimeImmutable => $v === null ? null : new DateTimeImmutable((string) $v);
+
+        return new SubscriptionState(
+            SubscriptionStatus::from((string) $row->status),
+            $date($row->trial_ends_at),
+            $date($row->grace_ends_at),
+            $row->status_reason === null ? null : (string) $row->status_reason,
+            $date($row->status_changed_at),
+            $row->status_changed_by === null ? null : (string) $row->status_changed_by,
+        );
+    }
+
+    public function changeStatus(
+        string $workspaceId,
+        SubscriptionStatus $status,
+        ?DateTimeImmutable $trialEndsAt,
+        ?DateTimeImmutable $graceEndsAt,
+        ?string $reason,
+        string $changedBy,
+    ): void {
+        $values = [
+            'status' => $status->value,
+            'trial_ends_at' => $trialEndsAt?->format(DATE_ATOM),
+            'grace_ends_at' => $graceEndsAt?->format(DATE_ATOM),
+            'status_reason' => $reason,
+            'status_changed_at' => now(),
+            'status_changed_by' => $changedBy,
+            'updated_at' => now(),
+        ];
+
+        if (DB::table('workspace_subscriptions')->where('workspace_id', $workspaceId)->exists()) {
+            DB::table('workspace_subscriptions')->where('workspace_id', $workspaceId)->update($values);
+        } else {
+            $planId = DB::table('plans')->where('code', (string) config('digitalsmart.saas.default_plan', PlanCatalogue::AGENCY))->value('id');
+            DB::table('workspace_subscriptions')->insert([...$values, 'workspace_id' => $workspaceId, 'plan_id' => $planId, 'assigned_at' => now(), 'assigned_by' => $changedBy, 'created_at' => now()]);
+        }
     }
 
     /** @return list<stdClass> the newest override per key */

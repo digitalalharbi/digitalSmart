@@ -58,6 +58,7 @@ import {
   AccessRequestsPage,
   AccessRequestDetailPage,
   InvitationPage,
+  PlatformPage,
 } from '@/app/router/lazyPages';
 import { SurfaceFallback } from '@/app/router/SurfaceFallback';
 import { PortalLanding, PortalRedirectGuard } from '@/app/router/portalGuards';
@@ -150,6 +151,14 @@ export const routes: RouteObject[] = [
   { path: '/f/:token', element: deferred(<PublicFormPage />) },
   /* A one-time approval link from WhatsApp or email: no session, the link is the credential, and it decides only on a press. */
   { path: '/approve/:token', element: deferred(<ApprovalLinkPage />) },
+  /*
+   * The platform console, outside the workspace shell: an operator runs tenants from outside them, and may belong to no
+   * workspace at all. The server decides who is an operator; the page only declines to draw itself for anybody else.
+   */
+  {
+    path: '/platform',
+    element: <RequireSession>{deferred(<PlatformPage />)}</RequireSession>,
+  },
   {
     path: '/',
     element: (

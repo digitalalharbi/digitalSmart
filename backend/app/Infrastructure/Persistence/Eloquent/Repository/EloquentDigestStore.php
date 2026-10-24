@@ -7,6 +7,7 @@ namespace App\Infrastructure\Persistence\Eloquent\Repository;
 use App\Application\Digest\Contract\DigestStore;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Attention\DigestKind;
+use App\Infrastructure\Saas\RunningWorkspaces;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -33,7 +34,7 @@ final readonly class EloquentDigestStore implements DigestStore
     {
         $out = [];
 
-        foreach (DB::table('workspaces')
+        foreach (RunningWorkspaces::only(DB::table('workspaces'), 'workspaces.id')
             ->when($workspaceId !== null, static fn ($q) => $q->where('id', $workspaceId))
             ->orderBy('id')->get(['id', 'timezone']) as $w) {
             $timezone = is_string($w->timezone) && $w->timezone !== '' ? $w->timezone : 'UTC';

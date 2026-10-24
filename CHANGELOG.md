@@ -4,6 +4,26 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## SaaS program, PR D: a platform console, and a subscription that can pause a workspace without losing it
+
+### Added
+- **Six subscription states** — trial, active, past due, grace, paused (suspended), ended (cancelled). Paused and ended workspaces
+  can be signed in to and read; every write answers `423 workspace_not_writable` with the reason, and syncs, store reads, rules,
+  agents and digests skip them through one SQL expression. Nothing is ever deleted, and nothing moves between states on its own
+  (no billing provider is connected). Every screen in a workspace that is not simply active says so.
+- **Platform operators**: a flag set only by `php artisan platform:operator`, with a name and a reason, audited against no
+  workspace. An operator holds no membership and sees no tenant data; an owner of every workspace is still refused the console.
+- **The console** (`/platform`, `/api/platform/*`): every workspace with type, plan, state, seats, clients, projects, connections
+  by status, overrides and provisioning status; one workspace's limits, features, overrides and commercial history; and three
+  acts — state, plan, override — each with a reason, recorded in the workspace's own trail under the operator's address.
+- **Creating a workspace** from the console with its roles, plan, trial or active state and owner, in one transaction. An existing
+  account joins as owner on its own password; a new one gets a one-time password shown once. Never from a public request.
+
+### Not built, stated plainly
+- Support impersonation (documented requirements in `docs/PLATFORM.md`); automatic state changes from billing (no provider).
+- A second "Agency Control Center": the existing overview, portfolio, Today, tracking operations and sync monitor already answer
+  each part; the mapping is in `docs/PLATFORM.md`.
+
 ## SaaS program, PR C: plans, features, limits and seats
 
 ### Added

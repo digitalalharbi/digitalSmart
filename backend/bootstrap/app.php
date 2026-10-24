@@ -6,8 +6,11 @@ use App\Application\Identity\Exception\AuthenticationFailed;
 use App\Application\Integration\Exception\ProviderNotConfigured;
 use App\Application\Integration\Exception\ProviderRequestFailed;
 use App\Application\Integration\Exception\ProviderUnavailable;
+use App\Application\Platform\Exception\PlatformRefused;
+use App\Application\Saas\Exception\EntitlementChangeRefused;
 use App\Application\Saas\Exception\FeatureNotEntitled;
 use App\Application\Saas\Exception\QuotaExceeded;
+use App\Application\Saas\Exception\WorkspaceNotWritable;
 use App\Application\Shared\Exception\AuthorizationDenied;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Application\Workspace\Exception\LastOwnerProtected;
@@ -16,6 +19,7 @@ use App\Interface\Console\BuildDigestsCommand;
 use App\Interface\Console\CommissionProvider;
 use App\Interface\Console\DemoAgencyCommand;
 use App\Interface\Console\PerformanceDigestsCommand;
+use App\Interface\Console\PlatformOperatorCommand;
 use App\Interface\Console\PruneExportsCommand;
 use App\Interface\Console\PurgeTrackingCommand;
 use App\Interface\Console\RaiseAccessRequestAlertsCommand;
@@ -62,6 +66,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         SaasPlanCommand::class,
+        PlatformOperatorCommand::class,
         SaasOverrideCommand::class,
         BuildDigestsCommand::class,
         PerformanceDigestsCommand::class,
@@ -179,6 +184,20 @@ return Application::configure(basePath: dirname(__DIR__))
             'feature' => $exception->feature->value,
             'plan' => $exception->planCode,
         ], Response::HTTP_FORBIDDEN));
+
+        /* A workspace that is paused or has ended: readable, not changeable. Names its state and the reason it was given. */
+        $exceptions->render(static fn (WorkspaceNotWritable $exception): Response => response()->json([
+            'message' => $exception->getMessage(),
+            'code' => 'workspace_not_writable',
+            'status' => $exception->status->value,
+            'reason' => $exception->reason,
+        ], Response::HTTP_LOCKED));
+
+        /* An operator's request that cannot be recorded, with what to change. */
+        $exceptions->render(static fn (PlatformRefused|EntitlementChangeRefused $exception): Response => response()->json([
+            'message' => $exception->getMessage(),
+            'code' => 'platform_refused',
+        ], Response::HTTP_UNPROCESSABLE_ENTITY));
 
         /* A limit reached: what was used, what is allowed, and when a monthly limit resets. Nothing existing is touched. */
         $exceptions->render(static fn (QuotaExceeded $exception): Response => response()->json([

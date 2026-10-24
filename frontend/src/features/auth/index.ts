@@ -9,4 +9,4 @@ export {
   useSwitchWorkspaceMutation,
   useSessionQuery,
 } from './api';
-export type { AuthenticatedUser, WorkspaceSummary } from './types';
+export type { AuthenticatedUser, SubscriptionState, WorkspaceSummary } from './types';

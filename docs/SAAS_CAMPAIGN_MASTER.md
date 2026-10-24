@@ -1896,7 +1896,7 @@ Claude Code must keep this section or `docs/RESUME_STATE.md` current after each 
 | A — Tenant Isolation | MERGED | #61 | e0fa0d6 | Matrix + schema guard; 6 findings fixed (one high: cross-tenant project members). `docs/TENANCY.md`, ADR 7. |
 | B — Multi-workspace Identity | IN_REVIEW | (this PR) | — | Revoked memberships kept; workspace type; audited switch; active workspace in its own cookie (fixes an in-flight session race); top-bar switcher. `docs/SAAS.md`. |
 | C — Plans / Entitlements / Seats | IN_REVIEW | (this PR) | — | Feature + Limit catalogues, 4 plans, `feature:` on 74 routes, locked quota claims, idempotent meters, seats, append-only overrides, `saas:plan`/`saas:override`, Plan & usage page. `docs/ENTITLEMENTS.md`. |
-| D — Subscription / Control Plane | NOT_STARTED | — | — | |
+| D — Subscription / Control Plane | IN_REVIEW | (this PR) | — | Six states with write/schedule behaviour, console-only operators, `/platform` console (workspaces, plan, override, state, create), subscription notice. Impersonation not built. `docs/PLATFORM.md`. |
 | E — Campaign Blueprint | NOT_STARTED | — | — | |
 | F — Translation / Preflight | NOT_STARTED | — | — | |
 | G — Provider Creation | NOT_STARTED | — | — | |

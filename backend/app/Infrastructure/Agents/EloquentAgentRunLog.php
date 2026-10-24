@@ -8,6 +8,7 @@ use App\Application\Agents\Contract\AgentRunLog;
 use App\Application\Shared\Contract\Clock;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Operations\ApprovalState;
+use App\Infrastructure\Saas\RunningWorkspaces;
 use Illuminate\Support\Facades\DB;
 
 final readonly class EloquentAgentRunLog implements AgentRunLog
@@ -49,7 +50,8 @@ final readonly class EloquentAgentRunLog implements AgentRunLog
 
     public function workspaces(?string $only): array
     {
-        $query = DB::table('workspaces')->select('id');
+        /* A suspended or cancelled workspace runs no agents and no rules. */
+        $query = RunningWorkspaces::only(DB::table('workspaces')->select('id'), 'workspaces.id');
 
         if ($only !== null) {
             $query->where('id', $only);

@@ -11,6 +11,7 @@ use App\Domain\Access\PermissionSet;
 use App\Domain\Identity\UserId;
 use App\Domain\Workspace\MembershipStatus;
 use App\Domain\Workspace\WorkspaceId;
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use stdClass;
@@ -23,6 +24,7 @@ final class EloquentIdentityReadModel implements IdentityReadModel
             ->select([
                 'id', 'name', 'email', 'locale', 'timezone', 'job_title', 'avatar_path',
                 'must_change_password',
+                'is_platform_operator',
             ])
             ->where('id', $userId->value)
             ->whereNull('deleted_at')
@@ -51,6 +53,8 @@ final class EloquentIdentityReadModel implements IdentityReadModel
                 : $this->permissionsFor($userId, new WorkspaceId($active->id))->slugs(),
             /* Published so the interface can act on it — see `AuthenticatedUser`. */
             mustChoosePassword: (bool) $user->must_change_password,
+            isPlatformOperator: (bool) $user->is_platform_operator,
+            subscription: $active === null ? null : $this->subscriptionOf($active->id),
         );
     }
 
@@ -149,5 +153,17 @@ final class EloquentIdentityReadModel implements IdentityReadModel
     private function avatarUrl(mixed $path): ?string
     {
         return is_string($path) && $path !== '' ? Storage::disk('public')->url($path) : null;
+    }
+
+    /** @return array{status: string, reason: string|null, trial_ends_at: string|null, grace_ends_at: string|null} */
+    private function subscriptionOf(string $workspaceId): array
+    {
+        $row = DB::table('workspace_subscriptions')->where('workspace_id', $workspaceId)
+            ->first(['status', 'status_reason', 'trial_ends_at', 'grace_ends_at']);
+        $date = static fn (mixed $v): ?string => $v === null ? null : (new DateTimeImmutable((string) $v))->format(DATE_ATOM);
+
+        return $row instanceof stdClass
+            ? ['status' => (string) $row->status, 'reason' => $row->status_reason === null ? null : (string) $row->status_reason, 'trial_ends_at' => $date($row->trial_ends_at), 'grace_ends_at' => $date($row->grace_ends_at)]
+            : ['status' => 'active', 'reason' => null, 'trial_ends_at' => null, 'grace_ends_at' => null];
     }
 }

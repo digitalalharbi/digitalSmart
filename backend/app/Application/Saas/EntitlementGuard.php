@@ -10,6 +10,7 @@ use App\Application\Saas\Contract\UsageReader;
 use App\Application\Saas\DTO\Entitlements;
 use App\Application\Saas\Exception\FeatureNotEntitled;
 use App\Application\Saas\Exception\QuotaExceeded;
+use App\Application\Saas\Exception\WorkspaceNotWritable;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Saas\Feature;
@@ -45,6 +46,22 @@ final readonly class EntitlementGuard
         if (! $entitlements->has($feature)) {
             throw new FeatureNotEntitled($feature, $entitlements->planCode);
         }
+    }
+
+    /** Refuse any change in a workspace that is suspended or cancelled. Reading is never refused here. */
+    public function ensureWritable(?string $workspaceId = null): void
+    {
+        $subscription = $this->store->subscription($workspaceId ?? $this->actor->workspaceId()->value);
+
+        if (! $subscription->status->allowsWrites()) {
+            throw new WorkspaceNotWritable($subscription->status, $subscription->reason);
+        }
+    }
+
+    /** Whether syncs, rules, agents and digests should run for this workspace. */
+    public function runsScheduledWork(string $workspaceId): bool
+    {
+        return $this->store->subscription($workspaceId)->status->runsScheduledWork();
     }
 
     /** Refuse when adding `$adding` more would pass the limit. A limit that does not refuse (visitor events) never throws. */

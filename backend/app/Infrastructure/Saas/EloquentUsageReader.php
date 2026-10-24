@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 final readonly class EloquentUsageReader implements UsageReader
 {
     /** The workspace's own agent member is not a person and takes no seat. */
-    private const string AGENT_EMAILS = '%@agents.digitalsmart.invalid';
+    public const string AGENT_EMAILS = '%@agents.digitalsmart.invalid';
 
     public function used(string $workspaceId, Limit $limit, DateTimeImmutable $now): ?int
     {

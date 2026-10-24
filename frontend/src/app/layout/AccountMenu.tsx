@@ -1,7 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { ChevronsUpDown, KeyRound, LogOut } from 'lucide-react';
+import { ChevronsUpDown, KeyRound, LogOut, ServerCog } from 'lucide-react';
 import { useState } from 'react';
 import { PasswordDialog, useLogoutMutation, useSession } from '@/features/auth';
 import { Button } from '@/shared/ui/button';
@@ -86,6 +86,16 @@ export function AccountMenu() {
             <KeyRound className="size-4" aria-hidden="true" />
             {t('account.password.title')}
           </DropdownMenu.Item>
+
+          {user.is_platform_operator === true ? (
+            <DropdownMenu.Item
+              onSelect={() => void navigate('/platform')}
+              className="text-content hover:bg-surface-hover focus:bg-surface-hover flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-none"
+            >
+              <ServerCog className="size-4" aria-hidden="true" />
+              {t('platform.title')}
+            </DropdownMenu.Item>
+          ) : null}
 
           <DropdownMenu.Item
             disabled={logout.isPending}

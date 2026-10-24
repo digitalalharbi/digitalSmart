@@ -132,6 +132,9 @@ use App\Application\Operations\Contract\AttachmentStore;
 use App\Application\Operations\Contract\BoardSignaller;
 use App\Application\Operations\Contract\ClientRequestRepository;
 use App\Application\Operations\Contract\TaskRepository;
+use App\Application\Platform\Contract\PlatformOperators;
+use App\Application\Platform\Contract\PlatformReadModel;
+use App\Application\Platform\Contract\WorkspaceCreator;
 use App\Application\Portal\Contract\PortalRepository;
 use App\Application\Portfolio\Contract\PortfolioReadModel;
 use App\Application\Presentation\Contract\DeckWriter;
@@ -330,6 +333,9 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingSettingsR
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
 use App\Infrastructure\Persistence\RandomOpaqueTokens;
+use App\Infrastructure\Platform\EloquentPlatformOperators;
+use App\Infrastructure\Platform\EloquentPlatformReadModel;
+use App\Infrastructure\Platform\EloquentWorkspaceCreator;
 use App\Infrastructure\Presentation\PptxWriter;
 use App\Infrastructure\Reporting\EloquentReportShareStore;
 use App\Infrastructure\Reporting\EloquentTrackingReportReader;
@@ -609,6 +615,9 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(EntitlementStore::class, EloquentEntitlementStore::class);
         $this->app->bind(UsageReader::class, EloquentUsageReader::class);
         $this->app->bind(CapacityLock::class, PostgresCapacityLock::class);
+        $this->app->bind(PlatformOperators::class, EloquentPlatformOperators::class);
+        $this->app->bind(PlatformReadModel::class, EloquentPlatformReadModel::class);
+        $this->app->bind(WorkspaceCreator::class, EloquentWorkspaceCreator::class);
 
         /* Email and WhatsApp deliveries, in the state they are in: nothing is sent, and the row says why. */
         $this->app->bind(NotificationChannelDelivery::class, static fn (): NotificationChannelDelivery => new HonestChannelDelivery(
