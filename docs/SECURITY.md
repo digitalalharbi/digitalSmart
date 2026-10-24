@@ -286,3 +286,10 @@ an owner or administrator can set a member's password out of band.
 
 Security issues are not filed as public issues. Report them to the Smart Code
 engineering owner directly.
+
+
+## Tenant isolation
+
+Workspace is the tenant; another tenant's identifier is answered as not found. The model, the three defences and the
+executable matrix that holds them are in [`TENANCY.md`](TENANCY.md); row-level security is evaluated in
+[ADR 7](adr/0007-postgresql-row-level-security.md).

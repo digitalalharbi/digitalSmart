@@ -12,7 +12,8 @@ final readonly class LocalExportFileStorage implements ExportFileStorage
 {
     public function put(string $workspaceId, string $id, string $extension, string $bytes): string
     {
-        $path = sprintf('exports/%s/%s.%s', $workspaceId, $id, $extension);
+        /* Under the tenant's own prefix. The stored path is read back as stored, so older files stay readable. */
+        $path = sprintf('workspaces/%s/exports/%s.%s', $workspaceId, $id, $extension);
         Storage::disk('local')->put($path, $bytes);
 
         return $path;

@@ -11,7 +11,6 @@ use App\Application\Reporting\Command\SaveReport;
 use App\Application\Reporting\Command\ShareReport;
 use App\Application\Reporting\Command\TakeSnapshot;
 use App\Application\Reporting\Contract\ReportRepository;
-use App\Application\Reporting\Contract\ReportShareStore;
 use App\Application\Reporting\Contract\ReportWorkbookWriter;
 use App\Application\Reporting\DTO\ReportDefinition;
 use App\Application\Reporting\DTO\SectionDefinition;
@@ -20,6 +19,7 @@ use App\Application\Reporting\Query\GetReport;
 use App\Application\Reporting\Query\ListReports;
 use App\Application\Reporting\Query\ListReportShares;
 use App\Application\Reporting\Query\ListReportSnapshots;
+use App\Application\Reporting\Query\ReadReportHistory;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
 use App\Domain\Analytics\Dimension;
@@ -153,12 +153,9 @@ final class ReportController extends Controller
         );
     }
 
-    public function snapshots(
-        string $report,
-        ReportRepository $reports,
-        ActorContext $actor,
-    ): JsonResponse {
-        $snapshots = $reports->snapshots($actor->workspaceId()->value, $report, 50);
+    public function snapshots(string $report, ReadReportHistory $history): JsonResponse
+    {
+        $snapshots = $history->snapshots($report);
 
         return response()->json([
             'data' => array_map(static fn (array $snapshot): array => [
@@ -195,18 +192,14 @@ final class ReportController extends Controller
         ]);
     }
 
-    public function shares(
-        string $report,
-        ReportShareStore $shares,
-        ActorContext $actor,
-        Clock $clock,
-    ): JsonResponse {
+    public function shares(string $report, ReadReportHistory $history, Clock $clock): JsonResponse
+    {
         $now = $clock->now();
 
         return response()->json([
             'data' => array_map(
                 static fn (ShareView $share): array => ReportResource::share($share, $now),
-                $shares->forReport($actor->workspaceId()->value, $report),
+                $history->shares($report),
             ),
         ]);
     }

@@ -38,7 +38,8 @@ final readonly class LocalAttachmentStore implements AttachmentStore
 
     public function put(string $workspaceId, string $contents, string $extension): string
     {
-        $name = sprintf('client-requests/%s/%s.%s', $workspaceId, $this->ids->generate(), $extension);
+        /* Under the tenant's own prefix, like every file this product writes. Older rows keep the path they were stored with. */
+        $name = sprintf('workspaces/%s/client-requests/%s.%s', $workspaceId, $this->ids->generate(), $extension);
 
         $this->filesystem->disk($this->disk)->put($name, $contents);
 

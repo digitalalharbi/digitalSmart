@@ -474,6 +474,22 @@ describe('webhook arrivals', function (): void {
             ->and(DB::table('store_webhook_events')->count())->toBe(1);
     });
 
+    it('keeps one workspace’s event id from swallowing the same event delivered to another workspace', function (): void {
+        $journal = app(WebhookEventJournal::class);
+        $agencyA = (string) WorkspaceScenario::create('Agency A')->workspace->getKey();
+        $agencyB = (string) WorkspaceScenario::create('Agency B')->workspace->getKey();
+
+        /* Two agencies registered the same shop, each with its own app; the platform sends both the same event. */
+        $a = $journal->record($agencyA, Provider::Salla, 'order.created', 'evt-shared', ['order' => ['id' => 1]], signatureVerified: true);
+        $b = $journal->record($agencyB, Provider::Salla, 'order.created', 'evt-shared', ['order' => ['id' => 1]], signatureVerified: true);
+        $again = $journal->record($agencyB, Provider::Salla, 'order.created', 'evt-shared', ['order' => ['id' => 1]], signatureVerified: true);
+
+        expect($a)->not->toBeNull()
+            ->and($b)->not->toBeNull()
+            ->and($again)->toBeNull()
+            ->and(DB::table('store_webhook_events')->where('external_event_id', 'evt-shared')->count())->toBe(2);
+    });
+
     it('records an unverified payload as rejected rather than discarding it', function (): void {
         $setup = commerceScenario();
 
