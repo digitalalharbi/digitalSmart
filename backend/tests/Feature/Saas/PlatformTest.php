@@ -50,7 +50,7 @@ it('lets only an operator into the console, and an operator gets nothing inside 
     platformAs($owner)->getJson('/api/platform/workspaces')->assertForbidden();
 
     $response = platformAs($operator)->getJson('/api/platform/workspaces?search=tenant one')->assertOk();
-    $row = collect($response->json('data'))->firstWhere('id', $workspace->getKey());
+    $row = collect((array) $response->json('data'))->firstWhere('id', $workspace->getKey());
 
     expect($row)->toMatchArray(['plan' => 'agency', 'status' => 'active', 'owners' => 1, 'clients' => 1, 'provisioning' => 'complete'])
         ->and($row['seats'])->toBe(['internal' => 1, 'client' => 0])
@@ -135,5 +135,5 @@ it('changes a plan and an override from the console, named after the operator', 
 
     $detail = platformAs($operator)->getJson("/api/platform/workspaces/{$id}")->assertOk();
     $detail->assertJsonPath('data.plan', 'starter')->assertJsonPath('data.overrides', 1)->assertJsonPath('data.plan_detail.overrides.0.changed_by', $operator->getAttribute('email'));
-    expect(collect($detail->json('data.plan_detail.features'))->firstWhere('key', 'automation')['enabled'])->toBeTrue();
+    expect(collect((array) $detail->json('data.plan_detail.features'))->firstWhere('key', 'automation')['enabled'])->toBeTrue();
 });
