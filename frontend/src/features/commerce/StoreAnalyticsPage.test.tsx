@@ -24,11 +24,13 @@ vi.mock('@/features/clients', () => ({
 const state = vi.hoisted(() => ({
   analytics: null as StoreAnalytics | null,
   lastSource: null as string | null,
+  lastQuery: null as Record<string, unknown> | null,
 }));
 
 vi.mock('./api', () => ({
   fetchStoreAnalytics: (query: { revenue_source: string }) => {
     state.lastSource = query.revenue_source;
+    state.lastQuery = { ...query };
 
     return Promise.resolve(state.analytics);
   },
@@ -121,6 +123,92 @@ function analytics(overrides: Partial<StoreAnalytics> = {}): StoreAnalytics {
 beforeEach(() => {
   state.analytics = analytics();
   state.lastSource = null;
+  state.lastQuery = null;
+});
+
+describe('trends and the previous period', () => {
+  const comparison = (overrides: Partial<NonNullable<StoreAnalytics['comparison']>> = {}) => ({
+    previous: {
+      from: '2026-09-01',
+      until: '2026-09-30',
+      orders: 4,
+      net_revenue_minor: 100_000,
+      average_order_value_minor: 25_000,
+    },
+    change: { orders_pct: 25, net_revenue_pct: -10.5, average_order_value_pct: null },
+    unavailable_reason: null,
+    ...overrides,
+  });
+
+  it('asks for the day grain and the previous period unless told otherwise', async () => {
+    await renderWithProviders(<StoreAnalyticsPage />);
+    await screen.findByText(/Salla invoiced this money/);
+
+    expect(state.lastQuery).toMatchObject({ grain: 'day', compare: 'previous' });
+  });
+
+  it('asks for a week when week is chosen', async () => {
+    await renderWithProviders(<StoreAnalyticsPage />);
+    await screen.findByText(/Salla invoiced this money/);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Week' }));
+
+    await screen.findByText(/Salla invoiced this money/);
+    expect(state.lastQuery).toMatchObject({ grain: 'week' });
+  });
+
+  it('shows the server’s change on the cards, and nothing where the server sent none', async () => {
+    state.analytics = analytics({ comparison: comparison() });
+    await renderWithProviders(<StoreAnalyticsPage />);
+
+    const cards = await screen.findByLabelText('Revenue summary');
+
+    // Orders up a quarter, net revenue down ten and a half per cent; the average has no change, so it carries no badge.
+    expect(within(cards).getByText(/25(\.0)?%/)).toBeInTheDocument();
+    expect(within(cards).getByText(/10\.5%/)).toBeInTheDocument();
+    expect(screen.getByTestId('comparison-basis')).toHaveTextContent('2026-09-01 to 2026-09-30');
+  });
+
+  it('says why there is no change instead of showing a flat badge', async () => {
+    state.analytics = analytics({
+      comparison: comparison({
+        change: { orders_pct: null, net_revenue_pct: null, average_order_value_pct: null },
+        unavailable_reason: 'before_the_data',
+      }),
+    });
+    await renderWithProviders(<StoreAnalyticsPage />);
+
+    expect(await screen.findByText(/store was not being read/)).toBeInTheDocument();
+    expect(screen.queryByTestId('comparison-basis')).not.toBeInTheDocument();
+  });
+
+  it('marks a bucket the period cuts through, in a note', async () => {
+    state.analytics = analytics({
+      series: {
+        grain: 'week',
+        week_starts_on: 'monday',
+        points: [
+          {
+            date: '2026-09-28',
+            orders: 1,
+            net_revenue_minor: 10_000,
+            refunded_minor: 0,
+            is_partial: true,
+          },
+          {
+            date: '2026-10-05',
+            orders: 2,
+            net_revenue_minor: 20_000,
+            refunded_minor: 0,
+            is_partial: false,
+          },
+        ],
+      },
+    });
+    await renderWithProviders(<StoreAnalyticsPage />);
+
+    expect(await screen.findByTestId('partial-note')).toHaveTextContent('Weeks begin on Monday');
+  });
 });
 
 describe('new versus returning customers', () => {
