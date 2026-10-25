@@ -71,6 +71,37 @@ final readonly class StoreAnalyticsResource
                 'refunded_minor' => $point->refundedMinor,
             ], $view->daily),
             /*
+             * The trend at its grain, each point dated by the first day of its bucket in the store's own calendar. `is_partial`
+             * marks the week or month the period cuts through: a short bucket beside whole ones reads as a fall if it is not flagged.
+             * Weeks begin on Monday. Absent for an audience that reads the daily series.
+             */
+            ...($view->series === null ? [] : ['series' => [
+                'grain' => $view->series->grain->value,
+                'week_starts_on' => 'monday',
+                'points' => array_map(static fn (DailyRevenuePoint $point): array => [
+                    'date' => $point->date,
+                    'orders' => $point->orders,
+                    'net_revenue_minor' => $point->netRevenueMinor,
+                    'refunded_minor' => $point->refundedMinor,
+                    'is_partial' => $point->isPartial,
+                ], $view->series->points),
+            ]]),
+            /*
+             * Against the same number of days immediately before. Absent unless asked for; when the period before has no sales the
+             * changes are null and `unavailable_reason` says whether the store sold nothing then or was not being read yet.
+             */
+            ...($view->comparison === null ? [] : ['comparison' => [
+                'previous' => [
+                    'from' => $view->comparison->previousFrom,
+                    'until' => $view->comparison->previousUntil,
+                    'orders' => $view->comparison->previousOrders,
+                    'net_revenue_minor' => $view->comparison->previousNetRevenueMinor,
+                    'average_order_value_minor' => $view->comparison->previousAverageOrderValueMinor,
+                ],
+                'change' => $view->comparison->changeFrom($summary),
+                'unavailable_reason' => $view->comparison->reason,
+            ]]),
+            /*
              * The new-versus-returning mix, with its three buckets and the reason there is no share when there is
              * none. `new_share` is **null** rather than computed whenever too much of the period belongs to
              * customers who were buying before this store was connected — a share over a denominator that is

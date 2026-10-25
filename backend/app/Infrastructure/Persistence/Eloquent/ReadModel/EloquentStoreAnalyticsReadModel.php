@@ -8,13 +8,16 @@ use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
 use App\Application\Commerce\DTO\CustomerMix;
 use App\Application\Commerce\DTO\DailyRevenuePoint;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
+use App\Application\Commerce\DTO\StoreComparison;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Commerce\DTO\StoreRevenueSummary;
 use App\Application\Commerce\DTO\StoreRollupRow;
+use App\Application\Commerce\DTO\TrendSeries;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Commerce\AttributionEvidence;
 use App\Domain\Commerce\CustomerRecency;
 use App\Domain\Commerce\PaymentState;
+use App\Domain\Commerce\TrendGrain;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -355,6 +358,109 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
         }
 
         return $points;
+    }
+
+    public function series(StoreQuery $query): TrendSeries
+    {
+        $day = self::localDay('o.placed_at');
+        $bucket = match ($query->grain) {
+            TrendGrain::Day => $day,
+            // ISO weeks, beginning on Monday, cut in the store's own calendar like everything else.
+            TrendGrain::Week => "date_trunc('week', {$day})::date",
+            TrendGrain::Month => "date_trunc('month', {$day})::date",
+        };
+
+        $rows = $this->scope($query)
+            ->whereIn('o.payment_state', self::REVENUE_STATES)
+            ->selectRaw(
+                "to_char({$bucket}, 'YYYY-MM-DD') as bucket, "
+                .'count(*) as orders, '
+                .'coalesce(sum(o.total_minor - o.refunded_minor), 0) as net_revenue, '
+                .'coalesce(sum(o.refunded_minor), 0) as refunded'
+            )
+            ->groupBy('bucket')
+            ->orderBy('bucket')
+            ->get();
+
+        $from = $query->from->format('Y-m-d');
+        $until = $query->until->format('Y-m-d');
+        $points = [];
+
+        foreach ($rows as $row) {
+            /** @var array<string, mixed> $values */
+            $values = (array) $row;
+            $start = (string) ($values['bucket'] ?? '');
+            $last = match ($query->grain) {
+                TrendGrain::Day => $start,
+                TrendGrain::Week => (new DateTimeImmutable($start))->modify('+6 days')->format('Y-m-d'),
+                TrendGrain::Month => (new DateTimeImmutable($start))->modify('last day of this month')->format('Y-m-d'),
+            };
+
+            $points[] = new DailyRevenuePoint(
+                date: $start,
+                orders: (int) ($values['orders'] ?? 0),
+                netRevenueMinor: (int) ($values['net_revenue'] ?? 0),
+                refundedMinor: (int) ($values['refunded'] ?? 0),
+                // A day is never partial. A week or month is, when the period begins after its first day or ends before its last.
+                isPartial: $query->grain !== TrendGrain::Day && ($start < $from || $last > $until),
+            );
+        }
+
+        return new TrendSeries($query->grain, $points);
+    }
+
+    public function comparison(StoreQuery $query): StoreComparison
+    {
+        $first = $query->from->setTime(0, 0);
+        $days = (int) $first->diff($query->until->setTime(0, 0))->days + 1;
+        $previousUntil = $first->modify('-1 day');
+        $previousFrom = $previousUntil->modify('-'.($days - 1).' days');
+
+        $previous = new StoreQuery(
+            workspaceId: $query->workspaceId,
+            revenueSource: $query->revenueSource,
+            from: $previousFrom,
+            until: $previousUntil->setTime(23, 59, 59),
+            visibleProjectIds: $query->visibleProjectIds,
+            clientId: $query->clientId,
+            storeId: $query->storeId,
+        );
+
+        /** @var object{orders: int|string|null, net: int|string|null}|null $totals */
+        $totals = $this->scope($previous)
+            ->whereIn('o.payment_state', self::REVENUE_STATES)
+            ->selectRaw('count(*) as orders, coalesce(sum(o.total_minor - o.refunded_minor), 0) as net')
+            ->first();
+        $orders = (int) ($totals->orders ?? 0);
+        $net = (int) ($totals->net ?? 0);
+
+        $reason = null;
+
+        if ($orders === 0) {
+            // Nothing in the period before: either the store sold nothing then, or it was not being read yet. Different statements.
+            $history = new StoreQuery(
+                workspaceId: $query->workspaceId,
+                revenueSource: $query->revenueSource,
+                from: new DateTimeImmutable('1970-01-01'),
+                until: $previousUntil->setTime(23, 59, 59),
+                visibleProjectIds: $query->visibleProjectIds,
+                clientId: $query->clientId,
+                storeId: $query->storeId,
+            );
+
+            $reason = $this->scope($history)->whereIn('o.payment_state', self::REVENUE_STATES)->exists()
+                ? StoreComparison::NOTHING_SOLD
+                : StoreComparison::BEFORE_THE_DATA;
+        }
+
+        return new StoreComparison(
+            previousFrom: $previousFrom->format('Y-m-d'),
+            previousUntil: $previousUntil->format('Y-m-d'),
+            previousOrders: $orders,
+            previousNetRevenueMinor: $net,
+            previousAverageOrderValueMinor: $orders > 0 ? intdiv($net, $orders) : null,
+            reason: $reason,
+        );
     }
 
     public function customerMix(StoreQuery $query): CustomerMix

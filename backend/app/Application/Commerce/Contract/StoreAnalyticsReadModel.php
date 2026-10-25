@@ -7,9 +7,11 @@ namespace App\Application\Commerce\Contract;
 use App\Application\Commerce\DTO\CustomerMix;
 use App\Application\Commerce\DTO\DailyRevenuePoint;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
+use App\Application\Commerce\DTO\StoreComparison;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Commerce\DTO\StoreRevenueSummary;
 use App\Application\Commerce\DTO\StoreRollupRow;
+use App\Application\Commerce\DTO\TrendSeries;
 
 /**
  * Reading what a client's stores sold.
@@ -88,4 +90,10 @@ interface StoreAnalyticsReadModel
      * @return list<StoreRollupRow>
      */
     public function byStore(StoreQuery $query): array;
+
+    /** Revenue at the query's grain, each bucket flagged partial where the period cuts through it. */
+    public function series(StoreQuery $query): TrendSeries;
+
+    /** The same number of days immediately before the period, in the store's own calendar. */
+    public function comparison(StoreQuery $query): StoreComparison;
 }

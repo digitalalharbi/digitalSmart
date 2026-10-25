@@ -37,5 +37,9 @@ final readonly class StoreAnalyticsView
         public CustomerMix $customerMix,
         public DateTimeImmutable $from,
         public DateTimeImmutable $until,
+        /** Null where the audience was not given a trend of its own: the client portal reads the daily series. */
+        public ?TrendSeries $series = null,
+        /** Null unless the previous period was asked for. */
+        public ?StoreComparison $comparison = null,
     ) {}
 }
