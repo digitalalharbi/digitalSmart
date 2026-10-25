@@ -2741,6 +2741,21 @@
       "pending": "Pending",
       "refunds": "Refunded",
       "attributed": "Attributed revenue"
+    },
+    "grain": {
+      "label": "Trend by",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "partial": "partial",
+      "partialNote": "The first or last {{grain}} only partly falls inside the period, so it holds fewer days than the others and is not comparable with them. Weeks begin on Monday."
+    },
+    "comparison": {
+      "basis": "Changes are against the previous {{days}} days ({{from}} to {{until}}).",
+      "reasons": {
+        "nothing_sold_before": "Nothing was sold in the {{days}} days before this period, so there is no change to show.",
+        "before_the_data": "The store was not being read in the {{days}} days before this period, so there is nothing to compare it with."
+      }
     }
   },
   "chart": {
