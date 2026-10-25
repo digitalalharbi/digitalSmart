@@ -17,6 +17,7 @@ use App\Domain\Integration\Provider;
 use App\Infrastructure\Persistence\Eloquent\Model\Client;
 use App\Infrastructure\Persistence\Eloquent\Model\Project;
 use App\Infrastructure\Persistence\Eloquent\Model\Store;
+use Illuminate\Support\Facades\DB;
 use Tests\Support\WorkspaceScenario;
 
 /*
@@ -599,7 +600,8 @@ describe('access', function (): void {
     it('includes an order placed on the last day of the window', function (): void {
         $setup = analyticsScenario();
 
-        writeOrders($setup, [analyticsOrder('last-1', 50_000, placedAt: '2026-10-31 22:30:00')]);
+        // 20:30 UTC on 31 October is 23:30 that evening in the store's own calendar (Riyadh, UTC+3).
+        writeOrders($setup, [analyticsOrder('last-1', 50_000, placedAt: '2026-10-31 20:30:00')]);
 
         $data = fetchAnalytics($setup);
 
@@ -802,4 +804,182 @@ describe('new versus returning customers', function (): void {
         // A split that only mentioned "we cannot tell" when it was large would teach a reader it never happens.
         expect($buckets)->toBe(['new', 'returning', 'unknown']);
     });
+});
+
+/*
+|--------------------------------------------------------------------------
+| The store's own day (DS-UC-202)
+|--------------------------------------------------------------------------
+|
+| Instants are stored as UTC. A store sells in its own calendar, so a period is cut in the store's own time zone: "2 October" for a
+| Riyadh store runs from 21:00 UTC on 1 October. Before this the period and the daily series were cut at UTC midnight, which moved the
+| first three hours of every Riyadh day onto the day before — and moved a month's first evening into the previous month.
+|
+*/
+
+/** @return array{scenario: WorkspaceScenario, client: Client, project: Project, store: Store} */
+function dayCutScenario(?string $timezone = 'Asia/Riyadh'): array
+{
+    $setup = analyticsScenario();
+    $setup['store']->forceFill(['timezone' => $timezone])->save();
+
+    return $setup;
+}
+
+/**
+ * @param  array<string, mixed>  $data
+ * @return array<string, int>
+ */
+function ordersByDay(array $data): array
+{
+    /** @var list<array{date: string, orders: int}> $daily */
+    $daily = $data['daily'];
+
+    return array_column($daily, 'orders', 'date');
+}
+
+describe('the store’s own day', function (): void {
+    it('puts the first evening hours of a Riyadh day on that day, not the day before', function (): void {
+        $setup = dayCutScenario();
+        // 22:30 UTC on 1 October is 01:30 on 2 October in Riyadh.
+        writeOrders($setup, [analyticsOrder('late', 10_000, placedAt: '2026-10-01 22:30:00')]);
+
+        expect(ordersByDay(fetchAnalytics($setup)))->toBe(['2026-10-02' => 1]);
+    });
+
+    it('includes that order in 2 October and not in 1 October when the period is a single day', function (): void {
+        $setup = dayCutScenario();
+        writeOrders($setup, [analyticsOrder('late', 10_000, placedAt: '2026-10-01 22:30:00')]);
+
+        $second = fetchAnalytics($setup, ['from' => '2026-10-02', 'until' => '2026-10-02']);
+        $first = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-01']);
+
+        expect($second['summary']['orders'])->toBe(1)->and($first['summary']['orders'])->toBe(0);
+    });
+
+    it('cuts exactly at the store’s local midnight', function (): void {
+        $setup = dayCutScenario();
+        writeOrders($setup, [
+            // 20:59:59 UTC is 23:59:59 on 1 October in Riyadh; 21:00:00 UTC is 00:00:00 on 2 October.
+            analyticsOrder('last-second', 10_000, placedAt: '2026-10-01 20:59:59'),
+            analyticsOrder('first-second', 20_000, placedAt: '2026-10-01 21:00:00'),
+        ]);
+
+        expect(ordersByDay(fetchAnalytics($setup)))->toBe(['2026-10-01' => 1, '2026-10-02' => 1]);
+    });
+
+    it('moves a month’s first Riyadh evening into that month', function (): void {
+        $setup = dayCutScenario();
+        writeOrders($setup, [analyticsOrder('october-first', 10_000, placedAt: '2026-09-30 21:30:00')]);
+
+        $october = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-31']);
+        $september = fetchAnalytics($setup, ['from' => '2026-09-01', 'until' => '2026-09-30']);
+
+        expect($october['summary']['orders'])->toBe(1)->and($september['summary']['orders'])->toBe(0);
+    });
+
+    it('cuts a store with no time zone at UTC midnight', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [analyticsOrder('late', 10_000, placedAt: '2026-10-01 22:30:00')]);
+
+        expect(ordersByDay(fetchAnalytics($setup)))->toBe(['2026-10-01' => 1]);
+    });
+
+    it('cuts each store in its own zone when a client has stores in two', function (): void {
+        $setup = dayCutScenario();
+        /** @var Store $dubai */
+        $dubai = Store::query()->create([
+            'workspace_id' => $setup['scenario']->workspace->getKey(), 'client_id' => $setup['client']->getKey(),
+            'provider' => Provider::Salla->value, 'external_id' => 'store-dubai', 'name' => 'Dubai', 'currency' => 'SAR',
+            'timezone' => 'Asia/Dubai',
+        ]);
+        writeOrders($setup, [analyticsOrder('riyadh', 10_000, placedAt: '2026-10-01 21:30:00')]);
+        app(CommerceStore::class)->upsertOrders(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $dubai->getKey(),
+            [analyticsOrder('dubai', 10_000, placedAt: '2026-10-01 21:30:00')],
+            RevenueSource::Salla,
+            MetricSource::Synced,
+        );
+
+        // 21:30 UTC is 00:30 on 2 October in Riyadh (+3) but 01:30 on 2 October in Dubai (+4): both on the 2nd, each by its own rule.
+        expect(ordersByDay(fetchAnalytics($setup)))->toBe(['2026-10-02' => 2]);
+        // And 20:30 UTC is 23:30 on the 1st in Riyadh but 00:30 on the 2nd in Dubai: split across two days.
+        writeOrders($setup, [analyticsOrder('riyadh-early', 5_000, placedAt: '2026-10-01 20:30:00')]);
+        app(CommerceStore::class)->upsertOrders(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $dubai->getKey(),
+            [analyticsOrder('dubai-early', 5_000, placedAt: '2026-10-01 20:30:00')],
+            RevenueSource::Salla,
+            MetricSource::Synced,
+        );
+        expect(ordersByDay(fetchAnalytics($setup)))->toBe(['2026-10-01' => 1, '2026-10-02' => 3]);
+    });
+
+    it('keeps the summary, the ledger and the daily series on one calendar', function (): void {
+        $setup = dayCutScenario();
+        writeOrders($setup, [
+            analyticsOrder('a', 10_000, placedAt: '2026-10-01 20:30:00'),
+            analyticsOrder('b', 20_000, placedAt: '2026-10-01 21:30:00'),
+            analyticsOrder('c', 40_000, placedAt: '2026-10-31 20:30:00'),
+            analyticsOrder('d', 80_000, placedAt: '2026-10-31 21:30:00'),
+        ]);
+
+        $data = fetchAnalytics($setup);
+
+        // 31 October 21:30 UTC is 1 November in Riyadh, so it is outside October; 1 October 20:30 UTC is still 1 October inside it.
+        expect($data['summary']['orders'])->toBe(3)
+            ->and(array_sum(ordersByDay($data)))->toBe(3)
+            ->and(array_sum(array_column($data['daily'], 'net_revenue_minor')))->toBe($data['summary']['net_revenue_minor'])
+            ->and($data['summary']['net_revenue_minor'])->toBe(70_000);
+    });
+
+    it('classifies a customer new or returning by the store’s own day', function (): void {
+        $setup = dayCutScenario();
+        app(CommerceStore::class)->upsertCustomers(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['store']->getKey(),
+            [new CustomerRecord(externalId: 'cust-0', name: 'Layla'), new CustomerRecord(externalId: 'cust-1', name: 'Omar')],
+        );
+        $first = new OrderRecord(
+            externalId: 'first', paymentState: PaymentState::Paid, fulfilmentState: FulfilmentState::Delivered, currency: 'SAR',
+            totalMinor: 10_000, placedAt: new DateTimeImmutable('2026-09-30 21:30:00'), attribution: OrderAttribution::none(),
+            customerExternalId: 'cust-1',
+        );
+        $earlier = new OrderRecord(
+            externalId: 'earlier', paymentState: PaymentState::Paid, fulfilmentState: FulfilmentState::Delivered, currency: 'SAR',
+            totalMinor: 5_000, placedAt: new DateTimeImmutable('2026-08-15 10:00:00'), attribution: OrderAttribution::none(),
+            customerExternalId: 'cust-0',
+        );
+        writeOrders($setup, [$earlier, $first]);
+        app(CommerceStore::class)->recalculateCustomerTotals(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['store']->getKey(),
+        );
+
+        $mix = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-31'])['customer_mix'];
+
+        // cust-1's first order is 00:30 on 1 October in Riyadh: new this month, not a September customer.
+        expect($mix['new_customers'])->toBe(1)->and($mix['returning_customers'])->toBe(0);
+    });
+
+    it('stores a real zone name, and nothing for a name it does not know', function (string $given, ?string $stored): void {
+        $setup = analyticsScenario();
+
+        $view = app(App\Application\Commerce\Contract\StoreDirectory::class)->register(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['client']->getKey(),
+            Provider::Zid,
+            new App\Application\Commerce\DTO\StoreRecord(externalId: 'tz-'.md5($given), name: 'Zone', currency: 'SAR', timezone: $given),
+            null,
+        );
+
+        // A name the database does not know would fail every analytics query for the client, and it comes from a provider's payload.
+        expect($view)->not->toBeNull()
+            ->and(DB::table('stores')->where('external_id', 'tz-'.md5($given))->value('timezone'))->toBe($stored);
+    })->with([
+        'a real zone' => ['Asia/Riyadh', 'Asia/Riyadh'],
+        'an invented one' => ['Mars/Olympus_Mons', null],
+        'an offset, which is not a zone name' => ['+03:00', null],
+    ]);
 });

@@ -126,11 +126,11 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
         }
 
         $sales = DB::table('store_orders as o')
+            ->join('stores as os', 'os.id', '=', 'o.store_id')
             ->where('o.workspace_id', $query->workspaceId)
-            ->where('o.revenue_source', $query->revenueSource->value)
-            ->where('o.placed_at', '>=', $query->from)
-            ->where('o.placed_at', '<=', $query->until)
-            ->whereIn('o.payment_state', self::REVENUE_STATES)
+            ->where('o.revenue_source', $query->revenueSource->value);
+        $this->withinPeriod($sales, $query, 'os');
+        $sales->whereIn('o.payment_state', self::REVENUE_STATES)
             ->groupBy('o.store_id')
             ->selectRaw(
                 'o.store_id, count(*) as orders, coalesce(sum(o.total_minor), 0) as revenue, '
@@ -331,7 +331,7 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
         $rows = $this->scope($query)
             ->whereIn('o.payment_state', self::REVENUE_STATES)
             ->selectRaw(
-                "to_char(o.placed_at, 'YYYY-MM-DD') as date, "
+                'to_char('.self::localDay('o.placed_at').", 'YYYY-MM-DD') as date, "
                 .'count(*) as orders, '
                 .'coalesce(sum(o.total_minor - o.refunded_minor), 0) as net_revenue, '
                 .'coalesce(sum(o.refunded_minor), 0) as refunded'
@@ -401,14 +401,14 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
                  * first recorded order *is* the earliest order in the data is exactly the ambiguous case.
                  */
                 .($boundary === null ? '' : 'when c.first_order_at <= ? then ? ')
-                .'when c.first_order_at >= ? then ? '
+                .'when '.self::localDay('c.first_order_at').' >= ?::date then ? '
                 .'else ? end as recency, '
                 .'count(distinct o.store_customer_id) as customers, '
                 .'coalesce(sum(o.total_minor - o.refunded_minor), 0) as revenue',
                 $boundary === null
                     ? [
                         CustomerRecency::Unknown->value,
-                        $query->from,
+                        $query->from->format('Y-m-d'),
                         CustomerRecency::New->value,
                         CustomerRecency::Returning->value,
                     ]
@@ -416,7 +416,7 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
                         CustomerRecency::Unknown->value,
                         $boundary,
                         CustomerRecency::Unknown->value,
-                        $query->from,
+                        $query->from->format('Y-m-d'),
                         CustomerRecency::New->value,
                         CustomerRecency::Returning->value,
                     ],
@@ -447,6 +447,36 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
     }
 
     /**
+     * A stored instant (UTC) as the calendar day it falls on in its store's own time zone.
+     *
+     * `stores.timezone` is validated where it is written (`EloquentStoreDirectory`), so it is a real zone name or null; null is UTC.
+     * `$column` is always one of this class's own column names, never request input.
+     */
+    private static function localDay(string $column): string
+    {
+        return "(({$column} AT TIME ZONE 'UTC') AT TIME ZONE coalesce(s.timezone, 'UTC'))::date";
+    }
+
+    /**
+     * Keep only orders placed on a day inside the period **in the store's own calendar**.
+     *
+     * The period is two dates. For a Riyadh store 2 October runs from 21:00 UTC on 1 October, so cutting at UTC midnight put the first
+     * three hours of every day on the day before. The coarse bounds beside the exact predicate are only for the index on `placed_at`:
+     * no zone is further than 14 hours from UTC, so a day either side of the period can never hide a matching order.
+     *
+     * @param  string  $stores  the alias of the stores table the zone is read from
+     */
+    private function withinPeriod(Builder $builder, StoreQuery $query, string $stores = 's'): Builder
+    {
+        $local = str_replace('s.timezone', "{$stores}.timezone", self::localDay('o.placed_at'));
+
+        return $builder
+            ->where('o.placed_at', '>=', $query->from->modify('-1 day'))
+            ->where('o.placed_at', '<=', $query->until->modify('+1 day'))
+            ->whereRaw("{$local} between ?::date and ?::date", [$query->from->format('Y-m-d'), $query->until->format('Y-m-d')]);
+    }
+
+    /**
      * The base query: this workspace, this authority, this window, these stores.
      *
      * Visibility is applied in SQL rather than by filtering results, so a store outside the actor's
@@ -458,9 +488,8 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
             ->join('stores as s', 's.id', '=', 'o.store_id')
             ->where('o.workspace_id', $query->workspaceId)
             // One authority per answer. Without this a Salla figure and a Zid figure would sum.
-            ->where('o.revenue_source', $query->revenueSource->value)
-            ->where('o.placed_at', '>=', $query->from)
-            ->where('o.placed_at', '<=', $query->until);
+            ->where('o.revenue_source', $query->revenueSource->value);
+        $this->withinPeriod($builder, $query);
 
         if ($query->clientId !== null) {
             $builder->where('s.client_id', $query->clientId);
