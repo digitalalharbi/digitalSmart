@@ -100,9 +100,23 @@ for (const locale of ['ar', 'en'] as const) {
       expect(box).not.toBeNull();
       expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(812 + 1);
 
-      for (const target of await bar.locator('a, button').all()) {
+      /*
+       * Counted, then each one waited for and measured by position. A snapshot of locators taken with `.all()` and measured later
+       * read a null box (0 × 0) once in CI when the bar re-rendered between the two — a target that is not there reads as a target
+       * of no size. Waiting for each to be visible first turns that into a retry, and a target that stays hidden still fails, now
+       * naming itself.
+       */
+      const targets = bar.locator('a, button');
+      await expect(targets.first()).toBeVisible();
+
+      for (let index = 0; index < (await targets.count()); index++) {
+        const target = targets.nth(index);
+        await expect(target, `bar target ${index + 1}`).toBeVisible();
         const size = await target.boundingBox();
-        expect(Math.min(size?.width ?? 0, size?.height ?? 0)).toBeGreaterThanOrEqual(43.5);
+        expect(
+          Math.min(size?.width ?? 0, size?.height ?? 0),
+          `bar target ${index + 1} is a thumb's size`,
+        ).toBeGreaterThanOrEqual(43.5);
       }
 
       /* A tap on an area goes there. */

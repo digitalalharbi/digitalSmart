@@ -1900,7 +1900,7 @@ Claude Code must keep this section or `docs/RESUME_STATE.md` current after each 
 | E — Campaign Blueprint | MERGED | #65 | 4a45f81 | Kept, stateful plans (12 states, versioned) referencing bound accounts, tracking links, conversions and Creative Hub; 10-step wizard; capability registry 26 keys × 7 platforms from a 2026-10-24 documentation audit. `docs/CAMPAIGN_LAUNCH.md`. |
 | F — Translation / Preflight | MERGED | #66 | 2d88a94 | ProviderCreatePlan per account, documented payload drafts paused at every level, read-only preflight with six states and a fix for each, per-currency totals, launch-plan UI. `docs/CAMPAIGN_LAUNCH.md`. |
 | G — Provider Creation | MERGED | #67 | 7430d92 | Fingerprinted approval, queued per-account executions with idempotency references, create paused → read back → verified → reconciled; unknown never blindly retried; partial keeps creations; sandbox labelled, real credentials blocked_external with no call. `docs/CAMPAIGN_LAUNCH.md`. |
-| H — Activation / Hardening | IN_REVIEW | (this PR) | — | Two-act activation with read-back, launch board with counts and filters, launches attention stream, seat type on invitations, operator logs, three acceptance reports. |
+| H — Activation / Hardening | MERGED | #68 | 98c7f14 | Two-act activation with read-back; an unanswered activation is `unknown`, never re-sent, settled only by reading the platform; launch board with counts and filters, launches attention stream, seat type on invitations, operator logs, three acceptance reports. |
 
 ---
 
@@ -1926,3 +1926,9 @@ Then continue automatically to the next PR.
 Do not stop at waiting.
 Do not claim LIVE_VERIFIED without real provider evidence.
 ```
+
+**Program state (A–H):** all eight slices are merged (#61–#68, last main SHA `98c7f14`). Nothing is `LIVE_VERIFIED`: creation and
+activation run end to end on sandbox connections only, and real credentials are recorded `blocked_external` with no platform
+called. The production server is `AWAITING_SERVER_ACCESS`; a green *Deploy Production* run before a server exists means the
+workflow reported that, not that anything was deployed. Acceptance: `docs/SAAS_ACCEPTANCE.md`,
+`docs/TENANT_ISOLATION_ACCEPTANCE.md`, `docs/CAMPAIGN_LAUNCH_ACCEPTANCE.md`.
