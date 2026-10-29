@@ -20,6 +20,7 @@ use App\Interface\Console\CommissionProvider;
 use App\Interface\Console\DemoAgencyCommand;
 use App\Interface\Console\PerformanceDigestsCommand;
 use App\Interface\Console\PlatformOperatorCommand;
+use App\Interface\Console\ProductionCheckCommand;
 use App\Interface\Console\PruneExportsCommand;
 use App\Interface\Console\PurgeTrackingCommand;
 use App\Interface\Console\RaiseAccessRequestAlertsCommand;
@@ -67,6 +68,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         SaasPlanCommand::class,
         PlatformOperatorCommand::class,
+        ProductionCheckCommand::class,
         SaasOverrideCommand::class,
         BuildDigestsCommand::class,
         PerformanceDigestsCommand::class,

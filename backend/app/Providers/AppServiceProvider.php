@@ -171,6 +171,7 @@ use App\Application\Shared\Contract\WorkLedger;
 use App\Application\Shortcuts\Contract\ShortcutStore;
 use App\Application\SurfaceView\Contract\SurfaceViewRepository;
 use App\Application\System\Contract\DeploymentRecord;
+use App\Application\System\Contract\ProductionReadiness;
 use App\Application\System\Contract\RepositoryStatusSource;
 use App\Application\System\Query\GetSystemHealth;
 use App\Application\Tags\Contract\TagStore;
@@ -366,6 +367,7 @@ use App\Infrastructure\System\FailedWorkHealthProbe;
 use App\Infrastructure\System\FileDeploymentRecord;
 use App\Infrastructure\System\GitHubRepositoryStatusSource;
 use App\Infrastructure\System\LaravelApplicationInfo;
+use App\Infrastructure\System\LaravelProductionReadiness;
 use App\Infrastructure\System\QueueHealthProbe;
 use App\Interface\Export\ReportExportRenderer;
 use App\Interface\Http\Resource\Reporting\ReportResource;
@@ -562,6 +564,7 @@ final class AppServiceProvider extends ServiceProvider
         BudgetControlReadModel::class => EloquentBudgetControlReadModel::class,
         SyncCandidateSource::class => EloquentSyncCandidateSource::class,
         StoreAnalyticsReadModel::class => EloquentStoreAnalyticsReadModel::class,
+        ProductionReadiness::class => LaravelProductionReadiness::class,
         AttributionReadModel::class => EloquentAttributionReadModel::class,
         CreativeSpecRegistry::class => EloquentCreativeSpecRegistry::class,
         CreativeRepository::class => EloquentCreativeRepository::class,
