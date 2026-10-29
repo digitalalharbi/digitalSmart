@@ -83,6 +83,23 @@ REVERB_RESTART_COMMAND="sudo supervisorctl restart digitalsmart-reverb"   # omit
 The web server serves `current/frontend/dist` for the SPA and `current/backend/public` for `/api`, `/sanctum`,
 `/up`; Horizon and Reverb run under a supervisor pointed at `current/`; cron runs `schedule:run` every minute.
 
+## Before the first request: `ops:production-check`
+
+On the server, with its real `.env`, run:
+
+```bash
+php artisan ops:production-check                      # production
+php artisan ops:production-check --expect-env=staging # a staging server
+```
+
+It is read-only and prints no secret value. It **fails** (exit 1) on the settings that expose a real server — `APP_DEBUG` on, a
+non-https `APP_URL`, a cookie that is not secure-only, local addresses left in the stateful domains or the CORS origins, the
+docker-compose database password, a non-PostgreSQL default, a queue that is not Redis, an unwritable or nearly full storage
+directory — and on a database or Redis that does not answer, or a migration not yet run. It **warns** about what is honest but
+incomplete: email that is only logged (invitations and notices stay `AWAITING_CREDENTIALS`), realtime switched off, a cache that
+is not Redis, a database on the same machine. `--strict` makes warnings fail; `--skip-connect` checks configuration only; `--json`
+is for a pipeline. A pass is a statement about configuration — it is not a deployment, and it says nothing about live providers.
+
 ## Secrets
 
 **No secret value may exist in a repository file, a workflow literal, a commit, a log or a document.** GitHub Actions
