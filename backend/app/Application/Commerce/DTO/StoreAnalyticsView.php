@@ -37,6 +37,11 @@ final readonly class StoreAnalyticsView
         public CustomerMix $customerMix,
         public DateTimeImmutable $from,
         public DateTimeImmutable $until,
+        /**
+         * What the totals were made of. Null where the audience has not been given it: the client portal's revenue module is
+         * narrower than the agency's, and shipping, tax and discount are the agency's working figures.
+         */
+        public ?RevenueLedger $ledger = null,
         /** Null where the audience was not given a trend of its own: the client portal reads the daily series. */
         public ?TrendSeries $series = null,
         /** Null unless the previous period was asked for. */

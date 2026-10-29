@@ -211,6 +211,42 @@ describe('trends and the previous period', () => {
   });
 });
 
+describe('the revenue ledger', () => {
+  it('shows the ledger when the server sends one', async () => {
+    state.analytics = analytics({
+      ledger: {
+        currency: 'SAR',
+        orders: 1,
+        total_minor: 50_000,
+        refunded_minor: 0,
+        net_minor: 50_000,
+        components: [
+          { key: 'subtotal', amount_minor: null, orders_reporting: 0, orders_counted: 1 },
+          { key: 'discount', amount_minor: null, orders_reporting: 0, orders_counted: 1 },
+          { key: 'shipping', amount_minor: 4_000, orders_reporting: 1, orders_counted: 1 },
+          { key: 'tax', amount_minor: null, orders_reporting: 0, orders_counted: 1 },
+        ],
+        reconciliation: {
+          orders_checked: 0,
+          orders_off: 0,
+          unexplained_minor: null,
+          reconciles: null,
+        },
+      },
+    });
+    await renderWithProviders(<StoreAnalyticsPage />);
+
+    expect(await screen.findByRole('region', { name: 'Revenue ledger' })).toBeInTheDocument();
+  });
+
+  it('shows no ledger section when the server sends none', async () => {
+    await renderWithProviders(<StoreAnalyticsPage />);
+
+    await screen.findByText(/Salla invoiced this money/);
+    expect(screen.queryByRole('region', { name: 'Revenue ledger' })).not.toBeInTheDocument();
+  });
+});
+
 describe('new versus returning customers', () => {
   it('splits the period three ways and reports the new share', async () => {
     await renderWithProviders(<StoreAnalyticsPage />);

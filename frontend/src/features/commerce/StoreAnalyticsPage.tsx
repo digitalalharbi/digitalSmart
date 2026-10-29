@@ -15,6 +15,7 @@ import { SourceBadge } from '@/shared/ui/source-badge';
 import { ChartFrame } from '@/shared/ui/chart';
 import { BreakdownTable } from './BreakdownTable';
 import { CustomerMixPanel } from './CustomerMixPanel';
+import { LedgerPanel } from './LedgerPanel';
 import { RevenueChart } from './RevenueChart';
 import { StoresPanel } from './StoresPanel';
 import { useStoreAnalyticsQuery } from './useCommerce';
@@ -433,6 +434,12 @@ export function StoreAnalyticsPage() {
                 The card carries its own heading, so this section is labelled by it rather than by a second one
                 saying the same thing twice to a screen reader.
               */}
+              {analytics.data?.ledger === undefined ? null : (
+                <section className="flex flex-col gap-3" aria-label={t('commerce.ledger.title')}>
+                  <LedgerPanel ledger={analytics.data.ledger} locale={locale} />
+                </section>
+              )}
+
               {analytics.data === undefined ? null : (
                 <section className="flex flex-col gap-3" aria-label={t('commerce.mix.title')}>
                   <CustomerMixPanel

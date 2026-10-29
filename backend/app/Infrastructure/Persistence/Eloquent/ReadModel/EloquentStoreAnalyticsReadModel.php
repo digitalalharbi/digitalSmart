@@ -7,7 +7,9 @@ namespace App\Infrastructure\Persistence\Eloquent\ReadModel;
 use App\Application\Commerce\Contract\StoreAnalyticsReadModel;
 use App\Application\Commerce\DTO\CustomerMix;
 use App\Application\Commerce\DTO\DailyRevenuePoint;
+use App\Application\Commerce\DTO\LedgerComponent;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
+use App\Application\Commerce\DTO\RevenueLedger;
 use App\Application\Commerce\DTO\StoreComparison;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Commerce\DTO\StoreRevenueSummary;
@@ -460,6 +462,50 @@ final readonly class EloquentStoreAnalyticsReadModel implements StoreAnalyticsRe
             previousNetRevenueMinor: $net,
             previousAverageOrderValueMinor: $orders > 0 ? intdiv($net, $orders) : null,
             reason: $reason,
+        );
+    }
+
+    public function ledger(StoreQuery $query): RevenueLedger
+    {
+        $parts = ['subtotal', 'discount', 'shipping', 'tax'];
+        $all = implode(' and ', array_map(static fn (string $p): string => "o.{$p}_minor is not null", $parts));
+        $off = 'o.total_minor - (o.subtotal_minor - o.discount_minor + o.shipping_minor + o.tax_minor)';
+
+        /*
+         * `count(column)` counts non-null values, which is exactly "how many orders reported this part". A part nobody reported sums
+         * to null, not zero. The reconciliation looks only at orders that reported all four: an order missing one cannot be checked,
+         * and counting it as exact would make a sparse provider look like a clean one.
+         */
+        $select = ['count(*) as orders', 'coalesce(sum(o.total_minor), 0) as total', 'coalesce(sum(o.refunded_minor), 0) as refunded'];
+
+        foreach ($parts as $part) {
+            $select[] = "sum(o.{$part}_minor) as {$part}_sum";
+            $select[] = "count(o.{$part}_minor) as {$part}_n";
+        }
+
+        $select[] = "count(*) filter (where {$all}) as checked";
+        $select[] = "count(*) filter (where {$all} and ({$off}) <> 0) as off";
+        $select[] = "sum(abs({$off})) filter (where {$all}) as unexplained";
+
+        /** @var object|null $row */
+        $row = $this->scope($query)->whereIn('o.payment_state', self::REVENUE_STATES)->selectRaw(implode(', ', $select))->first();
+        $values = (array) $row;
+        $orders = (int) ($values['orders'] ?? 0);
+        $checked = (int) ($values['checked'] ?? 0);
+
+        return new RevenueLedger(
+            currency: $this->currencyFor($query),
+            orders: $orders,
+            totalMinor: (int) ($values['total'] ?? 0),
+            refundedMinor: (int) ($values['refunded'] ?? 0),
+            components: array_map(static function (string $part) use ($values, $orders): LedgerComponent {
+                $reporting = (int) ($values["{$part}_n"] ?? 0);
+
+                return new LedgerComponent($part, $reporting > 0 ? (int) ($values["{$part}_sum"] ?? 0) : null, $reporting, $orders);
+            }, $parts),
+            ordersChecked: $checked,
+            ordersOff: (int) ($values['off'] ?? 0),
+            unexplainedMinor: $checked > 0 ? (int) ($values['unexplained'] ?? 0) : null,
         );
     }
 

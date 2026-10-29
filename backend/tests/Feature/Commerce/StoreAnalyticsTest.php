@@ -1178,3 +1178,185 @@ describe('the previous period', function (): void {
             ->assertUnprocessable()->assertJsonPath('code', 'invalid_comparison');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| The revenue ledger (DS-UC-201)
+|--------------------------------------------------------------------------
+|
+| What customers were charged, what came back, and what the order totals were made of. The breakdown columns are nullable because a
+| provider may simply not report them (Salla's order list reports a total and nothing else), so every component carries how many of the
+| counted orders reported it. A discount nobody reported is *unavailable*, never zero — and a breakdown that does not add up to the total
+| is published as a difference rather than forced into an equation, because shipping, tax and fees follow each provider's own rules.
+|
+*/
+
+/** An order that reports its breakdown, in minor units; pass null for a part the provider did not report. */
+function ledgerOrder(
+    string $id,
+    int $total,
+    ?int $subtotal = null,
+    ?int $discount = null,
+    ?int $shipping = null,
+    ?int $tax = null,
+    PaymentState $payment = PaymentState::Paid,
+    int $refunded = 0,
+    string $placedAt = '2026-10-02 10:00:00',
+): OrderRecord {
+    return new OrderRecord(
+        externalId: $id,
+        paymentState: $payment,
+        fulfilmentState: FulfilmentState::Delivered,
+        currency: 'SAR',
+        totalMinor: $total,
+        placedAt: new DateTimeImmutable($placedAt),
+        attribution: OrderAttribution::none(),
+        subtotalMinor: $subtotal,
+        discountMinor: $discount,
+        shippingMinor: $shipping,
+        taxMinor: $tax,
+        refundedMinor: $refunded,
+        refunds: $refunded > 0 ? [new RefundRecord($refunded, 'SAR', new DateTimeImmutable($placedAt))] : [],
+    );
+}
+
+/**
+ * @param  array<string, mixed>  $ledger
+ * @return array<string, array<string, mixed>>
+ */
+function ledgerComponents(array $ledger): array
+{
+    /** @var list<array<string, mixed>> $components */
+    $components = $ledger['components'];
+
+    return array_column($components, null, 'key');
+}
+
+describe('the revenue ledger', function (): void {
+    it('states what customers were charged, what was refunded and what is left', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [
+            ledgerOrder('a', total: 115_000, subtotal: 100_000, discount: 10_000, shipping: 10_000, tax: 15_000),
+            ledgerOrder('b', total: 50_000, refunded: 20_000),
+        ]);
+
+        $ledger = fetchAnalytics($setup)['ledger'];
+
+        expect($ledger['currency'])->toBe('SAR')
+            ->and($ledger['orders'])->toBe(2)
+            ->and($ledger['total_minor'])->toBe(165_000)
+            ->and($ledger['refunded_minor'])->toBe(20_000)
+            ->and($ledger['net_minor'])->toBe(145_000);
+    });
+
+    it('leaves out orders that are not money yet, and orders outside the period', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [
+            ledgerOrder('paid', total: 40_000),
+            ledgerOrder('cod', total: 99_000, payment: PaymentState::Pending),
+            // 20:00 UTC on 30 September is 23:00 that evening in the store's own calendar (Riyadh): outside October either way.
+            ledgerOrder('september', total: 77_000, placedAt: '2026-09-30 20:00:00'),
+        ]);
+
+        $ledger = fetchAnalytics($setup)['ledger'];
+
+        expect($ledger['orders'])->toBe(1)->and($ledger['total_minor'])->toBe(40_000);
+    });
+
+    it('sums each component over only the orders that reported it, and says how many that was', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [
+            ledgerOrder('full', total: 115_000, subtotal: 100_000, discount: 10_000, shipping: 10_000, tax: 15_000),
+            ledgerOrder('shipping-only', total: 30_000, shipping: 5_000),
+            ledgerOrder('bare', total: 20_000),
+        ]);
+
+        $components = ledgerComponents(fetchAnalytics($setup)['ledger']);
+
+        expect($components['shipping']['amount_minor'])->toBe(15_000)
+            ->and($components['shipping']['orders_reporting'])->toBe(2)
+            ->and($components['shipping']['orders_counted'])->toBe(3)
+            ->and($components['discount']['amount_minor'])->toBe(10_000)
+            ->and($components['discount']['orders_reporting'])->toBe(1)
+            ->and(array_keys($components))->toBe(['subtotal', 'discount', 'shipping', 'tax']);
+    });
+
+    it('calls a component unavailable, not zero, when no counted order reported it', function (): void {
+        $setup = analyticsScenario();
+        // Salla's order list: a total and nothing else.
+        writeOrders($setup, [ledgerOrder('a', total: 30_000), ledgerOrder('b', total: 45_000)]);
+
+        $components = ledgerComponents(fetchAnalytics($setup)['ledger']);
+
+        foreach (['subtotal', 'discount', 'shipping', 'tax'] as $key) {
+            expect($components[$key]['amount_minor'])->toBeNull()->and($components[$key]['orders_reporting'])->toBe(0);
+        }
+    });
+
+    it('keeps a reported zero apart from an unreported one', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [ledgerOrder('free-shipping', total: 30_000, shipping: 0)]);
+
+        $shipping = ledgerComponents(fetchAnalytics($setup)['ledger'])['shipping'];
+
+        // "Shipped free" is a fact; "nobody said" is not.
+        expect($shipping['amount_minor'])->toBe(0)->and($shipping['orders_reporting'])->toBe(1);
+    });
+
+    it('reconciles an order whose parts add up to its total, and publishes the difference when they do not', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [
+            // 100 000 − 10 000 + 10 000 + 15 000 = 115 000: exact.
+            ledgerOrder('exact', total: 115_000, subtotal: 100_000, discount: 10_000, shipping: 10_000, tax: 15_000),
+            // 100 000 − 0 + 5 000 + 0 = 105 000, but the provider's total is 107 500: a fee the breakdown does not carry.
+            ledgerOrder('fee', total: 107_500, subtotal: 100_000, discount: 0, shipping: 5_000, tax: 0),
+            // Only some parts reported: cannot be checked, so it is not counted as checked.
+            ledgerOrder('partial', total: 60_000, subtotal: 55_000, shipping: 5_000),
+        ]);
+
+        $reconciliation = fetchAnalytics($setup)['ledger']['reconciliation'];
+
+        expect($reconciliation['orders_checked'])->toBe(2)
+            ->and($reconciliation['unexplained_minor'])->toBe(2_500)
+            ->and($reconciliation['reconciles'])->toBeFalse();
+    });
+
+    it('reports nothing to reconcile, rather than a clean bill, when no order reports a full breakdown', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [ledgerOrder('a', total: 30_000, shipping: 2_000)]);
+
+        $reconciliation = fetchAnalytics($setup)['ledger']['reconciliation'];
+
+        expect($reconciliation['orders_checked'])->toBe(0)
+            ->and($reconciliation['unexplained_minor'])->toBeNull()
+            ->and($reconciliation['reconciles'])->toBeNull();
+    });
+
+    it('is the same figure as the summary, so the two never disagree', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [
+            ledgerOrder('a', total: 115_000, refunded: 15_000),
+            ledgerOrder('b', total: 50_000),
+        ]);
+
+        $data = fetchAnalytics($setup);
+
+        expect($data['ledger']['net_minor'])->toBe($data['summary']['net_revenue_minor'])
+            ->and($data['ledger']['orders'])->toBe($data['summary']['orders']);
+    });
+
+    it('shows nothing from a client the actor cannot reach, and nothing from another workspace', function (): void {
+        $setup = analyticsScenario();
+        $other = analyticsScenario();
+        writeOrders($setup, [ledgerOrder('mine', total: 50_000, shipping: 4_000)]);
+        writeOrders($other, [ledgerOrder('theirs', total: 777_000, shipping: 9_000)]);
+
+        $stranger = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+        $hidden = $this->actingAs($stranger)
+            ->getJson('/api/commerce/analytics?revenue_source=salla&from=2026-10-01&until=2026-10-31')
+            ->assertOk()->json('data.ledger');
+
+        expect($hidden['orders'])->toBe(0)->and($hidden['total_minor'])->toBe(0);
+        expect(fetchAnalytics($setup)['ledger']['total_minor'])->toBe(50_000);
+    });
+});

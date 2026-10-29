@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Interface\Http\Resource\Commerce;
 
 use App\Application\Commerce\DTO\DailyRevenuePoint;
+use App\Application\Commerce\DTO\LedgerComponent;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
+use App\Application\Commerce\DTO\RevenueLedger;
 use App\Application\Commerce\DTO\StoreAnalyticsView;
 use App\Domain\Commerce\CustomerRecency;
 
@@ -124,6 +126,36 @@ final readonly class StoreAnalyticsResource
                     'recency' => $recency->value,
                     'label' => $recency->label(),
                 ], CustomerRecency::cases()),
+            ],
+            /*
+             * What the totals were made of, with how many orders reported each part and whether the parts add up. Absent (not null)
+             * for an audience that was not given it: the client portal's revenue module is narrower than the agency's.
+             */
+            ...($view->ledger === null ? [] : ['ledger' => self::ledger($view->ledger)]),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private static function ledger(RevenueLedger $ledger): array
+    {
+        return [
+            'currency' => $ledger->currency,
+            'orders' => $ledger->orders,
+            'total_minor' => $ledger->totalMinor,
+            'refunded_minor' => $ledger->refundedMinor,
+            'net_minor' => $ledger->netMinor(),
+            'components' => array_map(static fn (LedgerComponent $c): array => [
+                'key' => $c->key,
+                // Null: no counted order reported it. Never zero.
+                'amount_minor' => $c->amountMinor,
+                'orders_reporting' => $c->ordersReporting,
+                'orders_counted' => $c->ordersCounted,
+            ], $ledger->components),
+            'reconciliation' => [
+                'orders_checked' => $ledger->ordersChecked,
+                'orders_off' => $ledger->ordersOff,
+                'unexplained_minor' => $ledger->unexplainedMinor,
+                'reconciles' => $ledger->reconciles(),
             ],
         ];
     }
