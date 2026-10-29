@@ -7,6 +7,7 @@ namespace App\Application\Commerce\Contract;
 use App\Application\Commerce\DTO\CustomerMix;
 use App\Application\Commerce\DTO\DailyRevenuePoint;
 use App\Application\Commerce\DTO\RevenueBreakdownRow;
+use App\Application\Commerce\DTO\RevenueLedger;
 use App\Application\Commerce\DTO\StoreQuery;
 use App\Application\Commerce\DTO\StoreRevenueSummary;
 use App\Application\Commerce\DTO\StoreRollupRow;
@@ -88,4 +89,7 @@ interface StoreAnalyticsReadModel
      * @return list<StoreRollupRow>
      */
     public function byStore(StoreQuery $query): array;
+
+    /** What the counted orders were charged and made of, with the parts each order reported and whether they add up. */
+    public function ledger(StoreQuery $query): RevenueLedger;
 }

@@ -75,7 +75,27 @@ test.describe('approvals', () => {
     await expect(summary.getByText('Approved, not yet done')).toBeVisible();
     await expect(summary.getByText('Nothing has changed yet')).toBeVisible();
     // The age is on the short warning; the full sentence is its hint, in the page for anyone who asks.
-    await expect(page.getByText(/oldest 9d/)).toBeVisible();
+    const shown = await page
+      .getByText(/oldest \d+d/)
+      .first()
+      .innerText();
+    const days = Number(/oldest (\d+)d/.exec(shown)?.[1]);
+
+    /*
+     * Nine at the moment of seeding, and never fewer. Age is counted in calendar days (`ApprovalAge`), so a run that crosses
+     * midnight between the demo being seeded and this test reads one more — which is the page being right, not the page being
+     * wrong. What this proves is that the backdated approval is shown with its age, and that the age is the server's own figure.
+     */
+    expect(days).toBeGreaterThanOrEqual(9);
+
+    const queue = await page.request.get('/api/approvals/queue', {
+      headers: { Accept: 'application/json', Referer: page.url() },
+    });
+    expect(queue.ok()).toBe(true);
+    const body = (await queue.json()) as {
+      data: { load: { oldest_outstanding_days: number | null } };
+    };
+    expect(days).toBe(body.data.load.oldest_outstanding_days);
   });
 
   test('keeps the decision queue and the enactment queue apart', async ({ page }) => {

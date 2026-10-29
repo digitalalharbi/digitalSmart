@@ -10,6 +10,7 @@ const accountsQuery = vi.hoisted(() => vi.fn());
 const bindingsQuery = vi.hoisted(() => vi.fn());
 const bind = vi.hoisted(() => vi.fn());
 const backfill = vi.hoisted(() => vi.fn());
+const disconnect = vi.hoisted(() => vi.fn());
 const permissions = vi.hoisted(() => ({ current: [] as string[] }));
 
 vi.mock('./api', () => ({
@@ -28,7 +29,12 @@ vi.mock('./api', () => ({
     reset: vi.fn(),
   }),
   useDiscoverAccountsMutation: () => ({ mutate: vi.fn(), isPending: false, error: null }),
-  useDisconnectProviderMutation: () => ({ mutate: vi.fn(), isPending: false, error: null }),
+  useDisconnectProviderMutation: () => ({
+    mutate: disconnect,
+    isPending: false,
+    error: null,
+    reset: vi.fn(),
+  }),
 }));
 
 vi.mock('@/features/projects', () => ({
@@ -111,6 +117,7 @@ describe('IntegrationsPage', () => {
     accountsQuery.mockReturnValue(ok([account()]));
     bindingsQuery.mockReturnValue(ok([] as ProjectBinding[]));
     bind.mockReset();
+    disconnect.mockReset();
     permissions.current = ['workspaces.view', 'workspaces.update'];
   });
 
@@ -325,5 +332,42 @@ describe('IntegrationsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Read history' }));
 
     expect(backfill).toHaveBeenCalledWith({ accountId: 'a1', days: 90 });
+  });
+
+  it('asks before disconnecting, says what it leaves alone, and disconnects only on confirmation', async () => {
+    providersQuery.mockReturnValue(
+      ok([
+        provider({
+          missing_credentials: [],
+          status: 'connected',
+          status_label: 'Connected',
+          connection_id: 'k1',
+        }),
+      ]),
+    );
+    const user = userEvent.setup();
+    await renderWithProviders(<IntegrationsPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Disconnect Meta Ads' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Disconnect Meta Ads?' });
+    expect(disconnect).not.toHaveBeenCalled();
+    expect(within(dialog).getByText(/credentials stored here are destroyed/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/already read stays as it was/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/not revoked from here/i)).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(disconnect).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Disconnect Meta Ads' }));
+    await user.click(
+      within(await screen.findByRole('dialog', { name: 'Disconnect Meta Ads?' })).getByRole(
+        'button',
+        { name: 'Disconnect' },
+      ),
+    );
+
+    expect(disconnect).toHaveBeenCalledTimes(1);
+    expect(disconnect.mock.calls[0]?.[0]).toBe('meta');
   });
 });

@@ -141,6 +141,11 @@ final class ProviderConnection
         return $this->expiresAt !== null && $this->expiresAt <= $now;
     }
 
+    public function isDisconnected(): bool
+    {
+        return $this->status->isDisconnected();
+    }
+
     public function canSync(): bool
     {
         return $this->status->canSync();
