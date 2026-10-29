@@ -62,6 +62,11 @@ final readonly class SyncStore
             throw ProviderNotConfigured::for($provider, $provider->requiredCredentialKeys());
         }
 
+        if ($connection->isDisconnected()) {
+            /* No adapter call, and no attempt stamped: nothing was tried, and saying otherwise hides that the connection is gone. */
+            return new StoreSyncResult(status: SyncStatus::Failed, failureMessage: ProviderNotConfigured::disconnected($provider)->getMessage());
+        }
+
         $credentials = $connection->credentials();
         $isSandbox = $credentials->isSandbox($provider->requiredCredentialKeys());
         $now = $this->clock->now();

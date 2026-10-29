@@ -19,8 +19,8 @@ use App\Application\Shared\Exception\ResourceNotFound;
 use App\Domain\Access\Permission;
 use App\Domain\Advertising\MetricSource;
 use App\Domain\Advertising\SyncStatus;
-use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
+use App\Domain\Integration\ProviderConnection;
 use App\Domain\Integration\Repository\ProviderConnectionRepository;
 use App\Domain\Shared\ValueObject\DateWindow;
 use DateTimeImmutable;
@@ -82,7 +82,14 @@ final readonly class SyncMeasurementSource
         }
 
         $adapter = $this->adapters->for($source->provider);
-        $credentials = $this->credentialsFor($source->provider);
+        $connection = $this->connectionFor($source->provider);
+
+        if ($connection->isDisconnected()) {
+            /* Nothing is requested and nothing is stamped as tried; the days already read stay exactly as they are. */
+            return new MeasurementSyncResult(status: SyncStatus::Failed, failureMessage: ProviderNotConfigured::disconnected($source->provider)->getMessage());
+        }
+
+        $credentials = $connection->credentials();
 
         $now = $this->clock->now();
         $until = $now;
@@ -184,13 +191,13 @@ final readonly class SyncMeasurementSource
     }
 
     /**
-     * The decrypted credentials for this source's connection.
+     * This source's connection.
      *
      * A source names its connection, so two clients measured through two different Google
      * accounts stay separate. Without one there is nothing to authenticate with, and saying so
      * names the thing to fix rather than failing inside the adapter on an empty token.
      */
-    private function credentialsFor(Provider $provider): Credentials
+    private function connectionFor(Provider $provider): ProviderConnection
     {
         $connection = $this->connections->agencyConnection($this->actor->workspaceId(), $provider);
 
@@ -203,6 +210,6 @@ final readonly class SyncMeasurementSource
             throw ProviderNotConfigured::for($provider, $provider->requiredCredentialKeys());
         }
 
-        return $connection->credentials();
+        return $connection;
     }
 }

@@ -92,6 +92,30 @@ describe('ConnectionsPanel', () => {
     expect(within(client).getByText('Advanced')).toBeInTheDocument();
   });
 
+  it('asks before disconnecting one connection, and then disconnects that one by id', async () => {
+    const user = userEvent.setup();
+    del.mockResolvedValue({ data: null });
+    await renderWithProviders(<ConnectionsPanel />);
+
+    const cards = await screen.findAllByRole('listitem');
+    await user.click(within(cards[1] as HTMLElement).getByRole('button', { name: 'Disconnect' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Disconnect Meta Ads — Alhambra?' });
+    expect(del).not.toHaveBeenCalled();
+    expect(within(dialog).getByText(/not revoked from here/i)).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(del).not.toHaveBeenCalled();
+
+    await user.click(within(cards[1] as HTMLElement).getByRole('button', { name: 'Disconnect' }));
+    await user.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Disconnect' }),
+    );
+
+    expect(del).toHaveBeenCalledTimes(1);
+    expect(del.mock.calls[0]?.[0]).toBe('/integrations/connections/k2');
+  });
+
   it('discovers on the connection it was asked about, by id', async () => {
     const user = userEvent.setup();
     post.mockResolvedValue({ data: {} });

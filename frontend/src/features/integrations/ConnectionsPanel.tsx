@@ -13,6 +13,7 @@ import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { useProvidersQuery } from './api';
 import { credentialKeysFor } from './credentialKeys';
+import { DisconnectDialog } from './DisconnectDialog';
 import {
   useConnectClientMutation,
   useConnectionAction,
@@ -40,6 +41,7 @@ export function ConnectionsPanel() {
   const { data, isPending, isError } = useConnectionsQuery();
   const action = useConnectionAction();
   const [adding, setAdding] = useState(false);
+  const [disconnecting, setDisconnecting] = useState<Connection | null>(null);
 
   return (
     <section aria-label={t('connections.title')} className="flex flex-col gap-3">
@@ -70,7 +72,14 @@ export function ConnectionsPanel() {
                 connection={connection}
                 locale={i18n.language}
                 busy={action.isPending}
-                onAction={(kind) => action.mutate({ id: connection.id, action: kind })}
+                onAction={(kind) => {
+                  if (kind === 'disconnect') {
+                    action.reset();
+                    setDisconnecting(connection);
+                  } else {
+                    action.mutate({ id: connection.id, action: kind });
+                  }
+                }}
               />
             </li>
           ))}
@@ -78,6 +87,25 @@ export function ConnectionsPanel() {
       )}
 
       <AddClientConnection open={adding} onOpenChange={setAdding} />
+      <DisconnectDialog
+        name={disconnecting?.label ?? ''}
+        open={disconnecting !== null}
+        pending={action.isPending}
+        error={action.error}
+        onOpenChange={(next) => {
+          if (!next) {
+            setDisconnecting(null);
+          }
+        }}
+        onConfirm={() => {
+          if (disconnecting !== null) {
+            action.mutate(
+              { id: disconnecting.id, action: 'disconnect' },
+              { onSuccess: () => setDisconnecting(null) },
+            );
+          }
+        }}
+      />
     </section>
   );
 }

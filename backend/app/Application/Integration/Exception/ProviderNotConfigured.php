@@ -37,6 +37,18 @@ final class ProviderNotConfigured extends RuntimeException
     }
 
     /**
+     * The connection exists but holds no credentials: it was disconnected, or never completed. Said as that, because "awaiting the
+     * provider's approval" would send an operator to the provider when the fix is to reconnect here.
+     */
+    public static function disconnected(Provider $provider): self
+    {
+        return new self($provider, $provider->requiredCredentialKeys(), sprintf(
+            '%s is disconnected or has no credentials, so nothing was read. Reconnect it under Integrations; the data already stored is untouched.',
+            $provider->label(),
+        ));
+    }
+
+    /**
      * Credentials are present, but no live call can be made with them.
      *
      * A different situation from missing credentials, and it reads differently:

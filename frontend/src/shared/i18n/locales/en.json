@@ -1291,6 +1291,16 @@
     "update": "Replace credentials",
     "discover": "Find accounts",
     "disconnectFrom": "Disconnect {{provider}}",
+    "disconnectDialog": {
+      "title": "Disconnect {{name}}?",
+      "body": "Read what this does, and what it leaves alone.",
+      "stops": "Reading from it stops straight away: syncs and store reads for it will say it is disconnected instead of running.",
+      "credentials": "The credentials stored here are destroyed. Connecting again later needs new ones.",
+      "kept": "Everything already read stays as it was: orders, figures, accounts and project bindings.",
+      "provider": "Access granted at the provider itself is not revoked from here. If the account is being retired, remove this app's access there too.",
+      "confirm": "Disconnect",
+      "failed": "Could not disconnect. Try again."
+    },
     "credentialsTitle": "{{provider}} credentials",
     "credentialsDescription": "The platform's own API credentials, issued to Smart Code.",
     "neverClientPassword": "Never enter a client's platform password. digitalSmart does not store them, and does not need them: access comes from OAuth, Business Manager sharing or partner access.",

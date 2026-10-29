@@ -31,6 +31,15 @@ enum ConnectionStatus: string
         return $this === self::Connected;
     }
 
+    /**
+     * Nothing to authenticate with: never configured, or disconnected (which revokes and then empties the credentials, leaving
+     * `not_configured`). `expired` and `error` are not this — those still hold credentials and may recover on the next try.
+     */
+    public function isDisconnected(): bool
+    {
+        return in_array($this, [self::NotConfigured, self::Revoked], true);
+    }
+
     /** Whether someone needs to act before this connection works again. */
     public function needsAttention(): bool
     {
