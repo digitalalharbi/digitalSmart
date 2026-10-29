@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { ProviderLogo } from './ProviderLogo';
 import { CredentialsDialog } from './CredentialsDialog';
+import { DisconnectDialog } from './DisconnectDialog';
 import { useDisconnectProviderMutation, useDiscoverAccountsMutation } from './api';
 import type { ConnectionStatus, ProviderRow } from './types';
 
@@ -28,6 +29,7 @@ export function ProviderCard({ provider }: { provider: ProviderRow }) {
   const { t } = useTranslation();
   const { can } = useSession();
   const [isDialogOpen, setDialogOpen] = useState(false);
+  const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
   const discover = useDiscoverAccountsMutation();
   const disconnect = useDisconnectProviderMutation();
 
@@ -152,7 +154,10 @@ export function ProviderCard({ provider }: { provider: ProviderRow }) {
                 size="sm"
                 className="text-danger"
                 disabled={disconnect.isPending}
-                onClick={() => disconnect.mutate(provider.provider)}
+                onClick={() => {
+                  disconnect.reset();
+                  setConfirmingDisconnect(true);
+                }}
                 aria-label={t('integrations.disconnectFrom', { provider: provider.label })}
               >
                 <Unlink />
@@ -163,6 +168,16 @@ export function ProviderCard({ provider }: { provider: ProviderRow }) {
       </CardContent>
 
       <CredentialsDialog open={isDialogOpen} onOpenChange={setDialogOpen} provider={provider} />
+      <DisconnectDialog
+        name={provider.label}
+        open={confirmingDisconnect}
+        pending={disconnect.isPending}
+        error={disconnect.error}
+        onOpenChange={setConfirmingDisconnect}
+        onConfirm={() =>
+          disconnect.mutate(provider.provider, { onSuccess: () => setConfirmingDisconnect(false) })
+        }
+      />
     </Card>
   );
 }

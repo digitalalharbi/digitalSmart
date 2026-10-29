@@ -4,6 +4,28 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Connection lifecycle: a disconnected connection is never read, and disconnecting asks first
+
+First bounded batch of the Unified Commerce program (`docs/UNIFIED_COMMERCE_MATRIX.md`, DS-UC-102 / 103 / 104).
+
+### Fixed
+- **A store read or a GA4 sync after a disconnect still called the adapter with emptied credentials.** It answered "not configured —
+  missing credentials", which sends an operator to the provider when the fix is to reconnect here, and it stamped the attempt as if
+  something had been tried. Both now return a `failed` result that says the connection is disconnected, call nothing, stamp no
+  attempt, and leave every stored order and day exactly as it was. Credentials put back, and they read again.
+
+### Added
+- **Disconnect asks first** — on the provider card and on a client's connection — and says what it does (reading stops, the stored
+  credentials are destroyed), what it leaves alone (orders, figures, accounts, project bindings) and what it cannot do (access
+  granted at the provider itself is not revoked from here).
+- Tests for what already worked but had none: replacing one connection's credentials (permission, key names only, tenant 404, the
+  audit entry) and the disconnect audit entry, which never carries a credential.
+- `docs/UNIFIED_COMMERCE_MATRIX.md`: every requirement ID mapped to what exists, with its tests and the smallest gap, plus an
+  owner-defects ledger.
+
+### Corrected
+- `docs/CLOSURE.md` said report PDF exports were verified in both browsers. Reports have no PDF; only the presentation deck prints.
+
 ## SaaS program, PR H: activation, the launch board, launch problems on the home screen, and the acceptance reports
 
 ### Added
