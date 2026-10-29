@@ -14,6 +14,7 @@ use App\Domain\Commerce\RevenueSource;
 use App\Domain\Shared\ValueObject\ContactPoint;
 use App\Infrastructure\Persistence\Eloquent\Model\Store;
 use DateTimeImmutable;
+use DateTimeZone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -95,10 +96,10 @@ final readonly class EloquentCommerceStore implements CommerceStore
                         'referrer' => $order->attribution->referrer,
                         'revenue_source' => $revenueSource->value,
                         'source' => $source->value,
-                        'placed_at' => $order->placedAt,
-                        'paid_at' => $order->paidAt,
-                        'cancelled_at' => $order->cancelledAt,
-                        'provider_updated_at' => $order->providerUpdatedAt,
+                        'placed_at' => self::utc($order->placedAt),
+                        'paid_at' => self::utc($order->paidAt),
+                        'cancelled_at' => self::utc($order->cancelledAt),
+                        'provider_updated_at' => self::utc($order->providerUpdatedAt),
                         'created_at' => $now,
                         'updated_at' => $now,
                     ];
@@ -328,7 +329,7 @@ final readonly class EloquentCommerceStore implements CommerceStore
                     'amount_minor' => $refund->amountMinor,
                     'currency' => strtoupper($refund->currency),
                     'reason' => $refund->reason,
-                    'refunded_at' => $refund->refundedAt,
+                    'refunded_at' => self::utc($refund->refundedAt),
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
@@ -343,8 +344,8 @@ final readonly class EloquentCommerceStore implements CommerceStore
                     'carrier' => $shipment->carrier,
                     'tracking_number' => $shipment->trackingNumber,
                     'status' => $shipment->status,
-                    'shipped_at' => $shipment->shippedAt,
-                    'delivered_at' => $shipment->deliveredAt,
+                    'shipped_at' => self::utc($shipment->shippedAt),
+                    'delivered_at' => self::utc($shipment->deliveredAt),
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
@@ -539,5 +540,18 @@ final readonly class EloquentCommerceStore implements CommerceStore
         unset($map['']);
 
         return $map;
+    }
+
+    /**
+     * A provider's instant, as the UTC wall-clock string the `timestamp` columns hold.
+     *
+     * The mappers keep the zone a payload carried — Salla's `Asia/Riyadh` — which is right for an instant. But the query builder
+     * formats a DateTimeInterface in *its own* zone without converting it, so binding one straight in stored 01:30 Riyadh time as
+     * `01:30` in a column every query reads as UTC. Converting here, once, is what lets a day boundary later be cut in a store's
+     * own zone and mean the same thing for every provider.
+     */
+    private static function utc(?DateTimeImmutable $at): ?string
+    {
+        return $at?->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
     }
 }
