@@ -21,7 +21,7 @@ import { StoresPanel } from './StoresPanel';
 import { useStoreAnalyticsQuery } from './useCommerce';
 import { formatMinor } from '@/shared/lib/format';
 import { summaryMetrics, windowFor } from './money';
-import type { RevenueSourceValue } from './types';
+import type { RevenueSourceValue, TrendGrain } from './types';
 
 /**
  * The revenue sources a reader may choose between.
@@ -41,6 +41,7 @@ const SOURCES: readonly RevenueSourceValue[] = [
 ];
 
 const PERIODS = [7, 30, 90] as const;
+const GRAINS: TrendGrain[] = ['day', 'week', 'month'];
 
 /**
  * Store analytics.
@@ -59,17 +60,28 @@ export function StoreAnalyticsPage() {
   const [source, setSource] = useState<RevenueSourceValue>('salla');
   const [days, setDays] = useState<(typeof PERIODS)[number]>(30);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [grain, setGrain] = useState<TrendGrain>('day');
 
   const clients = useClientsQuery({ page: 1, per_page: 100, sort: 'name', direction: 'asc' });
   const window = useMemo(() => windowFor(days), [days]);
 
   const query = useMemo(
-    () => ({ revenue_source: source, from: window.from, until: window.until, client_id: clientId }),
-    [source, window, clientId],
+    () => ({
+      revenue_source: source,
+      from: window.from,
+      until: window.until,
+      client_id: clientId,
+      grain,
+      // Always against the same number of days immediately before; the server says when there is nothing to compare with.
+      compare: 'previous' as const,
+    }),
+    [source, window, clientId, grain],
   );
 
   const analytics = useStoreAnalyticsQuery(query);
   const summary = analytics.data?.summary;
+  // The trend at the chosen grain; the daily series is what the server sends for an audience that was given no other.
+  const trend = analytics.data?.series?.points ?? analytics.data?.daily ?? [];
   const locale = i18n.language;
 
   /*
@@ -110,6 +122,16 @@ export function StoreAnalyticsPage() {
               {PERIODS.map((value) => (
                 <Choice key={value} isSelected={days === value} onSelect={() => setDays(value)}>
                   {t('commerce.period.days', { count: value })}
+                </Choice>
+              ))}
+            </div>
+          </ChoiceGroup>
+
+          <ChoiceGroup label={t('commerce.grain.label')}>
+            <div className="flex flex-wrap gap-2">
+              {GRAINS.map((value) => (
+                <Choice key={value} isSelected={grain === value} onSelect={() => setGrain(value)}>
+                  {t(`commerce.grain.${value}`)}
                 </Choice>
               ))}
             </div>
@@ -192,16 +214,40 @@ export function StoreAnalyticsPage() {
                  * figure shows where it came from — and reimplementing either here would be
                  * reimplementing them differently.
                  */}
-                {summaryMetrics(summary, {
-                  netRevenue: t('commerce.metrics.netRevenue'),
-                  orders: t('commerce.metrics.orders'),
-                  aov: t('commerce.metrics.aov'),
-                  customers: t('commerce.metrics.customers'),
-                  noOrders: t('commerce.metrics.noOrders'),
-                }).map((metric) => (
+                {summaryMetrics(
+                  summary,
+                  {
+                    netRevenue: t('commerce.metrics.netRevenue'),
+                    orders: t('commerce.metrics.orders'),
+                    aov: t('commerce.metrics.aov'),
+                    customers: t('commerce.metrics.customers'),
+                    noOrders: t('commerce.metrics.noOrders'),
+                  },
+                  analytics.data?.comparison,
+                ).map((metric) => (
                   <MetricCard key={metric.metric} value={metric} />
                 ))}
               </section>
+
+              {analytics.data?.comparison === undefined ? null : analytics.data.comparison
+                  .unavailable_reason === null ? (
+                <p className="text-content-secondary text-xs" data-testid="comparison-basis">
+                  {t('commerce.comparison.basis', {
+                    days,
+                    from: analytics.data.comparison.previous.from,
+                    until: analytics.data.comparison.previous.until,
+                  })}
+                </p>
+              ) : (
+                <Alert tone="info">
+                  {t(
+                    `commerce.comparison.reasons.${analytics.data.comparison.unavailable_reason}`,
+                    {
+                      days,
+                    },
+                  )}
+                </Alert>
+              )}
 
               <div className="flex items-center gap-1">
                 <InfoHint
@@ -324,9 +370,12 @@ export function StoreAnalyticsPage() {
                     t('commerce.table.netRevenue'),
                     t('commerce.table.refunded'),
                   ],
-                  rows: (analytics.data?.daily ?? []).map((point) => ({
+                  rows: trend.map((point) => ({
                     key: point.date,
-                    label: point.date,
+                    label:
+                      point.is_partial === true
+                        ? `${point.date} (${t('commerce.grain.partial')})`
+                        : point.date,
                     cells: [
                       formatMinor(point.net_revenue_minor, summary.currency, locale),
                       formatMinor(point.refunded_minor, summary.currency, locale),
@@ -334,11 +383,12 @@ export function StoreAnalyticsPage() {
                   })),
                 }}
               >
-                <RevenueChart
-                  points={analytics.data?.daily ?? []}
-                  currency={summary.currency}
-                  locale={locale}
-                />
+                {trend.some((point) => point.is_partial === true) ? (
+                  <p className="text-content-secondary pb-2 text-xs" data-testid="partial-note">
+                    {t('commerce.grain.partialNote', { grain: t(`commerce.grain.${grain}`) })}
+                  </p>
+                ) : null}
+                <RevenueChart points={trend} currency={summary.currency} locale={locale} />
               </ChartFrame>
 
               <section className="flex flex-col gap-3" aria-labelledby="commerce-attribution">

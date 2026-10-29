@@ -12,6 +12,7 @@ use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Domain\Access\Permission;
 use App\Domain\Commerce\RevenueSource;
+use App\Domain\Commerce\TrendGrain;
 use DateTimeImmutable;
 
 /**
@@ -55,6 +56,8 @@ final readonly class GetStoreAnalytics
         ?string $clientId = null,
         ?string $storeId = null,
         int $limit = 20,
+        TrendGrain $grain = TrendGrain::Day,
+        bool $comparePrevious = false,
     ): StoreAnalyticsView {
         // Again, so the use case is safe however it is called. See `PERMISSION`.
         $this->guard->ensure(self::PERMISSION);
@@ -69,6 +72,7 @@ final readonly class GetStoreAnalytics
             storeId: $storeId,
             // Clamped rather than trusted: a caller asking for ten thousand rows gets a hundred.
             limit: max(1, min($limit, 100)),
+            grain: $grain,
         );
 
         return new StoreAnalyticsView(
@@ -81,6 +85,8 @@ final readonly class GetStoreAnalytics
             from: $from,
             until: $until,
             ledger: $this->analytics->ledger($query),
+            series: $this->analytics->series($query),
+            comparison: $comparePrevious ? $this->analytics->comparison($query) : null,
         );
     }
 }

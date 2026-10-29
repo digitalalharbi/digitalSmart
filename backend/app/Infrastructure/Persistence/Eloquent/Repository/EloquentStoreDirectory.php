@@ -14,6 +14,7 @@ use App\Domain\Workspace\WorkspaceId;
 use App\Infrastructure\Saas\RunningWorkspaces;
 use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -73,7 +74,11 @@ final readonly class EloquentStoreDirectory implements StoreDirectory
             'name' => $store->name,
             'domain' => $store->domain,
             'currency' => $store->currency,
-            'timezone' => $store->timezone,
+            /*
+             * A real zone name or nothing. The analytics read this column straight into `AT TIME ZONE`, which fails the whole query
+             * on a name it does not know — and the name comes from a provider's payload, which this product does not control.
+             */
+            'timezone' => $store->timezone !== null && in_array($store->timezone, DateTimeZone::listIdentifiers(), true) ? $store->timezone : null,
             'is_active' => true,
             /*
              * Deliberately null, both of them. A store registered a second ago has not been read, and a

@@ -68,6 +68,38 @@ export type DailyRevenuePoint = {
   orders: number;
   net_revenue_minor: number;
   refunded_minor: number;
+  /** The period cuts through this week or month, so it holds fewer days than its neighbours. */
+  is_partial?: boolean;
+};
+
+export type TrendGrain = 'day' | 'week' | 'month';
+
+/** Revenue at one grain; each point is dated by the first day of its bucket in the store's own calendar. */
+export type TrendSeries = {
+  grain: TrendGrain;
+  /** Weeks begin on Monday. */
+  week_starts_on: 'monday';
+  points: DailyRevenuePoint[];
+};
+
+/**
+ * The same number of days immediately before the period. The changes are null — never zero — when there is nothing to compare
+ * with, and `unavailable_reason` says whether the store sold nothing then or was not being read yet.
+ */
+export type StoreComparison = {
+  previous: {
+    from: string;
+    until: string;
+    orders: number;
+    net_revenue_minor: number;
+    average_order_value_minor: number | null;
+  };
+  change: {
+    orders_pct: number | null;
+    net_revenue_pct: number | null;
+    average_order_value_pct: number | null;
+  };
+  unavailable_reason: 'nothing_sold_before' | 'before_the_data' | null;
 };
 
 /**
@@ -129,6 +161,8 @@ export type StoreAnalytics = {
   customer_mix: CustomerMix;
   /** Absent where the audience was not given it (the client portal's revenue module). */
   ledger?: RevenueLedger;
+  series?: TrendSeries;
+  comparison?: StoreComparison;
 };
 
 export type CommerceQuery = {
@@ -137,6 +171,8 @@ export type CommerceQuery = {
   until?: string;
   client_id?: string | null;
   limit?: number;
+  grain?: TrendGrain;
+  compare?: 'previous';
 };
 
 /**

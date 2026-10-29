@@ -42,5 +42,9 @@ final readonly class StoreAnalyticsView
          * narrower than the agency's, and shipping, tax and discount are the agency's working figures.
          */
         public ?RevenueLedger $ledger = null,
+        /** Null where the audience was not given a trend of its own: the client portal reads the daily series. */
+        public ?TrendSeries $series = null,
+        /** Null unless the previous period was asked for. */
+        public ?StoreComparison $comparison = null,
     ) {}
 }
