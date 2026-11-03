@@ -1,3 +1,4 @@
+import userEvent from '@testing-library/user-event';
 import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/render';
@@ -13,6 +14,8 @@ const base = {
   error: null,
   onShare: vi.fn(),
   onRevoke: vi.fn(),
+  onPause: vi.fn(),
+  onResume: vi.fn(),
   onTakeSnapshot: vi.fn(),
 };
 
@@ -70,6 +73,7 @@ describe('SharePanel', () => {
             is_frozen: false,
             expires_at: '2026-12-01T00:00:00Z',
             revoked_at: null,
+            paused_at: null,
             revoked_reason: null,
             recipient_label: 'Noura',
             view_count: 4,
@@ -84,5 +88,57 @@ describe('SharePanel', () => {
     expect(screen.getByText('Noura')).toBeInTheDocument();
     expect(screen.getByText('4')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Turn off' })).toBeInTheDocument();
+  });
+
+  const link = (state: 'active' | 'paused' | 'revoked') => ({
+    id: 's1',
+    hint: 'AAAAAAAAAAAA',
+    state,
+    state_label: state,
+    is_frozen: false,
+    expires_at: '2026-12-01T00:00:00Z',
+    revoked_at: state === 'revoked' ? '2026-10-02T00:00:00Z' : null,
+    paused_at: state === 'paused' ? '2026-10-02T00:00:00Z' : null,
+    revoked_reason: state === 'revoked' ? 'Wrong address' : null,
+    recipient_label: null,
+    view_count: 0,
+    last_viewed_at: null,
+    created_by_name: null,
+    created_at: '2026-10-01T00:00:00Z',
+  });
+
+  it('pauses a live link without asking for a reason, and resumes a paused one at the same address', async () => {
+    const onPause = vi.fn();
+    const onResume = vi.fn();
+    const user = userEvent.setup();
+    const { rerender } = await renderWithProviders(
+      <SharePanel {...base} freshToken={null} shares={[link('active')]} onPause={onPause} />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Pause' }));
+    expect(onPause).toHaveBeenCalledWith('s1');
+    expect(screen.queryByRole('button', { name: 'Resume' })).not.toBeInTheDocument();
+
+    rerender(
+      <SharePanel {...base} freshToken={null} shares={[link('paused')]} onResume={onResume} />,
+    );
+    await user.click(await screen.findByRole('button', { name: 'Resume' }));
+    expect(onResume).toHaveBeenCalledWith('s1');
+    expect(screen.getByRole('button', { name: 'Turn off' })).toBeInTheDocument();
+  });
+
+  it('offers neither pause nor resume on a revoked link', async () => {
+    await renderWithProviders(
+      <SharePanel {...base} freshToken={null} shares={[link('revoked')]} />,
+    );
+    expect(screen.queryByRole('button', { name: 'Pause' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Resume' })).not.toBeInTheDocument();
+  });
+
+  it('offers no pause to a reader who may not share', async () => {
+    await renderWithProviders(
+      <SharePanel {...base} canShare={false} freshToken={null} shares={[link('active')]} />,
+    );
+    expect(screen.queryByRole('button', { name: 'Pause' })).not.toBeInTheDocument();
   });
 });

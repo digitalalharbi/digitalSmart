@@ -97,6 +97,8 @@ vi.mock('./api', () => ({
 
     return Promise.resolve();
   },
+  pauseShare: () => Promise.resolve(),
+  resumeShare: () => Promise.resolve(),
   csvUrl: (id: string) => `/api/reports/${id}/csv`,
   xlsxUrl: (id: string) => `/api/reports/${id}/xlsx`,
 }));
@@ -343,6 +345,7 @@ beforeEach(() => {
       is_frozen: false,
       expires_at: '2026-10-15T09:00:00+00:00',
       revoked_at: null,
+      paused_at: null,
       revoked_reason: null,
       recipient_label: 'Alhambra',
       view_count: 3,
@@ -719,6 +722,7 @@ describe('the reports centre', function () {
         is_frozen: false,
         expires_at: '2026-11-08T09:00:00+00:00',
         revoked_at: null,
+        paused_at: null,
         revoked_reason: null,
         recipient_label: 'Noura',
         view_count: 4,

@@ -35,6 +35,8 @@ import {
   useReportDraftQuery,
   useReportVocabularyQuery,
   useReportsQuery,
+  usePauseShareMutation,
+  useResumeShareMutation,
   useRevokeShareMutation,
   useShareMutation,
   useSharesQuery,
@@ -122,16 +124,18 @@ export function ReportsPage() {
   const snapshot = useSnapshotMutation();
   const share = useShareMutation();
   const revoke = useRevokeShareMutation();
+  const pause = usePauseShareMutation();
+  const resume = useResumeShareMutation();
 
   const error = useMemo(() => {
-    for (const mutation of [create, update, remove, snapshot, share, revoke]) {
+    for (const mutation of [create, update, remove, snapshot, share, revoke, pause, resume]) {
       if (mutation.error instanceof ApiError && mutation.error.message !== '') {
         return mutation.error.message;
       }
     }
 
     return null;
-  }, [create, update, remove, snapshot, share, revoke]);
+  }, [create, update, remove, snapshot, share, revoke, pause, resume]);
 
   if (!canView) {
     return (
@@ -411,7 +415,13 @@ export function ReportsPage() {
                       title: rendered.data.name,
                       period: `${rendered.data.period.from} – ${rendered.data.period.until}`,
                     }}
-                    isWorking={snapshot.isPending || share.isPending || revoke.isPending}
+                    isWorking={
+                      snapshot.isPending ||
+                      share.isPending ||
+                      revoke.isPending ||
+                      pause.isPending ||
+                      resume.isPending
+                    }
                     error={error}
                     onShare={(input) => {
                       share.mutate(
@@ -430,6 +440,8 @@ export function ReportsPage() {
                       );
                     }}
                     onRevoke={(shareId, reason) => revoke.mutate({ shareId, reason })}
+                    onPause={(shareId) => pause.mutate({ shareId })}
+                    onResume={(shareId) => resume.mutate({ shareId })}
                     onTakeSnapshot={(label) =>
                       snapshot.mutate({
                         reportId: selected,

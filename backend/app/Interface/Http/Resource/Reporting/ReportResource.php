@@ -212,12 +212,12 @@ final readonly class ReportResource implements SnapshotSerialiser
     /**
      * One link in the workspace-wide list: the report it opens, and the same fields a report's own list of links has.
      *
-     * @param  array{id: string, report_id: string, report_name: string, client_name: ?string, hint: string, snapshot_id: ?string, expires_at: DateTimeImmutable, revoked_at: ?DateTimeImmutable, revoked_reason: ?string, recipient_label: ?string, view_count: int, last_viewed_at: ?DateTimeImmutable, created_by_name: ?string, created_at: DateTimeImmutable}  $share
+     * @param  array{id: string, report_id: string, report_name: string, client_name: ?string, hint: string, snapshot_id: ?string, expires_at: DateTimeImmutable, revoked_at: ?DateTimeImmutable, paused_at: ?DateTimeImmutable, revoked_reason: ?string, recipient_label: ?string, view_count: int, last_viewed_at: ?DateTimeImmutable, created_by_name: ?string, created_at: DateTimeImmutable}  $share
      * @return array<string, mixed>
      */
     public static function acrossShare(array $share, DateTimeImmutable $now): array
     {
-        $state = ShareState::of($share['revoked_at'] !== null, $share['expires_at'], $now);
+        $state = ShareState::of($share['revoked_at'] !== null, $share['expires_at'], $now, $share['paused_at'] !== null);
 
         return [
             'id' => $share['id'],
@@ -231,6 +231,7 @@ final readonly class ReportResource implements SnapshotSerialiser
             'is_frozen' => $share['snapshot_id'] !== null,
             'expires_at' => $share['expires_at']->format(DateTimeImmutable::ATOM),
             'revoked_at' => $share['revoked_at']?->format(DateTimeImmutable::ATOM),
+            'paused_at' => $share['paused_at']?->format(DateTimeImmutable::ATOM),
             'revoked_reason' => $share['revoked_reason'],
             'recipient_label' => $share['recipient_label'],
             'view_count' => $share['view_count'],
@@ -314,6 +315,7 @@ final readonly class ReportResource implements SnapshotSerialiser
             'is_frozen' => $share->isFrozen(),
             'expires_at' => $share->expiresAt->format(DateTimeImmutable::ATOM),
             'revoked_at' => $share->revokedAt?->format(DateTimeImmutable::ATOM),
+            'paused_at' => $share->pausedAt?->format(DateTimeImmutable::ATOM),
             'revoked_reason' => $share->revokedReason,
             'recipient_label' => $share->recipientLabel,
             'view_count' => $share->viewCount,

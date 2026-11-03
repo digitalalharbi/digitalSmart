@@ -46,6 +46,15 @@ interface ReportShareStore
     /** @return list<ShareView> */
     public function forReport(string $workspaceId, string $reportId): array;
 
+    /**
+     * Switch a live link off without ending it. Null when it is not there, is another workspace's, or is not live
+     * (revoked, expired or already paused) — one answer for all of them, so nothing is confirmed across a tenant.
+     */
+    public function pause(string $workspaceId, string $shareId, DateTimeImmutable $at): ?ShareView;
+
+    /** Switch a paused link back on at the same address. Never extends the expiry and never revives a revoked link. */
+    public function resume(string $workspaceId, string $shareId, DateTimeImmutable $at): ?ShareView;
+
     public function revoke(string $workspaceId, string $shareId, string $reason, DateTimeImmutable $at): ?ShareView;
 
     /**

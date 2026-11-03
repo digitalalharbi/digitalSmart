@@ -24,6 +24,9 @@ enum ShareState: string
 
     case Revoked = 'revoked';
 
+    /** Switched off by a person and switchable back on: the same URL, the same token, no new credential. */
+    case Paused = 'paused';
+
     /**
      * Derived rather than stored.
      *
@@ -32,7 +35,7 @@ enum ShareState: string
      */
     case Expired = 'expired';
 
-    public static function of(bool $isRevoked, ?DateTimeImmutable $expiresAt, DateTimeImmutable $now): self
+    public static function of(bool $isRevoked, ?DateTimeImmutable $expiresAt, DateTimeImmutable $now, bool $isPaused = false): self
     {
         if ($isRevoked) {
             return self::Revoked;
@@ -40,6 +43,11 @@ enum ShareState: string
 
         if ($expiresAt !== null && $expiresAt < $now) {
             return self::Expired;
+        }
+
+        /* After revoked and expired: pausing a link that is already dead must not make it look resumable. */
+        if ($isPaused) {
+            return self::Paused;
         }
 
         return self::Active;
@@ -55,6 +63,7 @@ enum ShareState: string
         return match ($this) {
             self::Active => 'Active',
             self::Revoked => 'Revoked',
+            self::Paused => 'Paused',
             self::Expired => 'Expired',
         };
     }
@@ -71,6 +80,7 @@ enum ShareState: string
             self::Active => null,
             self::Revoked => 'This link has been turned off. Ask whoever sent it for a new one.',
             self::Expired => 'This link has expired. Ask whoever sent it for a new one.',
+            self::Paused => 'This link is paused for now. It will work again at the same address when whoever sent it turns it back on.',
         };
     }
 

@@ -101,6 +101,32 @@ final readonly class EloquentReportShareStore implements ReportShareStore
         return $shares;
     }
 
+    public function pause(string $workspaceId, string $shareId, DateTimeImmutable $at): ?ShareView
+    {
+        $changed = DB::table('report_shares')
+            ->where('workspace_id', $workspaceId)
+            ->where('id', $shareId)
+            ->whereNull('revoked_at')
+            ->whereNull('paused_at')
+            ->where('expires_at', '>', $at)
+            ->update(['paused_at' => $at, 'updated_at' => now()]);
+
+        return $changed === 0 ? null : $this->find($workspaceId, $shareId);
+    }
+
+    public function resume(string $workspaceId, string $shareId, DateTimeImmutable $at): ?ShareView
+    {
+        $changed = DB::table('report_shares')
+            ->where('workspace_id', $workspaceId)
+            ->where('id', $shareId)
+            ->whereNull('revoked_at')
+            ->whereNotNull('paused_at')
+            ->where('expires_at', '>', $at)
+            ->update(['paused_at' => null, 'updated_at' => now()]);
+
+        return $changed === 0 ? null : $this->find($workspaceId, $shareId);
+    }
+
     public function revoke(
         string $workspaceId,
         string $shareId,
@@ -168,6 +194,7 @@ final readonly class EloquentReportShareStore implements ReportShareStore
             createdByName: $this->text($values['created_by_name'] ?? null),
             createdAt: $this->date($values['created_at'] ?? null) ?? new DateTimeImmutable('@0'),
             workspaceId: (string) ($values['workspace_id'] ?? ''),
+            pausedAt: $this->date($values['paused_at'] ?? null),
         );
     }
 

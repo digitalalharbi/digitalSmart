@@ -6,6 +6,8 @@ namespace App\Interface\Http\Controller\Reporting;
 
 use App\Application\Analytics\DTO\AnalyticsFilters;
 use App\Application\Reporting\Command\DeleteReport;
+use App\Application\Reporting\Command\PauseShare;
+use App\Application\Reporting\Command\ResumeShare;
 use App\Application\Reporting\Command\RevokeShare;
 use App\Application\Reporting\Command\SaveReport;
 use App\Application\Reporting\Command\ShareReport;
@@ -247,6 +249,22 @@ final class ReportController extends Controller
                 'code' => $refusal->reasonCode,
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /** Switch a live link off without ending it; the address survives. */
+    public function pauseShare(string $share, PauseShare $pause): JsonResponse
+    {
+        $pause($share);
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /** Switch a paused link back on at the same address. */
+    public function resumeShare(string $share, ResumeShare $resume): JsonResponse
+    {
+        $resume($share);
 
         return response()->json(null, Response::HTTP_NO_CONTENT);
     }

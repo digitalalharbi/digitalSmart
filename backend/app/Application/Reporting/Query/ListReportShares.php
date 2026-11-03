@@ -29,7 +29,7 @@ final readonly class ListReportShares
     ) {}
 
     /**
-     * @return list<array{id: string, report_id: string, report_name: string, client_name: ?string, hint: string, snapshot_id: ?string, expires_at: DateTimeImmutable, revoked_at: ?DateTimeImmutable, revoked_reason: ?string, recipient_label: ?string, view_count: int, last_viewed_at: ?DateTimeImmutable, created_by_name: ?string, created_at: DateTimeImmutable}>
+     * @return list<array{id: string, report_id: string, report_name: string, client_name: ?string, hint: string, snapshot_id: ?string, expires_at: DateTimeImmutable, revoked_at: ?DateTimeImmutable, paused_at: ?DateTimeImmutable, revoked_reason: ?string, recipient_label: ?string, view_count: int, last_viewed_at: ?DateTimeImmutable, created_by_name: ?string, created_at: DateTimeImmutable}>
      */
     public function __invoke(): array
     {
