@@ -2764,6 +2764,21 @@
       "nothingToCheck": "No order reported all four parts, so they could not be checked against the total. That is not the same as saying they add up.",
       "reconciles": "The parts add up to the total on all {{checked}} orders that reported them.",
       "doesNotReconcile": "On {{off}} of the {{checked}} orders that reported all four parts, they do not add up to the total ({{amount}} apart in all). The provider's total may include a fee or rounding the breakdown does not carry."
+    },
+    "grain": {
+      "label": "Trend by",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "partial": "partial",
+      "partialNote": "The first or last {{grain}} only partly falls inside the period, so it holds fewer days than the others and is not comparable with them. Weeks begin on Monday."
+    },
+    "comparison": {
+      "basis": "Changes are against the previous {{days}} days ({{from}} to {{until}}).",
+      "reasons": {
+        "nothing_sold_before": "Nothing was sold in the {{days}} days before this period, so there is no change to show.",
+        "before_the_data": "The store was not being read in the {{days}} days before this period, so there is nothing to compare it with."
+      }
     }
   },
   "chart": {

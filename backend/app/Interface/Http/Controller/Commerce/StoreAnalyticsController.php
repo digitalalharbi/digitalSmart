@@ -7,6 +7,7 @@ namespace App\Interface\Http\Controller\Commerce;
 use App\Application\Commerce\Query\GetStoreAnalytics;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Domain\Commerce\RevenueSource;
+use App\Domain\Commerce\TrendGrain;
 use App\Interface\Http\Controller\Controller;
 use App\Interface\Http\Resource\Commerce\StoreAnalyticsResource;
 use DateTimeImmutable;
@@ -60,6 +61,26 @@ final class StoreAnalyticsController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        $grain = TrendGrain::tryFrom($request->string('grain')->value() ?: TrendGrain::Day->value);
+
+        if ($grain === null) {
+            return response()->json([
+                'message' => 'Choose a grain the trend has: day, week or month.',
+                'code' => 'invalid_grain',
+                'allowed' => TrendGrain::values(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $compare = $request->string('compare')->value();
+
+        if (! in_array($compare, ['', 'none', 'previous'], true)) {
+            return response()->json([
+                'message' => 'The only comparison is with the period immediately before: compare=previous.',
+                'code' => 'invalid_comparison',
+                'allowed' => ['none', 'previous'],
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         return response()->json([
             'data' => StoreAnalyticsResource::view($analytics(
                 revenueSource: $revenueSource,
@@ -68,6 +89,8 @@ final class StoreAnalyticsController extends Controller
                 clientId: $this->scopeId($request, 'client_id'),
                 storeId: $this->scopeId($request, 'store_id'),
                 limit: (int) ($request->integer('limit') ?: 20),
+                grain: $grain,
+                comparePrevious: $compare === 'previous',
             )),
         ]);
     }

@@ -17,6 +17,8 @@ export async function fetchStoreAnalytics(query: CommerceQuery): Promise<StoreAn
       ...(query.until === undefined ? {} : { until: query.until }),
       ...(query.client_id == null ? {} : { client_id: query.client_id }),
       ...(query.limit === undefined ? {} : { limit: query.limit }),
+      ...(query.grain === undefined ? {} : { grain: query.grain }),
+      ...(query.compare === undefined ? {} : { compare: query.compare }),
     },
   });
 
