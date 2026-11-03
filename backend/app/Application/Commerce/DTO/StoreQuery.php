@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Commerce\DTO;
 
 use App\Domain\Commerce\RevenueSource;
+use App\Domain\Commerce\TrendGrain;
 use DateTimeImmutable;
 
 /**
@@ -27,5 +28,6 @@ final readonly class StoreQuery
         public ?string $storeId = null,
         /** Rows to return from a breakdown. The rest are not silently dropped — see the use case. */
         public int $limit = 20,
+        public TrendGrain $grain = TrendGrain::Day,
     ) {}
 }

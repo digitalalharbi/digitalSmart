@@ -255,6 +255,22 @@ describe('reading revenue', function (): void {
         expect($body['code'])->toBe('revenue_source_required');
         expect($body['available'])->not->toBeEmpty();
     });
+
+    it('does not give a client the agency’s ledger of discounts, shipping and tax', function (): void {
+        $setup = portalReadScenario();
+        openPortal($setup, ['store_revenue']);
+
+        $response = test()->actingAs($setup['viewer'])
+            ->getJson('/api/portal/'.$setup['clientId'].'/revenue?revenue_source=salla')
+            ->assertOk();
+
+        /*
+         * The ledger is the agency's working figure. The portal's revenue module has its own, narrower disclosure; adding the
+         * breakdown to the shared resource must not widen what a client reads.
+         */
+        $response->assertJsonMissingPath('data.ledger');
+        expect($response->json('data'))->toHaveKey('summary');
+    });
 });
 
 describe('a portal that was switched off', function (): void {

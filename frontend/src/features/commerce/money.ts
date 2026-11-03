@@ -1,6 +1,6 @@
 import { currencyExponent } from '@/shared/lib/money';
 import type { MetricSourceValue, MetricValue } from '@/shared/metrics';
-import type { StoreRevenueSummary } from './types';
+import type { StoreComparison, StoreRevenueSummary } from './types';
 
 /*
  * Money formatting is not here: it is `formatMinor` in `@/shared/lib/format`, which reads
@@ -72,39 +72,74 @@ function summaryMetric(options: {
 export function summaryMetrics(
   summary: StoreRevenueSummary,
   labels: { netRevenue: string; orders: string; aov: string; customers: string; noOrders: string },
+  comparison?: StoreComparison,
 ): MetricValue[] {
   const common = {
     source: summary.source,
     sourceLabel: summary.source_label,
   };
 
+  /*
+   * The change the server computed, against the period before. A null change stays null — the card then shows no badge rather
+   * than a flat one — and for these three figures a rise is good, so the colour follows the sign. Customers carry none: the
+   * comparison does not count them.
+   */
+  const withChange = (
+    metric: MetricValue,
+    pct: number | null | undefined,
+    previous: number | null,
+  ): MetricValue =>
+    pct === null || pct === undefined
+      ? metric
+      : {
+          ...metric,
+          comparison_value: previous,
+          change_ratio: pct / 100,
+          change_is_good: pct === 0 ? null : pct > 0,
+        };
+
+  const change = comparison?.change;
+  const previous = comparison?.previous;
+
   return [
-    summaryMetric({
-      ...common,
-      metric: 'net_revenue',
-      label: labels.netRevenue,
-      value: summary.net_revenue_minor,
-      format: 'currency',
-      currency: summary.currency,
-      isMinorUnits: true,
-    }),
-    summaryMetric({
-      ...common,
-      metric: 'orders',
-      label: labels.orders,
-      value: summary.orders,
-      format: 'count',
-    }),
-    summaryMetric({
-      ...common,
-      metric: 'aov',
-      label: labels.aov,
-      value: summary.average_order_value_minor,
-      format: 'currency',
-      currency: summary.currency,
-      isMinorUnits: true,
-      unavailableReason: summary.average_order_value_minor === null ? labels.noOrders : null,
-    }),
+    withChange(
+      summaryMetric({
+        ...common,
+        metric: 'net_revenue',
+        label: labels.netRevenue,
+        value: summary.net_revenue_minor,
+        format: 'currency',
+        currency: summary.currency,
+        isMinorUnits: true,
+      }),
+      change?.net_revenue_pct,
+      previous?.net_revenue_minor ?? null,
+    ),
+    withChange(
+      summaryMetric({
+        ...common,
+        metric: 'orders',
+        label: labels.orders,
+        value: summary.orders,
+        format: 'count',
+      }),
+      change?.orders_pct,
+      previous?.orders ?? null,
+    ),
+    withChange(
+      summaryMetric({
+        ...common,
+        metric: 'aov',
+        label: labels.aov,
+        value: summary.average_order_value_minor,
+        format: 'currency',
+        currency: summary.currency,
+        isMinorUnits: true,
+        unavailableReason: summary.average_order_value_minor === null ? labels.noOrders : null,
+      }),
+      change?.average_order_value_pct,
+      previous?.average_order_value_minor ?? null,
+    ),
     summaryMetric({
       ...common,
       metric: 'customers',

@@ -17,6 +17,7 @@ use App\Domain\Integration\Provider;
 use App\Infrastructure\Persistence\Eloquent\Model\Client;
 use App\Infrastructure\Persistence\Eloquent\Model\Project;
 use App\Infrastructure\Persistence\Eloquent\Model\Store;
+use Illuminate\Support\Facades\DB;
 use Tests\Support\WorkspaceScenario;
 
 /*
@@ -599,7 +600,8 @@ describe('access', function (): void {
     it('includes an order placed on the last day of the window', function (): void {
         $setup = analyticsScenario();
 
-        writeOrders($setup, [analyticsOrder('last-1', 50_000, placedAt: '2026-10-31 22:30:00')]);
+        // 20:30 UTC on 31 October is 23:30 that evening in the store's own calendar (Riyadh, UTC+3).
+        writeOrders($setup, [analyticsOrder('last-1', 50_000, placedAt: '2026-10-31 20:30:00')]);
 
         $data = fetchAnalytics($setup);
 
@@ -801,5 +803,560 @@ describe('new versus returning customers', function (): void {
 
         // A split that only mentioned "we cannot tell" when it was large would teach a reader it never happens.
         expect($buckets)->toBe(['new', 'returning', 'unknown']);
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| The store's own day (DS-UC-202)
+|--------------------------------------------------------------------------
+|
+| Instants are stored as UTC. A store sells in its own calendar, so a period is cut in the store's own time zone: "2 October" for a
+| Riyadh store runs from 21:00 UTC on 1 October. Before this the period and the daily series were cut at UTC midnight, which moved the
+| first three hours of every Riyadh day onto the day before — and moved a month's first evening into the previous month.
+|
+*/
+
+/** @return array{scenario: WorkspaceScenario, client: Client, project: Project, store: Store} */
+function dayCutScenario(?string $timezone = 'Asia/Riyadh'): array
+{
+    $setup = analyticsScenario();
+    $setup['store']->forceFill(['timezone' => $timezone])->save();
+
+    return $setup;
+}
+
+/**
+ * @param  array<string, mixed>  $data
+ * @return array<string, int>
+ */
+function ordersByDay(array $data): array
+{
+    /** @var list<array{date: string, orders: int}> $daily */
+    $daily = $data['daily'];
+
+    return array_column($daily, 'orders', 'date');
+}
+
+describe('the store’s own day', function (): void {
+    it('puts the first evening hours of a Riyadh day on that day, not the day before', function (): void {
+        $setup = dayCutScenario();
+        // 22:30 UTC on 1 October is 01:30 on 2 October in Riyadh.
+        writeOrders($setup, [analyticsOrder('late', 10_000, placedAt: '2026-10-01 22:30:00')]);
+
+        expect(ordersByDay(fetchAnalytics($setup)))->toBe(['2026-10-02' => 1]);
+    });
+
+    it('includes that order in 2 October and not in 1 October when the period is a single day', function (): void {
+        $setup = dayCutScenario();
+        writeOrders($setup, [analyticsOrder('late', 10_000, placedAt: '2026-10-01 22:30:00')]);
+
+        $second = fetchAnalytics($setup, ['from' => '2026-10-02', 'until' => '2026-10-02']);
+        $first = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-01']);
+
+        expect($second['summary']['orders'])->toBe(1)->and($first['summary']['orders'])->toBe(0);
+    });
+
+    it('cuts exactly at the store’s local midnight', function (): void {
+        $setup = dayCutScenario();
+        writeOrders($setup, [
+            // 20:59:59 UTC is 23:59:59 on 1 October in Riyadh; 21:00:00 UTC is 00:00:00 on 2 October.
+            analyticsOrder('last-second', 10_000, placedAt: '2026-10-01 20:59:59'),
+            analyticsOrder('first-second', 20_000, placedAt: '2026-10-01 21:00:00'),
+        ]);
+
+        expect(ordersByDay(fetchAnalytics($setup)))->toBe(['2026-10-01' => 1, '2026-10-02' => 1]);
+    });
+
+    it('moves a month’s first Riyadh evening into that month', function (): void {
+        $setup = dayCutScenario();
+        writeOrders($setup, [analyticsOrder('october-first', 10_000, placedAt: '2026-09-30 21:30:00')]);
+
+        $october = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-31']);
+        $september = fetchAnalytics($setup, ['from' => '2026-09-01', 'until' => '2026-09-30']);
+
+        expect($october['summary']['orders'])->toBe(1)->and($september['summary']['orders'])->toBe(0);
+    });
+
+    it('cuts a store with no time zone at UTC midnight', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [analyticsOrder('late', 10_000, placedAt: '2026-10-01 22:30:00')]);
+
+        expect(ordersByDay(fetchAnalytics($setup)))->toBe(['2026-10-01' => 1]);
+    });
+
+    it('cuts each store in its own zone when a client has stores in two', function (): void {
+        $setup = dayCutScenario();
+        /** @var Store $dubai */
+        $dubai = Store::query()->create([
+            'workspace_id' => $setup['scenario']->workspace->getKey(), 'client_id' => $setup['client']->getKey(),
+            'provider' => Provider::Salla->value, 'external_id' => 'store-dubai', 'name' => 'Dubai', 'currency' => 'SAR',
+            'timezone' => 'Asia/Dubai',
+        ]);
+        writeOrders($setup, [analyticsOrder('riyadh', 10_000, placedAt: '2026-10-01 21:30:00')]);
+        app(CommerceStore::class)->upsertOrders(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $dubai->getKey(),
+            [analyticsOrder('dubai', 10_000, placedAt: '2026-10-01 21:30:00')],
+            RevenueSource::Salla,
+            MetricSource::Synced,
+        );
+
+        // 21:30 UTC is 00:30 on 2 October in Riyadh (+3) but 01:30 on 2 October in Dubai (+4): both on the 2nd, each by its own rule.
+        expect(ordersByDay(fetchAnalytics($setup)))->toBe(['2026-10-02' => 2]);
+        // And 20:30 UTC is 23:30 on the 1st in Riyadh but 00:30 on the 2nd in Dubai: split across two days.
+        writeOrders($setup, [analyticsOrder('riyadh-early', 5_000, placedAt: '2026-10-01 20:30:00')]);
+        app(CommerceStore::class)->upsertOrders(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $dubai->getKey(),
+            [analyticsOrder('dubai-early', 5_000, placedAt: '2026-10-01 20:30:00')],
+            RevenueSource::Salla,
+            MetricSource::Synced,
+        );
+        expect(ordersByDay(fetchAnalytics($setup)))->toBe(['2026-10-01' => 1, '2026-10-02' => 3]);
+    });
+
+    it('keeps the summary, the ledger and the daily series on one calendar', function (): void {
+        $setup = dayCutScenario();
+        writeOrders($setup, [
+            analyticsOrder('a', 10_000, placedAt: '2026-10-01 20:30:00'),
+            analyticsOrder('b', 20_000, placedAt: '2026-10-01 21:30:00'),
+            analyticsOrder('c', 40_000, placedAt: '2026-10-31 20:30:00'),
+            analyticsOrder('d', 80_000, placedAt: '2026-10-31 21:30:00'),
+        ]);
+
+        $data = fetchAnalytics($setup);
+
+        // 31 October 21:30 UTC is 1 November in Riyadh, so it is outside October; 1 October 20:30 UTC is still 1 October inside it.
+        expect($data['summary']['orders'])->toBe(3)
+            ->and(array_sum(ordersByDay($data)))->toBe(3)
+            ->and(array_sum(array_column($data['daily'], 'net_revenue_minor')))->toBe($data['summary']['net_revenue_minor'])
+            ->and($data['summary']['net_revenue_minor'])->toBe(70_000);
+    });
+
+    it('classifies a customer new or returning by the store’s own day', function (): void {
+        $setup = dayCutScenario();
+        app(CommerceStore::class)->upsertCustomers(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['store']->getKey(),
+            [new CustomerRecord(externalId: 'cust-0', name: 'Layla'), new CustomerRecord(externalId: 'cust-1', name: 'Omar')],
+        );
+        $first = new OrderRecord(
+            externalId: 'first', paymentState: PaymentState::Paid, fulfilmentState: FulfilmentState::Delivered, currency: 'SAR',
+            totalMinor: 10_000, placedAt: new DateTimeImmutable('2026-09-30 21:30:00'), attribution: OrderAttribution::none(),
+            customerExternalId: 'cust-1',
+        );
+        $earlier = new OrderRecord(
+            externalId: 'earlier', paymentState: PaymentState::Paid, fulfilmentState: FulfilmentState::Delivered, currency: 'SAR',
+            totalMinor: 5_000, placedAt: new DateTimeImmutable('2026-08-15 10:00:00'), attribution: OrderAttribution::none(),
+            customerExternalId: 'cust-0',
+        );
+        writeOrders($setup, [$earlier, $first]);
+        app(CommerceStore::class)->recalculateCustomerTotals(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['store']->getKey(),
+        );
+
+        $mix = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-31'])['customer_mix'];
+
+        // cust-1's first order is 00:30 on 1 October in Riyadh: new this month, not a September customer.
+        expect($mix['new_customers'])->toBe(1)->and($mix['returning_customers'])->toBe(0);
+    });
+
+    it('stores a real zone name, and nothing for a name it does not know', function (string $given, ?string $stored): void {
+        $setup = analyticsScenario();
+
+        $view = app(App\Application\Commerce\Contract\StoreDirectory::class)->register(
+            (string) $setup['scenario']->workspace->getKey(),
+            (string) $setup['client']->getKey(),
+            Provider::Zid,
+            new App\Application\Commerce\DTO\StoreRecord(externalId: 'tz-'.md5($given), name: 'Zone', currency: 'SAR', timezone: $given),
+            null,
+        );
+
+        // A name the database does not know would fail every analytics query for the client, and it comes from a provider's payload.
+        expect($view)->not->toBeNull()
+            ->and(DB::table('stores')->where('external_id', 'tz-'.md5($given))->value('timezone'))->toBe($stored);
+    })->with([
+        'a real zone' => ['Asia/Riyadh', 'Asia/Riyadh'],
+        'an invented one' => ['Mars/Olympus_Mons', null],
+        'an offset, which is not a zone name' => ['+03:00', null],
+    ]);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Trends and the previous period (DS-UC-202)
+|--------------------------------------------------------------------------
+|
+| A trend is read at a grain; a change is read against a period that can be compared with it. Weeks start on Monday (ISO) and say so.
+| A bucket the window cuts through — the week that began before the period, the month that ends after it — is flagged partial rather
+| than drawn as if it were whole, because a short bucket beside full ones reads as a fall. The previous period is the same number of
+| days immediately before; where there is nothing to compare with, the change is absent and says why, never zero.
+|
+*/
+
+/**
+ * @param  array<string, mixed>  $data
+ * @return array<string, array{orders: int, partial: bool}>
+ */
+function seriesOf(array $data): array
+{
+    /** @var list<array{date: string, orders: int, is_partial: bool}> $points */
+    $points = $data['series']['points'];
+
+    return array_combine(
+        array_column($points, 'date'),
+        array_map(static fn (array $p): array => ['orders' => $p['orders'], 'partial' => $p['is_partial']], $points),
+    );
+}
+
+describe('the grain of a trend', function (): void {
+    it('groups by ISO week, beginning on Monday, and names its grain', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [
+            analyticsOrder('mon', 10_000, placedAt: '2026-10-05 10:00:00'),
+            analyticsOrder('sun', 10_000, placedAt: '2026-10-11 20:00:00'),
+            analyticsOrder('next-mon', 10_000, placedAt: '2026-10-12 08:00:00'),
+        ]);
+
+        $data = fetchAnalytics($setup, ['grain' => 'week']);
+
+        expect($data['series']['grain'])->toBe('week')
+            ->and(seriesOf($data))->toBe(['2026-10-05' => ['orders' => 2, 'partial' => false], '2026-10-12' => ['orders' => 1, 'partial' => false]]);
+    });
+
+    it('flags the bucket a window cuts through, and only that one', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [
+            analyticsOrder('first-week', 10_000, placedAt: '2026-10-01 10:00:00'),   // Thursday: its week began 28 September
+            analyticsOrder('middle', 10_000, placedAt: '2026-10-14 10:00:00'),
+            analyticsOrder('last-week', 10_000, placedAt: '2026-10-30 10:00:00'),    // its week ends 1 November
+        ]);
+
+        $partial = array_map(static fn (array $b): bool => $b['partial'], seriesOf(fetchAnalytics($setup, ['grain' => 'week'])));
+
+        expect($partial)->toBe(['2026-09-28' => true, '2026-10-12' => false, '2026-10-26' => true]);
+    });
+
+    it('groups by month, and calls a whole month whole', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [
+            analyticsOrder('sep', 10_000, placedAt: '2026-09-20 10:00:00'),
+            analyticsOrder('oct', 20_000, placedAt: '2026-10-10 10:00:00'),
+        ]);
+
+        $cut = seriesOf(fetchAnalytics($setup, ['grain' => 'month', 'from' => '2026-09-15', 'until' => '2026-10-15']));
+        $whole = seriesOf(fetchAnalytics($setup, ['grain' => 'month', 'from' => '2026-10-01', 'until' => '2026-10-31']));
+
+        expect($cut)->toBe(['2026-09-01' => ['orders' => 1, 'partial' => true], '2026-10-01' => ['orders' => 1, 'partial' => true]])
+            ->and($whole)->toBe(['2026-10-01' => ['orders' => 1, 'partial' => false]]);
+    });
+
+    it('buckets by the store’s own day', function (): void {
+        $setup = dayCutScenario();
+        // 21:30 UTC on 30 September is 00:30 on 1 October in Riyadh: October's month, not September's.
+        writeOrders($setup, [analyticsOrder('edge', 10_000, placedAt: '2026-09-30 21:30:00')]);
+
+        $series = seriesOf(fetchAnalytics($setup, ['grain' => 'month', 'from' => '2026-09-01', 'until' => '2026-10-31']));
+
+        expect(array_keys($series))->toBe(['2026-10-01']);
+    });
+
+    it('defaults to days, keeps the daily series as it was, and refuses a grain it does not have', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [analyticsOrder('a', 10_000, placedAt: '2026-10-05 10:00:00')]);
+
+        $data = fetchAnalytics($setup);
+
+        expect($data['series']['grain'])->toBe('day')->and(array_column($data['series']['points'], 'date'))->toBe(array_column($data['daily'], 'date'));
+
+        $this->actingAs($setup['scenario']->owner)
+            ->getJson('/api/commerce/analytics?revenue_source=salla&grain=fortnight')
+            ->assertUnprocessable()->assertJsonPath('code', 'invalid_grain');
+    });
+});
+
+describe('the previous period', function (): void {
+    it('is absent unless asked for', function (): void {
+        $setup = dayCutScenario(null);
+
+        expect(fetchAnalytics($setup))->not->toHaveKey('comparison');
+    });
+
+    it('is the same number of days immediately before, and reports the change as a percentage', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [
+            // Previous: 24–30 September (7 days). Current: 1–7 October (7 days).
+            analyticsOrder('p1', 20_000, placedAt: '2026-09-25 10:00:00'),
+            analyticsOrder('p2', 10_000, placedAt: '2026-09-28 10:00:00'),
+            analyticsOrder('c1', 30_000, placedAt: '2026-10-02 10:00:00'),
+            analyticsOrder('c2', 30_000, placedAt: '2026-10-05 10:00:00'),
+            analyticsOrder('c3', 30_000, placedAt: '2026-10-06 10:00:00'),
+        ]);
+
+        $c = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-07', 'compare' => 'previous'])['comparison'];
+
+        expect($c['previous']['from'])->toBe('2026-09-24')->and($c['previous']['until'])->toBe('2026-09-30')
+            ->and($c['previous']['orders'])->toBe(2)->and($c['previous']['net_revenue_minor'])->toBe(30_000)
+            ->and($c['previous']['average_order_value_minor'])->toBe(15_000)
+            ->and($c['unavailable_reason'])->toBeNull()
+            // 30 000 → 90 000 is +200%; 2 → 3 orders is +50%; 15 000 → 30 000 average is +100%.
+            ->and($c['change']['net_revenue_pct'])->toEqual(200.0)
+            ->and($c['change']['orders_pct'])->toEqual(50.0)
+            ->and($c['change']['average_order_value_pct'])->toEqual(100.0);
+    });
+
+    it('reports a fall as a negative change', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [
+            analyticsOrder('p', 40_000, placedAt: '2026-09-25 10:00:00'),
+            analyticsOrder('c', 30_000, placedAt: '2026-10-02 10:00:00'),
+        ]);
+
+        $c = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-07', 'compare' => 'previous'])['comparison'];
+
+        expect($c['change']['net_revenue_pct'])->toEqual(-25.0);
+    });
+
+    it('gives no change, and says why, when nothing was sold in the period before', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [
+            analyticsOrder('early', 5_000, placedAt: '2026-08-01 10:00:00'),   // the store has history, just not in the previous week
+            analyticsOrder('c', 30_000, placedAt: '2026-10-02 10:00:00'),
+        ]);
+
+        $c = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-07', 'compare' => 'previous'])['comparison'];
+
+        // "Up from nothing" has no percentage, and +∞ is a number somebody will quote.
+        expect($c['unavailable_reason'])->toBe('nothing_sold_before')
+            ->and($c['change']['net_revenue_pct'])->toBeNull()->and($c['change']['orders_pct'])->toBeNull()
+            ->and($c['previous']['orders'])->toBe(0);
+    });
+
+    it('says the period before predates the data, rather than that nothing was sold', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [analyticsOrder('c', 30_000, placedAt: '2026-10-02 10:00:00')]);
+
+        $c = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-07', 'compare' => 'previous'])['comparison'];
+
+        // The first order this product holds is in the current period: the store was not being read before it.
+        expect($c['unavailable_reason'])->toBe('before_the_data')->and($c['change']['net_revenue_pct'])->toBeNull();
+    });
+
+    it('gives no average-order change when either period has no average', function (): void {
+        $setup = dayCutScenario(null);
+        writeOrders($setup, [
+            analyticsOrder('p', 10_000, placedAt: '2026-09-25 10:00:00', payment: PaymentState::Pending),
+            analyticsOrder('early', 5_000, placedAt: '2026-08-01 10:00:00'),
+            analyticsOrder('c', 30_000, placedAt: '2026-10-02 10:00:00'),
+        ]);
+
+        $c = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-07', 'compare' => 'previous'])['comparison'];
+
+        expect($c['previous']['average_order_value_minor'])->toBeNull()->and($c['change']['average_order_value_pct'])->toBeNull();
+    });
+
+    it('is cut in the store’s own day, like the period it is compared with', function (): void {
+        $setup = dayCutScenario();
+        writeOrders($setup, [
+            // 21:30 UTC on 30 September is 00:30 on 1 October in Riyadh: the current period, not the previous one.
+            analyticsOrder('edge', 30_000, placedAt: '2026-09-30 21:30:00'),
+            analyticsOrder('before', 10_000, placedAt: '2026-09-25 10:00:00'),
+        ]);
+
+        $c = fetchAnalytics($setup, ['from' => '2026-10-01', 'until' => '2026-10-07', 'compare' => 'previous'])['comparison'];
+
+        expect($c['previous']['orders'])->toBe(1)->and($c['previous']['net_revenue_minor'])->toBe(10_000);
+    });
+
+    it('refuses a comparison it does not have', function (): void {
+        $setup = dayCutScenario(null);
+
+        $this->actingAs($setup['scenario']->owner)
+            ->getJson('/api/commerce/analytics?revenue_source=salla&compare=last_year')
+            ->assertUnprocessable()->assertJsonPath('code', 'invalid_comparison');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| The revenue ledger (DS-UC-201)
+|--------------------------------------------------------------------------
+|
+| What customers were charged, what came back, and what the order totals were made of. The breakdown columns are nullable because a
+| provider may simply not report them (Salla's order list reports a total and nothing else), so every component carries how many of the
+| counted orders reported it. A discount nobody reported is *unavailable*, never zero — and a breakdown that does not add up to the total
+| is published as a difference rather than forced into an equation, because shipping, tax and fees follow each provider's own rules.
+|
+*/
+
+/** An order that reports its breakdown, in minor units; pass null for a part the provider did not report. */
+function ledgerOrder(
+    string $id,
+    int $total,
+    ?int $subtotal = null,
+    ?int $discount = null,
+    ?int $shipping = null,
+    ?int $tax = null,
+    PaymentState $payment = PaymentState::Paid,
+    int $refunded = 0,
+    string $placedAt = '2026-10-02 10:00:00',
+): OrderRecord {
+    return new OrderRecord(
+        externalId: $id,
+        paymentState: $payment,
+        fulfilmentState: FulfilmentState::Delivered,
+        currency: 'SAR',
+        totalMinor: $total,
+        placedAt: new DateTimeImmutable($placedAt),
+        attribution: OrderAttribution::none(),
+        subtotalMinor: $subtotal,
+        discountMinor: $discount,
+        shippingMinor: $shipping,
+        taxMinor: $tax,
+        refundedMinor: $refunded,
+        refunds: $refunded > 0 ? [new RefundRecord($refunded, 'SAR', new DateTimeImmutable($placedAt))] : [],
+    );
+}
+
+/**
+ * @param  array<string, mixed>  $ledger
+ * @return array<string, array<string, mixed>>
+ */
+function ledgerComponents(array $ledger): array
+{
+    /** @var list<array<string, mixed>> $components */
+    $components = $ledger['components'];
+
+    return array_column($components, null, 'key');
+}
+
+describe('the revenue ledger', function (): void {
+    it('states what customers were charged, what was refunded and what is left', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [
+            ledgerOrder('a', total: 115_000, subtotal: 100_000, discount: 10_000, shipping: 10_000, tax: 15_000),
+            ledgerOrder('b', total: 50_000, refunded: 20_000),
+        ]);
+
+        $ledger = fetchAnalytics($setup)['ledger'];
+
+        expect($ledger['currency'])->toBe('SAR')
+            ->and($ledger['orders'])->toBe(2)
+            ->and($ledger['total_minor'])->toBe(165_000)
+            ->and($ledger['refunded_minor'])->toBe(20_000)
+            ->and($ledger['net_minor'])->toBe(145_000);
+    });
+
+    it('leaves out orders that are not money yet, and orders outside the period', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [
+            ledgerOrder('paid', total: 40_000),
+            ledgerOrder('cod', total: 99_000, payment: PaymentState::Pending),
+            // 20:00 UTC on 30 September is 23:00 that evening in the store's own calendar (Riyadh): outside October either way.
+            ledgerOrder('september', total: 77_000, placedAt: '2026-09-30 20:00:00'),
+        ]);
+
+        $ledger = fetchAnalytics($setup)['ledger'];
+
+        expect($ledger['orders'])->toBe(1)->and($ledger['total_minor'])->toBe(40_000);
+    });
+
+    it('sums each component over only the orders that reported it, and says how many that was', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [
+            ledgerOrder('full', total: 115_000, subtotal: 100_000, discount: 10_000, shipping: 10_000, tax: 15_000),
+            ledgerOrder('shipping-only', total: 30_000, shipping: 5_000),
+            ledgerOrder('bare', total: 20_000),
+        ]);
+
+        $components = ledgerComponents(fetchAnalytics($setup)['ledger']);
+
+        expect($components['shipping']['amount_minor'])->toBe(15_000)
+            ->and($components['shipping']['orders_reporting'])->toBe(2)
+            ->and($components['shipping']['orders_counted'])->toBe(3)
+            ->and($components['discount']['amount_minor'])->toBe(10_000)
+            ->and($components['discount']['orders_reporting'])->toBe(1)
+            ->and(array_keys($components))->toBe(['subtotal', 'discount', 'shipping', 'tax']);
+    });
+
+    it('calls a component unavailable, not zero, when no counted order reported it', function (): void {
+        $setup = analyticsScenario();
+        // Salla's order list: a total and nothing else.
+        writeOrders($setup, [ledgerOrder('a', total: 30_000), ledgerOrder('b', total: 45_000)]);
+
+        $components = ledgerComponents(fetchAnalytics($setup)['ledger']);
+
+        foreach (['subtotal', 'discount', 'shipping', 'tax'] as $key) {
+            expect($components[$key]['amount_minor'])->toBeNull()->and($components[$key]['orders_reporting'])->toBe(0);
+        }
+    });
+
+    it('keeps a reported zero apart from an unreported one', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [ledgerOrder('free-shipping', total: 30_000, shipping: 0)]);
+
+        $shipping = ledgerComponents(fetchAnalytics($setup)['ledger'])['shipping'];
+
+        // "Shipped free" is a fact; "nobody said" is not.
+        expect($shipping['amount_minor'])->toBe(0)->and($shipping['orders_reporting'])->toBe(1);
+    });
+
+    it('reconciles an order whose parts add up to its total, and publishes the difference when they do not', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [
+            // 100 000 − 10 000 + 10 000 + 15 000 = 115 000: exact.
+            ledgerOrder('exact', total: 115_000, subtotal: 100_000, discount: 10_000, shipping: 10_000, tax: 15_000),
+            // 100 000 − 0 + 5 000 + 0 = 105 000, but the provider's total is 107 500: a fee the breakdown does not carry.
+            ledgerOrder('fee', total: 107_500, subtotal: 100_000, discount: 0, shipping: 5_000, tax: 0),
+            // Only some parts reported: cannot be checked, so it is not counted as checked.
+            ledgerOrder('partial', total: 60_000, subtotal: 55_000, shipping: 5_000),
+        ]);
+
+        $reconciliation = fetchAnalytics($setup)['ledger']['reconciliation'];
+
+        expect($reconciliation['orders_checked'])->toBe(2)
+            ->and($reconciliation['unexplained_minor'])->toBe(2_500)
+            ->and($reconciliation['reconciles'])->toBeFalse();
+    });
+
+    it('reports nothing to reconcile, rather than a clean bill, when no order reports a full breakdown', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [ledgerOrder('a', total: 30_000, shipping: 2_000)]);
+
+        $reconciliation = fetchAnalytics($setup)['ledger']['reconciliation'];
+
+        expect($reconciliation['orders_checked'])->toBe(0)
+            ->and($reconciliation['unexplained_minor'])->toBeNull()
+            ->and($reconciliation['reconciles'])->toBeNull();
+    });
+
+    it('is the same figure as the summary, so the two never disagree', function (): void {
+        $setup = analyticsScenario();
+        writeOrders($setup, [
+            ledgerOrder('a', total: 115_000, refunded: 15_000),
+            ledgerOrder('b', total: 50_000),
+        ]);
+
+        $data = fetchAnalytics($setup);
+
+        expect($data['ledger']['net_minor'])->toBe($data['summary']['net_revenue_minor'])
+            ->and($data['ledger']['orders'])->toBe($data['summary']['orders']);
+    });
+
+    it('shows nothing from a client the actor cannot reach, and nothing from another workspace', function (): void {
+        $setup = analyticsScenario();
+        $other = analyticsScenario();
+        writeOrders($setup, [ledgerOrder('mine', total: 50_000, shipping: 4_000)]);
+        writeOrders($other, [ledgerOrder('theirs', total: 777_000, shipping: 9_000)]);
+
+        $stranger = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+        $hidden = $this->actingAs($stranger)
+            ->getJson('/api/commerce/analytics?revenue_source=salla&from=2026-10-01&until=2026-10-31')
+            ->assertOk()->json('data.ledger');
+
+        expect($hidden['orders'])->toBe(0)->and($hidden['total_minor'])->toBe(0);
+        expect(fetchAnalytics($setup)['ledger']['total_minor'])->toBe(50_000);
     });
 });
