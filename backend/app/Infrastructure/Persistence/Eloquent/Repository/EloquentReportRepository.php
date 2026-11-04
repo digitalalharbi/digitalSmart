@@ -19,6 +19,7 @@ use App\Domain\Commerce\RevenueSource;
 use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\ReportAudience;
+use App\Domain\Reporting\ReportIntent;
 use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
 use App\Domain\Reporting\TrackingView;
@@ -67,6 +68,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                 'audience' => $definition->audience->value,
                 'filters' => json_encode($this->filtersToArray($definition->filters), JSON_THROW_ON_ERROR),
                 'internal_note' => $definition->internalNote,
+                'intent' => $definition->intent->value,
                 'created_by' => $actorId,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -95,6 +97,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                     'audience' => $definition->audience->value,
                     'filters' => json_encode($this->filtersToArray($definition->filters), JSON_THROW_ON_ERROR),
                     'internal_note' => $definition->internalNote,
+                    'intent' => $definition->intent->value,
                     'updated_at' => now(),
                 ]);
 
@@ -476,6 +479,7 @@ final readonly class EloquentReportRepository implements ReportRepository
             customFrom: $this->date($values['custom_from'] ?? null),
             customUntil: $this->date($values['custom_until'] ?? null),
             internalNote: $this->text($values['internal_note'] ?? null),
+            intent: ReportIntent::tryFrom((string) ($values['intent'] ?? '')) ?? ReportIntent::Detailed,
         );
     }
 

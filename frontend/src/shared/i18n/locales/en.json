@@ -3817,6 +3817,12 @@
       "audienceHint": "Internal unless you say otherwise. A client-safe report is written to be read by the client, not the internal one with the notes removed.",
       "internalNote": "Internal note",
       "internalNoteHint": "Never appears in a client-safe render or on a shared link.",
+      "intent": {
+        "legend": "Report intent",
+        "hint": "An executive report leaves out the row-by-row tables and keeps rankings to five rows.",
+        "detailed": "Detailed",
+        "executive": "Executive"
+      },
       "sections": "Sections",
       "addSection": "Add a section",
       "removeSection": "Remove this section",

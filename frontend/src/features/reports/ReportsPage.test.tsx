@@ -544,6 +544,28 @@ describe('editing one in the full editor', function () {
     expect(await screen.findByText(/cannot tell seasonality from performance/)).toBeInTheDocument();
   });
 
+  it('lets the author choose what the report is for, detailed unless said otherwise', async () => {
+    await openEditor();
+
+    const intent = await screen.findByRole('group', { name: 'Report intent' });
+
+    expect(within(intent).getByRole('button', { name: 'Detailed' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    await userEvent.click(within(intent).getByRole('button', { name: 'Executive' }));
+
+    expect(within(intent).getByRole('button', { name: 'Executive' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(within(intent).getByRole('button', { name: 'Detailed' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
   it('asks for dates only for a specific period', async () => {
     await openEditor();
     await screen.findByRole('group', { name: 'Metrics' });

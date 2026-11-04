@@ -56,6 +56,7 @@ type ReportInput = {
   customUntil?: string | null;
   comparison: string;
   audience: string;
+  intent?: string;
   internalNote?: string | null;
   /** The campaigns the report is about. Sent whole on every save, so an edit never loses the scope. */
   campaignIds?: string[];
@@ -68,6 +69,7 @@ function body(input: ReportInput): Record<string, unknown> {
     window: input.window,
     comparison: input.comparison,
     audience: input.audience,
+    ...(input.intent === undefined ? {} : { intent: input.intent }),
     ...(input.description === undefined ? {} : { description: input.description ?? '' }),
     ...(input.clientId ? { client_id: input.clientId } : {}),
     ...(input.customFrom ? { custom_from: input.customFrom } : {}),
