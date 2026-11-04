@@ -12,11 +12,16 @@ Method: after one cold request, 20 sequential requests per endpoint with `curl`,
 | `GET /api/clients` | 10 KB | 36 ms | 27 ms | 31 ms |
 | `GET /api/reports` | 13 KB | 54 ms | 29 ms | 33 ms |
 | `GET /api/analytics?metrics[]=spend&date_preset=30d` | 13 KB | 485 ms | 47 ms | 53 ms |
-| `GET /api/attention` | **249 KB** | 745 ms | **471 ms** | **600 ms** |
+| `GET /api/attention?limit=6` (what the Overview asks for) | 5 KB | 636 ms | **468 ms** | **571 ms** |
+| `GET /api/attention?limit=25` | 17 KB | 487 ms | 454 ms | 492 ms |
+| `GET /api/attention` (the whole queue, 425 items) | 249 KB | 455 ms | 457 ms | 489 ms |
 
 ## Reading it
 
-- Everything but `/api/attention` answers in under 60 ms once warm. `/api/attention` is the outlier on both time and size and is the first
-  optimisation target: its payload is larger than every other endpoint combined, and the Overview reads it on every visit.
+- Everything except `/api/attention` answers in under 60 ms once warm.
+- `/api/attention` costs about 460 ms **whatever the limit**: asking for 6 items shrinks the payload from 249 KB to 5 KB but not the time,
+  so the cost is the server assembling eight streams (425 items in this dataset), not the transfer. That makes it the first optimisation
+  target, and the lever is the assembly (or a short, scope-keyed cache), not a smaller response. A cache must key on workspace, the
+  reader's visible projects, permissions and the requested streams; it is not done here.
 - Not measured: LCP, INP and CLS (no browser trace yet), query counts per request, the front-end bundle, concurrent load, and anything on
   a real server. Do not quote these numbers as production performance.
