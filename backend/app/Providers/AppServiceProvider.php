@@ -119,6 +119,7 @@ use App\Application\Leads\Contract\CrmReadAdapter;
 use App\Application\Leads\Contract\LeadReadModel;
 use App\Application\Leads\Contract\LeadRepository;
 use App\Application\Measurement\Contract\EventDefinitionRepository;
+use App\Application\Measurement\Contract\Ga4TrafficReadModel;
 use App\Application\Measurement\Contract\MeasurementSourceRepository;
 use App\Application\Measurement\Contract\MeasurementSyncAdapterRegistry as MeasurementSyncAdapterRegistryContract;
 use App\Application\Measurement\Contract\ObservedEventReadModel;
@@ -275,6 +276,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientVisibility;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentConnectionDirectory;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentCreativeCatalogue;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentGa4TrafficReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentJourneyReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentLeadReadModel;
@@ -489,6 +491,7 @@ final class AppServiceProvider extends ServiceProvider
         MeasurementSourceRepository::class => EloquentMeasurementSourceRepository::class,
         ObservedEventWriter::class => EloquentObservedEventWriter::class,
         TrafficWriter::class => EloquentTrafficWriter::class,
+        Ga4TrafficReadModel::class => EloquentGa4TrafficReadModel::class,
         /*
          * One implementation, bound directly rather than through a registry. Tag Manager is
          * the only container provider this product reads, and a registry of one is a

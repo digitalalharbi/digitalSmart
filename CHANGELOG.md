@@ -4,6 +4,23 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## GA4 acquisition traffic API (DS-P0-GA4-02/03/04, read model)
+
+### Added
+- **`GET /api/analytics/ga4/traffic`**: totals, a previous-period comparison, a daily trend and a grouped table (by default channel group,
+  or by source / medium) over the stored GA4 traffic, with true server-side pagination (10 / 25 / 50), sort and direction.
+- **Scope is the existing measurement visibility**, not a new rule: only the GA4 properties of clients the reader may see are read, so a
+  project-limited member or a media buyer on no project gets an empty answer, a source id that is not theirs is `404`, and another
+  workspace's data cannot appear. Needs `analytics.view`.
+- **Honest figures**: sums stay `null` when the property never reported the metric; engagement rate and engagement time per session exist
+  only when both sides exist and sessions are positive; a change figure is `null` when the previous period is empty or zero. The payload
+  says how many days of the period have data, the property's time zone(s), and that the figures are SANDBOX when they are.
+- **Users are not offered.** They are not additive across days or channels, so the response states `users.available: false` and why,
+  rather than summing a number that would overstate reach. A property-grain users report is a separate future read.
+
+### Not yet
+- The Analytics screen over this endpoint, report sections and exports; the live Data API transport (`BLOCKED_EXTERNAL_CREDENTIALS`).
+
 ## GA4 acquisition traffic is read and stored (DS-P0-GA4-02/03, ingest only)
 
 ### Added

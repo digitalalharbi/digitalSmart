@@ -712,3 +712,105 @@ describe('acquisition traffic read alongside the events', function (): void {
         expect(DB::table('ga4_traffic_daily')->count())->toBe(0);
     });
 });
+
+/* GA4 traffic API: what it says, and to whom. Driven through the real sync, so the API returns what the sync wrote (SANDBOX). */
+
+/** @return array{scenario: WorkspaceScenario, source: string} */
+function syncedGa4(): array
+{
+    $setup = ga4Scenario();
+
+    test()->actingAs($setup['scenario']->owner)
+        ->postJson("/api/measurement/sources/{$setup['source']->getKey()}/sync")
+        ->assertOk();
+
+    return ['scenario' => $setup['scenario'], 'source' => (string) $setup['source']->getKey()];
+}
+
+it('returns totals, channels, a daily trend and the quality of what it read, labelled sandbox', function (): void {
+    $setup = syncedGa4();
+
+    $data = test()->actingAs($setup['scenario']->owner)
+        ->getJson('/api/analytics/ga4/traffic')
+        ->assertOk()
+        ->json('data');
+
+    // Two fixture days: day one 1650 sessions, day two 90% of each channel rounded.
+    expect($data['totals']['sessions'])->toBeInt()->toBeGreaterThan(1650)
+        ->and($data['totals']['engaged_sessions'])->toBeInt()
+        ->and($data['totals']['engagement_rate'])->toBeFloat()->toBeLessThan(1.0)
+        ->and($data['totals']['engagement_seconds_per_session'])->toBeFloat();
+    expect($data['rows'])->toHaveCount(5)
+        ->and($data['rows'][0]['name'])->toBe('Paid Social')
+        ->and(array_sum(array_column($data['rows'], 'share_of_sessions')))->toEqualWithDelta(1.0, 0.0001);
+    expect($data['trend'])->toHaveCount(2);
+    expect($data['quality']['is_sandbox'])->toBeTrue()
+        ->and($data['quality']['source'])->not->toBe('live')
+        ->and($data['quality']['time_zones'])->toBe(['Asia/Riyadh'])
+        ->and($data['quality']['days_present'])->toBe(2)
+        ->and($data['quality']['is_complete'])->toBeFalse(); // 28-day period, two days of data: said, not hidden
+    expect($data['users']['available'])->toBeFalse();
+});
+
+it('says "no change figure" rather than inventing a percentage when the previous period is empty', function (): void {
+    $setup = syncedGa4();
+
+    $data = test()->actingAs($setup['scenario']->owner)->getJson('/api/analytics/ga4/traffic')->assertOk()->json('data');
+
+    expect($data['previous']['sessions'])->toBeNull()
+        ->and($data['change']['sessions'])->toBeNull();
+});
+
+it('groups by source and medium and paginates on the server', function (): void {
+    $setup = syncedGa4();
+
+    $response = test()->actingAs($setup['scenario']->owner)
+        ->getJson('/api/analytics/ga4/traffic?group=source_medium&per_page=10&page=1&sort=page_views&direction=asc')
+        ->assertOk();
+
+    expect($response->json('meta.total'))->toBe(5)
+        ->and($response->json('data.rows.0.name'))->toContain(' / ')
+        ->and($response->json('data.rows.0.page_views'))->toBeLessThanOrEqual($response->json('data.rows.1.page_views'));
+
+    $empty = test()->actingAs($setup['scenario']->owner)
+        ->getJson('/api/analytics/ga4/traffic?group=source_medium&per_page=10&page=2')->assertOk();
+    expect($empty->json('data.rows'))->toBe([]);
+});
+
+it('refuses a period that ends before it starts, or runs longer than a year', function (): void {
+    $setup = syncedGa4();
+    $owner = test()->actingAs($setup['scenario']->owner);
+
+    $owner->getJson('/api/analytics/ga4/traffic?from=2026-06-10&until=2026-06-01')->assertStatus(422)->assertJsonPath('code', 'invalid_period');
+    $owner->getJson('/api/analytics/ga4/traffic?from=2024-01-01&until=2026-06-01')->assertStatus(422)->assertJsonPath('code', 'period_too_long');
+    $owner->getJson('/api/analytics/ga4/traffic?per_page=7')->assertStatus(422);
+});
+
+it('answers another workspace nothing, and 404 for a source id that is not theirs', function (): void {
+    $setup = syncedGa4();
+    $other = WorkspaceScenario::create();
+
+    $own = test()->actingAs($other->owner)->getJson('/api/analytics/ga4/traffic')->assertOk()->json('data');
+    expect($own['rows'])->toBe([])->and($own['totals']['sessions'])->toBeNull()
+        ->and($own['quality']['no_data'])->toBeTrue()->and($own['sources'])->toBe([]);
+
+    test()->actingAs($other->owner)->getJson('/api/analytics/ga4/traffic?source_id='.$setup['source'])->assertNotFound();
+});
+
+it('shows a project-limited member only the properties of clients they work for', function (): void {
+    $setup = syncedGa4();
+    $buyer = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+
+    // A media buyer assigned to no project sees no client's property, so nothing is read and nothing is leaked.
+    $data = test()->actingAs($buyer)->getJson('/api/analytics/ga4/traffic')->assertOk()->json('data');
+    expect($data['sources'])->toBe([])->and($data['rows'])->toBe([])->and($data['totals']['sessions'])->toBeNull();
+
+    test()->actingAs($buyer)->getJson('/api/analytics/ga4/traffic?source_id='.$setup['source'])->assertNotFound();
+});
+
+it('refuses a role without analytics.view', function (): void {
+    $setup = syncedGa4();
+    $viewer = $setup['scenario']->addMember(SystemRole::ClientViewer);
+
+    test()->actingAs($viewer)->getJson('/api/analytics/ga4/traffic')->assertForbidden();
+});
