@@ -4,6 +4,22 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## The GA4 shopping-events funnel (DS-P0-GA4-04)
+
+### Added
+- **`GET /api/analytics/ga4/funnel`** and a "Shopping events (Google Analytics 4)" panel on Analytics: product views, added to cart, began
+  checkout and purchases, summed from the event counts already stored, for the GA4 properties the reader may see (same scope as the
+  traffic read: foreign source id `404`, another workspace and a member on no project get nothing, `analytics.view` required).
+- **Events, not people, and it says so**: the panel and the payload state that one shopper can trigger a stage several times, so a ratio
+  between stages is an *event ratio*, never a conversion rate, and that store orders — not GA4 purchases — are the authority for sales.
+  A stage the property never reported is "Not reported" (null, not zero) and no ratio is drawn across the gap. The honesty label
+  (SANDBOX today) and how many days of the period have data travel with it.
+- The sandbox property now reports the three stages before purchase so the panel and the tests have something to show; no other fixture
+  figure changed.
+
+### Not done
+- A user-level path (impossible from aggregate counts), per-channel funnels, live GA4 (`BLOCKED_EXTERNAL_CREDENTIALS`).
+
 ## GA4 acquisition traffic API (DS-P0-GA4-02/03/04, read model)
 
 ### Added

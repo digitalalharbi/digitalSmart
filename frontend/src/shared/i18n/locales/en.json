@@ -1498,7 +1498,20 @@
       "emptyTitle": "No GA4 traffic stored for this period",
       "emptyBody": "Connect a Google Analytics 4 property for this client and sync it. Nothing is shown until the property has reported.",
       "failed": "The traffic could not be loaded.",
-      "footnote": "Sessions are counted by Google Analytics in the property’s own time zone ({{zones}}). They are not ad clicks and are never added to them. Users are not shown: they cannot be added across days or channels."
+      "footnote": "Sessions are counted by Google Analytics in the property’s own time zone ({{zones}}). They are not ad clicks and are never added to them. Users are not shown: they cannot be added across days or channels.",
+      "funnel": {
+        "title": "Shopping events (Google Analytics 4)",
+        "failed": "The shopping events could not be loaded.",
+        "empty": "The property has reported none of the shopping events for this period. Nothing is shown rather than zeroes.",
+        "ofPrevious": "{{ratio}} of the previous stage (events)",
+        "stage": {
+          "view_item": "Product views",
+          "add_to_cart": "Added to cart",
+          "begin_checkout": "Began checkout",
+          "purchase": "Purchases (GA4)"
+        },
+        "note": "These are event counts, not people: one shopper can trigger a stage several times, so a ratio between stages is not a conversion rate. Store orders, not GA4 purchases, are the authority for sales."
+      }
     }
   },
   "campaigns": {
