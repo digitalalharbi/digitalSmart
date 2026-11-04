@@ -6,6 +6,7 @@ import type {
   StoreDraft,
   StoreReadResult,
   StoreAnalytics,
+  RevenueReconciliation,
 } from './types';
 
 export async function fetchStoreAnalytics(query: CommerceQuery): Promise<StoreAnalytics> {
@@ -64,6 +65,19 @@ export async function connectStore(draft: StoreDraft): Promise<Store> {
 export async function readStore(storeId: string): Promise<StoreReadResult> {
   await ensureCsrfCookie();
   const { data } = await api.post<{ data: StoreReadResult }>(`/commerce/stores/${storeId}/read`);
+
+  return data.data;
+}
+
+/** One client's sales by each authority for a period: the store, and every claim's difference from it. */
+export async function fetchReconciliation(
+  clientId: string,
+  from: string,
+  until: string,
+): Promise<RevenueReconciliation> {
+  const { data } = await api.get<{ data: RevenueReconciliation }>('/commerce/reconciliation', {
+    params: { client_id: clientId, from, until },
+  });
 
   return data.data;
 }

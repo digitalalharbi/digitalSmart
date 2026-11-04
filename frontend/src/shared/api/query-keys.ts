@@ -102,6 +102,8 @@ export const queryKeys = {
     stores: (clientId: string | null) => ['commerce', 'stores', clientId ?? 'all'] as const,
     /** What the connections can read. Not scoped: it is a question about the platform, not a client. */
     connectableStores: () => ['commerce', 'stores', 'connectable'] as const,
+    reconciliation: (clientId: string, from: string, until: string) =>
+      ['commerce', 'reconciliation', clientId, from, until] as const,
   },
   measurement: {
     all: () => ['measurement'] as const,
