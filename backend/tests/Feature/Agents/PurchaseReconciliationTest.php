@@ -14,6 +14,7 @@ use Tests\Support\WorkspaceScenario;
 /**
  * GA4 purchase events beside paid store orders: counts and sources only, and a finding only when the gap is wide.
  */
+/** @return array{scenario: WorkspaceScenario, client: Client} */
 function reconciliationWorld(?int $events, int $orders): array
 {
     $scenario = WorkspaceScenario::create();
