@@ -4,7 +4,6 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
-
 ## Integrations: each connection's last attempt beside its last success (DS-P0-INT-01)
 
 ### Added
@@ -14,6 +13,19 @@ All notable changes to digitalSmart are recorded here. Format follows
 - **Administration → Advanced diagnostics** shows it as a table; "Never succeeded" where there is no success, never a date.
 - One grouped statement; the operations read stays inside its query budget (`AgencyScaleTest`).
 
+## P0 reports: a report states what it is for — detailed or executive (DS-P0-REP-01)
+
+### Added
+- **A stored `intent` on every report** (`detailed` by default, `executive`), saved, edited, duplicated and returned by the API, with the choice in
+  the builder's Advanced settings (English and Arabic). Every existing report migrates to `detailed`, so nothing already saved or shared changes.
+- **It changes content, not honesty.** An executive report leaves out the row-by-row `table` sections and keeps each ranking to five rows; a
+  ranking that already asks for fewer keeps its own limit. Source, period, comparison and every caveat are untouched, and the same render feeds the
+  screen, a shared link, CSV, workbook and deck, so they cannot disagree.
+- **Snapshots stay frozen**: changing a report's intent does not touch a snapshot already taken (tested).
+
+### Not yet
+- The executive view does not yet add evidenced insights and recommended actions of its own; the existing highlights are unchanged.
+- Per-section and per-field `hidden` flags, and a report PDF, remain open.
 ## P0 GA4: a purchase-events versus store-orders check for the Leads agent (DS-P0-AGENT-GA4)
 
 ### Added
@@ -5424,7 +5436,6 @@ the feature is not yet reachable from the product — see docs/ROADMAP.md.
   an earlier decision against it, and what makes it safe.
 - `backend/database/fixtures/providers/README.md` documents the fixtures'
   provenance and the single way they depart from a verbatim API response.
-
 
 ## [Unreleased]
 

@@ -40,6 +40,7 @@ use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\RenderMode;
 use App\Domain\Reporting\ReportAudience;
+use App\Domain\Reporting\ReportIntent;
 use App\Domain\Reporting\SectionKind;
 use App\Domain\Shared\ValueObject\DateRange;
 
@@ -124,6 +125,12 @@ final readonly class RenderReport
         $sources = [];
 
         foreach ($definition->sections as $index => $section) {
+            if (! $definition->intent->shows($section->kind)) {
+                continue;
+            }
+
+            $section = $this->capped($section, $definition->intent);
+
             $rendered = $this->section(
                 $workspaceId,
                 $definition,
@@ -159,6 +166,7 @@ final readonly class RenderReport
             // Never read for a client-safe render. See the note at the top of this class.
             internalNote: $audience->allowsInternalNotes() ? $definition->internalNote : null,
             isPeriodIncomplete: $definition->window->isIncomplete(),
+            intent: $definition->intent,
         );
     }
 
@@ -192,6 +200,28 @@ final readonly class RenderReport
             customFrom: $definition->customFrom,
             customUntil: $definition->customUntil,
             internalNote: $definition->internalNote,
+            intent: $definition->intent,
+        );
+    }
+
+    /** An executive report's rankings are short; a section that already asks for fewer rows keeps its own limit. */
+    private function capped(SectionDefinition $section, ReportIntent $intent): SectionDefinition
+    {
+        $cap = $intent->rowCap();
+
+        if ($cap === null || $section->kind !== SectionKind::Breakdown) {
+            return $section;
+        }
+
+        return new SectionDefinition(
+            kind: $section->kind,
+            metrics: $section->metrics,
+            title: $section->title,
+            dimension: $section->dimension,
+            rowLimit: min($section->rowLimit ?? $cap, $cap),
+            revenueSource: $section->revenueSource,
+            creativeView: $section->creativeView,
+            trackingView: $section->trackingView,
         );
     }
 

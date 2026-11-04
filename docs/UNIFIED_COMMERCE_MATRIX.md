@@ -64,7 +64,7 @@ Status words: `REUSED` (exists, tested — leave alone) · `PARTIAL` · `MISSING
 | ID | Status | Evidence | Smallest gap |
 |---|---|---|---|
 | DS-UC-501 ten sections | PARTIAL | Paid advertising, store, funnel, attribution (internal only), creative, lead and tracking sections exist and are tested. | No GA4 section; no budget/pacing section; no category/geography; no server-side observations; executive overview is a preset, not a kind. |
-| DS-UC-502 executive vs detailed | MISSING | Presets are client-side section lists; the definition has no intent. | A stored `intent` that changes content, with a test. |
+| DS-UC-502 executive vs detailed | PARTIAL | Stored `intent` (`detailed`/`executive`); executive drops tables and caps rankings at five (`ReportIntentTest`). | Evidenced insights and recommended actions in the executive view. |
 | DS-UC-503 interactions | PARTIAL | Chart/table twin, period and comparison, shared-link filters. | `hidden` flag and per-section scope; replace-wholesale save today. |
 | DS-UC-504 share lifecycle | PARTIAL | Hashed, expiring (≤ 90 days), revocable with a reason, narrow-only filters, internal ids stripped (`SharedReportTest`, `SharedFilterTest`, `SharedPayloadIdsTest`, `e2e/shared-filters.spec.ts`). | Pause / resume (reversible, never widening); one-step replace. |
 | DS-UC-505 branding hierarchy | MISSING | `white_label` is an entitlement only; the report hero uses initials. | Workspace and client logo store, rendered in the report, entitlement-gated. |
