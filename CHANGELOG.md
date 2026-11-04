@@ -15,9 +15,11 @@ All notable changes to digitalSmart are recorded here. Format follows
   no store was read (events against no authority are not a gap); GA4 carries events only, because its revenue is not read.
 - It composes the store, GA4 funnel and analytics reads, so scope, permission and every figure are theirs. `analytics.view`,
   commerce feature, a client is required.
+- **Store revenue page**: once a client is chosen, a panel shows the store first as the authority and each claim beside it with
+  its difference; no total row; a missing figure reads *Not available*, never nought.
 
 ### Not yet
-- A screen for it, and a CRM row. Live GA4 and store figures remain `BLOCKED_EXTERNAL_CREDENTIALS`; sandbox rows say sandbox.
+- A CRM row. Live GA4 and store figures remain `BLOCKED_EXTERNAL_CREDENTIALS`; sandbox rows say sandbox.
 
 ## P0 GA4: a purchase-events versus store-orders check for the Leads agent (DS-P0-AGENT-GA4)
 

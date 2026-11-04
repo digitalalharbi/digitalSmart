@@ -230,3 +230,41 @@ export type StoreReadResult = {
   source: MetricSourceValue;
   failure_message: string | null;
 };
+
+/** One store's own figures in a reconciliation: the authority every claim is measured against. */
+export interface ReconciliationStore {
+  authority: string;
+  source: string;
+  currency: string;
+  paid_orders: number;
+  net_revenue_minor: number;
+  refunded_minor: number;
+  pending_orders: number;
+  tracked_orders: number;
+  tracked_revenue_minor: number;
+}
+
+/** What another source says, and how far that is from the store. Null wherever either side is missing. */
+export interface ReconciliationClaim {
+  source: 'platform_reported' | 'google_analytics' | 'tracking_evidence';
+  metric_source: MetricSourceValue | null;
+  purchases: number | null;
+  revenue_minor: number | null;
+  currency: string | null;
+  purchases_delta: number | null;
+  purchases_ratio: number | null;
+  revenue_delta_minor: number | null;
+  unavailable_reason: string | null;
+}
+
+export interface RevenueReconciliation {
+  period: { from: string; until: string };
+  authority: 'store';
+  stores: ReconciliationStore[];
+  store_paid_orders: number | null;
+  store_net_revenue_minor: number | null;
+  store_currency: string | null;
+  claims: ReconciliationClaim[];
+  ga4: { days_present: number; days_in_period: number };
+  note: string;
+}

@@ -3,6 +3,7 @@ import { queryKeys } from '@/shared/api/query-keys';
 import {
   connectStore,
   fetchConnectableStores,
+  fetchReconciliation,
   fetchStoreAnalytics,
   fetchStores,
   readStore,
@@ -83,5 +84,15 @@ export function useReadStoreMutation() {
   return useMutation({
     mutationFn: (storeId: string): Promise<StoreReadResult> => readStore(storeId),
     onSuccess: () => void invalidate(),
+  });
+}
+
+/** The reconciliation for one client. Only asked once a client is chosen: across clients it would be a sum of unrelated shops. */
+export function useReconciliationQuery(clientId: string | null, from: string, until: string) {
+  return useQuery({
+    queryKey: queryKeys.commerce.reconciliation(clientId ?? 'none', from, until),
+    queryFn: () => fetchReconciliation(clientId ?? '', from, until),
+    enabled: clientId !== null,
+    staleTime: 60_000,
   });
 }

@@ -2782,6 +2782,26 @@
       "refunds": "Refunded",
       "attributed": "Attributed revenue"
     },
+    "reconciliation": {
+      "title": "Who says what was sold",
+      "hint": "The store invoiced these sales, so it is the authority. Every other row is what another source says, with its difference from the store. The rows are never added together.",
+      "caption": "Sales according to each source, and each one's difference from the store",
+      "who": "Source",
+      "purchases": "Purchases",
+      "revenue": "Revenue",
+      "vsStore": "Versus store",
+      "authority": "Authority",
+      "notAvailable": "Not available",
+      "noStore": "No store orders were read for this client in the period, so there is nothing to measure the other sources against.",
+      "failed": "The comparison between sources could not be loaded.",
+      "note": "Google Analytics counts purchase events, not orders or people, and its revenue is not read. Tracked orders are the store's own orders that arrived with tracking evidence.",
+      "sources": {
+        "store": "Store (paid orders)",
+        "platform_reported": "Ad platforms report",
+        "google_analytics": "Google Analytics purchase events",
+        "tracking_evidence": "Store orders with tracking evidence"
+      }
+    },
     "ledger": {
       "title": "Revenue ledger",
       "hint": "What customers were charged is each provider's own order total, which includes shipping and tax where the provider includes them. The parts below are shown beside it, never subtracted from it: shipping, tax and fees follow each provider's rules.",
