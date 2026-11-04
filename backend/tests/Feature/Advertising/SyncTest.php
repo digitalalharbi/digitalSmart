@@ -31,6 +31,7 @@ use App\Infrastructure\Persistence\Eloquent\Model\ProjectIntegrationBinding;
 use App\Infrastructure\Persistence\Eloquent\Model\SyncCursor;
 use App\Infrastructure\Persistence\Eloquent\Model\SyncRun;
 use App\Interface\Queue\SyncBoundAccountJob;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Tests\Support\WorkspaceScenario;
 
@@ -541,5 +542,76 @@ describe('scheduling', function (): void {
         expect($job->uniqueId())->toBe(
             $setup['scenario']->workspace->getKey().':'.$setup['account']->getKey(),
         );
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| A disconnected connection is not synced (DS-UC-103)
+|--------------------------------------------------------------------------
+|
+| Disconnecting revokes the connection and destroys its credentials. The hourly sync still listed every bound account on it, queued a
+| job for each, and the job called the adapter with nothing — so every hour produced a failed run and a provider error per account for
+| something an operator had done on purpose, burying the failures that mean something.
+|
+*/
+
+/** Disconnect the way `DisconnectProvider` does: revoke, then empty the credentials. */
+function disconnectMeta(WorkspaceScenario $scenario): void
+{
+    $repository = app(ProviderConnectionRepository::class);
+    $connection = $repository->agencyConnection(new WorkspaceId((string) $scenario->workspace->getKey()), Provider::Meta);
+    expect($connection)->not->toBeNull();
+    assert($connection instanceof ProviderConnection);
+
+    $connection->revoke(new DateTimeImmutable);
+    $connection->replaceCredentials(Credentials::empty());
+    $repository->save($connection);
+}
+
+describe('a disconnected connection', function (): void {
+    it('is not queued by the scheduled sync', function (): void {
+        Queue::fake();
+        $setup = syncScenario();
+        disconnectMeta($setup['scenario']);
+
+        $this->artisan('advertising:sync')->assertSuccessful();
+
+        Queue::assertNothingPushed();
+    });
+
+    it('is skipped when run directly, and leaves no failed run or provider error behind', function (): void {
+        $setup = syncScenario();
+        disconnectMeta($setup['scenario']);
+
+        $outcome = runSync($setup);
+
+        expect($outcome->status)->toBe(SyncStatus::Skipped)
+            ->and(SyncRun::query()->count())->toBe(0)
+            ->and(DB::table('provider_errors')->count())->toBe(0)
+            ->and(Campaign::query()->count())->toBe(0);
+    });
+
+    it('is synced again once its credentials are put back', function (): void {
+        Queue::fake();
+        $setup = syncScenario();
+        disconnectMeta($setup['scenario']);
+        storeCredentials($setup['scenario'], ['client_id' => Credentials::SANDBOX_TOKEN, 'client_secret' => Credentials::SANDBOX_TOKEN]);
+
+        $this->artisan('advertising:sync')->assertSuccessful();
+
+        Queue::assertPushed(SyncBoundAccountJob::class, 1);
+        expect(runSync($setup)->status)->toBe(SyncStatus::Succeeded);
+    });
+
+    it('does not stop another workspace’s accounts being queued', function (): void {
+        Queue::fake();
+        $disconnected = syncScenario();
+        disconnectMeta($disconnected['scenario']);
+        syncScenario(externalId: 'act_sandbox_2002');
+
+        $this->artisan('advertising:sync')->assertSuccessful();
+
+        Queue::assertPushed(SyncBoundAccountJob::class, 1);
     });
 });

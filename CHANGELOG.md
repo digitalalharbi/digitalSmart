@@ -4,6 +4,16 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Advertising sync no longer retries a disconnected connection every hour
+
+### Fixed
+- **The scheduled advertising sync listed every account on a disconnected connection, queued a job for each, and each job called
+  the adapter with no credentials** — a failed run and a provider error per account per hour, for something an operator did on
+  purpose, burying the failures that mean something. A sync candidate is now an account that is actually syncing: a connection that
+  is not configured or revoked drops out of the list, the operations monitor's "accounts syncing" count and the scheduler. A job
+  already queued, or a direct call, is skipped with no run recorded. `expired` and `error` connections are still synced — they hold
+  credentials and may recover, and their failures are what the monitor is for. Credentials put back, and the account is synced again.
+
 ## Connection lifecycle: a disconnected connection is never read, and disconnecting asks first
 
 First bounded batch of the Unified Commerce program (`docs/UNIFIED_COMMERCE_MATRIX.md`, DS-UC-102 / 103 / 104).

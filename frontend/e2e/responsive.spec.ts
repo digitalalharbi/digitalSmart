@@ -36,6 +36,13 @@ test.describe('narrow screens', () => {
 
   for (const locale of ['en', 'ar'] as const) {
     test(`no surface is wider than the screen (${locale})`, async ({ page }) => {
+      /*
+       * One test walks every surface in turn, so its budget is the sum of nineteen page loads, not one. On a shared CI
+       * runner that outgrew the default 45 s as surfaces were added (two mobile-Safari runs timed out mid-walk with
+       * every page measured so far within the screen). The assertion is untouched; only the time allowed for it.
+       */
+      test.setTimeout(240_000);
+
       await signIn(page, ACCOUNTS.owner);
       await page.evaluate((value) => {
         localStorage.setItem(
