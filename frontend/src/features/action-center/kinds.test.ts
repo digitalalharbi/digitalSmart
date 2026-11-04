@@ -10,6 +10,7 @@ describe('itemType', () => {
     expect(itemType(item('CREATIVE_FATIGUE'))).toBe('creative');
     expect(itemType(item('LEADS_LOW_QUALITY'))).toBe('lead');
     expect(itemType(item('REPORTS_READY'))).toBe('report');
+    expect(itemType(item('PURCHASE_EVENTS_DIVERGE'))).toBe('tracking');
     expect(itemType(item('PROJECT_NEEDS_ACTION'))).toBe('task');
   });
 });

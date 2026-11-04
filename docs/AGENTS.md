@@ -147,6 +147,7 @@ Audit first, extend second. Most of the "action" machinery already existed and w
 | Tool | Risk | Approval |
 |---|---|---|
 | `list_campaigns`, `get_campaign`, `get_budget_status`, `get_attention_items`, `get_operating_rules` | read | — |
+| `get_purchase_reconciliation` | read | — |
 | `create_task` | internal | — |
 | `propose_pause_campaign`, `propose_resume_campaign`, `propose_budget_change` | proposal | always |
 

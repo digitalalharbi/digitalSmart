@@ -28,6 +28,7 @@ use App\Application\Agents\Tool\GetBudgetStatusTool;
 use App\Application\Agents\Tool\GetCampaignTool;
 use App\Application\Agents\Tool\GetLeadQualityTool;
 use App\Application\Agents\Tool\GetOperatingRulesTool;
+use App\Application\Agents\Tool\GetPurchaseReconciliationTool;
 use App\Application\Agents\Tool\ListAdSignalsTool;
 use App\Application\Agents\Tool\ListCampaignsTool;
 use App\Application\Agents\Tool\ListClientsTool;
@@ -719,6 +720,7 @@ final class AppServiceProvider extends ServiceProvider
                 $app->make(ListAdSignalsTool::class),
                 $app->make(ListClientsTool::class),
                 $app->make(GetLeadQualityTool::class),
+                $app->make(GetPurchaseReconciliationTool::class),
             ],
             $app->make(ActorContext::class),
             $app->make(ToolCallLog::class),

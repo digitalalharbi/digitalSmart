@@ -51,6 +51,7 @@ export function itemType(item: AttentionItem): ActionType | null {
   if (code.startsWith('CREATIVE_')) return 'creative';
   if (code.startsWith('LEADS_')) return 'lead';
   if (code.startsWith('REPORT')) return 'report';
+  if (code.startsWith('PURCHASE_')) return 'tracking';
 
   return 'task';
 }
