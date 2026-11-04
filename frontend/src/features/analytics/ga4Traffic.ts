@@ -109,3 +109,40 @@ export function lastDays(days: number, now = new Date()): { from: string; until:
 
   return { from: day(from), until: day(until) };
 }
+
+/** The GA4 e-commerce event funnel: aggregate event counts, never a path of people. */
+export type Ga4Funnel = {
+  period: { from: string; until: string };
+  stages: Array<{ event: string; count: number | null; ratio_from_previous: number | null }>;
+  days_present: number;
+  days_in_period: number;
+  source: string | null;
+  time_zones: string[];
+  sources: Array<{ id: string; name: string; client_name: string }>;
+  note: string;
+};
+
+export async function fetchGa4Funnel(params: {
+  from: string;
+  until: string;
+  clientId: string | null;
+}): Promise<Ga4Funnel> {
+  const query = new URLSearchParams({ from: params.from, until: params.until });
+
+  if (params.clientId !== null) {
+    query.set('client_id', params.clientId);
+  }
+
+  const { data } = await api.get<{ data: Ga4Funnel }>(`/analytics/ga4/funnel?${query.toString()}`);
+
+  return data.data;
+}
+
+export function useGa4Funnel(params: { from: string; until: string; clientId: string | null }) {
+  return useQuery({
+    queryKey: ['analytics', 'ga4-funnel', params] as const,
+    queryFn: () => fetchGa4Funnel(params),
+    staleTime: 60_000,
+    placeholderData: (previous) => previous,
+  });
+}

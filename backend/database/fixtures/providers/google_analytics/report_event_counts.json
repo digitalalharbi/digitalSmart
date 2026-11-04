@@ -45,6 +45,30 @@
       {
         "dimensionValues": [{ "value": "purchase" }, { "value": "20260531" }],
         "metricValues": [{ "value": "9" }, { "value": "6120.00" }]
+      },
+      {
+        "dimensionValues": [{ "value": "view_item" }, { "value": "20260601" }],
+        "metricValues": [{ "value": "3120" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "add_to_cart" }, { "value": "20260601" }],
+        "metricValues": [{ "value": "640" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "begin_checkout" }, { "value": "20260601" }],
+        "metricValues": [{ "value": "245" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "view_item" }, { "value": "20260531" }],
+        "metricValues": [{ "value": "2890" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "add_to_cart" }, { "value": "20260531" }],
+        "metricValues": [{ "value": "575" }, { "value": "0" }]
+      },
+      {
+        "dimensionValues": [{ "value": "begin_checkout" }, { "value": "20260531" }],
+        "metricValues": [{ "value": "210" }, { "value": "0" }]
       }
     ],
     "rowCount": 14,

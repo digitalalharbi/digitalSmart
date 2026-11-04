@@ -815,6 +815,52 @@ it('refuses a role without analytics.view', function (): void {
     test()->actingAs($viewer)->getJson('/api/analytics/ga4/traffic')->assertForbidden();
 });
 
+describe('the GA4 e-commerce event funnel', function (): void {
+    it('counts the four documented events, with a ratio between neighbours and a note that these are events, not people', function (): void {
+        $setup = syncedGa4();
+
+        $data = test()->actingAs($setup['scenario']->owner)->getJson('/api/analytics/ga4/funnel')->assertOk()->json('data');
+        $by = array_column($data['stages'], null, 'event');
+
+        expect(array_keys($by))->toBe(['view_item', 'add_to_cart', 'begin_checkout', 'purchase'])
+            ->and($by['view_item']['count'])->toBe(3120 + 2890)
+            ->and($by['add_to_cart']['count'])->toBe(640 + 575)
+            ->and($by['view_item']['ratio_from_previous'])->toBeNull()
+            ->and($by['add_to_cart']['ratio_from_previous'])->toEqualWithDelta((640 + 575) / (3120 + 2890), 0.0001)
+            ->and($data['note'])->toContain('not people')
+            ->and($data['source'])->not->toBe('live')
+            // The sandbox events span four days; the funnel reports how many days of the period have any data at all.
+            ->and($data['days_present'])->toBe(4);
+    });
+
+    it('is null, not zero, for a stage the property never reported, and gives no ratio across the gap', function (): void {
+        $setup = syncedGa4();
+        DB::table('observed_event_counts')->where('raw_event_name', 'begin_checkout')->delete();
+
+        $by = array_column(test()->actingAs($setup['scenario']->owner)->getJson('/api/analytics/ga4/funnel')->assertOk()->json('data.stages'), null, 'event');
+
+        expect($by['begin_checkout']['count'])->toBeNull()
+            ->and($by['begin_checkout']['ratio_from_previous'])->toBeNull()
+            ->and($by['purchase']['ratio_from_previous'])->toBeNull();
+    });
+
+    it('gives another workspace nothing, a member on no project nothing, and 404 for a source that is not theirs', function (): void {
+        $setup = syncedGa4();
+        $other = WorkspaceScenario::create();
+        $buyer = $setup['scenario']->addMember(SystemRole::MediaBuyer);
+
+        foreach ([$other->owner, $buyer] as $reader) {
+            $data = test()->actingAs($reader)->getJson('/api/analytics/ga4/funnel')->assertOk()->json('data');
+            expect(array_filter(array_column($data['stages'], 'count'), static fn ($c) => $c !== null))->toBe([])
+                ->and($data['sources'])->toBe([]);
+            test()->actingAs($reader)->getJson('/api/analytics/ga4/funnel?source_id='.$setup['source'])->assertNotFound();
+        }
+
+        test()->actingAs($setup['scenario']->addMember(SystemRole::ClientViewer))->getJson('/api/analytics/ga4/funnel')->assertForbidden();
+        test()->actingAs($setup['scenario']->owner)->getJson('/api/analytics/ga4/funnel?from=2026-06-10&until=2026-06-01')->assertStatus(422);
+    });
+});
+
 describe('GA4 website traffic in a client report', function (): void {
     /** @return array{setup: array{scenario: WorkspaceScenario, source: string}, report: string, client: string} */
     function webTrafficReport(string $audience = 'client_safe'): array

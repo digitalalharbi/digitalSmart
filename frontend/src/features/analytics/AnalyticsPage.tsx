@@ -20,6 +20,7 @@ import { HERO_METRICS as HERO } from './heroMetrics';
 import { PlatformPanel } from './PlatformPanel';
 import { efficiencyOption, trendOption } from '@/shared/metrics';
 import { FilterBar } from './FilterBar';
+import { Ga4FunnelPanel } from './Ga4FunnelPanel';
 import { Ga4TrafficPanel } from './Ga4TrafficPanel';
 import { formatMetric } from '@/shared/metrics';
 import { useAnalytics, useMetricCatalogue } from './useAnalytics';
@@ -371,6 +372,8 @@ export function AnalyticsPage() {
           {data === undefined ? null : <AttributionPanel data={data} clientId={clientId} />}
 
           <Ga4TrafficPanel days={period.days} clientId={clientId} />
+
+          <Ga4FunnelPanel days={period.days} clientId={clientId} />
 
           {/* The working: efficiency against scale, and every row. Detail, not the answer, so it opens on request. */}
           <section aria-label={t('analytics.table.title')} className="flex flex-col gap-3">

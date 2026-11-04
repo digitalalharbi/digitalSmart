@@ -52,6 +52,7 @@ use App\Interface\Http\Controller\Integration\ProviderController;
 use App\Interface\Http\Controller\Intelligence\AssistantController;
 use App\Interface\Http\Controller\Leads\LeadController;
 use App\Interface\Http\Controller\Measurement\AgencyTrackingController;
+use App\Interface\Http\Controller\Measurement\Ga4FunnelController;
 use App\Interface\Http\Controller\Measurement\Ga4TrafficController;
 use App\Interface\Http\Controller\Measurement\MeasurementController;
 use App\Interface\Http\Controller\Notifications\NotificationController;
@@ -367,6 +368,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
 
     /* Stored GA4 acquisition traffic, read from the properties the reader may see. */
     Route::get('analytics/ga4/traffic', Ga4TrafficController::class)->name('analytics.ga4.traffic');
+    Route::get('analytics/ga4/funnel', Ga4FunnelController::class)->name('analytics.ga4.funnel');
 
     /* Creatives, by asset or by ad: the same engine as `analytics`, grouped by what ran. */
     Route::get('analytics/creatives', CreativeIntelligenceController::class)->name('analytics.creatives')->middleware('feature:creative_intelligence');
