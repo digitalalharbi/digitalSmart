@@ -274,6 +274,24 @@ restatement window exists to compensate for.
 The demo seeder now connects its store through `ConnectStore` rather than writing the row, so the demo
 demonstrates a state a real owner can reach.
 
+## Reconciliation: one period, every authority, never a sum
+
+`GET /api/commerce/reconciliation?client_id=…&from=…&until=…` (`analytics.view`, commerce feature; a client is required).
+
+The store invoiced the sales, so it is the authority: paid orders, net revenue, refunds and pending orders per store. Beside it
+sit three **claims**, each with `purchases_delta` (claim minus store), `purchases_ratio` and, where money is comparable,
+`revenue_delta_minor`:
+
+| Claim | What it is | Money |
+|---|---|---|
+| `platform_reported` | Purchases and revenue the ad platforms report for the client's bound accounts | Yes, when one currency and the store's |
+| `google_analytics` | GA4 `purchase` **events** — not orders, not people | No: GA4 revenue is not read |
+| `tracking_evidence` | Store orders that carried any attribution evidence | Yes — a subset of the store's own figure |
+
+There is no total across sources and there never will be. A difference is `null` when either side is missing, when currencies
+differ, or when no store was read at all — thirty events against no authority are not a thirty-order gap. Each row carries its
+own source state (`sandbox`, `synced`, …) and an `unavailable_reason` where a figure is absent.
+
 ## What this phase does not do
 
 - **No live provider credentials.** Salla (Phase 12) and Zid (Phase 13) implement `CommerceSyncAdapter`, and

@@ -16,6 +16,7 @@ import { ChartFrame } from '@/shared/ui/chart';
 import { BreakdownTable } from './BreakdownTable';
 import { CustomerMixPanel } from './CustomerMixPanel';
 import { LedgerPanel } from './LedgerPanel';
+import { ReconciliationPanel } from './ReconciliationPanel';
 import { RevenueChart } from './RevenueChart';
 import { StoresPanel } from './StoresPanel';
 import { useStoreAnalyticsQuery } from './useCommerce';
@@ -437,6 +438,20 @@ export function StoreAnalyticsPage() {
               {analytics.data?.ledger === undefined ? null : (
                 <section className="flex flex-col gap-3" aria-label={t('commerce.ledger.title')}>
                   <LedgerPanel ledger={analytics.data.ledger} locale={locale} />
+                </section>
+              )}
+
+              {clientId === null ? null : (
+                <section
+                  className="flex flex-col gap-3"
+                  aria-label={t('commerce.reconciliation.title')}
+                >
+                  <ReconciliationPanel
+                    clientId={clientId}
+                    from={window.from}
+                    until={window.until}
+                    locale={locale}
+                  />
                 </section>
               )}
 

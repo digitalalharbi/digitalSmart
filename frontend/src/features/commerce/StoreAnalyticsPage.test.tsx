@@ -43,6 +43,19 @@ vi.mock('./api', () => ({
   fetchConnectableStores: () => Promise.resolve([]),
   connectStore: () => Promise.resolve({}),
   readStore: () => Promise.resolve({}),
+  // The reconciliation panel has its own tests; here it only has to load something once a client is chosen.
+  fetchReconciliation: () =>
+    Promise.resolve({
+      period: { from: '2026-10-01', until: '2026-10-28' },
+      authority: 'store',
+      stores: [],
+      store_paid_orders: null,
+      store_net_revenue_minor: null,
+      store_currency: null,
+      claims: [],
+      ga4: { days_present: 0, days_in_period: 28 },
+      note: '',
+    }),
 }));
 
 function summary(overrides: Partial<StoreRevenueSummary> = {}): StoreRevenueSummary {
