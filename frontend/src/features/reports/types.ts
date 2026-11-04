@@ -119,6 +119,7 @@ export type ReportVocabulary = {
   windows: WindowInfo[];
   comparisons: ComparisonInfo[];
   audiences: { audience: ReportAudienceValue; label: string; allows_internal_notes: boolean }[];
+  intents?: { intent: ReportIntentValue; label: string; row_cap: number | null }[];
   sections: SectionKindInfo[];
   metrics: MetricInfo[];
   dimensions: DimensionInfo[];
@@ -363,6 +364,8 @@ export type RenderedReport = {
     code: string | null;
   };
   audience: ReportAudienceValue;
+  /** Absent on a snapshot taken before intents existed; that report was detailed. */
+  intent?: ReportIntentValue;
   mode: RenderModeValue;
   mode_label: string;
   source: string;
@@ -428,6 +431,9 @@ export type SectionDraft = {
   tracking_view?: TrackingViewValue | null;
 };
 
+/** What a report is for: everything defined, or the headline view. */
+export type ReportIntentValue = 'detailed' | 'executive';
+
 export type ReportDraft = {
   id: string;
   name: string;
@@ -439,6 +445,7 @@ export type ReportDraft = {
   custom_until: string | null;
   comparison: ComparisonModeValue;
   audience: ReportAudienceValue;
+  intent?: ReportIntentValue;
   internal_note: string | null;
   filters: {
     providers: string[];
