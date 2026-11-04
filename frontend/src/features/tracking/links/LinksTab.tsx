@@ -16,6 +16,7 @@ import { LinkBuilder } from './LinkBuilder';
 import { LinkPerformancePanel } from './LinkPerformancePanel';
 import { QrCode } from './QrCode';
 import type { Counted, TrackingLink } from './types';
+import { UtmAuditPanel } from './UtmAuditPanel';
 
 /** A count, or why there is none. Never a zero standing in for "we cannot know". */
 function Figure({ label, counted }: { label: string; counted: Counted }) {
@@ -215,11 +216,14 @@ export function LinksTab() {
           description={t('tracking.links.empty.body')}
         />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {links.data.map((link) => (
-            <LinkCard key={link.id} link={link} canManage={canManage} />
-          ))}
-        </div>
+        <>
+          <UtmAuditPanel />
+          <div className="grid gap-4 lg:grid-cols-2">
+            {links.data.map((link) => (
+              <LinkCard key={link.id} link={link} canManage={canManage} />
+            ))}
+          </div>
+        </>
       )}
 
       <LinkBuilder open={building} onOpenChange={setBuilding} />

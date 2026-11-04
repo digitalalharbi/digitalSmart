@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/render';
 import { LinksTab } from './LinksTab';
-import type { TrackingLink } from './types';
+import type { LinkAudit, TrackingLink } from './types';
 
 const links: { data: TrackingLink[] | undefined } = { data: undefined };
+const audit: { data: LinkAudit | undefined } = { data: undefined };
 
 vi.mock('./api', () => ({
   useLinksQuery: () => ({ isPending: false, isError: false, data: links.data }),
+  useLinkAuditQuery: () => ({ data: audit.data }),
   useBindingOptions: () => ({ data: [], isFetching: false }),
   useLinkPerformanceQuery: () => ({ isPending: true, isError: false, data: undefined }),
   useSetLinkStatusMutation: () => ({ isPending: false, mutate: vi.fn() }),
@@ -76,6 +78,7 @@ function link(overrides: Partial<TrackingLink> = {}): TrackingLink {
 describe('LinksTab', () => {
   beforeEach(() => {
     links.data = [link()];
+    audit.data = undefined;
   });
 
   it('shows a figure it cannot know as not reported with its reason, never as zero', async () => {
@@ -102,5 +105,47 @@ describe('LinksTab', () => {
     await renderWithProviders(<LinksTab />);
 
     expect(screen.getByText('No tracking links yet')).toBeInTheDocument();
+  });
+
+  it('warns about campaign-parameter issues, naming the link and what is wrong', async () => {
+    links.data = [link()];
+    audit.data = {
+      audited: 3,
+      with_findings: 1,
+      by_code: { missing_medium: 1, duplicate_set: 1 },
+      links: [
+        {
+          id: 'l1',
+          name: 'Snap spring offer',
+          project_id: 'p1',
+          project_name: 'Spring',
+          client_name: 'Alhambra',
+          status: 'active',
+          findings: [
+            { code: 'missing_medium', parameters: ['utm_medium'], shared_with: [] },
+            { code: 'duplicate_set', parameters: [], shared_with: ['l2', 'l3'] },
+          ],
+        },
+      ],
+    };
+
+    await renderWithProviders(<LinksTab />);
+
+    const panel = screen.getByRole('region', { name: 'Campaign parameter issues' });
+
+    expect(panel).toHaveTextContent('1 of 3 links has a campaign-parameter issue');
+    expect(panel).toHaveTextContent('no utm_medium');
+    expect(panel).toHaveTextContent('the same parameters as 2 other live links');
+  });
+
+  it('says nothing about parameters when the audit found nothing', async () => {
+    links.data = [link()];
+    audit.data = { audited: 1, with_findings: 0, by_code: {}, links: [] };
+
+    await renderWithProviders(<LinksTab />);
+
+    expect(
+      screen.queryByRole('region', { name: 'Campaign parameter issues' }),
+    ).not.toBeInTheDocument();
   });
 });
