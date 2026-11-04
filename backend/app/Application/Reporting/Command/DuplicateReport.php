@@ -59,6 +59,7 @@ final readonly class DuplicateReport
             customFrom: $source->customFrom,
             customUntil: $source->customUntil,
             internalNote: $source->audience === ReportAudience::Internal ? $source->internalNote : null,
+            intent: $source->intent,
         );
 
         $copy->assertValid();

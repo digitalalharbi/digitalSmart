@@ -9,6 +9,7 @@ use App\Domain\Reporting\Comparability;
 use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\RenderMode;
 use App\Domain\Reporting\ReportAudience;
+use App\Domain\Reporting\ReportIntent;
 use App\Domain\Shared\ValueObject\DateRange;
 use DateTimeImmutable;
 
@@ -45,6 +46,7 @@ final readonly class RenderedReport
         public ?string $internalNote,
         /** True where the period itself is still running, which every comparison has to account for. */
         public bool $isPeriodIncomplete,
+        public ReportIntent $intent = ReportIntent::Detailed,
     ) {}
 
     public function isEmpty(): bool

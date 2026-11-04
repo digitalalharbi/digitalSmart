@@ -14,6 +14,7 @@ import type {
   ComparisonModeValue,
   ReportAudienceValue,
   ReportDraft,
+  ReportIntentValue,
   ReportVocabulary,
   ReportWindowValue,
   SectionDraft,
@@ -37,6 +38,7 @@ type ReportBuilderProps = {
     customUntil: string | null;
     comparison: ComparisonModeValue;
     audience: ReportAudienceValue;
+    intent: ReportIntentValue;
     internalNote: string | null;
     campaignIds: string[];
     sections: SectionDraft[];
@@ -88,6 +90,7 @@ export function ReportBuilder({
   const [customUntil, setCustomUntil] = useState(draft?.custom_until ?? '');
   const [comparison, setComparison] = useState<ComparisonModeValue>(draft?.comparison ?? 'none');
   const [audience, setAudience] = useState<ReportAudienceValue>(draft?.audience ?? 'internal');
+  const [intent, setIntent] = useState<ReportIntentValue>(draft?.intent ?? 'detailed');
   const [internalNote, setInternalNote] = useState(draft?.internal_note ?? '');
   /* A report written about particular campaigns keeps them on every save; clearing them is a choice made in Advanced. */
   const [campaignIds, setCampaignIds] = useState<string[]>(draft?.filters.campaign_ids ?? []);
@@ -147,6 +150,7 @@ export function ReportBuilder({
               customUntil: needsDates && customUntil !== '' ? customUntil : null,
               comparison,
               audience,
+              intent,
               internalNote: internalNote.trim() === '' ? null : internalNote.trim(),
               campaignIds,
               sections,
@@ -268,7 +272,12 @@ export function ReportBuilder({
             hides a value somebody set.
           */}
           <details
-            open={description.trim() !== '' || internalNote.trim() !== '' || campaignIds.length > 0}
+            open={
+              description.trim() !== '' ||
+              internalNote.trim() !== '' ||
+              campaignIds.length > 0 ||
+              intent !== 'detailed'
+            }
             className="border-line-subtle rounded-xl border px-4 py-3"
           >
             <summary className="text-content-secondary cursor-pointer text-sm font-medium">
@@ -285,6 +294,23 @@ export function ReportBuilder({
                   />
                 )}
               </Field>
+
+              <ChoiceGroup
+                label={t('reports.builder.intent.legend')}
+                hint={t('reports.builder.intent.hint')}
+              >
+                <div className="flex flex-wrap gap-2">
+                  {(['detailed', 'executive'] as const).map((value) => (
+                    <Choice
+                      key={value}
+                      isSelected={intent === value}
+                      onSelect={() => setIntent(value)}
+                    >
+                      {t(`reports.builder.intent.${value}`)}
+                    </Choice>
+                  ))}
+                </div>
+              </ChoiceGroup>
 
               {audience !== 'internal' ? null : (
                 <Field

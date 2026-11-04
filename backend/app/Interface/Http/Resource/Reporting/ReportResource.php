@@ -31,6 +31,7 @@ use App\Domain\Integration\Provider;
 use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\ReportAudience;
+use App\Domain\Reporting\ReportIntent;
 use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
 use App\Domain\Reporting\ShareState;
@@ -70,6 +71,11 @@ final readonly class ReportResource implements SnapshotSerialiser
                 /* What the comparison cannot account for. Stated per mode: the two fail differently. */
                 'caveat' => $mode->caveat(),
             ], ComparisonMode::cases()),
+            'intents' => array_map(static fn (ReportIntent $intent): array => [
+                'intent' => $intent->value,
+                'label' => $intent->label(),
+                'row_cap' => $intent->rowCap(),
+            ], ReportIntent::cases()),
             'audiences' => array_map(static fn (ReportAudience $audience): array => [
                 'audience' => $audience->value,
                 'label' => $audience->label(),
@@ -161,6 +167,7 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'code' => $report->comparability->code,
             ],
             'audience' => $report->audience->value,
+            'intent' => $report->intent->value,
             'mode' => $report->mode->value,
             'mode_label' => $report->mode->label(),
             'source' => $report->source->value,
@@ -278,6 +285,7 @@ final readonly class ReportResource implements SnapshotSerialiser
             'custom_until' => $definition->customUntil?->format('Y-m-d'),
             'comparison' => $definition->comparison->value,
             'audience' => $definition->audience->value,
+            'intent' => $definition->intent->value,
             'internal_note' => $definition->internalNote,
             'filters' => [
                 'providers' => $definition->filters->providers,
