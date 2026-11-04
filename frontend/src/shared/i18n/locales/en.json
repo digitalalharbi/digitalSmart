@@ -1474,7 +1474,32 @@
       "invoiced": "Invoiced by the store",
       "measured": "Measured by the property"
     },
-    "details": "Details — {{dimension}}"
+    "details": "Details — {{dimension}}",
+    "ga4": {
+      "title": "Website traffic (Google Analytics 4)",
+      "sessions": "Sessions",
+      "engagedSessions": "Engaged sessions",
+      "engagementRate": "Engagement rate",
+      "engagementPerSession": "Engagement time per session",
+      "pageViews": "Page views",
+      "notReported": "Not reported",
+      "secondsValue": "{{value}} s",
+      "vsPrevious": "{{change}} vs previous period",
+      "groupBy": "Group by",
+      "byChannel": "Default channel group",
+      "bySourceMedium": "Source / medium",
+      "rows": "Rows",
+      "channel": "Channel",
+      "sourceMedium": "Source / medium",
+      "share": "Share of sessions",
+      "tableLabel": "GA4 sessions by acquisition",
+      "page": "Page {{page}} of {{pages}}",
+      "coverage": "{{present}} of {{total}} days in this period have stored data. Figures cover only those days.",
+      "emptyTitle": "No GA4 traffic stored for this period",
+      "emptyBody": "Connect a Google Analytics 4 property for this client and sync it. Nothing is shown until the property has reported.",
+      "failed": "The traffic could not be loaded.",
+      "footnote": "Sessions are counted by Google Analytics in the property’s own time zone ({{zones}}). They are not ad clicks and are never added to them. Users are not shown: they cannot be added across days or channels."
+    }
   },
   "campaigns": {
     "status": {
