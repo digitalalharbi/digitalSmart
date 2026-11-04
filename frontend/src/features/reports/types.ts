@@ -40,7 +40,18 @@ export type SectionKindValue =
   | 'attribution'
   | 'tracking';
 
-export type TrackingViewValue = 'links' | 'forms' | 'funnel' | 'follow_up' | 'health';
+export type TrackingViewValue =
+  | 'links'
+  | 'forms'
+  | 'funnel'
+  | 'follow_up'
+  | 'health'
+  | 'roi'
+  | 'campaign_funnel'
+  | 'lead_quality'
+  | 'sales_funnel'
+  | 'response'
+  | 'web_traffic';
 
 export type CreativeViewValue =
   'top' | 'performance' | 'format_mix' | 'comparison' | 'refresh' | 'gallery' | 'platform_mix';

@@ -20,6 +20,23 @@ All notable changes to digitalSmart are recorded here. Format follows
 ### Not done
 - A user-level path (impossible from aggregate counts), per-channel funnels, live GA4 (`BLOCKED_EXTERNAL_CREDENTIALS`).
 
+## GA4 website traffic in client reports (DS-P0-REP-05)
+
+### Added
+- **A "Website traffic (GA4)" view of a report's tracking section**: sessions, engaged sessions, engagement rate and page views by default
+  channel group (top ten), read from the client's own active GA4 sources only. It rides the existing tracking section, so the viewer,
+  the shared client-safe link, the CSV, the workbook and the generated deck carry it with no second engine; the builder offers it from the
+  server's own vocabulary.
+- **The section's honesty label is the stored rows' weakest** (SANDBOX today), not "live" as first-party tracking is. A figure the property
+  never reported is "Not reported", the engagement rate exists only when both sides do, and the caveats say that sessions are not ad
+  clicks, that users are not shown (they cannot be added across days or channels), the property's time zone, and how many days of the
+  period have stored data.
+- Migration widens the allowed tracking views (additive, reversible; sections using the view are removed on the way down).
+- The front end's view union now lists all eleven views the server publishes (it had stopped at five).
+
+### Not yet
+- Live GA4 (`BLOCKED_EXTERNAL_CREDENTIALS`); landing-page and device views; a GA4 section in the deck's own layout (it uses the tracking slide).
+
 ## GA4 acquisition traffic API (DS-P0-GA4-02/03/04, read model)
 
 ### Added

@@ -494,7 +494,8 @@ final readonly class RenderReport
             kind: $section->kind,
             title: $title,
             metrics: [],
-            source: MetricSource::Live,
+            /* First-party tracking is ours and live; a view that reads a provider's figures names its own label (GA4 is sandbox here). */
+            source: $read['source'] ?? MetricSource::Live,
             isEmpty: $read['section']->isEmpty(),
             caveats: array_values(array_unique([...$caveats, ...$read['caveats']])),
             tracking: $read['section'],
