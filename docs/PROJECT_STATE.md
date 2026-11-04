@@ -9,7 +9,7 @@ short and mechanical.
 this file points at them rather than restating them, because two state documents that can disagree
 are worse than one. Where this file and Git disagree, **Git is right and this file is stale.**
 
-Updated 2026-11-04.
+Updated 2026-11-04 (23:30 UTC).
 
 ## Last verified commit
 
@@ -17,9 +17,9 @@ Updated 2026-11-04.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `5bd92f3` — fix(advertising): the hourly sync no longer queues accounts on a disconnected connection (DS-UC-103) (#74) |
-| Full sha | `5bd92f3308539c7d879caa076a5740f6bf9b6a11` |
-| Committed | 2026-11-04 09:34:29 +0300 |
+| Commit | `4a51d4e` — feat(reports): a snapshot records the metric-definitions version; checkpoint at main 9c24298 (DS-P0-REP-04) (#94) |
+| Full sha | `4a51d4e5a55ec474138b66098b8e56662a77856c` |
+| Evidence | #94 merged at head `7080bc4` with Governance, Backend, Frontend and E2E green and up to date; nothing deployed (`AWAITING_SERVER_ACCESS`) |
 
 Verify, do not trust:
 
@@ -31,9 +31,7 @@ git fetch origin && git log --oneline -10 origin/main && git status
 
 | PR | Branch | Title |
 |---|---|---|
-| [#78](https://github.com/digitalalharbi/digitalSmart/pull/78) | `feat/ga4-traffic` | feat(ga4): read acquisition traffic by channel, source and medium (DS-P0-GA4-02/03, ingest) |
-| [#77](https://github.com/digitalalharbi/digitalSmart/pull/77) | `feat/report-share-pause` | feat(reports): pause and resume a report link at the same address (DS-P0-REP-03) |
-| [#76](https://github.com/digitalalharbi/digitalSmart/pull/76) | `chore/p0-baseline` | docs: reconcile matrices to main 1e19215 and add the P0 requirement matrix |
+| [#93](https://github.com/digitalalharbi/digitalSmart/pull/93) | `feat/connection-sync-history` | feat(integrations): each connection's last attempt beside its last success (DS-P0-INT-01) — carries this file; once it is on `main`, none is open |
 
 CI on each is the authority — `Governance`, `Backend` and `Frontend` are required and the branch
 must be up to date with `main`:

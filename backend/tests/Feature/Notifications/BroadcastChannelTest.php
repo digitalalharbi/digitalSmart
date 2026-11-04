@@ -235,3 +235,46 @@ it('refuses a member of one workspace on another workspace\'s board', function (
         ])
         ->assertForbidden();
 });
+
+/*
+ * A permission taken away between two subscriptions.
+ *
+ * The rule is "re-checked on every subscription", and the suspended-member tests prove it for status. This proves it
+ * for the other thing that changes under an open tab — the role — and through the real endpoint an administrator
+ * uses rather than by editing a row, so the path that actually demotes somebody is the one shown to close the board.
+ */
+it('closes a board to somebody whose role stopped allowing it, on their next subscription', function (): void {
+    $scenario = WorkspaceScenario::create();
+    $manager = $scenario->addMember(SystemRole::ProjectManager);
+    $channel = boardChannelFor((string) $scenario->workspace->getKey(), 'tasks');
+
+    test()->actingAs($manager)
+        ->postJson('/broadcasting/auth', ['socket_id' => '1234.5678', 'channel_name' => $channel])
+        ->assertOk();
+
+    test()->actingAs($scenario->owner)
+        ->patchJson('/api/members/'.$manager->getKey().'/role', ['role' => SystemRole::ClientViewer->value])
+        ->assertSuccessful();
+
+    test()->actingAs($manager)
+        ->postJson('/broadcasting/auth', ['socket_id' => '1234.5678', 'channel_name' => $channel])
+        ->assertForbidden();
+});
+
+it('closes a person’s own channel once they are removed from the workspace', function (): void {
+    $scenario = WorkspaceScenario::create();
+    $member = $scenario->addMember(SystemRole::MediaBuyer);
+    $channel = channelFor((string) $scenario->workspace->getKey(), (string) $member->getKey());
+
+    test()->actingAs($member)
+        ->postJson('/broadcasting/auth', ['socket_id' => '1234.5678', 'channel_name' => $channel])
+        ->assertOk();
+
+    test()->actingAs($scenario->owner)
+        ->deleteJson('/api/members/'.$member->getKey())
+        ->assertSuccessful();
+
+    test()->actingAs($member)
+        ->postJson('/broadcasting/auth', ['socket_id' => '1234.5678', 'channel_name' => $channel])
+        ->assertForbidden();
+});
