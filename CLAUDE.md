@@ -15,6 +15,8 @@ git status
 Then read, in this order — they are the project's own record and they outrank any recollection:
 
 - @docs/RESUME_STATE.md — the live state, under **START HERE**
+- @docs/PROJECT_STATE.md — the recovery checkpoint: last verified commit, open pull requests, the
+  commands that verify, the standing blockers, the safe next action
 - @docs/CHANGE_MANAGEMENT.md — how a change gets from a request to `main`, and the emergency path
 - @docs/EXECUTION_POLICY.md — where development runs, what GitHub may do, and the secret policy
 - @docs/CI_STATUS.md — what CI runs and what is required
@@ -23,6 +25,19 @@ Then read, in this order — they are the project's own record and they outrank 
 - @docs/ROADMAP.md, @docs/ARCHITECTURE.md, @docs/AGENTS.md — the product and how it is built
 
 Work from what those say. If a document contradicts the code, the code is the fact and the document is a defect.
+
+## The owner's global policy, and what this repository overrides
+
+`~/.claude/CLAUDE.md` carries the owner's operating policy for every project. **This file outranks it
+on anything it addresses** — it fills gaps, it never overrides a decision made here. Two differences
+are deliberate and binding:
+
+- The global policy prefers a Claude Code cloud/remote session for long unattended work. **Not here.**
+  `docs/EXECUTION_POLICY.md` is the decision: GitHub never invokes Claude, Anthropic or any other
+  model, and the long-running path in this repository is CI/CD only.
+- The global policy asks for durable progress in `docs/PROJECT_STATE.md`. Here that file is the
+  mechanical checkpoint only; `docs/RESUME_STATE.md` remains the live product state, and
+  `PROJECT_STATE.md` points at it rather than competing with it.
 
 ## The pipeline
 
