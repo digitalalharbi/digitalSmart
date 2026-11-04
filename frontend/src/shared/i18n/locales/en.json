@@ -3819,6 +3819,8 @@
       "meta": "Expires {{expires}} · opened {{views}} times",
       "revokedBecause": "Turned off: {{reason}}",
       "revoke": "Turn off",
+      "pause": "Pause",
+      "resume": "Resume",
       "revokeReason": "Why it is being turned off",
       "confirmRevoke": "Turn it off",
       "whatsapp": "Share on WhatsApp",
@@ -4156,7 +4158,8 @@
       "state": {
         "active": "Active",
         "expired": "Expired",
-        "revoked": "Revoked"
+        "revoked": "Revoked",
+        "paused": "Paused"
       },
       "halted": "Stopped",
       "running": "Running",
@@ -4245,6 +4248,7 @@
     "unavailable": "This report is not available",
     "expired": "This link has expired. Ask whoever sent it for a new one.",
     "revoked": "This link has been turned off. Ask whoever sent it for a new one.",
+    "paused": "This link is paused for now. It will work again at the same address when whoever sent it turns it back on.",
     "unreachable": "The report could not be loaded. That is a connection problem, not an expired link — try again.",
     "preparedFor": "Prepared for {{recipient}}.",
     "footer": "Figures are as at the time shown above. A live link recalculates each time it is opened; a frozen copy never does, and says which it is.",

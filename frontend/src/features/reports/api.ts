@@ -174,6 +174,15 @@ export async function revokeShare(input: { shareId: string; reason: string }): P
   await api.delete(`/report-shares/${input.shareId}`, { data: { reason: input.reason } });
 }
 
+/** Switch a live link off without ending it; the address survives and starts working again on resume. */
+export async function pauseShare(input: { shareId: string }): Promise<void> {
+  await api.post(`/report-shares/${input.shareId}/pause`);
+}
+
+export async function resumeShare(input: { shareId: string }): Promise<void> {
+  await api.post(`/report-shares/${input.shareId}/resume`);
+}
+
 /** The CSV download URL. A plain link, so the browser handles the download rather than JavaScript. */
 export function csvUrl(reportId: string): string {
   return `/api/reports/${reportId}/csv`;

@@ -23,6 +23,8 @@ import {
   useReportDraftQuery,
   useReportVocabularyQuery,
   useReportsQuery,
+  usePauseShareMutation,
+  useResumeShareMutation,
   useRevokeShareMutation,
   useShareMutation,
   useSharesQuery,
@@ -66,19 +68,21 @@ export function ReportManagePage() {
   const snapshot = useSnapshotMutation();
   const share = useShareMutation();
   const revoke = useRevokeShareMutation();
+  const pause = usePauseShareMutation();
+  const resume = useResumeShareMutation();
   const remove = useDeleteReportMutation();
 
   const summary = summaries.data?.find((entry) => entry.id === reportId);
 
   const error = useMemo(() => {
-    for (const mutation of [snapshot, share, revoke, remove]) {
+    for (const mutation of [snapshot, share, revoke, pause, resume, remove]) {
       if (mutation.error instanceof ApiError && mutation.error.message !== '') {
         return mutation.error.message;
       }
     }
 
     return null;
-  }, [snapshot, share, revoke, remove]);
+  }, [snapshot, share, revoke, pause, resume, remove]);
 
   if (!canView) {
     return (
@@ -295,7 +299,13 @@ export function ReportManagePage() {
               title: rendered.data.name,
               period: `${rendered.data.period.from} – ${rendered.data.period.until}`,
             }}
-            isWorking={snapshot.isPending || share.isPending || revoke.isPending}
+            isWorking={
+              snapshot.isPending ||
+              share.isPending ||
+              revoke.isPending ||
+              pause.isPending ||
+              resume.isPending
+            }
             error={error}
             onShare={(input) => {
               share.mutate(
@@ -309,6 +319,8 @@ export function ReportManagePage() {
               );
             }}
             onRevoke={(shareId, reason) => revoke.mutate({ shareId, reason })}
+            onPause={(shareId) => pause.mutate({ shareId })}
+            onResume={(shareId) => resume.mutate({ shareId })}
             onTakeSnapshot={(label) =>
               snapshot.mutate({ reportId, ...(label === '' ? {} : { label }) })
             }

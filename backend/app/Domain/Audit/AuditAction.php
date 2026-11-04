@@ -177,6 +177,8 @@ enum AuditAction: string
      */
     case ReportShared = 'report.shared';
     case ReportShareRevoked = 'report.share_revoked';
+    case ReportSharePaused = 'report.share_paused';
+    case ReportShareResumed = 'report.share_resumed';
 
     /*
      * Exposing a surface to a client is a disclosure, and the entry is the only thing that can answer "who let
@@ -315,6 +317,8 @@ enum AuditAction: string
              */
             self::ReportShared,
             self::ReportShareRevoked,
+            self::ReportSharePaused,
+            self::ReportShareResumed,
             /*
              * A write to a client's live campaign is the most consequential thing this product does. It belongs
              * beside "who connected a platform" rather than beside "who renamed a report" — including the

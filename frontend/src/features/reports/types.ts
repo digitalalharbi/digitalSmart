@@ -47,7 +47,7 @@ export type CreativeViewValue =
 
 export type RenderModeValue = 'live' | 'snapshot';
 
-export type ShareStateValue = 'active' | 'revoked' | 'expired';
+export type ShareStateValue = 'active' | 'paused' | 'revoked' | 'expired';
 
 export type WindowInfo = {
   window: ReportWindowValue;
@@ -449,6 +449,8 @@ export type ReportShare = {
   is_frozen: boolean;
   expires_at: string;
   revoked_at: string | null;
+  /** Set while the link is switched off but still the same address; clear when it is on. */
+  paused_at: string | null;
   revoked_reason: string | null;
   recipient_label: string | null;
   view_count: number;
