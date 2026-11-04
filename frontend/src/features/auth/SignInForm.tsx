@@ -2,13 +2,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { Alert } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
 import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { ApiError } from '@/shared/api/client';
 import { useLoginMutation } from './api';
+import { safeReturnPath } from './returnPath';
 
 const schema = z.object({
   email: z.string().min(1).email(),
@@ -27,6 +28,7 @@ type FormValues = z.infer<typeof schema>;
 export function SignInForm({ autoFocus = false }: { autoFocus?: boolean }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const login = useLoginMutation();
 
   const {
@@ -40,7 +42,11 @@ export function SignInForm({ autoFocus = false }: { autoFocus?: boolean }) {
 
   const onSubmit = handleSubmit(async (values) => {
     await login.mutateAsync(values);
-    void navigate('/', { replace: true });
+    /* Back to the page they were headed for when `RequireSession` sent them here; home otherwise. */
+    const state: unknown = location.state;
+    const from = typeof state === 'object' && state !== null && 'from' in state ? state.from : null;
+
+    void navigate(safeReturnPath(from), { replace: true });
   });
 
   // The server returns one message for both a wrong password and an unknown
