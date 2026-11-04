@@ -43,7 +43,9 @@
         "description": "The total amount you paid for your ads.",
         "type": "TYPE_CURRENCY",
         "category": "Advertising",
-        "blockedReasons": ["NO_COST_METRICS"]
+        "blockedReasons": [
+          "NO_COST_METRICS"
+        ]
       },
       {
         "apiName": "purchaseRevenue",
@@ -51,6 +53,34 @@
         "description": "The sum of revenue from purchases made in your app or site.",
         "type": "TYPE_CURRENCY",
         "category": "Revenue"
+      },
+      {
+        "apiName": "totalUsers",
+        "uiName": "Total users",
+        "description": "Total users.",
+        "type": "TYPE_INTEGER",
+        "category": "Session"
+      },
+      {
+        "apiName": "engagedSessions",
+        "uiName": "Engaged sessions",
+        "description": "Engaged sessions.",
+        "type": "TYPE_INTEGER",
+        "category": "Session"
+      },
+      {
+        "apiName": "userEngagementDuration",
+        "uiName": "User engagement",
+        "description": "User engagement.",
+        "type": "TYPE_SECONDS",
+        "category": "Session"
+      },
+      {
+        "apiName": "screenPageViews",
+        "uiName": "Views",
+        "description": "Views.",
+        "type": "TYPE_INTEGER",
+        "category": "Session"
       }
     ]
   }

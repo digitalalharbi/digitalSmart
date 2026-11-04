@@ -28,6 +28,8 @@ final readonly class MeasurementSyncResult
         public ?string $failureMessage = null,
         /** The most recent day any event was seen on, which is what freshness is judged by. */
         public ?string $lastEventDate = null,
+        /** Acquisition traffic rows written by the same sync; null when the source has no traffic report. */
+        public ?int $trafficRowsWritten = null,
     ) {}
 
     public function succeeded(): bool

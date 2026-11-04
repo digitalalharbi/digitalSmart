@@ -11,6 +11,8 @@ use App\Application\Integration\Exception\ProviderUnavailable;
 use App\Application\Measurement\Contract\MeasurementSourceRepository;
 use App\Application\Measurement\Contract\MeasurementSyncAdapterRegistry;
 use App\Application\Measurement\Contract\ObservedEventWriter;
+use App\Application\Measurement\Contract\TrafficReportAdapter;
+use App\Application\Measurement\Contract\TrafficWriter;
 use App\Application\Measurement\DTO\MeasurementSyncResult;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -53,6 +55,7 @@ final readonly class SyncMeasurementSource
         private MeasurementSourceRepository $sources,
         private MeasurementSyncAdapterRegistry $adapters,
         private ObservedEventWriter $writer,
+        private TrafficWriter $trafficWriter,
         private ProviderConnectionRepository $connections,
         private AuthorizationGuard $guard,
         private ActorContext $actor,
@@ -168,6 +171,40 @@ final readonly class SyncMeasurementSource
          * needs; leaving the timestamp untouched would make a source that is failing
          * indistinguishable from one nobody has asked about.
          */
+        $trafficRows = null;
+
+        if ($failure === null && $adapter instanceof TrafficReportAdapter) {
+            /*
+             * Traffic is read after the events and never makes them fail: the event counts are what conversion health
+             * stands on, and a property that cannot answer the traffic report (a missing metric, a quota) still has
+             * honest event figures. A traffic failure is a caveat, and the sync stays as successful as the events were.
+             */
+            try {
+                $trafficRows = 0;
+
+                foreach (DateWindow::split($from, $until, $adapter->maxRangeDays()) as $window) {
+                    $cursor = null;
+
+                    do {
+                        $traffic = $adapter->fetchTraffic($credentials, $source->externalId, $window->from, $window->until, $cursor);
+                        $calls++;
+
+                        $trafficSource = $traffic->quality->metricSource($credentials->isSandbox($source->provider->requiredCredentialKeys()));
+                        $weakest = MetricSource::weakest([$weakest, $trafficSource]);
+
+                        foreach ($traffic->quality->caveats() as $caveat) {
+                            $caveats[$caveat] = true;
+                        }
+
+                        $trafficRows += $this->trafficWriter->upsert($workspaceId, $source->id, $traffic->items, $trafficSource, $traffic->timeZone);
+                        $cursor = $traffic->nextCursor;
+                    } while ($cursor !== null);
+                }
+            } catch (ProviderNotConfigured|ProviderRequestFailed|ProviderUnavailable $exception) {
+                $caveats['Traffic by source could not be read: '.$exception->getMessage()] = true;
+            }
+        }
+
         $this->writer->markSynced(
             $workspaceId,
             $source->id,
@@ -187,6 +224,7 @@ final readonly class SyncMeasurementSource
             caveats: array_keys($caveats),
             failureMessage: $failure,
             lastEventDate: $lastEventDate,
+            trafficRowsWritten: $trafficRows,
         );
     }
 

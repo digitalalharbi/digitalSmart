@@ -316,8 +316,8 @@ describe('syncing what the property reported', function (): void {
             ->assertOk()
             ->json('data');
 
-        // Two fixture pages, so a sync that stopped at the first would report one call.
-        expect($result['api_calls'])->toBe(2);
+        // Two fixture pages of events plus one traffic page, so a sync that stopped at the first events page would report one call.
+        expect($result['api_calls'])->toBe(3);
     });
 
     it('keeps the raw name without deciding what it means', function (): void {
@@ -629,5 +629,86 @@ describe('the range the adapter will answer', function (): void {
         expect($long->apiCalls)->toBeGreaterThan($short->apiCalls)
             // And the figures are still labelled as fixtures, whatever the range was.
             ->and($long->source->value)->toBe('sandbox');
+    });
+});
+
+/** The first stored traffic row matching the filter, failing the test outright when there is none. */
+function trafficRow(string $sourceName, string $medium): stdClass
+{
+    $row = DB::table('ga4_traffic_daily')->where('source_name', $sourceName)->where('medium', $medium)->orderByDesc('date')->first();
+    expect($row)->not->toBeNull();
+    assert($row instanceof stdClass);
+
+    return $row;
+}
+
+describe('acquisition traffic read alongside the events', function (): void {
+    it('stores sessions, users and engagement by channel, source and medium, and says how many rows', function (): void {
+        $setup = ga4Scenario();
+
+        $result = test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/measurement/sources/{$setup['source']->getKey()}/sync")
+            ->assertOk()
+            ->json('data');
+
+        expect($result['traffic_rows_written'])->toBe(10);
+
+        $paid = trafficRow('snapchat', 'paid_social');
+
+        expect($paid->channel_group)->toBe('Paid Social')
+            ->and($paid->sessions)->toBe(620)
+            ->and($paid->users)->toBe(540)
+            ->and($paid->engaged_sessions)->toBe(455)
+            ->and($paid->engagement_seconds)->toBe(38400)
+            ->and($paid->page_views)->toBe(1710)
+            ->and($paid->time_zone)->toBe('Asia/Riyadh')
+            ->and($paid->source)->not->toBe('live');
+    });
+
+    it('stores null, not zero, for a metric the property does not have', function (): void {
+        $setup = ga4Scenario();
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/measurement/sources/{$setup['source']->getKey()}/sync")->assertOk();
+
+        // `newUsers` is deliberately absent from the sandbox property's metadata, so it is never requested.
+        $rows = DB::table('ga4_traffic_daily')->where('measurement_source_id', $setup['source']->getKey())->get();
+
+        expect($rows)->toHaveCount(10)
+            ->and($rows->every(fn ($row) => $row->new_users === null))->toBeTrue()
+            ->and($rows->every(fn ($row) => $row->sessions !== null))->toBeTrue();
+    });
+
+    it('keeps an unattributed session as the property named it rather than dropping or renaming it', function (): void {
+        $setup = ga4Scenario();
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/measurement/sources/{$setup['source']->getKey()}/sync")->assertOk();
+
+        $row = trafficRow('(not set)', '(not set)');
+
+        expect($row->channel_group)->toBe('Unassigned')->and($row->medium)->toBe('(not set)');
+    });
+
+    it('replaces on a re-read instead of doubling the sessions', function (): void {
+        $setup = ga4Scenario();
+        $url = "/api/measurement/sources/{$setup['source']->getKey()}/sync";
+
+        test()->actingAs($setup['scenario']->owner)->postJson($url)->assertOk();
+        $first = (int) DB::table('ga4_traffic_daily')->sum('sessions');
+        test()->actingAs($setup['scenario']->owner)->postJson($url)->assertOk();
+
+        expect(DB::table('ga4_traffic_daily')->count())->toBe(10)
+            ->and((int) DB::table('ga4_traffic_daily')->sum('sessions'))->toBe($first);
+    });
+
+    it('reads no traffic for a source whose provider has no traffic report', function (): void {
+        $setup = ga4Scenario(sandbox: false);
+
+        test()->actingAs($setup['scenario']->owner)
+            ->postJson("/api/measurement/sources/{$setup['source']->getKey()}/sync")->assertOk();
+
+        // Real credentials are refused (BLOCKED_EXTERNAL): no row, and certainly no invented one.
+        expect(DB::table('ga4_traffic_daily')->count())->toBe(0);
     });
 });

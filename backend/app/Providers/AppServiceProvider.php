@@ -124,6 +124,7 @@ use App\Application\Measurement\Contract\MeasurementSyncAdapterRegistry as Measu
 use App\Application\Measurement\Contract\ObservedEventReadModel;
 use App\Application\Measurement\Contract\ObservedEventWriter;
 use App\Application\Measurement\Contract\TagContainerReadAdapter;
+use App\Application\Measurement\Contract\TrafficWriter;
 use App\Application\Notifications\Contract\AlertSubjects;
 use App\Application\Notifications\Contract\NotificationBroadcaster;
 use App\Application\Notifications\Contract\NotificationChannelDelivery;
@@ -344,6 +345,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingOperation
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingPolicyRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingRetentionStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingSettingsRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrafficWriter;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventJournal;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentWebhookEventReader;
 use App\Infrastructure\Persistence\RandomOpaqueTokens;
@@ -486,6 +488,7 @@ final class AppServiceProvider extends ServiceProvider
         MeasurementSyncAdapterRegistryContract::class => MeasurementSyncAdapterRegistry::class,
         MeasurementSourceRepository::class => EloquentMeasurementSourceRepository::class,
         ObservedEventWriter::class => EloquentObservedEventWriter::class,
+        TrafficWriter::class => EloquentTrafficWriter::class,
         /*
          * One implementation, bound directly rather than through a registry. Tag Manager is
          * the only container provider this product reads, and a registry of one is a

@@ -4,6 +4,22 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## GA4 acquisition traffic is read and stored (DS-P0-GA4-02/03, ingest only)
+
+### Added
+- **A second GA4 report beside the event counts**: sessions, users, new users, engaged sessions, engagement seconds and page views by
+  day × default channel group × session source × session medium (`TrafficReportAdapter`, `ga4_traffic_daily`). Read in the same sync,
+  re-read over the restatement window and replaced on the natural key, so a repeat never doubles a figure.
+- **Metrics come from the property's own metadata.** A metric the property does not list is not requested and is stored as `null` — the
+  sandbox property deliberately has no `newUsers` — never as zero. `(not set)` and `(other)` are kept verbatim: an unattributed session is
+  still a session, and the roll-up is already a caveat from the report quality.
+- Users are stored per row and are never summed across rows (a person active on two days is one person).
+- A traffic failure is a caveat on the sync, not a failure of it: the event counts conversion health stands on stay honest.
+
+### Not yet
+- The read model, API and screens over this table (next PRs); the live Data API transport stays `BLOCKED_EXTERNAL_CREDENTIALS`
+  (no Google OAuth client or authorised property). Everything here runs on the labelled sandbox fixtures.
+
 ## Report links can be paused and resumed at the same address (DS-P0-REP-03)
 
 ### Added

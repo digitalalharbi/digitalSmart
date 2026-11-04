@@ -8,6 +8,7 @@ use App\Application\Measurement\DTO\DataStreamRecord;
 use App\Application\Measurement\DTO\DiscoveredProperty;
 use App\Application\Measurement\DTO\KeyEventRecord;
 use App\Application\Measurement\DTO\ObservedEventRecord;
+use App\Application\Measurement\DTO\TrafficRecord;
 use App\Domain\Advertising\ValueObject\Money;
 use App\Domain\Measurement\ReportQuality;
 
@@ -229,6 +230,86 @@ final readonly class GoogleAnalyticsMapper
     }
 
     /**
+     * Acquisition traffic rows from a `runReport` response whose dimensions are the date and the three session-scoped
+     * acquisition dimensions.
+     *
+     * Read through the headers, never by position, and a metric the response did not carry is null — not zero. A row
+     * whose day cannot be placed is dropped; `(not set)` and `(other)` in an acquisition dimension are kept verbatim
+     * because they are what the property said (an unattributed session is still a session), and the `(other)` roll-up
+     * is already reported as a caveat by `quality()`.
+     *
+     * Session-scoped dimensions on purpose: `firstUserSource` and `sessionSource` answer different questions and
+     * mixing them in one table would make a "source" column mean two things.
+     *
+     * @param  array<string, mixed>  $response
+     * @return list<TrafficRecord>
+     */
+    public function trafficRecords(array $response): array
+    {
+        $dimensions = $this->headerIndex($response, 'dimensionHeaders');
+        $metrics = $this->headerIndex($response, 'metricHeaders');
+
+        $dateAt = $dimensions[self::DIMENSION_DATE] ?? null;
+        $channelAt = $dimensions['sessionDefaultChannelGroup'] ?? null;
+        $sourceAt = $dimensions['sessionSource'] ?? null;
+        $mediumAt = $dimensions['sessionMedium'] ?? null;
+
+        if ($dateAt === null || $channelAt === null || $sourceAt === null || $mediumAt === null) {
+            return [];
+        }
+
+        $records = [];
+
+        foreach ($this->listOf($response, 'rows') as $row) {
+            $day = $this->day((string) $this->valueAt($row, 'dimensionValues', $dateAt));
+
+            if ($day === null) {
+                continue;
+            }
+
+            $count = fn (string $name): ?int => isset($metrics[$name])
+                ? $this->wholeNumber($this->valueAt($row, 'metricValues', $metrics[$name]))
+                : null;
+
+            $records[] = new TrafficRecord(
+                date: $day,
+                channelGroup: (string) $this->valueAt($row, 'dimensionValues', $channelAt),
+                source: (string) $this->valueAt($row, 'dimensionValues', $sourceAt),
+                medium: (string) $this->valueAt($row, 'dimensionValues', $mediumAt),
+                sessions: $count('sessions'),
+                totalUsers: $count('totalUsers'),
+                newUsers: $count('newUsers'),
+                engagedSessions: $count('engagedSessions'),
+                engagementSeconds: $count('userEngagementDuration'),
+                pageViews: $count('screenPageViews'),
+            );
+        }
+
+        return $records;
+    }
+
+    /**
+     * Names of the metrics a property's `getMetadata` response lists.
+     *
+     * @param  array<string, mixed>  $metadata
+     * @return list<string>
+     */
+    public function metricNames(array $metadata): array
+    {
+        $names = [];
+
+        foreach ($this->listOf($metadata, 'metrics') as $metric) {
+            $name = $this->string($metric, 'apiName');
+
+            if ($name !== null) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
+    }
+
+    /**
      * What the response said about its own completeness.
      *
      * Every field here is one the provider volunteers, and dropping any of them would turn an
@@ -348,6 +429,12 @@ final readonly class GoogleAnalyticsMapper
         }
 
         return (string) array_key_first($candidates);
+    }
+
+    /** A count GA4 sends as a decimal string (durations arrive as `"12.5"`), rounded to whole units; null when absent. */
+    private function wholeNumber(?string $value): ?int
+    {
+        return $value !== null && is_numeric($value) ? (int) round((float) $value) : null;
     }
 
     /**

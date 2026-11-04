@@ -88,6 +88,7 @@ function tenantSafeUniques(): array
         'tracking_events(project_id,event_id)' => $ownedBy('projects'),
         'tracking_sessions(touchpoint_id)' => 'a server-generated touchpoint id',
         'project_integration_bindings(project_id,external_account_id)' => $ownedBy('projects'),
+        'ga4_traffic_daily(measurement_source_id,date,channel_group,source_name,medium)' => $ownedBy('measurement_sources'),
         'conversion_metrics(entity_type,entity_id,date,raw_action_type,attribution_window)' => 'bounded by a tenant-owned campaign, ad group or ad id',
         'daily_metrics(entity_type,entity_id,date)' => 'bounded by a tenant-owned campaign, ad group or ad id',
         'observed_event_counts(measurement_source_id,raw_event_name,date)' => $ownedBy('measurement_sources'),
