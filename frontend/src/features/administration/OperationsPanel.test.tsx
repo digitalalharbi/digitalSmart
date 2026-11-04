@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { renderWithProviders } from '@/test/render';
 import { OperationsPanel } from './OperationsPanel';
 
@@ -76,5 +76,45 @@ describe('OperationsPanel', () => {
     expect(
       await screen.findByText(/No failed or partial syncs in the last 24 hours/),
     ).toBeInTheDocument();
+  });
+
+  it('shows a connection’s last attempt and last success as two separate facts', async () => {
+    get.mockResolvedValue({
+      data: {
+        data: {
+          summary,
+          advanced: {
+            queue_depth: {},
+            providers: [],
+            failures: [],
+            stale: [],
+            window_hours: 24,
+            connection_history: [
+              {
+                connection_id: 'c-1',
+                provider: 'meta',
+                last_attempt_at: '2026-06-15T09:00:00Z',
+                last_attempt_status: 'failed',
+                last_success_at: null,
+                last_failure_at: '2026-06-15T09:00:00Z',
+                last_error_code: 'token_expired',
+                failures_since_success: 4,
+              },
+            ],
+          },
+        },
+      },
+    });
+    await renderWithProviders(<OperationsPanel />);
+
+    const table = await screen.findByRole('table', {
+      name: 'Each connection: last attempt and last success',
+    });
+
+    expect(within(table).getByText('Failed')).toBeInTheDocument();
+    // Never, not a date: an attempt is not a success.
+    expect(within(table).getByText('Never succeeded')).toBeInTheDocument();
+    expect(within(table).getByText('4')).toBeInTheDocument();
+    expect(within(table).getByText('token_expired')).toBeInTheDocument();
   });
 });

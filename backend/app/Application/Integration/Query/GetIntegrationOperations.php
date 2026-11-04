@@ -108,6 +108,8 @@ final readonly class GetIntegrationOperations
                     'last_success_at' => $p->candidate->lastSuccessAt?->format(DATE_ATOM),
                 ], $stale),
                 'window_hours' => 24,
+                // Not windowed: a connection that last succeeded a week ago must still say so.
+                'connection_history' => $this->operations->connectionHistory($workspace->value),
             ],
         ];
     }

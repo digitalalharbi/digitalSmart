@@ -48,6 +48,16 @@ type Operations = {
     }>;
     stale: Array<{ account_id: string; provider: string; last_success_at: string | null }>;
     window_hours: number;
+    connection_history?: Array<{
+      connection_id: string;
+      provider: string;
+      last_attempt_at: string;
+      last_attempt_status: 'succeeded' | 'partial' | 'failed';
+      last_success_at: string | null;
+      last_failure_at: string | null;
+      last_error_code: string | null;
+      failures_since_success: number;
+    }>;
   };
 };
 
@@ -163,6 +173,54 @@ export function OperationsPanel({ part = 'all' }: { part?: 'all' | 'health' | 'd
               ))}
             </TableBody>
           </DataTable>
+
+          {/*
+            The last attempt and the last success are separate columns on purpose: a connection that has failed every hour since
+            Tuesday was "synced" this morning by the first and not since Tuesday by the second.
+          */}
+          {advanced.connection_history === undefined ||
+          advanced.connection_history.length === 0 ? null : (
+            <DataTable label={t('integrationOps.history.title')} minWidth="44rem">
+              <TableHead>
+                <TableRow>
+                  <TableHeader>{t('integrationOps.col.provider')}</TableHeader>
+                  <TableHeader>{t('integrationOps.history.lastAttempt')}</TableHeader>
+                  <TableHeader>{t('integrationOps.history.lastSuccess')}</TableHeader>
+                  <TableHeader align="end">{t('integrationOps.history.failuresSince')}</TableHeader>
+                  <TableHeader>{t('integrationOps.col.code')}</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {advanced.connection_history.map((h) => (
+                  <TableRow key={h.connection_id}>
+                    <TableCell>{h.provider}</TableCell>
+                    <TableCell label={t('integrationOps.history.lastAttempt')}>
+                      <span className={h.last_attempt_status === 'failed' ? 'text-danger' : ''}>
+                        {t(`integrationOps.history.status.${h.last_attempt_status}`)}
+                      </span>
+                      {' · '}
+                      {formatRelativeTime(h.last_attempt_at, locale)}
+                    </TableCell>
+                    <TableCell label={t('integrationOps.history.lastSuccess')}>
+                      {h.last_success_at === null
+                        ? t('integrationOps.history.never')
+                        : formatRelativeTime(h.last_success_at, locale)}
+                    </TableCell>
+                    <TableCell
+                      isNumeric
+                      align="end"
+                      label={t('integrationOps.history.failuresSince')}
+                    >
+                      {formatNumber(h.failures_since_success, locale)}
+                    </TableCell>
+                    <TableCell label={t('integrationOps.col.code')}>
+                      {h.failures_since_success === 0 ? '—' : (h.last_error_code ?? '—')}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </DataTable>
+          )}
 
           {advanced.failures.length === 0 ? (
             <p className="text-content-tertiary text-sm">
