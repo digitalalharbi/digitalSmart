@@ -20,7 +20,7 @@ States: `NOT_STARTED` · `PARTIAL` · `IMPLEMENTED_NOT_VERIFIED` · `VERIFIED` �
 | DS-P0-COM-01 gross/net/refunds | PARTIAL | Revenue ledger (#71 `009be9d`): charged, refunded, components | Discount/tax/shipping components may stay null by provider | 06 |
 | DS-P0-COM-02 store-local time | PARTIAL | UTC at rest (#72 `62e5688`); store-timezone days, weekly/monthly grain, previous period (#75 `1e19215`) — CI-verified | Attribution day boundaries still use the placed-at date (`DS-UC-401`) | 06 |
 | DS-P0-COM-03 SKU/category/customers/coupons | PARTIAL | Product-by-line, customer mix with withholding rule | SKU grouping, category, coupon read model | 06 |
-| DS-P0-COM-04 sources never summed | PARTIAL | `RevenueSource` keeps authorities apart | A reconciliation read with deltas (`DS-UC-401`) | 06/07 |
+| DS-P0-COM-04 sources never summed | IMPLEMENTED_NOT_VERIFIED (API; in review) | `RevenueSource` keeps authorities apart; `GET /api/commerce/reconciliation` — store authority, platform / GA4 / tracking-evidence claims with deltas, no cross-source total (`RevenueReconciliationTest`, 8 cases) | A screen; CRM row; live figures `BLOCKED_EXTERNAL_CREDENTIALS` | 06/07 |
 | DS-P0-LINK-01 tracking links | PARTIAL | Links, safe redirect, QR, UTM templates, click-id whitelist, bot marking | UTM audit; link edit history preserving attribution | 07 |
 | DS-P0-LINK-02 influencer / evidence joins | NOT_STARTED | Tracking sessions and events exist; attribution does not read them (`DS-UC-402`) | Join by click id/touchpoint; influencer entity | 07 |
 | DS-P0-REP-01 types, presets, visibility | PARTIAL | Presets are client-side section lists; chart/table twin | Stored `intent`; per-section/field `hidden` enforced server-side (`DS-UC-502/503`) | 03 |

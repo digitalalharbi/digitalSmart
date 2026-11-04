@@ -4,6 +4,21 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+
+## Revenue reconciliation: the store as the authority, every other source a claim (DS-P0-COM-04)
+
+### Added
+- **`GET /api/commerce/reconciliation`** for one client and one period: each store's paid orders, net revenue, refunds and pending
+  orders, then three claims beside them — what the ad platforms report, GA4 purchase events, and store orders that carried
+  tracking evidence — each with its difference from the store (claim minus store) and, for counts, the ratio.
+- **Never a sum.** No field totals across sources. A difference is absent where either side is, where currencies differ, or where
+  no store was read (events against no authority are not a gap); GA4 carries events only, because its revenue is not read.
+- It composes the store, GA4 funnel and analytics reads, so scope, permission and every figure are theirs. `analytics.view`,
+  commerce feature, a client is required.
+
+### Not yet
+- A screen for it, and a CRM row. Live GA4 and store figures remain `BLOCKED_EXTERNAL_CREDENTIALS`; sandbox rows say sandbox.
+
 ## P0 GA4: a purchase-events versus store-orders check for the Leads agent (DS-P0-AGENT-GA4)
 
 ### Added
