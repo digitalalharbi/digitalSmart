@@ -131,6 +131,7 @@ use App\Application\Notifications\Contract\NotificationDeliveryLog;
 use App\Application\Notifications\Contract\NotificationPreferenceStore;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\Contract\RecipientResolver;
+use App\Application\Notifications\Mail\EmailRenderer;
 use App\Application\Operations\Command\IssueApprovalLink;
 use App\Application\Operations\Command\UseApprovalLink;
 use App\Application\Operations\Contract\ApprovalLinkDelivery;
@@ -253,6 +254,7 @@ use App\Infrastructure\Notifications\EloquentNotificationDeliveryLog;
 use App\Infrastructure\Notifications\EloquentNotificationPreferenceStore;
 use App\Infrastructure\Notifications\EloquentNotificationStore;
 use App\Infrastructure\Notifications\HonestChannelDelivery;
+use App\Infrastructure\Notifications\Mail\BrandedEmailRenderer;
 use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
 use App\Infrastructure\Operations\BroadcastBoardSignaller;
@@ -630,6 +632,11 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(EntitlementStore::class, EloquentEntitlementStore::class);
         $this->app->bind(UsageReader::class, EloquentUsageReader::class);
         $this->app->bind(CapacityLock::class, PostgresCapacityLock::class);
+        /* Links in a message are https everywhere except a developer's own machine. */
+        $this->app->singleton(EmailRenderer::class, static fn (): EmailRenderer => new BrandedEmailRenderer(
+            brand: (string) config('app.name', 'digitalSmart'),
+            allowInsecureLinks: in_array(config('app.env'), ['local', 'testing'], true),
+        ));
         $this->app->bind(PlatformOperators::class, EloquentPlatformOperators::class);
         $this->app->bind(PlatformReadModel::class, EloquentPlatformReadModel::class);
         $this->app->bind(WorkspaceCreator::class, EloquentWorkspaceCreator::class);
