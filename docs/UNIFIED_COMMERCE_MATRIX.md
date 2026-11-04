@@ -53,7 +53,7 @@ Status words: `REUSED` (exists, tested — leave alone) · `PARTIAL` · `MISSING
 
 | ID | Status | Evidence | Smallest gap |
 |---|---|---|---|
-| DS-UC-401 four authorities | PARTIAL | `RevenueSource` keeps platform, GA4, Salla, Zid, CRM, manual and attributed apart; Analytics shows "Revenue by who says so". Attribution takes one required `revenue_source` per call. | A reconciliation read: store, platform, GA4 and tracking-evidenced revenue for one period with deltas. |
+| DS-UC-401 four authorities | PARTIAL | `RevenueSource` keeps platform, GA4, Salla, Zid, CRM, manual and attributed apart; Analytics shows "Revenue by who says so". Attribution takes one required `revenue_source` per call. | Reconciliation read built (`GET /api/commerce/reconciliation`, in review): store authority beside platform, GA4-event and tracking-evidence claims with deltas, never summed. Panel on the store revenue page once a client is chosen (#92). Remaining: a CRM row, GA4 revenue (not read). |
 | DS-UC-402 evidence graph | PARTIAL | `tracking_sessions` / `tracking_events` hold UTMs, click ids, consent and a dedupe key. `EloquentAttributionReadModel` does not read them. | Join tracking evidence to orders by click id / touchpoint. |
 | DS-UC-403 configurations | MISSING | Model, window and limit are per-request parameters. | A stored per-workspace/client configuration with versioning. |
 | DS-UC-404 model comparison | `REUSED` | `last_recorded`, `first_recorded`, `paid_last_click` computed; linear, position-based and time-decay refused with a 422 naming what would unblock them (`AttributionTest`, `Unit/Domain/AttributionTest`, `AttributionPage.test.tsx`, `e2e/attribution.spec.ts`). | None — they stay refused until ordered, consented touchpoints exist. |

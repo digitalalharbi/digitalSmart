@@ -32,6 +32,7 @@ use App\Interface\Http\Controller\Campaign\BlueprintController;
 use App\Interface\Http\Controller\Campaign\LaunchController;
 use App\Interface\Http\Controller\Client\ClientController;
 use App\Interface\Http\Controller\Client\OffboardingController;
+use App\Interface\Http\Controller\Commerce\RevenueReconciliationController;
 use App\Interface\Http\Controller\Commerce\StoreAnalyticsController;
 use App\Interface\Http\Controller\Commerce\StoreController;
 use App\Interface\Http\Controller\Commerce\StoreRollupController;
@@ -724,6 +725,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::get('commerce/analytics', StoreAnalyticsController::class)
         ->name('commerce.analytics')->middleware('feature:commerce');
     Route::get('commerce/rollup', StoreRollupController::class)->name('commerce.rollup')->middleware('feature:commerce');
+    Route::get('commerce/reconciliation', RevenueReconciliationController::class)
+        ->name('commerce.reconciliation')->middleware('feature:commerce');
 
     /*
      * The stores a workspace reads. Reading the list needs `analytics.view` — "where does this figure come from
