@@ -6,7 +6,7 @@ import type { RenderedReport } from './types';
 /** What the one unauthenticated read in this product answers with. */
 export type SharedReportResult = {
   /** `active` carries a report; the other two carry a reason instead. */
-  state: 'active' | 'revoked' | 'expired';
+  state: 'active' | 'paused' | 'revoked' | 'expired';
   /** The server's own sentence. Used only if the state is one this build does not know. */
   message: string | null;
   mode: 'live' | 'snapshot' | null;

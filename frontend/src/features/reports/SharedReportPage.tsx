@@ -159,10 +159,12 @@ export function SharedReportPage() {
             <p className="text-content-secondary text-sm">
               {result.state === 'expired'
                 ? t('sharedReport.expired')
-                : result.state === 'revoked'
-                  ? t('sharedReport.revoked')
-                  : /* A state this build does not know. The server's own sentence, rather than a guess. */
-                    (result.message ?? t('sharedReport.revoked'))}
+                : result.state === 'paused'
+                  ? t('sharedReport.paused')
+                  : result.state === 'revoked'
+                    ? t('sharedReport.revoked')
+                    : /* A state this build does not know. The server's own sentence, rather than a guess. */
+                      (result.message ?? t('sharedReport.revoked'))}
             </p>
           </section>
         ) : (

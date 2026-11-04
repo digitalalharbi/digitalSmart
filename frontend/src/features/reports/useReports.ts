@@ -17,6 +17,8 @@ import {
   fetchShares,
   fetchSnapshots,
   requestExport,
+  pauseShare,
+  resumeShare,
   revokeShare,
   shareReport,
   takeSnapshot,
@@ -146,6 +148,14 @@ export function useSnapshotMutation() {
 
 export function useShareMutation() {
   return useReportMutation(shareReport);
+}
+
+export function usePauseShareMutation() {
+  return useReportMutation(pauseShare);
+}
+
+export function useResumeShareMutation() {
+  return useReportMutation(resumeShare);
 }
 
 export function useRevokeShareMutation() {

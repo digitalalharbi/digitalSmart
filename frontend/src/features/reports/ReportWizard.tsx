@@ -298,7 +298,11 @@ export function ReportWizard({
               <li key={entry.id}>
                 <button
                   type="button"
-                  disabled={!available}
+                  /*
+                   * Not choosable until the vocabulary has arrived: choosing builds the sections from it, so a click
+                   * before then used to do nothing at all and leave "Next" disabled with no explanation.
+                   */
+                  disabled={!available || vocabulary === undefined}
                   aria-pressed={selected}
                   onClick={() => choose(entry)}
                   className={cn(

@@ -23,6 +23,8 @@ type SharePanelProps = {
   error: string | null;
   onShare: (input: { days: number; snapshotId: string | null; recipientLabel: string }) => void;
   onRevoke: (shareId: string, reason: string) => void;
+  onPause: (shareId: string) => void;
+  onResume: (shareId: string) => void;
   onTakeSnapshot: (label: string) => void;
   /** What the WhatsApp message names. Words only: the message carries no figure and no figure travels in the link. */
   context?: { client: string | null; title: string; period: string };
@@ -55,6 +57,8 @@ export function SharePanel({
   error,
   onShare,
   onRevoke,
+  onPause,
+  onResume,
   onTakeSnapshot,
   context,
 }: SharePanelProps) {
@@ -198,7 +202,7 @@ export function SharePanel({
                       tone={
                         share.state === 'active'
                           ? 'accent'
-                          : share.state === 'expired'
+                          : share.state === 'expired' || share.state === 'paused'
                             ? 'warning'
                             : 'danger'
                       }
@@ -237,7 +241,8 @@ export function SharePanel({
                     </p>
                   )}
 
-                  {share.state !== 'active' || !canShare ? null : revoking === share.id ? (
+                  {(share.state !== 'active' && share.state !== 'paused') ||
+                  !canShare ? null : revoking === share.id ? (
                     <form
                       className="flex flex-wrap items-end gap-2"
                       onSubmit={(event) => {
@@ -271,7 +276,28 @@ export function SharePanel({
                       </Button>
                     </form>
                   ) : (
-                    <span>
+                    <span className="flex flex-wrap gap-2">
+                      {share.state === 'paused' ? (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          disabled={isWorking}
+                          onClick={() => onResume(share.id)}
+                        >
+                          {t('reports.share.resume')}
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          disabled={isWorking}
+                          onClick={() => onPause(share.id)}
+                        >
+                          {t('reports.share.pause')}
+                        </Button>
+                      )}
                       <Button
                         type="button"
                         variant="ghost"

@@ -312,7 +312,7 @@ final readonly class EloquentReportRepository implements ReportRepository
             ->orderByDesc('s.created_at')
             ->limit($limit)
             ->get([
-                's.id', 's.report_id', 's.snapshot_id', 's.token_hint', 's.expires_at', 's.revoked_at', 's.revoked_reason',
+                's.id', 's.report_id', 's.snapshot_id', 's.token_hint', 's.expires_at', 's.revoked_at', 's.paused_at', 's.revoked_reason',
                 's.recipient_label', 's.view_count', 's.last_viewed_at', 's.created_at',
                 'r.name as report_name', 'c.name as client_name', 'u.name as created_by_name',
             ]);
@@ -332,6 +332,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                 'snapshot_id' => $this->text($values['snapshot_id'] ?? null),
                 'expires_at' => $this->date($values['expires_at'] ?? null) ?? new DateTimeImmutable('@0'),
                 'revoked_at' => $this->date($values['revoked_at'] ?? null),
+                'paused_at' => $this->date($values['paused_at'] ?? null),
                 'revoked_reason' => $this->text($values['revoked_reason'] ?? null),
                 'recipient_label' => $this->text($values['recipient_label'] ?? null),
                 'view_count' => (int) ($values['view_count'] ?? 0),
@@ -573,9 +574,9 @@ final readonly class EloquentReportRepository implements ReportRepository
                 'report_id',
                 DB::raw('coalesce(sum(view_count), 0) as views'),
                 DB::raw('max(last_viewed_at) as last_viewed'),
-                DB::raw('count(*) filter (where revoked_at is null and expires_at > \''.$now->toDateTimeString().'\' and snapshot_id is null) as live'),
-                DB::raw('count(*) filter (where revoked_at is null and expires_at > \''.$now->toDateTimeString().'\' and snapshot_id is not null) as frozen'),
-                DB::raw('min(expires_at) filter (where revoked_at is null and expires_at > \''.$now->toDateTimeString().'\') as next_expiry'),
+                DB::raw('count(*) filter (where revoked_at is null and paused_at is null and expires_at > \''.$now->toDateTimeString().'\' and snapshot_id is null) as live'),
+                DB::raw('count(*) filter (where revoked_at is null and paused_at is null and expires_at > \''.$now->toDateTimeString().'\' and snapshot_id is not null) as frozen'),
+                DB::raw('min(expires_at) filter (where revoked_at is null and paused_at is null and expires_at > \''.$now->toDateTimeString().'\') as next_expiry'),
             ]);
 
         $stats = [];

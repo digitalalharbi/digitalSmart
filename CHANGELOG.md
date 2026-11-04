@@ -20,6 +20,20 @@ All notable changes to digitalSmart are recorded here. Format follows
 - The read model, API and screens over this table (next PRs); the live Data API transport stays `BLOCKED_EXTERNAL_CREDENTIALS`
   (no Google OAuth client or authorised property). Everything here runs on the labelled sandbox fixtures.
 
+## Report links can be paused and resumed at the same address (DS-P0-REP-03)
+
+### Added
+- **Pause and resume** (`POST /api/report-shares/{share}/pause|resume`, permission `reports.share`): a live link is switched off without
+  ending it. A stranger holding it gets a sentence and no figures; resuming brings the same token and URL back. No reason is asked
+  (that is revoking). Pausing applies only to a live link, resuming never extends an expiry and never revives a revoked or expired link,
+  and a second pause does not move the first moment. Both are audited as security-class actions, by the link's hint and never the token.
+- `report_shares.paused_at` (additive, reversible); the reports centre counts a paused link as neither live nor frozen.
+- A test that editing the report behind a link leaves the token row untouched and the same address showing the edited report.
+
+### Stated plainly
+- An already-sent link still cannot be re-read from the database: only its SHA-256 and a 12-character hint are stored. Pause, resume and
+  edit work on the link by its row; recovering the URL itself is impossible by design.
+
 ## Advertising sync no longer retries a disconnected connection every hour
 
 ### Fixed

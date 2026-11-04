@@ -26,11 +26,12 @@ final readonly class ShareView
         public ?string $createdByName,
         public DateTimeImmutable $createdAt,
         public string $workspaceId,
+        public ?DateTimeImmutable $pausedAt = null,
     ) {}
 
     public function state(DateTimeImmutable $now): ShareState
     {
-        return ShareState::of($this->revokedAt !== null, $this->expiresAt, $now);
+        return ShareState::of($this->revokedAt !== null, $this->expiresAt, $now, $this->pausedAt !== null);
     }
 
     /** Whether this link shows figures frozen at a moment, rather than today's. */
