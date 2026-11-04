@@ -6,9 +6,9 @@
 `git fetch origin && git log --oneline -10 origin/main && git status` before anything else; where this file and Git
 disagree, Git is right.
 
-### Where things stand — 2026-11-03
+### Where things stand — 2026-11-04
 
-**Main `0ddda43`.** #70–#75, #77 (report-link pause/resume `61126aa`) and #78 (GA4 traffic ingest `0ddda43`) merged, CI-verified. Open: #85 — one batch (GA4 traffic API and Analytics panel, duplicate report, sign-in return path, email templates) that also carries the P0 docs formerly in #76. Next: merge #85 on a green CI, then GA4 report sections, `/api/attention` payload, property-grain users, automation findings from GA4/store discrepancies. Requirement state: `docs/P0_REQUIREMENTS_MATRIX.md` (38 rows, none `VERIFIED`) and `docs/UNIFIED_COMMERCE_MATRIX.md`. Local demo: login, refresh and dashboards verified by Playwright; Horizon and Reverb run locally, scheduler off. Nothing is deployed or `LIVE_VERIFIED`.
+**Main `401c10a` (2026-11-04).** Merged and CI-verified this session: #72, #75, #74, #77 (report-link pause/resume), #78 (GA4 traffic ingest), #85 (GA4 traffic API and panel, duplicate report, sign-in return path, branded email templates; not sent), #86 (GA4 website traffic as a report view, `0172b87`), #87 (GA4 shopping-events funnel, `401c10a`). No PR is open. Next, in order: `/api/attention` assembly cost (~460 ms, `docs/PERFORMANCE_BASELINE.md`); GA4/store discrepancy findings for the agents; landing-page and device breakdowns; report intent (Executive/Detailed) and PDF; field-level visibility; auth cross-tab tests; Core Web Vitals measurement. Blocked externally (`BLOCKED_EXTERNAL_CREDENTIALS`): live GA4 (Google OAuth client and authorised property), Google sign-in/OTP delivery, email/WhatsApp provider, production server (`AWAITING_SERVER_ACCESS`). Requirement state: `docs/P0_REQUIREMENTS_MATRIX.md` (32 rows, none `VERIFIED`) and `docs/UNIFIED_COMMERCE_MATRIX.md`. Local demo: API 8001, Vite 5174, Reverb, Horizon run locally, scheduler off. Nothing is deployed or `LIVE_VERIFIED`.
 
 ### Earlier state — 2026-10-25
 
