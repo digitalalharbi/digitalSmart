@@ -3968,7 +3968,8 @@
     "actions": {
       "edit": "تعديل",
       "delete": "حذف",
-      "manage": "إدارة"
+      "manage": "إدارة",
+      "duplicate": "نسخ"
     },
     "view": {
       "allClients": "عبر جميع العملاء",

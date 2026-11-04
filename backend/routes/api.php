@@ -825,6 +825,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         ->whereUuid('report')->name('reports.show');
     Route::get('reports/{report}/definition', [ReportController::class, 'definition'])
         ->whereUuid('report')->name('reports.definition');
+    Route::post('reports/{report}/duplicate', [ReportController::class, 'duplicate'])
+        ->whereUuid('report')->name('reports.duplicate');
     Route::put('reports/{report}', [ReportController::class, 'update'])
         ->whereUuid('report')->name('reports.update');
     Route::delete('reports/{report}', [ReportController::class, 'destroy'])
