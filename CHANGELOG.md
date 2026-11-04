@@ -17,6 +17,19 @@ All notable changes to digitalSmart are recorded here. Format follows
 ### Not yet
 - The executive view does not yet add evidenced insights and recommended actions of its own; the existing highlights are unchanged.
 - Per-section and per-field `hidden` flags, and a report PDF, remain open.
+## P0 GA4: a purchase-events versus store-orders check for the Leads agent (DS-P0-AGENT-GA4)
+
+### Added
+- **`get_purchase_reconciliation`**, a read tool (`analytics.view`): one client's GA4 `purchase` events beside the paid orders its Salla and
+  Zid stores recorded over a window ending yesterday, with each figure's source label and the days GA4 actually reported. A property that
+  never sent a purchase event is `null`, never zero.
+- **`PURCHASE_EVENTS_DIVERGE`**, a `watch` finding from the Leads agent, raised only when the store has at least 20 paid orders in 28 days
+  and GA4's purchase events are under half or over one and a half times those orders. It says the two are different counts (cash on
+  delivery, consent and blockers separate them) and asks for a check; it never says which side is right. Text in English and Arabic;
+  sorted under Tracking on Today.
+
+### Not changed
+- Nothing is sent, paused or changed on any platform; live GA4 stays `BLOCKED_EXTERNAL_CREDENTIALS`.
 
 ## The GA4 shopping-events funnel (DS-P0-GA4-04)
 
