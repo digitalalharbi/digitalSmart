@@ -93,6 +93,24 @@ All notable changes to digitalSmart are recorded here. Format follows
 - An already-sent link still cannot be re-read from the database: only its SHA-256 and a 12-character hint are stored. Pause, resume and
   edit work on the link by its row; recovering the URL itself is impossible by design.
 
+## Closure of the commerce backlog, and the P0 requirement matrix
+
+### Merged (CI-verified on GitHub; nothing deployed, nothing live)
+- #70 `8bb2fba` — a disconnected connection is never read, and disconnecting asks first.
+- #71 `009be9d` — the revenue ledger: charged, refunded, and what the totals were made of.
+- #72 `62e5688` — provider instants are stored as UTC, not as their local wall-clock time.
+- #73 `0771357` — two E2E timing fixes.
+- #74 `5bd92f3` — the hourly advertising sync no longer queues accounts on a disconnected connection.
+- #75 `1e19215` — store-timezone days, weekly and monthly trends, previous-period comparison.
+
+### Added
+- `docs/P0_REQUIREMENTS_MATRIX.md`: the P0 master directive as 38 acceptance rows with their real state. None is `VERIFIED`.
+
+### Operations (local)
+- A 14,628-job Redis backlog (9,902 `BoardChanged`, 4,726 `NotificationAnnounced`, all unattempted, 7–24 Oct) was read-only
+  inspected, found to be local Reverb broadcasts only, and drained by Horizon with 0 failures. Every provider connection holds only
+  the `sandbox` credential. The scheduler was left off.
+
 ## Advertising sync no longer retries a disconnected connection every hour
 
 ### Fixed
