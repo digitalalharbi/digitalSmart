@@ -26,6 +26,14 @@ final readonly class LeadsAgent
 
     private const int CLIENTS = 60;
 
+    /** Orders in the window before GA4 and the store are compared at all. */
+    private const int MIN_ORDERS = 20;
+
+    /** GA4 purchase events as a share of paid orders, outside which the two are too far apart to be ordinary. */
+    private const float EVENTS_LOW = 0.5;
+
+    private const float EVENTS_HIGH = 1.5;
+
     /** @return array{looked_at: int, findings: list<AgentFinding>} */
     public function act(ToolGateway $tools, string $agent): array
     {
@@ -65,6 +73,12 @@ final readonly class LeadsAgent
                 );
             }
 
+            $gap = $this->purchaseGap($tools, $agent, $client);
+
+            if ($gap !== null) {
+                $findings[] = $gap;
+            }
+
             $rate = $current['qualification_rate'];
 
             if ((int) $current['reached'] >= self::MIN_LEADS && $rate !== null && $rate < self::POOR_QUALITY) {
@@ -89,5 +103,56 @@ final readonly class LeadsAgent
         }
 
         return ['looked_at' => $looked, 'findings' => $findings];
+    }
+
+    /**
+     * GA4 purchase events against paid store orders, and only when both exist and the store has enough orders.
+     *
+     * An event is not an order — cash on delivery, consent and blockers all separate them — so the finding says
+     * "check", names both counts and their sources, and never claims which one is right.
+     *
+     * @param  array<string, mixed>  $client
+     */
+    private function purchaseGap(ToolGateway $tools, string $agent, array $client): ?AgentFinding
+    {
+        $call = $tools->call('get_purchase_reconciliation', ['client_id' => $client['id'], 'days' => 28], 'agent', $agent);
+        $data = $call['data'] ?? null;
+
+        if (! $call['ok'] || $data === null || $data['ga4_purchase_events'] === null || (int) $data['store_paid_orders'] < self::MIN_ORDERS) {
+            return null;
+        }
+
+        $events = (int) $data['ga4_purchase_events'];
+        $orders = (int) $data['store_paid_orders'];
+        $share = $events / $orders;
+
+        if ($share >= self::EVENTS_LOW && $share <= self::EVENTS_HIGH) {
+            return null;
+        }
+
+        return new AgentFinding(
+            code: 'PURCHASE_EVENTS_DIVERGE',
+            subjectKind: 'Client',
+            subjectId: (string) $client['id'],
+            subjectLabel: (string) $client['name'],
+            clientId: (string) $client['id'],
+            projectId: null,
+            severity: 'watch',
+            message: sprintf(
+                'GA4 recorded %d purchase events against %d paid store orders for %s over 28 days. They are different counts and will not match exactly, but this gap is worth checking.',
+                $events,
+                $orders,
+                $client['name'],
+            ),
+            params: ['events' => $events, 'orders' => $orders],
+            evidence: [
+                'ga4_purchase_events' => $events,
+                'store_paid_orders' => $orders,
+                'ga4_source' => $data['ga4_source'],
+                'ga4_days_present' => $data['ga4_days_present'],
+                'days_in_period' => $data['days_in_period'],
+                'stores' => $data['stores'],
+            ],
+        );
     }
 }
