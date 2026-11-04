@@ -119,6 +119,7 @@ use App\Application\Leads\Contract\CrmReadAdapter;
 use App\Application\Leads\Contract\LeadReadModel;
 use App\Application\Leads\Contract\LeadRepository;
 use App\Application\Measurement\Contract\EventDefinitionRepository;
+use App\Application\Measurement\Contract\Ga4TrafficReadModel;
 use App\Application\Measurement\Contract\MeasurementSourceRepository;
 use App\Application\Measurement\Contract\MeasurementSyncAdapterRegistry as MeasurementSyncAdapterRegistryContract;
 use App\Application\Measurement\Contract\ObservedEventReadModel;
@@ -132,6 +133,7 @@ use App\Application\Notifications\Contract\NotificationDeliveryLog;
 use App\Application\Notifications\Contract\NotificationPreferenceStore;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\Contract\RecipientResolver;
+use App\Application\Notifications\Mail\EmailRenderer;
 use App\Application\Operations\Command\IssueApprovalLink;
 use App\Application\Operations\Command\UseApprovalLink;
 use App\Application\Operations\Contract\ApprovalLinkDelivery;
@@ -254,6 +256,7 @@ use App\Infrastructure\Notifications\EloquentNotificationDeliveryLog;
 use App\Infrastructure\Notifications\EloquentNotificationPreferenceStore;
 use App\Infrastructure\Notifications\EloquentNotificationStore;
 use App\Infrastructure\Notifications\HonestChannelDelivery;
+use App\Infrastructure\Notifications\Mail\BrandedEmailRenderer;
 use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
 use App\Infrastructure\Operations\BroadcastBoardSignaller;
@@ -275,6 +278,7 @@ use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentClientVisibility;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentConnectionDirectory;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentCreativeCatalogue;
+use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentGa4TrafficReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentIntegrationReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentJourneyReadModel;
 use App\Infrastructure\Persistence\Eloquent\ReadModel\EloquentLeadReadModel;
@@ -489,6 +493,7 @@ final class AppServiceProvider extends ServiceProvider
         MeasurementSourceRepository::class => EloquentMeasurementSourceRepository::class,
         ObservedEventWriter::class => EloquentObservedEventWriter::class,
         TrafficWriter::class => EloquentTrafficWriter::class,
+        Ga4TrafficReadModel::class => EloquentGa4TrafficReadModel::class,
         /*
          * One implementation, bound directly rather than through a registry. Tag Manager is
          * the only container provider this product reads, and a registry of one is a
@@ -633,6 +638,11 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(EntitlementStore::class, EloquentEntitlementStore::class);
         $this->app->bind(UsageReader::class, EloquentUsageReader::class);
         $this->app->bind(CapacityLock::class, PostgresCapacityLock::class);
+        /* Links in a message are https everywhere except a developer's own machine. */
+        $this->app->singleton(EmailRenderer::class, static fn (): EmailRenderer => new BrandedEmailRenderer(
+            brand: (string) config('app.name', 'digitalSmart'),
+            allowInsecureLinks: in_array(config('app.env'), ['local', 'testing'], true),
+        ));
         $this->app->bind(PlatformOperators::class, EloquentPlatformOperators::class);
         $this->app->bind(PlatformReadModel::class, EloquentPlatformReadModel::class);
         $this->app->bind(WorkspaceCreator::class, EloquentWorkspaceCreator::class);

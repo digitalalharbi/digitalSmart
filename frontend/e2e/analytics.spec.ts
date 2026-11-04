@@ -64,7 +64,10 @@ test.describe('analytics', () => {
     // The table is the working, not the answer: it opens on request.
     await page.getByRole('button', { name: /^Details/ }).click();
 
-    const table = page.getByRole('table');
+    // The campaign breakdown, by its Spend column: the page also carries the GA4 traffic table.
+    const table = page.getByRole('table').filter({
+      has: page.getByRole('columnheader', { name: 'Spend' }),
+    });
     await expect(table).toBeVisible();
 
     // The campaign name as the platform has it, and the platform's own id beside
@@ -147,7 +150,10 @@ test.describe('campaign explorer', () => {
     const trail = page.getByRole('navigation', { name: /Drill-down trail/i });
     await expect(trail.getByRole('button', { name: /All platforms/ })).toBeVisible();
 
-    const table = page.getByRole('table');
+    // The campaign breakdown, by its Spend column: the page also carries the GA4 traffic table.
+    const table = page.getByRole('table').filter({
+      has: page.getByRole('columnheader', { name: 'Spend' }),
+    });
     await expect(table).toBeVisible();
 
     // Platform → campaign.

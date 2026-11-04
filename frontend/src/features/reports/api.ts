@@ -101,6 +101,13 @@ export async function updateReport(
   return data.data;
 }
 
+/** A new report from an existing one's definition: no links, no snapshots, the same audience. */
+export async function duplicateReport(reportId: string): Promise<ReportDraft> {
+  const { data } = await api.post<{ data: ReportDraft }>(`/reports/${reportId}/duplicate`);
+
+  return data.data;
+}
+
 export async function deleteReport(reportId: string): Promise<void> {
   await api.delete(`/reports/${reportId}`);
 }

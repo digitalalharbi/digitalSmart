@@ -4,6 +4,30 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## GA4 acquisition traffic API (DS-P0-GA4-02/03/04, read model)
+
+### Added
+- **`GET /api/analytics/ga4/traffic`**: totals, a previous-period comparison, a daily trend and a grouped table (by default channel group,
+  or by source / medium) over the stored GA4 traffic, with true server-side pagination (10 / 25 / 50), sort and direction.
+- **Scope is the existing measurement visibility**, not a new rule: only the GA4 properties of clients the reader may see are read, so a
+  project-limited member or a media buyer on no project gets an empty answer, a source id that is not theirs is `404`, and another
+  workspace's data cannot appear. Needs `analytics.view`.
+- **Honest figures**: sums stay `null` when the property never reported the metric; engagement rate and engagement time per session exist
+  only when both sides exist and sessions are positive; a change figure is `null` when the previous period is empty or zero. The payload
+  says how many days of the period have data, the property's time zone(s), and that the figures are SANDBOX when they are.
+- **Users are not offered.** They are not additive across days or channels, so the response states `users.available: false` and why,
+  rather than summing a number that would overstate reach. A property-grain users report is a separate future read.
+
+### The Analytics screen
+- **A "Website traffic (Google Analytics 4)" panel on Analytics**: sessions, engaged sessions, engagement rate, engagement time per
+  session and page views for the shared period, change against the previous period where it can be computed, and a channel or
+  source / medium table with server-side paging (10 / 25 / 50). A missing figure reads "Not reported", never 0; the panel says how many
+  days of the period have stored data, names the property's time zone, shows the SANDBOX notice before any number, and states that
+  sessions are not ad clicks and users are not shown. English and Arabic, with an empty state and a retry.
+
+### Not yet
+- Report sections and exports over GA4 traffic; the live Data API transport (`BLOCKED_EXTERNAL_CREDENTIALS`).
+
 ## GA4 acquisition traffic is read and stored (DS-P0-GA4-02/03, ingest only)
 
 ### Added
@@ -20,6 +44,41 @@ All notable changes to digitalSmart are recorded here. Format follows
 - The read model, API and screens over this table (next PRs); the live Data API transport stays `BLOCKED_EXTERNAL_CREDENTIALS`
   (no Google OAuth client or authorised property). Everything here runs on the labelled sandbox fixtures.
 
+## Signing in returns you to the page you were headed for (DS-P0-AUTH-01)
+
+### Changed
+- `RequireSession` already remembered the page a signed-out visitor asked for; sign-in ignored it and always opened the home screen. It now
+  returns there — **only** if it is a page of this app. `safeReturnPath` accepts a single-slash path and refuses protocol-relative
+  (`//host`), backslash, scheme (`https:`, `javascript:`), control-character, over-long and `/login` paths, sending those home instead. The
+  remembered path is router state, not a URL parameter, so a link cannot supply it; the check is there because "only our code sets this"
+  is the assumption an open redirect is built on. Tests cover each refusal.
+
+## Branded, bilingual email templates (DS-P0-NOTIF-02) — written, not sent
+
+### Added
+- **`EmailRenderer` / `BrandedEmailRenderer`**: seven messages (invitation, weekly report, needs attention, report shared, approval needed,
+  integration alert, security notice) in Arabic and English, each as an HTML body and a plain-text alternative. One responsive,
+  table-based layout (a 600 px column that narrows on a phone, inline styles for Gmail, Outlook and Apple Mail), `lang` and `dir` from
+  the locale with alignment stated explicitly, so Arabic is laid out right to left rather than mirrored by accident.
+- **The subject always starts with the product name** (`digitalSmart — …`), taken from `APP_NAME`; no other product's name appears.
+- **Safe by construction**: every interpolated value is escaped in HTML and stripped of control characters in text (no header injection),
+  and the one link must be `https` (`http` only when the application runs locally) — `javascript:`, protocol-relative, hostless and
+  whitespace-containing links are refused.
+- No wording carries a figure, a client's money or a credential; every message ends with what it is and that nothing is asked of a stranger.
+
+### Not done
+- **Nothing is sent.** There is no mail provider or verified sender; delivery stays `awaiting_credentials` and is `BLOCKED_EXTERNAL_CREDENTIALS`.
+  Wiring a template to a notification kind comes with that provider. Not checked in Gmail/Outlook clients (none available here); checked in
+  Chromium at 1000 px and 375 px, English and Arabic, with no horizontal overflow.
+
+## A report can be duplicated (DS-P0-REP-03)
+
+### Added
+- **`POST /api/reports/{report}/duplicate`** and a Duplicate button: a new report from an existing one's definition (window, comparison,
+  filters, sections, client, audience) named "… (copy)". The copy has **no links, no snapshots and no history**, never a wider audience
+  than the original, and an internal note travels only with an internal copy — a client-safe copy does not start life carrying the
+  agency's commentary. Needs `reports.manage`, seen through the same visibility as opening the original; another workspace's id is `404`.
+
 ## Report links can be paused and resumed at the same address (DS-P0-REP-03)
 
 ### Added
@@ -33,6 +92,24 @@ All notable changes to digitalSmart are recorded here. Format follows
 ### Stated plainly
 - An already-sent link still cannot be re-read from the database: only its SHA-256 and a 12-character hint are stored. Pause, resume and
   edit work on the link by its row; recovering the URL itself is impossible by design.
+
+## Closure of the commerce backlog, and the P0 requirement matrix
+
+### Merged (CI-verified on GitHub; nothing deployed, nothing live)
+- #70 `8bb2fba` — a disconnected connection is never read, and disconnecting asks first.
+- #71 `009be9d` — the revenue ledger: charged, refunded, and what the totals were made of.
+- #72 `62e5688` — provider instants are stored as UTC, not as their local wall-clock time.
+- #73 `0771357` — two E2E timing fixes.
+- #74 `5bd92f3` — the hourly advertising sync no longer queues accounts on a disconnected connection.
+- #75 `1e19215` — store-timezone days, weekly and monthly trends, previous-period comparison.
+
+### Added
+- `docs/P0_REQUIREMENTS_MATRIX.md`: the P0 master directive as 38 acceptance rows with their real state. None is `VERIFIED`.
+
+### Operations (local)
+- A 14,628-job Redis backlog (9,902 `BoardChanged`, 4,726 `NotificationAnnounced`, all unattempted, 7–24 Oct) was read-only
+  inspected, found to be local Reverb broadcasts only, and drained by Horizon with 0 failures. Every provider connection holds only
+  the `sandbox` credential. The scheduler was left off.
 
 ## Advertising sync no longer retries a disconnected connection every hour
 

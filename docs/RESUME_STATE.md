@@ -6,7 +6,11 @@
 `git fetch origin && git log --oneline -10 origin/main && git status` before anything else; where this file and Git
 disagree, Git is right.
 
-### Where things stand — 2026-10-25
+### Where things stand — 2026-11-03
+
+**Main `0ddda43`.** #70–#75, #77 (report-link pause/resume `61126aa`) and #78 (GA4 traffic ingest `0ddda43`) merged, CI-verified. Open: #85 — one batch (GA4 traffic API and Analytics panel, duplicate report, sign-in return path, email templates) that also carries the P0 docs formerly in #76. Next: merge #85 on a green CI, then GA4 report sections, `/api/attention` payload, property-grain users, automation findings from GA4/store discrepancies. Requirement state: `docs/P0_REQUIREMENTS_MATRIX.md` (38 rows, none `VERIFIED`) and `docs/UNIFIED_COMMERCE_MATRIX.md`. Local demo: login, refresh and dashboards verified by Playwright; Horizon and Reverb run locally, scheduler off. Nothing is deployed or `LIVE_VERIFIED`.
+
+### Earlier state — 2026-10-25
 
 | Area | State |
 |---|---|

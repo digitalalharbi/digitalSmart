@@ -52,6 +52,7 @@ use App\Interface\Http\Controller\Integration\ProviderController;
 use App\Interface\Http\Controller\Intelligence\AssistantController;
 use App\Interface\Http\Controller\Leads\LeadController;
 use App\Interface\Http\Controller\Measurement\AgencyTrackingController;
+use App\Interface\Http\Controller\Measurement\Ga4TrafficController;
 use App\Interface\Http\Controller\Measurement\MeasurementController;
 use App\Interface\Http\Controller\Notifications\NotificationController;
 use App\Interface\Http\Controller\Operations\ApprovalController;
@@ -363,6 +364,9 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     // What can be asked for, and what each metric means. Served rather than
     // duplicated in the client, so formatting cannot diverge between screens.
     Route::get('analytics/catalogue', MetricCatalogueController::class)->name('analytics.catalogue');
+
+    /* Stored GA4 acquisition traffic, read from the properties the reader may see. */
+    Route::get('analytics/ga4/traffic', Ga4TrafficController::class)->name('analytics.ga4.traffic');
 
     /* Creatives, by asset or by ad: the same engine as `analytics`, grouped by what ran. */
     Route::get('analytics/creatives', CreativeIntelligenceController::class)->name('analytics.creatives')->middleware('feature:creative_intelligence');
@@ -825,6 +829,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         ->whereUuid('report')->name('reports.show');
     Route::get('reports/{report}/definition', [ReportController::class, 'definition'])
         ->whereUuid('report')->name('reports.definition');
+    Route::post('reports/{report}/duplicate', [ReportController::class, 'duplicate'])
+        ->whereUuid('report')->name('reports.duplicate');
     Route::put('reports/{report}', [ReportController::class, 'update'])
         ->whereUuid('report')->name('reports.update');
     Route::delete('reports/{report}', [ReportController::class, 'destroy'])
