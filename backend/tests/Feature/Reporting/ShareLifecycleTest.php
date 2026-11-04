@@ -153,3 +153,35 @@ it('records who paused and resumed a link, and refuses a reader without the shar
     test()->actingAs($outsider->owner)->postJson("/api/report-shares/{$shareId}/pause")->assertNotFound();
     expect(DB::table('report_shares')->where('id', $shareId)->value('paused_at'))->toBeNull();
 });
+
+it('duplicates a report without its links, its snapshots or a wider audience', function (): void {
+    $setup = pauseableShareScenario();
+    pauseableShareLink($setup);
+    test()->actingAs($setup['scenario']->owner)->postJson("/api/reports/{$setup['report']}/snapshots")->assertCreated();
+
+    $copy = test()->actingAs($setup['scenario']->owner)
+        ->postJson("/api/reports/{$setup['report']}/duplicate")
+        ->assertCreated()
+        ->json('data');
+
+    expect($copy['id'])->not->toBe($setup['report'])
+        ->and($copy['name'])->toBe('Monthly performance (copy)')
+        ->and($copy['audience'])->toBe('client_safe');
+
+    // The original keeps its link and snapshot; the copy has neither.
+    expect(DB::table('report_shares')->where('report_id', $copy['id'])->count())->toBe(0)
+        ->and(DB::table('report_snapshots')->where('report_id', $copy['id'])->count())->toBe(0)
+        ->and(DB::table('report_shares')->where('report_id', $setup['report'])->count())->toBe(1);
+});
+
+it('does not carry the internal note into a client-safe copy, and refuses a report the reader cannot see', function (): void {
+    $setup = pauseableShareScenario();
+    DB::table('reports')->where('id', $setup['report'])->update(['internal_note' => 'Churn risk — do not mention.']);
+
+    $copy = test()->actingAs($setup['scenario']->owner)->postJson("/api/reports/{$setup['report']}/duplicate")->assertCreated()->json('data.id');
+    expect(DB::table('reports')->where('id', $copy)->value('internal_note'))->toBeNull();
+
+    $outsider = WorkspaceScenario::create();
+    test()->actingAs($outsider->owner)->postJson("/api/reports/{$setup['report']}/duplicate")->assertNotFound();
+    expect(DB::table('reports')->where('workspace_id', $outsider->workspace->getKey())->count())->toBe(0);
+});

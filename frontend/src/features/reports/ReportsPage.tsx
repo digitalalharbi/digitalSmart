@@ -31,6 +31,7 @@ import {
   useAllSnapshotsQuery,
   useCreateReportMutation,
   useDeleteReportMutation,
+  useDuplicateReportMutation,
   useRenderedReportQuery,
   useReportDraftQuery,
   useReportVocabularyQuery,
@@ -121,6 +122,7 @@ export function ReportsPage() {
   const create = useCreateReportMutation();
   const update = useUpdateReportMutation();
   const remove = useDeleteReportMutation();
+  const duplicate = useDuplicateReportMutation();
   const snapshot = useSnapshotMutation();
   const share = useShareMutation();
   const revoke = useRevokeShareMutation();
@@ -128,14 +130,24 @@ export function ReportsPage() {
   const resume = useResumeShareMutation();
 
   const error = useMemo(() => {
-    for (const mutation of [create, update, remove, snapshot, share, revoke, pause, resume]) {
+    for (const mutation of [
+      create,
+      update,
+      remove,
+      duplicate,
+      snapshot,
+      share,
+      revoke,
+      pause,
+      resume,
+    ]) {
       if (mutation.error instanceof ApiError && mutation.error.message !== '') {
         return mutation.error.message;
       }
     }
 
     return null;
-  }, [create, update, remove, snapshot, share, revoke, pause, resume]);
+  }, [create, update, remove, duplicate, snapshot, share, revoke, pause, resume]);
 
   if (!canView) {
     return (
@@ -375,6 +387,21 @@ export function ReportsPage() {
                       >
                         {t('reports.actions.manage')}
                       </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={duplicate.isPending}
+                        onClick={() => {
+                          duplicate.mutate(selected, {
+                            onSuccess: (copy) => {
+                              setSelected(copy.id);
+                              setFreshToken(null);
+                            },
+                          });
+                        }}
+                      >
+                        {t('reports.actions.duplicate')}
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
