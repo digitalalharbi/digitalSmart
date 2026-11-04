@@ -20,6 +20,15 @@ All notable changes to digitalSmart are recorded here. Format follows
 - The read model, API and screens over this table (next PRs); the live Data API transport stays `BLOCKED_EXTERNAL_CREDENTIALS`
   (no Google OAuth client or authorised property). Everything here runs on the labelled sandbox fixtures.
 
+## Signing in returns you to the page you were headed for (DS-P0-AUTH-01)
+
+### Changed
+- `RequireSession` already remembered the page a signed-out visitor asked for; sign-in ignored it and always opened the home screen. It now
+  returns there — **only** if it is a page of this app. `safeReturnPath` accepts a single-slash path and refuses protocol-relative
+  (`//host`), backslash, scheme (`https:`, `javascript:`), control-character, over-long and `/login` paths, sending those home instead. The
+  remembered path is router state, not a URL parameter, so a link cannot supply it; the check is there because "only our code sets this"
+  is the assumption an open redirect is built on. Tests cover each refusal.
+
 ## Report links can be paused and resumed at the same address (DS-P0-REP-03)
 
 ### Added
