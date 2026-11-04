@@ -66,6 +66,11 @@ final readonly class SyncBoundAccount
             return new SyncOutcome(SyncStatus::Skipped);
         }
 
+        if ($connection->isDisconnected()) {
+            /* A job queued before the disconnect, or a direct call: nothing to authenticate with, and nothing worth a failed run. */
+            return new SyncOutcome(SyncStatus::Skipped);
+        }
+
         $credentials = $connection->credentials();
         $isSandbox = $credentials->isSandbox($account->provider->requiredCredentialKeys());
 
