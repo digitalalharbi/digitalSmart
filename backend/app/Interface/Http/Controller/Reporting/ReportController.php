@@ -183,6 +183,14 @@ final class ReportController extends Controller
                 'source_label' => $snapshot['source']->label(),
                 'label' => $snapshot['label'],
                 'taken_by_name' => $snapshot['taken_by_name'],
+                /*
+                 * Null on both for a snapshot taken before versions were recorded: unknown is not "current", and it
+                 * is not "outdated" either.
+                 */
+                'definitions_version' => $snapshot['definitions_version'],
+                'definitions_current' => $snapshot['definitions_version'] === null
+                    ? null
+                    : $snapshot['definitions_version'] === Metric::DEFINITIONS_VERSION,
             ], $snapshots),
         ]);
     }
