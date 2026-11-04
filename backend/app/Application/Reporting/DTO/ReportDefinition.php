@@ -8,6 +8,7 @@ use App\Application\Analytics\DTO\AnalyticsFilters;
 use App\Domain\Reporting\ComparisonMode;
 use App\Domain\Reporting\Exception\InvalidReportDefinition;
 use App\Domain\Reporting\ReportAudience;
+use App\Domain\Reporting\ReportIntent;
 use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
 use DateTimeImmutable;
@@ -29,6 +30,8 @@ final readonly class ReportDefinition
         public ?DateTimeImmutable $customUntil = null,
         /** The agency's own commentary. Never rendered into a client-safe report. */
         public ?string $internalNote = null,
+        /** Detailed shows everything defined; executive shows the headline view. */
+        public ReportIntent $intent = ReportIntent::Detailed,
     ) {}
 
     /** @throws InvalidReportDefinition */

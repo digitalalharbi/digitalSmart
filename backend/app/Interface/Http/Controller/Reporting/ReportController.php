@@ -33,6 +33,7 @@ use App\Domain\Reporting\CreativeView;
 use App\Domain\Reporting\Exception\InvalidReportDefinition;
 use App\Domain\Reporting\Exception\InvalidShare;
 use App\Domain\Reporting\ReportAudience;
+use App\Domain\Reporting\ReportIntent;
 use App\Domain\Reporting\ReportWindow;
 use App\Domain\Reporting\SectionKind;
 use App\Domain\Reporting\TrackingView;
@@ -349,6 +350,12 @@ final class ReportController extends Controller
             return $this->unknown('comparison', ComparisonMode::values());
         }
 
+        $intent = ReportIntent::tryFrom($request->string('intent')->value());
+
+        if ($request->string('intent')->value() !== '' && $intent === null) {
+            return $this->unknown('intent', ReportIntent::values());
+        }
+
         $audience = ReportAudience::tryFrom($request->string('audience')->value());
 
         if ($request->string('audience')->value() !== '' && $audience === null) {
@@ -453,6 +460,7 @@ final class ReportController extends Controller
             customFrom: $this->date($request, 'custom_from'),
             customUntil: $this->date($request, 'custom_until'),
             internalNote: $this->text($request, 'internal_note'),
+            intent: $intent ?? ReportIntent::Detailed,
         );
     }
 
