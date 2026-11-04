@@ -235,6 +235,8 @@ final readonly class EloquentReportRepository implements ReportRepository
             'payload' => json_encode($payload, JSON_THROW_ON_ERROR),
             'source' => $source->value,
             'label' => $label,
+            // What the figures in the payload were computed under. Read here, at the write, so no caller can omit it.
+            'definitions_version' => Metric::DEFINITIONS_VERSION,
             'taken_by' => $actorId,
             'taken_at' => $at,
             'created_at' => now(),
@@ -281,6 +283,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                 's.period_until',
                 's.source',
                 's.label',
+                's.definitions_version',
                 'u.name as taken_by_name',
             ]);
 
@@ -297,6 +300,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                 'period_until' => $this->date($values['period_until'] ?? null) ?? new DateTimeImmutable('@0'),
                 'source' => MetricSource::tryFrom((string) ($values['source'] ?? '')) ?? MetricSource::Synced,
                 'label' => $this->text($values['label'] ?? null),
+                'definitions_version' => $this->text($values['definitions_version'] ?? null),
                 'taken_by_name' => $this->text($values['taken_by_name'] ?? null),
             ];
         }

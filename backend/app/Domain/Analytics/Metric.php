@@ -57,6 +57,16 @@ enum Metric: string
     case Installs = 'installs';
     case CostPerInstall = 'cpi';
 
+    /**
+     * The version of these definitions — what each metric means and how a derived one is computed.
+     *
+     * Bumped, by hand, in the same change that alters a metric's meaning, its dependencies or its arithmetic; adding a
+     * metric does not change what the existing ones mean and does not bump it. A report snapshot stores the version it
+     * was computed under, so a frozen figure that today's rules would compute differently says so instead of looking
+     * like a discrepancy.
+     */
+    public const string DEFINITIONS_VERSION = '2026-11-01';
+
     /** Whether this is stored and summable, rather than computed from totals. */
     public function isBase(): bool
     {

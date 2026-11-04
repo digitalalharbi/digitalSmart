@@ -72,7 +72,7 @@ interface ReportRepository
     /**
      * Snapshots of one report, newest first.
      *
-     * @return list<array{id: string, taken_at: DateTimeImmutable, period_from: DateTimeImmutable, period_until: DateTimeImmutable, source: MetricSource, label: ?string, taken_by_name: ?string}>
+     * @return list<array{id: string, taken_at: DateTimeImmutable, period_from: DateTimeImmutable, period_until: DateTimeImmutable, source: MetricSource, label: ?string, definitions_version: ?string, taken_by_name: ?string}>
      */
     public function snapshots(string $workspaceId, string $reportId, int $limit): array;
 
