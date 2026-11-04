@@ -29,6 +29,24 @@ All notable changes to digitalSmart are recorded here. Format follows
   remembered path is router state, not a URL parameter, so a link cannot supply it; the check is there because "only our code sets this"
   is the assumption an open redirect is built on. Tests cover each refusal.
 
+## Branded, bilingual email templates (DS-P0-NOTIF-02) — written, not sent
+
+### Added
+- **`EmailRenderer` / `BrandedEmailRenderer`**: seven messages (invitation, weekly report, needs attention, report shared, approval needed,
+  integration alert, security notice) in Arabic and English, each as an HTML body and a plain-text alternative. One responsive,
+  table-based layout (a 600 px column that narrows on a phone, inline styles for Gmail, Outlook and Apple Mail), `lang` and `dir` from
+  the locale with alignment stated explicitly, so Arabic is laid out right to left rather than mirrored by accident.
+- **The subject always starts with the product name** (`digitalSmart — …`), taken from `APP_NAME`; no other product's name appears.
+- **Safe by construction**: every interpolated value is escaped in HTML and stripped of control characters in text (no header injection),
+  and the one link must be `https` (`http` only when the application runs locally) — `javascript:`, protocol-relative, hostless and
+  whitespace-containing links are refused.
+- No wording carries a figure, a client's money or a credential; every message ends with what it is and that nothing is asked of a stranger.
+
+### Not done
+- **Nothing is sent.** There is no mail provider or verified sender; delivery stays `awaiting_credentials` and is `BLOCKED_EXTERNAL_CREDENTIALS`.
+  Wiring a template to a notification kind comes with that provider. Not checked in Gmail/Outlook clients (none available here); checked in
+  Chromium at 1000 px and 375 px, English and Arabic, with no horizontal overflow.
+
 ## Report links can be paused and resumed at the same address (DS-P0-REP-03)
 
 ### Added
