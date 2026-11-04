@@ -814,3 +814,71 @@ it('refuses a role without analytics.view', function (): void {
 
     test()->actingAs($viewer)->getJson('/api/analytics/ga4/traffic')->assertForbidden();
 });
+
+describe('GA4 website traffic in a client report', function (): void {
+    /** @return array{setup: array{scenario: WorkspaceScenario, source: string}, report: string, client: string} */
+    function webTrafficReport(string $audience = 'client_safe'): array
+    {
+        $setup = ga4Scenario();
+        $source = $setup['source'];
+
+        test()->actingAs($setup['scenario']->owner)->postJson("/api/measurement/sources/{$source->getKey()}/sync")->assertOk();
+
+        $report = (string) test()->actingAs($setup['scenario']->owner)->postJson('/api/reports', [
+            'name' => 'Web traffic', 'client_id' => (string) $setup['client']->getKey(), 'window' => 'last_30_days', 'audience' => $audience,
+            'sections' => [['kind' => 'tracking', 'tracking_view' => 'web_traffic']],
+        ])->assertCreated()->json('data.id');
+
+        return ['setup' => ['scenario' => $setup['scenario'], 'source' => (string) $source->getKey()], 'report' => $report, 'client' => (string) $setup['client']->getKey()];
+    }
+
+    it('shows the client’s sessions by channel, labelled sandbox, with what they are not', function (): void {
+        $world = webTrafficReport();
+
+        $section = test()->actingAs($world['setup']['scenario']->owner)->getJson('/api/reports/'.$world['report'])->assertOk()->json('data.sections.0');
+
+        expect($section['title'])->toBe('Website traffic (GA4)')
+            ->and($section['tracking']['view'])->toBe('web_traffic')
+            ->and($section['tracking']['rows'][0]['channel'])->toBe('Paid Social')
+            ->and($section['tracking']['rows'][0]['sessions'])->toBeInt()
+            ->and($section['tracking']['rows'][0]['engagement_rate'])->toEndWith('%')
+            ->and($section['source'])->toBe('sandbox')
+            ->and(implode(' ', $section['caveats']))->toContain('not ad clicks')->toContain('Users are not shown')->toContain('of 30 days');
+    });
+
+    it('carries the same figures into the CSV, and no users column', function (): void {
+        $world = webTrafficReport();
+
+        $csv = test()->actingAs($world['setup']['scenario']->owner)->get('/api/reports/'.$world['report'].'/csv')->assertOk()->getContent();
+
+        expect($csv)->toContain('Website traffic (GA4)')->toContain('Paid Social')->toContain('Engaged sessions');
+        expect(strtolower($csv))->not->toContain('users,');
+    });
+
+    it('reaches a client-safe share link without any other client’s or workspace’s traffic', function (): void {
+        $world = webTrafficReport();
+        $other = webTrafficReport();
+        // Rename the other workspace's channel so any leak is visible by name.
+        DB::table('ga4_traffic_daily')->where('workspace_id', $other['setup']['scenario']->workspace->getKey())->update(['channel_group' => 'LEAK Channel']);
+
+        $token = (string) test()->actingAs($world['setup']['scenario']->owner)
+            ->postJson('/api/reports/'.$world['report'].'/shares', ['days' => 7])->assertCreated()->json('meta.token');
+        $shared = (string) test()->getJson('/api/shared-reports/'.$token)->assertOk()->getContent();
+
+        expect($shared)->toContain('Paid Social');
+        expect($shared)->not->toContain('LEAK Channel');
+        expect($shared)->not->toContain($world['setup']['source']);
+    });
+
+    it('says nothing is stored instead of drawing zeroes when the client has no GA4 data', function (): void {
+        $setup = ga4Scenario();
+        $report = (string) test()->actingAs($setup['scenario']->owner)->postJson('/api/reports', [
+            'name' => 'No data', 'client_id' => (string) $setup['client']->getKey(), 'window' => 'last_30_days', 'audience' => 'client_safe',
+            'sections' => [['kind' => 'tracking', 'tracking_view' => 'web_traffic']],
+        ])->assertCreated()->json('data.id');
+
+        $section = test()->actingAs($setup['scenario']->owner)->getJson('/api/reports/'.$report)->assertOk()->json('data.sections.0');
+
+        expect($section['tracking']['rows'])->toBe([])->and($section['is_empty'])->toBeTrue();
+    });
+});
