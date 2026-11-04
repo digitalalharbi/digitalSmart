@@ -11,6 +11,7 @@ use App\Application\Tracking\Contract\TrackingHealthReadModel;
 use App\Application\Tracking\Contract\TrackingLinkRepository;
 use App\Application\Tracking\Contract\TrackingOperationsReadModel;
 use App\Application\Tracking\Service\LinkPerformanceCalculator;
+use App\Domain\Advertising\MetricSource;
 use App\Domain\Advertising\ValueObject\CurrencyExponent;
 use App\Domain\Reporting\TrackingView;
 use App\Domain\Tracking\Funnel\FunnelCalculator;
@@ -51,7 +52,72 @@ final readonly class EloquentTrackingReportReader implements TrackingReportReade
             TrackingView::LeadQuality => $this->leadQuality($workspaceId, $clientId, $from, $until),
             TrackingView::SalesFunnel => $this->salesFunnel($workspaceId, $clientId, $from, $until),
             TrackingView::Response => $this->response($workspaceId, $clientId, $from, $until),
+            TrackingView::WebTraffic => $this->webTraffic($workspaceId, $clientId, $from, $until),
         };
+    }
+
+    /**
+     * The client's stored GA4 acquisition traffic, by default channel group.
+     *
+     * Read from `ga4_traffic_daily` through the client's own active GA4 sources only, over the report's days (the property's dates,
+     * not instants). A figure the property never reported is null, rates exist only when both sides do, and users are not a column
+     * because they cannot be added across days or channels. The honesty label of the weakest stored row travels with the section.
+     *
+     * @return array{section: TrackingSection, caveats: list<string>, source: MetricSource}
+     */
+    private function webTraffic(string $workspaceId, string $clientId, DateTimeImmutable $from, DateTimeImmutable $until): array
+    {
+        $sources = DB::table('measurement_sources')
+            ->where('workspace_id', $workspaceId)->where('client_id', $clientId)
+            ->where('provider', 'google_analytics')->where('is_active', true)
+            ->pluck('id')->all();
+
+        $base = static fn () => DB::table('ga4_traffic_daily')
+            ->where('workspace_id', $workspaceId)
+            ->whereIn('measurement_source_id', $sources === [] ? ['00000000-0000-0000-0000-000000000000'] : $sources)
+            ->whereBetween('date', [$from->format('Y-m-d'), $until->format('Y-m-d')]);
+
+        $rows = [];
+
+        foreach ($base()->selectRaw('channel_group, sum(sessions) as sessions, sum(engaged_sessions) as engaged, sum(page_views) as views')
+            ->groupBy('channel_group')->orderByRaw('sum(sessions) desc nulls last')->orderBy('channel_group')->limit(10)->get() as $r) {
+            $sessions = $r->sessions === null ? null : (int) $r->sessions;
+            $engaged = $r->engaged === null ? null : (int) $r->engaged;
+            $rows[] = [
+                'channel' => (string) $r->channel_group,
+                'sessions' => $sessions,
+                'engaged_sessions' => $engaged,
+                'engagement_rate' => $sessions !== null && $engaged !== null && $sessions > 0 ? number_format($engaged / $sessions * 100, 1).'%' : null,
+                'page_views' => $r->views === null ? null : (int) $r->views,
+            ];
+        }
+
+        $meta = $base()->selectRaw('count(distinct date) as days')->first();
+        $labels = $base()->distinct()->pluck('source')->all();
+        $zones = $base()->whereNotNull('time_zone')->distinct()->pluck('time_zone')->all();
+        $span = (int) $from->diff($until)->days + 1;
+        $present = (int) ($meta->days ?? 0);
+
+        $caveats = [
+            'Sessions are counted by Google Analytics in the property’s own time zone'.($zones === [] ? '' : ' ('.implode(', ', array_map('strval', $zones)).')').'. They are not ad clicks and are never added to them.',
+            'Users are not shown: they cannot be added across days or channels.',
+        ];
+
+        if ($present > 0 && $present < $span) {
+            $caveats[] = sprintf('Only %d of %d days in this period have stored GA4 data; the figures cover those days.', $present, $span);
+        }
+
+        return [
+            'section' => new TrackingSection(TrackingView::WebTraffic, [
+                ['key' => 'channel', 'label' => 'Channel'], ['key' => 'sessions', 'label' => 'Sessions'],
+                ['key' => 'engaged_sessions', 'label' => 'Engaged sessions'], ['key' => 'engagement_rate', 'label' => 'Engagement rate'],
+                ['key' => 'page_views', 'label' => 'Page views'],
+            ], $rows),
+            'caveats' => $caveats,
+            'source' => $labels === []
+                ? MetricSource::Synced
+                : MetricSource::weakest(array_map(static fn ($label): MetricSource => MetricSource::from((string) $label), $labels)),
+        ];
     }
 
     /** @return array{section: TrackingSection, caveats: list<string>} */

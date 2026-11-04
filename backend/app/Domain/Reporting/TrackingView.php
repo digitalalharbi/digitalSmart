@@ -18,6 +18,9 @@ enum TrackingView: string
     case SalesFunnel = 'sales_funnel';
     case Response = 'response';
 
+    /** The client's Google Analytics 4 sessions by channel: the property's own figures, labelled as such. */
+    case WebTraffic = 'web_traffic';
+
     public function label(): string
     {
         return match ($this) {
@@ -31,6 +34,7 @@ enum TrackingView: string
             self::LeadQuality => 'Lead quality',
             self::SalesFunnel => 'Sales funnel',
             self::Response => 'Response performance',
+            self::WebTraffic => 'Website traffic (GA4)',
         };
     }
 
