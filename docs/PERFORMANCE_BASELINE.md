@@ -23,5 +23,11 @@ Method: after one cold request, 20 sequential requests per endpoint with `curl`,
   so the cost is the server assembling eight streams (425 items in this dataset), not the transfer. That makes it the first optimisation
   target, and the lever is the assembly (or a short, scope-keyed cache), not a smaller response. A cache must key on workspace, the
   reader's visible projects, permissions and the requested streams; it is not done here.
+- **Where the 460 ms goes (profiled 2026-11-04, test database seeded to 100 clients / 2,000 campaigns, after `ANALYZE`):** 425 ms in all,
+  of which the campaigns stream is about 330 ms (two queries — it runs the control centre's health assessment over every campaign), budgets
+  about 57 ms, and the other seven streams 2–10 ms each. So the cost is one assessment, not the number of streams. Moving the health filter into
+  SQL would put a second copy of the health rules beside the policy, which the project avoids on purpose; the safe levers are a short cache
+  keyed as above or assessing fewer campaigns, and neither is done. Without planner statistics the same request took 2.5 s, which is why a
+  freshly loaded database should be analysed.
 - Not measured: LCP, INP and CLS (no browser trace yet), query counts per request, the front-end bundle, concurrent load, and anything on
   a real server. Do not quote these numbers as production performance.
