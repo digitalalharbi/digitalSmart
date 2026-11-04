@@ -11,6 +11,7 @@ use App\Application\Tracking\DTO\LinkCounts;
 use App\Application\Tracking\DTO\TrackingLinkInput;
 use App\Application\Tracking\DTO\TrackingLinkView;
 use App\Application\Tracking\Exception\TrackingRefused;
+use App\Application\Tracking\Query\AuditTrackingLinks;
 use App\Application\Tracking\Query\GetLinkPerformance;
 use App\Application\Tracking\Query\ListTrackingLinks;
 use App\Domain\Tracking\LinkStatus;
@@ -35,6 +36,12 @@ final class TrackingLinkController extends Controller
                 is_string($status) ? LinkStatus::tryFrom($status) : null,
             ),
         )]);
+    }
+
+    /** What is wrong with the links' campaign parameters, from the parameters alone. */
+    public function audit(Request $request, AuditTrackingLinks $audit): JsonResponse
+    {
+        return response()->json(['data' => $audit($this->id($request, 'project_id'), $this->id($request, 'client_id'))]);
     }
 
     public function show(string $link, ListTrackingLinks $list): JsonResponse
