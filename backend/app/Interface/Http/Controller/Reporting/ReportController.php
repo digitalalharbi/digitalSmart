@@ -6,6 +6,7 @@ namespace App\Interface\Http\Controller\Reporting;
 
 use App\Application\Analytics\DTO\AnalyticsFilters;
 use App\Application\Reporting\Command\DeleteReport;
+use App\Application\Reporting\Command\DuplicateReport;
 use App\Application\Reporting\Command\PauseShare;
 use App\Application\Reporting\Command\ResumeShare;
 use App\Application\Reporting\Command\RevokeShare;
@@ -94,6 +95,18 @@ final class ReportController extends Controller
         }
 
         return response()->json(['data' => ReportResource::definition($saved)]);
+    }
+
+    /** A new report from an existing one's definition: no links, no snapshots, the same audience. */
+    public function duplicate(string $report, DuplicateReport $duplicate): JsonResponse
+    {
+        try {
+            $saved = $duplicate($report);
+        } catch (InvalidReportDefinition $refusal) {
+            return $this->refused($refusal);
+        }
+
+        return response()->json(['data' => ReportResource::definition($saved)], Response::HTTP_CREATED);
     }
 
     public function store(Request $request, SaveReport $save): JsonResponse

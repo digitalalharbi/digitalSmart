@@ -3731,7 +3731,8 @@
     "actions": {
       "edit": "Edit",
       "delete": "Delete",
-      "manage": "Manage"
+      "manage": "Manage",
+      "duplicate": "Duplicate"
     },
     "view": {
       "allClients": "Across every client",

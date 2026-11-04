@@ -4,6 +4,14 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## A report can be duplicated (DS-P0-REP-03)
+
+### Added
+- **`POST /api/reports/{report}/duplicate`** and a Duplicate button: a new report from an existing one's definition (window, comparison,
+  filters, sections, client, audience) named "… (copy)". The copy has **no links, no snapshots and no history**, never a wider audience
+  than the original, and an internal note travels only with an internal copy — a client-safe copy does not start life carrying the
+  agency's commentary. Needs `reports.manage`, seen through the same visibility as opening the original; another workspace's id is `404`.
+
 ## Report links can be paused and resumed at the same address (DS-P0-REP-03)
 
 ### Added

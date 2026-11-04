@@ -97,6 +97,7 @@ vi.mock('./api', () => ({
 
     return Promise.resolve();
   },
+  duplicateReport: () => Promise.resolve({ id: 'copy' }),
   pauseShare: () => Promise.resolve(),
   resumeShare: () => Promise.resolve(),
   csvUrl: (id: string) => `/api/reports/${id}/csv`,
