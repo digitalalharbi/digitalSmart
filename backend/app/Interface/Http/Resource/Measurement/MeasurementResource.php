@@ -147,6 +147,7 @@ final readonly class MeasurementResource
             'status' => $result->status->value,
             'days_read' => $result->daysRead,
             'rows_written' => $result->rowsWritten,
+            'traffic_rows_written' => $result->trafficRowsWritten,
             'api_calls' => $result->apiCalls,
             /*
              * The weakest label anything in the run carries, and the caveats behind it. A run can

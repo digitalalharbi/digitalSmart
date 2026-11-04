@@ -1,0 +1,413 @@
+[
+  {
+    "_newest_days_ago": 1,
+    "dimensionHeaders": [
+      {
+        "name": "date"
+      },
+      {
+        "name": "sessionDefaultChannelGroup"
+      },
+      {
+        "name": "sessionSource"
+      },
+      {
+        "name": "sessionMedium"
+      }
+    ],
+    "metricHeaders": [
+      {
+        "name": "sessions",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "totalUsers",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "newUsers",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "engagedSessions",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "userEngagementDuration",
+        "type": "TYPE_INTEGER"
+      },
+      {
+        "name": "screenPageViews",
+        "type": "TYPE_INTEGER"
+      }
+    ],
+    "rows": [
+      {
+        "dimensionValues": [
+          {
+            "value": "20260601"
+          },
+          {
+            "value": "Paid Social"
+          },
+          {
+            "value": "snapchat"
+          },
+          {
+            "value": "paid_social"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "620"
+          },
+          {
+            "value": "540"
+          },
+          {
+            "value": "410"
+          },
+          {
+            "value": "455"
+          },
+          {
+            "value": "38400"
+          },
+          {
+            "value": "1710"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "20260601"
+          },
+          {
+            "value": "Paid Search"
+          },
+          {
+            "value": "google"
+          },
+          {
+            "value": "cpc"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "480"
+          },
+          {
+            "value": "430"
+          },
+          {
+            "value": "190"
+          },
+          {
+            "value": "360"
+          },
+          {
+            "value": "41800"
+          },
+          {
+            "value": "1440"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "20260601"
+          },
+          {
+            "value": "Organic Search"
+          },
+          {
+            "value": "google"
+          },
+          {
+            "value": "organic"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "300"
+          },
+          {
+            "value": "280"
+          },
+          {
+            "value": "120"
+          },
+          {
+            "value": "210"
+          },
+          {
+            "value": "29500"
+          },
+          {
+            "value": "980"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "20260601"
+          },
+          {
+            "value": "Direct"
+          },
+          {
+            "value": "(direct)"
+          },
+          {
+            "value": "(none)"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "210"
+          },
+          {
+            "value": "190"
+          },
+          {
+            "value": "60"
+          },
+          {
+            "value": "130"
+          },
+          {
+            "value": "14100"
+          },
+          {
+            "value": "560"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "20260601"
+          },
+          {
+            "value": "Unassigned"
+          },
+          {
+            "value": "(not set)"
+          },
+          {
+            "value": "(not set)"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "40"
+          },
+          {
+            "value": "38"
+          },
+          {
+            "value": "30"
+          },
+          {
+            "value": "12"
+          },
+          {
+            "value": "500"
+          },
+          {
+            "value": "80"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "20260531"
+          },
+          {
+            "value": "Paid Social"
+          },
+          {
+            "value": "snapchat"
+          },
+          {
+            "value": "paid_social"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "558"
+          },
+          {
+            "value": "486"
+          },
+          {
+            "value": "369"
+          },
+          {
+            "value": "410"
+          },
+          {
+            "value": "34560"
+          },
+          {
+            "value": "1539"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "20260531"
+          },
+          {
+            "value": "Paid Search"
+          },
+          {
+            "value": "google"
+          },
+          {
+            "value": "cpc"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "432"
+          },
+          {
+            "value": "387"
+          },
+          {
+            "value": "171"
+          },
+          {
+            "value": "324"
+          },
+          {
+            "value": "37620"
+          },
+          {
+            "value": "1296"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "20260531"
+          },
+          {
+            "value": "Organic Search"
+          },
+          {
+            "value": "google"
+          },
+          {
+            "value": "organic"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "270"
+          },
+          {
+            "value": "252"
+          },
+          {
+            "value": "108"
+          },
+          {
+            "value": "189"
+          },
+          {
+            "value": "26550"
+          },
+          {
+            "value": "882"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "20260531"
+          },
+          {
+            "value": "Direct"
+          },
+          {
+            "value": "(direct)"
+          },
+          {
+            "value": "(none)"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "189"
+          },
+          {
+            "value": "171"
+          },
+          {
+            "value": "54"
+          },
+          {
+            "value": "117"
+          },
+          {
+            "value": "12690"
+          },
+          {
+            "value": "504"
+          }
+        ]
+      },
+      {
+        "dimensionValues": [
+          {
+            "value": "20260531"
+          },
+          {
+            "value": "Unassigned"
+          },
+          {
+            "value": "(not set)"
+          },
+          {
+            "value": "(not set)"
+          }
+        ],
+        "metricValues": [
+          {
+            "value": "36"
+          },
+          {
+            "value": "34"
+          },
+          {
+            "value": "27"
+          },
+          {
+            "value": "11"
+          },
+          {
+            "value": "450"
+          },
+          {
+            "value": "72"
+          }
+        ]
+      }
+    ],
+    "rowCount": 10,
+    "metadata": {
+      "currencyCode": "SAR",
+      "timeZone": "Asia/Riyadh"
+    },
+    "kind": "analyticsData#runReport"
+  }
+]

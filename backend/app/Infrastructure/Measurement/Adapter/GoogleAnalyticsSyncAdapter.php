@@ -6,10 +6,12 @@ namespace App\Infrastructure\Measurement\Adapter;
 
 use App\Application\Integration\Exception\ProviderNotConfigured;
 use App\Application\Measurement\Contract\MeasurementSyncAdapter;
+use App\Application\Measurement\Contract\TrafficReportAdapter;
 use App\Application\Measurement\DTO\DataStreamRecord;
 use App\Application\Measurement\DTO\DiscoveredProperty;
 use App\Application\Measurement\DTO\KeyEventRecord;
 use App\Application\Measurement\DTO\ObservedEventPage;
+use App\Application\Measurement\DTO\TrafficPage;
 use App\Domain\Integration\Credentials;
 use App\Domain\Integration\Provider;
 use App\Infrastructure\Measurement\Mapper\GoogleAnalyticsMapper;
@@ -47,8 +49,11 @@ use DateTimeImmutable;
  * INTERNAL` and `503 UNAVAILABLE` likewise, mindful that 10 server errors per project per
  * property per hour blocks the pair outright.
  */
-final readonly class GoogleAnalyticsSyncAdapter implements MeasurementSyncAdapter
+final readonly class GoogleAnalyticsSyncAdapter implements MeasurementSyncAdapter, TrafficReportAdapter
 {
+    /** Metrics the traffic report asks for, each only if the property's own metadata lists it. */
+    public const array TRAFFIC_METRICS = ['sessions', 'totalUsers', 'newUsers', 'engagedSessions', 'userEngagementDuration', 'screenPageViews'];
+
     /** Fixture names, each holding what the matching endpoint returns. */
     private const string FIXTURE_ACCOUNTS = 'account_summaries';
 
@@ -59,6 +64,8 @@ final readonly class GoogleAnalyticsSyncAdapter implements MeasurementSyncAdapte
     private const string FIXTURE_METADATA = 'metadata';
 
     private const string FIXTURE_REPORT = 'report_event_counts';
+
+    private const string FIXTURE_TRAFFIC = 'report_traffic';
 
     public function __construct(
         private MeasurementFixtures $fixtures,
@@ -158,6 +165,43 @@ final readonly class GoogleAnalyticsSyncAdapter implements MeasurementSyncAdapte
         );
     }
 
+    public function fetchTraffic(
+        Credentials $credentials,
+        string $propertyId,
+        DateTimeImmutable $since,
+        DateTimeImmutable $until,
+        ?string $cursor = null,
+    ): TrafficPage {
+        $this->assertConfigured($credentials);
+
+        /*
+         * The live request this stands in for:
+         *
+         *   dimensions: date, sessionDefaultChannelGroup, sessionSource, sessionMedium
+         *   metrics:    TRAFFIC_METRICS ∩ the property's getMetadata metric names — a metric the property does not
+         *               have is not requested (it would turn the whole call into a 400) and comes back null.
+         *   dateRanges, limit/offset paging, returnPropertyQuota so quota is reported, not guessed.
+         */
+        $available = $this->mapper->metricNames($this->fixtures->first($this->provider(), self::FIXTURE_METADATA));
+        $page = $this->fixtures->page($this->provider(), self::FIXTURE_TRAFFIC, $cursor);
+        $response = $page['response'];
+
+        $records = [];
+
+        foreach ($this->mapper->trafficRecords($this->restrictMetrics($response, $available)) as $record) {
+            if ($record->date >= $since->format('Y-m-d') && $record->date <= $until->format('Y-m-d')) {
+                $records[] = $record;
+            }
+        }
+
+        return new TrafficPage(
+            items: $records,
+            quality: $this->mapper->quality($response),
+            nextCursor: $page['nextCursor'],
+            timeZone: $this->mapper->timeZoneOf($response),
+        );
+    }
+
     public function valueMetricFor(Credentials $credentials, string $propertyId): ?string
     {
         $this->assertConfigured($credentials);
@@ -195,6 +239,44 @@ final readonly class GoogleAnalyticsSyncAdapter implements MeasurementSyncAdapte
     public function restatementWindowDays(): int
     {
         return 14;
+    }
+
+    /**
+     * What a live call would have returned had it only asked for the metrics the property has.
+     *
+     * The fixture carries every metric the sandbox knows; a property whose metadata does not list one would never have
+     * been asked for it, so its column is dropped here and the mapper reports null.
+     *
+     * @param  array<string, mixed>  $response
+     * @param  list<string>  $available
+     * @return array<string, mixed>
+     */
+    private function restrictMetrics(array $response, array $available): array
+    {
+        $headers = is_array($response['metricHeaders'] ?? null) ? $response['metricHeaders'] : [];
+        $keep = [];
+
+        foreach ($headers as $position => $header) {
+            if (is_array($header) && in_array($header['name'] ?? null, $available, true)) {
+                $keep[] = $position;
+            }
+        }
+
+        $response['metricHeaders'] = array_values(array_intersect_key($headers, array_flip($keep)));
+        $response['rows'] = array_map(
+            static function (mixed $row) use ($keep): mixed {
+                if (! is_array($row) || ! is_array($row['metricValues'] ?? null)) {
+                    return $row;
+                }
+
+                $row['metricValues'] = array_values(array_intersect_key($row['metricValues'], array_flip($keep)));
+
+                return $row;
+            },
+            is_array($response['rows'] ?? null) ? $response['rows'] : [],
+        );
+
+        return $response;
     }
 
     /**
