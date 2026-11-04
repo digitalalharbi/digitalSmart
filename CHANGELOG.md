@@ -18,8 +18,15 @@ All notable changes to digitalSmart are recorded here. Format follows
 - **Users are not offered.** They are not additive across days or channels, so the response states `users.available: false` and why,
   rather than summing a number that would overstate reach. A property-grain users report is a separate future read.
 
+### The Analytics screen
+- **A "Website traffic (Google Analytics 4)" panel on Analytics**: sessions, engaged sessions, engagement rate, engagement time per
+  session and page views for the shared period, change against the previous period where it can be computed, and a channel or
+  source / medium table with server-side paging (10 / 25 / 50). A missing figure reads "Not reported", never 0; the panel says how many
+  days of the period have stored data, names the property's time zone, shows the SANDBOX notice before any number, and states that
+  sessions are not ad clicks and users are not shown. English and Arabic, with an empty state and a retry.
+
 ### Not yet
-- The Analytics screen over this endpoint, report sections and exports; the live Data API transport (`BLOCKED_EXTERNAL_CREDENTIALS`).
+- Report sections and exports over GA4 traffic; the live Data API transport (`BLOCKED_EXTERNAL_CREDENTIALS`).
 
 ## GA4 acquisition traffic is read and stored (DS-P0-GA4-02/03, ingest only)
 

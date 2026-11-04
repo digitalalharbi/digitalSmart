@@ -1615,7 +1615,32 @@
       "invoiced": "فوترها المتجر",
       "measured": "قاسته الخاصية"
     },
-    "details": "التفاصيل — {{dimension}}"
+    "details": "التفاصيل — {{dimension}}",
+    "ga4": {
+      "title": "زيارات الموقع (Google Analytics 4)",
+      "sessions": "الجلسات",
+      "engagedSessions": "الجلسات المتفاعلة",
+      "engagementRate": "معدل التفاعل",
+      "engagementPerSession": "وقت التفاعل لكل جلسة",
+      "pageViews": "مشاهدات الصفحات",
+      "notReported": "غير مُبلَّغ",
+      "secondsValue": "{{value}} ث",
+      "vsPrevious": "{{change}} مقارنة بالفترة السابقة",
+      "groupBy": "التجميع حسب",
+      "byChannel": "مجموعة القناة الافتراضية",
+      "bySourceMedium": "المصدر / الوسيط",
+      "rows": "الصفوف",
+      "channel": "القناة",
+      "sourceMedium": "المصدر / الوسيط",
+      "share": "حصة الجلسات",
+      "tableLabel": "جلسات GA4 حسب مصدر الزيارة",
+      "page": "صفحة {{page}} من {{pages}}",
+      "coverage": "{{present}} من {{total}} يومًا في هذه الفترة لها بيانات مخزّنة. الأرقام تغطي هذه الأيام فقط.",
+      "emptyTitle": "لا توجد زيارات GA4 مخزّنة لهذه الفترة",
+      "emptyBody": "اربط خاصية Google Analytics 4 لهذا العميل وزامنها. لا يُعرض شيء قبل أن تُبلِّغ الخاصية بأرقامها.",
+      "failed": "تعذّر تحميل الزيارات.",
+      "footnote": "تحتسب Google Analytics الجلسات بحسب المنطقة الزمنية للخاصية ({{zones}}). وهي ليست نقرات إعلانية ولا تُجمع معها أبدًا. لا تُعرض أعداد المستخدمين لأنها لا تُجمع عبر الأيام أو القنوات."
+    }
   },
   "campaigns": {
     "status": {
