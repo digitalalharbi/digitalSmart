@@ -4,6 +4,20 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+
+## Reports: a snapshot records the metric definitions it was computed under (DS-P0-REP-04)
+
+### Added
+- **`definitions_version`** on every new snapshot (`Metric::DEFINITIONS_VERSION`, bumped by hand when a metric's meaning or
+  arithmetic changes). The snapshot list publishes it with `definitions_current`, so a frozen figure that today's rules would
+  compute differently says so instead of looking like a discrepancy.
+- Never backfilled: a snapshot taken before versions were recorded reports `null` for both — unknown is neither current nor
+  outdated. The stored payload is untouched.
+
+### Tests
+- A realtime subscription is re-checked after a role change and after removal, through the endpoints an administrator uses
+  (`BroadcastChannelTest`, DS-P0-NOTIF-01).
+
 ## Revenue reconciliation: the store as the authority, every other source a claim (DS-P0-COM-04)
 
 ### Added

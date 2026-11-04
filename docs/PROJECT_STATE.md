@@ -9,7 +9,7 @@ short and mechanical.
 this file points at them rather than restating them, because two state documents that can disagree
 are worse than one. Where this file and Git disagree, **Git is right and this file is stale.**
 
-Updated 2026-11-04.
+Updated 2026-11-04 (22:45 UTC).
 
 ## Last verified commit
 
@@ -17,9 +17,9 @@ Updated 2026-11-04.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `5bd92f3` — fix(advertising): the hourly sync no longer queues accounts on a disconnected connection (DS-UC-103) (#74) |
-| Full sha | `5bd92f3308539c7d879caa076a5740f6bf9b6a11` |
-| Committed | 2026-11-04 09:34:29 +0300 |
+| Commit | `9c24298` — feat(commerce): revenue reconciliation — store as authority, each source a claim with its delta (DS-P0-COM-04) (#92) |
+| Full sha | `9c24298b89078282a28a71927aac7900c994dc54` |
+| Evidence | #92 merged at head `56374ce` with Governance, Backend, Frontend and E2E green; nothing deployed (`AWAITING_SERVER_ACCESS`) |
 
 Verify, do not trust:
 
@@ -31,9 +31,9 @@ git fetch origin && git log --oneline -10 origin/main && git status
 
 | PR | Branch | Title |
 |---|---|---|
-| [#78](https://github.com/digitalalharbi/digitalSmart/pull/78) | `feat/ga4-traffic` | feat(ga4): read acquisition traffic by channel, source and medium (DS-P0-GA4-02/03, ingest) |
-| [#77](https://github.com/digitalalharbi/digitalSmart/pull/77) | `feat/report-share-pause` | feat(reports): pause and resume a report link at the same address (DS-P0-REP-03) |
-| [#76](https://github.com/digitalalharbi/digitalSmart/pull/76) | `chore/p0-baseline` | docs: reconcile matrices to main 1e19215 and add the P0 requirement matrix |
+| [#93](https://github.com/digitalalharbi/digitalSmart/pull/93) | `feat/connection-sync-history` | feat(integrations): each connection's last attempt beside its last success (DS-P0-INT-01) |
+| this PR | `feat/snapshot-definition-version` | feat(reports): a snapshot records the metric-definitions version (DS-P0-REP-04), with this checkpoint |
+| [#91](https://github.com/digitalalharbi/digitalSmart/pull/91) | `docs/checkpoint-actions-blocked` | superseded by this PR — close once it merges |
 
 CI on each is the authority — `Governance`, `Backend` and `Frontend` are required and the branch
 must be up to date with `main`:
