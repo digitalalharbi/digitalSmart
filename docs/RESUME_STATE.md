@@ -8,7 +8,7 @@ disagree, Git is right.
 
 ### Where things stand — 2026-11-03
 
-**Main `1e19215`.** #70, #71, #72, #73, #75 merged (CI-verified); #74 in review. Requirement state: `docs/P0_REQUIREMENTS_MATRIX.md` (38 rows, none `VERIFIED`) and `docs/UNIFIED_COMMERCE_MATRIX.md`. Local demo: login, refresh and dashboards verified by Playwright; Horizon and Reverb run locally, scheduler off. Nothing is deployed or `LIVE_VERIFIED`.
+**Main `5bd92f3`.** #70, #71, #72, #73, #74, #75 merged (CI-verified). Open: #76 (docs), #77 (report-link pause/resume). Requirement state: `docs/P0_REQUIREMENTS_MATRIX.md` (38 rows, none `VERIFIED`) and `docs/UNIFIED_COMMERCE_MATRIX.md`. Local demo: login, refresh and dashboards verified by Playwright; Horizon and Reverb run locally, scheduler off. Nothing is deployed or `LIVE_VERIFIED`.
 
 ### Earlier state — 2026-10-25
 

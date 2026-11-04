@@ -1,7 +1,7 @@
 # P0 master directive — requirement matrix (DS-P0-MASTER-2026-11-03)
 
 Cross-module acceptance rows of the owner's P0 directive, linked to the commerce rows in `docs/UNIFIED_COMMERCE_MATRIX.md` (that file stays
-the one place `DS-UC-*` rows live; nothing here repeats them). Read against `origin/main` at `1e19215` (#75). The directive's two
+the one place `DS-UC-*` rows live; nothing here repeats them). Read against `origin/main` at `5bd92f3` (#74). The directive's two
 reference documents (CampaignsHub, Mohtam) are **not present in this repository**; the directive's own acceptance criteria are used and the
 missing references are reported for provenance. Nothing is copied from either product.
 
@@ -37,7 +37,7 @@ States: `NOT_STARTED` · `PARTIAL` · `IMPLEMENTED_NOT_VERIFIED` · `VERIFIED` �
 | DS-P0-NOTIF-01 centre + realtime | PARTIAL | Feed, severity, dedup, per-person digest settings, Reverb nudges | Quiet hours, snooze; subscription re-check after permission change test | 11 |
 | DS-P0-NOTIF-02 email templates | NOT_STARTED | Delivery honestly `awaiting_credentials`; no templates | Branded AR/EN responsive template set + plain text | 11 |
 | DS-P0-NOTIF-03 delivery states | PARTIAL | `notification_deliveries` states, nothing writes `sent` | `provider_accepted`/`delivered` from a real provider (`BLOCKED_EXTERNAL_CREDENTIALS`) | 11 |
-| DS-P0-INT-01 connection diagnostics | PARTIAL | #70 `8bb2fba` disconnect is never read; #74 (hourly ad sync skips disconnected connections) in review | Last-success vs last-attempt; per-connection sync history | 12 |
+| DS-P0-INT-01 connection diagnostics | PARTIAL | #70 `8bb2fba` disconnect is never read; #74 `5bd92f3` (hourly ad sync skips disconnected connections) | Last-success vs last-attempt; per-connection sync history | 12 |
 | DS-P0-INT-02 creative previews | PARTIAL | Aggregate creative read with honest "no preview" | Provider asset resolution needs live credentials | 12 (`BLOCKED_EXTERNAL_CREDENTIALS`) |
 | DS-P0-UX-01..03 performance, tables, mobile | PARTIAL | `MobileTabBar`, mobile gate (Chromium, Firefox, WebKit), SWR via TanStack Query | No before/after measurements; 10/25/50 server pagination not everywhere | 13 |
 | DS-P0-OPS-01 readiness | PARTIAL | Health, sync monitor, `ops:production-check`, commissioning ledger; queue backlog (14,628 local broadcast jobs) diagnosed and drained 2026-10-29 | One readiness surface | 14 |

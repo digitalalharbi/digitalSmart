@@ -11,6 +11,7 @@ All notable changes to digitalSmart are recorded here. Format follows
 - #71 `009be9d` — the revenue ledger: charged, refunded, and what the totals were made of.
 - #72 `62e5688` — provider instants are stored as UTC, not as their local wall-clock time.
 - #73 `0771357` — two E2E timing fixes.
+- #74 `5bd92f3` — the hourly advertising sync no longer queues accounts on a disconnected connection.
 - #75 `1e19215` — store-timezone days, weekly and monthly trends, previous-period comparison.
 
 ### Added
@@ -20,6 +21,16 @@ All notable changes to digitalSmart are recorded here. Format follows
 - A 14,628-job Redis backlog (9,902 `BoardChanged`, 4,726 `NotificationAnnounced`, all unattempted, 7–24 Oct) was read-only
   inspected, found to be local Reverb broadcasts only, and drained by Horizon with 0 failures. Every provider connection holds only
   the `sandbox` credential. The scheduler was left off.
+
+## Advertising sync no longer retries a disconnected connection every hour
+
+### Fixed
+- **The scheduled advertising sync listed every account on a disconnected connection, queued a job for each, and each job called
+  the adapter with no credentials** — a failed run and a provider error per account per hour, for something an operator did on
+  purpose, burying the failures that mean something. A sync candidate is now an account that is actually syncing: a connection that
+  is not configured or revoked drops out of the list, the operations monitor's "accounts syncing" count and the scheduler. A job
+  already queued, or a direct call, is skipped with no run recorded. `expired` and `error` connections are still synced — they hold
+  credentials and may recover, and their failures are what the monitor is for. Credentials put back, and the account is synced again.
 
 ## Connection lifecycle: a disconnected connection is never read, and disconnecting asks first
 
