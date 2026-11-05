@@ -4,6 +4,14 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Integrations: each connection's last attempt beside its last success (DS-P0-INT-01)
+
+### Added
+- **`connection_history`** in the advanced part of `GET /api/integrations/operations`: per connection, the last settled attempt and
+  its status, the last success, the last failure and its code, and how many reads have failed since the last success. Not
+  windowed — a connection that last succeeded a week ago still says so. A connection never read is absent, not given dates.
+- **Administration → Advanced diagnostics** shows it as a table; "Never succeeded" where there is no success, never a date.
+- One grouped statement; the operations read stays inside its query budget (`AgencyScaleTest`).
 
 ## Reports: a snapshot records the metric definitions it was computed under (DS-P0-REP-04)
 

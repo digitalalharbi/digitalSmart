@@ -9,7 +9,7 @@ short and mechanical.
 this file points at them rather than restating them, because two state documents that can disagree
 are worse than one. Where this file and Git disagree, **Git is right and this file is stale.**
 
-Updated 2026-11-04 (22:45 UTC).
+Updated 2026-11-04 (23:30 UTC).
 
 ## Last verified commit
 
@@ -17,9 +17,9 @@ Updated 2026-11-04 (22:45 UTC).
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `9c24298` — feat(commerce): revenue reconciliation — store as authority, each source a claim with its delta (DS-P0-COM-04) (#92) |
-| Full sha | `9c24298b89078282a28a71927aac7900c994dc54` |
-| Evidence | #92 merged at head `56374ce` with Governance, Backend, Frontend and E2E green; nothing deployed (`AWAITING_SERVER_ACCESS`) |
+| Commit | `4a51d4e` — feat(reports): a snapshot records the metric-definitions version; checkpoint at main 9c24298 (DS-P0-REP-04) (#94) |
+| Full sha | `4a51d4e5a55ec474138b66098b8e56662a77856c` |
+| Evidence | #94 merged at head `7080bc4` with Governance, Backend, Frontend and E2E green and up to date; nothing deployed (`AWAITING_SERVER_ACCESS`) |
 
 Verify, do not trust:
 
@@ -31,9 +31,7 @@ git fetch origin && git log --oneline -10 origin/main && git status
 
 | PR | Branch | Title |
 |---|---|---|
-| [#93](https://github.com/digitalalharbi/digitalSmart/pull/93) | `feat/connection-sync-history` | feat(integrations): each connection's last attempt beside its last success (DS-P0-INT-01) |
-| this PR | `feat/snapshot-definition-version` | feat(reports): a snapshot records the metric-definitions version (DS-P0-REP-04), with this checkpoint |
-| [#91](https://github.com/digitalalharbi/digitalSmart/pull/91) | `docs/checkpoint-actions-blocked` | superseded by this PR — close once it merges |
+| [#93](https://github.com/digitalalharbi/digitalSmart/pull/93) | `feat/connection-sync-history` | feat(integrations): each connection's last attempt beside its last success (DS-P0-INT-01) — carries this file; once it is on `main`, none is open |
 
 CI on each is the authority — `Governance`, `Backend` and `Frontend` are required and the branch
 must be up to date with `main`:
