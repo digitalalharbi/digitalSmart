@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ensureCsrfCookie } from '@/shared/api/client';
 import type {
   BindingOption,
+  LinkAudit,
   LinkDraft,
   LinkPerformance,
   LinkStatus,
@@ -16,6 +17,20 @@ export function useLinksQuery(projectId: string | null) {
     queryKey: [...KEY, projectId],
     queryFn: async (): Promise<TrackingLink[]> => {
       const { data } = await api.get<{ data: TrackingLink[] }>('/tracking/links', {
+        params: projectId === null ? {} : { project_id: projectId },
+      });
+
+      return data.data;
+    },
+  });
+}
+
+/** Under the links key, so saving or pausing a link re-reads the audit with the list. */
+export function useLinkAuditQuery(projectId: string | null) {
+  return useQuery({
+    queryKey: [...KEY, 'audit', projectId],
+    queryFn: async (): Promise<LinkAudit> => {
+      const { data } = await api.get<{ data: LinkAudit }>('/tracking/links/audit', {
         params: projectId === null ? {} : { project_id: projectId },
       });
 

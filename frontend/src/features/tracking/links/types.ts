@@ -124,3 +124,28 @@ export type LinkDraft = {
 };
 
 export type LinkTemplate = { id: string; name: string; patterns: Record<string, string> };
+
+export type UtmFindingCode =
+  | 'missing_source'
+  | 'missing_medium'
+  | 'missing_campaign'
+  | 'mixed_case'
+  | 'has_spaces'
+  | 'destination_has_parameter'
+  | 'duplicate_set';
+
+/** The campaign-parameter audit: only links with something wrong are listed. */
+export interface LinkAudit {
+  audited: number;
+  with_findings: number;
+  by_code: Partial<Record<UtmFindingCode, number>>;
+  links: Array<{
+    id: string;
+    name: string;
+    project_id: string;
+    project_name: string;
+    client_name: string;
+    status: string;
+    findings: Array<{ code: UtmFindingCode; parameters: string[]; shared_with: string[] }>;
+  }>;
+}

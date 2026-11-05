@@ -2026,6 +2026,21 @@
       "operations": "Operations"
     },
     "links": {
+      "audit": {
+        "title": "Campaign parameter issues",
+        "summary_one": "{{count}} of {{audited}} links has a campaign-parameter issue",
+        "summary_other": "{{count}} of {{audited}} links have campaign-parameter issues",
+        "codes": {
+          "missing_source": "no utm_source",
+          "missing_medium": "no utm_medium",
+          "missing_campaign": "no utm_campaign",
+          "mixed_case": "capital letters in {{parameters}} (analytics treats them as a different name)",
+          "has_spaces": "spaces in {{parameters}}",
+          "destination_has_parameter": "the destination already carries {{parameters}}",
+          "duplicate_set_one": "the same parameters as {{count}} other live link — their visits cannot be told apart",
+          "duplicate_set_other": "the same parameters as {{count}} other live links — their visits cannot be told apart"
+        }
+      },
       "intro": "A tracking link sends a visitor to your page and records the visit first. Use it as the address in the advertisement.",
       "create": "New tracking link",
       "failed": "The links could not be loaded.",

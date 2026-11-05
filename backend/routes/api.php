@@ -219,6 +219,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     /* Answering them: administrators of the workspace the request was made to, who can add people. */
     Route::get('tracking/links', [TrackingLinkController::class, 'index'])->name('tracking.links.index');
     Route::post('tracking/links', [TrackingLinkController::class, 'store'])->name('tracking.links.store');
+    Route::get('tracking/links/audit', [TrackingLinkController::class, 'audit'])->name('tracking.links.audit');
     Route::get('tracking/links/{link}', [TrackingLinkController::class, 'show'])->whereUuid('link')->name('tracking.links.show');
     Route::put('tracking/links/{link}', [TrackingLinkController::class, 'update'])->whereUuid('link')->name('tracking.links.update');
     Route::get('tracking/links/{link}/performance', [TrackingLinkController::class, 'performance'])->whereUuid('link')->name('tracking.links.performance');

@@ -13,6 +13,20 @@ All notable changes to digitalSmart are recorded here. Format follows
 - **Administration → Advanced diagnostics** shows it as a table; "Never succeeded" where there is no success, never a date.
 - One grouped statement; the operations read stays inside its query budget (`AgencyScaleTest`).
 
+
+## Tracking links: a campaign-parameter audit (DS-P0-LINK-01)
+
+### Added
+- **`GET /api/tracking/links/audit`** (`tracking.view`, scoped like the link list): links with a missing `utm_source`,
+  `utm_medium` or `utm_campaign`; capital letters or spaces in a value; a destination that already carries a campaign parameter;
+  and live links in one project carrying an identical set, whose visits an analytics property cannot tell apart.
+- Facts about what was typed only — no rule about whether a source "matches" a platform. Archived links are left out; a
+  duplicate is reported only between links the reader can see.
+- **Tracking → Links** shows the findings as one warning above the list, and nothing when there are none.
+
+### Not yet
+- Link edit history that preserves attribution.
+
 ## Reports: a snapshot records the metric definitions it was computed under (DS-P0-REP-04)
 
 ### Added
