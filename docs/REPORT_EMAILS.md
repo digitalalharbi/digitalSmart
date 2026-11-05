@@ -46,6 +46,9 @@ complaint are the provider's later knowledge and need its webhook, which is not 
 3. `MAIL_DELIVERY_ENABLED=true` — a separate switch, so credentials present on a staging server are not a decision to
    email clients from it.
 
+Administration → Advanced diagnostics shows the result as an **Email** dot: *waiting* with what is missing, or *configured,
+not proven*. It is never green — only a message read in an inbox proves delivery.
+
 All three live in the server's `shared/.env`. No mail credential belongs in GitHub, a workflow or a document
 (`docs/EXECUTION_POLICY.md`).
 

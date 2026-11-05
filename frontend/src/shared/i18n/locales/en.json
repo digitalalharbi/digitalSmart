@@ -1273,6 +1273,7 @@
       "label": "Sync status",
       "main": "Main",
       "deploy": "Deploy",
+      "email": "Email",
       "unavailable": "Status unavailable"
     }
   },

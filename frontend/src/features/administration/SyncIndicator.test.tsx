@@ -33,4 +33,28 @@ describe('SyncIndicator', () => {
 
     expect(await screen.findByText('Status unavailable')).toBeInTheDocument();
   });
+
+  it('shows whether this server can send email, with the reason, and never as live', async () => {
+    get.mockResolvedValue({
+      data: {
+        data: {
+          main: { state: 'green', label: 'green', sha: 'dc05b45' },
+          deploy: { state: 'grey', label: 'waiting', sha: null },
+          email: {
+            state: 'grey',
+            label: 'waiting',
+            sha: null,
+            detail: 'Email is not sent from this installation yet. Missing: a mail provider.',
+          },
+        },
+      },
+    });
+
+    await renderWithProviders(<SyncIndicator />);
+
+    const email = (await screen.findByText('Email')).closest('li');
+
+    expect(email).toHaveTextContent('waiting');
+    expect(email).toHaveAttribute('title', expect.stringContaining('Missing: a mail provider'));
+  });
 });

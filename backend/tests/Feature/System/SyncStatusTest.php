@@ -96,3 +96,26 @@ it('is not for a role that cannot see workspace settings', function (): void {
 
     test()->actingAs($viewer)->getJson('/api/system/sync-status')->assertForbidden();
 });
+
+it('shows email as waiting with what is missing, and never as green', function (): void {
+    fakeGitHub('completed', 'success');
+    deployedAs(null);
+    $w = SyncedWorkspace::default();
+
+    $email = test()->actingAs($w->scenario->owner)->getJson('/api/system/sync-status')->assertOk()->json('data.email');
+
+    expect($email['state'])->toBe('grey')
+        ->and($email['label'])->toBe('waiting')
+        ->and($email['detail'])->toContain('MAIL_DELIVERY_ENABLED');
+
+    // With all three settings present it is set up — and still not green: nobody has read a message yet.
+    config(['mail.mailers.outbox' => ['transport' => 'array']]);
+    app()->instance(App\Application\Notifications\Mail\MailTransport::class, new App\Infrastructure\Notifications\Mail\LaravelMailTransport(
+        app(Illuminate\Contracts\Mail\Factory::class), 'outbox', 'reports@agency.sa', 'Agency', true,
+    ));
+    Cache::flush();
+
+    $configured = test()->actingAs($w->scenario->owner)->getJson('/api/system/sync-status')->json('data.email');
+
+    expect($configured['state'])->toBe('amber')->and($configured['label'])->toBe('configured, not proven');
+});

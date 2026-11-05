@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\System\Query;
 
+use App\Application\Notifications\Mail\MailTransport;
 use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\System\Contract\DeploymentRecord;
 use App\Application\System\Contract\RepositoryStatusSource;
@@ -24,6 +25,7 @@ final readonly class GetSyncStatus
     public function __construct(
         private RepositoryStatusSource $repository,
         private DeploymentRecord $deployment,
+        private MailTransport $mail,
         private AuthorizationGuard $guard,
     ) {}
 
@@ -52,6 +54,14 @@ final readonly class GetSyncStatus
             $deploy = ['state' => 'amber', 'label' => 'behind main', 'sha' => $deployed];
         }
 
-        return ['main' => $main, 'deploy' => $deploy];
+        /*
+         * Email is never green here. Configured means the three settings are present on this server — not that a message
+         * has ever been read in an inbox, which only a person can say (`mail:test`, then look). Amber is "set up, unproven".
+         */
+        $email = $this->mail->isConfigured()
+            ? ['state' => 'amber', 'label' => 'configured, not proven', 'sha' => null, 'detail' => 'Run mail:test and read the message in the inbox.']
+            : ['state' => 'grey', 'label' => 'waiting', 'sha' => null, 'detail' => $this->mail->missing()];
+
+        return ['main' => $main, 'deploy' => $deploy, 'email' => $email];
     }
 }
