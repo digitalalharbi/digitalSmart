@@ -16,6 +16,7 @@ import { csvUrl, xlsxUrl } from './api';
 import { ExportsPanel } from './ExportsPanel';
 import { ReportTracking } from './ReportTracking';
 import { ReportView } from './ReportView';
+import { RecipientsPanel } from './RecipientsPanel';
 import { SharePanel } from './SharePanel';
 import {
   useDeleteReportMutation,
@@ -325,6 +326,14 @@ export function ReportManagePage() {
               snapshot.mutate({ reportId, ...(label === '' ? {} : { label }) })
             }
           />
+        ) : null}
+
+        {/*
+          Beside the links, because an emailed report is a link somebody is sent on a rhythm. Only for a client-safe report
+          and only for somebody who may share: the server refuses both, and a form that cannot succeed is not offered.
+        */}
+        {tab === 'sharing' && canShare && summary?.audience === 'client_safe' ? (
+          <RecipientsPanel reportId={reportId} />
         ) : null}
 
         {tab === 'files' ? <ExportsPanel reportId={reportId} /> : null}

@@ -70,6 +70,7 @@ use App\Interface\Http\Controller\Project\ProjectController;
 use App\Interface\Http\Controller\Project\ProjectMemberController;
 use App\Interface\Http\Controller\Project\ReadinessController;
 use App\Interface\Http\Controller\Reporting\ReportController;
+use App\Interface\Http\Controller\Reporting\ReportRecipientController;
 use App\Interface\Http\Controller\Reporting\SharedReportController;
 use App\Interface\Http\Controller\Search\SearchController;
 use App\Interface\Http\Controller\Shortcuts\ShortcutController;
@@ -164,6 +165,15 @@ Route::post('approval-links/{token}', [ApprovalLinkController::class, 'use'])
  * 200 with a state, because a 404 on a link a client was sent reads as a broken site and they ask for it again
  * instead of learning that it lapsed.
  */
+/*
+ * A report-email recipient's own "stop". No session: the token in the email is the credential, the answer is the same
+ * whatever it was, and it is a POST so that a mail scanner fetching links unsubscribes nobody.
+ */
+Route::post('report-emails/unsubscribe/{token}', [ReportRecipientController::class, 'unsubscribe'])
+    ->where('token', '[a-f0-9]{64}')
+    ->middleware('throttle:shared-reports')
+    ->name('report-emails.unsubscribe');
+
 Route::get('shared-reports/{token}', SharedReportController::class)
     ->middleware('throttle:shared-reports')
     ->where('token', '[A-Fa-f0-9]{96}')
@@ -859,6 +869,16 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         ->whereUuid('report')->name('reports.snapshots');
     Route::post('reports/{report}/snapshots', [ReportController::class, 'snapshot'])
         ->whereUuid('report')->name('reports.snapshot');
+    Route::get('reports/{report}/recipients', [ReportRecipientController::class, 'index'])
+        ->whereUuid('report')->name('reports.recipients.index');
+    Route::post('reports/{report}/recipients', [ReportRecipientController::class, 'store'])
+        ->whereUuid('report')->name('reports.recipients.store');
+    Route::post('report-recipients/{recipient}/pause', [ReportRecipientController::class, 'pause'])
+        ->whereUuid('recipient')->name('reports.recipients.pause');
+    Route::post('report-recipients/{recipient}/resume', [ReportRecipientController::class, 'resume'])
+        ->whereUuid('recipient')->name('reports.recipients.resume');
+    Route::delete('report-recipients/{recipient}', [ReportRecipientController::class, 'destroy'])
+        ->whereUuid('recipient')->name('reports.recipients.destroy');
     Route::get('reports/{report}/shares', [ReportController::class, 'shares'])
         ->whereUuid('report')->name('reports.shares');
     Route::post('reports/{report}/shares', [ReportController::class, 'share'])

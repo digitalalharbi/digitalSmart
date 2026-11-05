@@ -31,6 +31,7 @@ use App\Interface\Console\RunAutomationRulesCommand;
 use App\Interface\Console\RunReportSchedulesCommand;
 use App\Interface\Console\SaasOverrideCommand;
 use App\Interface\Console\SaasPlanCommand;
+use App\Interface\Console\SendReportEmailsCommand;
 use App\Interface\Console\SyncAccessCatalogue;
 use App\Interface\Console\SyncAdvertisingData;
 use App\Interface\Http\Middleware\AssignRequestId;
@@ -80,6 +81,7 @@ return Application::configure(basePath: dirname(__DIR__))
         RaiseLeadSlaAlertsCommand::class,
         RaiseAccessRequestAlertsCommand::class,
         RunReportSchedulesCommand::class,
+        SendReportEmailsCommand::class,
         ReadStores::class,
         SyncAccessCatalogue::class,
         SyncAdvertisingData::class,

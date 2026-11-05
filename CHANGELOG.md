@@ -4,6 +4,29 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+
+## Reports: a client-safe report emailed to a client, once per period — through a real provider or not at all
+
+### Added
+- **Email recipients on a report** (Reports → a report → Sharing): an outside address, weekly or monthly, Arabic or English,
+  with a required sentence saying how the recipient agreed. `reports.share` and a client-safe report are both required.
+- **`reports:email-due`** (hourly): claims each period behind a unique key so it is never sent twice, acts as the member who
+  added the recipient — so a lost permission, a hidden report or a report that stopped being client-safe halts it with the
+  reason — mints a fresh expiring link and emails it. The email carries the link and the report's title, no figures.
+- **A mail transport that can really send**, and only when a transmitting mailer, a sender on the agency's own domain and
+  `MAIL_DELIVERY_ENABLED=true` are all present on the server. Otherwise every period is recorded `awaiting_credentials` and
+  no link is made. The surface says so before listing anybody.
+- **A delivery ledger** per recipient and period: pending, accepted by the provider, failed (three attempts), awaiting
+  credentials, skipped. There is no "delivered": acceptance by a mail server is not arrival.
+- **Unsubscribe** from the email itself, with no account: a `List-Unsubscribe` header and a page with one button (a POST, so a
+  mail scanner stops nobody). The token is stored hashed and replaced with every email; the agency cannot resume it.
+- `docs/REPORT_EMAILS.md`: the three things kept apart (share link, staff digests, client email), what only the owner can
+  supply, and the acceptance run that has **not** been done.
+
+### Stated plainly
+- No email has left this product. Nothing is deployed. This is `IMPLEMENTED_NOT_VERIFIED` until a message is read in a real
+  inbox from a real server.
+
 ## Integrations: each connection's last attempt beside its last success (DS-P0-INT-01)
 
 ### Added

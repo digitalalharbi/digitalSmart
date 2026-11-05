@@ -97,6 +97,13 @@ Schedule::command('exports:prune')->dailyAt('04:00')->withoutOverlapping()->runI
 Schedule::command('reports:run-schedules')->hourly()->withoutOverlapping()->runInBackground();
 
 /*
+ * Report links emailed to clients. Hourly, at a quarter past: the period key decides what is due, so running often
+ * costs nothing and a failed send is retried within the hour rather than a week later. Without a mail provider it
+ * records each period as awaiting credentials and sends nothing.
+ */
+Schedule::command('reports:email-due')->hourlyAt(15)->withoutOverlapping()->runInBackground();
+
+/*
  * The routines. Agents propose and never decide, so running them often costs a person nothing but a card.
  *
  * The daily performance review runs before the working day in the agency's own time zone, so the Today list is

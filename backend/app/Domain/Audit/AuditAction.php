@@ -180,6 +180,11 @@ enum AuditAction: string
     case ReportSharePaused = 'report.share_paused';
     case ReportShareResumed = 'report.share_resumed';
 
+    /* Writing to an address outside the agency is a disclosure with a standing schedule: who added it, and who stopped it. */
+    case ReportRecipientAdded = 'report.recipient_added';
+    case ReportRecipientChanged = 'report.recipient_changed';
+    case ReportRecipientUnsubscribed = 'report.recipient_unsubscribed';
+
     /*
      * Exposing a surface to a client is a disclosure, and the entry is the only thing that can answer "who let
      * them see that" after the person who did it has left. Withdrawal is its own action rather than an exposure
@@ -319,6 +324,9 @@ enum AuditAction: string
             self::ReportShareRevoked,
             self::ReportSharePaused,
             self::ReportShareResumed,
+            self::ReportRecipientAdded,
+            self::ReportRecipientChanged,
+            self::ReportRecipientUnsubscribed,
             /*
              * A write to a client's live campaign is the most consequential thing this product does. It belongs
              * beside "who connected a platform" rather than beside "who renamed a report" — including the

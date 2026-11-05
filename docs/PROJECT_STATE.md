@@ -9,7 +9,7 @@ short and mechanical.
 this file points at them rather than restating them, because two state documents that can disagree
 are worse than one. Where this file and Git disagree, **Git is right and this file is stale.**
 
-Updated 2026-11-05 (00:25 UTC).
+Updated 2026-11-05.
 
 ## Last verified commit
 
@@ -17,9 +17,9 @@ Updated 2026-11-05 (00:25 UTC).
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `e19dfcc` — feat(integrations): each connection's last attempt beside its last success (DS-P0-INT-01) (#93) |
-| Full sha | `e19dfcca13a4e436d7105b5a046019740c901b60` |
-| Evidence | #93 merged at head `5f2f4f0` with Governance, Backend, Frontend and E2E green and up to date; nothing deployed (`AWAITING_SERVER_ACCESS`) |
+| Commit | `66fabe9` — feat(tracking): a campaign-parameter audit of tracking links; checkpoint at main e19dfcc (DS-P0-LINK-01) (#95) |
+| Full sha | `66fabe9506cfea598c80b48e1ca8eb4e577b8e36` |
+| Evidence | CI run 41945960033 green on `66fabe9` (Governance, Backend, Frontend, E2E). Deploy run 41945960193 executed only "Production server not configured"; the deploy job was skipped — **nothing is deployed** (`AWAITING_SERVER_ACCESS`) |
 
 Verify, do not trust:
 
@@ -31,7 +31,7 @@ git fetch origin && git log --oneline -10 origin/main && git status
 
 | PR | Branch | Title |
 |---|---|---|
-| the PR carrying this file | `feat/utm-audit` | feat(tracking): a campaign-parameter audit of tracking links (DS-P0-LINK-01) — once it is on `main`, none is open |
+| the PR carrying this file | `feat/client-report-email` | feat(reports): a client-safe report emailed to a client, once per period — once it is on `main`, none is open |
 
 CI on each is the authority — `Governance`, `Backend` and `Frontend` are required and the branch
 must be up to date with `main`:

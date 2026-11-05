@@ -58,6 +58,7 @@ const TENANT_PARAM_TABLES = [
     'digest' => 'digests',
     'export' => 'export_jobs',
     'share' => 'report_shares',
+    'recipient' => 'report_email_subscriptions',
     'dispatch' => 'provider_event_dispatches',
     'mapping' => 'conversion_mappings',
     'workspace' => 'workspaces',
@@ -197,6 +198,9 @@ function seedForeignGaps(): void
     ])->assertCreated();
     $safe = (string) DB::table('reports')->where('workspace_id', $workspace)->where('audience', 'client_safe')->orderBy('id')->value('id');
     $as->postJson("/api/reports/{$safe}/shares", ['days' => 7])->assertCreated();
+    $as->postJson("/api/reports/{$safe}/recipients", [
+        'email' => 'foreign-recipient@example.test', 'cadence' => 'weekly', 'consent_note' => 'Agreed in writing to receive the weekly link.',
+    ])->assertCreated();
     $as->postJson('/api/exports/schedules', ['report_id' => $report, 'kind' => 'report_csv', 'cadence' => 'daily', 'hour' => 6])->assertCreated();
 
     config(['digitalsmart.access_requests.workspace_slug' => 'demo-smart-code']);
