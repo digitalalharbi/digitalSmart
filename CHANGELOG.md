@@ -6,6 +6,19 @@ All notable changes to digitalSmart are recorded here. Format follows
 
 
 
+
+## Fixed: the "stop these emails" button failed for the person it exists for
+
+### Fixed
+- **The recipient's unsubscribe page could not stop anything in a real browser.** A visitor arriving from an email has no
+  cookies, and the page posted without first fetching the CSRF cookie, so the request was refused and the page said "That did
+  not go through". Component tests could not see it — they stub the request — and a new end-to-end test found it on its first
+  run. The page now primes the cookie, and retries once on a dropped connection (stopping twice stops once).
+
+### Added
+- `e2e/report-recipients.spec.ts`: adding a recipient with a consent sentence, the "email is not sent from this installation
+  yet" warning, the refusal of a second copy of an address, removal, and the stop page opened with no session.
+
 ## Notifications: a member's email copy leaves through the real mail transport — when there is one
 
 ### Changed

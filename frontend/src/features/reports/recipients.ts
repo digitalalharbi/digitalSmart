@@ -100,5 +100,11 @@ export function useChangeRecipientMutation(reportId: string) {
 
 /** The recipient's own stop. No session; the same answer whatever the token was. */
 export async function unsubscribeFromReportEmails(token: string): Promise<void> {
-  await api.post(`/report-emails/unsubscribe/${token}`);
+  /*
+   * A visitor from an email has no cookies at all, and the API refuses a POST without the CSRF cookie. Without this
+   * line the button fails for exactly the person it exists for — and only in a real browser, which is how it was found.
+   */
+  await ensureCsrfCookie();
+  // Stopping twice stops once, so a dropped connection is worth one more try rather than an error on the one button here.
+  await api.post(`/report-emails/unsubscribe/${token}`, undefined, { retryOnNetworkError: true });
 }
