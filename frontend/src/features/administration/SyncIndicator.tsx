@@ -2,8 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/shared/api/client';
 
-type Dot = { state: 'green' | 'amber' | 'red' | 'grey'; label: string; sha: string | null };
-type SyncStatus = { main: Dot; deploy: Dot };
+type Dot = {
+  state: 'green' | 'amber' | 'red' | 'grey';
+  label: string;
+  sha: string | null;
+  /** Why it is in this state, where the server says. */
+  detail?: string;
+};
+type SyncStatus = { main: Dot; deploy: Dot; email?: Dot };
 
 const COLOUR: Record<Dot['state'], string> = {
   green: 'var(--ds-success-500)',
@@ -41,6 +47,8 @@ export function SyncIndicator() {
       : [
           { key: 'main', dot: status.data.main },
           { key: 'deploy', dot: status.data.deploy },
+          // Whether this server can send email at all — never green: set up is not the same as a message read.
+          ...(status.data.email === undefined ? [] : [{ key: 'email', dot: status.data.email }]),
         ];
 
   return (
@@ -55,7 +63,7 @@ export function SyncIndicator() {
         </li>
       ) : (
         items.map(({ key, dot }) => (
-          <li key={key} className="text-content flex items-center gap-2">
+          <li key={key} className="text-content flex items-center gap-2" title={dot.detail}>
             <span
               aria-hidden
               className="size-2.5 rounded-full"
