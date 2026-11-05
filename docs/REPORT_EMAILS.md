@@ -8,7 +8,7 @@ Three things are easy to confuse and are kept apart in the code, the schema and 
 | | What it is | Who receives it | State |
 |---|---|---|---|
 | **1. Share link** | `/shared-reports/{token}` — a client-safe report read with no account. Live or frozen, pausable, revocable, expires within 90 days, token stored as a hash (`docs/REPORTING.md`) | Whoever holds the link | `IMPLEMENTED_NOT_VERIFIED` — needs a public server |
-| **2. Staff digests and alerts** | `digests:performance`, `alerts:raise` — daily/weekly/monthly summaries and alerts in the notification centre, per person, in their own scope | Workspace members | `IMPLEMENTED_NOT_VERIFIED` in-app; email/WhatsApp copies `AWAITING_CREDENTIALS` |
+| **2. Staff digests and alerts** | `digests:performance`, `alerts:raise` — daily/weekly/monthly summaries and alerts in the notification centre, per person, in their own scope. A member who chose email gets a copy at their own account address through the same mail transport | Workspace members | `IMPLEMENTED_NOT_VERIFIED`; the email copy is `AWAITING_CREDENTIALS`, WhatsApp has no adapter |
 | **3. Report email to a client** | A fresh link to one client-safe report, emailed to one outside address, weekly or monthly | Somebody outside the agency who agreed | `IMPLEMENTED_NOT_VERIFIED`; sending is `AWAITING_CREDENTIALS` |
 
 A **scheduled export** (`reports:run-schedules`) is none of these: it makes a file for a member to download. It emails nobody.
@@ -74,10 +74,16 @@ Not run. Each line needs evidence (a timestamp, the deployed sha, a screenshot o
 6. Press the unsubscribe link: the next period sends nothing.
 7. Turn `MAIL_DELIVERY_ENABLED` off: the next period is `awaiting_credentials` and no link is made.
 
+## 2. The staff email copy
+
+`TransportChannelDelivery` sends a member's own copy of a notification when — and only when — the mail transport above is
+configured. It goes to their account address and to nobody else, and only while they are an active member of the workspace
+the notification is about; somebody removed since is not emailed. The row reads `sent` with the detail *"Accepted by the mail
+provider. Arrival in the inbox is not confirmed."*, or `failed` with the provider's words. Without a provider, and for
+WhatsApp, the answer is unchanged: `awaiting_credentials` (or `logged` in development), nothing sent.
+
 ## Not built
 
 - Provider webhooks for delivered / bounced / complained (needs the provider chosen in row 4).
-- Email copies of staff digests and alerts: `HonestChannelDelivery` still records `awaiting_credentials`; wiring it to the
-  transport is a separate change, after one real send has been proven.
 - A PDF attachment. The email carries a link on purpose: a forwarded link expires, a forwarded file does not.
 - WhatsApp delivery.
