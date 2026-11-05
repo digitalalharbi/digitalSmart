@@ -6,6 +6,15 @@ All notable changes to digitalSmart are recorded here. Format follows
 
 
 
+
+## Operations: `mail:test` — the one step no test suite can perform
+
+### Added
+- **`php artisan mail:test {address} --i-own-this-inbox`** sends one test message through the same transport every real email
+  uses. Without a configured provider it prints what is missing and sends nothing; it refuses to write to an address until
+  the operator states the inbox is theirs; on acceptance it prints the provider's message id and says that acceptance is not
+  arrival — the proof is the message read in the inbox. It is step 3 of the acceptance run in `docs/REPORT_EMAILS.md`.
+
 ## Notifications: a member's email copy leaves through the real mail transport — when there is one
 
 ### Changed

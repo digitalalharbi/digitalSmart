@@ -67,12 +67,15 @@ Not run. Each line needs evidence (a timestamp, the deployed sha, a screenshot o
 1. Deploy a named sha; `GET /api/health` answers 200; `schedule:run` and Horizon are running.
 2. Create a client-safe report on data labelled as test data; open its share link in a browser with no session, on a phone
    and a desktop, in Arabic and English; pause, resume and revoke it; confirm an expired link says so.
-3. Add the test inbox as a recipient with a consent note; wait for `reports:email-due`; confirm the row reads
+3. `php artisan mail:test you@your-domain --i-own-this-inbox` — it prints what is missing and sends nothing when the
+   transport is not configured, and otherwise sends one message and says the provider accepted it. **Read it in the inbox**
+   (and check spam): the command does not, and cannot, report arrival.
+4. Add the test inbox as a recipient with a consent note; wait for `reports:email-due`; confirm the row reads
    `provider_accepted` **and the message is in the inbox**; open the link from the email.
-4. Run the command again in the same period: no second message.
-5. Demote the member who added the recipient: the next period is `skipped` and the subscription `halted`.
-6. Press the unsubscribe link: the next period sends nothing.
-7. Turn `MAIL_DELIVERY_ENABLED` off: the next period is `awaiting_credentials` and no link is made.
+5. Run the command again in the same period: no second message.
+6. Demote the member who added the recipient: the next period is `skipped` and the subscription `halted`.
+7. Press the unsubscribe link: the next period sends nothing.
+8. Turn `MAIL_DELIVERY_ENABLED` off: the next period is `awaiting_credentials` and no link is made.
 
 ## 2. The staff email copy
 
