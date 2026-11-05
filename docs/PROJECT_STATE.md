@@ -17,9 +17,9 @@ Updated 2026-11-05.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `0c6a178` — feat(reports): a client-safe report emailed to a client, once per period — through a real provider or not at all (#96) |
-| Full sha | `0c6a1786026e50e718f4fe9438058d52eaa6edfc` |
-| Evidence | #96 merged at head `f497383` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
+| Commit | `38621e0` — feat(ops): mail:test — one test message to an inbox the operator owns; checkpoint at main b537a36 (#98) |
+| Full sha | `38621e0e80f2c91fb46911289d43a0695a1e7d3e` |
+| Evidence | #98 merged at head `2272d57` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
 
 Verify, do not trust:
 
@@ -31,7 +31,7 @@ git fetch origin && git log --oneline -10 origin/main && git status
 
 | PR | Branch | Title |
 |---|---|---|
-| the PR carrying this file | `feat/staff-email-delivery` | feat(notifications): a member's email copy through the real mail transport — once it is on `main`, none is open |
+| the PR carrying this file | `test/e2e-report-recipients` | fix(reports): the recipient's unsubscribe button works in a real browser; E2E for report email recipients — once it is on `main`, none is open |
 
 CI on each is the authority — `Governance`, `Backend` and `Frontend` are required and the branch
 must be up to date with `main`:

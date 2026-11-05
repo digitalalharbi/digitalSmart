@@ -4,9 +4,6 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
-
-
-
 ## Fixed: the "stop these emails" button failed for the person it exists for
 
 ### Fixed
@@ -18,6 +15,14 @@ All notable changes to digitalSmart are recorded here. Format follows
 ### Added
 - `e2e/report-recipients.spec.ts`: adding a recipient with a consent sentence, the "email is not sent from this installation
   yet" warning, the refusal of a second copy of an address, removal, and the stop page opened with no session.
+
+## Operations: `mail:test` — the one step no test suite can perform
+
+### Added
+- **`php artisan mail:test {address} --i-own-this-inbox`** sends one test message through the same transport every real email
+  uses. Without a configured provider it prints what is missing and sends nothing; it refuses to write to an address until
+  the operator states the inbox is theirs; on acceptance it prints the provider's message id and says that acceptance is not
+  arrival — the proof is the message read in the inbox. It is step 3 of the acceptance run in `docs/REPORT_EMAILS.md`.
 
 ## Notifications: a member's email copy leaves through the real mail transport — when there is one
 
@@ -63,7 +68,6 @@ All notable changes to digitalSmart are recorded here. Format follows
   windowed — a connection that last succeeded a week ago still says so. A connection never read is absent, not given dates.
 - **Administration → Advanced diagnostics** shows it as a table; "Never succeeded" where there is no success, never a date.
 - One grouped statement; the operations read stays inside its query budget (`AgencyScaleTest`).
-
 
 ## Tracking links: a campaign-parameter audit (DS-P0-LINK-01)
 

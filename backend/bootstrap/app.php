@@ -18,6 +18,7 @@ use App\Domain\Shared\Exception\DomainException;
 use App\Interface\Console\BuildDigestsCommand;
 use App\Interface\Console\CommissionProvider;
 use App\Interface\Console\DemoAgencyCommand;
+use App\Interface\Console\MailTestCommand;
 use App\Interface\Console\PerformanceDigestsCommand;
 use App\Interface\Console\PlatformOperatorCommand;
 use App\Interface\Console\PruneExportsCommand;
@@ -82,6 +83,7 @@ return Application::configure(basePath: dirname(__DIR__))
         RaiseAccessRequestAlertsCommand::class,
         RunReportSchedulesCommand::class,
         SendReportEmailsCommand::class,
+        MailTestCommand::class,
         ReadStores::class,
         SyncAccessCatalogue::class,
         SyncAdvertisingData::class,
