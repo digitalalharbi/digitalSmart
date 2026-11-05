@@ -71,6 +71,8 @@ function tenantSafeUniques(): array
         'campaign_launch_executions(idempotency_reference)' => 'a hash of the launch id and the account, unique across the installation on purpose',
         'approval_links(token_hash)' => $token,
         'report_shares(token_hash)' => $token,
+        'report_email_subscriptions(unsubscribe_token_hash)' => $token,
+        'report_email_deliveries(subscription_id,period_key)' => $ownedBy('report_email_subscriptions'),
         'forms(public_token)' => $token,
         'tracking_links(public_token)' => $token,
         'client_request_attachments(stored_name)' => 'a generated storage name, unique across the installation',

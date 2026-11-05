@@ -136,6 +136,7 @@ use App\Application\Notifications\Contract\NotificationPreferenceStore;
 use App\Application\Notifications\Contract\NotificationStore;
 use App\Application\Notifications\Contract\RecipientResolver;
 use App\Application\Notifications\Mail\EmailRenderer;
+use App\Application\Notifications\Mail\MailTransport;
 use App\Application\Operations\Command\IssueApprovalLink;
 use App\Application\Operations\Command\UseApprovalLink;
 use App\Application\Operations\Contract\ApprovalLinkDelivery;
@@ -159,6 +160,8 @@ use App\Application\Reporting\Contract\ReportShareStore;
 use App\Application\Reporting\Contract\ReportWorkbookWriter;
 use App\Application\Reporting\Contract\SnapshotSerialiser;
 use App\Application\Reporting\Contract\TrackingReportReader;
+use App\Application\Reporting\Subscription\ReportSubscriptionStore;
+use App\Application\Reporting\Subscription\SendDueReportEmails;
 use App\Application\Saas\Contract\CapacityLock;
 use App\Application\Saas\Contract\EntitlementStore;
 use App\Application\Saas\Contract\UsageReader;
@@ -259,6 +262,7 @@ use App\Infrastructure\Notifications\EloquentNotificationPreferenceStore;
 use App\Infrastructure\Notifications\EloquentNotificationStore;
 use App\Infrastructure\Notifications\HonestChannelDelivery;
 use App\Infrastructure\Notifications\Mail\BrandedEmailRenderer;
+use App\Infrastructure\Notifications\Mail\LaravelMailTransport;
 use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
 use App\Infrastructure\Operations\BroadcastBoardSignaller;
@@ -334,6 +338,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProposalHistory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderConnectionRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentProviderDispatchStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentReportRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentReportSubscriptionStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentRuleExecutionLog;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentSavedViewRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentShortcutStore;
@@ -658,6 +663,20 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(CampaignActivator::class, RoutingCampaignActivator::class);
         $this->app->bind(CampaignReconciler::class, EloquentCampaignReconciler::class);
         $this->app->bind(LaunchQueue::class, QueuedLaunches::class);
+
+        /*
+         * The one place a message leaves: a real mailer, a real sender domain and an explicit switch, or nothing.
+         * Credentials are the server's environment; none is in this repository.
+         */
+        $this->app->singleton(MailTransport::class, static fn ($app): MailTransport => new LaravelMailTransport(
+            mail: $app->make(\Illuminate\Contracts\Mail\Factory::class),
+            mailer: (string) config('mail.default'),
+            fromAddress: (string) config('mail.from.address'),
+            fromName: (string) config('mail.from.name'),
+            enabled: (bool) config('mail.delivery_enabled', false),
+        ));
+        $this->app->bind(ReportSubscriptionStore::class, EloquentReportSubscriptionStore::class);
+        $this->app->when(SendDueReportEmails::class)->needs('$frontendUrl')->give(static fn (): string => (string) config('app.frontend_url'));
 
         /* Email and WhatsApp deliveries, in the state they are in: nothing is sent, and the row says why. */
         $this->app->bind(NotificationChannelDelivery::class, static fn (): NotificationChannelDelivery => new HonestChannelDelivery(

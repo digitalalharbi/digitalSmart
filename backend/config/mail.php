@@ -19,6 +19,12 @@ return [
     'default' => env('MAIL_MAILER', 'log'),
 
     /*
+    | Whether this installation may write to inboxes outside the agency. Off unless somebody turns it on: credentials
+    | present in an environment are not a decision to email clients from it.
+    */
+    'delivery_enabled' => (bool) env('MAIL_DELIVERY_ENABLED', false),
+
+    /*
     |--------------------------------------------------------------------------
     | Mailer Configurations
     |--------------------------------------------------------------------------
