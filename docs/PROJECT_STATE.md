@@ -17,9 +17,9 @@ Updated 2026-11-05.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `38621e0` — feat(ops): mail:test — one test message to an inbox the operator owns; checkpoint at main b537a36 (#98) |
-| Full sha | `38621e0e80f2c91fb46911289d43a0695a1e7d3e` |
-| Evidence | #98 merged at head `2272d57` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
+| Commit | `35d691d` — fix(reports): the recipient's unsubscribe button works in a real browser; E2E for report email recipients (#99) |
+| Full sha | `35d691dd02afb98007a2ea4bce51d2ba0f960c88` |
+| Evidence | #99 merged at head `c684d10` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
 
 Verify, do not trust:
 
@@ -31,7 +31,7 @@ git fetch origin && git log --oneline -10 origin/main && git status
 
 | PR | Branch | Title |
 |---|---|---|
-| the PR carrying this file | `test/e2e-report-recipients` | fix(reports): the recipient's unsubscribe button works in a real browser; E2E for report email recipients — once it is on `main`, none is open |
+| the PR carrying this file | `feat/readiness-mail` | feat(ops): whether this server can send email, beside main and deploy — once it is on `main`, none is open |
 
 CI on each is the authority — `Governance`, `Backend` and `Frontend` are required and the branch
 must be up to date with `main`:

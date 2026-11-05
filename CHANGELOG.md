@@ -4,6 +4,15 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project uses
 [Semantic Versioning](https://semver.org/).
 
+
+## Operations: whether this server can send email, beside main and deploy
+
+### Added
+- **An Email dot in Administration → Advanced diagnostics** (`GET /api/system/sync-status`, `email`): *waiting*, with exactly
+  what is missing, or *configured, not proven* once a transmitting mailer, a sender on the agency's own domain and
+  `MAIL_DELIVERY_ENABLED` are all present. It is never green: set up is not a message read in an inbox — that is `mail:test`
+  and a person looking.
+
 ## Fixed: the "stop these emails" button failed for the person it exists for
 
 ### Fixed
