@@ -24,7 +24,8 @@ enum DeliveryStatus: string
         return match ($this) {
             self::AwaitingCredentials => 'Awaiting credentials',
             self::Logged => 'Logged (development)',
-            self::Sent => 'Sent',
+            // The mail server took it. Arrival is the provider's later knowledge, and nothing here claims it.
+            self::Sent => 'Accepted by the provider',
             self::Failed => 'Failed',
         };
     }

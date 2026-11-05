@@ -5,6 +5,21 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+
+## Notifications: a member's email copy leaves through the real mail transport — when there is one
+
+### Changed
+- **Email copies of digests and alerts** go through `MailTransport` (`TransportChannelDelivery`) to the member's own account
+  address, only while they are an active member of that workspace. Accepted by the provider is recorded as `sent` with
+  "arrival is not confirmed"; a refusal is `failed` with the provider's words.
+- **Nothing changes without a provider**: with no transmitting mailer, no sender on the agency's domain or
+  `MAIL_DELIVERY_ENABLED` off, the row is `awaiting_credentials` (or `logged` in development) exactly as before. WhatsApp
+  still has no adapter and is never sent.
+- The label of `sent` reads "Accepted by the provider".
+
+### Stated plainly
+- No email has left this product; this is `IMPLEMENTED_NOT_VERIFIED` until one is read in a real inbox.
+
 ## Reports: a client-safe report emailed to a client, once per period — through a real provider or not at all
 
 ### Added
