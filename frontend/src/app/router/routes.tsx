@@ -51,6 +51,7 @@ import {
   ReportsPage,
   RequestsPage,
   SharedReportPage,
+  ReportEmailUnsubscribePage,
   ApprovalLinkPage,
   StoreAnalyticsPage,
   StoresRollupPage,
@@ -149,6 +150,8 @@ export const routes: RouteObject[] = [
    * email and has no account to be sent to a sign-in screen for. The token is in the path and nothing else is.
    */
   { path: '/shared-reports/:token', element: deferred(<SharedReportPage />) },
+  /* The "stop these emails" link in a report email: no session, and nothing happens until the button is pressed. */
+  { path: '/report-emails/unsubscribe/:token', element: deferred(<ReportEmailUnsubscribePage />) },
   { path: '/f/:token', element: deferred(<PublicFormPage />) },
   /* A one-time approval link from WhatsApp or email: no session, the link is the credential, and it decides only on a press. */
   { path: '/approve/:token', element: deferred(<ApprovalLinkPage />) },

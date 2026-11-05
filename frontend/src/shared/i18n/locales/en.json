@@ -3774,6 +3774,52 @@
     }
   },
   "reports": {
+    "recipients": {
+      "title": "Email this report to a client",
+      "intro": "Each recipient is emailed a fresh link to this report once per period. The email carries the link only — no figures.",
+      "failed": "The recipients could not be loaded.",
+      "notConfigured": "Email is not sent from this installation yet. Recipients can be recorded, and nothing will reach them until a mail provider is connected.",
+      "none": "Nobody is emailed this report yet.",
+      "email": "Recipient's email",
+      "name": "Name (optional)",
+      "cadence": "How often",
+      "language": "Email language",
+      "cadences": {
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      },
+      "consent": "How did they agree to receive it?",
+      "consentHint": "A sentence somebody can read a year from now, e.g. “Asked for the weekly link in the kickoff call on 3 November.”",
+      "add": "Add recipient",
+      "addFailed": "The recipient could not be added.",
+      "addedBy": "added by {{name}}",
+      "pause": "Pause",
+      "resume": "Resume",
+      "remove": "Remove",
+      "removeNamed": "Remove {{email}}",
+      "consentRecorded": "Consent: {{note}}",
+      "nothingYet": "Nothing has been sent yet. The first email goes on the next hourly run.",
+      "status": {
+        "active": "Active",
+        "paused": "Paused",
+        "unsubscribed": "Unsubscribed by the recipient",
+        "halted": "Stopped — needs attention"
+      },
+      "delivery": {
+        "pending": "{{period}}: being sent",
+        "provider_accepted": "{{period}}: accepted by the mail provider (arrival is not confirmed)",
+        "failed": "{{period}}: the mail provider refused it",
+        "awaiting_credentials": "{{period}}: not sent — no mail provider is connected",
+        "skipped": "{{period}}: not sent"
+      }
+    },
+    "unsubscribe": {
+      "title": "Stop these report emails",
+      "body": "Press the button to stop receiving this report by email. Links you were already sent keep working until they expire.",
+      "confirm": "Stop the emails",
+      "done": "Done. You will not be emailed this report again.",
+      "failed": "That did not go through. Please try again."
+    },
     "title": "Reports",
     "subtitle": "Saved reports, the frozen copies behind them, and the links they went out on.",
     "loadFailed": "Could not load the reports. Try again in a moment.",

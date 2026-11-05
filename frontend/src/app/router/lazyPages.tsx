@@ -97,6 +97,10 @@ export const ApprovalLinkPage = lazy(async () => ({
 export const SharedReportPage = lazy(async () => ({
   default: (await import('@/features/reports/SharedReportPage')).SharedReportPage,
 }));
+export const ReportEmailUnsubscribePage = lazy(async () => ({
+  default: (await import('@/features/reports/ReportEmailUnsubscribePage'))
+    .ReportEmailUnsubscribePage,
+}));
 
 /*
  * The agency's portal configuration, and the client's own portal. Both split: the configuration surface is only
