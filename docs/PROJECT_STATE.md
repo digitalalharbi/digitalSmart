@@ -17,9 +17,9 @@ Updated 2026-11-05.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `66fabe9` — feat(tracking): a campaign-parameter audit of tracking links; checkpoint at main e19dfcc (DS-P0-LINK-01) (#95) |
-| Full sha | `66fabe9506cfea598c80b48e1ca8eb4e577b8e36` |
-| Evidence | CI run 41945960033 green on `66fabe9` (Governance, Backend, Frontend, E2E). Deploy run 41945960193 executed only "Production server not configured"; the deploy job was skipped — **nothing is deployed** (`AWAITING_SERVER_ACCESS`) |
+| Commit | `0c6a178` — feat(reports): a client-safe report emailed to a client, once per period — through a real provider or not at all (#96) |
+| Full sha | `0c6a1786026e50e718f4fe9438058d52eaa6edfc` |
+| Evidence | #96 merged at head `f497383` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
 
 Verify, do not trust:
 
@@ -31,7 +31,7 @@ git fetch origin && git log --oneline -10 origin/main && git status
 
 | PR | Branch | Title |
 |---|---|---|
-| the PR carrying this file | `feat/client-report-email` | feat(reports): a client-safe report emailed to a client, once per period — once it is on `main`, none is open |
+| the PR carrying this file | `feat/staff-email-delivery` | feat(notifications): a member's email copy through the real mail transport — once it is on `main`, none is open |
 
 CI on each is the authority — `Governance`, `Backend` and `Frontend` are required and the branch
 must be up to date with `main`:

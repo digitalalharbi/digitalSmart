@@ -129,6 +129,7 @@ use App\Application\Measurement\Contract\ObservedEventWriter;
 use App\Application\Measurement\Contract\TagContainerReadAdapter;
 use App\Application\Measurement\Contract\TrafficWriter;
 use App\Application\Notifications\Contract\AlertSubjects;
+use App\Application\Notifications\Contract\MemberAddressBook;
 use App\Application\Notifications\Contract\NotificationBroadcaster;
 use App\Application\Notifications\Contract\NotificationChannelDelivery;
 use App\Application\Notifications\Contract\NotificationDeliveryLog;
@@ -257,6 +258,7 @@ use App\Infrastructure\Measurement\Adapter\GoogleTagManagerReadAdapter;
 use App\Infrastructure\Measurement\MeasurementSyncAdapterRegistry;
 use App\Infrastructure\Measurement\Sandbox\MeasurementFixtures;
 use App\Infrastructure\Notifications\EloquentAlertSubjects;
+use App\Infrastructure\Notifications\EloquentMemberAddressBook;
 use App\Infrastructure\Notifications\EloquentNotificationDeliveryLog;
 use App\Infrastructure\Notifications\EloquentNotificationPreferenceStore;
 use App\Infrastructure\Notifications\EloquentNotificationStore;
@@ -265,6 +267,7 @@ use App\Infrastructure\Notifications\Mail\BrandedEmailRenderer;
 use App\Infrastructure\Notifications\Mail\LaravelMailTransport;
 use App\Infrastructure\Notifications\PermissionAwareRecipientResolver;
 use App\Infrastructure\Notifications\ReverbNotificationBroadcaster;
+use App\Infrastructure\Notifications\TransportChannelDelivery;
 use App\Infrastructure\Operations\BroadcastBoardSignaller;
 use App\Infrastructure\Operations\ChannelApprovalLinkDelivery;
 use App\Infrastructure\Operations\EloquentApprovalLinkRepository;
@@ -679,8 +682,14 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->when(SendDueReportEmails::class)->needs('$frontendUrl')->give(static fn (): string => (string) config('app.frontend_url'));
 
         /* Email and WhatsApp deliveries, in the state they are in: nothing is sent, and the row says why. */
-        $this->app->bind(NotificationChannelDelivery::class, static fn (): NotificationChannelDelivery => new HonestChannelDelivery(
-            logInDevelopment: app()->environment('local', 'testing'),
+        $this->app->bind(MemberAddressBook::class, EloquentMemberAddressBook::class);
+        $this->app->bind(NotificationChannelDelivery::class, static fn ($app): NotificationChannelDelivery => new TransportChannelDelivery(
+            mail: $app->make(MailTransport::class),
+            renderer: $app->make(EmailRenderer::class),
+            addresses: $app->make(MemberAddressBook::class),
+            // Without a configured provider, and for WhatsApp, the answer is the honest one it always was.
+            otherwise: new HonestChannelDelivery(logInDevelopment: app()->environment('local', 'testing')),
+            frontendUrl: (string) config('app.frontend_url'),
         ));
 
         /* One-time approval links: keyed by the application key, sent to the SPA's own origin, delivered honestly. */
