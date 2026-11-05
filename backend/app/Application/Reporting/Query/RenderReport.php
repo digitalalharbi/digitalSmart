@@ -129,6 +129,14 @@ final readonly class RenderReport
                 continue;
             }
 
+            /*
+             * A hidden section is not rendered for anybody. Every surface — live view, shared link, snapshot, export,
+             * deck, portal — reads this method, so there is no second place that has to remember.
+             */
+            if ($section->hidden) {
+                continue;
+            }
+
             $section = $this->capped($section, $definition->intent);
 
             $rendered = $this->section(

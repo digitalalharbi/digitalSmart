@@ -412,6 +412,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                 'revenue_source' => $section->revenueSource?->value,
                 'creative_view' => $section->creativeView?->value,
                 'tracking_view' => $section->trackingView?->value,
+                'hidden' => $section->hidden,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -459,6 +460,7 @@ final readonly class EloquentReportRepository implements ReportRepository
                 revenueSource: RevenueSource::tryFrom((string) ($values['revenue_source'] ?? '')),
                 creativeView: CreativeView::tryFrom((string) ($values['creative_view'] ?? '')),
                 trackingView: TrackingView::tryFrom((string) ($values['tracking_view'] ?? '')),
+                hidden: (bool) ($values['hidden'] ?? false),
             );
         }
 

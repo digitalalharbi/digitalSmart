@@ -444,6 +444,7 @@ final class ReportController extends Controller
                 revenueSource: $revenueSource,
                 creativeView: $creativeView,
                 trackingView: $trackingView,
+                hidden: filter_var($entry['hidden'] ?? false, FILTER_VALIDATE_BOOL),
             );
         }
 

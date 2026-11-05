@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/shared/ui/alert';
@@ -378,6 +378,10 @@ export function ReportBuilder({
               const kind = kinds.find((entry) => entry.kind === section.kind);
               const allowed = kind?.metrics ?? [];
               const atCap = kind !== undefined && section.metrics.length >= kind.metric_cap;
+              const isHidden = section.hidden === true;
+              /* The server refuses a report with nothing to show, so the last visible section cannot be hidden. */
+              const isLastVisible =
+                !isHidden && sections.filter((entry) => entry.hidden !== true).length === 1;
 
               return (
                 <div
@@ -439,22 +443,46 @@ export function ReportBuilder({
                       </div>
                     </ChoiceGroup>
 
-                    {sections.length === 1 ? null : (
+                    <div className="flex shrink-0 items-center gap-1">
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() =>
-                          setSections((current) =>
-                            current.filter((_, position) => position !== index),
-                          )
-                        }
-                        aria-label={t('reports.builder.removeSection')}
+                        aria-pressed={isHidden}
+                        disabled={isLastVisible}
+                        onClick={() => updateSection(index, { hidden: !isHidden })}
+                        aria-label={t('reports.builder.hideSection')}
                       >
-                        <Trash2 aria-hidden className="size-3.5" />
+                        {isHidden ? (
+                          <EyeOff aria-hidden className="size-3.5" />
+                        ) : (
+                          <Eye aria-hidden className="size-3.5" />
+                        )}
                       </Button>
-                    )}
+                      {sections.length === 1 ? null : (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setSections((current) =>
+                              current.filter((_, position) => position !== index),
+                            )
+                          }
+                          aria-label={t('reports.builder.removeSection')}
+                        >
+                          <Trash2 aria-hidden className="size-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
+
+                  {isHidden ? (
+                    <p className="text-content-secondary flex items-center gap-2 text-xs">
+                      <Badge tone="neutral">{t('reports.builder.hiddenBadge')}</Badge>
+                      {t('reports.builder.hiddenNote')}
+                    </p>
+                  ) : null}
 
                   {section.kind === 'creative' ? (
                     <ChoiceGroup label={t('reports.builder.creativeView')}>
