@@ -56,6 +56,55 @@ final readonly class EloquentOperationsReadModel implements OperationsReadModel
         ];
     }
 
+    public function connectionHistory(string $workspaceId): array
+    {
+        /*
+         * One grouped statement however many connections there are. The latest row per connection is picked with
+         * `distinct on` rather than a correlated sub-select per connection, and settled runs only: a run still
+         * pending or running is not yet an attempt with an outcome.
+         */
+        /** @var list<stdClass> $rows */
+        $rows = DB::select(
+            <<<'SQL'
+            with settled as (
+                select provider_connection_id, provider, status, error_code, coalesce(finished_at, created_at) as at
+                from sync_runs
+                where workspace_id = ? and provider_connection_id is not null
+                  and status in ('succeeded', 'partial', 'failed')
+            ),
+            latest as (
+                select distinct on (provider_connection_id) provider_connection_id, provider, status, error_code, at
+                from settled order by provider_connection_id, at desc
+            ),
+            totals as (
+                select provider_connection_id,
+                    max(at) filter (where status = 'succeeded') as last_success_at,
+                    max(at) filter (where status = 'failed') as last_failure_at
+                from settled group by provider_connection_id
+            )
+            select l.provider_connection_id, l.provider, l.status, l.at, t.last_success_at, t.last_failure_at,
+                (select e.error_code from settled e where e.provider_connection_id = l.provider_connection_id
+                    and e.status = 'failed' order by e.at desc limit 1) as last_error_code,
+                (select count(*) from settled f where f.provider_connection_id = l.provider_connection_id
+                    and f.status = 'failed' and (t.last_success_at is null or f.at > t.last_success_at)) as failures_since_success
+            from latest l join totals t on t.provider_connection_id = l.provider_connection_id
+            order by l.provider, l.provider_connection_id
+            SQL,
+            [$workspaceId],
+        );
+
+        return array_map(static fn (stdClass $r): array => [
+            'connection_id' => (string) $r->provider_connection_id,
+            'provider' => (string) $r->provider,
+            'last_attempt_at' => (string) $r->at,
+            'last_attempt_status' => (string) $r->status,
+            'last_success_at' => is_string($r->last_success_at) ? $r->last_success_at : null,
+            'last_failure_at' => is_string($r->last_failure_at) ? $r->last_failure_at : null,
+            'last_error_code' => is_string($r->last_error_code) ? $r->last_error_code : null,
+            'failures_since_success' => (int) $r->failures_since_success,
+        ], $rows);
+    }
+
     /**
      * @param  list<string>  $queues
      * @return array<string, int>

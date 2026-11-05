@@ -5100,6 +5100,18 @@
     }
   },
   "integrationOps": {
+    "history": {
+      "title": "Each connection: last attempt and last success",
+      "lastAttempt": "Last attempt",
+      "lastSuccess": "Last success",
+      "failuresSince": "Failures since",
+      "never": "Never succeeded",
+      "status": {
+        "succeeded": "Succeeded",
+        "partial": "Partial",
+        "failed": "Failed"
+      }
+    },
     "loadFailed": "Integration status could not be loaded.",
     "summary": "Integration summary",
     "healthy": "Healthy connections",

@@ -5448,6 +5448,18 @@
     }
   },
   "integrationOps": {
+    "history": {
+      "title": "كل اتصال: آخر محاولة وآخر نجاح",
+      "lastAttempt": "آخر محاولة",
+      "lastSuccess": "آخر نجاح",
+      "failuresSince": "إخفاقات منذ آخر نجاح",
+      "never": "لم ينجح قط",
+      "status": {
+        "succeeded": "نجحت",
+        "partial": "جزئية",
+        "failed": "فشلت"
+      }
+    },
     "loadFailed": "تعذّر تحميل حالة التكاملات.",
     "summary": "ملخص التكاملات",
     "healthy": "اتصالات سليمة",
