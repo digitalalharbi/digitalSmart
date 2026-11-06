@@ -102,6 +102,10 @@ final readonly class NotificationResource
             'client_id' => $preferences->clientId,
             'project_ids' => $preferences->projectIds,
             'muted_categories' => array_map(static fn (NotificationCategory $c): string => $c->value, $preferences->mutedCategories),
+            'quiet_from' => $preferences->quietFrom,
+            'quiet_until' => $preferences->quietUntil,
+            /* Null once it has passed: an expired snooze is not a snooze. */
+            'snoozed_until' => $preferences->snoozedUntil !== null && $preferences->snoozedUntil > new DateTimeImmutable ? $preferences->snoozedUntil->format(DATE_ATOM) : null,
             /* What each channel can do today, in the product's own words: nothing is promised that cannot be sent. */
             'channel_availability' => array_map(static fn (DigestChannel $c): array => [
                 'channel' => $c->value,

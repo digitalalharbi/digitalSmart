@@ -720,6 +720,26 @@ operator detail, and a client viewer reaches that page.
 | `POST` | `/api/notifications/{notification}/read` | Returns the whole feed |
 | `POST` | `/api/notifications/read-all` | Returns the feed, and how many were cleared |
 
+## Quiet hours and snooze
+
+Quiet is about **interruption, never about being told**. Each person may set a window of local hours (`quiet_from`,
+`quiet_until`, in their own zone or the workspace's; it may wrap midnight) and may snooze for between fifteen minutes
+and a week (`POST` / `DELETE /api/notifications/snooze`). Inside either:
+
+- the notification **is still written** to their bell, with the same disclosure rule as always;
+- **no realtime push** is sent to them (`Announce` filters the push, not the write);
+- **no copy leaves over email or WhatsApp** — the delivery row says `held`, with the reason, rather than leaving a
+  silence somebody later reads as a failure. **Nothing held is sent later.**
+
+A **critical** alert interrupts anyway: quiet hours are for noise. A **digest never does**, whatever severity it
+carries (`NotificationKind::isScheduledSummary()`) — it was always going to arrive at that hour and it waits in the bell.
+
+A snooze is an instant, compared on read: nothing has to run to lift it, and an expired one is reported as none. It is
+set only by the snooze action — saving preferences neither starts nor ends one. Both are the person's own, keyed by the
+session; no parameter names somebody else. `QuietHoursTest` (9) pins all of it.
+
+Not built: a per-category window, a different window per weekday, and catching up on what was held.
+
 ## Performance digests and alerts
 
 The bell carries three more things since the performance notifications work, all on the same rows and the same

@@ -78,3 +78,18 @@ export async function saveNotificationPreferences(
 
   return data.data;
 }
+
+/** Do not interrupt for this many minutes. The answer is the preferences, with the instant the snooze ends. */
+export async function snoozeNotifications(minutes: number): Promise<NotificationPreferences> {
+  const { data } = await api.post<{ data: NotificationPreferences }>('/notifications/snooze', {
+    minutes,
+  });
+
+  return data.data;
+}
+
+export async function endNotificationSnooze(): Promise<NotificationPreferences> {
+  const { data } = await api.delete<{ data: NotificationPreferences }>('/notifications/snooze');
+
+  return data.data;
+}
