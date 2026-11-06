@@ -91,6 +91,9 @@ between them preserved, the `YYYYMMDD` format untouched — the mapper cannot te
 Without it, every freshness state in a sandbox workspace would read `stale` and the tracking
 page would be a wall of warnings about fixtures.
 
+On a page that is not a GA4 report — a HubSpot deals page — the same directive moves every ISO-8601 timestamp
+in it by one whole number of days, so its newest lands that many days before today. A null date stays null.
+
 `metadata.json` holds a one-element list containing the single `getMetadata` object, so every
 file reads the same way while the object inside stays verbatim.
 
