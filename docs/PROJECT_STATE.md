@@ -17,8 +17,8 @@ Updated 2026-11-05.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `2af1257` — fix(sandbox): move the CRM fixture's dates, so the demo pipeline stays inside the period (#104) |
-| Full sha | `2af125767fb3bf5081c6a7972e4e5bd80c49099b` |
+| Commit | `2bbefd9` — feat(tracking): a link keeps the history of where it pointed, and visits are counted under the revision in force (#103) |
+| Full sha | `2bbefd9d0dc721367c7027ef35842fef7052c830` |
 | Evidence | #100 merged at head `e0ba45a` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
 
 Verify, do not trust:
@@ -31,7 +31,7 @@ git fetch origin && git log --oneline -10 origin/main && git status
 
 | PR | Branch | Title |
 |---|---|---|
-| the PR carrying this file | `feat/link-edit-history` | feat(tracking): a link keeps the history of where it pointed — once it is on `main`, none is open |
+| the PR carrying this file | `feat/notification-quiet-hours` | feat(notifications): quiet hours and snooze — once it is on `main`, none is open |
 
 CI on each is the authority — `Governance`, `Backend` and `Frontend` are required and the branch
 must be up to date with `main`:

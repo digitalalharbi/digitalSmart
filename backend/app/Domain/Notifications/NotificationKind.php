@@ -187,6 +187,17 @@ enum NotificationKind: string
     /** An invitation was made and nobody has accepted it. */
     case AccessInvitationPending = 'access_invitation_pending';
 
+    /**
+     * A summary made on a schedule rather than news about something that just happened.
+     *
+     * It matters for quiet hours: a critical alert interrupts them, a digest never does, whatever it found — it was
+     * always going to arrive at that hour, and it waits in the bell.
+     */
+    public function isScheduledSummary(): bool
+    {
+        return $this === self::DigestReady || $this === self::PerformanceDigest;
+    }
+
     public function label(): string
     {
         return match ($this) {

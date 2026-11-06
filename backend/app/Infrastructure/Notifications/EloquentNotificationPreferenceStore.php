@@ -9,6 +9,7 @@ use App\Application\Notifications\DTO\NotificationPreferences;
 use App\Application\Shared\Contract\IdentifierGenerator;
 use App\Domain\Notifications\DigestChannel;
 use App\Domain\Notifications\NotificationCategory;
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 
 final readonly class EloquentNotificationPreferenceStore implements NotificationPreferenceStore
@@ -26,23 +27,7 @@ final readonly class EloquentNotificationPreferenceStore implements Notification
         /** @var array<string, mixed> $values */
         $values = (array) $row;
 
-        return new NotificationPreferences(
-            daily: (bool) $values['daily'],
-            weekly: (bool) $values['weekly'],
-            monthly: (bool) $values['monthly'],
-            channels: array_values(array_filter(array_map(
-                static fn (mixed $value): ?DigestChannel => is_string($value) ? DigestChannel::tryFrom($value) : null,
-                $this->list($values['channels'] ?? null) ?? [],
-            ))),
-            timezone: is_string($values['timezone']) && $values['timezone'] !== '' ? $values['timezone'] : null,
-            hour: (int) $values['hour'],
-            clientId: is_string($values['client_id']) ? $values['client_id'] : null,
-            projectIds: $this->list($values['project_ids'] ?? null),
-            mutedCategories: array_values(array_filter(array_map(
-                static fn (mixed $value): ?NotificationCategory => is_string($value) ? NotificationCategory::tryFrom($value) : null,
-                $this->list($values['muted_categories'] ?? null) ?? [],
-            ))),
-        );
+        return $this->hydrate($values);
     }
 
     public function put(string $workspaceId, string $userId, NotificationPreferences $preferences): void
@@ -63,11 +48,13 @@ final readonly class EloquentNotificationPreferenceStore implements Notification
                 'client_id' => $preferences->clientId,
                 'project_ids' => $preferences->projectIds === null ? null : json_encode($preferences->projectIds, JSON_THROW_ON_ERROR),
                 'muted_categories' => json_encode(array_map(static fn (NotificationCategory $c): string => $c->value, $preferences->mutedCategories), JSON_THROW_ON_ERROR),
+                'quiet_from' => $preferences->quietFrom,
+                'quiet_until' => $preferences->quietUntil,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]],
             ['workspace_id', 'user_id'],
-            ['daily', 'weekly', 'monthly', 'channels', 'timezone', 'hour', 'client_id', 'project_ids', 'muted_categories', 'updated_at'],
+            ['daily', 'weekly', 'monthly', 'channels', 'timezone', 'hour', 'client_id', 'project_ids', 'muted_categories', 'quiet_from', 'quiet_until', 'updated_at'],
         );
     }
 
@@ -100,6 +87,82 @@ final readonly class EloquentNotificationPreferenceStore implements Notification
                 ->pluck('user_id')
                 ->all(),
         ));
+    }
+
+    public function snooze(string $workspaceId, string $userId, ?DateTimeImmutable $until): void
+    {
+        $now = now();
+
+        /* A person who never saved preferences still has the defaults; the row is created with them, snoozed. */
+        DB::table('notification_preferences')->upsert(
+            [[
+                'id' => $this->identifiers->generate(),
+                'workspace_id' => $workspaceId,
+                'user_id' => $userId,
+                'snoozed_until' => $until?->format('Y-m-d H:i:sP'),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]],
+            ['workspace_id', 'user_id'],
+            ['snoozed_until', 'updated_at'],
+        );
+    }
+
+    public function quietAmong(string $workspaceId, array $userIds, DateTimeImmutable $now): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+
+        $zone = DB::table('workspaces')->where('id', $workspaceId)->value('timezone');
+        $zone = is_string($zone) && $zone !== '' ? $zone : 'UTC';
+        $quiet = [];
+
+        /* Only people who set a window or a snooze can be quiet; everybody else has no row worth reading. */
+        $rows = DB::table('notification_preferences')
+            ->where('workspace_id', $workspaceId)
+            ->whereIn('user_id', $userIds)
+            ->where(static function ($query): void {
+                $query->whereNotNull('quiet_from')->orWhereNotNull('snoozed_until');
+            })
+            ->get();
+
+        foreach ($rows as $row) {
+            /** @var array<string, mixed> $values */
+            $values = (array) $row;
+
+            if ($this->hydrate($values)->isQuietAt($now, $zone)) {
+                $quiet[] = (string) $values['user_id'];
+            }
+        }
+
+        return $quiet;
+    }
+
+    /** @param array<string, mixed> $values */
+    private function hydrate(array $values): NotificationPreferences
+    {
+
+        return new NotificationPreferences(
+            daily: (bool) $values['daily'],
+            weekly: (bool) $values['weekly'],
+            monthly: (bool) $values['monthly'],
+            channels: array_values(array_filter(array_map(
+                static fn (mixed $value): ?DigestChannel => is_string($value) ? DigestChannel::tryFrom($value) : null,
+                $this->list($values['channels'] ?? null) ?? [],
+            ))),
+            timezone: is_string($values['timezone']) && $values['timezone'] !== '' ? $values['timezone'] : null,
+            hour: (int) $values['hour'],
+            clientId: is_string($values['client_id']) ? $values['client_id'] : null,
+            projectIds: $this->list($values['project_ids'] ?? null),
+            mutedCategories: array_values(array_filter(array_map(
+                static fn (mixed $value): ?NotificationCategory => is_string($value) ? NotificationCategory::tryFrom($value) : null,
+                $this->list($values['muted_categories'] ?? null) ?? [],
+            ))),
+            quietFrom: is_numeric($values['quiet_from'] ?? null) ? (int) $values['quiet_from'] : null,
+            quietUntil: is_numeric($values['quiet_until'] ?? null) ? (int) $values['quiet_until'] : null,
+            snoozedUntil: is_string($values['snoozed_until'] ?? null) ? new DateTimeImmutable($values['snoozed_until']) : null,
+        );
     }
 
     /** @return list<string>|null */

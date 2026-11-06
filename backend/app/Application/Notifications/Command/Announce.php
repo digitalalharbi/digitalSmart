@@ -12,6 +12,7 @@ use App\Application\Notifications\DTO\NotificationDraft;
 use App\Application\Notifications\DTO\NotificationView;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\Clock;
+use App\Domain\Notifications\NotificationSeverity;
 use Throwable;
 
 /**
@@ -98,7 +99,21 @@ final readonly class Announce
              * not in the database is one a reload makes vanish — worse than no realtime at all, because the
              * person has already acted on having seen it.
              */
-            $this->broadcaster->push($workspaceId, $written);
+            /*
+             * Somebody inside their quiet hours, or snoozed, is not nudged: the row above is theirs to find when they
+             * look. A critical notification interrupts anyway — quiet hours are for noise, and this is not noise.
+             */
+            $toPush = $written;
+
+            if ($draft->severity !== NotificationSeverity::Critical || $draft->kind->isScheduledSummary()) {
+                $quiet = $this->preferences->quietAmong($workspaceId, $userIds, $this->clock->now());
+                $toPush = array_values(array_filter(
+                    $written,
+                    static fn (NotificationView $view): bool => ! in_array($view->recipientId, $quiet, true),
+                ));
+            }
+
+            $this->broadcaster->push($workspaceId, $toPush);
 
             return $written;
         } catch (Throwable $failure) {
