@@ -21,8 +21,18 @@ Then read, in this order — they are the project's own record and they outrank 
 - @docs/EXECUTION_POLICY.md — where development runs, what GitHub may do, and the secret policy
 - @docs/CI_STATUS.md — what CI runs and what is required
 - @docs/DEPLOYMENT.md — how `main` reaches production, rollback, and disk space
-- @CHANGELOG.md — what has landed
-- @docs/ROADMAP.md, @docs/ARCHITECTURE.md, @docs/AGENTS.md — the product and how it is built
+- @docs/ARCHITECTURE.md — how the product is built
+
+**Read on demand — deliberately not loaded into every request.** Measured on 2026-11-06 against this
+machine's own session transcripts: these three were pulled into the context of *every* message at a
+cost of ~124,000 tokens each time, which came to roughly a fifth of a month's entire token use, for
+documents a session needs occasionally rather than always. They are still part of the project's
+record; open them when the work calls for them.
+
+- `CHANGELOG.md` (~102,000 tokens) — what has landed. Read it, or `grep` it, when the history of a
+  change matters. **Still write to it**: the entry a change earns is unchanged by this.
+- `docs/ROADMAP.md` (~18,000 tokens) — the product plan. Read it when planning a slice.
+- `docs/AGENTS.md` (~4,000 tokens) — agents, tools and MCP. Read it when working on that layer.
 
 Work from what those say. If a document contradicts the code, the code is the fact and the document is a defect.
 
