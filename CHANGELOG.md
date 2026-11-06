@@ -5,6 +5,21 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## Tracking: a link keeps the history of where it pointed
+
+### Added
+- **`tracking_link_revisions`.** Every save that changes where a link points or how it is tagged — destination, platform,
+  campaign, ad group, ad, creative, channel, UTMs, custom parameters, bound entities — closes the current revision and opens
+  the next, with the fields that changed, who changed them and when. A save that changes none of them writes nothing.
+- **`GET /api/tracking/links/{link}/history`** and a History panel on each link: each revision with what it was, what
+  changed, and how many valid visits arrived while it was in force. A visit is counted under the revision that was live when
+  it happened, so editing a link's campaign does not re-label the clicks that came before the edit.
+- Links that existed before this change get one revision marked as reconstructed: what the link says now, from its creation —
+  the product does not claim to know what it said earlier.
+
+### Not yet
+- Attribution reads the link's current tags; reading the revision in force at the time of a visit is `DS-P0-LINK-02`.
+
 ## Reports: a section can be hidden without being deleted, and the server is what hides it
 
 ### Added

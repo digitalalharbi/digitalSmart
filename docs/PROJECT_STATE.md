@@ -17,8 +17,8 @@ Updated 2026-11-05.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `5bbb08f` — feat(ops): whether this server can send email, beside main and deploy — never green (#100) |
-| Full sha | `5bbb08fa37b8cfc499afa54b03580df4f921db8f` |
+| Commit | `3b92b4b` — feat(reports): a section can be hidden without being deleted; the server leaves it out of every render (#101) |
+| Full sha | `3b92b4bd65bd9ed6e9688012d3a176c308c6ffd5` |
 | Evidence | #100 merged at head `e0ba45a` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
 
 Verify, do not trust:
@@ -31,7 +31,7 @@ git fetch origin && git log --oneline -10 origin/main && git status
 
 | PR | Branch | Title |
 |---|---|---|
-| the PR carrying this file | `feat/report-hidden-sections` | feat(reports): a section can be hidden without being deleted — once it is on `main`, none is open |
+| the PR carrying this file | `feat/link-edit-history` | feat(tracking): a link keeps the history of where it pointed — once it is on `main`, none is open |
 
 CI on each is the authority — `Governance`, `Backend` and `Frontend` are required and the branch
 must be up to date with `main`:
