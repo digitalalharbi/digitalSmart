@@ -25,7 +25,6 @@ All notable changes to digitalSmart are recorded here. Format follows
 ### Not changed
 - No code, no workflow, no script. `AWAITING_SERVER_ACCESS` is still the status and nothing is `LIVE_VERIFIED`.
 
-
 ## Tracking: a link keeps the history of where it pointed
 
 ### Added
