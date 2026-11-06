@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { ACCOUNTS, DEMO_PASSWORD, signIn } from './support/accounts';
 
 test.describe('authentication', () => {
@@ -28,6 +28,55 @@ test.describe('authentication', () => {
     await expect(page.getByRole('button', { name: 'Account and workspace' })).toContainText(
       'DEMO — Smart Code Agency',
     );
+  });
+
+  /* Sign in on the screen `RequireSession` sent us to, so the remembered page travels with it — `signIn` starts afresh. */
+  async function signInFromRedirect(page: Page, email: string): Promise<void> {
+    await expect(page).toHaveURL(/\/login$/);
+    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Password').fill(DEMO_PASSWORD);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+  }
+
+  test('returns agency staff to the page they were headed for', async ({ page }) => {
+    await page.goto('/reports');
+    await signInFromRedirect(page, ACCOUNTS.owner);
+
+    await expect(page).toHaveURL(/\/reports$/, { timeout: 30_000 });
+  });
+
+  test('sends a client to their portal, not to the agency page that was remembered', async ({
+    page,
+  }) => {
+    await page.goto('/clients');
+    await signInFromRedirect(page, ACCOUNTS.client);
+
+    await expect(page).toHaveURL(/\/portal$/, { timeout: 30_000 });
+    await expect(page.getByRole('table', { name: 'Clients' })).toHaveCount(0);
+  });
+
+  test('a sign-out in one tab ends the session in the other', async ({ context }) => {
+    const first = await context.newPage();
+    await signIn(first, ACCOUNTS.owner);
+    await first.goto('/clients');
+    await expect(first.getByRole('heading', { level: 1, name: 'Clients' })).toBeVisible({
+      timeout: 30_000,
+    });
+
+    const second = await context.newPage();
+    await second.goto('/clients');
+    await expect(second.getByRole('heading', { level: 1, name: 'Clients' })).toBeVisible({
+      timeout: 30_000,
+    });
+
+    await second.getByRole('button', { name: 'Account and workspace' }).click();
+    await second.getByRole('menuitem', { name: 'Sign out' }).click();
+    await expect(second).toHaveURL(/\/login$/, { timeout: 30_000 });
+
+    /* The first tab still has the page drawn; its next read is refused and it shows no client data afterwards. */
+    await first.goto('/clients');
+    await expect(first.getByRole('row', { name: /DEMO — / })).toHaveCount(0);
+    await expect(first).toHaveURL(/\/login$/, { timeout: 30_000 });
   });
 
   test('keeps the session across a reload', async ({ page }) => {

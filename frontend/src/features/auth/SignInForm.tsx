@@ -9,7 +9,7 @@ import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { ApiError } from '@/shared/api/client';
 import { useLoginMutation } from './api';
-import { safeReturnPath } from './returnPath';
+import { signInDestination } from './returnPath';
 
 const schema = z.object({
   email: z.string().min(1).email(),
@@ -41,12 +41,15 @@ export function SignInForm({ autoFocus = false }: { autoFocus?: boolean }) {
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    await login.mutateAsync(values);
-    /* Back to the page they were headed for when `RequireSession` sent them here; home otherwise. */
+    const user = await login.mutateAsync(values);
+    /*
+     * Back to the page they were headed for when `RequireSession` sent them here, if it belongs to the application this
+     * person uses; that application's front door otherwise.
+     */
     const state: unknown = location.state;
     const from = typeof state === 'object' && state !== null && 'from' in state ? state.from : null;
 
-    void navigate(safeReturnPath(from), { replace: true });
+    void navigate(signInDestination(from, user), { replace: true });
   });
 
   // The server returns one message for both a wrong password and an unknown
