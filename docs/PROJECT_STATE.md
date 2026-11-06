@@ -17,8 +17,8 @@ Updated 2026-11-05.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `3b92b4b` — feat(reports): a section can be hidden without being deleted; the server leaves it out of every render (#101) |
-| Full sha | `3b92b4bd65bd9ed6e9688012d3a176c308c6ffd5` |
+| Commit | `2af1257` — fix(sandbox): move the CRM fixture's dates, so the demo pipeline stays inside the period (#104) |
+| Full sha | `2af125767fb3bf5081c6a7972e4e5bd80c49099b` |
 | Evidence | #100 merged at head `e0ba45a` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
 
 Verify, do not trust:
