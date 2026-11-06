@@ -429,6 +429,8 @@ export type SectionDraft = {
   creative_view?: CreativeViewValue | null;
   /** Which part of the client's tracking a tracking section shows. */
   tracking_view?: TrackingViewValue | null;
+  /** Kept in the report and shown nowhere; the server leaves it out of every render. */
+  hidden?: boolean;
 };
 
 /** What a report is for: everything defined, or the headline view. */
