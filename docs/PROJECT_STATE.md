@@ -17,8 +17,8 @@ Updated 2026-11-05.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `6dfeb7f` — feat(auth): sign-in lands in the application the person uses (#106) |
-| Full sha | `6dfeb7f455c8aea307889e3e0f83a88c0633a5bf` |
+| Commit | `c81c4ac` — chore(claude-md): read the changelog, roadmap and agents doc on demand instead of loading them into every request (#107) |
+| Full sha | `c81c4acdec95e724c098b334b26153ad7df5f75d` |
 | Evidence | #100 merged at head `e0ba45a` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
 
 Verify, do not trust:
