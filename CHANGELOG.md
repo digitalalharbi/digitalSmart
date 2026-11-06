@@ -5,6 +5,15 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## Fixed: the demo's CRM pipeline aged out of every period
+
+### Fixed
+- **`_newest_days_ago` did nothing on a HubSpot page.** The sandbox loader moved dates only in a GA4 report's date
+  column, so the deal pages kept the dates they were written with. A month later the open "Won" deal fell outside the
+  Lead Center's period and the end-to-end case that shows it failed on every branch, `main` included. ISO timestamps
+  anywhere in a non-report page now move by the same whole number of days; times, gaps and missing dates are kept
+  (`MeasurementFixturesDatesTest`, fails without the fix).
+
 ## Reports: a section can be hidden without being deleted, and the server is what hides it
 
 ### Added
