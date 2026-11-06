@@ -5,6 +5,24 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## Tracking: influencers — who a link was made for
+
+### Added
+- **Influencers**, belonging to one client: name, handle, platform, notes, active or archived. Unique per client without
+  regard to case, never moved to another client, archived rather than deleted. `GET/POST /api/influencers`,
+  `GET/PUT /api/influencers/{id}`, behind `tracking.view` / `tracking.manage` and narrowed to the clients the reader can see.
+- **A link can name its client's influencer** (`influencer_id`); another client's or another workspace's is not found. The
+  link card shows the name, the builder offers only that client's influencers, and an *Influencers* panel on the Links tab
+  lists them with valid links and clicks counted for each. **No fee or cost is shown or divided by**: none is recorded.
+- Setting or clearing a link's influencer is a revision in its history.
+
+### Fixed
+- **Link history never noticed a field that disappeared.** It compared only the fields of the new snapshot, so a value that was
+  set and then cleared wrote no revision. It now compares the fields of both (`InfluencerTest`; fails without the change).
+
+### Not yet
+- Influencer-level spend, fee and return; per-influencer leads and sales (counts of valid clicks only).
+
 ## Attribution: an order's click identifier can be resolved through a tracked link
 
 ### Added

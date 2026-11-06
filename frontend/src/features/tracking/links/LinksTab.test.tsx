@@ -20,6 +20,13 @@ vi.mock('./api', () => ({
     reset: vi.fn(),
   }),
 }));
+vi.mock('./influencers', () => ({
+  useInfluencersQuery: () => ({ isError: false, data: [] }),
+  useSaveInfluencerMutation: () => ({ isPending: false, mutate: vi.fn(), error: null }),
+}));
+vi.mock('@/features/clients', () => ({
+  useClientsQuery: () => ({ data: { data: [] }, isFetching: false }),
+}));
 vi.mock('@/features/projects', () => ({
   useProjectsQuery: () => ({ data: { data: [] }, isFetching: false }),
 }));
@@ -49,6 +56,7 @@ function link(overrides: Partial<TrackingLink> = {}): TrackingLink {
       level: null,
     },
     conversion_goal: null,
+    influencer: null,
     channel: 'paid',
     destination_url: 'https://shop.example.com',
     utm: {},
@@ -147,5 +155,14 @@ describe('LinksTab', () => {
     expect(
       screen.queryByRole('region', { name: 'Campaign parameter issues' }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('LinksTab — influencer on a link', () => {
+  it('names the influencer a link was made for beside its client and project', async () => {
+    links.data = [link({ influencer: { id: 'i1', name: 'Noura Alharbi' } })];
+    await renderWithProviders(<LinksTab />);
+
+    expect(screen.getByText(/Alhambra · Spring · Noura Alharbi/)).toBeInTheDocument();
   });
 });

@@ -170,6 +170,7 @@ final class TrackingLinkController extends Controller
             'ad_id' => ['nullable', 'uuid'],
             'creative_id' => ['nullable', 'uuid'],
             'conversion_goal' => ['nullable', 'string', 'in:lead,qualified,appointment,sale'],
+            'influencer_id' => ['nullable', 'uuid'],
             'campaign' => ['nullable', 'string', 'max:190'],
             'ad_group' => ['nullable', 'string', 'max:190'],
             'ad' => ['nullable', 'string', 'max:190'],
@@ -214,6 +215,7 @@ final class TrackingLinkController extends Controller
                 adId: $text('ad_id'),
                 creativeId: $text('creative_id'),
                 conversionGoal: $text('conversion_goal'),
+                influencerId: $text('influencer_id'),
             ), $id);
         } catch (TrackingRefused $e) {
             abort(Response::HTTP_UNPROCESSABLE_ENTITY, $e->getMessage());
@@ -275,6 +277,7 @@ final class TrackingLinkController extends Controller
                 'level' => $l->adId !== null ? 'ad' : ($l->adGroupId !== null ? 'ad_group' : ($l->campaignId !== null ? 'campaign' : null)),
             ],
             'conversion_goal' => $l->conversionGoal,
+            'influencer' => $l->influencerId === null ? null : ['id' => $l->influencerId, 'name' => $l->influencerName],
             'channel' => $l->channel,
             'destination_url' => $l->destinationUrl,
             'utm' => (object) $l->utm,

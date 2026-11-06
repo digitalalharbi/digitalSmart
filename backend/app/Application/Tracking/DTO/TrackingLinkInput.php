@@ -35,5 +35,6 @@ final readonly class TrackingLinkInput
         public ?string $adId = null,
         public ?string $creativeId = null,
         public ?string $conversionGoal = null,
+        public ?string $influencerId = null,
     ) {}
 }

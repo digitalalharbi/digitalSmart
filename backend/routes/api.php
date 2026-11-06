@@ -45,6 +45,7 @@ use App\Interface\Http\Controller\Export\ExportController;
 use App\Interface\Http\Controller\Home\HomeController;
 use App\Interface\Http\Controller\Identity\SessionController;
 use App\Interface\Http\Controller\Identity\WorkspaceSwitchController;
+use App\Interface\Http\Controller\Influencers\InfluencerController;
 use App\Interface\Http\Controller\Integration\ConnectionController;
 use App\Interface\Http\Controller\Integration\ExternalAccountController;
 use App\Interface\Http\Controller\Integration\OperationsController;
@@ -233,6 +234,10 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::get('tracking/links/audit', [TrackingLinkController::class, 'audit'])->name('tracking.links.audit');
     Route::get('tracking/links/{link}', [TrackingLinkController::class, 'show'])->whereUuid('link')->name('tracking.links.show');
     Route::put('tracking/links/{link}', [TrackingLinkController::class, 'update'])->whereUuid('link')->name('tracking.links.update');
+    Route::get('influencers', [InfluencerController::class, 'index'])->name('influencers.index');
+    Route::post('influencers', [InfluencerController::class, 'store'])->name('influencers.store');
+    Route::get('influencers/{influencer}', [InfluencerController::class, 'show'])->whereUuid('influencer')->name('influencers.show');
+    Route::put('influencers/{influencer}', [InfluencerController::class, 'update'])->whereUuid('influencer')->name('influencers.update');
     Route::get('tracking/links/{link}/history', [TrackingLinkController::class, 'history'])->whereUuid('link')->name('tracking.links.history');
     Route::get('tracking/links/{link}/performance', [TrackingLinkController::class, 'performance'])->whereUuid('link')->name('tracking.links.performance');
     Route::get('tracking/binding-options', [TrackingLinkController::class, 'bindingOptions'])->name('tracking.binding_options');

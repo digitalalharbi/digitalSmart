@@ -178,7 +178,8 @@ final readonly class EloquentTrackingLinkRepository implements TrackingLinkRepos
         return DB::table('tracking_links as l')
             ->join('clients as c', 'c.id', '=', 'l.client_id')
             ->join('projects as p', 'p.id', '=', 'l.project_id')
-            ->select('l.*', 'c.name as client_name', 'p.name as project_name');
+            ->leftJoin('influencers as inf', 'inf.id', '=', 'l.influencer_id')
+            ->select('l.*', 'c.name as client_name', 'p.name as project_name', 'inf.name as influencer_name');
     }
 
     /**
@@ -230,6 +231,8 @@ final readonly class EloquentTrackingLinkRepository implements TrackingLinkRepos
             $this->id($row->campaign_id ?? null), $this->id($row->ad_group_id ?? null), $this->id($row->ad_id ?? null),
             $this->id($row->creative_id ?? null), $this->id($row->external_account_id ?? null),
             is_string($row->conversion_goal ?? null) ? $row->conversion_goal : null,
+            $this->id($row->influencer_id ?? null),
+            is_string($row->influencer_name ?? null) ? $row->influencer_name : null,
         );
     }
 

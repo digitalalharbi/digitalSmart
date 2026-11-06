@@ -83,6 +83,7 @@ enum AuditAction: string
     case MeasurementSourceSaved = 'measurement.source_saved';
     case MeasurementSourceDeleted = 'measurement.source_deleted';
     case TrackingLinkSaved = 'tracking.link_saved';
+    case InfluencerSaved = 'tracking.influencer_saved';
     case TrackingFormSaved = 'tracking.form_saved';
     case TrackingFunnelSaved = 'tracking.funnel_saved';
     case TrackingSettingsSaved = 'tracking.settings_saved';

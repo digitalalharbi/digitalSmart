@@ -261,6 +261,21 @@ visitor → POST /api/public/forms/{token}/submit → form_submissions → [crea
   the same calculator with no actor, so a shared link renders them.
 - Not built: form and owner filters on the whole view; ROAS from CRM-won or platform-reported revenue (neither is joined to a link).
 
+## Influencers
+
+An **influencer** is a person or account that promotes one client's offer (`influencers`: name, handle, platform, notes,
+status). It belongs to **one client and never moves**, names are unique per client without regard to case, and archiving keeps
+the row and its links — nothing deletes. A tracking link may name one (`tracking_links.influencer_id`), and only its **own
+client's**: another client's or another workspace's influencer is answered as not found, never as "belongs to somebody else".
+
+`GET /api/influencers` (`tracking.view`, narrowed to the clients the reader can see) returns each with
+`totals: {links, clicks, visitors}` — valid traffic only, summed over its links by the same counts the link cards use.
+`POST` and `PUT` need `tracking.manage`. **No fee, cost or return is shown**: this product does not record what an influencer
+was paid, so it never divides anything by it.
+
+Setting or clearing a link's influencer is a revision in the link's history. (Doing so exposed a gap in the history itself: a
+field that disappeared from the snapshot was never compared. It is now compared over both sides' fields.)
+
 ## Link history — what a link said when a click arrived
 
 A click is recorded against a link, and a link can be edited afterwards. `tracking_link_revisions` keeps every state the
