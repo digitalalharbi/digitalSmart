@@ -5,6 +5,26 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## Operations: the one available server was assessed, and it is not the production server
+
+### Recorded
+- **`docs/DEPLOYMENT.md` gains *Assessment of the available server — 2026-11-06*.** The owner's hosting account holds one
+  VPS — one vCPU, 4 GB of memory, a 50 GB disk — and it is not spare: it serves production for two of his other projects,
+  with roughly 1.8 GB of memory and 18–20 GB of disk left over about 24 hours of measurement. No domain for digitalSmart
+  exists in the account at all.
+- **The reason it is refused is the build, not the capacity in general.** `scripts/deploy/deploy-production.sh` runs
+  `npm ci && npm run build` on the server on every deploy, and a Vite build of this frontend on one core with 1.8 GB free
+  is the most likely thing to be killed for memory — on a host serving two other live products while it happens.
+- **Stated as what it is**: an engineering judgement from measured headroom, not a failed deploy. Nothing was installed,
+  built or changed on that server, and the server decision stays the owner's. The four things that would actually raise
+  `AWAITING_SERVER_ACCESS` — a separate server, a domain, the server's details, then the six `PRODUCTION_*` secrets and
+  `PRODUCTION_ENABLED=true` — are listed in the order each becomes useful.
+- The first item of **Next** in `docs/RESUME_STATE.md` now says a *separate* server is what is wanted, so the next session
+  does not re-open a question that has been answered.
+
+### Not changed
+- No code, no workflow, no script. `AWAITING_SERVER_ACCESS` is still the status and nothing is `LIVE_VERIFIED`.
+
 ## Notifications: quiet hours and snooze — interruption withheld, nothing lost
 
 ### Added
