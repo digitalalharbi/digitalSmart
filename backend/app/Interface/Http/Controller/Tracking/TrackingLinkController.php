@@ -8,11 +8,13 @@ use App\Application\Tracking\Command\SaveLinkTemplate;
 use App\Application\Tracking\Command\SaveTrackingLink;
 use App\Application\Tracking\Command\SetTrackingLinkStatus;
 use App\Application\Tracking\DTO\LinkCounts;
+use App\Application\Tracking\DTO\LinkRevision;
 use App\Application\Tracking\DTO\TrackingLinkInput;
 use App\Application\Tracking\DTO\TrackingLinkView;
 use App\Application\Tracking\Exception\TrackingRefused;
 use App\Application\Tracking\Query\AuditTrackingLinks;
 use App\Application\Tracking\Query\GetLinkPerformance;
+use App\Application\Tracking\Query\GetTrackingLinkHistory;
 use App\Application\Tracking\Query\ListTrackingLinks;
 use App\Domain\Tracking\LinkStatus;
 use App\Interface\Http\Controller\Controller;
@@ -65,6 +67,27 @@ final class TrackingLinkController extends Controller
         $set($link, LinkStatus::from((string) $data['status']));
 
         return response()->json(['data' => ['status' => $data['status']]]);
+    }
+
+    /** What the link said at each point, newest first, with the valid clicks each state received. */
+    public function history(string $link, GetTrackingLinkHistory $history): JsonResponse
+    {
+        return response()->json([
+            'data' => array_map(static fn (LinkRevision $revision): array => [
+                'revision' => $revision->revision,
+                'values' => $revision->snapshot,
+                'changed_fields' => $revision->changedFields,
+                'changed_by_name' => $revision->changedByName,
+                'backfilled' => $revision->backfilled,
+                'effective_from' => $revision->effectiveFrom->format(DATE_ATOM),
+                'effective_until' => $revision->effectiveUntil?->format(DATE_ATOM),
+                'is_current' => $revision->effectiveUntil === null,
+                'clicks' => $revision->clicks,
+            ], $history($link)),
+            'meta' => [
+                'note' => 'Clicks are counted under the values the link carried when they arrived. Performance and cost figures elsewhere read the link as it stands now.',
+            ],
+        ]);
     }
 
     public function performance(Request $request, string $link, GetLinkPerformance $performance): JsonResponse

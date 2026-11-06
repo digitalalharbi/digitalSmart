@@ -13,6 +13,7 @@ import { periodOfDays } from '../funnels/duration';
 import { FunnelView } from '../funnels/FunnelView';
 import { useLinksQuery, useSetLinkStatusMutation } from './api';
 import { LinkBuilder } from './LinkBuilder';
+import { LinkHistoryPanel } from './LinkHistoryPanel';
 import { LinkPerformancePanel } from './LinkPerformancePanel';
 import { QrCode } from './QrCode';
 import type { Counted, TrackingLink } from './types';
@@ -60,6 +61,7 @@ function LinkCard({ link, canManage }: { link: TrackingLink; canManage: boolean 
   const [showFunnel, setShowFunnel] = useState(false);
   const [showQr, setShowQr] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const counts = link.counts;
 
   const copy = () => {
@@ -131,6 +133,7 @@ function LinkCard({ link, canManage }: { link: TrackingLink; canManage: boolean 
       ) : null}
 
       {showPerformance ? <LinkPerformancePanel linkId={link.id} /> : null}
+      {showHistory ? <LinkHistoryPanel linkId={link.id} /> : null}
       {showQr ? <QrCode address={link.short_url} name={link.name} /> : null}
       {showFunnel ? <LinkFunnel link={link} /> : null}
 
@@ -144,6 +147,16 @@ function LinkCard({ link, canManage }: { link: TrackingLink; canManage: boolean 
           onClick={() => setShowPerformance((v) => !v)}
         >
           {showPerformance ? t('tracking.performance.hide') : t('tracking.performance.show')}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="max-md:h-11"
+          aria-expanded={showHistory}
+          onClick={() => setShowHistory((v) => !v)}
+        >
+          {showHistory ? t('tracking.history.hide') : t('tracking.history.show')}
         </Button>
         <Button
           type="button"

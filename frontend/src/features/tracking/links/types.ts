@@ -149,3 +149,17 @@ export interface LinkAudit {
     findings: Array<{ code: UtmFindingCode; parameters: string[]; shared_with: string[] }>;
   }>;
 }
+
+/** One state of a tracking link, with the valid clicks that arrived while it was in force. */
+export type LinkRevision = {
+  revision: number;
+  values: Record<string, unknown>;
+  changed_fields: string[];
+  changed_by_name: string | null;
+  /** True when the values were copied from the link as it stood when history began. */
+  backfilled: boolean;
+  effective_from: string;
+  effective_until: string | null;
+  is_current: boolean;
+  clicks: number;
+};
