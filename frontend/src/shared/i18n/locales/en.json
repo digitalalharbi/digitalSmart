@@ -3627,7 +3627,22 @@
       "muted": "Muted tabs",
       "mutedHint": "A muted tab is not sent to you. It cannot widen what you are shown — only switch it off.",
       "saved": "Saved.",
-      "save": "Save settings"
+      "save": "Save settings",
+      "quiet": "Quiet hours",
+      "quietHint": "Between these hours nothing pops up and no email or WhatsApp copy is sent. Everything is still in your notification centre, a critical alert still interrupts, and nothing held is sent later.",
+      "quietOff": "No quiet hours",
+      "quietFrom": "From",
+      "quietUntil": "Until",
+      "snooze": "Snooze",
+      "snoozeHint": "The same as quiet hours, starting now.",
+      "snoozeFor": {
+        "60": "1 hour",
+        "240": "4 hours",
+        "480": "8 hours",
+        "1440": "Until this time tomorrow"
+      },
+      "snoozedUntil": "Snoozed until {{time}}",
+      "endSnooze": "End snooze"
     },
     "delivery": {
       "label": "Deliveries",
@@ -3635,7 +3650,8 @@
         "awaiting_credentials": "awaiting credentials",
         "logged": "logged, not sent",
         "sent": "sent",
-        "failed": "failed"
+        "failed": "failed",
+        "held": "held — quiet hours or snoozed"
       }
     }
   },

@@ -102,7 +102,7 @@ export type NotificationItem = {
   /** The channels this was carried over and what became of each. Empty for the bell alone. */
   deliveries?: Array<{
     channel: DigestChannelValue;
-    status: 'awaiting_credentials' | 'logged' | 'sent' | 'failed';
+    status: 'awaiting_credentials' | 'logged' | 'sent' | 'failed' | 'held';
     detail: string | null;
     attempted_at: string;
   }>;
@@ -157,6 +157,11 @@ export type NotificationPreferences = {
   client_id: string | null;
   project_ids: string[] | null;
   muted_categories: NotificationCategoryValue[];
+  /** Local hours, both set or both null; the window may wrap midnight. */
+  quiet_from: number | null;
+  quiet_until: number | null;
+  /** Set by the snooze action only; null once it has passed. */
+  snoozed_until: string | null;
   channel_availability: {
     channel: DigestChannelValue;
     label: string;
@@ -164,4 +169,7 @@ export type NotificationPreferences = {
   }[];
 };
 
-export type NotificationPreferencesInput = Omit<NotificationPreferences, 'channel_availability'>;
+export type NotificationPreferencesInput = Omit<
+  NotificationPreferences,
+  'channel_availability' | 'snoozed_until'
+>;

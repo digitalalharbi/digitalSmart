@@ -685,6 +685,8 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
         ->name('notifications.preferences');
     Route::put('notifications/preferences', [NotificationController::class, 'savePreferences'])
         ->name('notifications.preferences.save');
+    Route::post('notifications/snooze', [NotificationController::class, 'snooze'])->name('notifications.snooze');
+    Route::delete('notifications/snooze', [NotificationController::class, 'endSnooze'])->name('notifications.snooze.end');
 
     /*
      * Approvals. The vocabulary publishes, per kind, whether approving a request makes the change — which today

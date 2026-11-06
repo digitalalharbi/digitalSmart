@@ -7,7 +7,11 @@ import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Choice, ChoiceGroup } from '@/shared/ui/choice';
 import { EntityPicker } from '@/shared/ui/entity-picker';
-import { useNotificationPreferencesQuery, useSavePreferencesMutation } from './useNotifications';
+import {
+  useNotificationPreferencesQuery,
+  useSavePreferencesMutation,
+  useSnoozeMutation,
+} from './useNotifications';
 import type {
   DigestChannelValue,
   NotificationCategoryValue,
@@ -24,6 +28,11 @@ const CATEGORIES: NotificationCategoryValue[] = [
   'reports',
   'work',
 ];
+
+/** What a snooze can last, in minutes. The server accepts anything from a quarter of an hour to a week. */
+const SNOOZES = [60, 240, 480, 1440] as const;
+
+const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
 /** The zones an agency in this market is likely to be in, plus the one the browser is in. */
 const ZONES = ['Asia/Riyadh', 'Asia/Dubai', 'Africa/Cairo', 'Europe/London', 'UTC'];
@@ -43,7 +52,65 @@ export function DigestSettings() {
     return null;
   }
 
-  return <SettingsForm initial={preferences.data} />;
+  return (
+    <div className="flex flex-col gap-3">
+      <SnoozeControl snoozedUntil={preferences.data.snoozed_until} />
+      <SettingsForm initial={preferences.data} />
+    </div>
+  );
+}
+
+/**
+ * Snooze sits outside the settings form on purpose: it is an action that takes effect when pressed, not a preference
+ * saved with the rest, and saving the form neither starts nor ends one.
+ */
+function SnoozeControl({ snoozedUntil }: { snoozedUntil: string | null }) {
+  const { t, i18n } = useTranslation();
+  const snooze = useSnoozeMutation();
+
+  return (
+    <div className="border-line-subtle flex flex-wrap items-center gap-2 rounded-2xl border p-4">
+      <div className="me-auto flex flex-col">
+        <span className="text-content text-sm font-medium">
+          {t('notifications.settings.snooze')}
+        </span>
+        <span className="text-content-secondary text-xs" role="status">
+          {snoozedUntil === null
+            ? t('notifications.settings.snoozeHint')
+            : t('notifications.settings.snoozedUntil', {
+                time: new Intl.DateTimeFormat(i18n.language, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                }).format(new Date(snoozedUntil)),
+              })}
+        </span>
+      </div>
+      {snoozedUntil === null ? (
+        SNOOZES.map((minutes) => (
+          <Button
+            key={minutes}
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={snooze.isPending}
+            onClick={() => snooze.mutate(minutes)}
+          >
+            {t(`notifications.settings.snoozeFor.${minutes}`)}
+          </Button>
+        ))
+      ) : (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={snooze.isPending}
+          onClick={() => snooze.mutate(null)}
+        >
+          {t('notifications.settings.endSnooze')}
+        </Button>
+      )}
+    </div>
+  );
 }
 
 function SettingsForm({ initial }: { initial: NotificationPreferences }) {
@@ -59,6 +126,8 @@ function SettingsForm({ initial }: { initial: NotificationPreferences }) {
     client_id: initial.client_id,
     project_ids: initial.project_ids,
     muted_categories: initial.muted_categories,
+    quiet_from: initial.quiet_from,
+    quiet_until: initial.quiet_until,
   }));
   const [clientLabel, setClientLabel] = useState<string | null>(null);
   const [clientTerm, setClientTerm] = useState('');
@@ -207,6 +276,70 @@ function SettingsForm({ initial }: { initial: NotificationPreferences }) {
                 {t(`notifications.tabs.${category}`)}
               </Choice>
             ))}
+          </div>
+        </ChoiceGroup>
+
+        <ChoiceGroup
+          label={t('notifications.settings.quiet')}
+          hint={t('notifications.settings.quietHint')}
+        >
+          <div className="flex flex-wrap items-end gap-3">
+            <Choice
+              isSelected={draft.quiet_from === null}
+              onSelect={() =>
+                update(
+                  draft.quiet_from === null
+                    ? { quiet_from: 22, quiet_until: 7 }
+                    : { quiet_from: null, quiet_until: null },
+                )
+              }
+            >
+              {t('notifications.settings.quietOff')}
+            </Choice>
+            {draft.quiet_from === null || draft.quiet_until === null ? null : (
+              <>
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="quiet-from"
+                    className="text-content-secondary text-xs font-medium"
+                  >
+                    {t('notifications.settings.quietFrom')}
+                  </label>
+                  <select
+                    id="quiet-from"
+                    value={draft.quiet_from}
+                    onChange={(event) => update({ quiet_from: Number(event.target.value) })}
+                    className="bg-surface-sunken text-content h-10 rounded-full border-0 px-4 text-sm"
+                  >
+                    {HOURS.map((hour) => (
+                      <option key={hour} value={hour}>
+                        {String(hour).padStart(2, '0')}:00
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="quiet-until"
+                    className="text-content-secondary text-xs font-medium"
+                  >
+                    {t('notifications.settings.quietUntil')}
+                  </label>
+                  <select
+                    id="quiet-until"
+                    value={draft.quiet_until}
+                    onChange={(event) => update({ quiet_until: Number(event.target.value) })}
+                    className="bg-surface-sunken text-content h-10 rounded-full border-0 px-4 text-sm"
+                  >
+                    {HOURS.map((hour) => (
+                      <option key={hour} value={hour}>
+                        {String(hour).padStart(2, '0')}:00
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
           </div>
         </ChoiceGroup>
 

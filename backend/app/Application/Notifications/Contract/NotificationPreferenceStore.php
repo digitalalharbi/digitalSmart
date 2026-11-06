@@ -6,6 +6,7 @@ namespace App\Application\Notifications\Contract;
 
 use App\Application\Notifications\DTO\NotificationPreferences;
 use App\Domain\Notifications\NotificationCategory;
+use DateTimeImmutable;
 
 interface NotificationPreferenceStore
 {
@@ -31,4 +32,16 @@ interface NotificationPreferenceStore
      * @return list<string>
      */
     public function mutedAmong(string $workspaceId, NotificationCategory $category, array $userIds): array;
+
+    /** Snooze until this instant, or clear the snooze with null. Kept apart from `put`, which never touches it. */
+    public function snooze(string $workspaceId, string $userId, ?DateTimeImmutable $until): void;
+
+    /**
+     * Of these people, the ones who asked not to be interrupted at this instant — snoozed, or inside quiet hours in
+     * their own zone or the workspace's.
+     *
+     * @param  list<string>  $userIds
+     * @return list<string>
+     */
+    public function quietAmong(string $workspaceId, array $userIds, DateTimeImmutable $now): array;
 }

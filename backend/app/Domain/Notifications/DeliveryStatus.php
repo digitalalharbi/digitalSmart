@@ -19,6 +19,9 @@ enum DeliveryStatus: string
     case Sent = 'sent';
     case Failed = 'failed';
 
+    /** Not attempted: the recipient was inside their quiet hours or had snoozed. It is in the bell; it is not sent later. */
+    case Held = 'held';
+
     public function label(): string
     {
         return match ($this) {
@@ -27,6 +30,7 @@ enum DeliveryStatus: string
             // The mail server took it. Arrival is the provider's later knowledge, and nothing here claims it.
             self::Sent => 'Accepted by the provider',
             self::Failed => 'Failed',
+            self::Held => 'Held (quiet hours or snoozed)',
         };
     }
 

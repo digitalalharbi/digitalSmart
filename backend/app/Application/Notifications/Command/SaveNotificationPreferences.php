@@ -30,6 +30,13 @@ final readonly class SaveNotificationPreferences
             throw InvalidNotificationPreference::unknownTimezone($preferences->timezone);
         }
 
+        $from = $preferences->quietFrom;
+        $until = $preferences->quietUntil;
+
+        if (($from === null) !== ($until === null) || ($from !== null && ($from < 0 || $from > 23 || $until < 0 || $until > 23 || $from === $until))) {
+            throw InvalidNotificationPreference::quietHours();
+        }
+
         if ($preferences->clientId !== null && ! $this->store->clientExists($workspaceId, $preferences->clientId)) {
             throw ResourceNotFound::of('Client');
         }
@@ -44,6 +51,7 @@ final readonly class SaveNotificationPreferences
 
         $this->store->put($workspaceId, $this->actor->userId()->value, $preferences);
 
-        return $preferences;
+        /* Read back: a snooze is not part of what was saved, and the answer should still say it is running. */
+        return $this->store->get($workspaceId, $this->actor->userId()->value);
     }
 }
