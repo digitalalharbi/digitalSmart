@@ -93,6 +93,7 @@ use App\Application\Export\Contract\ExportRenderer;
 use App\Application\Export\Contract\ScheduleStore;
 use App\Application\Identity\Contract\Authenticator;
 use App\Application\Identity\Contract\IdentityReadModel;
+use App\Application\Influencers\Contract\InfluencerRepository;
 use App\Application\Integration\Contract\ConnectionDirectory;
 use App\Application\Integration\Contract\CredentialCipher;
 use App\Application\Integration\Contract\IntegrationReadModel;
@@ -326,6 +327,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentExternalAccountRe
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFormRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFormSubmissionStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentFunnelRepository;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentInfluencerRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentIntegrationBindingRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadAutomationRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentLeadFollowUpReadModel;
@@ -537,6 +539,7 @@ final class AppServiceProvider extends ServiceProvider
         AccessRequestRepository::class => EloquentAccessRequestRepository::class,
         AccessInvitationRepository::class => EloquentAccessInvitationRepository::class,
         TrackingLinkHistory::class => EloquentTrackingLinkHistory::class,
+        InfluencerRepository::class => EloquentInfluencerRepository::class,
         TrackingLinkRepository::class => EloquentTrackingLinkRepository::class,
         CampaignBindingResolver::class => EloquentCampaignBindingResolver::class,
         LeadAutomationRepository::class => EloquentLeadAutomationRepository::class,

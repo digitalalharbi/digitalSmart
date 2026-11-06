@@ -42,6 +42,8 @@ final readonly class TrackingLinkView
         public ?string $creativeId = null,
         public ?string $externalAccountId = null,
         public ?string $conversionGoal = null,
+        public ?string $influencerId = null,
+        public ?string $influencerName = null,
     ) {}
 
     public function withCounts(LinkCounts $counts): self
@@ -52,6 +54,7 @@ final readonly class TrackingLinkView
             $this->destinationUrl, $this->utm, $this->customParams, $this->objective, $this->status, $this->expiresAt,
             $this->notes, $this->createdAt, $counts,
             $this->campaignId, $this->adGroupId, $this->adId, $this->creativeId, $this->externalAccountId, $this->conversionGoal,
+            $this->influencerId, $this->influencerName,
         );
     }
 }

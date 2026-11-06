@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tracking\Command;
 
 use App\Application\Analytics\Contract\VisibilityResolver;
+use App\Application\Influencers\Contract\InfluencerRepository;
 use App\Application\Shared\Contract\ActorContext;
 use App\Application\Shared\Contract\AuditRecorder;
 use App\Application\Shared\Contract\AuthorizationGuard;
@@ -43,6 +44,7 @@ final readonly class SaveTrackingLink
         private AuditRecorder $audit,
         private CampaignBindingResolver $bindings,
         private TrackingLinkHistory $history,
+        private InfluencerRepository $influencers,
         private array $ownHosts = [],
     ) {}
 
@@ -68,6 +70,11 @@ final readonly class SaveTrackingLink
 
         if ($input->conversionGoal !== null && ! in_array($input->conversionGoal, ['lead', 'qualified', 'appointment', 'sale'], true)) {
             throw new TrackingRefused('Unknown conversion goal.');
+        }
+
+        if ($input->influencerId !== null && ! $this->influencers->belongsToClient($workspaceId, $input->influencerId, $clientId)) {
+            /* Not found, never "belongs to another client": the answer must not confirm another client's influencer exists. */
+            throw ResourceNotFound::of('Influencer');
         }
 
         /*
@@ -130,6 +137,7 @@ final readonly class SaveTrackingLink
             'ad_id' => $binding?->adId,
             'creative_id' => $binding?->creativeId,
             'conversion_goal' => $input->conversionGoal,
+            'influencer_id' => $input->influencerId,
             'channel' => $input->channel,
             'destination_url' => $destination->value,
             'utm_source' => $utm['utm_source'] ?? null,
@@ -160,6 +168,12 @@ final readonly class SaveTrackingLink
          * team and change nothing a click is attributed by.
          */
         $snapshot = $values;
+
+        /* Only when set: a link that never had one must not get a revision just because the key now exists with null. */
+        if ($snapshot['influencer_id'] === null) {
+            unset($snapshot['influencer_id']);
+        }
+
         unset($snapshot['project_id'], $snapshot['client_id'], $snapshot['name'], $snapshot['objective'], $snapshot['expires_at'], $snapshot['notes']);
         $this->history->record($workspaceId, $link->id, $snapshot, $this->actor->userId()->value);
 

@@ -12,6 +12,7 @@ import { useFunnelAnalyticsQuery } from '../funnels/api';
 import { periodOfDays } from '../funnels/duration';
 import { FunnelView } from '../funnels/FunnelView';
 import { useLinksQuery, useSetLinkStatusMutation } from './api';
+import { InfluencersPanel } from './InfluencersPanel';
 import { LinkBuilder } from './LinkBuilder';
 import { LinkHistoryPanel } from './LinkHistoryPanel';
 import { LinkPerformancePanel } from './LinkPerformancePanel';
@@ -78,6 +79,7 @@ function LinkCard({ link, canManage }: { link: TrackingLink; canManage: boolean 
           <h3 className="text-content truncate text-base font-semibold">{link.name}</h3>
           <p className="text-content-tertiary truncate text-xs">
             {link.client.name} · {link.project.name}
+            {link.influencer === null ? null : ` · ${link.influencer.name}`}
           </p>
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -218,6 +220,8 @@ export function LinksTab() {
           </Button>
         ) : null}
       </div>
+
+      <InfluencersPanel canManage={canManage} />
 
       {links.isPending ? (
         <Skeleton className="h-40 w-full" />

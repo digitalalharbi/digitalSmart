@@ -30,9 +30,16 @@ final readonly class EloquentTrackingLinkHistory implements TrackingLinkHistory
             $changed = [];
 
             if ($previous !== null) {
-                foreach ($snapshot as $field => $value) {
+                /*
+                 * The fields of both sides, not only the new one: a value that was set and is now absent is a change, and a
+                 * comparison that walked just the new snapshot would never see it.
+                 */
+                $fields = array_unique([...array_keys($snapshot), ...array_keys($previous)]);
+                sort($fields);
+
+                foreach ($fields as $field) {
                     // Compared as stored: a round trip through JSON must not read as a change.
-                    if (json_encode($previous[$field] ?? null) !== json_encode($value)) {
+                    if (json_encode($previous[$field] ?? null) !== json_encode($snapshot[$field] ?? null)) {
                         $changed[] = $field;
                     }
                 }

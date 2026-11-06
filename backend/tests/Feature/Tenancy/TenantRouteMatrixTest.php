@@ -43,6 +43,7 @@ const TENANT_PARAM_TABLES = [
     'user' => 'users',
     'task' => 'tasks',
     'link' => 'tracking_links',
+    'influencer' => 'influencers',
     'campaign' => 'campaigns',
     'dashboard' => 'dashboards',
     'tag' => 'tags',
@@ -182,6 +183,8 @@ function seedForeignGaps(): void
         'blueprint_id' => $plan?->id, 'blueprint_version' => 1, 'fingerprint' => str_repeat('a', 64), 'snapshot' => '{}', 'created_at' => now(), 'updated_at' => now()]);
     DB::table('campaign_launch_executions')->insert(['id' => (string) Str::uuid7(), 'workspace_id' => $workspace, 'launch_id' => $launch, 'provider' => 'meta',
         'external_account_id' => $binding?->external_account_id, 'idempotency_reference' => str_repeat('b', 64), 'status' => 'unknown', 'created_at' => now(), 'updated_at' => now()]);
+    $client = (string) DB::table('projects')->where('id', $project)->value('client_id');
+    $as->postJson('/api/influencers', ['client_id' => $client, 'name' => 'Foreign influencer'])->assertCreated();
     $as->postJson('/api/tracking/links', ['project_id' => $project, 'name' => 'Foreign link', 'destination_url' => 'https://shop.example.com/x'])->assertCreated();
     $as->postJson('/api/tracking/forms', [
         'project_id' => $project, 'name' => 'Foreign form', 'creates_lead' => true,
@@ -308,7 +311,7 @@ it('never shows another workspace’s records in a list, a search or a filtered 
     /* What would identify a foreign record if it appeared: ids of the things a list could name, and client names. */
     $markers = [];
 
-    foreach (['clients', 'projects', 'campaigns', 'leads', 'reports', 'tasks', 'approval_requests', 'client_requests', 'creative_requests', 'external_accounts', 'tracking_links', 'forms', 'access_requests', 'dashboards', 'tags'] as $table) {
+    foreach (['clients', 'projects', 'campaigns', 'leads', 'reports', 'tasks', 'approval_requests', 'client_requests', 'creative_requests', 'external_accounts', 'tracking_links', 'influencers', 'forms', 'access_requests', 'dashboards', 'tags'] as $table) {
         foreach (DB::table($table)->whereIn('workspace_id', $foreign)->limit(25)->pluck('id') as $id) {
             $markers[] = (string) $id;
         }

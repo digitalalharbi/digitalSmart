@@ -2107,7 +2107,10 @@
         "manual": "No synced campaign? Name it by hand",
         "goal": "Conversion goal",
         "goalHint": "What a good result from this link is. It does not change how anything is counted.",
-        "noGoal": "None chosen"
+        "noGoal": "None chosen",
+        "influencer": "Influencer",
+        "influencerHint": "Only this client's influencers are offered.",
+        "noInfluencer": "None"
       },
       "showFunnel": "Show funnel",
       "hideFunnel": "Hide funnel",
@@ -2688,6 +2691,30 @@
       "backfilled": "These are the link's values when history began; earlier changes were not recorded.",
       "note": "A click is counted under what the link carried when it arrived. Cost and performance figures read the link as it stands now.",
       "failed": "The link's history could not be loaded."
+    },
+    "influencers": {
+      "title": "Influencers",
+      "hint": "The people and accounts that promote a client's offer. A link can name one; what valid traffic their links brought is counted here. No fee is recorded, so nothing is divided by one.",
+      "none": "No influencers yet.",
+      "failed": "The influencers could not be read.",
+      "client": "Client",
+      "name": "Name",
+      "handle": "Handle",
+      "platform": "Platform",
+      "noPlatform": "Not stated",
+      "platforms": {
+        "snapchat": "Snapchat",
+        "tiktok": "TikTok",
+        "meta": "Meta",
+        "x": "X",
+        "youtube": "YouTube",
+        "other": "Other"
+      },
+      "add": "Add influencer",
+      "archive": "Archive",
+      "restore": "Restore",
+      "archived": "Archived",
+      "totals": "{{links}} links · {{clicks}} clicks"
     }
   },
   "commerce": {

@@ -91,6 +91,8 @@ export type TrackingLink = {
   creative: string | null;
   binding: LinkBinding;
   conversion_goal: ConversionGoal | null;
+  /** The influencer the link was made for, when it names one. */
+  influencer: { id: string; name: string } | null;
   channel: string;
   destination_url: string;
   utm: Record<string, string>;
@@ -117,6 +119,7 @@ export type LinkDraft = {
   ad_group_id?: string;
   ad_id?: string;
   conversion_goal?: ConversionGoal;
+  influencer_id?: string;
   channel?: string;
   utm?: Record<string, string>;
   template_patterns?: Record<string, string>;

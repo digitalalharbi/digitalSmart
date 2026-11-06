@@ -10,6 +10,7 @@ import { Field } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { returnFocus } from '@/shared/ui/return-focus';
 import { useBindingOptions, useSaveLinkMutation } from './api';
+import { useInfluencersQuery } from './influencers';
 import type { BindingOption, ConversionGoal, LinkDraft } from './types';
 
 const CHANNELS = [
@@ -48,7 +49,10 @@ export function LinkBuilder({
   const { t } = useTranslation();
   const save = useSaveLinkMutation();
   const [term, setTerm] = useState('');
-  const [project, setProject] = useState<{ id: string; label: string } | null>(null);
+  const [project, setProject] = useState<{ id: string; label: string; clientId: string } | null>(
+    null,
+  );
+  const [influencer, setInfluencer] = useState('');
   const [form, setForm] = useState({
     name: '',
     destination_url: '',
@@ -63,6 +67,8 @@ export function LinkBuilder({
   const [chain, setChain] = useState({ account: '', campaign: '', adGroup: '', ad: '' });
   const projects = useProjectsQuery({ search: term, per_page: 8 });
   const projectId = project?.id ?? null;
+  /* Only this project's client's influencers: a link can name nobody else's. */
+  const influencers = useInfluencersQuery(project?.clientId ?? null, project !== null);
   const accounts = useBindingOptions(projectId, 'accounts', null, open);
   const campaigns = useBindingOptions(
     projectId,
@@ -109,6 +115,7 @@ export function LinkBuilder({
             ...(form.creative ? { creative: form.creative } : {}),
           }),
       ...(form.conversion_goal ? { conversion_goal: form.conversion_goal as ConversionGoal } : {}),
+      ...(influencer !== '' ? { influencer_id: influencer } : {}),
     };
 
     save.mutate({ draft }, { onSuccess: () => onOpenChange(false) });
@@ -149,7 +156,17 @@ export function LinkBuilder({
               clearLabel={t('actions.clear')}
               value={project}
               onChange={(option) => {
-                setProject(option === null ? null : { id: option.id, label: option.label });
+                setProject(
+                  option === null
+                    ? null
+                    : {
+                        id: option.id,
+                        label: option.label,
+                        clientId:
+                          projects.data?.data.find((p) => p.id === option.id)?.client.id ?? '',
+                      },
+                );
+                setInfluencer('');
                 setChain({ account: '', campaign: '', adGroup: '', ad: '' });
               }}
               onSearch={setTerm}
@@ -362,6 +379,30 @@ export function LinkBuilder({
                 </div>
               )}
             </Field>
+            {(influencers.data ?? []).length > 0 ? (
+              <Field
+                label={t('tracking.links.builder.influencer')}
+                hint={t('tracking.links.builder.influencerHint')}
+              >
+                {(f) => (
+                  <div className="-mx-1 min-w-0 overflow-x-clip px-1">
+                    <select
+                      {...f}
+                      className={SELECT}
+                      value={influencer}
+                      onChange={(e) => setInfluencer(e.target.value)}
+                    >
+                      <option value="">{t('tracking.links.builder.noInfluencer')}</option>
+                      {(influencers.data ?? []).map((i) => (
+                        <option key={i.id} value={i.id}>
+                          {i.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </Field>
+            ) : null}
             <p className="text-content-tertiary text-xs">{t('tracking.links.builder.utmNote')}</p>
 
             {save.isError ? (
