@@ -137,3 +137,28 @@ it('changes a plan and an override from the console, named after the operator', 
     $detail->assertJsonPath('data.plan', 'starter')->assertJsonPath('data.overrides', 1)->assertJsonPath('data.plan_detail.overrides.0.changed_by', $operator->getAttribute('email'));
     expect(collect((array) $detail->json('data.plan_detail.features'))->firstWhere('key', 'automation')['enabled'])->toBeTrue();
 });
+
+it('shows an operator whether this server is fit to serve real users, names settings and never their values', function (): void {
+    ['owner' => $owner, 'operator' => $operator] = platformScene();
+
+    platformAs($owner)->getJson('/api/platform/readiness')->assertForbidden();
+
+    $response = platformAs($operator)->getJson('/api/platform/readiness?expect=staging')->assertOk();
+    /** @var list<array{key: string, status: string, detail: string}> $checks */
+    $checks = $response->json('data.checks');
+    $keys = array_column($checks, 'key');
+
+    expect($response->json('data.expected_environment'))->toBe('staging')
+        ->and($response->json('data.status'))->toBeIn(['pass', 'warn', 'fail'])
+        ->and($keys)->toContain('app.debug', 'app.key', 'database.default', 'queue.default');
+
+    $body = (string) $response->getContent();
+    $key = (string) config('app.key');
+    $password = (string) config('database.connections.pgsql.password');
+
+    expect($key === '' || ! str_contains($body, $key))->toBeTrue()
+        ->and($password === '' || ! str_contains($body, '"'.$password.'"'))->toBeTrue();
+
+    // An unknown environment is not echoed back: the report is for production unless told staging.
+    platformAs($operator)->getJson('/api/platform/readiness?expect=anything')->assertOk()->assertJsonPath('data.expected_environment', 'production');
+});

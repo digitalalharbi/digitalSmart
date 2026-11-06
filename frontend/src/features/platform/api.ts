@@ -118,3 +118,25 @@ export function useCreateWorkspaceMutation() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
   });
 }
+
+export type ServerReadiness = {
+  status: 'pass' | 'warn' | 'fail';
+  expected_environment: 'production' | 'staging';
+  checked_at: string;
+  checks: Array<{ key: string; status: 'pass' | 'warn' | 'fail'; detail: string }>;
+};
+
+/** This installation's configuration, checked only when asked: the check reaches the database and Redis. */
+export function useServerReadinessQuery(expect: 'production' | 'staging', enabled: boolean) {
+  return useQuery({
+    queryKey: ['platform', 'readiness', expect],
+    queryFn: async () => {
+      const { data } = await api.get<{ data: ServerReadiness }>('/platform/readiness', {
+        params: { expect },
+      });
+      return data.data;
+    },
+    enabled,
+    staleTime: 0,
+  });
+}

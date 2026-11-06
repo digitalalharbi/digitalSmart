@@ -100,6 +100,8 @@ incomplete: email that is only logged (invitations and notices stay `AWAITING_CR
 is not Redis, a database on the same machine. `--strict` makes warnings fail; `--skip-connect` checks configuration only; `--json`
 is for a pipeline. A pass is a statement about configuration — it is not a deployment, and it says nothing about live providers.
 
+The same report is on the platform console (`/platform` → **Server readiness**, `GET /api/platform/readiness?expect=staging|production`), for operators only: the server's configuration belongs to whoever runs the installation, not to one workspace. It runs only when asked, names settings and never their values, and a pass there is configuration only.
+
 ## Secrets
 
 **No secret value may exist in a repository file, a workflow literal, a commit, a log or a document.** GitHub Actions

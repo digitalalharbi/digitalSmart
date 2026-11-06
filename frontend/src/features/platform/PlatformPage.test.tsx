@@ -7,6 +7,7 @@ import { PlatformPage } from './PlatformPage';
 const state = vi.hoisted(() => ({
   operator: true,
   posts: [] as Array<{ url: string; body: unknown }>,
+  readinessAsked: [] as string[],
 }));
 
 vi.mock('@/features/auth', async () => {
@@ -58,41 +59,54 @@ vi.mock('@/shared/api/client', async (importOriginal) => {
     ...original,
     ensureCsrfCookie: () => Promise.resolve(),
     api: {
-      get: (url: string) =>
+      get: (url: string, config?: { params?: { expect?: string } }) =>
         Promise.resolve({
-          data: url.endsWith('/w1')
-            ? {
+          data: url.endsWith('/readiness')
+            ? (state.readinessAsked.push(config?.params?.expect ?? ''),
+              {
                 data: {
-                  ...ROW,
-                  plan_detail: {
-                    name: 'Agency',
-                    features: [
-                      { key: 'automation', enabled: true, source: 'plan', everywhere: false },
-                    ],
-                    limits: [
-                      {
-                        key: 'clients',
-                        allowed: null,
-                        used: 12,
-                        source: 'plan',
-                        monthly: false,
-                        resets_at: null,
-                        over: false,
-                        refuses: true,
-                      },
-                    ],
-                    overrides: [],
-                  },
-                  history: [
-                    {
-                      action: 'workspace.subscription_changed',
-                      summary: 'ops moved the subscription from active to suspended.',
-                      at: '2026-10-20T10:00:00+00:00',
-                    },
+                  status: 'fail',
+                  expected_environment: config?.params?.expect ?? 'production',
+                  checked_at: '2026-11-06T10:00:00+00:00',
+                  checks: [
+                    { key: 'app.debug', status: 'fail', detail: 'APP_DEBUG must be false.' },
+                    { key: 'app.key', status: 'pass', detail: 'APP_KEY is set.' },
                   ],
                 },
-              }
-            : { data: [ROW], meta: { total: 1 } },
+              })
+            : url.endsWith('/w1')
+              ? {
+                  data: {
+                    ...ROW,
+                    plan_detail: {
+                      name: 'Agency',
+                      features: [
+                        { key: 'automation', enabled: true, source: 'plan', everywhere: false },
+                      ],
+                      limits: [
+                        {
+                          key: 'clients',
+                          allowed: null,
+                          used: 12,
+                          source: 'plan',
+                          monthly: false,
+                          resets_at: null,
+                          over: false,
+                          refuses: true,
+                        },
+                      ],
+                      overrides: [],
+                    },
+                    history: [
+                      {
+                        action: 'workspace.subscription_changed',
+                        summary: 'ops moved the subscription from active to suspended.',
+                        at: '2026-10-20T10:00:00+00:00',
+                      },
+                    ],
+                  },
+                }
+              : { data: [ROW], meta: { total: 1 } },
         }),
       post: (url: string, body: unknown) => {
         state.posts.push({ url, body });
@@ -106,6 +120,7 @@ describe('PlatformPage', () => {
   beforeEach(() => {
     state.operator = true;
     state.posts = [];
+    state.readinessAsked = [];
   });
 
   it('declines to draw itself for somebody who is not an operator', async () => {
@@ -138,5 +153,22 @@ describe('PlatformPage', () => {
       url: '/platform/workspaces/w1/status',
       body: { status: 'active', reason: 'Paid in full' },
     });
+  });
+
+  it('checks the server only when asked, and names settings with their verdicts', async () => {
+    const user = userEvent.setup();
+    await renderWithProviders(<PlatformPage />);
+
+    await screen.findByRole('article', { name: 'Tenant One' });
+    expect(state.readinessAsked).toEqual([]);
+
+    await user.selectOptions(screen.getByLabelText('This server is'), 'staging');
+    await user.click(screen.getByRole('button', { name: 'Check now' }));
+
+    const list = await screen.findByRole('list', { name: 'Server readiness' });
+    expect(list).toHaveTextContent('app.debug');
+    expect(list).toHaveTextContent('APP_DEBUG must be false.');
+    expect(state.readinessAsked).toEqual(['staging']);
+    expect(screen.getByText(/configuration only/)).toBeInTheDocument();
   });
 });

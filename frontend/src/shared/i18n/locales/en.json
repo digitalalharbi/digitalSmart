@@ -6147,6 +6147,22 @@
       "submit": "Create workspace",
       "doneNew": "Created. Give {{email}} this one-time password; it is shown once:",
       "doneExisting": "Created. {{email}} already has an account and signs in with their own password."
+    },
+    "readiness": {
+      "title": "Server readiness",
+      "subtitle": "Whether this installation's configuration is fit to serve real users — the same report as `php artisan ops:production-check`. Settings are named, never their values.",
+      "expect": "This server is",
+      "production": "Production",
+      "staging": "Staging",
+      "run": "Check now",
+      "failed": "The check could not be read.",
+      "checkedAt": "checked {{time}}",
+      "note": "A pass here is configuration only. It is not a deployment, and it says nothing about live providers or email delivery.",
+      "status": {
+        "pass": "Pass",
+        "warn": "Warning",
+        "fail": "Fail"
+      }
     }
   },
   "subscription": {

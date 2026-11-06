@@ -18,6 +18,7 @@ import {
   useOverrideMutation,
   usePlatformWorkspaceQuery,
   usePlatformWorkspacesQuery,
+  useServerReadinessQuery,
   type NewWorkspaceDraft,
   type PlatformWorkspace,
 } from './api';
@@ -152,6 +153,8 @@ export function PlatformPage() {
           <Button onClick={() => setCreating((open) => !open)}>{t('platform.create.open')}</Button>
         </div>
 
+        <ServerReadinessPanel />
+
         {creating ? <CreateWorkspace onDone={(id) => setSelected(id)} /> : null}
 
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_14rem]">
@@ -189,6 +192,75 @@ export function PlatformPage() {
         {selected !== null ? <WorkspaceDetail id={selected} /> : null}
       </main>
     </div>
+  );
+}
+
+/**
+ * Is this server fit to serve real users — `ops:production-check`, on the console. Run only when asked, because it reaches the
+ * database and Redis. It names settings, never their values, and a pass is configuration only: not a deployment, and nothing about
+ * a live provider.
+ */
+function ServerReadinessPanel() {
+  const { t, i18n } = useTranslation();
+  const [expect, setExpect] = useState<'production' | 'staging'>('production');
+  const [asked, setAsked] = useState(false);
+  const readiness = useServerReadinessQuery(expect, asked);
+  const tone = { pass: 'success', warn: 'warning', fail: 'danger' } as const;
+
+  return (
+    <Section title={t('platform.readiness.title')}>
+      <p className="text-content-secondary text-sm">{t('platform.readiness.subtitle')}</p>
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="w-48">
+          <Select
+            label={t('platform.readiness.expect')}
+            value={expect}
+            onChange={(value) => setExpect(value === 'staging' ? 'staging' : 'production')}
+            options={[
+              { value: 'production', label: t('platform.readiness.production') },
+              { value: 'staging', label: t('platform.readiness.staging') },
+            ]}
+          />
+        </div>
+        <Button
+          variant="secondary"
+          disabled={readiness.isFetching}
+          onClick={() => (asked ? void readiness.refetch() : setAsked(true))}
+        >
+          {t('platform.readiness.run')}
+        </Button>
+      </div>
+
+      {readiness.isError ? <Alert tone="danger">{t('platform.readiness.failed')}</Alert> : null}
+
+      {readiness.data !== undefined ? (
+        <div className="flex flex-col gap-2">
+          <p className="text-content text-sm" role="status">
+            <Badge tone={tone[readiness.data.status]}>
+              {t(`platform.readiness.status.${readiness.data.status}`)}
+            </Badge>{' '}
+            {t('platform.readiness.checkedAt', {
+              time: new Intl.DateTimeFormat(localeTag(i18n.language), {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              }).format(new Date(readiness.data.checked_at)),
+            })}
+          </p>
+          <ul aria-label={t('platform.readiness.title')} className="flex flex-col gap-1.5">
+            {readiness.data.checks.map((check) => (
+              <li key={check.key} className="flex flex-wrap items-start gap-2 text-sm">
+                <Badge tone={tone[check.status]}>
+                  {t(`platform.readiness.status.${check.status}`)}
+                </Badge>
+                <code className="text-content-secondary text-xs">{check.key}</code>
+                <span className="text-content min-w-0 flex-1">{check.detail}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-content-tertiary text-xs">{t('platform.readiness.note')}</p>
+        </div>
+      ) : null}
+    </Section>
   );
 }
 
