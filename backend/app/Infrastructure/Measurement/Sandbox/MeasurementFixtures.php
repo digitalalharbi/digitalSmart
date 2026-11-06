@@ -148,7 +148,12 @@ final class MeasurementFixtures
         $position = $this->datePosition($response);
 
         if ($position === null) {
-            return $response;
+            /*
+             * Not a GA4 report: a CRM page, whose dates are ISO timestamps anywhere in the record. Without this the
+             * directive was silently inert on those pages, every deal kept the date it was written with, and the demo's
+             * pipeline aged out of every period a month after the fixture was made.
+             */
+            return $this->shiftTimestamps($response, $daysAgo);
         }
 
         $newest = $this->newestDate($response, $position);
@@ -254,6 +259,61 @@ final class MeasurementFixtures
         }
 
         return $newest;
+    }
+
+    /**
+     * Shift every ISO-8601 date in a response by the same whole number of days, so its newest lands `$daysAgo` before
+     * today. Times, offsets and the gaps between records are kept; a null date stays null.
+     *
+     * @param  array<string, mixed>  $response
+     * @return array<string, mixed>
+     */
+    private function shiftTimestamps(array $response, int $daysAgo): array
+    {
+        $newest = null;
+
+        array_walk_recursive($response, function (mixed $value) use (&$newest): void {
+            $date = is_string($value) ? $this->isoDate($value) : null;
+
+            if ($date !== null && ($newest === null || $date > $newest)) {
+                $newest = $date;
+            }
+        });
+
+        if (! $newest instanceof DateTimeImmutable) {
+            return $response;
+        }
+
+        $shift = (int) $newest->diff($this->today->modify('-'.max(0, $daysAgo).' days')->setTime(0, 0))->format('%r%a');
+
+        if ($shift === 0) {
+            return $response;
+        }
+
+        array_walk_recursive($response, function (mixed &$value) use ($shift): void {
+            if (! is_string($value) || preg_match('/^(\d{4}-\d{2}-\d{2})(T.*)?$/', $value, $matches) !== 1) {
+                return;
+            }
+
+            $date = DateTimeImmutable::createFromFormat('!Y-m-d', $matches[1]);
+
+            if ($date !== false) {
+                $value = $date->modify(($shift >= 0 ? '+' : '-').abs($shift).' days')->format('Y-m-d').($matches[2] ?? '');
+            }
+        });
+
+        return $response;
+    }
+
+    private function isoDate(string $raw): ?DateTimeImmutable
+    {
+        if (preg_match('/^(\d{4}-\d{2}-\d{2})(T.*)?$/', $raw, $matches) !== 1) {
+            return null;
+        }
+
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $matches[1]);
+
+        return $date === false ? null : $date;
     }
 
     private function parse(string $raw): ?DateTimeImmutable
