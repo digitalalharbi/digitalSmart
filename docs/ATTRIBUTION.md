@@ -85,6 +85,29 @@ nothing.
 an agency is asked and the half a report listing only winning campaigns leaves out: money spent on
 campaigns no order ever named is a tagging problem with a size, not a gap.
 
+## A click identifier can be resolved through a tracked link
+
+An order that carried a click identifier and **no campaign name** used to land on "click identifier, campaign not
+resolvable". Since tracking links record the identifiers of the visits that come through them, the order can now borrow the
+campaign of the link its click came through — `CampaignLink::TrackedLink`, labelled *Matched through a tracked link*. It is
+deliberately narrow, and each condition is tested:
+
+- the identifier is **equal**, not similar, to one recorded on a visit event;
+- the link belongs to the **same client** as the order's store, in the same workspace;
+- the visit was **valid** — test and suspected-bot traffic never credits anybody;
+- the visit came **before** the order and inside the lookback window; the earliest such visit decides, because that is the click;
+- an order that already names a campaign is **never** overridden: what it carried outranks what is inferred.
+
+The campaign is the link's `utm_campaign`, the field the order's own UTM would have held, so it joins spend by exact name like
+any other row. The join is done when attribution is read, on the same single scan, and writes nothing — an order's stored
+evidence is unchanged.
+
+**Store analytics does not do this**, deliberately: it reports what the order itself carried, so for such an order its
+campaign breakdown still says "click identifier" while attribution names the link's campaign. They answer different
+questions, and the row says which one it is.
+
+Not built: influencer entities, and joining by anything other than an exact click identifier (a visitor id, a landing time).
+
 ## The comparison is the honest surface
 
 `GET /api/attribution/comparison` runs every available model over one period and reports **where they

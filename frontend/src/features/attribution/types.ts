@@ -37,7 +37,7 @@ export type AttributionModelInfo = {
 
 /** How firmly a row ties to an ad campaign, which decides whether spend may sit beside its revenue. */
 export type CampaignLinkValue =
-  'exact_name' | 'click_not_resolved' | 'no_matching_campaign' | 'channel_only';
+  'exact_name' | 'tracked_link' | 'click_not_resolved' | 'no_matching_campaign' | 'channel_only';
 
 export type AttributionCoverage = {
   conversions: number;

@@ -45,6 +45,9 @@ use Illuminate\Support\Facades\DB;
  *     phone_key: string|null,
  *     email_key: string|null,
  *     net: int,
+ *     click_id: string|null,
+ *     client_id: string|null,
+ *     tracked_campaign: string|null,
  * }
  * @phpstan-type HistoryRow array{
  *     campaign: string|null,
@@ -200,6 +203,15 @@ final readonly class EloquentAttributionReadModel implements AttributionReadMode
              */
         }
 
+        if ($this->campaignName($order) === null && $order['tracked_campaign'] !== null) {
+            /* The order named nothing; a tracked link did, through the click identifier both carry. */
+            return [
+                'label' => $order['tracked_campaign'],
+                'link' => CampaignLink::TrackedLink,
+                'evidence' => $evidence,
+            ];
+        }
+
         return $this->link($this->campaignName($order), $evidence);
     }
 
@@ -328,6 +340,8 @@ final readonly class EloquentAttributionReadModel implements AttributionReadMode
                 'o.utm_campaign as campaign',
                 'o.coupon_code as coupon',
                 'o.utm_medium as medium',
+                'o.click_identifier as click_id',
+                's.client_id',
                 'c.phone_key',
                 'c.email_key',
                 DB::raw('(o.total_minor - coalesce(o.refunded_minor, 0)) as net'),
@@ -349,7 +363,90 @@ final readonly class EloquentAttributionReadModel implements AttributionReadMode
                 'phone_key' => $this->text($values['phone_key'] ?? null),
                 'email_key' => $this->text($values['email_key'] ?? null),
                 'net' => (int) ($values['net'] ?? 0),
+                'click_id' => $this->text($values['click_id'] ?? null),
+                'client_id' => $this->text($values['client_id'] ?? null),
+                'tracked_campaign' => null,
             ];
+        }
+
+        return $this->resolveThroughTrackedLinks($query, $orders);
+    }
+
+    /**
+     * Name the campaign of an order that carried a click identifier and no campaign, from a tracked link.
+     *
+     * Exact and narrow on purpose. The identifier must be equal, not similar; the link must belong to the same client as the
+     * order's store (a click identifier is minted by a platform, but a join across clients is the leak this product refuses);
+     * the visit must be a valid one — test and bot traffic never credits anybody — and it must have happened before the
+     * order and inside the lookback window. The earliest such visit decides, because that is the click. An order that
+     * already names a campaign is left alone: what it carried outranks what is inferred, and nothing here overrides it.
+     *
+     * @param  list<OrderRow>  $orders
+     * @return list<OrderRow>
+     */
+    private function resolveThroughTrackedLinks(AttributionQuery $query, array $orders): array
+    {
+        $wanted = [];
+
+        foreach ($orders as $order) {
+            if ($order['click_id'] !== null && $this->campaignName($order) === null) {
+                $wanted[$order['click_id']] = true;
+            }
+        }
+
+        if ($wanted === []) {
+            return $orders;
+        }
+
+        $visits = [];
+
+        foreach (array_chunk(array_keys($wanted), 500) as $chunk) {
+            $marks = implode(',', array_fill(0, count($chunk), '?'));
+
+            $rows = DB::select(
+                'select kv.value as click_id, l.client_id, l.utm_campaign as campaign, e.occurred_at '
+                .'from tracking_events e '
+                .'join tracking_links l on l.id = e.tracking_link_id and l.workspace_id = e.workspace_id '
+                .'cross join lateral jsonb_each_text(e.click_ids) as kv(key, value) '
+                ."where e.workspace_id = ? and e.traffic_class = 'valid' and l.utm_campaign is not null "
+                ."and l.utm_campaign <> '' and kv.value in ($marks) "
+                .'order by e.occurred_at asc',
+                [$query->workspaceId, ...$chunk],
+            );
+
+            foreach ($rows as $row) {
+                /** @var array<string, mixed> $values */
+                $values = (array) $row;
+                $occurred = $this->date($values['occurred_at'] ?? null);
+
+                if ($occurred === null) {
+                    continue;
+                }
+
+                $visits[(string) $values['click_id']][] = [
+                    'client_id' => (string) $values['client_id'],
+                    'campaign' => trim((string) $values['campaign']),
+                    'occurred_at' => $occurred,
+                ];
+            }
+        }
+
+        foreach ($orders as $index => $order) {
+            $placed = $order['placed_at'];
+
+            if ($order['click_id'] === null || $placed === null || $this->campaignName($order) !== null) {
+                continue;
+            }
+
+            $floor = $placed->modify(sprintf('-%d days', $query->lookbackDays));
+
+            foreach ($visits[$order['click_id']] ?? [] as $visit) {
+                if ($visit['client_id'] === $order['client_id'] && $visit['occurred_at'] <= $placed && $visit['occurred_at'] >= $floor) {
+                    $orders[$index]['tracked_campaign'] = $visit['campaign'];
+
+                    break;
+                }
+            }
         }
 
         return $orders;

@@ -25,6 +25,16 @@ enum CampaignLink: string
     case ExactName = 'exact_name';
 
     /**
+     * The order carried a click identifier and no campaign name, and the same identifier was recorded on a visit through
+     * one of this client's **tracked links** before the order was placed.
+     *
+     * The campaign is the link's, not a guess: the identifier is an exact match, the link belongs to the order's own
+     * client, the visit was a valid one and came first, and inside the lookback window. The row says the name came from a
+     * link rather than from the order, because that is a different claim from the order naming a campaign itself.
+     */
+    case TrackedLink = 'tracked_link';
+
+    /**
      * The order carried a platform click identifier and no campaign name this product can resolve.
      *
      * `gclid` and `fbclid` identify a click, and turning one into a campaign requires the platform's
@@ -42,13 +52,14 @@ enum CampaignLink: string
     /** Whether spend and revenue may appear on the same row for this link. */
     public function joinsSpend(): bool
     {
-        return $this === self::ExactName;
+        return $this === self::ExactName || $this === self::TrackedLink;
     }
 
     public function label(): string
     {
         return match ($this) {
             self::ExactName => 'Matched by campaign name',
+            self::TrackedLink => 'Matched through a tracked link',
             self::ClickNotResolved => 'Click identifier, campaign not resolvable',
             self::NoMatchingCampaign => 'No campaign of that name',
             self::ChannelOnly => 'Channel named, campaign not',
@@ -60,6 +71,8 @@ enum CampaignLink: string
     {
         return match ($this) {
             self::ExactName => null,
+            self::TrackedLink => 'The order carried no campaign name. Its click identifier was recorded on a visit through one '
+                .'of this client\'s tracked links, so the campaign is that link\'s.',
             self::ClickNotResolved => 'The order carried a platform click identifier. Resolving one to '
                 .'a campaign needs the platform\'s click-level API, which this product does not read.',
             self::NoMatchingCampaign => 'No campaign of this name exists in the connected ad accounts. '

@@ -5,6 +5,21 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## Attribution: an order's click identifier can be resolved through a tracked link
+
+### Added
+- **`CampaignLink::TrackedLink`** (*Matched through a tracked link*). An order that carried a click identifier and no
+  campaign name takes the campaign of the tracked link that identifier was recorded through — exact match only, the same
+  client and workspace, a valid visit that came before the order and inside the lookback window, the earliest such visit
+  deciding. Test and bot traffic and another client's links never credit anyone, and an order that names its own campaign is
+  never overridden. It joins spend by exact name like any other row and writes nothing (`AttributionTest`, 5 new; the positive
+  case fails without the change).
+
+### Stated plainly
+- Store analytics still reports what the order itself carried, so for such an order its breakdown says "click identifier" while
+  attribution names the link's campaign (`docs/ATTRIBUTION.md`).
+- Not built: an influencer entity, and any join other than an exact click identifier (`DS-P0-LINK-02` stays `PARTIAL`).
+
 ## Operations: whether this server is fit for real users, on the platform console
 
 ### Added
