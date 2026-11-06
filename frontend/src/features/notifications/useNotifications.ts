@@ -4,6 +4,7 @@ import { queryKeys } from '@/shared/api/query-keys';
 import { connectRealtime, isRealtimeConfigured } from '@/shared/realtime/echo';
 import {
   dismissNotification,
+  endNotificationSnooze,
   fetchNotificationPreferences,
   fetchNotificationVocabulary,
   fetchNotifications,
@@ -11,6 +12,7 @@ import {
   markNotificationClicked,
   markNotificationRead,
   saveNotificationPreferences,
+  snoozeNotifications,
 } from './api';
 import type { NotificationCategoryValue } from './types';
 
@@ -132,6 +134,19 @@ export function useSavePreferencesMutation() {
 
   return useMutation({
     mutationFn: saveNotificationPreferences,
+    onSuccess: (saved) => {
+      client.setQueryData(queryKeys.notifications.preferences(), saved);
+    },
+  });
+}
+
+/** Snooze for a number of minutes, or end the snooze with null. The cache takes the server's answer. */
+export function useSnoozeMutation() {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (minutes: number | null) =>
+      minutes === null ? endNotificationSnooze() : snoozeNotifications(minutes),
     onSuccess: (saved) => {
       client.setQueryData(queryKeys.notifications.preferences(), saved);
     },

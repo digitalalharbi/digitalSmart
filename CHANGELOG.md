@@ -5,6 +5,19 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## Notifications: quiet hours and snooze — interruption withheld, nothing lost
+
+### Added
+- **Quiet hours** per person (`quiet_from`, `quiet_until`, local hours in their zone or the workspace's; the window may
+  wrap midnight) and a **snooze** of fifteen minutes to a week (`POST` / `DELETE /api/notifications/snooze`).
+- Inside either, the notification **is still written** to the bell; the realtime push is withheld, and a copy over email
+  or WhatsApp is not attempted — its delivery row says **`held`** with the reason. Nothing held is sent later.
+- A **critical** alert interrupts anyway; a **digest never does**, whatever it found. A snooze ends by itself; saving
+  preferences neither starts nor ends one. Both are the person's own (`QuietHoursTest`, 9; `DigestSettings.test.tsx`, 2).
+
+### Not yet
+- A window per category or per weekday; catching up on what was held.
+
 ## Tracking: a link keeps the history of where it pointed
 
 ### Added

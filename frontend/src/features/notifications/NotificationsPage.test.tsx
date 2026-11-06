@@ -53,6 +53,9 @@ const state = vi.hoisted(() => ({
     client_id: null,
     project_ids: null,
     muted_categories: [],
+    quiet_from: null,
+    quiet_until: null,
+    snoozed_until: null,
     channel_availability: [
       { channel: 'in_app', label: 'In the app', availability: 'available' },
       { channel: 'email', label: 'Email', availability: 'awaiting_credentials' },

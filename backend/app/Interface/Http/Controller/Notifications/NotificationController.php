@@ -9,6 +9,7 @@ use App\Application\Notifications\Command\MarkAllRead;
 use App\Application\Notifications\Command\MarkClicked;
 use App\Application\Notifications\Command\MarkRead;
 use App\Application\Notifications\Command\SaveNotificationPreferences;
+use App\Application\Notifications\Command\SnoozeNotifications;
 use App\Application\Notifications\DTO\NotificationPreferences;
 use App\Application\Notifications\Query\GetNotificationPreferences;
 use App\Application\Notifications\Query\GetNotifications;
@@ -93,6 +94,8 @@ final class NotificationController extends Controller
             'project_ids.*' => ['uuid'],
             'muted_categories' => ['present', 'array'],
             'muted_categories.*' => ['string', Rule::in(NotificationCategory::values())],
+            'quiet_from' => ['sometimes', 'nullable', 'integer', 'between:0,23'],
+            'quiet_until' => ['sometimes', 'nullable', 'integer', 'between:0,23'],
         ]);
 
         /** @var list<string> $channels */
@@ -112,9 +115,23 @@ final class NotificationController extends Controller
             clientId: isset($validated['client_id']) ? (string) $validated['client_id'] : null,
             projectIds: $projects,
             mutedCategories: array_map(static fn (string $c): NotificationCategory => NotificationCategory::from($c), $muted),
+            quietFrom: isset($validated['quiet_from']) ? (int) $validated['quiet_from'] : null,
+            quietUntil: isset($validated['quiet_until']) ? (int) $validated['quiet_until'] : null,
         ));
 
         return response()->json(['data' => NotificationResource::preferences($saved)]);
+    }
+
+    public function snooze(Request $request, SnoozeNotifications $snooze): JsonResponse
+    {
+        $validated = $request->validate(['minutes' => ['required', 'integer']]);
+
+        return response()->json(['data' => NotificationResource::preferences($snooze((int) $validated['minutes']))]);
+    }
+
+    public function endSnooze(SnoozeNotifications $snooze): JsonResponse
+    {
+        return response()->json(['data' => NotificationResource::preferences($snooze(null))]);
     }
 
     public function readAll(MarkAllRead $mark, GetNotifications $query): JsonResponse
