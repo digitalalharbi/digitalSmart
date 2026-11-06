@@ -725,3 +725,114 @@ describe('access', function (): void {
         expect($data['coverage']['conversions'])->toBe(0);
     });
 });
+
+/**
+ * A tracked link of the client's, and one visit through it that carried a click identifier.
+ *
+ * @param  array{scenario: WorkspaceScenario, client: Client, project: Project, store: Store}  $setup
+ * @param  array<string, mixed>  $visit
+ */
+function visitThroughTrackedLink(array $setup, string $clickId, string $utmCampaign, array $visit = [], ?string $clientId = null): void
+{
+    $workspaceId = (string) $setup['scenario']->workspace->getKey();
+    $linkId = (string) Illuminate\Support\Str::uuid7();
+
+    DB::table('tracking_links')->insert([
+        'id' => $linkId,
+        'workspace_id' => $workspaceId,
+        'client_id' => $clientId ?? (string) $setup['client']->getKey(),
+        'project_id' => (string) $setup['project']->getKey(),
+        'public_token' => substr(bin2hex(random_bytes(12)), 0, 24),
+        'name' => 'Link '.$utmCampaign,
+        'channel' => 'paid',
+        'destination_url' => 'https://shop.example.com/',
+        'utm_source' => 'meta',
+        'utm_medium' => 'cpc',
+        'utm_campaign' => $utmCampaign,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    DB::table('tracking_events')->insert([
+        'id' => (string) Illuminate\Support\Str::uuid7(),
+        'workspace_id' => $workspaceId,
+        'project_id' => (string) $setup['project']->getKey(),
+        'tracking_link_id' => $linkId,
+        'event_id' => bin2hex(random_bytes(8)),
+        'name' => 'landing_view',
+        'visitor_id' => bin2hex(random_bytes(8)),
+        'traffic_class' => $visit['traffic_class'] ?? 'valid',
+        'click_ids' => json_encode(['fbclid' => $clickId], JSON_THROW_ON_ERROR),
+        'occurred_at' => $visit['at'] ?? '2026-10-09 09:00:00',
+    ]);
+}
+
+describe('joining tracked links to orders', function (): void {
+    it('names the campaign of an order that carried only a click identifier, from the link that click came through', function (): void {
+        $setup = attributionScenario();
+        spendOnCampaign($setup, 'autumn-range', 100_000);
+        visitThroughTrackedLink($setup, 'fbclid-abc', 'autumn-range');
+        writeAttributedOrders($setup, [attributedOrder('o-1', 500_000, ['click' => 'fbclid-abc'])]);
+
+        $data = fetchAttribution($setup);
+        $row = $data['rows'][0];
+
+        expect($row['label'])->toBe('autumn-range')
+            ->and($row['link'])->toBe('tracked_link')
+            ->and($row['joins_spend'])->toBeTrue()
+            ->and($row['spend_minor'])->toBe(100_000)
+            ->and($data['coverage']['campaign_named_conversions'])->toBe(1);
+    });
+
+    it('does nothing for a click identifier no tracked link recorded', function (): void {
+        $setup = attributionScenario();
+        visitThroughTrackedLink($setup, 'fbclid-other', 'autumn-range');
+        writeAttributedOrders($setup, [attributedOrder('o-1', 500_000, ['click' => 'fbclid-abc'])]);
+
+        expect(fetchAttribution($setup)['rows'][0]['link'])->toBe('click_not_resolved');
+    });
+
+    it('never overrides a campaign the order itself named', function (): void {
+        $setup = attributionScenario();
+        visitThroughTrackedLink($setup, 'fbclid-abc', 'from-the-link');
+        writeAttributedOrders($setup, [attributedOrder('o-1', 500_000, ['click' => 'fbclid-abc', 'source' => 'meta', 'campaign' => 'from-the-order'])]);
+
+        $row = fetchAttribution($setup)['rows'][0];
+
+        expect($row['label'])->toBe('from-the-order')
+            ->and($row['link'])->not->toBe('tracked_link');
+    });
+
+    it('ignores test and bot traffic, a visit after the order, a visit outside the window, and another client\'s link', function (): void {
+        $setup = attributionScenario();
+        $other = Client::factory()->create(['workspace_id' => $setup['scenario']->workspace->getKey()]);
+
+        visitThroughTrackedLink($setup, 'click-test', 'camp-test', ['traffic_class' => 'test']);
+        visitThroughTrackedLink($setup, 'click-bot', 'camp-bot', ['traffic_class' => 'suspected_bot']);
+        visitThroughTrackedLink($setup, 'click-after', 'camp-after', ['at' => '2026-10-11 09:00:00']);
+        visitThroughTrackedLink($setup, 'click-old', 'camp-old', ['at' => '2026-05-01 09:00:00']);
+        visitThroughTrackedLink($setup, 'click-other', 'camp-other', [], (string) $other->getKey());
+
+        writeAttributedOrders($setup, [
+            attributedOrder('o-1', 100_000, ['click' => 'click-test']),
+            attributedOrder('o-2', 100_000, ['click' => 'click-bot']),
+            attributedOrder('o-3', 100_000, ['click' => 'click-after']),
+            attributedOrder('o-4', 100_000, ['click' => 'click-old']),
+            attributedOrder('o-5', 100_000, ['click' => 'click-other']),
+        ]);
+
+        $rows = fetchAttribution($setup)['rows'];
+
+        expect(array_column($rows, 'link'))->toBe(['click_not_resolved'])
+            ->and($rows[0]['conversions'])->toBe(5);
+    });
+
+    it('never reads another workspace\'s visits', function (): void {
+        $setup = attributionScenario();
+        $stranger = attributionScenario();
+        visitThroughTrackedLink($stranger, 'fbclid-abc', 'their-campaign');
+        writeAttributedOrders($setup, [attributedOrder('o-1', 500_000, ['click' => 'fbclid-abc'])]);
+
+        expect(fetchAttribution($setup)['rows'][0]['link'])->toBe('click_not_resolved');
+    });
+});
