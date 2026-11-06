@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { safeReturnPath } from './returnPath';
+import { safeReturnPath, signInDestination } from './returnPath';
 
 describe('safeReturnPath', () => {
   it('returns a page of this app', () => {
@@ -29,5 +29,51 @@ describe('safeReturnPath', () => {
     expect(safeReturnPath(null)).toBe('/');
     expect(safeReturnPath({ from: '/reports' })).toBe('/');
     expect(safeReturnPath('/' + 'a'.repeat(600))).toBe('/');
+  });
+});
+
+describe('signInDestination', () => {
+  const workspace = { id: 'w1' };
+  const staff = { permissions: ['clients.view', 'portal.view'], active_workspace: workspace };
+  const client = {
+    permissions: ['portal.read', 'client_requests.submit'],
+    active_workspace: workspace,
+  };
+
+  it('returns agency staff to the page they were headed for', () => {
+    expect(signInDestination('/reports/abc', staff)).toBe('/reports/abc');
+    expect(signInDestination('/portal/performance', staff)).toBe('/portal/performance');
+  });
+
+  it('sends a client to their portal, whatever page was remembered', () => {
+    expect(signInDestination('/clients', client)).toBe('/portal');
+    expect(signInDestination(undefined, client)).toBe('/portal');
+    expect(signInDestination('/portal/reports?x=1', client)).toBe('/portal/reports?x=1');
+  });
+
+  it('keeps staff with no portal out of the portal shell', () => {
+    expect(
+      signInDestination('/portal', { permissions: ['clients.view'], active_workspace: workspace }),
+    ).toBe('/');
+  });
+
+  it('opens the console for an operator with no workspace, and offers it to nobody else', () => {
+    expect(
+      signInDestination('/clients', {
+        permissions: [],
+        active_workspace: null,
+        is_platform_operator: true,
+      }),
+    ).toBe('/platform');
+    expect(signInDestination('/platform', staff)).toBe('/');
+    expect(signInDestination('/platform', { ...staff, is_platform_operator: true })).toBe(
+      '/platform',
+    );
+    expect(signInDestination('/clients', { permissions: [], active_workspace: null })).toBe('/');
+  });
+
+  it('still refuses anything that is not a page of this app', () => {
+    expect(signInDestination('//evil.example', staff)).toBe('/');
+    expect(signInDestination('https://evil.example/', client)).toBe('/portal');
   });
 });
