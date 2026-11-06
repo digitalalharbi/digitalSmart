@@ -5,6 +5,20 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## Sign-in lands in the application the person uses
+
+### Changed
+- **After signing in, the remembered page is used only if it belongs to the person's application** (`signInDestination`):
+  a client (`portal.read` without `portal.view`, the server's rule) goes to `/portal` whatever agency page was
+  remembered; staff with no portal to read are sent home from `/portal`; a platform operator with no workspace opens
+  `/platform`, which nobody else is sent to. The open-redirect checks of `safeReturnPath` still apply first. This
+  decides which application to draw, never what may be read.
+
+### Added
+- End-to-end: staff return to the page they were headed for; a client sent to sign in from `/clients` lands on their
+  portal with no client table drawn; **signing out in one tab ends the session in the other** — its next page shows no
+  client data and goes to sign-in.
+
 ## Notifications: quiet hours and snooze — interruption withheld, nothing lost
 
 ### Added
