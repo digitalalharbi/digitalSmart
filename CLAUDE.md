@@ -25,9 +25,12 @@ Then read, in this order — they are the project's own record and they outrank 
 
 **Read on demand — deliberately not loaded into every request.** Measured on 2026-11-06 against this
 machine's own session transcripts: these three were pulled into the context of *every* message at a
-cost of ~124,000 tokens each time, which came to roughly a fifth of a month's entire token use, for
-documents a session needs occasionally rather than always. They are still part of the project's
-record; open them when the work calls for them.
+cost of ~124,000 tokens each time, for documents a session needs occasionally rather than always.
+Measured from the files themselves, the `@` list went from ~139,000 tokens to ~15,700 — an 88.7% cut
+in autoload weight. **That is a measurement of the load, not of a saving**: what it returns in actual
+consumption is only knowable from later sessions, and is not claimed here. Token counts are derived
+from file size (bytes ÷ 4), so ±15%. They are still part of the project's record; open them when the
+work calls for them.
 
 - `CHANGELOG.md` (~102,000 tokens) — what has landed. Read it, or `grep` it, when the history of a
   change matters. **Still write to it**: the entry a change earns is unchanged by this.
