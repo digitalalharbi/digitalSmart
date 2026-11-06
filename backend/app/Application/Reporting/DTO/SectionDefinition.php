@@ -28,6 +28,11 @@ final readonly class SectionDefinition
         public ?CreativeView $creativeView = null,
         /** Which view of the client's tracking a tracking section shows; null for every other kind. */
         public ?TrackingView $trackingView = null,
+        /**
+         * Kept in the definition and rendered nowhere — not the live view, a shared link, a snapshot or an export.
+         * Enforced where the report is rendered, so no client of the API can show what the author switched off.
+         */
+        public bool $hidden = false,
     ) {}
 
     /**

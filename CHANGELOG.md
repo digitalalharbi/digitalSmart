@@ -25,6 +25,20 @@ All notable changes to digitalSmart are recorded here. Format follows
 ### Not changed
 - No code, no workflow, no script. `AWAITING_SERVER_ACCESS` is still the status and nothing is `LIVE_VERIFIED`.
 
+## Reports: a section can be hidden without being deleted, and the server is what hides it
+
+### Added
+- **`hidden` on a report section.** A hidden section stays in the definition — where the builder edits it — and is rendered
+  nowhere: not the live view, a shared link, a snapshot, the CSV/XLSX, a deck or the portal. `RenderReport` leaves it out, and
+  every one of those reads that method, so no client of the API can show what the author switched off. Switching it back on
+  shows it again at the same link.
+- **A report whose every section is hidden is refused** (`422 every_section_hidden`); the builder disables the switch on the
+  last visible section. A copy keeps the flags. Every existing section stays visible.
+- An eye switch on each section in the report builder, with the sentence saying where it will not appear.
+
+### Not yet
+- Hiding one field or metric inside a section; a report PDF (`DS-P0-REP-06`).
+
 ## Operations: whether this server can send email, beside main and deploy
 
 ### Added
