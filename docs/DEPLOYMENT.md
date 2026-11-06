@@ -9,6 +9,56 @@ Claude Code → branch → pull request → required CI (governance, backend, fr
 no production server yet (`docs/PRODUCTION.md`). Until the owner supplies the values below and sets
 `PRODUCTION_ENABLED=true`, a merge to `main` runs only the job that says so — no deployment is recorded.
 
+## Assessment of the available server — 2026-11-06
+
+The owner's hosting account was read, read-only, to answer one question: is there already a server this product
+could deploy to? **There is one, and it is not available for this.** Recorded here so the question is not
+re-opened from nothing in six months, and so nobody assumes the existing server is spare.
+
+**What exists.** One VPS, on a one-vCPU plan with 4 GB of memory and a 50 GB disk (Ubuntu 24.04 LTS). It is not
+idle: it serves production for two of the owner's other projects. There is **no domain for digitalSmart in the
+account at all** — not a spare one, not a subdomain.
+
+**What it has left.** Measured over roughly 24 hours, not sampled once:
+
+| | Measured |
+|---|---|
+| CPU | 25–57% of its single core, averaging about 30% |
+| Memory | 2.1–2.5 GB of 4 GB in use — roughly 1.8 GB free |
+| Disk | 31.9 GB of 50 GB in use — 18–20 GB free |
+
+**The critical reason it is refused, and it is a build rather than a capacity argument.** This pipeline builds on
+the server: `scripts/deploy/deploy-production.sh` runs `composer install`, then `npm ci && npm run build`, inside
+the new release directory on **every** deploy. A Vite production build of this frontend on one core with about
+1.8 GB free is the most likely point of failure in the whole procedure, and the likely failure is the kernel's
+out-of-memory killer rather than a clean error — on a host that is serving two other live products while it
+happens. A deploy of digitalSmart would then be an outage of somebody else's. The disk is the lesser problem: the
+deploy refuses below 2 GB free, which today's 18–20 GB clears, and a release directory plus `node_modules` plus
+the five kept releases eat into that from the first deploy onwards.
+
+It also runs against the owner's standing rule in `~/.claude/CLAUDE.md` never to mix projects or deployments, but
+the memory argument stands on its own.
+
+**This is an engineering judgement, not a measured failure.** Nothing was installed, built, deployed or changed on
+that server; no deploy was attempted. What is measured is the headroom, and what is reasoned from it is the build
+step. **The server decision is the owner's** — a larger plan, a build moved off the server, or a second machine are
+all his to choose between, and none of them is taken here.
+
+## What raising `AWAITING_SERVER_ACCESS` actually takes
+
+In this order, because each one is useless without the one before it:
+
+1. **A separate server** for digitalSmart — not the one above. Enough memory for a Node build beside PHP-FPM,
+   Postgres, Redis, Horizon and Reverb, or a deploy that builds elsewhere and ships the artefact.
+2. **A domain for digitalSmart**, with DNS and a certificate. The account holds none, so this is a purchase or a
+   delegation rather than a setting.
+3. **The server's own details** — SSH user, port, deploy path, host key, web-server arrangement, process names —
+   and `shared/.env` plus `shared/deploy.env` filled on the server (*First-time setup*, below).
+4. **The six `PRODUCTION_*` secrets** in the `production` environment, and the repository variable
+   `PRODUCTION_ENABLED=true` (*Secrets*, below).
+
+Until all four exist, `AWAITING_SERVER_ACCESS` is the honest status and nothing here is `LIVE_VERIFIED`.
+
 ## What triggers a deploy
 
 | Event | Deploys? |

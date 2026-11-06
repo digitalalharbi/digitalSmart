@@ -17,8 +17,8 @@ Updated 2026-11-05.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `14dc4a5` — feat(notifications): quiet hours and snooze — still written to the bell, not pushed, and the email copy is held, not lost (#105) |
-| Full sha | `14dc4a5ebcf1a9d04c60c4d6e4081bc8c305754f` |
+| Commit | `9d26605` — docs(deployment): the one available server was assessed and is not the production server (#102) |
+| Full sha | `9d2660590423ead46be98f9d45e66c9e49049657` |
 | Evidence | #100 merged at head `e0ba45a` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
 
 Verify, do not trust:
