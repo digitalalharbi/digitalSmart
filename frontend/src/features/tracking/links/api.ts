@@ -8,6 +8,7 @@ import type {
   LinkStatus,
   LinkTemplate,
   TrackingLink,
+  LinkRevision,
 } from './types';
 
 const KEY = ['tracking', 'links'] as const;
@@ -122,6 +123,17 @@ export function useLinkPerformanceQuery(
           params: { from: day(from), to: day(to), ...(allocate ? { allocate: 'clicks' } : {}) },
         },
       );
+
+      return data.data;
+    },
+  });
+}
+
+export function useLinkHistoryQuery(linkId: string) {
+  return useQuery({
+    queryKey: ['tracking', 'link-history', linkId] as const,
+    queryFn: async (): Promise<LinkRevision[]> => {
+      const { data } = await api.get<{ data: LinkRevision[] }>(`/tracking/links/${linkId}/history`);
 
       return data.data;
     },

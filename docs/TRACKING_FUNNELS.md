@@ -260,3 +260,20 @@ visitor → POST /api/public/forms/{token}/submit → form_submissions → [crea
 - Report views: `roi`, `campaign_funnel`, `lead_quality`, `sales_funnel`, `response` (CHECK re-derived from the enum). They read
   the same calculator with no actor, so a shared link renders them.
 - Not built: form and owner filters on the whole view; ROAS from CRM-won or platform-reported revenue (neither is joined to a link).
+
+## Link history — what a link said when a click arrived
+
+A click is recorded against a link, and a link can be edited afterwards. `tracking_link_revisions` keeps every state the
+link was in: one row when it is created and one whenever a value a click is attributed by changes — destination, platform,
+channel, account, campaign / ad group / ad / creative (names and bound ids), conversion goal, the five UTMs, custom
+parameters. Name, notes, objective and expiry write nothing. Rows are never updated.
+
+`GET /api/tracking/links/{link}/history` (`tracking.view`, project visibility as on the link) returns the revisions newest
+first, each with what changed, who changed it, when it was in force and the **valid clicks that arrived in that window**.
+The Links tab shows it under *History*, with each changed value before and after.
+
+| Stated plainly | |
+|---|---|
+| Links that existed before this table | One revision with today's values, `backfilled: true`. What they said earlier was not recorded and is not reconstructed. |
+| Performance, cost and funnel figures | Still read the link **as it stands now**. The history is where earlier clicks stay readable under what they carried; re-pointing those reads at the revision in force is not built. |
+| Status changes (pause, resume, archive) | Not a revision: they change whether the link answers, not what a click carries. |

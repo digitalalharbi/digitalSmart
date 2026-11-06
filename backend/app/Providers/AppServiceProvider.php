@@ -200,6 +200,7 @@ use App\Application\Tracking\Contract\ProviderDispatchStore;
 use App\Application\Tracking\Contract\TrackingAnalyticsReadModel;
 use App\Application\Tracking\Contract\TrackingEventStore;
 use App\Application\Tracking\Contract\TrackingHealthReadModel;
+use App\Application\Tracking\Contract\TrackingLinkHistory;
 use App\Application\Tracking\Contract\TrackingLinkRepository;
 use App\Application\Tracking\Contract\TrackingOperationsReadModel;
 use App\Application\Tracking\Contract\TrackingPolicyRepository;
@@ -355,6 +356,7 @@ use App\Infrastructure\Persistence\Eloquent\Repository\EloquentToolCallLog;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingAnalyticsReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingEventStore;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingHealthReadModel;
+use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingLinkHistory;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingLinkRepository;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingOperationsReadModel;
 use App\Infrastructure\Persistence\Eloquent\Repository\EloquentTrackingPolicyRepository;
@@ -532,6 +534,7 @@ final class AppServiceProvider extends ServiceProvider
         TagStore::class => EloquentTagStore::class,
         AccessRequestRepository::class => EloquentAccessRequestRepository::class,
         AccessInvitationRepository::class => EloquentAccessInvitationRepository::class,
+        TrackingLinkHistory::class => EloquentTrackingLinkHistory::class,
         TrackingLinkRepository::class => EloquentTrackingLinkRepository::class,
         CampaignBindingResolver::class => EloquentCampaignBindingResolver::class,
         LeadAutomationRepository::class => EloquentLeadAutomationRepository::class,

@@ -2674,6 +2674,20 @@
         "high_cpl": "{{subject}}: cost per lead is well above the other links",
         "slow_follow_up": "Leads are not being tried inside the promised time"
       }
+    },
+    "history": {
+      "title": "Link history",
+      "show": "History",
+      "hide": "Hide history",
+      "revision": "Version {{n}}",
+      "current": "In force now",
+      "since": "since {{from}}",
+      "between": "{{from}} – {{until}}",
+      "clicks": "Valid clicks while in force: {{n}}",
+      "by": "changed by {{name}}",
+      "backfilled": "These are the link's values when history began; earlier changes were not recorded.",
+      "note": "A click is counted under what the link carried when it arrived. Cost and performance figures read the link as it stands now.",
+      "failed": "The link's history could not be loaded."
     }
   },
   "commerce": {
