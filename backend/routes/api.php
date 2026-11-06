@@ -217,6 +217,7 @@ Route::post('public/track', [PublicTrackingController::class, 'event'])
  * plan can stop the platform from resuming it. Each action authorises the caller as an operator in the application layer.
  */
 Route::middleware(['auth:sanctum', RestrictMcpTokens::class])->prefix('platform')->name('platform.')->group(function (): void {
+    Route::get('readiness', [PlatformController::class, 'readiness'])->name('readiness');
     Route::get('workspaces', [PlatformController::class, 'index'])->name('workspaces.index');
     Route::post('workspaces', [PlatformController::class, 'store'])->name('workspaces.store');
     Route::get('workspaces/{workspace}', [PlatformController::class, 'show'])->whereUuid('workspace')->name('workspaces.show');

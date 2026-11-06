@@ -11,6 +11,7 @@ use App\Application\Platform\DTO\NewWorkspace;
 use App\Application\Platform\DTO\PlatformWorkspaceRow;
 use App\Application\Platform\PlatformAccess;
 use App\Application\Platform\Query\GetPlatformWorkspace;
+use App\Application\Platform\Query\GetServerReadiness;
 use App\Application\Platform\Query\ListPlatformWorkspaces;
 use App\Application\Saas\Command\ChangeWorkspacePlan;
 use App\Application\Saas\Command\OverrideEntitlement;
@@ -46,6 +47,12 @@ final class PlatformController extends Controller
             'data' => array_map($this->row(...), $result['rows']),
             'meta' => ['total' => $result['total']],
         ]);
+    }
+
+    /** This installation's configuration, checked now. `expect=staging` for a staging server. */
+    public function readiness(Request $request, GetServerReadiness $readiness): JsonResponse
+    {
+        return response()->json(['data' => $readiness($this->caller($request), $request->string('expect')->toString() ?: 'production')]);
     }
 
     public function show(Request $request, string $workspace, GetPlatformWorkspace $get): JsonResponse

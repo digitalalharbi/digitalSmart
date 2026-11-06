@@ -17,8 +17,8 @@ Updated 2026-11-05.
 |---|---|
 | Repository | `digitalalharbi/digitalSmart` (public) |
 | Branch | `main` |
-| Commit | `9d26605` — docs(deployment): the one available server was assessed and is not the production server (#102) |
-| Full sha | `9d2660590423ead46be98f9d45e66c9e49049657` |
+| Commit | `c81c4ac` — chore(claude-md): read the changelog, roadmap and agents doc on demand instead of loading them into every request (#107) |
+| Full sha | `c81c4acdec95e724c098b334b26153ad7df5f75d` |
 | Evidence | #100 merged at head `e0ba45a` with Governance, Backend, Frontend and E2E green and up to date. **Nothing is deployed** (`AWAITING_SERVER_ACCESS`) and no email has been sent |
 
 Verify, do not trust:
@@ -31,7 +31,7 @@ git fetch origin && git log --oneline -10 origin/main && git status
 
 | PR | Branch | Title |
 |---|---|---|
-| the PR carrying this file | `feat/signin-destination` | feat(auth): sign-in lands in the application the person uses — once it is on `main`, none is open |
+| the PR carrying this file | `feat/readiness-surface` | feat(platform): server readiness on the console — once it is on `main`, none is open |
 
 CI on each is the authority — `Governance`, `Backend` and `Frontend` are required and the branch
 must be up to date with `main`:

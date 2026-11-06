@@ -5,6 +5,19 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## Operations: whether this server is fit for real users, on the platform console
+
+### Added
+- **`php artisan ops:production-check`** reaches `main` (it had been written on 2026-10-29 and never opened as a pull request,
+  though the requirements matrix already counted it). Read-only and printing no secret value, it fails on what would expose a
+  real server — debug on, an http `APP_URL`, a session cookie not secure-only, local addresses in the stateful domains or
+  CORS origins, the compose database password, a default other than PostgreSQL, a queue other than Redis, storage unwritable
+  or nearly full, a database or Redis that does not answer, a migration not run — and warns on what is honest but
+  incomplete. `--expect-env=staging`, `--skip-connect`, `--strict`, `--json`.
+- **Server readiness on the platform console** (`GET /api/platform/readiness`): the same report for platform operators only,
+  because a server's configuration belongs to whoever runs the installation, not to one workspace. Run only when an operator
+  presses *Check now*; settings are named, never their values; and a pass is labelled as configuration only — not a deployment,
+  and nothing about live providers or email.
 ## Session bootstrap: the changelog, roadmap and agents doc are read on demand, not loaded into every request
 
 ### Changed
