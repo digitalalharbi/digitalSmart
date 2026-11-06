@@ -5,6 +5,27 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## Session bootstrap: the changelog, roadmap and agents doc are read on demand, not loaded into every request
+
+### Changed
+- **`CLAUDE.md` no longer pulls `CHANGELOG.md`, `docs/ROADMAP.md` or `docs/AGENTS.md` in with `@`.** An `@` reference
+  loads the whole document into the context of *every* message. Measured on 2026-11-06 from the owner's own session
+  transcripts (579 files, 153,122 unique API responses): those three came to **~124,000 tokens on every message** —
+  over October's 52,405 requests that is **~6.5 billion tokens of context carried**, spent re-reading a 406 KB
+  historical changelog and a plan that a session wants occasionally rather than always. Measured from the files
+  themselves, the `@` list goes from **~139,000 tokens to ~15,700 — an 88.7% cut in autoload weight**. That measures
+  what is *loaded*, not what is *saved*: the effect on actual consumption is only knowable from sessions run after
+  this lands, and is not claimed here. Counts are derived from file size (bytes ÷ 4), ±15%.
+- They keep their place in the bootstrap list, named as read-on-demand, **with the measurement and the cost written
+  beside them** so the next session knows what putting the `@` back would buy. `docs/ARCHITECTURE.md` (~1,600 tokens)
+  keeps its `@`: it is small and it is wanted before the first edit.
+
+### Not changed
+- Nothing about what these documents are for. **The entry a change earns in this file is unchanged**, the roadmap is
+  still the plan, and `docs/RESUME_STATE.md`, `docs/CHANGE_MANAGEMENT.md`, `docs/EXECUTION_POLICY.md`,
+  `docs/CI_STATUS.md`, `docs/DEPLOYMENT.md` and `docs/PROJECT_STATE.md` are all still loaded every session — together
+  they are about 8,000 tokens, which is the right price for the project's live state.
+
 ## Sign-in lands in the application the person uses
 
 ### Changed
@@ -18,6 +39,7 @@ All notable changes to digitalSmart are recorded here. Format follows
 - End-to-end: staff return to the page they were headed for; a client sent to sign in from `/clients` lands on their
   portal with no client table drawn; **signing out in one tab ends the session in the other** — its next page shows no
   client data and goes to sign-in.
+
 ## Operations: the one available server was assessed, and it is not the production server
 
 ### Recorded
@@ -37,6 +59,7 @@ All notable changes to digitalSmart are recorded here. Format follows
 
 ### Not changed
 - No code, no workflow, no script. `AWAITING_SERVER_ACCESS` is still the status and nothing is `LIVE_VERIFIED`.
+
 
 ## Notifications: quiet hours and snooze — interruption withheld, nothing lost
 
