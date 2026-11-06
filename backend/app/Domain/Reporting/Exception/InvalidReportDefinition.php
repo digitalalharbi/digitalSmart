@@ -42,6 +42,14 @@ final class InvalidReportDefinition extends RuntimeException
         );
     }
 
+    public static function everySectionHidden(): self
+    {
+        return new self(
+            'Every section of this report is hidden. Show at least one: a report with nothing in it reads as a broken one.',
+            'every_section_hidden',
+        );
+    }
+
     public static function metricsRequired(SectionKind $kind): self
     {
         return new self(

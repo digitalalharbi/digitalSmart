@@ -243,6 +243,13 @@ reporting on their own performance to a client, with nobody reading it first, is
 this module exists to keep. The interface says why rather than hiding the control: hiding it
 produces a support question, the sentence produces a conversation.
 
+### Hiding a section
+
+A section carries `hidden`. A hidden section stays in the definition (`GET /api/reports/{id}/definition`) and is rendered
+nowhere: `RenderReport` skips it, and the live view, a shared link, a snapshot, the CSV/XLSX, a deck and the portal all read
+that method. A snapshot taken while a section was hidden never held it; one taken before keeps what it froze. A report whose
+every section is hidden is refused (`every_section_hidden`). Hiding one metric inside a section is not built.
+
 Project visibility applies as everywhere else — a reader without `projects.view_all` sees reports
 narrowed to their assignments, in SQL.
 

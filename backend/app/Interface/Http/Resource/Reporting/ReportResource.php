@@ -302,6 +302,7 @@ final readonly class ReportResource implements SnapshotSerialiser
                 'revenue_source' => $section->revenueSource?->value,
                 'creative_view' => $section->creativeView?->value,
                 'tracking_view' => $section->trackingView?->value,
+                'hidden' => $section->hidden,
             ], $definition->sections),
             'created_by_name' => $report->createdByName,
             'updated_at' => $report->updatedAt->format(DateTimeImmutable::ATOM),

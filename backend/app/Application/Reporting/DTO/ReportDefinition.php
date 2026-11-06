@@ -45,6 +45,10 @@ final readonly class ReportDefinition
             throw InvalidReportDefinition::sectionsRequired();
         }
 
+        if (array_filter($this->sections, static fn (SectionDefinition $section): bool => ! $section->hidden) === []) {
+            throw InvalidReportDefinition::everySectionHidden();
+        }
+
         if ($this->window->needsDates() && ($this->customFrom === null || $this->customUntil === null)) {
             throw InvalidReportDefinition::datesRequired();
         }
