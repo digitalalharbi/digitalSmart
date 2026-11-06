@@ -232,6 +232,7 @@ Route::middleware(['auth:sanctum', RestrictMcpTokens::class, BindActorContext::c
     Route::get('tracking/links/audit', [TrackingLinkController::class, 'audit'])->name('tracking.links.audit');
     Route::get('tracking/links/{link}', [TrackingLinkController::class, 'show'])->whereUuid('link')->name('tracking.links.show');
     Route::put('tracking/links/{link}', [TrackingLinkController::class, 'update'])->whereUuid('link')->name('tracking.links.update');
+    Route::get('tracking/links/{link}/history', [TrackingLinkController::class, 'history'])->whereUuid('link')->name('tracking.links.history');
     Route::get('tracking/links/{link}/performance', [TrackingLinkController::class, 'performance'])->whereUuid('link')->name('tracking.links.performance');
     Route::get('tracking/binding-options', [TrackingLinkController::class, 'bindingOptions'])->name('tracking.binding_options');
     Route::post('tracking/links/{link}/status', [TrackingLinkController::class, 'status'])->whereUuid('link')->name('tracking.links.status');

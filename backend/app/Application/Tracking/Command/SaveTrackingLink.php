@@ -11,6 +11,7 @@ use App\Application\Shared\Contract\AuthorizationGuard;
 use App\Application\Shared\Exception\ResourceNotFound;
 use App\Application\Tracking\Contract\CampaignBindingResolver;
 use App\Application\Tracking\Contract\OpaqueTokens;
+use App\Application\Tracking\Contract\TrackingLinkHistory;
 use App\Application\Tracking\Contract\TrackingLinkRepository;
 use App\Application\Tracking\DTO\TrackingLinkInput;
 use App\Application\Tracking\DTO\TrackingLinkView;
@@ -41,6 +42,7 @@ final readonly class SaveTrackingLink
         private VisibilityResolver $visibility,
         private AuditRecorder $audit,
         private CampaignBindingResolver $bindings,
+        private TrackingLinkHistory $history,
         private array $ownHosts = [],
     ) {}
 
@@ -152,6 +154,14 @@ final readonly class SaveTrackingLink
 
             $link = $this->links->update($workspaceId, $id, $values);
         }
+
+        /*
+         * What a click carries from now on. Name, notes, objective and expiry are left out: they describe the link to the
+         * team and change nothing a click is attributed by.
+         */
+        $snapshot = $values;
+        unset($snapshot['project_id'], $snapshot['client_id'], $snapshot['name'], $snapshot['objective'], $snapshot['expires_at'], $snapshot['notes']);
+        $this->history->record($workspaceId, $link->id, $snapshot, $this->actor->userId()->value);
 
         $this->audit->record(new AuditEntry(
             workspaceId: $this->actor->workspaceId(),

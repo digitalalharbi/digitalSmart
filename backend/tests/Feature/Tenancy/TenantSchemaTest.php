@@ -75,6 +75,7 @@ function tenantSafeUniques(): array
         'report_email_deliveries(subscription_id,period_key)' => $ownedBy('report_email_subscriptions'),
         'forms(public_token)' => $token,
         'tracking_links(public_token)' => $token,
+        'tracking_link_revisions(tracking_link_id,revision)' => $ownedBy('tracking_links'),
         'client_request_attachments(stored_name)' => 'a generated storage name, unique across the installation',
         'ad_groups(external_account_id,external_id)' => $ownedBy('external_accounts'),
         'ads(external_account_id,external_id)' => $ownedBy('external_accounts'),
