@@ -41,8 +41,13 @@ disagree, Git is right.
 
 ### Next
 
-1. Owner: a production server — host, SSH user, port, deploy path, host key, web-server arrangement, process
-   names (`docs/DEPLOYMENT.md`); then the `production` environment's secrets and `PRODUCTION_ENABLED=true`.
+1. Owner: a production server — **the one server in the account was assessed on 2026-11-06 and is not usable**:
+   one vCPU, 4 GB of memory (≈1.8 GB free) and it already serves production for two of the owner's other
+   projects, while this pipeline runs `npm ci && npm run build` on the server at every deploy. So a *separate*
+   server is needed, and a domain for digitalSmart (the account holds none) — then its host, SSH user, port,
+   deploy path, host key, web-server arrangement and process names (`docs/DEPLOYMENT.md`), then the `production`
+   environment's secrets and `PRODUCTION_ENABLED=true`. The reasoning, the measured figures and what it would
+   take are under *Assessment of the available server* in `docs/DEPLOYMENT.md`; the choice is the owner's.
 2. Free disk space (≈2 GB free on 2026-10-19; `scripts/check-disk.sh` needs 10 GB) and rerun desktop, agency and
    mobile-Safari E2E. Mobile Safari is not verified until it completes.
 3. Agents & Automation is closed at campaign, ad-group and ad level (#7, #8, #9 — main green at `65e48d0`, E2E on
