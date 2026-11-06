@@ -11,9 +11,11 @@ All notable changes to digitalSmart are recorded here. Format follows
 - **`CLAUDE.md` no longer pulls `CHANGELOG.md`, `docs/ROADMAP.md` or `docs/AGENTS.md` in with `@`.** An `@` reference
   loads the whole document into the context of *every* message. Measured on 2026-11-06 from the owner's own session
   transcripts (579 files, 153,122 unique API responses): those three came to **~124,000 tokens on every message** —
-  over October's 52,405 requests, **6.5 billion tokens of context, close to a quarter of the month's entire token
-  use**, spent re-reading a 406 KB historical changelog and a plan that a session wants occasionally rather than
-  always.
+  over October's 52,405 requests that is **~6.5 billion tokens of context carried**, spent re-reading a 406 KB
+  historical changelog and a plan that a session wants occasionally rather than always. Measured from the files
+  themselves, the `@` list goes from **~139,000 tokens to ~15,700 — an 88.7% cut in autoload weight**. That measures
+  what is *loaded*, not what is *saved*: the effect on actual consumption is only knowable from sessions run after
+  this lands, and is not claimed here. Counts are derived from file size (bytes ÷ 4), ±15%.
 - They keep their place in the bootstrap list, named as read-on-demand, **with the measurement and the cost written
   beside them** so the next session knows what putting the `@` back would buy. `docs/ARCHITECTURE.md` (~1,600 tokens)
   keeps its `@`: it is small and it is wanted before the first edit.
