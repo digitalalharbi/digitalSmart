@@ -34,6 +34,7 @@ in an end-to-end spec. Every stored provider credential in this installation is 
 | Ruleset `main protection` | **Active.** Pull request required; `Governance`, `Backend` and `Frontend` required and the branch must be up to date; no deletion; no force-push; review threads must be resolved. |
 | Bypass | Repository admin, `always` — copied from CampaignsHub deliberately, because `docs/CHANGE_MANAGEMENT.md` documents an emergency direct push and a rule with no bypass would make that procedure a lie. |
 | Local `pre-push` hook | **Still active, and still the real guard against the owner's own accidental push**, precisely because the ruleset bypasses for an admin. Enable per clone with `git config core.hooksPath .githooks`. |
+| Auto-merge | **Allowed since 2026-11-12** by owner decision; `allow_auto_merge` was off before. Armed per pull request, bypasses no required check, and lands on the three required ones — so a pull request can merge while the non-required end-to-end check is still running. The reasoning and what to reconsider: `docs/CHANGE_MANAGEMENT.md`. |
 
 `Governance` is required here although CampaignsHub requires only `backend` and `frontend`. The no-fees rule
 is the one a careless commit could break silently, so it is enforced by the server rather than by good

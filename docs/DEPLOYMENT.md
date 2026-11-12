@@ -168,6 +168,12 @@ encrypted secrets are allowed for **deployment infrastructure only**, in the `pr
 
 Repository variable (not secret): `PRODUCTION_ENABLED=true` once the above exist.
 
+**Before setting it, decide whether auto-merge stays on.** Since 2026-11-12 a pull request can merge itself the moment
+the three required checks pass (`docs/CHANGE_MANAGEMENT.md`), so with this variable set the chain is green CI → merge →
+deploy → `migrate --force`, with nobody in it — and the end-to-end suite, which is not a required check, may still be
+running when it starts. Until the variable exists this workflow only reports `AWAITING_SERVER_ACCESS`, which is the
+second gate doing its job rather than an absence of risk.
+
 Provider credentials (Meta, Google, TikTok, Snapchat, LinkedIn, X, WhatsApp, mail) and model keys are **not**
 GitHub secrets: they live in the server's `shared/.env` or the product's encrypted store. The guard
 (`scripts/governance/no-paid-model.sh`) allows `${{ secrets.PRODUCTION_* }}` only in `deploy-production.yml`, refuses
