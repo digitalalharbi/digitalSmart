@@ -111,6 +111,12 @@ git fetch origin → branch from origin/main → bounded slice → tests → com
 `scripts/check-disk.sh` (10 GB by default) runs before E2E; the production deploy refuses to start below 2 GB. Low
 disk is an operational blocker — investigate read-only, and delete nothing without knowing what it is.
 
+`scripts/check-load.sh` runs before E2E too, and refuses two states: **another test run already on this machine**, and
+**critical kernel memory pressure**. One session, one heavy run — two suites at once produce failures that are about the
+machine, not the code. On an 8 GB machine run the suite as
+`E2E_WORKERS=1 PHP_CLI_SERVER_WORKERS=8 bash scripts/e2e.sh`, which the guard prints for you. Override with
+`E2E_IGNORE_LOAD=1` only knowingly.
+
 ## Status vocabulary — use it exactly
 
 | Status | Meaning |
