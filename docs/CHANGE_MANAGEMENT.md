@@ -29,6 +29,30 @@ moved from the honour system to the server the same day.
 | Bypass | Repository admin, `always`. Deliberate: the emergency procedure below is a documented path, and a rule with no bypass would make it an untruth. |
 | Local `pre-push` hook | **Active, and still the only thing standing between the owner and an accidental direct push**, because the ruleset bypasses for an admin. `.githooks/pre-push` refuses any push to `main` and runs the governance guard. Enable per clone with `git config core.hooksPath .githooks`. |
 | Rule in `CLAUDE.md` | **Binding** on every session |
+| Auto-merge | **Allowed since 2026-11-12, by owner decision**; the repository setting was off until then, and it is still armed per pull request rather than repository-wide. It bypasses nothing — an armed pull request waits for `Governance`, `Backend` and `Frontend` and for the branch to be up to date, exactly as a manual merge does. What it removes is the last look at the green tick. Off again with `gh api -X PATCH repos/digitalalharbi/digitalSmart -f allow_auto_merge=false`. |
+
+### What auto-merge costs, recorded rather than implied
+
+The ruleset's own parameters are why this is worth writing down: `required_approving_review_count` is **0**, and the
+five pull requests before the decision (#106–#110) carried no review at all. Review is not a gate here and never has
+been; CI is. Auto-merge does not weaken that gate — it removes the moment somebody reads the result before the code
+lands. Three consequences follow, and none is hypothetical.
+
+**A pull request merges before the end-to-end suite finishes.** Only `Governance`, `Backend` and `Frontend` are
+required, and E2E is not. #111 merged on those three — 9 s, 4 m 4 s and 17 m 28 s — **33 seconds after the end-to-end
+check started** (14:06:59Z, merged 14:07:32Z), and it was still running long afterwards. With a manual merge the owner
+tends to wait for it; armed, nothing does. Treat E2E as what it is here:
+evidence read after the fact, not a gate.
+
+**A late push lands on its own.** `require_last_push_approval` and `dismiss_stale_reviews_on_push` are both `false`,
+so a commit pushed to an armed pull request merges when CI next goes green. With concurrent sessions that is the case
+to watch.
+
+**Reconsider it the day production exists.** A merge to `main` runs `Deploy Production`, and today a second
+independent gate stops there: the repository variable `PRODUCTION_ENABLED` does not exist, so the workflow reports
+`AWAITING_SERVER_ACCESS` and deploys nothing — which is exactly what it did for #111 (`16b3767`), succeeding without a
+deployment. The day that variable is `true`, the chain becomes green CI → merge → deploy → `migrate --force` with
+nobody in it. `docs/DEPLOYMENT.md` says so where the variable is set, because that is where somebody will be standing.
 
 ## CI
 

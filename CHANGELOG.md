@@ -5,6 +5,29 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## Auto-merge, allowed and written down
+
+### Changed
+- **The repository allows auto-merge, by owner decision on 2026-11-12.** `allow_auto_merge` was `false` until then. It
+  is armed per pull request, never repository-wide, and bypasses nothing: an armed pull request waits for `Governance`,
+  `Backend` and `Frontend` and for the branch to be up to date, exactly as a manual merge does. Off again in one
+  command, and an armed pull request can be disarmed while it waits.
+
+### Recorded, because the parameters are the reason it matters
+- **Review was never a gate here**, which is what makes the last look worth a paragraph rather than a line:
+  `required_approving_review_count` is **0** and #106–#110 carried no review at all. CI is the gate; auto-merge removes
+  the moment somebody reads its result before the code lands.
+- **A pull request now merges before the end-to-end suite finishes.** Only three checks are required and E2E is not one
+  of them. #111 merged on `Governance` 9 s, `Frontend` 4 m 4 s and `Backend` 17 m 28 s **33 seconds after the
+  end-to-end check started** — it began at 14:06:59Z and the merge landed at 14:07:32Z, with E2E still running long
+  afterwards. So E2E is evidence read after the fact, not a gate, and this is the first entry here to say so plainly.
+- **A late push lands on its own**: `require_last_push_approval` and `dismiss_stale_reviews_on_push` are both `false`.
+- **The second gate held, and was observed holding.** `Deploy Production` ran on the first auto-merged commit
+  (`16b3767`) and succeeded without deploying, because `PRODUCTION_ENABLED` does not exist. `docs/DEPLOYMENT.md` now
+  carries the decision to re-take at the moment that variable is set, which is when green CI → merge → deploy →
+  `migrate --force` would run with nobody in it.
+
+
 ## A guard for a machine that is already busy
 
 ### Added
