@@ -101,7 +101,11 @@ jobs:
 
       - name: Tests (architecture, unit, feature)
         # The architecture suite analyses the whole codebase; 128M is not enough.
-        run: php -d memory_limit=512M vendor/bin/pest --ci
+        #
+        # One PHPUnit process per core. Each gets its own database (digitalsmart_test_test_1 … _N, created and
+        # migrated by Laravel's parallel-testing support with the service's own superuser), so no test shares a
+        # transaction with another. Serial, this step took 10 m 57 s on run 43239350172 and was most of the job.
+        run: php -d memory_limit=512M vendor/bin/pest --ci --parallel --processes="$(nproc)"
         env:
           DB_CONNECTION: pgsql
           DB_HOST: 127.0.0.1
@@ -150,13 +154,27 @@ jobs:
       - name: Production build
         run: npm run build
 
-  e2e:
-    name: End-to-end (Playwright)
+  # The end-to-end suite in shards. It needs a migrated API and a built SPA, and it builds both itself in its own
+  # steps — so it waits on nothing but the governance gate. Waiting on `backend` put the whole twelve-minute Pest
+  # run in front of it (run 43239350172: backend 12 m 51 s, then e2e 26 m 6 s, total 39 m), and waiting on
+  # `frontend` would do the same for four minutes; a type error fails both the Frontend check and this job's own
+  # build, so nothing is lost by running them side by side.
+  #
+  # Not a required check (docs/CI_STATUS.md) — the merge waits on Governance, Backend and Frontend. The aggregating
+  # `e2e` job below keeps the one status line this had before.
+  e2e-shard:
+    name: End-to-end shard ${{ matrix.shard }}/${{ strategy.job-total }}
     runs-on: ubuntu-latest
-    # The suite plus the entry-screen compatibility specs on five browsers, and a browser install that is network-bound
-    # (one run spent half an hour in apt), so the limit leaves room: a timeout cancels the job and reads as a failure.
-    timeout-minutes: 80
-    needs: [backend, frontend]
+    needs: [governance]
+    # A browser install that is network-bound (one run spent half an hour in apt) is the reason for the margin:
+    # a timeout cancels the job and reads as a failure.
+    timeout-minutes: 30
+
+    strategy:
+      # Every shard reports; the aggregating job below fails if any of them did.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
 
     services:
       postgres:
@@ -199,6 +217,14 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
+      # The same key as the backend job, so whichever job ran first has already paid for the install.
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ runner.os }}-php${{ env.PHP_VERSION }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php${{ env.PHP_VERSION }}-
+
       - name: Start the API
         working-directory: backend
         run: |
@@ -216,13 +242,20 @@ jobs:
             # The landing page takes requests for an account for the demo workspace, so the flow is exercised.
             echo "ACCESS_REQUESTS_WORKSPACE_SLUG=demo-smart-code"
             echo "RATE_LIMIT_ACCESS_REQUESTS=500"
+            # Cheap password hashing for this run only, as scripts/e2e.sh does and for the same reason: every
+            # test signs in, one browser worker per core now does so at once, and at production rounds a burst
+            # of sign-ins fills the accept queue and the browser reports the server as unreachable. Seeded
+            # before the server starts, so the seed and the server agree.
+            echo "BCRYPT_ROUNDS=4"
           } >> .env
           php artisan key:generate
           php artisan migrate --force
           # The end-to-end suite signs in as the seeded demo roles, so a
           # permission regression fails here as well as in the backend tests.
           php artisan db:seed --force
-          nohup php artisan serve --host=127.0.0.1 --port=8001 > /tmp/api.log 2>&1 &
+          # PHP's built-in server answers one request at a time unless told to fork; `--no-reload` is what lets
+          # it (scripts/e2e.sh explains both). Eight is headroom for one browser worker per core.
+          PHP_CLI_SERVER_WORKERS=8 nohup php artisan serve --host=127.0.0.1 --port=8001 --no-reload > /tmp/api.log 2>&1 &
           for i in $(seq 1 30); do
             code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8001/api/health || true)
             if [ "$code" = "200" ]; then echo "API ready"; exit 0; fi
@@ -234,18 +267,54 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Install Playwright browsers
+      # The three browsers are kept between runs, keyed on the Playwright version the lockfile pins: a new
+      # Playwright brings new browser builds and misses the cache, anything else hits it. The apt packages the
+      # browsers need are not in the cache and are installed every run.
+      - name: Playwright version
+        id: playwright
+        working-directory: frontend
+        run: echo "version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      - name: Install Playwright browsers and their packages
+        if: steps.browsers.outputs.cache-hit != 'true'
         working-directory: frontend
         run: npx playwright install --with-deps chromium webkit firefox
 
+      - name: Install the browsers' packages
+        if: steps.browsers.outputs.cache-hit == 'true'
+        working-directory: frontend
+        run: npx playwright install-deps chromium webkit firefox
+
       - name: Run end-to-end tests
         working-directory: frontend
-        run: npm run e2e
+        # One browser worker per core, against the eight-worker API above. Playwright builds and serves the SPA
+        # itself (playwright.config.ts, webServer). This shard runs its share of every project's tests.
+        run: E2E_WORKERS="$(nproc)" npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-shard-${{ matrix.shard }}
           path: frontend/playwright-report
           retention-days: 7
+
+  # One status line for the whole suite, under the name the suite has always reported with.
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    needs: [e2e-shard]
+    if: ${{ !cancelled() }}
+    timeout-minutes: 5
+    steps:
+      - name: Every shard passed
+        run: |
+          echo "Shards: ${{ needs.e2e-shard.result }}"
+          [ "${{ needs.e2e-shard.result }}" = "success" ]
