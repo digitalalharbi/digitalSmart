@@ -220,3 +220,10 @@ Heavy local work (E2E, builds) starts with `scripts/check-disk.sh` — 10 GB fre
 first. The server deploy refuses to start with less than 2 GB free. When space is short, investigate read-only first
 (`du -sh` on caches, worktrees, logs, Playwright output) and delete only what is known to be disposable — never a
 database, a production file, another project's working tree or uncommitted work without authorisation.
+
+## Machine load
+
+`scripts/check-load.sh` is the companion guard, local only — nothing about it reaches the server. It refuses to start
+E2E when another test run is already on the machine, or when the kernel reports critical memory pressure (at which
+point a suite is killed rather than failed, and a killed suite reads as a failing test). Measured on 2026-11-12: this
+suite alone costs ≈1.6 GB and took swap from 3.4 GB to 6.3 GB on an 8 GB machine. `E2E_IGNORE_LOAD=1` overrides it.

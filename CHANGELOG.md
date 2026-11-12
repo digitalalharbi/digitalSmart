@@ -5,6 +5,44 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## A guard for a machine that is already busy
+
+### Added
+- **`scripts/check-load.sh`**, the companion to `scripts/check-disk.sh` and run by `scripts/e2e.sh` before anything
+  starts. It refuses two states. **Another test run already on the machine** — a suite sharing a machine with another
+  produces failures that are about the machine, and the hours then go into investigating code that was never wrong; the
+  refusal names the processes it found and prints the one-line way to queue behind them. **Critical kernel memory
+  pressure** — `kern.memorystatus_vm_pressure_level` is Apple's own verdict rather than a threshold invented here, and
+  at critical the kernel kills processes, so a suite started there is killed rather than failed, which reads as a
+  failing test.
+- **Warn-level pressure is reported and never refused.** On a small machine it is the ordinary state, and a guard that
+  refuses the ordinary state is a guard somebody switches off. `E2E_IGNORE_LOAD=1` skips both refusals, visibly, saying
+  so on each one it passed.
+- **The reduced invocation is printed rather than left to be worked out**: on 8 GB or less with the worker counts at
+  their defaults, the guard prints `E2E_WORKERS=1 PHP_CLI_SERVER_WORKERS=8`, which halves both and keeps the
+  eight-servers-per-browser-worker ratio that `scripts/e2e.sh` documents as the fix for its connection-queueing flake.
+  Halving only the browser workers would leave sixteen server workers costing memory for nothing.
+- **`scripts/test-check-load.sh`** — twenty cases, the way `test-no-paid-model.sh` proves the governance guard, and
+  verified by breaking the guard rather than by being green: removing the first `exit 1` fails nine of them.
+  Seven run against **real sleeping processes** at paths like `<tmp>/vendor/phpunit/phpunit`, so the wiring to the
+  process table is proven and not assumed. The other thirteen inject the process list, the pressure reading and the
+  machine size (`CHECK_LOAD_PS`, `CHECK_LOAD_PRESSURE`, `CHECK_LOAD_TOTAL_GB`), because three branches cannot be
+  asked of a real machine: an **idle** one — this machine runs suites and so does CI, so the clean path would have
+  been skipped everywhere and proven nowhere — a kernel at **critical** pressure, and a machine of a **different
+  size**. Each injection announces itself on stderr, so a real run cannot be fooled quietly, and none is a larger
+  bypass than `E2E_IGNORE_LOAD` already is. Written for bash 3.2, which is what macOS ships.
+
+### Measured on 2026-11-12, on the development machine
+- The E2E stack alone costs **≈1.6 GB**: sixteen `php -S` workers ≈650 MB, two browser workers with their headless
+  Chromium ≈900 MB, Vite ≈76 MB. Running it took swap from **3.4 GB to 6.3 GB** with 187 MB of RAM unused on an 8 GB
+  machine, while another project's PHPUnit suite ran beside it. That is the state every *flaky under full-suite load*
+  and *starved server* entry in this file was diagnosed as — it is now refused rather than re-diagnosed.
+
+### Corrected
+- `docs/RESUME_STATE.md` still named free disk space as what blocks rerunning E2E (≈2 GB on 2026-10-19). There are
+  **38 GB free**, `check-disk.sh` passes, and the blocker is machine load.
+
+
 ## Tracking: influencers — who a link was made for
 
 ### Added

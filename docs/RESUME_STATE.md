@@ -48,8 +48,11 @@ disagree, Git is right.
    deploy path, host key, web-server arrangement and process names (`docs/DEPLOYMENT.md`), then the `production`
    environment's secrets and `PRODUCTION_ENABLED=true`. The reasoning, the measured figures and what it would
    take are under *Assessment of the available server* in `docs/DEPLOYMENT.md`; the choice is the owner's.
-2. Free disk space (≈2 GB free on 2026-10-19; `scripts/check-disk.sh` needs 10 GB) and rerun desktop, agency and
-   mobile-Safari E2E. Mobile Safari is not verified until it completes.
+2. Rerun desktop, agency and mobile-Safari E2E. **Disk is no longer the blocker** — 38 GB free on 2026-11-12, so
+   `scripts/check-disk.sh` (10 GB) passes. What blocks a *trustworthy* run is machine load: measured on 2026-11-12
+   this suite alone costs ≈1.6 GB and took swap from 3.4 GB to 6.3 GB on an 8 GB machine, while another project's
+   PHPUnit suite ran beside it. `scripts/check-load.sh` now refuses that state; on 8 GB run
+   `E2E_WORKERS=1 PHP_CLI_SERVER_WORKERS=8 bash scripts/e2e.sh`. Mobile Safari is not verified until it completes.
 3. Agents & Automation is closed at campaign, ad-group and ad level (#7, #8, #9 — main green at `65e48d0`, E2E on
    Chromium and mobile Safari included). Next, in this order, with no new architecture phase before the first:
    A. provider live-read commissioning readiness; B. live-write commissioning readiness; C. the cross-platform

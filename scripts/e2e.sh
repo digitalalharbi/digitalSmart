@@ -20,6 +20,11 @@ E2E_DB="${E2E_DB:-digitalsmart_e2e}"
 API_PORT="${API_PORT:-8011}"
 WEB_PORT="${VITE_DEV_PORT:-5178}"
 
+# Another test run already on this machine, or a kernel reporting critical memory pressure, fails this suite for
+# reasons unrelated to the code — the state every "flaky under full-suite load" entry in CHANGELOG.md was traced to.
+# Override with E2E_IGNORE_LOAD=1 only knowingly.
+bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-load.sh" "$API_PORT"
+
 # `kill` on a subshell leaves the real server orphaned, still holding the port —
 # and the next run then talks to a stale process with the previous run's
 # configuration, which fails in ways that look like application bugs. Each
