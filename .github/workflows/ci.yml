@@ -174,7 +174,7 @@ jobs:
       # Every shard reports; the aggregating job below fails if any of them did.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6]
 
     services:
       postgres:
