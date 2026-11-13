@@ -5,6 +5,24 @@ All notable changes to digitalSmart are recorded here. Format follows
 [Semantic Versioning](https://semver.org/).
 
 
+## CI in ten minutes instead of forty
+
+### Changed
+- **The end-to-end suite runs in six shards beside `Backend` and `Frontend`, not after them** (#113). Each shard
+  migrates and seeds its own API, builds the SPA and runs one sixth of every Playwright project; an aggregating job
+  keeps the one `End-to-end (Playwright)` status line. The jobs wait only on the governance gate: they used to wait on
+  the whole serial Pest run, for an API they build themselves.
+- **Pest runs in parallel on CI**, one process per core, each on its own database, as `--parallel` does locally.
+- **The three Playwright browsers are cached** between runs, keyed on the Playwright version the lockfile pins.
+
+### Measured
+- On `main`, run to run: **39 m 32 s → 10 m 48 s** (runs 43239350172 and 43356750566; job times in `docs/CI_STATUS.md`).
+  `Backend` 12 m 51 s → 9 m 57 s; the end-to-end suite 26 m 06 s after `Backend` → six shards of 4–10 m beside it.
+
+### Not changed
+- The required checks are still `Governance`, `Backend` and `Frontend`; the end-to-end jobs are not required, as before.
+  No schedule, no secret, no model, no paid feature; the governance guard passed on the new workflow before it ran.
+
 ## Auto-merge, allowed and written down
 
 ### Changed

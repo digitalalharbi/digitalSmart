@@ -52,6 +52,45 @@ It requires the `merge_group` trigger in `ci.yml`: the queue builds each pull re
 the entries ahead of it, and gates the merge on checks run against **that** combination. The trigger must be
 on `main` **before** the rule is enabled, or every queued entry waits for a status that cannot arrive.
 
+## What CI runs, and how long it takes — 2026-11-13
+
+`.github/workflows/ci.yml` after [#113](https://github.com/digitalalharbi/digitalSmart/pull/113), merged 2026-11-13.
+The three required checks are unchanged; what changed is what runs beside them and when.
+
+| Job | Waits on | Required | What it does |
+|---|---|---|---|
+| `Governance` | — | yes | The guard's own test suite, then the guard over every workflow. Nothing else starts until it passes. |
+| `Backend` | Governance | yes | Pint, PHPStan level 8, then Pest **in parallel** — one PHPUnit process per core, each on its own database (`digitalsmart_test_test_1 … _N`, created and migrated by Laravel's parallel-testing support). |
+| `Frontend` | Governance | yes | Type check, ESLint, Prettier, Vitest, production build. |
+| `End-to-end shard 1/6 … 6/6` | Governance | no | Six jobs, each migrating and seeding its own API, building the SPA and running one sixth of every Playwright project (`--shard=n/6`), one browser worker per core. The three browsers are cached between runs, keyed on the Playwright version the lockfile pins; the apt packages they need are installed every run. `fail-fast: false`, so every shard reports. |
+| `End-to-end (Playwright)` | the six shards | no | One status line under the name the suite has always reported with; fails if any shard did. |
+
+The end-to-end jobs wait on the governance gate and nothing else. They used to wait on `Backend`, which put the whole
+serial Pest run in front of a suite that builds its own API anyway; a type error still fails both `Frontend` and the
+shard's own build, so running them side by side loses nothing.
+
+**Measured on `main`, same workflow file before and after** (job start → end, from the Actions API):
+
+| | Serial — run [43239350172](https://github.com/digitalalharbi/digitalSmart/actions/runs/43239350172), `d9ba991` | Sharded — run [43356750566](https://github.com/digitalalharbi/digitalSmart/actions/runs/43356750566), `c374b3a` |
+|---|---|---|
+| Governance | 8 s | 7 s |
+| Backend | 12 m 51 s | 9 m 57 s |
+| Frontend | 4 m 46 s | 4 m 40 s |
+| End-to-end | 26 m 06 s, after Backend | shards 4 m 18 s – 10 m 29 s, beside Backend |
+| **Whole run** | **39 m 32 s** | **10 m 48 s** |
+
+Two consecutive runs on the pull request were also green (the second in 9 m 13 s). The critical path is now `Backend`
+and the slowest shard, both near ten minutes; the next minute saved comes from Pest or from a seventh shard, not from
+ordering.
+
+**What is still not run on the server:** the agency-scale profile (`E2E_AGENCY=1` in `scripts/e2e.sh`, sixty clients
+and every role's history on top of the demo). The shards run all five Playwright projects — `chromium`, `mobile-safari`,
+`firefox`, `webkit`, `mobile-chromium` — against the demo seed only; the local gate is still what a reviewer reads before
+approving, as `docs/CHANGE_MANAGEMENT.md` says.
+
+**What did not change:** no schedule, no secret, no model, no paid feature. The governance guard passed on the new file
+before any of it ran, and `merge_group` is still on the trigger list.
+
 ## Deployment
 
 `.github/workflows/deploy-production.yml` deploys `main` to production over SSH after every merge — see
